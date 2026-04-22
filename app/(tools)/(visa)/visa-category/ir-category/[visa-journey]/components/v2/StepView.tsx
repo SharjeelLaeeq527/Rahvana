@@ -4501,7 +4501,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   return (
     <div
-      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
+      className={`flex-1 flex flex-col min-h-[100dvh] sm:h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
       style={
         isChapter3
           ? {
@@ -4518,7 +4518,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
           currentStep.step_type === "quest"
             ? ""
-            : "px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10 lg:py-12"
+            : "px-2 sm:px-4 md:px-8 lg:px-12 pt-6 sm:pt-10 md:pt-14 pb-6 md:pb-10 lg:pb-12"
         }`}
       >
         {/* Quiz Overlay Refinement - Now absolute below headers */}
@@ -4863,11 +4863,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   }}
                 />
               )}
-              <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <div className="w-full flex flex-col items-center px-4 sm:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                 {/* Questionnaire CTA — only for step_1_2 when not yet completed */}
                 {/* uncomment this line */}
                 {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
-                <div className="w-full max-w-[740px] mb-[24px] mt-5">
+                <div className="w-full max-w-[740px] mb-6 mt-4 sm:mt-5 px-4 sm:px-0">
                   <button
                     onClick={() => setShowDocQuestionnaire(true)}
                     className="w-full p-[20px_24px] rounded-[16px] border-[2px] border-primary bg-[rgba(59,125,216,0.06)] hover:bg-[rgba(59,125,216,0.12)] hover:shadow-[0_4px_20px_rgba(59,125,216,0.15)] hover:-translate-y-px transition-all cursor-pointer text-left group"
@@ -5515,7 +5515,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           ) : (
             <div
-              className={`bg-white border border-[#d0e4f7] rounded-[24px] sm:rounded-[32px] p-6 sm:p-10 md:p-14 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto ${isChapter1 ? "step-modal-spacing" : ""}`}
+              className={`bg-white border border-[#d0e4f7] rounded-[20px] sm:rounded-[28px] md:rounded-[32px] p-4 sm:p-8 md:p-12 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto mt-4 sm:mt-8 md:mt-12 ${isChapter1 ? "step-modal-spacing" : ""}`}
             >
               <div
                 className={`text-[11px] font-bold uppercase tracking-[0.2em] mb-4 opacity-70 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -5968,7 +5968,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             const currentTutStep = steps[tutorialIdx];
 
             return (
-              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out">
+              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
                 {/* Tutorial Topbar */}
                 <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                   <button
@@ -6128,7 +6128,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           const currentTutStep = steps[tutorialIdx];
 
           return (
-            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out">
+            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
               {/* Tutorial Topbar */}
               <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                 <button
@@ -6588,7 +6588,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {isGatheringGuideOpen && selectedGatheringItem && (
         <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans guide-bg">
           {/* Guide Topbar */}
-          <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
+          <div className="flex items-center px-2 sm:px-4 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
               onClick={() => setIsGatheringGuideOpen(false)}
               className="w-[36px] h-[36px] rounded-full bg-[#f4f7fb] flex items-center justify-center transition-colors hover:bg-[#d0e4f7] group"
@@ -6608,15 +6608,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
 
           {/* Guide Body */}
-          <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+          <div className="flex-1 overflow-y-auto flex flex-col items-center px-2 sm:px-4 md:px-8 py-8 sm:py-12">
             <div className="w-full max-w-[600px]">
-              <div className="text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-[16px]">
+              <div className="text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-[16px]">
                 Step 4 · Original Documents Checklist
               </div>
-              <h2 className="text-[clamp(20px,3vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.25]">
+              <h2 className="text-[clamp(18px,4vw,26px)] sm:text-[clamp(20px,3vw,26px)] text-[#0c1b33] mb-[8px] leading-[1.25] break-words">
                 {selectedGatheringItem.title}
               </h2>
-              <p className="text-[14px] text-[#3a4f63] mb-[22px] leading-[1.6]">
+              <p className="text-[13px] sm:text-[14px] text-[#3a4f63] mb-[22px] leading-[1.6] break-words">
                 {selectedGatheringItem.sub}
               </p>
 
@@ -6625,13 +6625,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {selectedGatheringItem.sections.map((sec, i) => (
                   <div
                     key={i}
-                    className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[18px_20px]"
+                    className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-4 sm:p-[18px_20px]"
                   >
-                    <div className="text-[12px] font-[700] tracking-[0.06em] uppercase text-[#6b8097] mb-[8px]">
+                    <div className="text-[11px] sm:text-[12px] font-[700] tracking-[0.06em] uppercase text-[#6b8097] mb-[8px]">
                       {sec.t}
                     </div>
                     <div
-                      className="text-[14px] text-[#3a4f63] leading-[1.7] prose-sm"
+                      className="text-[13px] sm:text-[14px] text-[#3a4f63] leading-[1.7] prose-sm break-words"
                       dangerouslySetInnerHTML={{ __html: sec.c }}
                     />
                   </div>
@@ -6659,7 +6659,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   disabled={
                     gatheringStatus[selectedGatheringItem.id] === "reviewed"
                   }
-                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                  className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[14px] sm:text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
                   {gatheringStatus[selectedGatheringItem.id] === "reviewed" ? (
                     <>
@@ -6671,7 +6671,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </button>
                 <button
                   onClick={() => setIsGatheringGuideOpen(false)}
-                  className="p-[13px_24px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[14px] font-[500] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] flex items-center justify-center gap-2"
+                  className="p-[13px_24px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[16px] text-[13px] sm:text-[14px] font-[500] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] flex items-center justify-center gap-2"
                 >
                   <ChevronLeft size={16} /> Back to checklist
                 </button>

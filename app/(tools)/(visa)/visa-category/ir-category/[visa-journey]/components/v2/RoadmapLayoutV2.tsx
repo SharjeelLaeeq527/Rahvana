@@ -88,7 +88,7 @@ export default function RoadmapLayoutV2({
   const isChapter3 = selectedChapterIdx === 2;
   return (
     <div
-      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500"
+      className="min-h-screen min-h-[100dvh] sm:h-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500"
     >
       {/* Top Navigation */}
       <nav className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40 pt-2">
@@ -194,7 +194,7 @@ export default function RoadmapLayoutV2({
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col relative overflow-hidden">
+      <main className="flex-1 flex flex-col relative overflowx-x-hidden">
         {view === "dashboard" && (
           <DashboardView
             data={data}

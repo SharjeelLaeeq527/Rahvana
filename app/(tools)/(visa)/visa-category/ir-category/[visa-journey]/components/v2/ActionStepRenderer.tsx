@@ -498,7 +498,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       }
     >
       {/* Main Content */}
-      <div className="max-w-3xl w-full mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col gap-3 step step-modal-spacing">
+      <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-6 sm:pt-10 md:pt-14 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
         {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
@@ -1274,6 +1274,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             flexDirection: "column",
             animation: "fadeIn 0.3s ease",
           }}
+          className="px-2 sm:px-4 md:px-8 pt-6 sm:pt-10 md:pt-14"
         >
           {/* Topbar */}
           <div
