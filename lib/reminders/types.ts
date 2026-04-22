@@ -20,7 +20,7 @@ export type ReminderType =
   | 'step_pending_too_long'      // step in-progress for 7+ days (also used as ACTION catch-all)
   | 'appointment_not_recorded'   // appointment step complete, no date saved
   | 'ceac_status_update'         // CEAC status notification (WAITING type reminders)
-  | 'tracking_status_update'     // tracking-related status updates (matches DB enum)
+  | 'tracking_status_update'     // Mailing tracking status update
 
 /** Priority levels — used for UI ordering and salience */
 export type ReminderPriority = 'critical' | 'high' | 'normal' | 'low'

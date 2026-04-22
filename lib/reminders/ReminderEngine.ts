@@ -35,6 +35,7 @@ export class ReminderEngine {
       accountSetupReminder,
       toolAbandonedReminders,
       appointmentNotRecordedReminder,
+      trackingStatusReminder,
     ] = await Promise.allSettled([
       this.checkMissingDocuments(journeyId),
       this.checkAppointmentsApproaching(journeyId),
@@ -44,6 +45,7 @@ export class ReminderEngine {
       this.checkAccountSetupIncomplete(journeyId),
       this.checkAbandonedToolSessions(journeyId),
       this.checkAppointmentNotRecorded(journeyId),
+      this.checkTrackingStatusUpdates(journeyId)
     ])
 
     // Collect results safely (ignore individual failures)
@@ -59,6 +61,7 @@ export class ReminderEngine {
     push(accountSetupReminder)
     push(toolAbandonedReminders)
     push(appointmentNotRecordedReminder)
+    push(trackingStatusReminder)
 
     if (candidates.length === 0) return
 
@@ -481,5 +484,76 @@ export class ReminderEngine {
     }
 
     return reminders
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // CHECKER 9: Tracking Status Updates
+  // Trigger: recent updates to tracking status
+  // Priority: depends on status
+  // ─────────────────────────────────────────────────────────────
+
+  private async checkTrackingStatusUpdates(
+    journeyId: string
+  ): Promise<ReminderCandidate[]> {
+  
+    // Get latest tracking status
+    const { data: statusData } = await this.supabase
+      .from('case_data')
+      .select('data_value, updated_at')
+      .eq('journey_id', journeyId)
+      .eq('data_key', 'tracking_status')
+      .single()
+  
+    if (!statusData?.data_value) return []
+  
+    // Clean Value
+    const status = String(statusData.data_value)
+      .replace(/"/g, '')
+      .toLowerCase()
+  
+    // Only trigger if recently updated (avoid old spam)
+    const updatedAt = new Date(statusData.updated_at)
+    const now = new Date()
+    const diffMinutes =
+      (now.getTime() - updatedAt.getTime()) / (1000 * 60)
+  
+    if (diffMinutes > 60) return []
+  
+    // Only important statuses
+    const allowedStatuses = ['out_for_delivery', 'delivered']
+  
+    if (!allowedStatuses.includes(status)) {
+      return []
+    }
+  
+    // Create reminder content
+    let title = ''
+    let body = ''
+    let priority: 'high' | 'critical' = 'high'
+  
+    if (status === 'out_for_delivery') {
+      title = 'Package Out for Delivery'
+      body = 'Your package is out for delivery today. Be ready to receive it.'
+      priority = 'high'
+    }
+  
+    if (status === 'delivered') {
+      title = 'Package Delivered Successfully'
+      body =
+        'Your package has been delivered. Please confirm receipt and proceed with next steps.'
+      priority = 'critical'
+    }
+  
+    return [
+      {
+        reminder_type: 'tracking_status_update' as const,
+        priority,
+        title,
+        body,
+        action_url: '/visa-category/ir-category/ir1-journey',
+        action_label: 'View Tracking',
+        dedup_key: `${journeyId}:tracking_status:${status}`,
+      },
+    ]
   }
 }
