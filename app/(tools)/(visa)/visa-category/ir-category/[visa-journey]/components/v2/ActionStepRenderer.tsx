@@ -498,28 +498,28 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       }
     >
       {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-5.5 py-12">
+      <div className="max-w-3xl w-full mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
-        {(step.step_key === "step_1_11" ||
-          step.step_key === "step_1_12" ||
-          step.step_key === "step_1_13" ||
+        {(step.step_key === "step_1_11" || 
+          step.step_key === "step_1_12" || 
+          step.step_key === "step_1_13" || 
           step.step_key === "step_1_14") && (
           <div className="text-[10px] font-bold uppercase tracking-widest text-soft mb-2 text-[#636B97]">
-            Chapter 1 · Chapter 1: USCIS Petition Filing{" "}
-            <span className="text-[#BDD7F1] mx-2">&gt;</span>{" "}
+            Chapter 1 · Chapter 1: USCIS Petition Filing
+            <span className="text-[#BDD7F1] mx-2">&gt;</span>
             <span className="text-[#3B7DD8]">{step.step_name}</span>
           </div>
         )}
         {/* Title */}
         <h1
-          className={`text-4xl leading-tight font-black -tracking-wide mb-3 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
+          className={`page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
         >
           {step.step_name}
         </h1>
 
         {/* Subtitle */}
         <p
-          className={`text-base leading-relaxed max-w-2xl mb-5.5 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : "text-soft"}`}
+          className={`page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : "text-soft"}`}
         >
           {step.step_description}
         </p>

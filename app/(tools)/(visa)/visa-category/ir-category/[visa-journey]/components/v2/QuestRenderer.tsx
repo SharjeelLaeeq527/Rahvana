@@ -243,7 +243,7 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="max-w-[740px] mx-auto w-full animate-in fade-in duration-500 step-modal-spacing">
+      <div className="max-w-[740px] mx-auto w-full px-4 sm:px-6 md:px-8 animate-in fade-in duration-500 step-modal-spacing">
         <div className="px-0 pt-0 pb-0 step-modal-spacing">
           <div className="mb-9">
             <h1
@@ -252,7 +252,7 @@ export function QuestRenderer({
               {suite.title}
             </h1>
             <p
-              className={`text-[15px] max-w-[540px] leading-[1.65] ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#3a4f63]" : "text-[#3a4f63]"}`}
+              className={`text-[15px] max-w-full md:max-w-[540px] leading-[1.65] ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#3a4f63]" : "text-[#3a4f63]"}`}
             >
               {suite.subtitle}
             </p>
@@ -479,7 +479,7 @@ export function QuestRenderer({
         >
           <button
             onClick={() => setView("landing")}
-            className={`cant fnd it just eit it
+            className={`
               [36px] h-[36px] rounded-full border-none flex items-center justify-center cursor-pointer transition-colors shrink-0 ${isChapter1 ? "bg-[#e6d6c3] hover:bg-[#f7ede5]" : isChapter2 ? "bg-[#ede6f6] hover:bg-[#b48ad6]/10" : isChapter3 ? "bg-[#e8f1fb] hover:bg-[#2f6fd4]/10" : "bg-[#f5f7fa] hover:bg-[#e8f1fb]"}`}
             aria-label="Close quest"
           >

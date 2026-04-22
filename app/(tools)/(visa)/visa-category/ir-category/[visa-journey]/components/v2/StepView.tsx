@@ -4516,7 +4516,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     >
       <div
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
-          currentStep.step_type === "quest" ? "" : "p-6 md:p-10 lg:p-12"
+          currentStep.step_type === "quest"
+            ? ""
+            : "px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10 lg:py-12"
         }`}
       >
         {/* Quiz Overlay Refinement - Now absolute below headers */}
@@ -4782,7 +4784,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         )}
 
         <div
-          className={`w-full ${currentStep.step_type === "quest" ? "" : "max-w-4xl"}`}
+          className={`w-full ${currentStep.step_type === "quest" ? "" : "max-w-4xl"} mx-auto`}
         >
           {currentStep.step_type === "quest" ? (
             <div
@@ -5513,7 +5515,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           ) : (
             <div
-              className={`bg-white border border-[#d0e4f7] rounded-[32px] p-10 md:p-14 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto ${isChapter1 ? "step-modal-spacing" : ""}`}
+              className={`bg-white border border-[#d0e4f7] rounded-[24px] sm:rounded-[32px] p-6 sm:p-10 md:p-14 lg:p-20 shadow-xl shadow-[#0f1f38]/5 animate-in fade-in zoom-in-95 duration-700 w-full max-w-[740px] mx-auto ${isChapter1 ? "step-modal-spacing" : ""}`}
             >
               <div
                 className={`text-[11px] font-bold uppercase tracking-[0.2em] mb-4 opacity-70 ${isChapter1 ? "accent-rose" : "text-primary"}`}
