@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rahvana — Monitor USCIS Case Status</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+:root{
+  --navy:#0c1b33;--navy-mid:#1a3054;--navy-light:#2d4a6e;
+  --ink:#1c2b3a;--ink-soft:#3a4f63;--ink-muted:#6b8097;
+  --sky:#e8f1fb;--sky-mid:#d0e4f7;--sky-deep:#b8d4f0;
+  --white:#fafcff;--warm-white:#f4f7fb;--surface:#eef3fa;
+  --accent:#2f6fd4;--accent-hover:#2460bb;--accent-glow:rgba(47,111,212,.13);
+  --green:#15744f;--green-bg:#e8f5ef;--green-border:#a8d9be;--green-dark:#0e5c3c;
+  --amber:#8a6200;--amber-bg:#fef8e8;--amber-border:#f0d98a;
+  --purple:#4a2d8a;--purple-bg:#f3f0fb;--purple-border:#c9bef2;
+  --rose:#9f285a;--rose-bg:#fff0f5;--rose-border:#f4bfd3;
+  --launch-bg:#0e1e38;--launch-border:rgba(255,255,255,.08);--launch-text:rgba(255,255,255,.93);
+  --launch-sub:rgba(255,255,255,.66);--launch-muted:rgba(255,255,255,.40);
+  --launch-cue-bg:rgba(255,255,255,.06);--launch-cue-bd:rgba(255,255,255,.11);--launch-line:rgba(255,255,255,.09);
+  --shadow-module:0 20px 60px rgba(12,27,51,.18),0 4px 16px rgba(12,27,51,.12);
+  --shadow-card:0 8px 24px rgba(12,27,51,.07);--shadow-modal:0 24px 80px rgba(12,27,51,.32),0 4px 20px rgba(12,27,51,.16);
+  --radius:16px;--radius-sm:10px;--radius-pill:100px;--trans:.22s cubic-bezier(.4,0,.2,1);--trans-slow:.38s cubic-bezier(.4,0,.2,1);
+  --font-serif:'DM Serif Display',Georgia,serif;--font-sans:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--warm-white);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,textarea{font-family:var(--font-sans)}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+.page{max-width:760px;margin:0 auto;padding:52px 24px 96px;display:flex;flex-direction:column;gap:22px}
+.page>*{animation:childEnter .38s cubic-bezier(.4,0,.2,1) both}
+.page>*:nth-child(1){animation-delay:.04s}.page>*:nth-child(2){animation-delay:.08s}.page>*:nth-child(3){animation-delay:.12s}.page>*:nth-child(4){animation-delay:.16s}.page>*:nth-child(5){animation-delay:.2s}.page>*:nth-child(6){animation-delay:.24s}.page>*:nth-child(7){animation-delay:.28s}.page>*:nth-child(8){animation-delay:.32s}
+@keyframes childEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow-row{display:flex;align-items:center;gap:8px;margin-bottom:-10px}.eyebrow-text,.eyebrow-step{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}.eyebrow-text{color:var(--ink-muted)}.eyebrow-step{color:var(--accent)}.eyebrow-sep{font-size:11px;color:var(--sky-deep)}
+.page-title{font-family:var(--font-serif);font-size:clamp(30px,4.6vw,40px);color:var(--navy);line-height:1.12;letter-spacing:-.01em}
+.page-desc{font-size:15px;color:var(--ink-soft);line-height:1.72;max-width:620px}
+.meta-chips{display:flex;gap:7px;flex-wrap:wrap}.chip{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:var(--radius-pill)}
+.chip-role{background:var(--sky);color:var(--navy-light);border:1px solid var(--sky-mid)}.chip-path{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}.chip-track{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.launch-module{background:var(--launch-bg);border-radius:var(--radius);border:1px solid var(--launch-border);box-shadow:var(--shadow-module);overflow:hidden;position:relative}
+.launch-module::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent) 0%,#6aa8f0 55%,transparent 100%);opacity:.8}
+.launch-inner{padding:30px 32px 28px}.launch-top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}.launch-header{display:flex;gap:16px;align-items:flex-start}
+.launch-icon{width:48px;height:48px;border-radius:12px;background:var(--launch-cue-bg);border:1px solid var(--launch-cue-bd);display:flex;align-items:center;justify-content:center;flex-shrink:0}.launch-icon svg{width:23px;height:23px;stroke:rgba(255,255,255,.78);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.launch-eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--launch-muted);margin-bottom:4px}.launch-heading{font-family:var(--font-serif);font-size:clamp(21px,3vw,26px);line-height:1.2;color:var(--launch-text);margin-bottom:7px}.launch-copy{font-size:13.5px;line-height:1.66;color:var(--launch-sub);max-width:470px}
+.status-badge{padding:8px 12px;border-radius:999px;background:rgba(168,217,190,.12);border:1px solid rgba(168,217,190,.28);color:#b9e5cc;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.launch-divider{height:1px;background:var(--launch-line);margin:18px 0 16px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.metric{background:var(--launch-cue-bg);border:1px solid var(--launch-cue-bd);border-radius:12px;padding:13px 14px}.metric-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--launch-muted);margin-bottom:6px}.metric-value{font-size:14px;font-weight:600;color:var(--launch-text);line-height:1.35}
+.metric-sub{font-size:11px;color:var(--launch-sub);margin-top:4px;line-height:1.4}
+.launch-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 18px;border-radius:12px;font-size:14px;font-weight:600;transition:background var(--trans),transform var(--trans),border-color var(--trans),color var(--trans),box-shadow var(--trans)}
+.btn-primary{border:none;background:var(--accent);color:#fff;box-shadow:0 4px 20px rgba(47,111,212,.35)}.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px)}.btn-secondary{border:1px solid var(--launch-cue-bd);background:rgba(255,255,255,.03);color:var(--launch-text)}.btn-secondary:hover{background:rgba(255,255,255,.07);transform:translateY(-1px)}
+.btn-primary svg,.btn-secondary svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.panel,.card{background:var(--white);border:1.5px solid var(--sky-mid);border-radius:var(--radius);box-shadow:var(--shadow-card)}
+.panel{padding:22px}.panel-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}.panel-title{font-family:var(--font-serif);font-size:24px;color:var(--navy);line-height:1.2}.panel-copy{font-size:14px;line-height:1.68;color:var(--ink-soft);max-width:540px}.panel-tag{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:7px 11px;border-radius:999px;background:var(--sky);border:1px solid var(--sky-mid);color:var(--navy-light);white-space:nowrap}
+.grid-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid-three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{padding:18px}.card-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}.card-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.card-icon.green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}.card-icon.purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}.card-icon.amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}.card-icon.rose{background:var(--rose-bg);color:var(--rose);border:1px solid var(--rose-border)}
+.card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}.card-copy{font-size:13px;color:var(--ink-soft);line-height:1.6}.card-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.mini-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 13px;border-radius:10px;border:1.5px solid var(--sky-mid);background:var(--warm-white);font-size:12px;font-weight:600;color:var(--navy);transition:all var(--trans)}.mini-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}.mini-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.status-explainer{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.status-panel{background:linear-gradient(180deg,#fbfdff 0%,#f4f8fd 100%);border:1.5px solid var(--sky-mid);border-radius:14px;padding:18px}.status-kicker{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}.status-headline{font-family:var(--font-serif);font-size:28px;color:var(--navy);line-height:1.1;margin-bottom:10px}.status-body{font-size:14px;color:var(--ink-soft);line-height:1.72;margin-bottom:14px}.checklist{display:flex;flex-direction:column;gap:12px}
+.check-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;border:1.5px solid var(--sky-mid);background:var(--white);transition:border-color var(--trans),box-shadow var(--trans),transform var(--trans)}
+.check-item:hover{border-color:#bad7fa;box-shadow:0 4px 16px rgba(12,27,51,.05)}.check-item.done{border-color:var(--green-border);background:linear-gradient(180deg,#f9fffc 0%,#eefaf3 100%)}
+.check-toggle{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--sky-deep);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all var(--trans)}
+.check-item.done .check-toggle{background:var(--green);border-color:var(--green)}.check-toggle svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:2;display:none}.check-item.done .check-toggle svg{display:block}
+.check-content{flex:1}.check-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px}.check-copy{font-size:12.5px;color:var(--ink-soft);line-height:1.55}.muted-note{font-size:12px;color:var(--ink-muted);line-height:1.58}
+.timeline{display:flex;flex-direction:column;gap:12px}.tl-item{display:flex;gap:12px}.tl-dot{width:11px;height:11px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0;box-shadow:0 0 0 4px rgba(47,111,212,.12)}.tl-line{position:relative}.tl-item:not(:last-child) .tl-line::after{content:'';position:absolute;left:5px;top:18px;bottom:-17px;width:1.5px;background:var(--sky-deep)}.tl-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px}.tl-copy{font-size:12.8px;line-height:1.58;color:var(--ink-soft)}.tl-pill{display:inline-block;margin-top:6px;padding:5px 9px;border-radius:999px;background:var(--sky);border:1px solid var(--sky-mid);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--navy-light)}
+.update-list{display:flex;flex-direction:column;gap:12px}.update-card{padding:16px;border-radius:14px;border:1.5px solid var(--sky-mid);background:linear-gradient(180deg,#fff 0%,#f8fbff 100%)}.update-top{display:flex;justify-content:space-between;gap:14px;margin-bottom:8px;align-items:flex-start}.update-title{font-size:14px;font-weight:700;color:var(--navy)}.update-source{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted)}.update-copy{font-size:13px;line-height:1.62;color:var(--ink-soft)}
+.community-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.community-card{padding:18px;border-radius:14px;background:linear-gradient(180deg,#fff 0%,#fbfcff 100%);border:1.5px solid var(--sky-mid)}.community-quote{font-size:14px;line-height:1.72;color:var(--ink-soft);margin-bottom:12px}.community-meta{font-size:12px;font-weight:700;color:var(--navy)}.community-sub{font-size:11px;color:var(--ink-muted);margin-top:3px}
+.footer-note{font-size:11.5px;line-height:1.65;color:var(--ink-muted);text-align:center;padding-top:4px}
+#modal-overlay,#tutorial-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(12,27,51,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px}
+#tutorial-overlay{z-index:310;background:var(--white);backdrop-filter:none;padding:0;flex-direction:column;overflow:hidden}
+#modal-overlay.open,#tutorial-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-modal);width:100%;max-width:640px;max-height:88vh;overflow-y:auto;animation:modalIn .24s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:24px 24px 0}.modal-title{font-family:var(--font-serif);font-size:24px;color:var(--navy);line-height:1.2}.modal-sub{font-size:13px;color:var(--ink-muted);line-height:1.58;margin-top:5px}.modal-close{width:34px;height:34px;border-radius:50%;border:none;background:var(--surface);display:flex;align-items:center;justify-content:center}.modal-close:hover{background:var(--sky-mid)}.modal-close svg{width:14px;height:14px;stroke:var(--ink-soft);fill:none;stroke-width:2}.modal-body{padding:20px 24px 24px}
+.inline-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted)}.input,.textarea{padding:11px 13px;border:1.5px solid var(--sky-mid);border-radius:10px;font-size:14px;color:var(--ink);background:#fff;outline:none;transition:border-color var(--trans),box-shadow var(--trans)}.input:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}.helper{font-size:11.5px;color:var(--ink-muted);line-height:1.5}.save-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}.btn-save{padding:13px 16px;border:none;border-radius:11px;background:var(--accent);color:#fff;font-size:14px;font-weight:700}.btn-save:hover{background:var(--accent-hover)}.btn-light{padding:13px 16px;border-radius:11px;border:1.5px solid var(--sky-mid);background:var(--warm-white);font-size:14px;font-weight:600;color:var(--navy)}
+.error{display:none;margin-bottom:12px;padding:11px 13px;border-radius:10px;background:#fff2f2;border:1px solid #f7b6b6;color:#b42318;font-size:12.5px;line-height:1.5}.error.show{display:block}
+.tut-topbar{display:flex;align-items:center;padding:18px 24px;border-bottom:1px solid var(--sky-mid);gap:16px;flex-shrink:0}.tut-close{width:36px;height:36px;border-radius:50%;border:none;background:var(--warm-white);display:flex;align-items:center;justify-content:center}.tut-close:hover{background:var(--sky)}.tut-close svg{width:16px;height:16px;stroke:var(--ink-soft);fill:none;stroke-width:2}
+.tut-prog-track{flex:1;height:5px;background:var(--sky-mid);border-radius:10px;overflow:hidden}.tut-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),#6aa8f0);border-radius:10px;transition:width .35s}.tut-counter{font-size:12px;font-weight:600;color:var(--ink-muted);white-space:nowrap}
+.tut-body{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:44px 24px 34px}.tut-inner{width:100%;max-width:620px}.tut-step-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}.tut-heading{font-family:var(--font-serif);font-size:clamp(22px,3.2vw,28px);line-height:1.2;color:var(--navy);margin-bottom:8px}.tut-instruction{font-size:14px;color:var(--ink-soft);line-height:1.72;margin-bottom:18px}
+.browser-block{border:1.5px solid var(--sky-mid);background:linear-gradient(180deg,#fff 0%,#f7fbff 100%);border-radius:14px;overflow:hidden;margin-bottom:16px}.browser-bar{height:34px;background:var(--sky);display:flex;align-items:center;gap:7px;padding:0 12px}.bb-dot{width:10px;height:10px;border-radius:50%}.red{background:#f87171}.amber{background:#fbbf24}.green{background:#34d399}.browser-url{margin-left:8px;background:#fff;border-radius:6px;padding:5px 10px;font-size:10px;color:var(--ink-muted);font-family:monospace;flex:1}
+.browser-content{padding:22px 20px 24px}.bb-kicker{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}.bb-head{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}.bb-copy{font-size:12.8px;line-height:1.62;color:var(--ink-soft);max-width:470px;margin-bottom:14px}.bb-pill-row{display:flex;gap:8px;flex-wrap:wrap}.bb-pill{padding:7px 10px;border-radius:999px;background:var(--warm-white);border:1px solid var(--sky-mid);font-size:11px;font-weight:700;color:var(--navy-light)}
+.tut-note{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--amber);line-height:1.58;margin-bottom:18px}
+.tut-nav{display:flex;gap:10px;align-items:center}.tut-btn-back{padding:13px 18px;background:transparent;border:1.5px solid var(--sky-mid);border-radius:11px;font-size:14px;font-weight:600;color:var(--ink-soft)}.tut-btn-back:hover{border-color:var(--ink-soft);color:var(--ink)}.tut-btn-next,.tut-btn-done{flex:1;padding:13px 18px;border:none;border-radius:11px;font-size:14px;font-weight:700;color:#fff;background:var(--accent)}.tut-btn-next:hover,.tut-btn-done:hover{background:var(--accent-hover)}.tut-btn-done{background:var(--green)}.tut-btn-done:hover{background:var(--green-dark)}
+@media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}.grid-three{grid-template-columns:1fr}.grid-two,.community-row,.status-explainer,.inline-row,.launch-actions{grid-template-columns:1fr}.launch-top{flex-direction:column}.status-badge{white-space:normal}}@media(max-width:520px){.page{padding:38px 16px 76px}.launch-inner,.panel,.card{padding:20px}.tut-body{padding:34px 16px 28px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="eyebrow-row"><span class="eyebrow-text">Chapter 1 · USCIS Petition Filing</span><span class="eyebrow-sep">›</span><span class="eyebrow-step">Monitor USCIS Case Status</span></div>
+  <h1 class="page-title">Monitor USCIS Case Status</h1>
+  <p class="page-desc">Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one place, explains what the current status means, and gives you useful next-step prep so the waiting period does not become dead time.</p>
+  <div class="meta-chips"><span class="chip chip-role">Petitioner</span><span class="chip chip-path">Online Filing</span><span class="chip chip-track">USCIS Tracking</span></div>
+
+  <section class="launch-module">
+    <div class="launch-inner">
+      <div class="launch-top">
+        <div class="launch-header">
+          <div class="launch-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 21s7-4.35 7-10V5l-7-2-7 2v6c0 5.65 7 10 7 10Z"/><path d="M9 12.5l2 2 4-4"/></svg>
+          </div>
+          <div>
+            <div class="launch-eyebrow">Pending with USCIS · Active Monitoring</div>
+            <div class="launch-heading" id="heroStatusTitle">Case Was Received</div>
+            <div class="launch-copy" id="heroStatusCopy">USCIS has accepted the filing and issued a receipt number. This stage is mostly waiting, monitoring, and preparing intelligently for what may come next.</div>
+          </div>
+        </div>
+        <div class="status-badge" id="heroBadge">Tracking active</div>
+      </div>
+      <div class="launch-divider"></div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Receipt number</div><div class="metric-value" id="metricReceipt">Not saved</div><div class="metric-sub">USCIS tracking identifier</div></div>
+        <div class="metric"><div class="metric-label">Last checked</div><div class="metric-value" id="metricChecked">Just now</div><div class="metric-sub">Rahvana monitoring baseline</div></div>
+        <div class="metric"><div class="metric-label">Priority date</div><div class="metric-value" id="metricPriority">Saved if provided</div><div class="metric-sub">Useful record, not the center of IR-1</div></div>
+        <div class="metric"><div class="metric-label">Next likely phase</div><div class="metric-value">USCIS review</div><div class="metric-sub">Then approval or RFE, depending on the case</div></div>
+      </div>
+      <div class="launch-actions">
+        <button class="btn-primary" id="refreshBtn"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>Refresh tracking status</button>
+        <button class="btn-secondary" id="statusGuideBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>What does this status mean?</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Stay Prepared While USCIS Reviews Your Case</div>
+        <div class="panel-copy">Use this waiting period to stay organized, build stronger records, and prepare for the steps that usually come after USCIS review.</div>
+      </div>
+      <div class="panel-tag">High-value now</div>
+    </div>
+    <div class="status-explainer">
+      <div class="status-panel">
+        <div class="status-kicker">What this status means</div>
+        <div class="status-headline" id="statusHeadline">USCIS has the case</div>
+        <div class="status-body" id="statusBody">This usually means the filing has been accepted into the system and is waiting in the USCIS queue for review. In most cases, there is nothing to submit right now unless USCIS later asks for more evidence.</div>
+        <div class="card-actions">
+          <button class="mini-btn" id="processingBtn"><svg viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M12 3v18"/></svg>Check processing-time context</button>
+          <button class="mini-btn" id="nextMilestonesBtn"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>See common next milestones</button>
+        </div>
+      </div>
+      <div class="checklist" id="prepChecklist"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">What’s Coming Next</div>
+        <div class="panel-copy">See the likely path ahead so you can prepare early without feeling rushed into work that does not matter yet.</div>
+      </div>
+      <div class="panel-tag">Coming next</div>
+    </div>
+    <div class="timeline" id="futureTimeline"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Useful Right Now</div>
+        <div class="panel-copy">These are focused, case-relevant resources you can use while USCIS is still processing your petition.</div>
+      </div>
+      <div class="panel-tag">Education + updates</div>
+    </div>
+    <div class="grid-three" id="usefulNow"></div>
+    <div class="update-list" id="relevantUpdates" style="margin-top:14px"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Keep Building Your Case</div>
+        <div class="panel-copy">Even while the case is pending, you can strengthen readiness by continuing to collect relationship evidence and organizing what may matter later.</div>
+      </div>
+      <div class="panel-tag">Ongoing prep</div>
+    </div>
+    <div class="grid-two" id="buildCaseGrid"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Community & Proof Layer</div>
+        <div class="panel-copy">See practical insights from similar journeys and common habits that help people stay organized during this stage.</div>
+      </div>
+      <div class="panel-tag">Human context</div>
+    </div>
+    <div class="community-row" id="communityLayer"></div>
+  </section>
+
+  <p class="footer-note">Rahvana will keep this case visible, explain major updates clearly, and help you stay prepared while USCIS reviews the petition.</p>
+</div>
+
+<div id="modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTitle">Status details</div>
+        <div class="modal-sub" id="modalSub">A closer look at this pending-stage milestone.</div>
+      </div>
+      <button class="modal-close" id="modalClose"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div id="tutorial-overlay">
+  <div class="tut-topbar">
+    <button class="tut-close" id="tutClose"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="tut-prog-track"><div class="tut-prog-fill" id="tutFill"></div></div>
+    <div class="tut-counter" id="tutCounter">1 / 4</div>
+  </div>
+  <div class="tut-body"><div class="tut-inner" id="tutInner"></div></div>
+</div>
+
+<script>
+const CASE_KEY = 'rahvana_ir1_step11_case';
+const STATE_KEY = 'rahvana_ir1_step12_state';
+
+const DEFAULT_CASE = {
+  receiptNumber:'IOE1234567890',
+  noticeDate:'2026-03-12',
+  priorityDate:'2026-03-08',
+  source:'manual',
+  trackingEnabled:true,
+  lastKnownStatus:'Case Was Received',
+  lastCheckedAt:new Date().toISOString(),
+  lastStatusChangedAt:'2026-03-12T11:20:00Z',
+  statusHistory:[
+    {title:'Case Was Received', date:'2026-03-12', note:'USCIS accepted the filing and created the case record.'}
+  ]
+};
+
+const STATUS_MAP = {
+  'Case Was Received': {
+    hero:'Case Was Received',
+    copy:'USCIS accepted the filing and created the official case record. At this point, the most valuable thing is to monitor updates and use the waiting period to prepare intelligently for later stages.',
+    headline:'USCIS has the case',
+    body:'This usually means the filing has entered the system and is in line for review. Most users do not need to take any action right now unless USCIS later issues an update, a request for evidence, or another notice.',
+    badge:'Tracking active'
+  },
+  'Case Is Being Actively Reviewed By USCIS': {
+    hero:'Case Is Being Actively Reviewed',
+    copy:'USCIS has moved the case into an active review state. This is still usually a waiting phase, but it often becomes the point where users start checking more often for RFE, approval, or other notice changes.',
+    headline:'USCIS is reviewing the petition',
+    body:'This means USCIS has taken a substantive look at the case. It still does not necessarily require action from the user, but it is a good time to keep documents organized and watch for any change.',
+    badge:'Review underway'
+  },
+  'Request for Evidence Was Sent': {
+    hero:'Request for Evidence Was Sent',
+    copy:'USCIS has asked for additional evidence. This becomes an action-required stage, and your next task should shift into preparing a complete response.',
+    headline:'USCIS needs more evidence',
+    body:'An RFE means USCIS wants additional documentation before making a decision. The priority becomes reading the notice carefully and preparing a complete, organized response by the stated deadline.',
+    badge:'Action required'
+  },
+  'Case Was Approved': {
+    hero:'Case Was Approved',
+    copy:'USCIS approved the petition. This moves the case out of the waiting stage and into the next phase of the immigrant-visa process.',
+    headline:'USCIS approved the petition',
+    body:'Approval means the I-130 phase is complete. The next meaningful workflow will shift toward the National Visa Center and later consular processing.',
+    badge:'Approved'
+  }
+};
+
+const CHECKLIST_ITEMS = [
+  {id:'docs', title:'Organize future NVC and civil documents', copy:'Use the waiting period to make sure passports, birth certificates, translations, and marriage records are easy to retrieve later.'},
+  {id:'evidence', title:'Keep collecting relationship evidence', copy:'Add photos, travel records, call logs, chats, and other ongoing proof so later stages do not rely only on older material.'},
+  {id:'rfe', title:'Understand common USCIS RFE scenarios', copy:'Learn what an RFE is, what it usually means, and how Rahvana will help if one arrives.'},
+  {id:'next', title:'Preview what happens after approval', copy:'Get familiar with NVC, fees, DS-260, affidavit of support, and later interview prep so the next phase is not a surprise.'}
+];
+
+const FUTURE_TIMELINE = [
+  {title:'USCIS continues review', copy:'The case remains pending while USCIS reviews the filing and supporting evidence.', pill:'Current phase'},
+  {title:'Possible Request for Evidence', copy:'If USCIS needs more material, it may issue an RFE asking for specific evidence or clarification.', pill:'Conditional'},
+  {title:'Petition approval', copy:'If approved, the I-130 stage closes and the case moves toward the National Visa Center.', pill:'Likely next milestone'},
+  {title:'NVC case creation', copy:'After approval, the State Department side begins and new fees, forms, and civil-document steps come into play.', pill:'Later stage'}
+];
+
+const USEFUL_NOW = [
+  {icon:'green', title:'What happens after I-130 approval?', copy:'A compact explainer that prepares you for NVC case creation, fees, DS-260, and document upload.', action:'Open preview'},
+  {icon:'purple', title:'How to keep building relationship evidence', copy:'Practical guidance on what new proof is worth saving while the case is pending.', action:'View evidence guide'},
+  {icon:'amber', title:'Affidavit of support preview', copy:'A short preparation module so household size, income questions, and sponsor strategy do not hit all at once later.', action:'See future prep'}
+];
+
+const RELEVANT_UPDATES = [
+  {title:'USCIS processing-time tools are available while the case is pending', source:'Official USCIS context', copy:'Users can check official processing-time context and later use case tools if the filing appears to be taking longer than expected.'},
+  {title:'Case status online only shows the latest official case action', source:'Important expectation', copy:'A quiet period does not mean the case is lost. USCIS status tools usually reflect the latest recorded action, not every internal movement.'}
+];
+
+const BUILD_CASE = [
+  {icon:'green', title:'Add new evidence entries', copy:'Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.', buttons:['Add note','Mark planned']},
+  {icon:'rose', title:'Track household or income changes', copy:'If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.', buttons:['Save reminder','Open notes']}
+];
+
+const COMMUNITY = [
+  {quote:'“While our case was quiet, we used the waiting time to clean up all of our civil documents and relationship evidence. When the next stage came, we were not scrambling.”', meta:'Anonymized IR-family journey', sub:'Illustrative prep pattern · not legal advice'},
+  {quote:'“The most helpful thing during the pending phase was having a simple list of what we could do now versus what truly needed to wait.”', meta:'Common insight from similar journeys', sub:'Lightweight, practical, and grounded in real waiting-stage habits'}
+];
+
+const TUTORIAL_STEPS = [
+  {label:'Step 1 of 4 — Open official USCIS status tools', heading:'Start with the official case-status view', instruction:'USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.', url:'egov.uscis.gov', kicker:'Official USCIS tracking', head:'Case Status Online', copy:'Track your case using the 13-character receipt number.', pills:['Receipt number required','Last action shown','Official USCIS tool'], note:'A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet.'},
+  {label:'Step 2 of 4 — Understand common pending statuses', heading:'Learn the difference between waiting and action-required states', instruction:'Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.', url:'rahvana.local/status-map', kicker:'Status guide', head:'Status meanings', copy:'Separate passive waiting from states that require action.', pills:['Received','Actively reviewed','RFE','Approved'], note:'Use this guide to understand whether you need to act now or simply stay prepared.'},
+  {label:'Step 3 of 4 — Use the waiting period well', heading:'Turn waiting time into preparation time', instruction:'Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.', url:'rahvana.local/pending-prep', kicker:'While-you-wait tools', head:'Stay prepared while waiting', copy:'A prep checklist, next-step preview, and useful modules for this waiting period.', pills:['Prep checklist','Coming next','Useful right now'], note:'A few small tasks now can make the next phase feel much easier when the case moves forward.'},
+  {label:'Step 4 of 4 — Know when the page should pivot', heading:'Be ready for the next meaningful change', instruction:'If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.', url:'rahvana.local/conditional-next-steps', kicker:'Next-step guide', head:'Pivot when USCIS changes the status', copy:'RFE and approval should each unlock their own dedicated next-step experiences.', pills:['Conditional branches','Next step unlocks','Action clarity'], note:'Your next task should match the actual update USCIS gives you.'}
+];
+
+function loadCase(){
+  try{ return JSON.parse(localStorage.getItem(CASE_KEY) || 'null') || DEFAULT_CASE; }
+  catch{ return DEFAULT_CASE; }
+}
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(STATE_KEY) || '{}'); }
+  catch{ return {}; }
+}
+function saveState(state){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+function formatDateTime(v){
+  if(!v) return 'Not yet checked';
+  const d = new Date(v);
+  if(isNaN(d)) return v;
+  return d.toLocaleString([], {month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
+}
+function formatDate(v){
+  if(!v) return '—';
+  const d = new Date(v);
+  if(isNaN(d)) return v;
+  return d.toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'});
+}
+
+const caseData = loadCase();
+const uiState = Object.assign({ checklist:{} }, loadState());
+const statusData = STATUS_MAP[caseData.lastKnownStatus] || STATUS_MAP['Case Was Received'];
+
+document.getElementById('metricReceipt').textContent = caseData.receiptNumber || 'Not saved';
+document.getElementById('metricChecked').textContent = formatDateTime(caseData.lastCheckedAt);
+document.getElementById('metricPriority').textContent = caseData.priorityDate ? formatDate(caseData.priorityDate) : 'Not provided';
+document.getElementById('heroStatusTitle').textContent = statusData.hero;
+document.getElementById('heroStatusCopy').textContent = statusData.copy;
+document.getElementById('heroBadge').textContent = statusData.badge;
+document.getElementById('statusHeadline').textContent = statusData.headline;
+document.getElementById('statusBody').textContent = statusData.body;
+
+function renderChecklist(){
+  const host = document.getElementById('prepChecklist');
+  host.innerHTML = CHECKLIST_ITEMS.map(item => {
+    const done = !!uiState.checklist[item.id];
+    return `<div class="check-item ${done ? 'done' : ''}" data-id="${item.id}">
+      <button class="check-toggle" aria-label="Mark ${item.title} complete"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+      <div class="check-content"><div class="check-title">${item.title}</div><div class="check-copy">${item.copy}</div></div>
+    </div>`;
+  }).join('') + `<div class="muted-note">These are practical ways to stay prepared while you wait.</div>`;
+  host.querySelectorAll('.check-item').forEach(el => {
+    el.addEventListener('click', e => {
+      const id = el.dataset.id;
+      uiState.checklist[id] = !uiState.checklist[id];
+      saveState(uiState);
+      renderChecklist();
+    });
+  });
+}
+
+function renderFutureTimeline(){
+  document.getElementById('futureTimeline').innerHTML = FUTURE_TIMELINE.map((item, idx) => `
+    <div class="tl-item">
+      <div class="tl-line"><div class="tl-dot"></div></div>
+      <div>
+        <div class="tl-title">${item.title}</div>
+        <div class="tl-copy">${item.copy}</div>
+        <div class="tl-pill">${item.pill}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderUsefulNow(){
+  document.getElementById('usefulNow').innerHTML = USEFUL_NOW.map((item, idx) => `
+    <div class="card">
+      <div class="card-icon ${item.icon}">${iconSVG(item.icon)}</div>
+      <div class="card-title">${item.title}</div>
+      <div class="card-copy">${item.copy}</div>
+      <div class="card-actions"><button class="mini-btn" data-modal="useful-${idx}">${item.action}<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></button></div>
+    </div>`).join('');
+}
+
+function renderRelevantUpdates(){
+  document.getElementById('relevantUpdates').innerHTML = RELEVANT_UPDATES.map((item, idx) => `
+    <div class="update-card">
+      <div class="update-top"><div class="update-title">${item.title}</div><div class="update-source">${item.source}</div></div>
+      <div class="update-copy">${item.copy}</div>
+    </div>`).join('');
+}
+
+function renderBuildCase(){
+  document.getElementById('buildCaseGrid').innerHTML = BUILD_CASE.map((item, idx) => `
+    <div class="card">
+      <div class="card-icon ${item.icon}">${iconSVG(item.icon)}</div>
+      <div class="card-title">${item.title}</div>
+      <div class="card-copy">${item.copy}</div>
+      <div class="card-actions">${item.buttons.map(btn => `<button class="mini-btn" data-modal="build-${idx}">${btn}</button>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderCommunity(){
+  document.getElementById('communityLayer').innerHTML = COMMUNITY.map(item => `
+    <div class="community-card">
+      <div class="community-quote">${item.quote}</div>
+      <div class="community-meta">${item.meta}</div>
+      <div class="community-sub">${item.sub}</div>
+    </div>`).join('');
+}
+
+function iconSVG(type){
+  if(type==='green') return '<svg viewBox="0 0 24 24"><path d="M12 21s7-4.35 7-10V5l-7-2-7 2v6c0 5.65 7 10 7 10Z"/><path d="M9 12.5l2 2 4-4"/></svg>';
+  if(type==='purple') return '<svg viewBox="0 0 24 24"><path d="M4 19.5V4.5a2 2 0 0 1 2-2h9l5 5v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M14 2.5v5h5"/></svg>';
+  if(type==='amber') return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>';
+  return '<svg viewBox="0 0 24 24"><path d="M12 21c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9Z"/><path d="M8.5 14.5c1.25 1.25 2.42 1.88 3.5 1.88s2.25-.63 3.5-1.88"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>';
+}
+
+renderChecklist();
+renderFutureTimeline();
+renderUsefulNow();
+renderRelevantUpdates();
+renderBuildCase();
+renderCommunity();
+
+function openModal(title, sub, html){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalSub').textContent = sub;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', e => { if(e.target.id==='modal-overlay') closeModal(); });
+
+document.getElementById('processingBtn').addEventListener('click', () => openModal(
+  'Processing-time context',
+  'Use this to keep expectations grounded.',
+  `<div class="card-copy" style="font-size:14px;line-height:1.75">
+    USCIS processing-time tools can help you see whether your case still appears to be within normal timing for this form and office. A quiet case is common, so use this as context rather than a reason to panic.
+  </div>`
+));
+
+document.getElementById('nextMilestonesBtn').addEventListener('click', () => openModal(
+  'Common next milestones',
+  'These are the most common next milestones.',
+  `<div class="timeline">${FUTURE_TIMELINE.map(item=>`<div class="tl-item"><div class="tl-line"><div class="tl-dot"></div></div><div><div class="tl-title">${item.title}</div><div class="tl-copy">${item.copy}</div></div></div>`).join('')}</div>`
+));
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  const now = new Date().toISOString();
+  caseData.lastCheckedAt = now;
+  localStorage.setItem(CASE_KEY, JSON.stringify(caseData));
+  document.getElementById('metricChecked').textContent = formatDateTime(now);
+  openModal('Tracking refreshed', 'Tracking updated', `<div class="card-copy" style="font-size:14px;line-height:1.75">Rahvana refreshed your tracking record and updated the last-checked time. The current status remains <strong>${caseData.lastKnownStatus}</strong> unless USCIS posts a new official change.</div>`);
+});
+
+const modalDelegates = {
+  'useful-0': ['After I-130 approval', 'A focused preview of what often comes after USCIS approval.', '<div class="card-copy" style="font-size:14px;line-height:1.75">After USCIS approval, the case generally shifts toward the National Visa Center. That means new fees, DS-260, affidavit-of-support planning, and civil-document workflow. This preview helps you understand what often comes next so the transition feels less sudden.</div>'],
+  'useful-1': ['Relationship evidence builder', 'Use the waiting period to keep your records current.', '<div class="card-copy" style="font-size:14px;line-height:1.75">Save ongoing photos, travel records, chat logs, call summaries, visit notes, and other proof that shows the relationship continuing naturally over time.</div>'],
+  'useful-2': ['Affidavit-of-support preview', 'Prepare early without overwhelming yourself.', '<div class="card-copy" style="font-size:14px;line-height:1.75">While this is not the stage to file the I-864, it is smart to use the quiet time to understand sponsor strategy, household size, income questions, and what documentation may later be needed.</div>'],
+  'build-0': ['Add new evidence entries', 'A future-friendly evidence log.', `<div class="field"><label class="label">Quick note</label><textarea class="textarea" rows="4" placeholder="Example: Saved travel itinerary from July visit, added new photos, and uploaded flight confirmation."></textarea></div><div class="helper">This note stays in Rahvana so you can keep an organized record of new evidence while the case is pending.</div><div class="save-row"><button class="btn-save" id="closeEvidenceModal">Save note</button></div>`],
+  'build-1': ['Track household or income changes', 'Useful later for sponsorship prep.', `<div class="card-copy" style="font-size:14px;line-height:1.75">If income, employment, household size, or sponsor strategy changes while the case is pending, it helps to capture that information early so later steps are easier.</div>`]
+};
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-modal]');
+  if(!btn) return;
+  const conf = modalDelegates[btn.dataset.modal];
+  if(conf) openModal(conf[0], conf[1], conf[2]);
+  if(btn.dataset.modal==='build-0'){
+    setTimeout(()=>document.getElementById('closeEvidenceModal')?.addEventListener('click', closeModal),0);
+  }
+});
+
+let tutIndex = 0;
+function openTutorial(){ document.getElementById('tutorial-overlay').classList.add('open'); document.body.style.overflow='hidden'; tutIndex=0; renderTutorial(); }
+function closeTutorial(){ document.getElementById('tutorial-overlay').classList.remove('open'); document.body.style.overflow=''; }
+function renderTutorial(){
+  const step = TUTORIAL_STEPS[tutIndex];
+  const total = TUTORIAL_STEPS.length;
+  document.getElementById('tutFill').style.width = `${((tutIndex+1)/total)*100}%`;
+  document.getElementById('tutCounter').textContent = `${tutIndex+1} / ${total}`;
+  document.getElementById('tutInner').innerHTML = `
+    <div class="tut-step-label">Monitor USCIS Case Status · ${step.label}</div>
+    <div class="tut-heading">${step.heading}</div>
+    <div class="tut-instruction">${step.instruction}</div>
+    <div class="browser-block">
+      <div class="browser-bar"><div class="bb-dot red"></div><div class="bb-dot amber"></div><div class="bb-dot green"></div><div class="browser-url">${step.url}</div></div>
+      <div class="browser-content">
+        <div class="bb-kicker">${step.kicker}</div>
+        <div class="bb-head">${step.head}</div>
+        <div class="bb-copy">${step.copy}</div>
+        <div class="bb-pill-row">${step.pills.map(p=>`<div class="bb-pill">${p}</div>`).join('')}</div>
+      </div>
+    </div>
+    <div class="tut-note">${step.note}</div>
+    <div class="tut-nav">
+      ${tutIndex>0?'<button class="tut-btn-back" id="tutBack">← Back</button>':''}
+      ${tutIndex===total-1?'<button class="tut-btn-done" id="tutDone">Done — return to step</button>':'<button class="tut-btn-next" id="tutNext">Next →</button>'}
+    </div>`;
+  document.getElementById('tutBack')?.addEventListener('click',()=>{tutIndex--;renderTutorial();});
+  document.getElementById('tutNext')?.addEventListener('click',()=>{tutIndex++;renderTutorial();});
+  document.getElementById('tutDone')?.addEventListener('click',closeTutorial);
+}
+
+document.getElementById('statusGuideBtn').addEventListener('click', openTutorial);
+document.getElementById('tutClose').addEventListener('click', closeTutorial);
+</script>
+</body>
+</html>
