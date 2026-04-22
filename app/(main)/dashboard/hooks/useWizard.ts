@@ -496,6 +496,7 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         if (success) {
           console.log("[useWizard] sync success:", stepKey);
+          window.dispatchEvent(new CustomEvent("refresh-reminders"));
         } else {
           console.error("[useWizard] sync failed after 3 attempts:", stepKey, lastErr);
           toast.error("Progress saved locally. Will sync when connection is restored.");
@@ -560,6 +561,8 @@ export function useWizard(options: UseWizardOptions = {}) {
               operations: ops,
             }),
           });
+          // Notify other components that reminders might have changed
+          window.dispatchEvent(new CustomEvent("refresh-reminders"));
         } catch (err) {
           console.error("[useWizard] Case data sync failed:", err);
         }

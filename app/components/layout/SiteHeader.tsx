@@ -251,6 +251,13 @@ export function SiteHeader({
     return () => clearInterval(interval);
   }, [resolvedUser, fetchNotifications]);
 
+  // Re-fetch immediately when any data save triggers refresh-reminders
+  useEffect(() => {
+    if (!resolvedUser) return;
+    window.addEventListener("refresh-reminders", fetchNotifications);
+    return () => window.removeEventListener("refresh-reminders", fetchNotifications);
+  }, [resolvedUser, fetchNotifications]);
+
   const handleBellClick = () => {
     setNotificationsOpen((prev) => !prev);
   };
