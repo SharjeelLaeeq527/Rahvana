@@ -102,8 +102,10 @@ export class ReminderEngine {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // HELPERS
+  // HELPERS / CHECKS
   // ─────────────────────────────────────────────────────────────
+
+  // CHECKER 1: Missing Required Documents
   // Trigger: journey_documents rows where is_required=true and
   //          status is 'not_started' or 'requested'
   // Priority: high
@@ -131,6 +133,84 @@ export class ReminderEngine {
       action_label: 'Upload Document',
       dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
     }))
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // CHECKER 3: Police Certificate Tracking
+  // Source: case_data table (pcc_saved, pcc_received, pcc_date)
+  // Logic: fires smart escalating reminders weekly until received.
+  //   Day  7 → normal  "1 week check-in"
+  //   Day 14 → high    "2 weeks — check tracking now"
+  //   Day 21 → high    "3 weeks — follow up urgently"
+  //   Day 30+ → critical "Overdue — interview may be at risk"
+  // ─────────────────────────────────────────────────────────────
+
+  private async checkPoliceCertificatePending(journeyId: string): Promise<ReminderCandidate[]> {
+    const { data: caseRows } = await this.supabase
+      .from('case_data')
+      .select('data_key, data_value')
+      .eq('journey_id', journeyId)
+      .in('data_key', ['pcc_saved', 'pcc_received', 'pcc_date'])
+
+    if (!caseRows || caseRows.length === 0) return []
+
+    const byKey = Object.fromEntries(caseRows.map((r) => [r.data_key, String(r.data_value ?? '')]))
+
+    // Already received — no reminder
+    if (byKey['pcc_received'] === 'true' || byKey['pcc_received'] === '"true"') return []
+
+    // Application must be saved for tracking to start
+    if (byKey['pcc_saved'] !== 'true' && byKey['pcc_saved'] !== '"true"') return []
+
+    // Calculate days since application date
+    const now = new Date()
+    let daysSince = 0
+    const rawDate = (byKey['pcc_date'] ?? '').replace(/^"|"$/g, '')
+    if (rawDate) {
+      const appDate = new Date(rawDate + 'T00:00:00')
+      if (!isNaN(appDate.getTime())) {
+        daysSince = Math.floor((now.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24))
+      }
+    }
+
+    // Only fire reminders on meaningful intervals (7, 14, 21, 30+)
+    if (daysSince < 7) return []
+
+    // Escalating priority and messaging
+    let priority: 'critical' | 'high' | 'normal'
+    let title: string
+    let body: string
+    const week = Math.floor(daysSince / 7)
+
+    if (daysSince >= 30) {
+      priority = 'critical'
+      title = `⚠️ PCC overdue — ${daysSince} days since application`
+      body = `Your Police Clearance Certificate was applied ${daysSince} days ago and is still not received. This is urgent — contact the issuing authority immediately and confirm your interview timeline is not at risk.`
+    } else if (daysSince >= 21) {
+      priority = 'high'
+      title = `PCC still pending — ${daysSince} days, follow up now`
+      body = `It has been ${daysSince} days since your PCC application. Most PCCs arrive within 14–21 days. Visit the tracking portal or call the issuing office to check your status and get an ETA.`
+    } else if (daysSince >= 14) {
+      priority = 'high'
+      title = 'PCC — 2 weeks since application, check tracking'
+      body = 'Your PCC application is 2 weeks old. Log in to the tracking website of the issuing authority to verify processing status. Mark it as received in your journey once it arrives.'
+    } else {
+      priority = 'normal'
+      title = 'PCC — 1 week check-in'
+      body = 'It has been a week since your PCC application. Applications typically enter processing within 7–10 days. You can start checking the tracking portal for a status update.'
+    }
+
+    return [{
+      reminder_type: 'police_certificate_pending' as const,
+      priority,
+      title,
+      body,
+      step_key: 'step_3_3',
+      action_url: '/visa-category/ir-category/ir1-journey',
+      action_label: 'Update PCC Status',
+      // dedup_key changes each week — so a fresh escalated notification appears
+      dedup_key: `${journeyId}:pcc_tracking:week${week}`,
+    }]
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -183,45 +263,6 @@ export class ReminderEngine {
         dedup_key: `${journeyId}:appointment_approaching:${appt.id}:${diffDays}d`,
       }
     })
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // CHECKER 3: Police Certificate Pending
-  // Trigger: document with type 'police_certificate' and status
-  //          'requested' or 'pending' (not yet 'received'/'uploaded')
-  // Priority: high (this is a persistent-until-resolved reminder)
-  // ─────────────────────────────────────────────────────────────
-
-  private async checkPoliceCertificatePending(journeyId: string): Promise<ReminderCandidate[]> {
-    const { data: docs } = await this.supabase
-      .from('journey_documents')
-      .select('id, status, updated_at')
-      .eq('journey_id', journeyId)
-      .eq('document_type', 'police_certificate')
-      .in('status', ['requested', 'pending'])
-      .is('deleted_at', null)
-      .limit(1)
-
-    if (!docs || docs.length === 0) return []
-
-    // Check if older than 6 months (180 days)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const isStale = new Date(docs[0].updated_at) < sixMonthsAgo;
-
-    return [{
-      reminder_type: 'police_certificate_pending' as const,
-      priority: 'high' as const,
-      title: isStale ? 'Police Certificate May Be Expired' : 'Police Certificate Not Yet Received',
-      body: isStale 
-        ? 'Your police certificate request is over 6 months old. Ensure it is still valid for your interview date.'
-        : 'Your police certificate has been requested but not yet received. Keep following up with the issuing authority.',
-      step_key: 'III.2',
-      reference_id: docs[0].id,
-      action_url: '/visa-category/ir-category/ir1-journey',
-      action_label: 'Update Status',
-      dedup_key: `${journeyId}:police_certificate_pending`,
-    }]
   }
 
   // ─────────────────────────────────────────────────────────────

@@ -9,9 +9,21 @@ export const dynamic = 'force-dynamic'
 import { ReminderEngine } from '@/lib/reminders/ReminderEngine'
 import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine'
 import { REMINDER_PRIORITY_ORDER } from '@/lib/reminders/types'
-import { getReminderById } from '@/lib/notifications/reminderRegistry'
-import type { ReminderListResponse } from '@/lib/reminders/types'
+import { getReminderById, type ReminderKind } from '@/lib/notifications/reminderRegistry'
+import type { ReminderListResponse, ReminderType } from '@/lib/reminders/types'
 import { createClient } from '@supabase/supabase-js'
+
+// Maps registry kind → journey_reminders.reminder_type enum value
+// This is the ONLY place this mapping lives — change here to affect all registry notifications
+function kindToReminderType(kind: ReminderKind | undefined): ReminderType {
+  switch (kind) {
+    case 'ACTION':    return 'step_pending_too_long'   // user needs to take action
+    case 'URGENT':    return 'step_pending_too_long'   // urgent action needed
+    case 'WAITING':   return 'ceac_status_update'      // waiting for external update
+    case 'FOLLOW-UP': return 'appointment_not_recorded' // follow up on something saved
+    default:          return 'step_pending_too_long'
+  }
+}
 
 interface RouteParams {
   params: Promise<{ journeyId: string }>
@@ -67,12 +79,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     for (const notif of dueNow ?? []) {
       const def = getReminderById(notif.reminder_id)
-      const priority = notif.reminder_type === 'URGENT' || notif.reminder_type === 'ACTION'
-        ? (def?.priority ?? 'high') : (def?.priority ?? 'normal')
+      // Map the registry kind to a valid reminder_type DB enum value
+      const reminderType = kindToReminderType(def?.kind)
+      const priority = def?.priority ?? (notif.reminder_type === 'URGENT' ? 'high' : 'normal')
 
       await adminSupabase.from('journey_reminders').upsert({
         journey_id: journeyId,
-        reminder_type: 'step_pending_too_long',
+        reminder_type: reminderType,
         priority,
         title: notif.title,
         body: notif.message,
@@ -80,7 +93,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         action_url: def?.actionUrl ?? null,
         action_label: def?.actionLabel ?? null,
         is_dismissed: false,
-        dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}:${notif.id}`,
+        dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}`,
       }, { onConflict: 'dedup_key', ignoreDuplicates: true })
 
       await adminSupabase.from('ceac_scheduled_notifications')

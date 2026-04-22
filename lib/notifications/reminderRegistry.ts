@@ -145,7 +145,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'WAITING',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'receiptNum' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_1_17' },
+    // Suppress when NVC Case Number exists = USCIS approved + NVC phase started
+    suppressWhen: { type: 'metadata_key_exists', metadataKey: 'nvcCaseNum' },
     delayDays: 30,
     recurring: { intervalDays: 30 },
     priority: 'normal',

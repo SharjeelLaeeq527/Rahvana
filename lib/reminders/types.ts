@@ -17,9 +17,10 @@ export type ReminderType =
   | 'account_setup_incomplete'   // USCIS step done, no wallet record saved
   | 'ceac_upload_incomplete'     // CEAC upload step done, not confirmed
   | 'tool_session_abandoned'     // tool started 3+ days ago, incomplete
-  | 'step_pending_too_long'      // step in-progress for 7+ days
+  | 'step_pending_too_long'      // step in-progress for 7+ days (also used as ACTION catch-all)
   | 'appointment_not_recorded'   // appointment step complete, no date saved
-  | 'ceac_status_update'         // CEAC status notification (Chapter 3, Step 9)
+  | 'ceac_status_update'         // CEAC status notification (WAITING type reminders)
+  | 'tracking_status_update'     // tracking-related status updates (matches DB enum)
 
 /** Priority levels — used for UI ordering and salience */
 export type ReminderPriority = 'critical' | 'high' | 'normal' | 'low'
