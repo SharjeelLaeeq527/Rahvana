@@ -903,12 +903,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
+  const journeyId = state.backendId;
   if (sId === "step_1_15" && currentStep.tool_data) {
     customRenderer = (
       <RegisterReceiptStep
         tool={currentStep.tool_data}
         state={state}
         actions={actions}
+        journeyId={journeyId}
       />
     );
   } else if (sId === "step_1_16" && currentStep.tool_data) {
@@ -917,6 +919,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         tool={currentStep.tool_data}
         state={state}
         actions={actions}
+        journeyId={journeyId}
       />
     );
   }

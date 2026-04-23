@@ -1,6 +1,7 @@
 // lib/supabase/receipts.ts
-// All Supabase operations for the receipt_records table.
-// Server-side only — never import in client components.
+
+// DEPRECATED: All receipt data should now be stored in the case_data table (see journey/data-access.ts)
+// This file is retained for legacy migration only. Do not use in new code.
 
 import { createClient } from "./client";
 import type { ReceiptRecord } from "@/lib/register-receipt";
@@ -21,50 +22,16 @@ function rowToRecord(row: Record<string, any>): ReceiptRecord {
   };
 }
 
-export async function upsertReceiptRecord(
-  supabase: any,
-  record: any,
-  userId: string
-) {
-  return await supabase
-    .from("receipt_records")
-    .insert({
-      user_id: userId, // 🔥 CRITICAL (RLS depends on this)
-      receipt_number: record.receipt_number,
-      notice_date: record.notice_date,
-      priority_date: record.priority_date,
-      case_label: record.case_label,
-      source: record.source,
-      tracking_enabled: record.tracking_enabled,
-      last_known_status: record.last_known_status,
-      last_checked_at: record.last_checked_at,
-    })
-    .select()
-    .single();
+
+// DEPRECATED: Use upsertCaseDataDB from journey/data-access.ts
+export async function upsertReceiptRecord() {
+  throw new Error("upsertReceiptRecord is deprecated. Use upsertCaseDataDB for journey-based receipt storage.");
 }
 
-export async function getReceiptRecord(
-  _receiptNumber: string,
-  userId: string,
-  supabase?: any   // ← add optional param
-): Promise<{ data: ReceiptRecord | null; error: string | null }> {
-  // Use passed-in client (has auth cookies) or fall back to createClient
-  const db = supabase ?? createClient();
 
-  const { data, error } = await db
-    .from(TABLE)
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      return { data: null, error: null };
-    }
-    return { data: null, error: error.message };
-  }
-
-  return { data: rowToRecord(data), error: null };
+// DEPRECATED: Use getCaseDataByKeyDB from journey/data-access.ts
+export async function getReceiptRecord() {
+  throw new Error("getReceiptRecord is deprecated. Use getCaseDataByKeyDB for journey-based receipt storage.");
 }
 
 export async function listReceiptRecords(

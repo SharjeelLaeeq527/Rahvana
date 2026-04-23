@@ -18,28 +18,28 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions }) => {
   // You may want to get the receipt number from props, state, or context
   const receiptNumber = tool?.receiptNumber || state?.receiptNumber || "";
 
+  // journeyId should be available from tool, state, or props
+  const journeyId = tool?.journeyId || state?.journeyId || state?.backendId || "";
   useEffect(() => {
-  const load = async () => {
-    const res = await fetch("/api/receipt/me");
-    const data = await res.json();
-
-    if (!res.ok || data.error) return;
-
-    setReceiptInfo({
-      receiptNumber:   data.receipt_number,
-      noticeDate:      data.notice_date,
-      priorityDate:    data.priority_date,
-      caseLabel:       data.case_label,
-      source:          data.source,
-      trackingEnabled: data.tracking_enabled,
-      lastKnownStatus: data.last_known_status,
-      lastCheckedAt:   data.last_checked_at,
-      savedAt:         data.saved_at,
-    });
-  };
-
-  load();
-}, []);// fetch once on mount, no dep on receiptNumber
+    if (!journeyId) return;
+    const load = async () => {
+      const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
+      const data = await res.json();
+      if (!res.ok || data.error) return;
+      setReceiptInfo({
+        receiptNumber:   data.receipt_number,
+        noticeDate:      data.notice_date,
+        priorityDate:    data.priority_date,
+        caseLabel:       data.case_label,
+        source:          data.source,
+        trackingEnabled: data.tracking_enabled,
+        lastKnownStatus: data.last_known_status,
+        lastCheckedAt:   data.last_checked_at,
+        savedAt:         data.saved_at,
+      });
+    };
+    load();
+  }, [journeyId]); // fetch on mount and when journeyId changes
   // Modal and checklist state
   const [showStatusGuide, setShowStatusGuide] = useState(false);
   const [statusGuideStep, setStatusGuideStep] = useState(0);

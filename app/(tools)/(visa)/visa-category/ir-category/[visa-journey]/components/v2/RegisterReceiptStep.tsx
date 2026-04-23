@@ -104,11 +104,14 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
    API CALLS
 ───────────────────────────────────────────────────────────── */
 
+
+// Requires journeyId to be passed in
 async function postReceipt(
+  journeyId: string,
   payload: RegisterReceiptPayload
 ): Promise<{ record: ReceiptRecord | null; error: string }> {
   try {
-    const res = await fetch("/api/receipt/register", {
+    const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}` , {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -134,9 +137,11 @@ async function postReceipt(
   }
 }
 
-async function fetchReceipt() {
+
+// Requires journeyId to be passed in
+async function fetchReceipt(journeyId: string) {
   try {
-    const res = await fetch(`/api/receipt/me`);
+    const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
     const data = await res.json();
     if (!res.ok || data.error) return { record: null, error: data.error || "Failed to fetch receipt" };
     const record: ReceiptRecord = {
@@ -175,9 +180,10 @@ interface ManualFormProps {
   existingRecord: ReceiptRecord | null;
 }
 
-const ManualForm: React.FC<ManualFormProps> = ({ onBack, onSaved, existingRecord }) => {
-  const isUpdate = existingRecord !== null;
 
+// Accept journeyId as prop
+const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack, onSaved, existingRecord, journeyId }) => {
+  const isUpdate = existingRecord !== null;
   const [fields, setFields] = useState({
     receiptNumber: existingRecord?.receiptNumber ?? "",
     noticeDate:    existingRecord?.noticeDate    ?? "",
@@ -186,16 +192,13 @@ const ManualForm: React.FC<ManualFormProps> = ({ onBack, onSaved, existingRecord
   });
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
-
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields((f) => ({ ...f, [k]: e.target.value }));
-
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
-
   async function handleSubmit() {
     setLoading(true); setError("");
-    const { record, error: err } = await postReceipt({ ...fields, source: "manual" });
+    const { record, error: err } = await postReceipt(journeyId, { ...fields, source: "manual" });
     setLoading(false);
     if (err) { setError(err); return; }
     if (record) onSaved(record);
@@ -219,9 +222,9 @@ const ManualForm: React.FC<ManualFormProps> = ({ onBack, onSaved, existingRecord
             className="rounded-lg px-4 py-3 text-[15px] outline-none"
             style={{
               border: "1.5px solid #d0e4f7",
-              color: isUpdate ? "#6b8097" : "#1c2b3a",
-              background: isUpdate ? "#f4f7fb" : "#fff",
-              cursor: isUpdate ? "not-allowed" : "text",
+              color: "#1c2b3a",
+              background: "#fff",
+              cursor: "text",
             }}
             placeholder="IOE1234567890"
             maxLength={13}
@@ -229,13 +232,7 @@ const ManualForm: React.FC<ManualFormProps> = ({ onBack, onSaved, existingRecord
             onChange={set("receiptNumber")}
             onFocus={focusBorder}
             onBlur={blurBorder}
-            readOnly={isUpdate}
           />
-          {isUpdate && (
-            <span className="text-[11px] mt-1" style={{ color: "#6b8097" }}>
-              Receipt number is locked — one number per case. Contact support if a correction is needed.
-            </span>
-          )}
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Notice Date</label>
@@ -284,9 +281,10 @@ interface UploadFormProps {
   existingRecord: ReceiptRecord | null;
 }
 
-const UploadForm: React.FC<UploadFormProps> = ({ onBack, onSaved, onFileVault, existingRecord }) => {
-  const isUpdate = existingRecord !== null;
 
+// Accept journeyId as prop
+const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack, onSaved, onFileVault, existingRecord, journeyId }) => {
+  const isUpdate = existingRecord !== null;
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   // These three inputs are UNCHANGED from the original
   const [fields, setFields] = useState({
@@ -296,18 +294,46 @@ const UploadForm: React.FC<UploadFormProps> = ({ onBack, onSaved, onFileVault, e
   });
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
-
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields((f) => ({ ...f, [k]: e.target.value }));
-
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
-
   async function handleSubmit() {
     setLoading(true); setError("");
-    const { record, error: err } = await postReceipt({ ...fields, source: "upload" });
+    // 1. Upload file to Document Vault if present
+    if (!uploadFile) {
+      setError("Please select a receipt notice file to upload.");
+      setLoading(false);
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      formData.append("documentDefId", RECEIPT_NOTICE_DOC_ID);
+      formData.append("role", "PETITIONER"); // or "BENEFICIARY" if needed
+      formData.append("personName", "Petitioner"); // Optionally use actual name if available
+      formData.append("caseId", fields.receiptNumber);
+      formData.append("notes", "Uploaded via receipt registration step");
+
+      const response = await fetch("/api/documents/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Failed to upload receipt notice to vault.");
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unexpected error during upload.");
+      setLoading(false);
+      return;
+    }
+    // 2. Save receipt record as before
+    const { record, error: err2 } = await postReceipt(journeyId, { ...fields, source: "upload" });
     setLoading(false);
-    if (err) { setError(err); return; }
+    if (err2) { setError(err2); return; }
     if (record) onSaved(record);
   }
 
@@ -360,9 +386,9 @@ const UploadForm: React.FC<UploadFormProps> = ({ onBack, onSaved, onFileVault, e
             className="rounded-lg px-4 py-3 text-[15px] outline-none"
             style={{
               border: "1.5px solid #d0e4f7",
-              color: isUpdate ? "#6b8097" : "#1c2b3a",
-              background: isUpdate ? "#f4f7fb" : "#fff",
-              cursor: isUpdate ? "not-allowed" : "text",
+              color: "#1c2b3a",
+              background: "#fff",
+              cursor: "text",
             }}
             placeholder="IOE1234567890"
             maxLength={13}
@@ -370,13 +396,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ onBack, onSaved, onFileVault, e
             onChange={set("receiptNumber")}
             onFocus={focusBorder}
             onBlur={blurBorder}
-            readOnly={isUpdate}
           />
-          {isUpdate && (
-            <span className="text-[11px] mt-1" style={{ color: "#6b8097" }}>
-              Receipt number is locked — one number per case. Contact support if a correction is needed.
-            </span>
-          )}
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Notice Date</label>
@@ -414,7 +434,13 @@ const UploadForm: React.FC<UploadFormProps> = ({ onBack, onSaved, onFileVault, e
 type UiState = "idle" | "register" | "update";
 type TabMode  = "manual" | "upload";
 
-const RegisterReceiptStep: React.FC<any> = ({ tool }) => {
+
+interface RegisterReceiptStepProps {
+  tool: any;
+  journeyId: string;
+}
+
+const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journeyId }) => {
   const [uiState,     setUiState]     = useState<UiState>("idle");
   const [activeTab,   setActiveTab]   = useState<TabMode>("manual");
   const [savedRecord, setSavedRecord] = useState<ReceiptRecord | null>(null);
@@ -427,21 +453,22 @@ const RegisterReceiptStep: React.FC<any> = ({ tool }) => {
 
   useEffect(() => {
     import("@/data/receipt-guide-steps.json").then((mod) => setGuideSteps(mod.default));
-  }, []);
+  });
 
   // Load any existing receipt on mount — sets savedRecord if one exists
   useEffect(() => {
-    fetchReceipt().then(({ record }) => {
+    if (!journeyId) return;
+    fetchReceipt(journeyId).then(({ record }) => {
       if (record) setSavedRecord(record);
     });
-  }, []);
+  }, [journeyId]);
 
   // Called by both forms on a successful save — refreshes from server then returns to idle
   const handleSaved = useCallback(async (record: ReceiptRecord) => {
     setUiState("idle");
-    const { record: fresh } = await fetchReceipt();
+    const { record: fresh } = await fetchReceipt(journeyId);
     setSavedRecord(fresh ?? record);
-  }, []);
+  }, [journeyId]);
 
   // Document vault handler — identical signature to onFileUpload in DocumentChecklist
   const handleFileVault = useCallback((docId: string, files: FileList) => {
@@ -596,36 +623,60 @@ const RegisterReceiptStep: React.FC<any> = ({ tool }) => {
           {/* ── Registration / update form ── */}
           {(uiState === "register" || uiState === "update") && (
             <>
-              <div className="flex gap-2 mb-4 flex-wrap" style={{ borderBottom: "1px solid #e5e7eb" }}>
-                {(["manual", "upload"] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    className="px-5 py-2 text-[15px] font-semibold transition-colors duration-150"
-                    style={{
-                      borderBottom: activeTab === tab ? "2px solid #c0596a" : "2px solid transparent",
-                      color: activeTab === tab ? "#c0596a" : "#6b8097",
-                      background: "transparent",
-                    }}
-                    onClick={() => setActiveTab(tab)}
-                  >
-                    {tab === "manual" ? "Enter Receipt Number" : "Upload Receipt Notice"}
-                  </button>
-                ))}
-              </div>
-
-              {activeTab === "manual" ? (
-                <ManualForm
-                  onBack={() => setUiState("idle")}
-                  onSaved={handleSaved}
-                  existingRecord={savedRecord}
-                />
+              {/* Only allow registration if no record exists; allow update if record exists */}
+              {hasExistingReceipt ? (
+                // Update mode: allow editing all fields, but only show the form for the method originally used
+                savedRecord?.source === "manual" ? (
+                  <ManualForm
+                    onBack={() => setUiState("idle")}
+                    onSaved={handleSaved}
+                    existingRecord={savedRecord}
+                    journeyId={journeyId}
+                  />
+                ) : (
+                  <UploadForm
+                    onBack={() => setUiState("idle")}
+                    onSaved={handleSaved}
+                    onFileVault={handleFileVault}
+                    existingRecord={savedRecord}
+                    journeyId={journeyId}
+                  />
+                )
               ) : (
-                <UploadForm
-                  onBack={() => setActiveTab("manual")}
-                  onSaved={handleSaved}
-                  onFileVault={handleFileVault}
-                  existingRecord={savedRecord}
-                />
+                <>
+                  <div className="flex gap-2 mb-4 flex-wrap" style={{ borderBottom: "1px solid #e5e7eb" }}>
+                    {(["manual", "upload"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        className="px-5 py-2 text-[15px] font-semibold transition-colors duration-150"
+                        style={{
+                          borderBottom: activeTab === tab ? "2px solid #c0596a" : "2px solid transparent",
+                          color: activeTab === tab ? "#c0596a" : "#6b8097",
+                          background: "transparent",
+                        }}
+                        onClick={() => setActiveTab(tab)}
+                      >
+                        {tab === "manual" ? "Enter Receipt Number" : "Upload Receipt Notice"}
+                      </button>
+                    ))}
+                  </div>
+                  {activeTab === "manual" ? (
+                    <ManualForm
+                      onBack={() => setUiState("idle")}
+                      onSaved={handleSaved}
+                      existingRecord={savedRecord}
+                      journeyId={journeyId}
+                    />
+                  ) : (
+                    <UploadForm
+                      onBack={() => setActiveTab("manual")}
+                      onSaved={handleSaved}
+                      onFileVault={handleFileVault}
+                      existingRecord={savedRecord}
+                      journeyId={journeyId}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
