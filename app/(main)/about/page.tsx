@@ -1,20 +1,14 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   Heart,
-  Plane,
-  Mail,
-  ClipboardList,
-  Phone,
   Clock,
   AlertCircle,
   MapPin,
   FileText,
   Users,
   ArrowRight,
-  HelpCircle,
-  Bell,
   MessageSquare,
   Compass,
   Handshake,
@@ -39,7 +33,7 @@ const dmSans = DM_Sans({
 });
 
 export default function AboutPage() {
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -49,7 +43,7 @@ export default function AboutPage() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 24 },
     visible: {
       opacity: 1,
@@ -122,7 +116,7 @@ export default function AboutPage() {
           viewport={{ once: true }}
           className="relative flex justify-center"
         >
-          <div className="relative w-full max-w-[520px] aspect-[4/3] rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.14)] group">
+          <div className="relative w-full max-w-[520px] aspect-4/3 rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.14)] group">
             <Image
               src="/assets/images/about-hero-image.png"
               alt="Airport reunion"
@@ -168,35 +162,35 @@ export default function AboutPage() {
         <div className="flex flex-nowrap overflow-x-auto lg:grid lg:grid-cols-5 lg:overflow-x-visible pb-12 gap-6 px-4 lg:px-10 lg:max-w-[1400px] lg:mx-auto scrollbar-hide">
           {[
             {
-              img: "/assets/images/about-card-1.png",
-              rotate: "-rotate-2",
-              text: "The last wave before the gate closes.",
-            },
-            {
-              img: "/assets/images/about-card-2.png",
-              rotate: "rotate-1",
-              text: "Words written when calls were too expensive.",
-            },
-            {
-              img: "/assets/images/about-card-3.png",
-              rotate: "-rotate-1",
-              text: "Home is wherever they are.",
-            },
-            {
               img: "/assets/images/about-card-4.png",
-              rotate: "rotate-2",
+              rotate: "-rotate-2",
               text: "Forms that carry the weight of real lives.",
             },
             {
               img: "/assets/images/about-card-5.png",
-              rotate: "-rotate-2",
+              rotate: "rotate-1",
               text: "11pm here. 8am on the other side.",
+            },
+            {
+              img: "/assets/images/about-card-2.png",
+              rotate: "-rotate-1",
+              text: "Words written when calls were too expensive.",
+            },
+            {
+              img: "/assets/images/about-card-1.png",
+              rotate: "rotate-1",
+              text: "The last wave before the gate closes.",
+            },
+            {
+              img: "/assets/images/about-card-3.png",
+              rotate: "-rotate-2",
+              text: "Home is wherever they are.",
             },
           ].map((item, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -10, rotate: 0, zIndex: 10 }}
-              className={`flex-shrink-0 bg-white p-3 pb-12 w-64 lg:w-auto shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 transition-all ${item.rotate}`}
+              className={`shrink-0 bg-white p-3 pb-12 w-64 lg:w-auto shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 transition-all ${item.rotate}`}
             >
               <div className="aspect-square w-full relative overflow-hidden bg-gray-100 mb-6">
                 <Image
@@ -242,17 +236,19 @@ export default function AboutPage() {
               home, children growing up over video calls, milestones spent
               apart, and the steady effort of holding hope across distance.
             </p>
-            <p>That's Rahvana: the space between people who belong together.</p>
+            <p>
+              That&apos;s Rahvana: the space between people who belong together.
+            </p>
             <p>
               In Phase 1, we are focused exclusively on the IR-1 spouse visa
               journey — to go deep on one path before expanding further.
             </p>
           </div>
           <div className="mt-10 p-5 md:p-7 bg-white rounded-r-xl border-l-4 border-[#0d7a75] shadow-sm text-lg italic text-[#121e2e] leading-relaxed">
-            "We wanted to build something that understood both things: the
+            &quot;We wanted to build something that understood both things: the
             bureaucratic complexity and the human weight. A tool that holds your
-            hand through the process without losing sight of why you're doing
-            it."
+            hand through the process without losing sight of why you&apos;re
+            doing it.&quot;
           </div>
         </div>
       </section>
@@ -368,7 +364,7 @@ export default function AboutPage() {
                 whileHover={{ x: 4, boxShadow: "0 6px 24px rgba(0,0,0,0.1)" }}
                 className="bg-white rounded-2xl p-5 px-6 flex items-start gap-4 shadow-sm border-l-3 border-[#0d7a75] transition-all"
               >
-                <div className="flex-shrink-0 mt-0.5">{value.icon}</div>
+                <div className="shrink-0 mt-0.5">{value.icon}</div>
                 <p className="text-[15px] text-[#2a2a2a] leading-relaxed">
                   {value.text}
                 </p>
@@ -381,7 +377,7 @@ export default function AboutPage() {
       {/* MEMORY TO MOVEMENT */}
       <section className="bg-[#edf6f5] py-24 px-8 md:px-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-20 items-center">
-          <div className="rounded-2xl overflow-hidden aspect-[4/3] shadow-xl relative">
+          <div className="rounded-2xl overflow-hidden aspect-4/3 shadow-xl relative">
             <Image
               src="/assets/images/from-memory-to-movement.png"
               alt="Consultation"
@@ -405,17 +401,17 @@ export default function AboutPage() {
               </em>
             </h2>
             <p className="text-gray-600 text-[15px] leading-relaxed mb-8">
-              We're not here to keep you in the feeling of distance. We're here
-              to help you close it. Every tool, every guide, every step in
-              Rahvana is designed to move you forward — toward clarity, toward
-              submission, toward reunion.
+              We&apos;re not here to keep you in the feeling of distance.
+              We&apos;re here to help you close it. Every tool, every guide,
+              every step in Rahvana is designed to move you forward — toward
+              clarity, toward submission, toward reunion.
             </p>
-            <a
-              href="#"
+            <Link
+              href="/visa-category/ir-category/ir-1"
               className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5"
             >
               Start the IR-1 journey <ArrowRight size={16} />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -430,7 +426,7 @@ export default function AboutPage() {
         <h2 className="font-serif font-bold text-3xl md:text-5xl text-[#121e2e] mb-14 max-w-4xl mx-auto leading-tight">
           Words from people{" "}
           <em className="italic text-[#0d7a75] font-normal">
-            who've been there.
+            who&apos;ve been there.
           </em>
         </h2>
 
@@ -467,8 +463,8 @@ export default function AboutPage() {
               >
                 <Quote size={20} fill="currentColor" />
               </div>
-              <blockquote className="text-sm italic text-gray-600 leading-relaxed flex-grow">
-                "{item.text}"
+              <blockquote className="text-sm italic text-gray-600 leading-relaxed grow">
+                &quot;{item.text}&quot;
               </blockquote>
               <div className="text-sm">
                 <strong className="block text-[#121e2e] font-semibold">
@@ -542,25 +538,28 @@ export default function AboutPage() {
           If this journey is part of
           <br />
           your story too,{" "}
-          <em className="italic text-[#a8e8e5] font-normal">we're here.</em>
+          <em className="italic text-[#a8e8e5] font-normal">
+            we&apos;re here.
+          </em>
         </h2>
         <p className="text-white/75 text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed">
-          You don't have to figure it out alone. Rahvana walks with you through
-          the IR-1 process — one step, one form, one checkpoint at a time.
+          You don&apos;t have to figure it out alone. Rahvana walks with you
+          through the IR-1 process — one step, one form, one checkpoint at a
+          time.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <a
-            href="#"
+          <Link
+            href="/visa-category/ir-category/ir-1"
             className="bg-white text-[#0d7a75] px-8 py-3.5 rounded-full text-sm font-semibold hover:shadow-xl transition-all transform hover:-translate-y-0.5"
           >
             Start your IR-1 journey →
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            href="/resources"
             className="bg-transparent border-[1.5px] border-white/50 text-white px-8 py-3.5 rounded-full text-sm font-medium hover:border-white hover:bg-white/10 transition-all"
           >
             Browse tools & resources
-          </a>
+          </Link>
         </div>
         <p className="mt-7 text-[14px] text-white/50 tracking-wider">
           Phase 1 · IR-1 Spouse Visa Journey · U.S. Embassy Islamabad · Karachi
