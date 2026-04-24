@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { MessageCircle, X, Upload } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { MessageSquareWarning, X, Upload } from "lucide-react";
 import { useToast } from "./shared/ToastProvider";
 import { usePathname } from "next/navigation";
 import {
@@ -19,7 +19,7 @@ interface FeedbackButtonProps {
     feedbackType: string,
     description: string,
     attachment?: File,
-  ) => Promise<any>;
+  ) => Promise<unknown>;
 }
 
 export default function FeedbackButton({
@@ -29,6 +29,8 @@ export default function FeedbackButton({
 }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inHero, setInHero] = useState(false);
+  const [bottomOffset, setBottomOffset] = useState(16);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const [feedback, setFeedback] = useState({
     category: "",
@@ -39,8 +41,97 @@ export default function FeedbackButton({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
 
+  const chooseButtonPosition = useCallback(() => {
+    if (typeof window === "undefined" || isOpen) return;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const edgeOffset = viewportWidth < 640 ? 12 : 24;
+    const buttonHeight = 48;
+    const buttonWidth = 56;
+    const maxBottom = Math.max(edgeOffset, viewportHeight - buttonHeight - 96);
+    const baseCandidates = [
+      edgeOffset,
+      edgeOffset + 64,
+      edgeOffset + 128,
+      edgeOffset + 192,
+      edgeOffset + 256,
+      Math.round(viewportHeight * 0.45),
+    ];
+    const candidates = Array.from(
+      new Set(baseCandidates.map((candidate) => Math.min(candidate, maxBottom))),
+    ).filter((candidate) => candidate >= edgeOffset);
+
+    const right = viewportWidth - edgeOffset;
+    const left = right - buttonWidth;
+
+    const scoreCandidate = (candidate: number) => {
+      const top = viewportHeight - candidate - buttonHeight;
+      const samplePoints = [
+        [left + buttonWidth / 2, top + buttonHeight / 2],
+        [left + 10, top + 10],
+        [right - 10, top + buttonHeight - 10],
+      ];
+
+      return samplePoints.reduce((score, [x, y]) => {
+        const elements = document.elementsFromPoint(x, y);
+
+        const hasImportantElement = elements.some((element) => {
+          const currentButton = buttonRef.current;
+          if (
+            !element ||
+            element === document.body ||
+            element === document.documentElement ||
+            (currentButton && currentButton.contains(element))
+          ) {
+            return false;
+          }
+
+          if (!(element instanceof HTMLElement)) return false;
+
+          const style = window.getComputedStyle(element);
+          if (
+            style.visibility === "hidden" ||
+            style.display === "none" ||
+            style.pointerEvents === "none"
+          ) {
+            return false;
+          }
+
+          const tagName = element.tagName.toLowerCase();
+          const isInteractive =
+            ["a", "button", "input", "select", "textarea", "summary"].includes(
+              tagName,
+            ) ||
+            element.getAttribute("role") === "button" ||
+            element.getAttribute("role") === "link" ||
+            element.hasAttribute("tabindex");
+          const isFloating =
+            style.position === "fixed" ||
+            style.position === "sticky" ||
+            Number(style.zIndex) >= 10;
+
+          return isInteractive || isFloating;
+        });
+
+        return score + (hasImportantElement ? 1 : 0);
+      }, 0);
+    };
+
+    const bestCandidate = candidates.reduce(
+      (best, candidate) => {
+        const score = scoreCandidate(candidate);
+        if (score < best.score) return { offset: candidate, score };
+        return best;
+      },
+      { offset: candidates[0] ?? edgeOffset, score: Number.POSITIVE_INFINITY },
+    );
+
+    setBottomOffset(bestCandidate.offset);
+  }, [isOpen]);
+
   // Prevent background scrolling when modal is open
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -52,6 +143,25 @@ export default function FeedbackButton({
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    let frameId = 0;
+
+    const schedulePositionUpdate = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(chooseButtonPosition);
+    };
+
+    schedulePositionUpdate();
+    window.addEventListener("scroll", schedulePositionUpdate, { passive: true });
+    window.addEventListener("resize", schedulePositionUpdate);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", schedulePositionUpdate);
+      window.removeEventListener("resize", schedulePositionUpdate);
+    };
+  }, [chooseButtonPosition]);
 
   // Listen for hero visibility changes
   useEffect(() => {
@@ -68,7 +178,7 @@ export default function FeedbackButton({
   }, []);
 
   // Update step if it changes externally while modal is open
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentStepName && !feedback.step) {
       setFeedback((prev) => ({ ...prev, step: currentStepName }));
     }
@@ -111,7 +221,7 @@ export default function FeedbackButton({
         formData.append("feedbackType", feedback.category);
         formData.append("description", feedback.description);
         formData.append("pageUrl", fullPageUrl);
-        
+
         // Append all attachments
         feedback.attachments.forEach((file) => {
           formData.append("attachment", file);
@@ -150,7 +260,6 @@ export default function FeedbackButton({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       setFeedback((prev) => ({
@@ -164,17 +273,27 @@ export default function FeedbackButton({
     <>
       {/* Sticky Feedback Button */}
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center justify-center gap-2 text-white p-3 sm:px-5 sm:py-3 rounded-full shadow-lg transition-all duration-200 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-        style={{ 
-          backgroundColor: inHero ? "var(--feedback-button-hero, #71a1a1)" : "var(--feedback-button-bg, #0d7377)", 
-          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)"
+        className="group fixed right-3 z-40 inline-flex h-12 w-12 max-w-[calc(100vw-24px)] items-center justify-center overflow-hidden rounded-full text-white shadow-lg transition-[bottom,width,background-color,box-shadow,transform,padding] duration-200 ease-out hover:w-[190px] hover:gap-2 hover:px-4 hover:scale-[1.03] focus:w-[190px] focus:gap-2 focus:px-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:w-[190px] active:gap-2 active:px-4 sm:right-6"
+        style={{
+          bottom: bottomOffset,
+          backgroundColor: inHero
+            ? "var(--feedback-button-hero, #71a1a1)"
+            : "var(--feedback-button-bg, #0d7377)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
         }}
         aria-label="Provide feedback"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        title="Provide feedback"
       >
-        <MessageCircle className="w-5 h-5" />
-        <span className="text-sm font-semibold tracking-wide hidden sm:inline">
-          Provide feedback
+        <span className="pointer-events-none flex shrink-0 items-center justify-center">
+          <MessageSquareWarning className="h-5 w-5" />
+        </span>
+        <span className="pointer-events-none max-w-0 whitespace-nowrap text-sm font-semibold opacity-0 transition-all duration-200 group-hover:max-w-[136px] group-hover:opacity-100 group-focus:max-w-[136px] group-focus:opacity-100 group-active:max-w-[136px] group-active:opacity-100">
+          Provide Feedback
         </span>
       </button>
 
