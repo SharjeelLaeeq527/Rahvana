@@ -24,6 +24,8 @@ export type Field = {
   groupId?: string;
   tooltip?: string;
   originalLabel?: string;
+  /** Nested sub-questions (e.g., 4a, 4b, 4c) rendered in same card */
+  subQuestions?: (Omit<Field, 'section'> & { condition?: (data: Record<string, string>) => boolean })[];
 };
 
 // ✅ Add this: FormConfig type
@@ -32,4 +34,5 @@ export type FormConfig = {
   formSubtitle?: string;
   formFields: Field[];
   getInitialFormData: () => Record<string, string>;
+  sectionIntroMessages?: Record<string, { greeting: string; message: string }>;
 };
