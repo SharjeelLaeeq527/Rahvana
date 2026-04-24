@@ -21,31 +21,31 @@ export const formFields: Field[] = [
       { label: "Brother/Sister", value: "BrotherSister", pdfKey: "relationship_BrotherSister" },
       { label: "Child", value: "Child", pdfKey: "relationship_Child" },
     ],
-  },
-  {
-    key: "relationship_detail",
-    pdfKey: "relationship_detail",
-    label: "2. If you are filing this petition for your child or parent, select the box that describes your relationship (Select only one box):",
-    type: "radio",
-    section: "Part 1. Relationship",
-    condition: (d) => ["Parent", "Child"].includes(d.relationship),
-    options: [
-      { label: "Child was born to parents who were married to each other at the time of the child's birth", value: "ChildBornMarried", pdfKey: "relationship_detail_ChildBornMarried" },
-      { label: "Stepchild/Stepparent", value: "Stepchild", pdfKey: "relationship_detail_Stepchild" },
-      { label: "Child was born to parents who were not married to each other at the time of the child's birth", value: "ChildBornUnmarried", pdfKey: "relationship_detail_ChildBornUnmarried" },
-      { label: "Child was adopted (not an Orphan or Hague Convention adoptee)", value: "ChildAdopted", pdfKey: "relationship_detail_ChildAdopted" },
-    ],
-  },
-  {
-    key: "sibling_adoption",
-    pdfKey: "sibling_adoption",
-    label: "3. If the beneficiary is your brother/sister, are you related by adoption?",
-    type: "radio",
-    section: "Part 1. Relationship",
-    condition: (d) => d.relationship === "BrotherSister",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "sibling_adoption_Yes" },
-      { label: "No", value: "No", pdfKey: "sibling_adoption_No" },
+    subQuestions: [
+      {
+        key: "relationship_detail",
+        pdfKey: "relationship_detail",
+        label: "2. If you are filing this petition for your child or parent, select the box that describes your relationship (Select only one box):",
+        type: "radio",
+        condition: (d) => ["Parent", "Child"].includes(d.relationship),
+        options: [
+          { label: "Child was born to parents who were married to each other at the time of the child's birth", value: "ChildBornMarried", pdfKey: "relationship_detail_ChildBornMarried" },
+          { label: "Stepchild/Stepparent", value: "Stepchild", pdfKey: "relationship_detail_Stepchild" },
+          { label: "Child was born to parents who were not married to each other at the time of the child's birth", value: "ChildBornUnmarried", pdfKey: "relationship_detail_ChildBornUnmarried" },
+          { label: "Child was adopted (not an Orphan or Hague Convention adoptee)", value: "ChildAdopted", pdfKey: "relationship_detail_ChildAdopted" },
+        ],
+      },
+      {
+        key: "sibling_adoption",
+        pdfKey: "sibling_adoption",
+        label: "3. If the beneficiary is your brother/sister, are you related by adoption?",
+        type: "radio",
+        condition: (d) => d.relationship === "BrotherSister",
+        options: [
+          { label: "Yes", value: "Yes", pdfKey: "sibling_adoption_Yes" },
+          { label: "No", value: "No", pdfKey: "sibling_adoption_No" },
+        ],
+      },
     ],
   },
   {
@@ -95,29 +95,36 @@ export const formFields: Field[] = [
   {
     key: "family_name",
     pdfKey: "family_name",
-    label: "4.a. Family Name (Last Name)",
+    label: "4. Full Name",
     type: "text",
     section: "Part 2. Information About You (Petitioner)",
-    placeholder: "Last Name",
-    maxLength: 35,
-  },
-  {
-    key: "given_name",
-    pdfKey: "given_name",
-    label: "4.b. Given Name (First Name)",
-    type: "text",
-    section: "Part 2. Information About You (Petitioner)",
-    placeholder: "First Name",
-    maxLength: 35,
-  },
-  {
-    key: "middle_name",
-    pdfKey: "middle_name",
-    label: "4.c. Middle Name",
-    type: "text",
-    section: "Part 2. Information About You (Petitioner)",
-    placeholder: "Middle Name",
-    maxLength: 35,
+    tooltip: "Enter your legal name - Make sure it matches your government-issued ID",
+    subQuestions: [
+      {
+        key: "family_name",
+        pdfKey: "family_name",
+        label: "4.a. Family Name (Last Name)",
+        type: "text",
+        placeholder: "Last Name",
+        maxLength: 35,
+      },
+      {
+        key: "given_name",
+        pdfKey: "given_name",
+        label: "4.b. Given Name (First Name)",
+        type: "text",
+        placeholder: "First Name",
+        maxLength: 35,
+      },
+      {
+        key: "middle_name",
+        pdfKey: "middle_name",
+        label: "4.c. Middle Name",
+        type: "text",
+        placeholder: "Middle Name",
+        maxLength: 35,
+      },
+    ],
   },
 
   // Other Names Used
@@ -3233,11 +3240,56 @@ export const getInitialFormData = () => {
   formFields.forEach((f) => (data[f.key] = ""));
   return data;
 };
+
+export const sectionIntroMessages = {
+  "Part 1. Relationship": {
+    greeting: "Let's start with the basics",
+    message: "First, we need to understand your relationship with the person you're petitioning for. This helps us determine the right visa category and requirements for your case.",
+  },
+  "Part 2. Information About You (Petitioner)": {
+    greeting: "Now tell us about yourself",
+    message: "Next, we'll collect your personal information as the petitioner. This includes your name, identification numbers, and other details USCIS needs to verify your identity.",
+  },
+  "Address History": {
+    greeting: "Let's cover your address history",
+    message: "USCIS requires a complete record of where you've lived. We'll collect your current and previous addresses to ensure all records are accurate and up to date.",
+  },
+  "Part 3. Biographic Information": {
+    greeting: "Moving on to biographic details",
+    message: "Now we'll gather some additional background information including your physical characteristics and personal history. This is standard for all immigration petitions.",
+  },
+  "Part 4. Information About Your Relative": {
+    greeting: "Now let's learn about your relative",
+    message: "We'll collect detailed information about the beneficiary - the person you're petitioning for. This includes their personal details, background, and current situation.",
+  },
+  "Part 5. Additional Information About Your Relative": {
+    greeting: "A few more details about your relative",
+    message: "We need some additional information about the beneficiary's immigration history and current status. This helps USCIS process the petition correctly.",
+  },
+  "Part 6. Petitioner's Declaration": {
+    greeting: "Almost there - declaration section",
+    message: "This section contains important declarations and certifications. Please review each question carefully as these are legal statements.",
+  },
+  "Part 7. Interpreter's Information": {
+    greeting: "Interpreter information section",
+    message: "If you used an interpreter to help complete this form, we'll need their information here. Skip this section if you completed the form without assistance.",
+  },
+  "Part 8. Preparer's Information": {
+    greeting: "Preparer information section",
+    message: "If someone else helped prepare this form, we'll need their details. Skip this if you completed it yourself.",
+  },
+  "Part 9. Additional Information": {
+    greeting: "Final section - additional information",
+    message: "This is the last section. Use this space for any extra information that didn't fit in the previous sections. You're almost done!",
+  },
+};
+
 export const i130Config = {
   formId,
   formTitle,
   formSubtitle,
   formFields,
+  sectionIntroMessages,
 }
 
 export default i130Config
