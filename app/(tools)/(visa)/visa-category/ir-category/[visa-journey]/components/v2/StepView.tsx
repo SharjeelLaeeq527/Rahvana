@@ -903,7 +903,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
-  const journeyId = state.backendId;
+  const journeyId: string = state.backendId ?? "";
   if (sId === "step_1_15" && currentStep.tool_data) {
     customRenderer = (
       <RegisterReceiptStep
@@ -2476,7 +2476,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   const postName = (state.metadata?.dqPost ||
                     state.metadata?.post ||
                     "") as string;
-
 
                   const handleFetch = async () => {
                     if (!postName) {
@@ -4279,10 +4278,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-[15px] font-bold text-[#0c1b33] mb-0.5 truncate">
+                        <h3 className="text-[15px] font-bold text-[#0c1b33] mb-1 sm:mb-1.5 truncate">
                           {tool.guide_card.title}
                         </h3>
-                        <p className="text-[13px] text-[#6b8097] leading-normal line-clamp-2">
+
+                        <p className="text-[13px] text-[#6b8097] leading-relaxed sm:leading-normal line-clamp-2">
                           {tool.guide_card.subtitle}
                         </p>
                       </div>
@@ -4504,7 +4504,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   return (
     <div
-      className={`flex-1 flex flex-col min-h-[100dvh] sm:h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
+      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
       style={
         isChapter3
           ? {
@@ -4870,7 +4870,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {/* Questionnaire CTA — only for step_1_2 when not yet completed */}
                 {/* uncomment this line */}
                 {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
-                <div className="w-full max-w-[740px] mb-6 mt-4 sm:mt-5 px-4 sm:px-0">
+             <div className="
+                  max-w-3xl w-full mx-auto
+                  px-3 sm:px-4 md:px-8
+                  pt-10 sm:pt-12 md:pt-14
+                  pb-8 md:pb-12
+                  flex flex-col gap-3
+                  ">
                   <button
                     onClick={() => setShowDocQuestionnaire(true)}
                     className="w-full p-[20px_24px] rounded-[16px] border-[2px] border-primary bg-[rgba(59,125,216,0.06)] hover:bg-[rgba(59,125,216,0.12)] hover:shadow-[0_4px_20px_rgba(59,125,216,0.15)] hover:-translate-y-px transition-all cursor-pointer text-left group"
@@ -5293,9 +5299,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           ) : currentStep.step_type === "filing" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               <div className="flex flex-col w-full max-w-[660px] pb-[80px] px-[24px]">
-                <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0f1f38] leading-[1.2]">
-                  {currentStep.step_name}
-                </h1>
+               <h1 className="
+                mt-8 sm:mt-10 md:mt-0
+                text-[clamp(26px,4vw,34px)]
+                font-black
+                text-[#0f1f38]
+                leading-[1.2]
+                ">
+                {currentStep.step_name}
+              </h1>
                 <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
                   {currentStep.filing_data?.subtitle ||
                     currentStep.step_description}

@@ -142,53 +142,9 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions }) => {
   }
 
   return (
-    <div className="min-h-screen w-full ch1step-bg">
-    <div className="max-w-[760px] mx-auto px-6 py-12 flex flex-col gap-3 step step-modal-spacing">
-      {/* Receipt status info (display values in correct label locations) */}
-{/* {receiptInfo && (
-  <div className="mb-4">
-    <div className="text-[13px] font-semibold mb-1">
-      Receipt Number:{" "}
-      <span className="text-[#2f6fd4]">
-        {receiptInfo.receiptNumber || "—"}
-      </span>
-    </div>
-
-    {receiptError && (
-      <div className="text-[12px] text-[#c0596a]">{receiptError}</div>
-    )}
-
-    <div className="text-[12px] text-[#0c1b33]">
-      <div>
-        Status:{" "}
-        <span className="font-bold">
-          {receiptInfo.lastKnownStatus || "—"}
-        </span>
-      </div>
-
-      <div>
-        Last Checked:{" "}
-        {receiptInfo.lastCheckedAt
-          ? fmtDateTime(receiptInfo.lastCheckedAt)
-          : "—"}
-      </div>
-
-      <div>
-        Notice Date:{" "}
-        {receiptInfo.noticeDate
-          ? fmtDate(receiptInfo.noticeDate)
-          : "—"}
-      </div>
-
-      <div>
-        Priority Date:{" "}
-        {receiptInfo.priorityDate
-          ? fmtDate(receiptInfo.priorityDate)
-          : "—"}
-      </div>
-    </div>
-  </div>
-)}     */}
+      <div className="min-h-screen w-full ch1step-bg">
+    {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
+    <div className="max-w-[760px] mx-auto px-4 py-8 md:px-6 md:py-12 flex flex-col gap-3 step step-modal-spacing">
   {/* Title & Desc */}
       <div className="flex items-center gap-2 mb-2">
         <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">Chapter 1 · USCIS Petition Filing</span>
@@ -202,8 +158,10 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions }) => {
       {tool.launch_module && (
         <div className={`rounded-2xl border mb-2 relative overflow-hidden launch-module step-modal-spacing bg-[#28151c] border-[#28151c]`}>
           <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#28151c] via-[#28151c] to-transparent opacity-80`} />
-          <div className="launch-inner p-8 md:p-[32px_34px_28px]">
-            <div className="launch-top flex items-start gap-4 mb-6">
+          {/* CHANGE 2: p-5 on mobile, md:p-8, lg:p-[32px_34px_28px] */}
+          <div className="launch-inner p-5 md:p-8 lg:p-[32px_34px_28px]">
+            {/* CHANGE 3: flex-wrap added so badge wraps on small screens */}
+            <div className="launch-top flex items-start gap-4 mb-6 flex-wrap">
               <div className="launch-header flex gap-4 items-start">
                 <div className="launch-icon w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 bg-[#c0596a] border-white">
                   <Shield className="w-7 h-7 text-[#ffffff]" />
@@ -214,12 +172,14 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions }) => {
                   <div className="launch-copy text-[13.5px] text-white leading-snug max-w-[470px]">{tool.launch_module.status?.copy}</div>
                 </div>
               </div>
-              <span className={`status-badge ml-auto accent-rose`}>{tool.launch_module.status?.badge}</span>
+              {/* CHANGE 4: self-start shrink-0 prevents badge from stretching/squishing */}
+              <span className={`status-badge ml-auto self-start shrink-0 accent-rose`}>{tool.launch_module.status?.badge}</span>
             </div>
             <div className={`launch-divider h-px bg-[#c0596a]/20 mb-5`} />
             {/* Metrics */}
-            <div className="metrics grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-  {/* Status */}
+            {/* CHANGE 5: grid-cols-2 on mobile (was grid-cols-1), md:grid-cols-4 */}
+            <div className="metrics grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"> 
+               {/* Status */}
   <div className="metric bg-white rounded-[12px] px-4 py-3 flex flex-col border border-[#28151c]">
     <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1 accent-brown">
       Status
