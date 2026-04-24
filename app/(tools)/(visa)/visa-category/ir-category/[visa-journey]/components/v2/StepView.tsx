@@ -2370,7 +2370,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-[#15744f] mb-[2px]">
-                  {tool.launch_module.return_note?.title ||
+                  {tool.launch_module?.return_note?.title ||
                     "Tool launched in a new tab"}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-normal">

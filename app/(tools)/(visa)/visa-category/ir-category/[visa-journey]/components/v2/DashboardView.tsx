@@ -89,6 +89,8 @@ export function DashboardView({
     // NOTE: AP alert removed here — APTrackingTool (sidebar) handles this
     // when user has recorded AP details, WaitingStateCard handles it before that.
 
+    // Redundant text alert commented out — WaitingStateCard in sidebar handles this now.
+    /*
     if (trackingStatus.interview_date) {
       list.push({
         type: "gold",
@@ -104,6 +106,7 @@ export function DashboardView({
         },
       });
     }
+    */
 
     // "In scheduling queue" alert removed — the Dynamic Scheduling Tracker
     // (sidebar dark card with DQ date + embassy month + estimate) shows
@@ -126,11 +129,13 @@ export function DashboardView({
         type: "sky",
         iconColor: "d-sky",
         title: "Case Registered & Under Review",
-        text: "Your NVC identifiers have been recorded. Our admin team will verify your case status at the embassy/NVC shortly.",
+        text: "Your NVC case number has been recorded. Tracking will activate once your case status is updated.",
       });
     }
 
     // Legacy metadata-based alerts
+    // Redundant text alert commented out — WaitingStateCard in sidebar handles this now.
+    /*
     if (
       meta.interviewDate &&
       !trackingStatus.interview_date &&
@@ -143,6 +148,7 @@ export function DashboardView({
         text: `${meta.interviewDate} ${meta.interviewEmbassy ? `· ${meta.interviewEmbassy}` : ""}`,
       });
     }
+    */
 
     // "In scheduling queue (Manual)" removed — the Dynamic Scheduling Tracker
     // card (sidebar) already shows DQ date + embassy month + estimated window
@@ -189,8 +195,13 @@ export function DashboardView({
 
   // Determine if sidebar should be visible
   const showSidebar = useMemo(() => {
-    return alerts.length > 0 || isDqPhase || (isApPhase && state.metadata?.apSaved === "true");
-  }, [alerts.length, isDqPhase, isApPhase, state.metadata?.apSaved]);
+    const hasWaitingStateCards = (
+      (trackingStatus.interview_queue && !interviewDate && !state.metadata?.dqDate && trackingStatus.dq_status !== "qualified" && !state.metadata?.dqStatus) ||
+      (!!interviewDate && !interviewAttended) ||
+      (isApPhase && state.metadata?.apSaved !== "true")
+    );
+    return alerts.length > 0 || isDqPhase || (isApPhase && state.metadata?.apSaved === "true") || hasWaitingStateCards;
+  }, [alerts.length, isDqPhase, isApPhase, state.metadata?.apSaved, trackingStatus.interview_queue, trackingStatus.dq_status, interviewDate, state.metadata?.dqDate, state.metadata?.dqStatus, interviewAttended]);
 
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
     {
@@ -315,54 +326,7 @@ export function DashboardView({
         <div className={`flex flex-col lg:flex-row gap-8 items-start ${!showSidebar ? "justify-center" : ""}`}>
           {/* Main Content Column */}
           <div className={`flex flex-col gap-6 order-1 w-full ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}>
-            {/* Interview Queue simple card — only when admin flagged queue
-                but NO DQ data exists yet (Dynamic Tracker handles the rest). */}
-            {trackingStatus.interview_queue &&
-              !interviewDate &&
-              !state.metadata?.dqDate &&
-              trackingStatus.dq_status !== "qualified" &&
-              !state.metadata?.dqStatus && (
-              <WaitingStateCard
-                icon="clock"
-                title="In Interview Queue"
-                description="Your case is in the scheduling queue at the embassy. Interview dates will be assigned based on visa bulletin and wait times."
-                status="waiting"
-                showIVToolLink
-                ivEmbassy={trackingStatus.interview_embassy}
-              />
-            )}
-
-            {/* Interview Scheduled — shows when interview date exists
-                (either admin-set via tracking_status OR user-set in Step 2.12).
-                Hidden once interview has been attended. */}
-            {interviewDate && !interviewAttended && (
-              <WaitingStateCard
-                icon="calendar"
-                title="Interview Scheduled"
-                description="Your visa interview is scheduled. Prepare all required documents and attend on time."
-                date={`${trackingStatus.interview_date || state.metadata?.interviewDate}${trackingStatus.interview_time ? ` at ${trackingStatus.interview_time}` : ""}${trackingStatus.interview_embassy ? ` · ${trackingStatus.interview_embassy}` : ""}`}
-                status="complete"
-                actionLabel="Interview Prep Guide"
-                onAction={() => {
-                  actions.setStage(2);
-                  actions.setCurrentStep(3);
-                }}
-              />
-            )}
-
-            {/* Administrative Processing — only shows AFTER interview is attended.
-                Simple card until Step 3.9 is filled; full APTrackingTool after. */}
-            {isApPhase && state.metadata?.apSaved !== "true" && (
-              <WaitingStateCard
-                icon="alert"
-                title="Case in Administrative Processing"
-                description="Your case is under review. Go to Chapter 3 → Step 9 to record your AP details and activate full tracking."
-                date={trackingStatus.ap_date}
-                status="waiting"
-                actionLabel="Go to Step 9"
-                actionUrl="/visa-category/ir-category/ir1-journey"
-              />
-            )}
+             {/* Main Content Column items moved to sidebar for tighter layout */}
 
           {/* Hero Section */}
           <section className="bg-[#0c1b33] rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] outline outline-2 outline-[#22304a] after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
@@ -562,6 +526,49 @@ export function DashboardView({
                 </div>
               </div>
 
+              {/* Status Tracking Cards — Moved from main column */}
+              {trackingStatus.interview_queue &&
+                !interviewDate &&
+                !state.metadata?.dqDate &&
+                trackingStatus.dq_status !== "qualified" &&
+                !state.metadata?.dqStatus && (
+                <WaitingStateCard
+                  icon="clock"
+                  title="In Interview Queue"
+                  description="Your case is in the scheduling queue at the embassy. Interview dates will be assigned based on visa bulletin and wait times."
+                  status="waiting"
+                  showIVToolLink
+                  ivEmbassy={trackingStatus.interview_embassy}
+                />
+              )}
+
+              {interviewDate && !interviewAttended && (
+                <WaitingStateCard
+                  icon="calendar"
+                  title="Interview Scheduled"
+                  description="Your visa interview is scheduled. Prepare all required documents and attend on time."
+                  date={`${trackingStatus.interview_date || state.metadata?.interviewDate}${trackingStatus.interview_time ? ` at ${trackingStatus.interview_time}` : ""}${trackingStatus.interview_embassy ? ` · ${trackingStatus.interview_embassy}` : ""}`}
+                  status="complete"
+                  actionLabel="Interview Prep Guide"
+                  onAction={() => {
+                    actions.setStage(2);
+                    actions.setCurrentStep(3);
+                  }}
+                />
+              )}
+
+              {isApPhase && state.metadata?.apSaved !== "true" && (
+                <WaitingStateCard
+                  icon="alert"
+                  title="Case in Administrative Processing"
+                  description="Your case is under review. Go to Chapter 3 → Step 9 to record your AP details and activate full tracking."
+                  date={trackingStatus.ap_date}
+                  status="waiting"
+                  actionLabel="Go to Step 9"
+                  actionUrl="/visa-category/ir-category/ir1-journey"
+                />
+              )}
+
               {/* Unified Alerts */}
               {alerts.length > 0 && (
                 <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
@@ -605,7 +612,14 @@ export function DashboardView({
 
                 const dqDateObj = new Date(dqDateStr + "T00:00:00");
                 const diffTime = new Date().getTime() - dqDateObj.getTime();
-                const daysSinceDq = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+                const rawDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                const daysSinceDq = Math.max(0, rawDays);
+                const dqLabel =
+                  rawDays < -1  ? `in ${Math.abs(rawDays)} days` :
+                  rawDays === -1 ? "tomorrow" :
+                  rawDays === 0  ? "today" :
+                  rawDays === 1  ? "1 day ago" :
+                  `${rawDays} days ago`;
 
                 if (!currentSchedulingMonthYear) {
                   return (
@@ -617,7 +631,7 @@ export function DashboardView({
                         <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 max-w-md">Your DQ date is recorded. To see your estimated interview window, go to <b>Chapter 2 → Step 11</b> and sync the official embassy scheduling month.</p>
                         <div className="bg-white rounded-xl p-3 border border-[#d0e4f7] flex items-center justify-between">
                           <span className="text-[12px] font-bold">DQ Date: {dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                          <span className="text-[10px] text-[#34d399] font-black uppercase">{daysSinceDq} DAYS AGO</span>
+                          <span className="text-[10px] text-[#34d399] font-black uppercase">{dqLabel.toUpperCase()}</span>
                         </div>
                       </div>
                     </div>
@@ -647,7 +661,7 @@ export function DashboardView({
                       <div className="bg-white rounded-2xl p-4 border border-[#d0e4f7]">
                         <div className="text-[10px] uppercase tracking-widest text-[#6b8097] mb-2 font-black">Your DQ Date</div>
                         <div className="text-[18px] font-bold">{dqDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
-                        <div className="text-[11px] text-[#34d399] mt-1 font-bold uppercase">{daysSinceDq} Days Ago</div>
+                        <div className="text-[11px] text-[#34d399] mt-1 font-bold uppercase">{dqLabel}</div>
                       </div>
                       <div className="bg-white rounded-2xl p-4 border border-[#d0e4f7] flex flex-col justify-between">
                         <div>

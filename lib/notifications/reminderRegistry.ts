@@ -27,10 +27,32 @@ export type SuppressCondition =
 
 /** What event starts this reminder chain */
 export type TriggerEvent =
-  | { type: 'step_completed';      stepKey: string }       // fires when a step is marked done
-  | { type: 'ceac_status';         status: string }        // fires when CEAC status is set
-  | { type: 'metadata_key_exists'; metadataKey: string }   // fires when metadata key appears
-  | { type: 'metadata_date_set';   metadataKey: string }   // fires relative to a DATE stored in metadata
+  | { type: 'step_completed';      stepKey: string }
+  | { type: 'ceac_status';         status: string }
+  | { type: 'metadata_key_exists'; metadataKey: string }
+  | { type: 'metadata_key_value';  metadataKey: string; value: string }
+  | { type: 'metadata_date_set';   metadataKey: string }
+
+// ─────────────────────────────────────────────────────────────
+// TYPE-SAFE ACCESSORS — use these instead of (trigger as any)
+// ─────────────────────────────────────────────────────────────
+export function getStepKey(t: TriggerEvent): string | null {
+  return t.type === 'step_completed' ? t.stepKey : null
+}
+export function getMetadataKey(t: TriggerEvent | SuppressCondition): string | null {
+  if ('metadataKey' in t) return t.metadataKey
+  return null
+}
+export function getMetadataValue(t: TriggerEvent | SuppressCondition): string | null {
+  if (t.type === 'metadata_key_value') return t.value
+  return null
+}
+export function getSuppressStepKey(s: SuppressCondition): string | null {
+  return s.type === 'step_completed' ? s.stepKey : null
+}
+export function getCeacGroups(s: SuppressCondition): string[] {
+  return s.type === 'ceac_status_beyond' ? s.groups : []
+}
 
 export interface JourneyReminderDef {
   /** Unique ID — used as reminder_id in DB */
@@ -123,7 +145,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'WAITING',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'receiptNum' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_1_17' },
+    // Suppress when NVC Case Number exists = USCIS approved + NVC phase started
+    suppressWhen: { type: 'metadata_key_exists', metadataKey: 'nvcCaseNum' },
     delayDays: 30,
     recurring: { intervalDays: 30 },
     priority: 'normal',
@@ -144,8 +167,12 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_2' },
-    suppressWhen: { type: 'metadata_key_value', metadataKey: 'nvcFeeStatus', value: 'posted' },
+    // Trigger: fires when NVC Case Number is saved (Step 2.1 — CaseRegistrationForm saves nvcCaseNum)
+    // This means user has registered with NVC, so fees are now due
+    trigger: { type: 'metadata_key_exists', metadataKey: 'nvcCaseNum' },
+    // Suppress: nvcFeeStatus is an OBJECT { aos: 'Paid', iv: 'Paid' } saved by NVC Fee Modal.
+    // We suppress when the object exists (any status saved = user has acknowledged fees)
+    suppressWhen: { type: 'metadata_key_exists', metadataKey: 'nvcFeeStatus' },
     delayDays: 0,
     recurring: { intervalDays: 14 },
     priority: 'high',
@@ -166,7 +193,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    // Trigger: SubmissionReviewTool saves submissionSaved:true when user submits docs to NVC
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 0,
     priority: 'normal',
@@ -183,7 +211,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    // Trigger: same as c2_s9_start — submissionSaved key existing means docs are with NVC
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 14,
     recurring: { intervalDays: 14 },
@@ -201,7 +230,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 60,
     priority: 'high',
@@ -218,7 +247,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 90,
     priority: 'high',
@@ -235,7 +264,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_2_8' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
     delayDays: 120,
     priority: 'high',
@@ -252,14 +281,16 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 2,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'metadata_key_value', metadataKey: 'nvcReviewComplete', value: 'true' },
+    // Fires after docs submitted to NVC (submissionSaved) but DQ date not yet recorded.
+    // This reminds user to go back and record DQ once NVC approves.
+    trigger: { type: 'metadata_key_exists', metadataKey: 'submissionSaved' },
     suppressWhen: { type: 'metadata_key_exists', metadataKey: 'dqDate' },
-    delayDays: 0,
-    recurring: { intervalDays: 7, maxCount: 4 },
+    delayDays: 45,
+    recurring: { intervalDays: 14, maxCount: 6 },
     priority: 'high',
     channels: ['push'],
     title: 'Record your DQ date — Step 10 is waiting',
-    body: 'NVC has completed their review. Go to Chapter 2 → Step 10 and record your DQ (Documentarily Qualified) date to activate interview queue tracking and your estimated interview window.',
+    body: 'NVC has had your documents for over a month. Once they mark your case as Documentarily Qualified (DQ), go to Chapter 2 → Step 10 and record your DQ date to activate interview queue tracking.',
     actionLabel: 'Go to Step 10',
     actionUrl: '/visa-category/ir-category/ir1-journey',
   },
@@ -370,7 +401,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'ACTION',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
-    suppressWhen: { type: 'metadata_key_exists', metadataKey: 'medicalDate' },
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'med_appt_saved', value: 'true' },
     delayDays: 0,
     recurring: { intervalDays: 5, maxCount: 5 },
     priority: 'critical',
@@ -390,8 +421,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
+    suppressWhen: { type: 'never' },
     delayDays: -14,   // 14 days BEFORE the medical appointment
     priority: 'high',
     channels: ['push'],
@@ -407,8 +438,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
+    suppressWhen: { type: 'never' },
     delayDays: -7,   // 7 days BEFORE
     priority: 'high',
     channels: ['push'],
@@ -424,8 +455,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
+    suppressWhen: { type: 'never' },
     delayDays: -3,   // 3 days BEFORE
     priority: 'critical',
     channels: ['push_and_email'],
@@ -441,8 +472,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_date_set', metadataKey: 'medicalDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_1' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'med_date' },
+    suppressWhen: { type: 'never' },
     delayDays: -1,   // 1 day BEFORE (the evening before)
     priority: 'critical',
     channels: ['push_and_email'],
@@ -461,7 +492,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'ACTION',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_2' },
+    // PolioCertificateTool saves polio_launched:'true' when guide is completed — no step mark
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'polio_launched', value: 'true' },
     delayDays: 0,
     recurring: { intervalDays: 7, maxCount: 4 },
     priority: 'high',
@@ -481,7 +513,8 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     kind: 'ACTION',
     origin: 'journey',
     trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_3' },
+    // PoliceClearanceTool saves pcc_saved:'true' when tracking info is saved — no step mark
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'pcc_saved', value: 'true' },
     delayDays: 0,
     recurring: { intervalDays: 5, maxCount: 4 },
     priority: 'critical',
@@ -498,8 +531,10 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'WAITING',
     origin: 'journey',
-    trigger: { type: 'step_completed', stepKey: 'step_3_3' },
-    suppressWhen: { type: 'step_completed', stepKey: 'step_3_4' },
+    // Trigger: fires when PCC application is saved (pcc_saved = 'true')
+    trigger: { type: 'metadata_key_value', metadataKey: 'pcc_saved', value: 'true' },
+    // Suppress: when PCC is received (pcc_received = 'true') via 'Mark as Received' button
+    suppressWhen: { type: 'metadata_key_value', metadataKey: 'pcc_received', value: 'true' },
     delayDays: 7,
     recurring: { intervalDays: 7, maxCount: 6 },
     priority: 'high',
@@ -535,9 +570,9 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewDate' },
+    trigger: { type: 'metadata_date_set', metadataKey: 'interviewDate' },
     suppressWhen: { type: 'step_completed', stepKey: 'step_3_4' },
-    delayDays: 0,
+    delayDays: -7,
     priority: 'critical',
     channels: ['push_and_email'],
     title: '7 days to interview — confirm ALL documents are in hand',
@@ -564,7 +599,6 @@ export function getRemindersForMetadataKey(metadataKey: string): JourneyReminder
   return REMINDER_REGISTRY.filter(
     (r) =>
       (r.trigger.type === 'metadata_key_exists' && (r.trigger as any).metadataKey === metadataKey) ||
-      (r.trigger.type === 'metadata_key_value' && (r.trigger as any).metadataKey === metadataKey) ||
       (r.trigger.type === 'metadata_date_set' && (r.trigger as any).metadataKey === metadataKey)
   )
 }

@@ -262,7 +262,31 @@ export const AppointmentReceivedTool: React.FC<{
     setConsulateLocation,
   } = interviewState;
   const [isSaving, setIsSaving] = React.useState(false);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
   const data = APPOINTMENT_RECEIVED_DATA;
+
+  const validateAppointmentFields = () => {
+    const newErrors: Record<string, string> = {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (!interviewDate) {
+      newErrors.interviewDate = "Interview date is required.";
+    } else if (new Date(interviewDate) < today) {
+      newErrors.interviewDate = "Interview date cannot be in the past.";
+    }
+
+    const loc = consulateLocation.trim();
+    if (!loc) {
+      newErrors.consulateLocation = "Location is required.";
+    } else if (loc.length < 2) {
+      newErrors.consulateLocation = "Must be at least 2 characters.";
+    } else if (!/^[a-zA-Z\s\-,\.]+$/.test(loc)) {
+      newErrors.consulateLocation = "Only letters, spaces, dashes, and commas allowed.";
+    }
+
+    return newErrors;
+  };
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
@@ -287,25 +311,51 @@ export const AppointmentReceivedTool: React.FC<{
               <input
                 type="date"
                 value={interviewDate}
-                onChange={(e) => setInterviewDate(e.target.value)}
-                className="p-2.5 border rounded-lg focus:ring-2 focus:ring-primary/20"
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => {
+                  setInterviewDate(e.target.value);
+                  setErrors((prev) => ({ ...prev, interviewDate: "" }));
+                }}
+                className={`p-2.5 border rounded-lg focus:ring-2 focus:ring-primary/20 ${errors.interviewDate ? "border-red-500 bg-red-50/30" : ""}`}
               />
+              {errors.interviewDate && (
+                <span className="text-[9px] font-bold text-red-500 uppercase px-1">{errors.interviewDate}</span>
+              )}
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold text-slate-500 uppercase">
-                Location
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                  Location
+                </label>
+                <span className={`text-[9px] font-medium ${consulateLocation.length >= 50 ? "text-red-500" : "text-slate-400"}`}>
+                  {consulateLocation.length}/50
+                </span>
+              </div>
               <input
                 type="text"
                 value={consulateLocation}
-                onChange={(e) => setConsulateLocation(e.target.value)}
+                maxLength={50}
                 placeholder="e.g. Islamabad"
-                className="p-2.5 border rounded-lg focus:ring-2 focus:ring-primary/20"
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^a-zA-Z\s\-,\.]/g, "").slice(0, 50);
+                  setConsulateLocation(val);
+                  setErrors((prev) => ({ ...prev, consulateLocation: "" }));
+                }}
+                className={`p-2.5 border rounded-lg focus:ring-2 focus:ring-primary/20 ${errors.consulateLocation ? "border-red-500 bg-red-50/30" : ""}`}
               />
+              {errors.consulateLocation && (
+                <span className="text-[9px] font-bold text-red-500 uppercase px-1">{errors.consulateLocation}</span>
+              )}
             </div>
           </div>
           <button
             onClick={async () => {
+              const validationErrors = validateAppointmentFields();
+              if (Object.keys(validationErrors).length > 0) {
+                setErrors(validationErrors);
+                toast.error("Please fix the errors before saving.");
+                return;
+              }
               setIsSaving(true);
               try {
                 setInterviewSaved(true);
@@ -370,6 +420,7 @@ export const MedicalExamTool: React.FC<{
     setMedWizardMode,
   } = medState;
   const [isSaving, setIsSaving] = React.useState(false);
+  const [medErrors, setMedErrors] = React.useState<Record<string, string>>({});
   const data = MEDICAL_EXAM_DATA;
 
   const handleMedTimeChange = (input: string) => {
@@ -540,9 +591,16 @@ export const MedicalExamTool: React.FC<{
                     <input
                       type="date"
                       value={medDate}
-                      onChange={(e) => setMedDate(e.target.value)}
-                      className="p-3 border rounded-xl"
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => {
+                        setMedDate(e.target.value);
+                        setMedErrors((prev) => ({ ...prev, medDate: "" }));
+                      }}
+                      className={`p-3 border rounded-xl ${medErrors.medDate ? "border-red-500 bg-red-50/30" : ""}`}
                     />
+                    {medErrors.medDate && (
+                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">{medErrors.medDate}</span>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase">
@@ -551,23 +609,42 @@ export const MedicalExamTool: React.FC<{
                     <input
                       type="text"
                       value={medTime}
-                      onChange={(e) => handleMedTimeChange(e.target.value)}
+                      onChange={(e) => {
+                        handleMedTimeChange(e.target.value);
+                        setMedErrors((prev) => ({ ...prev, medTime: "" }));
+                      }}
                       placeholder="hh:mm AM"
                       maxLength={8}
-                      className="p-3 border rounded-xl"
+                      className={`p-3 border rounded-xl font-mono ${medErrors.medTime ? "border-red-500 bg-red-50/30" : ""}`}
                     />
+                    {medErrors.medTime && (
+                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">{medErrors.medTime}</span>
+                    )}
                   </div>
                   <div className="col-span-2 flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">
-                      Clinic / Physician Name
-                    </label>
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase">
+                        Clinic / Physician Name
+                      </label>
+                      <span className={`text-[9px] font-medium ${medClinic.length >= 80 ? "text-red-500" : "text-slate-400"}`}>
+                        {medClinic.length}/80
+                      </span>
+                    </div>
                     <input
                       type="text"
                       value={medClinic}
-                      onChange={(e) => setMedClinic(e.target.value)}
+                      maxLength={80}
                       placeholder="e.g. IOM Islamabad"
-                      className="p-3 border rounded-xl"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z0-9\s\-\.,\/]/g, "").slice(0, 80);
+                        setMedClinic(val);
+                        setMedErrors((prev) => ({ ...prev, medClinic: "" }));
+                      }}
+                      className={`p-3 border rounded-xl ${medErrors.medClinic ? "border-red-500 bg-red-50/30" : ""}`}
                     />
+                    {medErrors.medClinic && (
+                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">{medErrors.medClinic}</span>
+                    )}
                   </div>
                 </div>
               )}
@@ -584,8 +661,33 @@ export const MedicalExamTool: React.FC<{
                 <button
                   onClick={async () => {
                     if ((s as any).nav?.save) {
-                      if (!medDate || !medTime || !medClinic) {
-                        toast.error("Please fill all details");
+                      const saveErrors: Record<string, string> = {};
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+
+                      if (!medDate) {
+                        saveErrors.medDate = "Date is required.";
+                      } else if (new Date(medDate) < today) {
+                        saveErrors.medDate = "Appointment date cannot be in the past.";
+                      }
+
+                      const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
+                      if (!medTime || !timeRegex.test(medTime)) {
+                        saveErrors.medTime = "Enter a valid time (e.g. 09:30 AM).";
+                      }
+
+                      const clinic = medClinic.trim();
+                      if (!clinic) {
+                        saveErrors.medClinic = "Clinic name is required.";
+                      } else if (clinic.length < 2) {
+                        saveErrors.medClinic = "Must be at least 2 characters.";
+                      } else if (!/^[a-zA-Z0-9\s\-\.,\/]+$/.test(clinic)) {
+                        saveErrors.medClinic = "Only letters, numbers, spaces, and basic punctuation allowed.";
+                      }
+
+                      if (Object.keys(saveErrors).length > 0) {
+                        setMedErrors(saveErrors);
+                        toast.error("Please fix the errors before saving.");
                         return;
                       }
                       setIsSaving(true);
@@ -822,6 +924,22 @@ export const PoliceClearanceTool: React.FC<{
     setPccOverlayMode,
   } = pccState;
   const [isSaving, setIsSaving] = React.useState(false);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+  const validatePccField = (id: string, value: string) => {
+    if (!value) return "";
+    
+    // Allow alphanumeric, spaces, dashes, slashes
+    const regex = /^[a-zA-Z0-9\s\-\/]+$/;
+    if (!regex.test(value)) {
+      return "Only letters, numbers, dashes (-), and slashes (/) allowed.";
+    }
+    if (value.length < 3) {
+      return "Too short (minimum 3 characters).";
+    }
+    return "";
+  };
+
   const data = POLICE_CLEARANCE_DATA;
   const isPccUploaded = uploadedDocuments?.some(
     (doc: any) => doc.documentDefId === "police-certificate-pakistan",
@@ -879,24 +997,76 @@ export const PoliceClearanceTool: React.FC<{
           <Search size={16} /> {data.trackingCard.title}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          {data.trackingCard.fields.map((f: any) => (
-            <div key={f.id} className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold text-slate-500 uppercase">
-                {f.label}
-              </label>
-              <input
-                type={f.id === "date" ? "date" : "text"}
-                value={(pccData as any)[f.id]}
-                onChange={(e) =>
-                  setPccData({ ...pccData, [f.id]: e.target.value })
-                }
-                className="p-3 border rounded-xl focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-          ))}
+          {data.trackingCard.fields.map((f: any) => {
+            const isDate = f.id === "date";
+            const todayStr = new Date().toISOString().split("T")[0];
+            const currentVal = (pccData as any)[f.id] || "";
+            const MAX_LEN = 20;
+            return (
+              <div key={f.id} className="flex flex-col gap-1">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase">
+                    {f.label}
+                  </label>
+                  {!isDate && (
+                    <span className={`text-[9px] font-medium ${currentVal.length >= MAX_LEN ? "text-red-500" : "text-slate-400"}`}>
+                      {currentVal.length}/{MAX_LEN}
+                    </span>
+                  )}
+                </div>
+                <input
+                  type={isDate ? "date" : "text"}
+                  value={currentVal}
+                  max={isDate ? todayStr : undefined}
+                  maxLength={!isDate ? MAX_LEN : undefined}
+                  placeholder={!isDate ? f.id === "receipt" ? "e.g. PCC-2024-001234" : "Optional" : undefined}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (!isDate) {
+                      val = val.replace(/[^a-zA-Z0-9\-\/\s]/g, "").toUpperCase();
+                      if (val.length > MAX_LEN) val = val.slice(0, MAX_LEN);
+                      const err = validatePccField(f.id, val);
+                      setErrors((prev) => ({ ...prev, [f.id]: err }));
+                    }
+                    setPccData({ ...pccData, [f.id]: val });
+                  }}
+                  className={`p-3 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm ${
+                    errors[f.id] ? "border-red-500 bg-red-50/30" : "border-slate-200"
+                  }`}
+                />
+                {errors[f.id] && (
+                  <span className="text-[9px] font-bold text-red-500 uppercase px-1">
+                    {errors[f.id]}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
         <button
           onClick={async () => {
+            // Final validation check
+            const receiptErr = validatePccField("receipt", pccData.receipt);
+            const trackErr = validatePccField("track", pccData.track);
+
+            if (receiptErr || trackErr) {
+              setErrors({ receipt: receiptErr, track: trackErr });
+              toast.error("Please fix format errors before saving.");
+              return;
+            }
+
+            if (!pccData.date) {
+              toast.error("Please enter the application date.");
+              return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (new Date(pccData.date) > today) {
+              toast.error("Application date cannot be in the future.");
+              return;
+            }
+
             setIsSaving(true);
             try {
               setPccSaved(true);

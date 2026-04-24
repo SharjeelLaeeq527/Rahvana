@@ -255,10 +255,8 @@ export function SiteHeader({
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
 
-  // Fetch real notifications when bell opens
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
-      // Step 1: get active journey ID
       let jId = notifJourneyId;
       if (!jId) {
         const res = await fetch("/api/journeys");
@@ -272,21 +270,35 @@ export function SiteHeader({
         }
       }
       if (!jId) return;
-
-      // Step 2: fetch reminders
       const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
       if (r.ok) {
         const d = await r.json();
         setNotifList(d.reminders ?? []);
       }
     } catch {}
-  };
+  }, [notifJourneyId]);
+
+  // Fetch on mount — so bell badge and data are ready before user clicks
+  useEffect(() => {
+    if (resolvedUser) fetchNotifications();
+  }, [resolvedUser]);
+
+  // Re-fetch every 2 minutes in background to keep count fresh
+  useEffect(() => {
+    if (!resolvedUser) return;
+    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [resolvedUser, fetchNotifications]);
+
+  // Re-fetch immediately when any data save triggers refresh-reminders
+  useEffect(() => {
+    if (!resolvedUser) return;
+    window.addEventListener("refresh-reminders", fetchNotifications);
+    return () => window.removeEventListener("refresh-reminders", fetchNotifications);
+  }, [resolvedUser, fetchNotifications]);
 
   const handleBellClick = () => {
-    setNotificationsOpen((prev) => {
-      if (!prev) fetchNotifications();
-      return !prev;
-    });
+    setNotificationsOpen((prev) => !prev);
   };
 
   const dismissNotif = async (id: string) => {
@@ -444,7 +456,7 @@ export function SiteHeader({
       className={`fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-300 ${
         isHomeHeroState || isHomeHeroP2State
           ? "bg-transparent border-none shadow-none py-4"
-          : "bg-background/80 backdrop-blur-md shadow-lg py-2"
+          : "bg-background shadow-lg py-2"
       }`}
       style={
         isHomeHeroState || isHomeHeroP2State
@@ -782,7 +794,7 @@ export function SiteHeader({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full border border-white/30 bg-white/70 backdrop-blur-md shadow-xl rounded-xl p-4 mt-2"
+              className="absolute top-full border border-slate-200 bg-white shadow-xl rounded-xl p-4 mt-2"
               style={{ width: "200px", left: `${arrowOffset - 90}px` }}
             >
               <div>
@@ -889,22 +901,24 @@ export function SiteHeader({
                       border: "none",
                     }}
                   >
-                    <Bell
-                      className="h-5 w-5"
-                      aria-hidden="true"
-                      style={
-                        isHomeHeroP2State
-                          ? { color: "#fff" }
-                          : isHomeHeroState
+                    <div className="relative inline-flex">
+                      <Bell
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                        style={
+                          isHomeHeroP2State
                             ? { color: "#fff" }
-                            : { color: "var(--rahvana-primary, #0d7377)" }
-                      }
-                    />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </span>
-                    )}
+                            : isHomeHeroState
+                              ? { color: "#fff" }
+                              : { color: "var(--rahvana-primary, #0d7377)" }
+                        }
+                      />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-white/50">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </HydrationSafeButton>
 
                   <AnimatePresence>
@@ -914,7 +928,7 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-white/30 bg-white/70 backdrop-blur-md z-9999 overflow-hidden origin-top-right"
+                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-slate-200 bg-white z-9999 overflow-hidden origin-top-right"
                       >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
@@ -1117,7 +1131,7 @@ export function SiteHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-white/30 bg-white/70 backdrop-blur-md z-9999 transform origin-top-right"
+                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-slate-200 bg-white z-9999 transform origin-top-right"
                   >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">

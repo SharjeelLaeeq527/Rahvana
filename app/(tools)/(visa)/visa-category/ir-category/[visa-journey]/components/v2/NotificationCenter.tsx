@@ -122,6 +122,16 @@ export default function NotificationCenter({
     fetchReminders();
   }, [fetchReminders]);
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      console.log("[NotificationCenter] Refreshing reminders due to data change...");
+      fetchReminders();
+    };
+
+    window.addEventListener("refresh-reminders", handleRefresh);
+    return () => window.removeEventListener("refresh-reminders", handleRefresh);
+  }, [fetchReminders]);
+
   // ── Dismiss ──────────────────────────────────────────────
   const dismiss = async (reminderId: string) => {
     if (!resolvedJourneyId) return;
