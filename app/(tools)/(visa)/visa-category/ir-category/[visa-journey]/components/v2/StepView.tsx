@@ -899,6 +899,42 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [isRcptGuideOpen, setIsRcptGuideOpen] = React.useState(false);
   const [rcptGuideStep, setRcptGuideStep] = React.useState(0);
 
+  // Sync with metadata on mount
+  React.useEffect(() => {
+    if (state.metadata?.uscis_receipt_number) {
+      setRcptManual(prev => ({
+        ...prev,
+        receipt: state.metadata.uscis_receipt_number,
+        noticeDate: state.metadata.uscis_notice_date || "",
+        priorityDate: state.metadata.uscis_priority_date || "",
+      }));
+      
+      if (state.metadata.uscis_tracking_enabled) {
+        setRcptUiState("tracked");
+      }
+    }
+  }, [state.metadata?.uscis_receipt_number, state.metadata?.uscis_tracking_enabled]);
+
+  const handleSaveReceipt = () => {
+    const isValid = /^[A-Z]{3}[0-9]{10}$/.test(rcptManual.receipt);
+    if (!isValid) {
+      setRcptError("Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).");
+      setRcptSuccess(false);
+      return;
+    }
+    setRcptError("");
+    setRcptSuccess(true);
+    
+    actions.updateMetadata({
+      uscis_receipt_number: rcptManual.receipt,
+      uscis_notice_date: rcptManual.noticeDate,
+      uscis_priority_date: rcptManual.priorityDate,
+      uscis_tracking_enabled: true
+    });
+    
+    setRcptUiState("tracked");
+  };
+
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
   // step_1_15: Register Receipt Notice & Track Case
@@ -1196,12 +1232,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       placeholder="IOE1234567890"
                       maxLength={13}
                       value={rcptManual.receipt}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
                         setRcptManual({
                           ...rcptManual,
-                          receipt: e.target.value,
-                        })
-                      }
+                          receipt: val,
+                        });
+                        if (rcptError) setRcptError("");
+                      }}
                     />
                   </div>
                   <div className="form-field flex flex-col">
@@ -1269,7 +1307,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </button>
                   <button
                     className={`primary-btn px-5 py-2 rounded-full text-white font-semibold ${isChapter1 ? "bg-[#c0596a] hover:bg-[#a13e4e]" : "bg-[#c0596a] hover:bg-[#a13e4e]"}`}
-                    onClick={() => setRcptUiState("tracked")}
+                    onClick={handleSaveReceipt}
                   >
                     Save Receipt & Enable Tracking
                   </button>
@@ -1308,10 +1346,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div
                         className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}
                       >
-                        Tracking
+                        USCIS Case Status
                       </div>
                       <div className={`text-[14px] font-semibold text-[#fff]`}>
-                        Enabled
+                        {state.metadata?.tracking_status?.uscis_status
+                          ? state.metadata.tracking_status.uscis_status.replace(/_/g, ' ')
+                          : "Monitoring Active"}
                       </div>
                     </div>
                     <div
@@ -1338,6 +1378,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         {rcptManual.priorityDate || "Not saved"}
                       </div>
                     </div>
+                    {state.metadata?.tracking_status?.uscis_status_updated && (
+                      <div
+                        className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}
+                      >
+                        <div
+                          className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}
+                        >
+                          Last Updated
+                        </div>
+                        <div className={`text-[14px] font-semibold text-[#fff]`}>
+                          {new Date(state.metadata.tracking_status.uscis_status_updated).toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                     <div

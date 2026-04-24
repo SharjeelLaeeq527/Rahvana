@@ -534,6 +534,55 @@ export default function VisaCasesTable() {
               <div className="space-y-3">
                 <h3 className="font-semibold text-xs uppercase tracking-widest text-slate-500 mb-2">Operational Tracking (Editable)</h3>
 
+                {/* Step 1.15: USCIS Case Status */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <button 
+                    onClick={() => setOpenStep(openStep === 'uscis' ? null : 'uscis')}
+                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.uscis_status ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                        <FileText size={16} />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-[#0c1b33]">1.15: USCIS Case Status</p>
+                        <p className="text-[11px] text-slate-500">{trackingStatus.uscis_status ? `Status: ${trackingStatus.uscis_status.replace(/_/g, ' ')}` : 'No managed tracking updates yet'}</p>
+                      </div>
+                    </div>
+                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'uscis' ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {openStep === 'uscis' && (
+                    <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
+                      <div className="space-y-3">
+                        <Label className="text-xs uppercase tracking-wider font-bold">Update USCIS Status</Label>
+                        <Select
+                          value={trackingStatus.uscis_status || ""}
+                          onValueChange={(val) =>
+                            setTrackingStatus((prev) => ({
+                              ...prev,
+                              uscis_status: val,
+                              uscis_status_updated: new Date().toISOString(),
+                            }))
+                          }
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue placeholder="Select current status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="receipt_notice_sent">Receipt Notice Sent</SelectItem>
+                            <SelectItem value="case_received">Case Received</SelectItem>
+                            <SelectItem value="under_review">Actively Reviewing</SelectItem>
+                            <SelectItem value="rfe">Request for Evidence (RFE)</SelectItem>
+                            <SelectItem value="approved">Case Approved</SelectItem>
+                            <SelectItem value="denied">Case Denied</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Step 2.9: NVC Review */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
                   <button 
