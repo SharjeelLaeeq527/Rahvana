@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FileText,
   CheckCircle,
@@ -595,20 +595,30 @@ export default function VisaFormSelector() {
     message: string;
     type: "success" | "info";
   } | null>(null);
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const filterPopoverRef = useRef<HTMLDivElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Close filter popover when clicking outside
   useEffect(() => {
-    if (isMobileFiltersOpen) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-
-    // Cleanup when component unmounts
-    return () => {
-      document.body.classList.remove("overflow-hidden");
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterPopoverRef.current &&
+        !filterPopoverRef.current.contains(event.target as Node) &&
+        filterButtonRef.current &&
+        !filterButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterPopoverOpen(false);
+      }
     };
-  }, [isMobileFiltersOpen]);
+
+    if (isFilterPopoverOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isFilterPopoverOpen]);
 
   const handleStartForm = (formCode: string): void => {
     const normalized = formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -686,7 +696,7 @@ export default function VisaFormSelector() {
   });
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-primary/10 via-white to-primary/5">
+    <div className="min-h-screen bg-linear-to-br from-primary/10 via-white to-primary/5 mt-10">
       <div className="site-main-px site-main-py">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
@@ -739,146 +749,12 @@ export default function VisaFormSelector() {
         {/* Search & View Toggle Section */}
 
         {/* Content Grid */}
-        <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-8 items-start">
-          {/* Sidebar Filters Mobile Backdrop */}
-          {isMobileFiltersOpen && (
-            <div
-              className="lg:hidden fixed inset-0 z-100 bg-black/50 backdrop-blur-sm transition-opacity"
-              onClick={() => setIsMobileFiltersOpen(false)}
-            />
-          )}
-
-          {/* Sidebar Filters */}
-          <aside
-            className={`
-              w-[280px] sm:w-[320px] lg:w-full space-y-6 lg:self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:overflow-x-hidden custom-scrollbar
-              ${
-                isMobileFiltersOpen
-                  ? "fixed inset-y-0 right-0 z-110 bg-white p-5 shadow-2xl overflow-y-auto"
-                  : "hidden lg:block lg:relative lg:z-auto lg:bg-transparent lg:p-0 lg:shadow-none"
-              }
-            `}
-          >
-            <div className="bg-white lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm lg:p-5 lg:md:p-6">
-              {/* Mobile Close Button */}
-              <div className="lg:hidden flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                <span className="text-lg font-bold text-gray-900">Filters</span>
-                <button
-                  onClick={() => setIsMobileFiltersOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Search Filter */}
-
-              {/* Journey Filter (Only in Journey View) */}
-
-              <div className="hidden lg:block text-xs font-extrabold tracking-wider uppercase text-gray-400 mb-5">
-                Filters
-              </div>
-              <div className="mb-6 pb-6 border-b border-gray-100">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">
-                  Visa Journey
-                </h3>
-                <div className="flex flex-col gap-2">
-                  {[
-                    { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                    { id: "IR5", label: "IR-5 (Parent)" },
-                    { id: "K1", label: "K-1 (Fiancé)" },
-                    { id: "AOS", label: "Adjustment of Status" },
-                    { id: "Naturalization", label: "Naturalization" },
-                  ].map((journey) => (
-                    <button
-                      key={journey.id}
-                      suppressHydrationWarning
-                      onClick={() => {
-                        if (currentJourney === journey.id) {
-                          setCurrentJourney("");
-                        } else {
-                          setCurrentJourney(journey.id);
-                          setCurrentStage("USCIS Filing");
-                        }
-                      }}
-                      className={`w-full text-left px-4 py-2 text-sm border rounded-full transition-all duration-200 ${
-                        currentJourney === journey.id
-                          ? "bg-[#0d7377] text-white border-[#0d7377]"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
-                      }`}
-                    >
-                      {journey.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Agency Filter */}
-              <div className="mb-6 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">Agency</h3>
-                <div className="flex flex-col gap-2">
-                  {["USCIS", "DOS", "CBP", "SSA"].map((agency) => (
-                    <button
-                      key={agency}
-                      suppressHydrationWarning
-                      onClick={() => toggleFilter("agency", agency)}
-                      className={`w-full text-left px-4 py-2 text-sm border rounded-full transition-all duration-200 ${
-                        activeFilters.agency.includes(agency)
-                          ? "bg-[#0d7377] text-white border-[#0d7377]"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
-                      }`}
-                    >
-                      {agency}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Category Filter */}
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">
-                  Category
-                </h3>
-                <div className="flex flex-col gap-2">
-                  {["Family-based", "AOS", "Financial", "Waiver"].map(
-                    (category) => (
-                      <button
-                        key={category}
-                        suppressHydrationWarning
-                        onClick={() => toggleFilter("category", category)}
-                        className={`w-full text-left px-4 py-2 text-sm border rounded-full transition-all duration-200 ${
-                          activeFilters.category.includes(category)
-                            ? "bg-[#0d7377] text-white border-[#0d7377]"
-                            : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    ),
-                  )}
-                </div>
-              </div>
-
-              {/* Clear Button */}
-              {(activeFilters.agency.length > 0 ||
-                activeFilters.category.length > 0) && (
-                <button
-                  onClick={clearFilters}
-                  suppressHydrationWarning
-                  className="w-full flex items-center justify-center gap-2 text-sm font-medium text-[#0d7377] hover:bg-[#e8f6f6] py-2 rounded-lg transition-colors border border-dashed border-gray-300 mt-4"
-                >
-                  <X className="w-4 h-4" />
-                  Clear all
-                </button>
-              )}
-            </div>
-          </aside>
-
+        <div className="max-w-7xl mx-auto">
           {/* Main Content */}
           <main className="min-w-0">
             {/* Search & Tabs (Moved Inside Main Content) */}
             <div className="mb-8 md:mb-10">
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex flex-row gap-4 mb-6">
                 <div className="relative flex-1">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                     <Search className="w-4 h-4" />
@@ -892,20 +768,170 @@ export default function VisaFormSelector() {
                     placeholder="Search forms..."
                   />
                 </div>
-                <button
-                  onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                  className="lg:hidden flex items-center justify-center gap-2 px-6 py-3 sm:py-4 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] transition-all shadow-sm"
-                >
-                  <Filter className="w-4 h-4" />
-                  Filters
-                  {(activeFilters.agency.length > 0 ||
-                    activeFilters.category.length > 0) && (
-                    <span className="bg-[#0d7377] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-1">
-                      {activeFilters.agency.length +
-                        activeFilters.category.length}
-                    </span>
+                <div className="relative">
+                  <button
+                    ref={filterButtonRef}
+                    onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
+                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] transition-all shadow-sm"
+                  >
+                    <Filter className="w-4 h-4" />
+
+                    {/* Hide on mobile, show on sm+ */}
+                    <span className="hidden sm:inline">Filters</span>
+
+                    {(activeFilters.agency.length > 0 ||
+                      activeFilters.category.length > 0 ||
+                      currentJourney) && (
+                      <span className="bg-[#0d7377] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-1">
+                        {activeFilters.agency.length +
+                          activeFilters.category.length +
+                          (currentJourney ? 1 : 0)}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Filter Popover */}
+                  {isFilterPopoverOpen && (
+                    <div
+                      ref={filterPopoverRef}
+                      className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 w-80 max-h-[500px] overflow-y-auto"
+                    >
+                      {/* Header */}
+                      <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
+                        <h3 className="font-semibold text-gray-900">
+                          Filter Forms
+                        </h3>
+                        <button
+                          onClick={() => setIsFilterPopoverOpen(false)}
+                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Filter Content */}
+                      <div className="p-4 space-y-4">
+                        {/* Journey Filter */}
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                            Visa Journey
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {[
+                              { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
+                              { id: "IR5", label: "IR-5 (Parent)" },
+                              { id: "K1", label: "K-1 (Fiancé)" },
+                              { id: "AOS", label: "Adjustment of Status" },
+                              { id: "Naturalization", label: "Naturalization" },
+                            ].map((journey) => (
+                              <button
+                                key={journey.id}
+                                onClick={() => {
+                                  if (currentJourney === journey.id) {
+                                    setCurrentJourney("");
+                                  } else {
+                                    setCurrentJourney(journey.id);
+                                    setCurrentStage("USCIS Filing");
+                                  }
+                                }}
+                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                  currentJourney === journey.id
+                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                }`}
+                              >
+                                {journey.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Agency Filter */}
+                        <div className="pt-4 border-t border-gray-100">
+                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                            Agency
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {["USCIS", "DOS", "CBP", "SSA"].map((agency) => (
+                              <button
+                                key={agency}
+                                onClick={() => toggleFilter("agency", agency)}
+                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                  activeFilters.agency.includes(agency)
+                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                }`}
+                              >
+                                {agency}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div className="pt-4 border-t border-gray-100">
+                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                            Category
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {["Family-based", "AOS", "Financial", "Waiver"].map(
+                              (category) => (
+                                <button
+                                  key={category}
+                                  onClick={() =>
+                                    toggleFilter("category", category)
+                                  }
+                                  className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                    activeFilters.category.includes(category)
+                                      ? "bg-[#0d7377] text-white border-[#0d7377]"
+                                      : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {category}
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="px-4 py-3 border-t border-gray-100 space-y-3 sticky bottom-0 bg-gray-50">
+                        <div className="flex gap-2">
+                          {(activeFilters.agency.length > 0 ||
+                            activeFilters.category.length > 0 ||
+                            currentJourney) && (
+                            <button
+                              onClick={() => {
+                                clearFilters();
+                                setCurrentJourney("");
+                              }}
+                              className="flex-1 text-sm text-white bg-[#0d7377] hover:bg-[#0a5a5d] font-medium transition-colors py-2 px-3 rounded-lg"
+                            >
+                              Reset
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setIsFilterPopoverOpen(false)}
+                            className="flex-1 text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium transition-colors py-2 px-3 rounded-lg"
+                          >
+                            Done
+                          </button>
+                        </div>
+                        <div className="text-xs text-gray-600 text-center">
+                          Showing{" "}
+                          <span className="font-semibold text-gray-900">
+                            {filteredForms.length}
+                          </span>{" "}
+                          of{" "}
+                          <span className="font-semibold text-gray-900">
+                            {VISA_FORMS.length}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </button>
+                </div>
               </div>
               <div className="flex gap-3 sm:gap-4">
                 <button
@@ -1027,7 +1053,7 @@ export default function VisaFormSelector() {
             )}
 
             {/* Forms Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 mb-12">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
               {filteredForms.length > 0 ? (
                 filteredForms.map((form) => {
                   return (
