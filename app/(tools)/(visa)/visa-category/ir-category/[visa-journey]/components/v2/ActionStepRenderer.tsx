@@ -71,8 +71,7 @@ const formatRelativeTime = (isoString: string): string => {
   return date.toLocaleDateString();
 };
 
-// Helper: Get tracking status icon and color
-const getTrackingStatusDisplay = (status: string) => {
+const getTrackingStatusDisplay = (status: any) => {
   const statusMap: Record<
     string,
     { icon: React.ReactNode; label: string; color: string; bgColor: string }
@@ -121,14 +120,19 @@ const getTrackingStatusDisplay = (status: string) => {
     },
   };
 
-  return (
-    statusMap[status] || {
-      icon: <Loader size={16} />,
-      label: status,
-      color: "text-gray-700",
-      bgColor: "bg-gray-50",
-    }
-  );
+  // ✅ STEP 1: extract real string safely
+  let normalized = "";
+
+  if (typeof status === "string") {
+    normalized = status;
+  } else if (status && typeof status === "object") {
+    normalized = status.code || status.status || "";
+  }
+
+  normalized = normalized.toLowerCase().trim();
+
+  // ✅ STEP 2: fallback safely
+  return statusMap[normalized] ?? statusMap.unknown;
 };
 
 export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
@@ -1307,7 +1311,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         )}
 
                         {/* Delivered Date */}
-                        {deliveredAt && trackingStatus === "delivered" && (
+                        {/* {deliveredAt && trackingStatus === "delivered" && (
                           <div
                             style={{
                               display: "flex",
@@ -1324,7 +1328,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                               {new Date(deliveredAt).toLocaleDateString()}
                             </span>
                           </div>
-                        )}
+                        )} */}
                       </div>
                     )}
                 </div>

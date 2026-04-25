@@ -11,8 +11,8 @@
 // and upserts reminder records using dedup_key to prevent duplicates.
 // ============================================================
 
-import { SupabaseClient } from '@supabase/supabase-js'
-import type { ReminderCandidate } from './types'
+import { SupabaseClient } from "@supabase/supabase-js";
+import type { ReminderCandidate } from "./types";
 
 export class ReminderEngine {
   constructor(private supabase: SupabaseClient) {}
@@ -23,7 +23,7 @@ export class ReminderEngine {
   // ─────────────────────────────────────────────────────────────
 
   async generateReminders(journeyId: string): Promise<void> {
-    const candidates: ReminderCandidate[] = []
+    const candidates: ReminderCandidate[] = [];
 
     // Run all checks in parallel for performance
     const [
@@ -36,6 +36,7 @@ export class ReminderEngine {
       toolAbandonedReminders,
       appointmentNotRecordedReminder,
       trackingStatusReminder,
+      step2GatheringReminder,
     ] = await Promise.allSettled([
       this.checkMissingDocuments(journeyId),
       this.checkAppointmentsApproaching(journeyId),
@@ -45,37 +46,37 @@ export class ReminderEngine {
       this.checkAccountSetupIncomplete(journeyId),
       this.checkAbandonedToolSessions(journeyId),
       this.checkAppointmentNotRecorded(journeyId),
-      this.checkTrackingStatusUpdates(journeyId)
-    ])
+      this.checkTrackingStatusUpdates(journeyId),
+      this.checkStep2GatheringPending(journeyId),
+    ]);
 
     // Collect results safely (ignore individual failures)
     const push = (result: PromiseSettledResult<ReminderCandidate[]>) => {
-      if (result.status === 'fulfilled') candidates.push(...result.value)
-    }
+      if (result.status === "fulfilled") candidates.push(...result.value);
+    };
 
-    push(missingDocReminders)
-    push(appointmentApproachingReminders)
-    push(policeCertReminder)
-    push(receiptNotCapturedReminder)
-    push(nvcFeeReminder)
-    push(accountSetupReminder)
-    push(toolAbandonedReminders)
-    push(appointmentNotRecordedReminder)
-    push(trackingStatusReminder)
+    push(missingDocReminders);
+    push(appointmentApproachingReminders);
+    push(policeCertReminder);
+    push(receiptNotCapturedReminder);
+    push(nvcFeeReminder);
+    push(accountSetupReminder);
+    push(toolAbandonedReminders);
+    push(appointmentNotRecordedReminder);
+    push(trackingStatusReminder);
+    push(step2GatheringReminder);
 
-    if (candidates.length === 0) return
+    if (candidates.length === 0) return;
 
     // Upsert all candidates using dedup_key (ON CONFLICT DO UPDATE)
     // This refreshes the title/body if logic changes, without creating duplicates
-    await this.supabase
-      .from('journey_reminders')
-      .upsert(
-        candidates.map((c) => ({
-          journey_id: journeyId,
-          ...c,
-        })),
-        { onConflict: 'dedup_key', ignoreDuplicates: false }
-      )
+    await this.supabase.from("journey_reminders").upsert(
+      candidates.map((c) => ({
+        journey_id: journeyId,
+        ...c,
+      })),
+      { onConflict: "dedup_key", ignoreDuplicates: false },
+    );
   }
 
   /**
@@ -83,24 +84,24 @@ export class ReminderEngine {
    */
   private async checkNewStepsAvailable(journeyId: string, reminders: any[]) {
     const { data: currentStep } = await this.supabase
-      .from('journey_steps')
-      .select('id, step_name')
-      .eq('journey_id', journeyId)
-      .eq('status', 'not_started')
-      .order('sequence_order', { ascending: true })
+      .from("journey_steps")
+      .select("id, step_name")
+      .eq("journey_id", journeyId)
+      .eq("status", "not_started")
+      .order("sequence_order", { ascending: true })
       .limit(1)
       .single();
 
     if (currentStep) {
-       reminders.push({
-         reminder_type: 'step_available',
-         priority: 'normal',
-         title: `Next Step: ${currentStep.step_name}`,
-         body: `Ready for the next phase? Begin ${currentStep.step_name} to keep your case moving.`,
-         action_label: 'Start Now',
-         action_url: `/visa-category/ir-category/ir1-journey`,
-         dedup_key: `${journeyId}:step_available:${currentStep.id}`
-       });
+      reminders.push({
+        reminder_type: "step_available",
+        priority: "normal",
+        title: `Next Step: ${currentStep.step_name}`,
+        body: `Ready for the next phase? Begin ${currentStep.step_name} to keep your case moving.`,
+        action_label: "Start Now",
+        action_url: `/visa-category/ir-category/ir1-journey`,
+        dedup_key: `${journeyId}:step_available:${currentStep.id}`,
+      });
     }
   }
 
@@ -114,28 +115,30 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkMissingDocuments(journeyId: string): Promise<ReminderCandidate[]> {
+  private async checkMissingDocuments(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
     const { data: docs } = await this.supabase
-      .from('journey_documents')
-      .select('id, document_type, document_label, step_key, status')
-      .eq('journey_id', journeyId)
-      .eq('is_required', true)
-      .in('status', ['not_started', 'requested'])
-      .is('deleted_at', null)
+      .from("journey_documents")
+      .select("id, document_type, document_label, step_key, status")
+      .eq("journey_id", journeyId)
+      .eq("is_required", true)
+      .in("status", ["not_started", "requested"])
+      .is("deleted_at", null);
 
-    if (!docs || docs.length === 0) return []
+    if (!docs || docs.length === 0) return [];
 
     return docs.map((doc) => ({
-      reminder_type: 'missing_document' as const,
-      priority: 'high' as const,
+      reminder_type: "missing_document" as const,
+      priority: "high" as const,
       title: `Document Required: ${doc.document_label || doc.document_type}`,
       body: `Your "${doc.document_label || doc.document_type}" is required but has not been uploaded yet. Upload it to keep your case on track.`,
       step_key: doc.step_key ?? undefined,
       reference_id: doc.id,
-      action_url: '/visa-category/ir-category/ir1-journey',
-      action_label: 'Upload Document',
+      action_url: "/visa-category/ir-category/ir1-journey",
+      action_label: "Upload Document",
       dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
-    }))
+    }));
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -148,72 +151,84 @@ export class ReminderEngine {
   //   Day 30+ → critical "Overdue — interview may be at risk"
   // ─────────────────────────────────────────────────────────────
 
-  private async checkPoliceCertificatePending(journeyId: string): Promise<ReminderCandidate[]> {
+  private async checkPoliceCertificatePending(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
     const { data: caseRows } = await this.supabase
-      .from('case_data')
-      .select('data_key, data_value')
-      .eq('journey_id', journeyId)
-      .in('data_key', ['pcc_saved', 'pcc_received', 'pcc_date'])
+      .from("case_data")
+      .select("data_key, data_value")
+      .eq("journey_id", journeyId)
+      .in("data_key", ["pcc_saved", "pcc_received", "pcc_date"]);
 
-    if (!caseRows || caseRows.length === 0) return []
+    if (!caseRows || caseRows.length === 0) return [];
 
-    const byKey = Object.fromEntries(caseRows.map((r) => [r.data_key, String(r.data_value ?? '')]))
+    const byKey = Object.fromEntries(
+      caseRows.map((r) => [r.data_key, String(r.data_value ?? "")]),
+    );
 
     // Already received — no reminder
-    if (byKey['pcc_received'] === 'true' || byKey['pcc_received'] === '"true"') return []
+    if (byKey["pcc_received"] === "true" || byKey["pcc_received"] === '"true"')
+      return [];
 
     // Application must be saved for tracking to start
-    if (byKey['pcc_saved'] !== 'true' && byKey['pcc_saved'] !== '"true"') return []
+    if (byKey["pcc_saved"] !== "true" && byKey["pcc_saved"] !== '"true"')
+      return [];
 
     // Calculate days since application date
-    const now = new Date()
-    let daysSince = 0
-    const rawDate = (byKey['pcc_date'] ?? '').replace(/^"|"$/g, '')
+    const now = new Date();
+    let daysSince = 0;
+    const rawDate = (byKey["pcc_date"] ?? "").replace(/^"|"$/g, "");
     if (rawDate) {
-      const appDate = new Date(rawDate + 'T00:00:00')
+      const appDate = new Date(rawDate + "T00:00:00");
       if (!isNaN(appDate.getTime())) {
-        daysSince = Math.floor((now.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24))
+        daysSince = Math.floor(
+          (now.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24),
+        );
       }
     }
 
     // Only fire reminders on meaningful intervals (7, 14, 21, 30+)
-    if (daysSince < 7) return []
+    if (daysSince < 7) return [];
 
     // Escalating priority and messaging
-    let priority: 'critical' | 'high' | 'normal'
-    let title: string
-    let body: string
-    const week = Math.floor(daysSince / 7)
+    let priority: "critical" | "high" | "normal";
+    let title: string;
+    let body: string;
+    const week = Math.floor(daysSince / 7);
 
     if (daysSince >= 30) {
-      priority = 'critical'
-      title = `⚠️ PCC overdue — ${daysSince} days since application`
-      body = `Your Police Clearance Certificate was applied ${daysSince} days ago and is still not received. This is urgent — contact the issuing authority immediately and confirm your interview timeline is not at risk.`
+      priority = "critical";
+      title = `⚠️ PCC overdue — ${daysSince} days since application`;
+      body = `Your Police Clearance Certificate was applied ${daysSince} days ago and is still not received. This is urgent — contact the issuing authority immediately and confirm your interview timeline is not at risk.`;
     } else if (daysSince >= 21) {
-      priority = 'high'
-      title = `PCC still pending — ${daysSince} days, follow up now`
-      body = `It has been ${daysSince} days since your PCC application. Most PCCs arrive within 14–21 days. Visit the tracking portal or call the issuing office to check your status and get an ETA.`
+      priority = "high";
+      title = `PCC still pending — ${daysSince} days, follow up now`;
+      body = `It has been ${daysSince} days since your PCC application. Most PCCs arrive within 14–21 days. Visit the tracking portal or call the issuing office to check your status and get an ETA.`;
     } else if (daysSince >= 14) {
-      priority = 'high'
-      title = 'PCC — 2 weeks since application, check tracking'
-      body = 'Your PCC application is 2 weeks old. Log in to the tracking website of the issuing authority to verify processing status. Mark it as received in your journey once it arrives.'
+      priority = "high";
+      title = "PCC — 2 weeks since application, check tracking";
+      body =
+        "Your PCC application is 2 weeks old. Log in to the tracking website of the issuing authority to verify processing status. Mark it as received in your journey once it arrives.";
     } else {
-      priority = 'normal'
-      title = 'PCC — 1 week check-in'
-      body = 'It has been a week since your PCC application. Applications typically enter processing within 7–10 days. You can start checking the tracking portal for a status update.'
+      priority = "normal";
+      title = "PCC — 1 week check-in";
+      body =
+        "It has been a week since your PCC application. Applications typically enter processing within 7–10 days. You can start checking the tracking portal for a status update.";
     }
 
-    return [{
-      reminder_type: 'police_certificate_pending' as const,
-      priority,
-      title,
-      body,
-      step_key: 'step_3_3',
-      action_url: '/visa-category/ir-category/ir1-journey',
-      action_label: 'Update PCC Status',
-      // dedup_key changes each week — so a fresh escalated notification appears
-      dedup_key: `${journeyId}:pcc_tracking:week${week}`,
-    }]
+    return [
+      {
+        reminder_type: "police_certificate_pending" as const,
+        priority,
+        title,
+        body,
+        step_key: "step_3_3",
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "Update PCC Status",
+        // dedup_key changes each week — so a fresh escalated notification appears
+        dedup_key: `${journeyId}:pcc_tracking:week${week}`,
+      },
+    ];
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -222,50 +237,61 @@ export class ReminderEngine {
   // Priority: critical (≤1 day), high (≤7 days), normal (≤14 days)
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAppointmentsApproaching(journeyId: string): Promise<ReminderCandidate[]> {
-    const now = new Date()
-    const in14Days = new Date(now)
-    in14Days.setDate(in14Days.getDate() + 14)
+  private async checkAppointmentsApproaching(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
+    const now = new Date();
+    const in14Days = new Date(now);
+    in14Days.setDate(in14Days.getDate() + 14);
 
     const { data: appointments } = await this.supabase
-      .from('journey_appointments')
-      .select('id, appointment_type, appointment_date, appointment_datetime, location, step_key')
-      .eq('journey_id', journeyId)
-      .eq('status', 'scheduled')
-      .gte('appointment_datetime', now.toISOString())
-      .lte('appointment_datetime', in14Days.toISOString())
+      .from("journey_appointments")
+      .select(
+        "id, appointment_type, appointment_date, appointment_datetime, location, step_key",
+      )
+      .eq("journey_id", journeyId)
+      .eq("status", "scheduled")
+      .gte("appointment_datetime", now.toISOString())
+      .lte("appointment_datetime", in14Days.toISOString());
 
-    if (!appointments || appointments.length === 0) return []
+    if (!appointments || appointments.length === 0) return [];
 
     return appointments.map((appt) => {
-      const apptDate = new Date(appt.appointment_datetime || appt.appointment_date)
-      const diffDays = Math.ceil((apptDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      const apptDate = new Date(
+        appt.appointment_datetime || appt.appointment_date,
+      );
+      const diffDays = Math.ceil(
+        (apptDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+      );
 
       const priority =
-        diffDays <= 1 ? 'critical' :
-        diffDays <= 7 ? 'high' : 'normal'
+        diffDays <= 1 ? "critical" : diffDays <= 7 ? "high" : "normal";
 
       const typeLabel =
-        appt.appointment_type === 'medical' ? 'Medical Exam' :
-        appt.appointment_type === 'interview' ? 'Consular Interview' :
-        'Appointment'
+        appt.appointment_type === "medical"
+          ? "Medical Exam"
+          : appt.appointment_type === "interview"
+            ? "Consular Interview"
+            : "Appointment";
 
-      const dateStr = apptDate.toLocaleDateString('en-US', {
-        weekday: 'long', month: 'long', day: 'numeric'
-      })
+      const dateStr = apptDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      });
 
       return {
-        reminder_type: 'appointment_approaching' as const,
-        priority: priority as 'critical' | 'high' | 'normal',
-        title: `${typeLabel} in ${diffDays} day${diffDays !== 1 ? 's' : ''}`,
-        body: `Your ${typeLabel.toLowerCase()} is scheduled for ${dateStr}${appt.location ? ` at ${appt.location}` : ''}. Make sure everything is ready.`,
+        reminder_type: "appointment_approaching" as const,
+        priority: priority as "critical" | "high" | "normal",
+        title: `${typeLabel} in ${diffDays} day${diffDays !== 1 ? "s" : ""}`,
+        body: `Your ${typeLabel.toLowerCase()} is scheduled for ${dateStr}${appt.location ? ` at ${appt.location}` : ""}. Make sure everything is ready.`,
         step_key: appt.step_key ?? undefined,
         reference_id: appt.id,
-        action_url: '/visa-category/ir-category/ir1-journey',
-        action_label: 'View Details',
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "View Details",
         dedup_key: `${journeyId}:appointment_approaching:${appt.id}:${diffDays}d`,
-      }
-    })
+      };
+    });
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -275,38 +301,42 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkReceiptNotCaptured(journeyId: string): Promise<ReminderCandidate[]> {
+  private async checkReceiptNotCaptured(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
     // Check if journey is in_progress (user has started filing)
     const { data: journey } = await this.supabase
-      .from('journeys')
-      .select('status, completion_percentage')
-      .eq('id', journeyId)
-      .single()
+      .from("journeys")
+      .select("status, completion_percentage")
+      .eq("id", journeyId)
+      .single();
 
-    if (!journey || journey.status !== 'in_progress') return []
+    if (!journey || journey.status !== "in_progress") return [];
     // Only trigger if user is past the early stages (>15% complete)
-    if ((journey.completion_percentage ?? 0) < 15) return []
+    if ((journey.completion_percentage ?? 0) < 15) return [];
 
     // Check if receipt number already captured
     const { data: receiptData } = await this.supabase
-      .from('case_data')
-      .select('id')
-      .eq('journey_id', journeyId)
-      .eq('data_key', 'uscis_receipt_number')
-      .single()
+      .from("case_data")
+      .select("id")
+      .eq("journey_id", journeyId)
+      .eq("data_key", "uscis_receipt_number")
+      .single();
 
-    if (receiptData) return [] // Already captured, no reminder needed
+    if (receiptData) return []; // Already captured, no reminder needed
 
-    return [{
-      reminder_type: 'receipt_not_captured' as const,
-      priority: 'high' as const,
-      title: 'USCIS Receipt Number Not Recorded',
-      body: 'Once USCIS processes your petition, you will receive a receipt notice with a case number. Enter it here to track your case and activate waiting-state guidance.',
-      step_key: 'I.9',
-      action_url: '/visa-category/ir-category/ir1-journey',
-      action_label: 'Enter Receipt Number',
-      dedup_key: `${journeyId}:receipt_not_captured`,
-    }]
+    return [
+      {
+        reminder_type: "receipt_not_captured" as const,
+        priority: "high" as const,
+        title: "USCIS Receipt Number Not Recorded",
+        body: "Once USCIS processes your petition, you will receive a receipt notice with a case number. Enter it here to track your case and activate waiting-state guidance.",
+        step_key: "I.9",
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "Enter Receipt Number",
+        dedup_key: `${journeyId}:receipt_not_captured`,
+      },
+    ];
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -316,35 +346,40 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkNvcFeeNotConfirmed(journeyId: string): Promise<ReminderCandidate[]> {
+  private async checkNvcFeeNotConfirmed(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
     const { data: journey } = await this.supabase
-      .from('journeys')
-      .select('completion_percentage')
-      .eq('id', journeyId)
-      .single()
+      .from("journeys")
+      .select("completion_percentage")
+      .eq("id", journeyId)
+      .single();
 
-    if (!journey || (journey.completion_percentage ?? 0) < 35) return []
+    if (!journey || (journey.completion_percentage ?? 0) < 35) return [];
 
     const { data: feeData } = await this.supabase
-      .from('case_data')
-      .select('data_value')
-      .eq('journey_id', journeyId)
-      .eq('data_key', 'nvc_fee_status')
-      .single()
+      .from("case_data")
+      .select("data_value")
+      .eq("journey_id", journeyId)
+      .eq("data_key", "nvc_fee_status")
+      .single();
 
     // If fee is posted, no reminder needed
-    if (feeData?.data_value === 'posted' || feeData?.data_value === '"posted"') return []
+    if (feeData?.data_value === "posted" || feeData?.data_value === '"posted"')
+      return [];
 
-    return [{
-      reminder_type: 'nvc_fee_not_confirmed' as const,
-      priority: 'high' as const,
-      title: 'NVC Fee Payment Not Confirmed',
-      body: 'Your NVC fee payment has not yet been confirmed as posted in CEAC. DS-260 becomes available only after fees are marked as posted. Check CEAC and update your status.',
-      step_key: 'II.2',
-      action_url: '/visa-category/ir-category/ir1-journey',
-      action_label: 'Check CEAC Status',
-      dedup_key: `${journeyId}:nvc_fee_not_confirmed`,
-    }]
+    return [
+      {
+        reminder_type: "nvc_fee_not_confirmed" as const,
+        priority: "high" as const,
+        title: "NVC Fee Payment Not Confirmed",
+        body: "Your NVC fee payment has not yet been confirmed as posted in CEAC. DS-260 becomes available only after fees are marked as posted. Check CEAC and update your status.",
+        step_key: "II.2",
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "Check CEAC Status",
+        dedup_key: `${journeyId}:nvc_fee_not_confirmed`,
+      },
+    ];
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -354,34 +389,38 @@ export class ReminderEngine {
   // Priority: normal
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAccountSetupIncomplete(journeyId: string): Promise<ReminderCandidate[]> {
+  private async checkAccountSetupIncomplete(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
     const { data: journey } = await this.supabase
-      .from('journeys')
-      .select('completion_percentage')
-      .eq('id', journeyId)
-      .single()
+      .from("journeys")
+      .select("completion_percentage")
+      .eq("id", journeyId)
+      .single();
 
-    if (!journey || (journey.completion_percentage ?? 0) < 20) return []
+    if (!journey || (journey.completion_percentage ?? 0) < 20) return [];
 
     const { data: portalRecord } = await this.supabase
-      .from('journey_portal_records')
-      .select('id')
-      .eq('journey_id', journeyId)
-      .eq('portal_type', 'uscis')
-      .limit(1)
+      .from("journey_portal_records")
+      .select("id")
+      .eq("journey_id", journeyId)
+      .eq("portal_type", "uscis")
+      .limit(1);
 
-    if (portalRecord && portalRecord.length > 0) return []
+    if (portalRecord && portalRecord.length > 0) return [];
 
-    return [{
-      reminder_type: 'account_setup_incomplete' as const,
-      priority: 'normal' as const,
-      title: 'USCIS Account Not Saved to Portal Wallet',
-      body: 'Save your USCIS account credentials to your Portal Wallet so you can quickly access your case online whenever you need to.',
-      step_key: 'I.5',
-      action_url: '/visa-category/ir-category/ir1-journey',
-      action_label: 'Save to Wallet',
-      dedup_key: `${journeyId}:account_setup_incomplete`,
-    }]
+    return [
+      {
+        reminder_type: "account_setup_incomplete" as const,
+        priority: "normal" as const,
+        title: "USCIS Account Not Saved to Portal Wallet",
+        body: "Save your USCIS account credentials to your Portal Wallet so you can quickly access your case online whenever you need to.",
+        step_key: "I.5",
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "Save to Wallet",
+        dedup_key: `${journeyId}:account_setup_incomplete`,
+      },
+    ];
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -391,43 +430,45 @@ export class ReminderEngine {
   // Priority: normal
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAbandonedToolSessions(journeyId: string): Promise<ReminderCandidate[]> {
-    const threeDaysAgo = new Date()
-    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+  private async checkAbandonedToolSessions(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
     const { data: sessions } = await this.supabase
-      .from('tool_sessions')
-      .select('id, tool_key, step_key, completion_percentage, last_saved_at')
-      .eq('journey_id', journeyId)
-      .eq('is_completed', false)
-      .lt('last_saved_at', threeDaysAgo.toISOString())
+      .from("tool_sessions")
+      .select("id, tool_key, step_key, completion_percentage, last_saved_at")
+      .eq("journey_id", journeyId)
+      .eq("is_completed", false)
+      .lt("last_saved_at", threeDaysAgo.toISOString());
 
-    if (!sessions || sessions.length === 0) return []
+    if (!sessions || sessions.length === 0) return [];
 
     const toolLabels: Record<string, string> = {
-      form_filler_i130: 'I-130 AutoFormFiller',
-      affidavit_calculator: 'Affidavit Support Calculator',
-      ds260_prep: 'DS-260 Preparation',
-      interview_prep: 'Interview Prep Tool',
-      case_strength_checker: 'Case Strength Checker',
-    }
+      form_filler_i130: "I-130 AutoFormFiller",
+      affidavit_calculator: "Affidavit Support Calculator",
+      ds260_prep: "DS-260 Preparation",
+      interview_prep: "Interview Prep Tool",
+      case_strength_checker: "Case Strength Checker",
+    };
 
     return sessions.map((session) => {
-      const label = toolLabels[session.tool_key] || session.tool_key
-      const pct = session.completion_percentage || 0
+      const label = toolLabels[session.tool_key] || session.tool_key;
+      const pct = session.completion_percentage || 0;
 
       return {
-        reminder_type: 'tool_session_abandoned' as const,
-        priority: 'normal' as const,
+        reminder_type: "tool_session_abandoned" as const,
+        priority: "normal" as const,
         title: `Resume ${label}`,
         body: `You started the ${label} but left at ${pct}% completion. Return to pick up where you left off — your progress is saved.`,
         step_key: session.step_key,
         reference_id: session.id,
-        action_url: '/visa-category/ir-category/ir1-journey',
-        action_label: 'Resume Tool',
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "Resume Tool",
         dedup_key: `${journeyId}:tool_session_abandoned:${session.tool_key}`,
-      }
-    })
+      };
+    });
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -437,53 +478,55 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAppointmentNotRecorded(journeyId: string): Promise<ReminderCandidate[]> {
+  private async checkAppointmentNotRecorded(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
     const { data: journey } = await this.supabase
-      .from('journeys')
-      .select('completion_percentage')
-      .eq('id', journeyId)
-      .single()
+      .from("journeys")
+      .select("completion_percentage")
+      .eq("id", journeyId)
+      .single();
 
-    if (!journey || (journey.completion_percentage ?? 0) < 70) return []
+    if (!journey || (journey.completion_percentage ?? 0) < 70) return [];
 
     const { data: caseData } = await this.supabase
-      .from('case_data')
-      .select('data_key')
-      .eq('journey_id', journeyId)
-      .in('data_key', ['med_date', 'interviewDate'])
+      .from("case_data")
+      .select("data_key")
+      .eq("journey_id", journeyId)
+      .in("data_key", ["med_date", "interviewDate"]);
 
-    const hasMedical = caseData?.some(d => d.data_key === 'med_date')
-    const hasInterview = caseData?.some(d => d.data_key === 'interviewDate')
+    const hasMedical = caseData?.some((d) => d.data_key === "med_date");
+    const hasInterview = caseData?.some((d) => d.data_key === "interviewDate");
 
-    const reminders: ReminderCandidate[] = []
+    const reminders: ReminderCandidate[] = [];
 
     if (!hasMedical) {
       reminders.push({
-        reminder_type: 'appointment_not_recorded' as const,
-        priority: 'high' as const,
-        title: 'Medical Exam Date Not Recorded',
-        body: 'You are in Chapter III but your medical exam appointment date has not been saved. Record it so Rahvana can remind you as it approaches.',
-        step_key: 'III.1',
-        action_url: '/visa-category/ir-category/ir1-journey',
-        action_label: 'Record Date',
+        reminder_type: "appointment_not_recorded" as const,
+        priority: "high" as const,
+        title: "Medical Exam Date Not Recorded",
+        body: "You are in Chapter III but your medical exam appointment date has not been saved. Record it so Rahvana can remind you as it approaches.",
+        step_key: "III.1",
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "Record Date",
         dedup_key: `${journeyId}:appointment_not_recorded:medical`,
-      })
+      });
     }
 
     if (!hasInterview) {
       reminders.push({
-        reminder_type: 'appointment_not_recorded' as const,
-        priority: 'high' as const,
-        title: 'Interview Date Not Recorded',
-        body: 'Your consular interview date has not been saved. Add it to receive timely reminders and preparation guidance.',
-        step_key: 'III.4',
-        action_url: '/visa-category/ir-category/ir1-journey',
-        action_label: 'Record Date',
+        reminder_type: "appointment_not_recorded" as const,
+        priority: "high" as const,
+        title: "Interview Date Not Recorded",
+        body: "Your consular interview date has not been saved. Add it to receive timely reminders and preparation guidance.",
+        step_key: "III.4",
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "Record Date",
         dedup_key: `${journeyId}:appointment_not_recorded:interview`,
-      })
+      });
     }
 
-    return reminders
+    return reminders;
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -493,67 +536,152 @@ export class ReminderEngine {
   // ─────────────────────────────────────────────────────────────
 
   private async checkTrackingStatusUpdates(
-    journeyId: string
+    journeyId: string,
   ): Promise<ReminderCandidate[]> {
-  
     // Get latest tracking status
     const { data: statusData } = await this.supabase
-      .from('case_data')
-      .select('data_value, updated_at')
-      .eq('journey_id', journeyId)
-      .eq('data_key', 'tracking_status')
-      .single()
-  
-    if (!statusData?.data_value) return []
-  
+      .from("case_data")
+      .select("data_value, updated_at")
+      .eq("journey_id", journeyId)
+      .eq("data_key", "tracking_status")
+      .single();
+
+    if (!statusData?.data_value) return [];
+
     // Clean Value
     const status = String(statusData.data_value)
-      .replace(/"/g, '')
-      .toLowerCase()
-  
+      .replace(/"/g, "")
+      .toLowerCase();
+
     // Only trigger if recently updated (avoid old spam)
-    const updatedAt = new Date(statusData.updated_at)
-    const now = new Date()
-    const diffMinutes =
-      (now.getTime() - updatedAt.getTime()) / (1000 * 60)
-  
-    if (diffMinutes > 60) return []
-  
+    const updatedAt = new Date(statusData.updated_at);
+    const now = new Date();
+    const diffMinutes = (now.getTime() - updatedAt.getTime()) / (1000 * 60);
+
+    if (diffMinutes > 60) return [];
+
     // Only important statuses
-    const allowedStatuses = ['out_for_delivery', 'delivered']
-  
+    const allowedStatuses = ["out_for_delivery", "delivered"];
+
     if (!allowedStatuses.includes(status)) {
-      return []
+      return [];
     }
-  
+
     // Create reminder content
-    let title = ''
-    let body = ''
-    let priority: 'high' | 'critical' = 'high'
-  
-    if (status === 'out_for_delivery') {
-      title = 'Package Out for Delivery'
-      body = 'Your package is out for delivery today. Be ready to receive it.'
-      priority = 'high'
-    }
-  
-    if (status === 'delivered') {
-      title = 'Package Delivered Successfully'
+    let title = "";
+    let body = "";
+    let priority: "high" | "critical" = "high";
+
+    if (status === "out_for_delivery") {
+      title = "Packet Out for Delivery to USCIS";
       body =
-        'Your package has been delivered. Please confirm receipt and proceed with next steps.'
-      priority = 'critical'
+        "Your packet is out for delivery and should reach USCIS today. Keep your tracking details for confirmation once it is delivered.";
+      priority = "high";
     }
-  
+
+    if (status === "delivered") {
+      title = "Packet Delivered to USCIS";
+      body =
+        "Your packet has been successfully delivered to USCIS. Keep the delivery confirmation for your records as proof of submission. You can now continue with receipt notice tracking.";
+      priority = "critical";
+    }
+
     return [
       {
-        reminder_type: 'tracking_status_update' as const,
+        reminder_type: "tracking_status_update" as const,
         priority,
         title,
         body,
-        action_url: '/visa-category/ir-category/ir1-journey',
-        action_label: 'View Tracking',
+        action_url: "/visa-category/ir-category/ir1-journey",
+        action_label: "View Tracking",
         dedup_key: `${journeyId}:tracking_status:${status}`,
       },
-    ]
+    ];
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // CHECKER 10: Chapter 1 Step 2 — Required Documents Not Gathered
+  // Trigger: gathering_status exists in case_data (user opened Step 2)
+  //          AND one or more required documents are not "reviewed"
+  //          AND it has been 48+ hours since last update (no spam)
+  // Priority: high
+  // Auto-dismisses when all required docs are marked reviewed
+  // ─────────────────────────────────────────────────────────────
+
+  private async checkStep2GatheringPending(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
+    const REQUIRED_DOC_IDS = [
+      "doc_citizenship",
+      "doc_passport_ben",
+      "doc_nikah_nama",
+      "doc_mrc",
+      "doc_relationship",
+    ];
+
+    const REQUIRED_DOC_LABELS: Record<string, string> = {
+      doc_citizenship: "Proof of U.S. Citizenship",
+      doc_passport_ben: "Beneficiary Passport",
+      doc_nikah_nama: "Nikah Nama (Original)",
+      doc_mrc: "NADRA Marriage Certificate",
+      doc_relationship: "Relationship Evidence",
+    };
+
+    const DEDUP_KEY = `${journeyId}:step2_gathering_pending`;
+
+    const { data: gatheringRow } = await this.supabase
+      .from("case_data")
+      .select("data_value, updated_at")
+      .eq("journey_id", journeyId)
+      .eq("data_key", "gathering_status")
+      .single();
+
+    // Step 2 has never been opened — no reminder yet
+    if (!gatheringRow?.data_value) return [];
+
+    // Parse the gathering status JSON (strip surrounding quotes if present)
+    let gatheringStatus: Record<string, string> = {};
+    try {
+      const raw = String(gatheringRow.data_value).replace(/^"|"$/g, "");
+      gatheringStatus = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+
+    const pendingDocs = REQUIRED_DOC_IDS.filter(
+      (id) => gatheringStatus[id] !== "reviewed",
+    );
+
+    // All required docs reviewed — auto-dismiss any existing reminder
+    if (pendingDocs.length === 0) {
+      await this.supabase
+        .from("journey_reminders")
+        .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
+        .eq("dedup_key", DEDUP_KEY)
+        .eq("is_dismissed", false);
+      return [];
+    }
+
+    // Only remind if user has been inactive on this step for 48+ hours
+    const updatedAt = new Date(gatheringRow.updated_at);
+    const hoursSince =
+      (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60);
+    if (hoursSince < 48) return [];
+
+    const pendingLabels = pendingDocs.map((id) => REQUIRED_DOC_LABELS[id]);
+    const count = pendingDocs.length;
+
+    return [
+      {
+        reminder_type: "missing_document" as const,
+        priority: "high" as const,
+        title: `Complete your documents — ${count} item${count !== 1 ? "s" : ""} pending`,
+        body: `Your document checklist for Chapter 1, Step 2 is incomplete. Still needed: ${pendingLabels.join(", ")}. Mark each document as ready to keep your case on track.`,
+        step_key: "step_1_2",
+        action_url: "/visa-category/ir-category/ir-1-journey",
+        action_label: "Complete Documents",
+        dedup_key: DEDUP_KEY,
+      },
+    ];
   }
 }

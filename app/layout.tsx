@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 // import { ThemeProvider } from "./components/theme-provider";
 import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
+import { PlanProvider } from "./context/PlanContext";
 import { ToastProvider } from "./components/shared/ToastProvider";
 import { LanguageProvider } from "./context/LanguageContext";
 
@@ -71,20 +72,22 @@ export default function RootLayout({
         </Script>
         <ToastProvider>
           <AuthProvider>
-            <LanguageProvider>
-              {/* <ThemeProvider
-            attribute="class"
-            // un comment if you want bydefault device theme
-            // defaultTheme="system"
-            // enableSystem
-            disableTransitionOnChange
-          > */}
-              <ClientHeader />
-              {children}
-              <ClientWidgets />
-              <Footer />
-              {/* </ThemeProvider> */}
-            </LanguageProvider>
+            <PlanProvider>
+              <LanguageProvider>
+                {/* <ThemeProvider
+              attribute="class"
+              // un comment if you want bydefault device theme
+              // defaultTheme="system"
+              // enableSystem
+              disableTransitionOnChange
+            > */}
+                <ClientHeader />
+                {children}
+                <ClientWidgets />
+                <Footer />
+                {/* </ThemeProvider> */}
+              </LanguageProvider>
+            </PlanProvider>
           </AuthProvider>
         </ToastProvider>
       </body>

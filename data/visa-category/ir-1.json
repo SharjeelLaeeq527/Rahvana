@@ -2449,6 +2449,7 @@
           "display_order": 15,
           "tool_data": {
             "id": "step_1_15",
+            "type": "uscis_receipt_tracking",
             "title": "Register Receipt Notice & Track Case",
             "subtitle": "Once USCIS accepts the filing, bring the receipt notice back into Rahvana so the case can be registered, tracked, and monitored for meaningful status changes.",
             "chips": [

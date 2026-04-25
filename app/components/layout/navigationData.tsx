@@ -532,7 +532,7 @@ export const NAV_DATA: Record<string, NavSection> = {
   tools: {
     id: "tools",
     label: "Toolbox",
-    footerLink: { label: "View all tools", href: "/tools" },
+    footerLink: { label: "View all tools", href: "/resources?tab=toolbox" },
     tabs: [
       {
         id: "ai-planning",
@@ -689,7 +689,7 @@ export const NAV_DATA: Record<string, NavSection> = {
   guides: {
     id: "guides",
     label: "Guides",
-    footerLink: { label: "Browse all guides", href: "/guides" },
+    footerLink: { label: "Browse all guides", href: "/resources?tab=guides" },
     tabs: [
       {
         id: "pakistan-docs",
@@ -921,7 +921,7 @@ export const NAV_DATA: Record<string, NavSection> = {
   services: {
     id: "services",
     label: "Services",
-    footerLink: { label: "Explore all services", href: "/services" },
+    footerLink: { label: "Explore all services", href: "/resources?tab=services" },
     tabs: [
       {
         id: "expert-help",

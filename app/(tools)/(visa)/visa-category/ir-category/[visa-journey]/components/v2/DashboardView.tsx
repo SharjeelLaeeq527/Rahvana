@@ -190,6 +190,24 @@ export function DashboardView({
       });
     }
 
+    if (!!state.metadata?.uscis_tracking_enabled && !trackingStatus.nvc_review_complete && trackingStatus.dq_status !== "qualified") {
+      list.push({
+        type: "sky",
+        iconColor: "d-sky",
+        title: "USCIS Case Tracking Active",
+        text: trackingStatus.uscis_status
+          ? `Current Status: ${trackingStatus.uscis_status.replace(/_/g, ' ')} ${trackingStatus.uscis_status_updated ? `(Updated: ${new Date(trackingStatus.uscis_status_updated).toLocaleDateString()})` : ''}`
+          : "Your Receipt Notice is registered. Rahvana is monitoring your case for updates.",
+        action: {
+          label: "View Receipt Details",
+          onAction: () => {
+            actions.setStage(0);
+            actions.setCurrentStep(14);
+          }
+        }
+      });
+    }
+
     return list;
   }, [state, actions]);
 
