@@ -152,6 +152,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
         if (data?.profile_details) {
           setFormData((prev) => {
+            // Use current form structure as template for auto-fill
             const autoData = autoFillForm(
               data.profile_details as MasterProfile,
               prev,
@@ -294,10 +295,20 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     ) => {
       const { name, value, type } = e.target;
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? (checked ? "Yes" : "") : value,
-      }));
+
+      setFormData((prev) => {
+        const newData = {
+          ...prev,
+          [name]: type === "checkbox" ? (checked ? "Yes" : "") : value,
+        };
+
+        // Special side effect for I-130: If beneficiary is NOT employed, set employer name to "Unemployed"
+        if (name === "beneficiary_isEmployed" && value === "No") {
+          newData["beneficiary_employerName"] = "Unemployed";
+        }
+
+        return newData;
+      });
     },
     [],
   );
@@ -421,9 +432,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     [config],
   );
 
-  const buildPdfPayload = useCallback((): Record<string, string> => {
+  const buildPdfPayload = useCallback((): Record<string, any> => {
     if (!config) return {};
-    const payload: Record<string, string> = {};
+
+    const payload: Record<string, any> = {};
+
     config.formFields.forEach((field: ConfigField) => {
       const value = formData[field.key];
       if (!value || (field.condition && !field.condition(formData))) return;
@@ -451,6 +464,40 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         payload[field.pdfKey] = value;
       }
     });
+
+    // Add dynamic overflow handling for additional addresses
+    const count = Number(formData.address_count) || 0;
+    const additionalBlocks = [];
+
+    for (let i = 3; i <= count + 1; i++) {
+      if (i > 9) break; // Limit to Address 9 (which is 8 previous addresses) for now
+
+      const street = formData[`address_${i}_street`] || "";
+      const city = formData[`address_${i}_city`] || "";
+      const state = formData[`address_${i}_state`] || "";
+      const zip = formData[`address_${i}_zip`] || "";
+      const from = formData[`address_${i}_from`] || "";
+      const to = formData[`address_${i}_to`] || "";
+      const country = formData[`address_${i}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let infoString = `Address ${i}: ${parts.join("\n ")}.`;
+      if (from || to) {
+        infoString += ` From: ${from} To: ${to}`;
+      }
+
+      additionalBlocks.push({
+        page_number: "2", // I-130 Address History is on Page 2
+        part_number: "2", // Part 2
+        item_number: "14", // Item 14 (Physical Address 2)
+        info: infoString,
+      });
+    }
+
+    if (additionalBlocks.length > 0) {
+      payload.additional_info_blocks = additionalBlocks;
+    }
+
     return payload;
   }, [config, formData]);
 

@@ -10,6 +10,7 @@ import {
   Users,
   ArrowRight,
   MessageSquare,
+  Trophy,
   Compass,
   Handshake,
   Lightbulb,
@@ -319,7 +320,7 @@ export default function AboutPage() {
 
       {/* VALUES */}
       <section className="bg-[#faf7f2] py-24 px-8 md:px-20">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-20 items-start">
+        <div className="max-w-6xl mx-auto flex flex-col gap-16 md:gap-20 items-start">
           <div>
             <div className="flex justify-start mb-5">
               <span className="inline-flex items-center gap-2 px-4 py-1.5 border-[1.5px] border-[#b5451b] rounded-full text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
@@ -336,40 +337,121 @@ export default function AboutPage() {
               situations.
             </p>
           </div>
-          <div className="flex flex-col gap-3.5">
-            {[
-              {
-                icon: <Handshake className="text-[#0d7a75]" size={20} />,
-                text: "Immigration help should feel humane, not mechanical.",
-              },
-              {
-                icon: <Lightbulb className="text-[#0d7a75]" size={20} />,
-                text: "Clarity is a form of care.",
-              },
-              {
-                icon: <Briefcase className="text-[#0d7a75]" size={20} />,
-                text: "Being far from your loved ones is already hard enough. The tools you use shouldn't add to that burden.",
-              },
-              {
-                icon: <Folder className="text-[#0d7a75]" size={20} />,
-                text: "Every case number belongs to a real person with a real story.",
-              },
-              {
-                icon: <Compass className="text-[#0d7a75]" size={20} />,
-                text: "Good guidance respects your intelligence and your situation.",
-              },
-            ].map((value, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ x: 4, boxShadow: "0 6px 24px rgba(0,0,0,0.1)" }}
-                className="bg-white rounded-2xl p-5 px-6 flex items-start gap-4 shadow-sm border-l-3 border-[#0d7a75] transition-all"
-              >
-                <div className="shrink-0 mt-0.5">{value.icon}</div>
-                <p className="text-[15px] text-[#2a2a2a] leading-relaxed">
-                  {value.text}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+            {/* CARD 1: FOUNDATION (FEATURED) */}
+            <motion.div
+              variants={itemVariants}
+              className="lg:col-span-2 bg-[#0d7a75] rounded-[2rem] p-8 md:p-10 text-white relative overflow-hidden group shadow-xl"
+            >
+              <div className="relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-8 border border-white/20">
+                  <Trophy size={22} className="text-white/90" />
+                </div>
+                <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-white/60 mb-4">
+                  Our Foundation
+                </span>
+                <h3 className="font-serif text-3xl md:text-4xl leading-[1.15] mb-6 max-w-xl">
+                  Immigration help should feel humane, not mechanical.
+                </h3>
+                {/* <p className="text-white/80 text-[15px] md:text-[16px] leading-relaxed max-w-md mb-8">
+                  We built every part of this experience around one question:
+                  does this make someone&apos;s life easier? If not, we rethink
+                  it.
                 </p>
-              </motion.div>
-            ))}
+                <div className="inline-flex items-center bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-[12px] font-medium border border-white/10">
+                  Human-first design
+                </div> */}
+              </div>
+              {/* Subtle background decoration */}
+              <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-white/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+            </motion.div>
+
+            {/* CARD 2: CLARITY */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] relative overflow-hidden group"
+            >
+              {/* <div className="relative z-10"> */}
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <Lightbulb size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Clarity
+              </span>
+              <h3 className="font-serif text-2xl md:text-3xl leading-tight text-[#121e2e] mb-5">
+                Clarity is a form of care.
+              </h3>
+              {/* <p className="text-gray-500 text-[15px] leading-relaxed">
+                  Plain language. No jargon. Always.
+                </p> */}
+              {/* </div> */}
+              {/* <div className="absolute top-4 right-8 font-serif text-8xl text-gray-50 opacity-[0.08] pointer-events-none select-none group-hover:scale-110 transition-transform duration-500">
+                02
+              </div> */}
+            </motion.div>
+
+            {/* CARD 3: DISTANCE */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <Heart size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Distance
+              </span>
+              <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-4">
+                Being far from your loved ones is already hard enough. The tools
+                you use shouldn't add to that burden.
+              </h3>
+              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
+                The tools you use shouldn&apos;t add to that burden.
+              </p> */}
+            </motion.div>
+
+            {/* CARD 4: EVERY FILE */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <FileText size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Every File
+              </span>
+              <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-4">
+                Every case number belongs to a real person with a real story.
+              </h3>
+              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
+                One step, one form, one checkpoint at a time.
+              </p> */}
+            </motion.div>
+
+            {/* CARD 5: RESPECT */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] relative overflow-hidden group"
+            >
+              {/* <div className="relative z-10"> */}
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <Compass size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Respect
+              </span>
+              <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-5">
+                Good guidance respects your intelligence and your situation.
+              </h3>
+              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
+                  No hidden agendas. No false promises. Just the truth.
+                </p> */}
+              {/* </div>
+              <div className="absolute top-4 right-8 font-serif text-8xl text-gray-50 opacity-[0.08] pointer-events-none select-none group-hover:scale-110 transition-transform duration-500">
+                05
+              </div> */}
+            </motion.div>
           </div>
         </div>
       </section>

@@ -26,6 +26,8 @@ export type Field = {
   originalLabel?: string;
   /** Nested sub-questions (e.g., 4a, 4b, 4c) rendered in same card */
   subQuestions?: (Omit<Field, 'section'> & { condition?: (data: Record<string, string>) => boolean })[];
+  pattern?: string;
+  inputMode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
 };
 
 // ✅ Add this: FormConfig type
