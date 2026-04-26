@@ -96,7 +96,7 @@ export const formFields: Field[] = [
   // ============================================
   {
     key: "has_a_number",
-    label: "1. Do you have an Alien Registration Number (A-Number)?",
+    label: "1. Do you have an Alien Registration Number (A-Number)? (This is a 7 to 9-digit number often found on immigration documents like a Green Card.)",
     type: "radio",
     section: "Part 2. Information About You (Petitioner)",
     options: [
