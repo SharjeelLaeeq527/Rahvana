@@ -11,7 +11,6 @@ import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
 import {
   X,
-  ChevronLeft,
   ChevronRight,
   Check,
   PanelLeftClose,
@@ -81,6 +80,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isClient, setIsClient] = useState(false);
   const [showSectionIntro, setShowSectionIntro] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
+  const [cameFromIntro, setCameFromIntro] = useState(false);
   const savedScrollPosition = useRef<number>(0);
   const { user } = useAuth();
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -231,14 +231,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         // Show intro card for new section
         setShowSectionIntro(true);
         setIntroVisible(true);
-
-        // Auto-hide after 10 seconds
-        const timer = setTimeout(() => {
-          setIntroVisible(false);
-          setTimeout(() => setShowSectionIntro(false), 500);
-        }, 10000);
-
-        return () => clearTimeout(timer);
       }
       prevStepRef.current = currentStep;
     }
@@ -249,13 +241,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (isReady && currentSection && !showSectionIntro) {
       setShowSectionIntro(true);
       setIntroVisible(true);
-
-      const timer = setTimeout(() => {
-        setIntroVisible(false);
-        setTimeout(() => setShowSectionIntro(false), 500);
-      }, 10000);
-
-      return () => clearTimeout(timer);
     }
   }, [isReady]);
 
@@ -384,14 +369,24 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       }
       setCurrentQuestionIndex((prev) => prev - 1);
     } else if (currentStep > 1) {
+      if (currentQuestionIndex === 0 && cameFromIntro) {
+        // User just entered section → go back to intro of SAME section
+        setShowSectionIntro(true);
+        setIntroVisible(true);
+        setCameFromIntro(false);
+        return;
+      }
+    
+      // normal behavior (go to previous section LAST question)
       const prevStep = currentStep - 1;
       setCurrentStep(prevStep);
       setProgressiveSubQuestionIndices({});
-      // place at last question of previous section
+    
       const prevSection = sections[prevStep - 1];
       const prevVisible = prevSection.fields.filter(
-        (field) => !field.condition || field.condition(formData),
+        (field) => !field.condition || field.condition(formData)
       );
+    
       setCurrentQuestionIndex(Math.max(0, prevVisible.length - 1));
     }
   };
@@ -866,7 +861,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   return (
     <div className="w-full min-h-screen" style={{ backgroundColor: "#f7fbfb" }}>
-      {/* Sticky Header w/ Header */}
+      {/* Sticky Header */}
       <Header
         formTitle={config.formTitle}
         formSubtitle={config.formSubtitle}
@@ -928,8 +923,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         )}
       </AnimatePresence>
 
-      {/* Main Layout */}
-      <div className="flex gap-6 px-4 md:px-8 py-6 guide-grid-bg">
+      {/* Main Layout - Desktop with Sidebar & Centered Content */}
+      <div className="flex gap-6 px-4 md:px-8 py-6 guide-grid-bg justify-center">
         {/* Desktop Sidebar - Hide when intro is visible */}
         {view === "form" && !(showSectionIntro && introVisible) && (
           <motion.aside
@@ -939,11 +934,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             className="hidden lg:block shrink-0"
           >
             <div
-              className={`sticky top-6 max-h-[calc(100vh-120px)] rounded-2xl transition-all duration-300 flex flex-col ${
-                isSidebarCollapsed
-                  ? "items-center justify-start p-2"
-                  : "items-stretch border p-4 overflow-y-auto custom-scrollbar"
-              }`}
+              className={`sticky top-6 rounded-2xl transition-all duration-300 flex flex-col 
+                max-h-[calc(100vh-180px)] min-h-[calc(100vh-180px)]
+                ${
+                  isSidebarCollapsed
+                    ? "items-center justify-start p-2"
+                    : "items-stretch border p-4 overflow-y-auto custom-scrollbar"
+                }`}
               style={{
                 backgroundColor: isSidebarCollapsed
                   ? "transparent"
@@ -1014,170 +1011,239 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         )}
 
         {/* Right Content Area */}
-        <div className="flex-1 min-w-0">
-          {view === "form" && currentSection && (
-            <>
-              {/* Section Intro Card */}
-              <AnimatePresence mode="wait">
-                {showSectionIntro && introVisible && (
-                  <motion.div
-                    key="intro-card"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="flex items-center justify-center min-h-[60vh]"
-                  >
-                    <div className="max-w-2xl w-full mx-auto">
-                      <div
-                        className="rounded-2xl overflow-hidden border"
-                        style={{
-                          backgroundColor: "#fafafa",
-                          borderColor: "rgba(0, 0, 0, 0.08)",
-                        }}
+        <div className="flex-1 min-w-0 flex flex-col">
+          <div className="flex-1 flex items-start justify-center py-8">
+            <div className="w-full max-w-2xl px-4 md:px-0">
+              {view === "form" && currentSection && (
+                <>
+                  {/* Section Intro Card */}
+                  <AnimatePresence mode="wait">
+                    {showSectionIntro && introVisible && (
+                      <motion.div
+                        key="intro-card"
+                        initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="flex items-center justify-center min-h-[60vh] px-4"
                       >
-                        <div className="p-6 md:p-8">
-                          <div className="text-center">
-                            <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3 leading-snug">
-                              {
-                                getSectionIntroMessage(currentSection.title)
-                                  .greeting
-                              }
-                            </h3>
-                            <p className="text-sm md:text-base text-gray-700 leading-relaxed max-w-xl mx-auto">
-                              {
-                                getSectionIntroMessage(currentSection.title)
-                                  .message
-                              }
-                            </p>
-                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                              <span className="text-xs font-medium text-gray-500">
-                                Section {currentStep} of {totalSteps}
-                              </span>
-                              <button
-                                onClick={() => {
-                                  setIntroVisible(false);
-                                  setTimeout(
-                                    () => setShowSectionIntro(false),
-                                    500,
-                                  );
-                                }}
-                                className="text-sm font-medium text-[#0d7377] hover:text-[#0a5a5d] transition-colors"
-                              >
-                                Continue to questions
-                              </button>
+                        <div className="relative max-w-3xl w-full">
+                          <div className="absolute -inset-6 bg-gradient-to-r from-[#0d7377]/20 via-[#14a0a6]/10 to-transparent blur-3xl rounded-[40px]" />
+
+                          <div className="relative overflow-hidden rounded-[28px] border border-white/20 shadow-[0_30px_100px_-40px_rgba(13,115,119,0.35)] backdrop-blur-xl bg-white">
+                            <div className="absolute inset-0 flex">
+                              <div className="w-1/2 bg-gradient-to-br from-[#0d7377] via-[#14a0a6] to-[#32e0c4]" />
+                              <div className="w-1/2 bg-gradient-to-br from-[#0d7377] via-[#14a0a6] to-[#32e0c4]" />
+                            </div>
+
+                            <div className="absolute inset-0 overflow-hidden">
+                              {Array.from({ length: 18 }).map((_, i) => (
+                                <span
+                                  key={i}
+                                  className="absolute w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse"
+                                  style={{
+                                    top: `${Math.random() * 100}%`,
+                                    left: `${Math.random() * 100}%`,
+                                    animationDuration: `${2 + Math.random() * 3}s`,
+                                  }}
+                                />
+                              ))}
+                            </div>
+
+                            <div className="relative z-10 grid md:grid-cols-2">
+                              <div className="p-10 md:p-14 flex flex-col justify-center text-white">
+                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 w-fit">
+                                  <span className="text-[11px] uppercase tracking-[0.2em] font-semibold">
+                                    {currentSection?.title || "Next Section"}
+                                  </span>
+                                </div>
+
+                                <h2 className="mt-6 text-3xl md:text-4xl font-semibold leading-tight">
+                                  {
+                                    getSectionIntroMessage(currentSection.title)
+                                      .greeting
+                                  }
+                                </h2>
+
+                                <p className="mt-4 text-sm md:text-base text-white/80 leading-relaxed">
+                                  {
+                                    getSectionIntroMessage(currentSection.title)
+                                      .message
+                                  }
+                                </p>
+                              </div>
+
+                              <div className="p-10 md:p-14 flex flex-col justify-center bg-white relative">
+                                {/* subtle gradient overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-[#f7fbfb] to-white" />
+
+                                <div className="relative z-10">
+                                  <h3 className="text-2xl font-semibold text-[#0F0F0E]">
+                                    Ready to Dive in?
+                                  </h3>
+
+                                  <div className="mt-6 space-y-3">
+                                    <div className="flex items-start gap-2 text-sm text-gray-500">
+                                      <span className="mt-4 w-2 h-2 rounded-full bg-[#14a0a6]" />
+                                      Provide accurate details for faster
+                                      processing
+                                    </div>
+                                    <div className="flex items-start gap-2 text-sm text-gray-500">
+                                      <span className="mt-4 w-2 h-2 rounded-full bg-[#14a0a6]" />
+                                      This information will be used in official
+                                      forms
+                                    </div>
+                                    <div className="flex items-start gap-2 text-sm text-gray-500">
+                                      <span className="mt-4 w-2 h-2 rounded-full bg-[#14a0a6]" />
+                                      You can review and edit everything later
+                                    </div>
+                                  </div>
+
+                                  {/* Progress mini indicator */}
+                                  <div className="mt-6">
+                                    <div className="flex justify-between text-xs text-gray-500 mb-2">
+                                      <span>Section Progress</span>
+                                      <span>
+                                        {currentStep}/{totalSteps}
+                                      </span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                                      <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{
+                                          width: `${(currentStep / totalSteps) * 100}%`,
+                                        }}
+                                        className="h-full bg-gradient-to-r from-[#0d7377] to-[#32e0c4]"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* CTA */}
+                                  <motion.button
+                                    onClick={() => {
+                                      setIntroVisible(false);
+                                      setCameFromIntro(true); 
+                                      setTimeout(() => setShowSectionIntro(false), 400);
+                                    }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="mt-8 w-full py-3.5 rounded-xl font-semibold text-white shadow-lg"
+                                    style={{
+                                      background:
+                                        "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+                                    }}
+                                  >
+                                    Continue →
+                                  </motion.button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        {/* Progress bar showing auto-dismiss */}
-                        <motion.div
-                          initial={{ width: "100%" }}
-                          animate={{ width: "0%" }}
-                          transition={{ duration: 6, ease: "linear" }}
-                          className="h-0.5 bg-[#0d7377]"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-              {/* Form Card */}
-              <AnimatePresence mode="wait">
-                {(!showSectionIntro || !introVisible) && (
-                  <motion.div
-                    key="form-card"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="rounded-2xl bg-white p-5 md:p-8 border-2 animated-border"
-                    style={{
-                      boxShadow:
-                        "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
-                    }}
-                  >
-                    <FormStep
-                      stepNumber={currentStep}
-                      sectionTitle={currentSection.title}
-                      fields={fieldsToRender}
-                      allVisibleFields={visibleFields}
-                      formData={formData}
-                      onInputChange={handleChange}
-                      currentQuestionIndex={currentQuestionIndex}
-                      navigationDirection={navigationDirection}
-                      progressiveSubQuestionIndices={
-                        progressiveSubQuestionIndices
-                      }
-                    />
-
-                    {/* Navigation Buttons */}
-                    <div className="flex flex-row justify-between items-center gap-3 mt-10 pt-6 border-t border-[#e8f6f6]">
-                      <button
-                        onClick={handlePrevious}
-                        disabled={
-                          currentStep === 1 && currentQuestionIndex === 0
-                        }
-                        className="group flex items-center gap-2 px-5 md:px-6 py-3 rounded-xl font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                        style={{
-                          backgroundColor: "#e8f6f6",
-                          color: "#0a5a5d",
-                        }}
+                  {/* Form Card */}
+                  <AnimatePresence mode="wait">
+                    {(!showSectionIntro || !introVisible) && (
+                      <motion.div
+                        key="form-card"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="space-y-6"
                       >
-                        <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-                        Previous
-                      </button>
-
-                      <motion.button
-                        whileTap={{ scale: 0.97 }}
-                        onClick={handleNext}
-                        className="group flex items-center gap-2 px-6 md:px-8 py-3 rounded-xl text-white font-semibold transition-all"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
-                          boxShadow: "0 8px 20px -6px rgba(13, 115, 119, 0.45)",
-                        }}
-                      >
-                        {(() => {
-                          const isLastField =
-                            currentQuestionIndex === visibleFields.length - 1;
-                          const isLastStep = currentStep === totalSteps;
-
-                          if (isLastStep && isLastField) {
-                            return "Review Answers";
+                        <FormStep
+                          stepNumber={currentStep}
+                          sectionTitle={currentSection.title}
+                          fields={fieldsToRender}
+                          allVisibleFields={visibleFields}
+                          formData={formData}
+                          onInputChange={handleChange}
+                          currentQuestionIndex={currentQuestionIndex}
+                          navigationDirection={navigationDirection}
+                          progressiveSubQuestionIndices={
+                            progressiveSubQuestionIndices
                           }
-                          return "Next";
-                        })()}
-                        <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </>
-          )}
+                        />
 
-          {view === "review" && (
-            <div
-              className="rounded-2xl bg-white p-4 md:p-8 border-2 animated-border"
-              style={{
-                boxShadow:
-                  "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
-              }}
-            >
-              <ReviewPage
-                formData={formData}
-                sections={sections}
-                onEditStep={handleEditStep}
-                onBackToForm={() => setView("form")}
-                onPreviewPDF={handlePreviewPDF}
-                onDownloadPDF={handleDownloadPDF}
-                onSaveToVault={handleSaveToVault}
-                isPreviewing={isPreviewing}
-                isDownloading={isDownloading}
-                isSavingToVault={isSavingToVault}
-              />
+                        {/* Navigation Buttons */}
+                        <div className="flex flex-row justify-between items-center gap-3 mt-10 pt-6 border-t border-[#e8f6f6]">
+                          <button
+                            onClick={handlePrevious}
+                            disabled={
+                              currentStep === 1 && currentQuestionIndex === 0
+                            }
+                            className="px-6 py-3 rounded-lg font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#0d7377] hover:text-[#0d7377] whitespace-nowrap inline-flex items-center gap-2"
+                            style={{
+                              background: "transparent",
+                              color: "#8C8C85",
+                              border: "1px solid #E0DDD8",
+                              letterSpacing: "0.01em",
+                            }}
+                          >
+                            ← Back
+                          </button>
+
+                          <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleNext}
+                            className="w-full px-6 md:px-8 py-3 rounded-lg text-white font-semibold transition-all text-sm"
+                            style={{
+                              background: "#0d7377",
+                              letterSpacing: "0.02em",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = "#0a5a5d";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = "#0d7377";
+                            }}
+                          >
+                            {(() => {
+                              const isLastField =
+                                currentQuestionIndex ===
+                                visibleFields.length - 1;
+                              const isLastStep = currentStep === totalSteps;
+
+                              if (isLastStep && isLastField) {
+                                return "Review Answers";
+                              }
+                              return "Continue →";
+                            })()}
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
+
+              {view === "review" && (
+                <div
+                  className="rounded-2xl bg-white p-4 md:p-8 border-2 animated-border"
+                  style={{
+                    boxShadow:
+                      "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
+                  }}
+                >
+                  <ReviewPage
+                    formData={formData}
+                    sections={sections}
+                    onEditStep={handleEditStep}
+                    onBackToForm={() => setView("form")}
+                    onPreviewPDF={handlePreviewPDF}
+                    onDownloadPDF={handleDownloadPDF}
+                    onSaveToVault={handleSaveToVault}
+                    isPreviewing={isPreviewing}
+                    isDownloading={isDownloading}
+                    isSavingToVault={isSavingToVault}
+                  />
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 

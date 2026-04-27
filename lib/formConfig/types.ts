@@ -6,17 +6,19 @@ export type FieldType =
   | "hidden"
   | "select"
   | "combo"
-  | "textarea";
+  | "textarea"
+  | "dropdown";
 
 export type Field = {
   key: string;
   pdfKey: string;
   label: string;
   type: FieldType;
+  isState?: boolean; // Add this for automatic US_STATES dropdown
   placeholder?: string;
   maxLength?: number;
   required?: boolean;
-  options?: { label: string; value: string; pdfKey: string }[];
+  options?: { label: string; value: string; pdfKey?: string }[]; // pdfKey is optional for dropdowns
   condition?: (data: Record<string, string>) => boolean;
   section?: string;
   value?: string;

@@ -18,7 +18,7 @@ export function Header({
 }: HeaderProps) {
   return (
     <div
-      className="mt-12 backdrop-blur-xl border-b sticky top-0 z-30"
+      className="mt-12 backdrop-blur-xl border-b z-30"
       style={{
         backgroundColor: "rgba(255,255,255,0.85)",
         borderColor: "rgba(13, 115, 119, 0.08)",
