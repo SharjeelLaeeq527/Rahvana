@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   Heart,
   Clock,
@@ -10,6 +10,7 @@ import {
   Users,
   ArrowRight,
   MessageSquare,
+  Trophy,
   Compass,
   Handshake,
   Lightbulb,
@@ -33,7 +34,7 @@ const dmSans = DM_Sans({
 });
 
 export default function AboutPage() {
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -43,7 +44,7 @@ export default function AboutPage() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 24 },
     visible: {
       opacity: 1,
@@ -116,7 +117,7 @@ export default function AboutPage() {
           viewport={{ once: true }}
           className="relative flex justify-center"
         >
-          <div className="relative w-full max-w-[520px] aspect-[4/3] rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.14)] group">
+          <div className="relative w-full max-w-[520px] aspect-4/3 rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.14)] group">
             <Image
               src="/assets/images/about-hero-image.png"
               alt="Airport reunion"
@@ -162,35 +163,35 @@ export default function AboutPage() {
         <div className="flex flex-nowrap overflow-x-auto lg:grid lg:grid-cols-5 lg:overflow-x-visible pb-12 gap-6 px-4 lg:px-10 lg:max-w-[1400px] lg:mx-auto scrollbar-hide">
           {[
             {
-              img: "/assets/images/about-card-1.png",
-              rotate: "-rotate-2",
-              text: "The last wave before the gate closes.",
-            },
-            {
-              img: "/assets/images/about-card-2.png",
-              rotate: "rotate-1",
-              text: "Words written when calls were too expensive.",
-            },
-            {
-              img: "/assets/images/about-card-3.png",
-              rotate: "-rotate-1",
-              text: "Home is wherever they are.",
-            },
-            {
               img: "/assets/images/about-card-4.png",
-              rotate: "rotate-2",
+              rotate: "-rotate-2",
               text: "Forms that carry the weight of real lives.",
             },
             {
               img: "/assets/images/about-card-5.png",
-              rotate: "-rotate-2",
+              rotate: "rotate-1",
               text: "11pm here. 8am on the other side.",
+            },
+            {
+              img: "/assets/images/about-card-2.png",
+              rotate: "-rotate-1",
+              text: "Words written when calls were too expensive.",
+            },
+            {
+              img: "/assets/images/about-card-1.png",
+              rotate: "rotate-1",
+              text: "The last wave before the gate closes.",
+            },
+            {
+              img: "/assets/images/about-card-3.png",
+              rotate: "-rotate-2",
+              text: "Home is wherever they are.",
             },
           ].map((item, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -10, rotate: 0, zIndex: 10 }}
-              className={`flex-shrink-0 bg-white p-3 pb-12 w-64 lg:w-auto shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 transition-all ${item.rotate}`}
+              className={`shrink-0 bg-white p-3 pb-12 w-64 lg:w-auto shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 transition-all ${item.rotate}`}
             >
               <div className="aspect-square w-full relative overflow-hidden bg-gray-100 mb-6">
                 <Image
@@ -236,17 +237,19 @@ export default function AboutPage() {
               home, children growing up over video calls, milestones spent
               apart, and the steady effort of holding hope across distance.
             </p>
-            <p>That's Rahvana: the space between people who belong together.</p>
+            <p>
+              That&apos;s Rahvana: the space between people who belong together.
+            </p>
             <p>
               In Phase 1, we are focused exclusively on the IR-1 spouse visa
               journey — to go deep on one path before expanding further.
             </p>
           </div>
           <div className="mt-10 p-5 md:p-7 bg-white rounded-r-xl border-l-4 border-[#0d7a75] shadow-sm text-lg italic text-[#121e2e] leading-relaxed">
-            "We wanted to build something that understood both things: the
+            &quot;We wanted to build something that understood both things: the
             bureaucratic complexity and the human weight. A tool that holds your
-            hand through the process without losing sight of why you're doing
-            it."
+            hand through the process without losing sight of why you&apos;re
+            doing it.&quot;
           </div>
         </div>
       </section>
@@ -317,7 +320,7 @@ export default function AboutPage() {
 
       {/* VALUES */}
       <section className="bg-[#faf7f2] py-24 px-8 md:px-20">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-20 items-start">
+        <div className="max-w-6xl mx-auto flex flex-col gap-16 md:gap-20 items-start">
           <div>
             <div className="flex justify-start mb-5">
               <span className="inline-flex items-center gap-2 px-4 py-1.5 border-[1.5px] border-[#b5451b] rounded-full text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
@@ -334,40 +337,121 @@ export default function AboutPage() {
               situations.
             </p>
           </div>
-          <div className="flex flex-col gap-3.5">
-            {[
-              {
-                icon: <Handshake className="text-[#0d7a75]" size={20} />,
-                text: "Immigration help should feel humane, not mechanical.",
-              },
-              {
-                icon: <Lightbulb className="text-[#0d7a75]" size={20} />,
-                text: "Clarity is a form of care.",
-              },
-              {
-                icon: <Briefcase className="text-[#0d7a75]" size={20} />,
-                text: "Being far from your loved ones is already hard enough. The tools you use shouldn't add to that burden.",
-              },
-              {
-                icon: <Folder className="text-[#0d7a75]" size={20} />,
-                text: "Every case number belongs to a real person with a real story.",
-              },
-              {
-                icon: <Compass className="text-[#0d7a75]" size={20} />,
-                text: "Good guidance respects your intelligence and your situation.",
-              },
-            ].map((value, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ x: 4, boxShadow: "0 6px 24px rgba(0,0,0,0.1)" }}
-                className="bg-white rounded-2xl p-5 px-6 flex items-start gap-4 shadow-sm border-l-3 border-[#0d7a75] transition-all"
-              >
-                <div className="flex-shrink-0 mt-0.5">{value.icon}</div>
-                <p className="text-[15px] text-[#2a2a2a] leading-relaxed">
-                  {value.text}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+            {/* CARD 1: FOUNDATION (FEATURED) */}
+            <motion.div
+              variants={itemVariants}
+              className="lg:col-span-2 bg-[#0d7a75] rounded-[2rem] p-8 md:p-10 text-white relative overflow-hidden group shadow-xl"
+            >
+              <div className="relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-8 border border-white/20">
+                  <Trophy size={22} className="text-white/90" />
+                </div>
+                <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-white/60 mb-4">
+                  Our Foundation
+                </span>
+                <h3 className="font-serif text-3xl md:text-4xl leading-[1.15] mb-6 max-w-xl">
+                  Immigration help should feel humane, not mechanical.
+                </h3>
+                {/* <p className="text-white/80 text-[15px] md:text-[16px] leading-relaxed max-w-md mb-8">
+                  We built every part of this experience around one question:
+                  does this make someone&apos;s life easier? If not, we rethink
+                  it.
                 </p>
-              </motion.div>
-            ))}
+                <div className="inline-flex items-center bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-[12px] font-medium border border-white/10">
+                  Human-first design
+                </div> */}
+              </div>
+              {/* Subtle background decoration */}
+              <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-white/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+            </motion.div>
+
+            {/* CARD 2: CLARITY */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] relative overflow-hidden group"
+            >
+              {/* <div className="relative z-10"> */}
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <Lightbulb size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Clarity
+              </span>
+              <h3 className="font-serif text-2xl md:text-3xl leading-tight text-[#121e2e] mb-5">
+                Clarity is a form of care.
+              </h3>
+              {/* <p className="text-gray-500 text-[15px] leading-relaxed">
+                  Plain language. No jargon. Always.
+                </p> */}
+              {/* </div> */}
+              {/* <div className="absolute top-4 right-8 font-serif text-8xl text-gray-50 opacity-[0.08] pointer-events-none select-none group-hover:scale-110 transition-transform duration-500">
+                02
+              </div> */}
+            </motion.div>
+
+            {/* CARD 3: DISTANCE */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <Heart size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Distance
+              </span>
+              <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-4">
+                Being far from your loved ones is already hard enough. The tools
+                you use shouldn't add to that burden.
+              </h3>
+              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
+                The tools you use shouldn&apos;t add to that burden.
+              </p> */}
+            </motion.div>
+
+            {/* CARD 4: EVERY FILE */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <FileText size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Every File
+              </span>
+              <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-4">
+                Every case number belongs to a real person with a real story.
+              </h3>
+              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
+                One step, one form, one checkpoint at a time.
+              </p> */}
+            </motion.div>
+
+            {/* CARD 5: RESPECT */}
+            <motion.div
+              variants={itemVariants}
+              className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] relative overflow-hidden group"
+            >
+              {/* <div className="relative z-10"> */}
+              <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
+                <Compass size={20} />
+              </div>
+              <span className="block text-[11px] font-bold tracking-[0.2em] uppercase text-[#0d7a75] mb-4">
+                Respect
+              </span>
+              <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-5">
+                Good guidance respects your intelligence and your situation.
+              </h3>
+              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
+                  No hidden agendas. No false promises. Just the truth.
+                </p> */}
+              {/* </div>
+              <div className="absolute top-4 right-8 font-serif text-8xl text-gray-50 opacity-[0.08] pointer-events-none select-none group-hover:scale-110 transition-transform duration-500">
+                05
+              </div> */}
+            </motion.div>
           </div>
         </div>
       </section>
@@ -375,7 +459,7 @@ export default function AboutPage() {
       {/* MEMORY TO MOVEMENT */}
       <section className="bg-[#edf6f5] py-24 px-8 md:px-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-20 items-center">
-          <div className="rounded-2xl overflow-hidden aspect-[4/3] shadow-xl relative">
+          <div className="rounded-2xl overflow-hidden aspect-4/3 shadow-xl relative">
             <Image
               src="/assets/images/from-memory-to-movement.png"
               alt="Consultation"
@@ -399,17 +483,17 @@ export default function AboutPage() {
               </em>
             </h2>
             <p className="text-gray-600 text-[15px] leading-relaxed mb-8">
-              We're not here to keep you in the feeling of distance. We're here
-              to help you close it. Every tool, every guide, every step in
-              Rahvana is designed to move you forward — toward clarity, toward
-              submission, toward reunion.
+              We&apos;re not here to keep you in the feeling of distance.
+              We&apos;re here to help you close it. Every tool, every guide,
+              every step in Rahvana is designed to move you forward — toward
+              clarity, toward submission, toward reunion.
             </p>
-            <a
-              href="#"
+            <Link
+              href="/visa-category/ir-category/ir-1"
               className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5"
             >
               Start the IR-1 journey <ArrowRight size={16} />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -424,7 +508,7 @@ export default function AboutPage() {
         <h2 className="font-serif font-bold text-3xl md:text-5xl text-[#121e2e] mb-14 max-w-4xl mx-auto leading-tight">
           Words from people{" "}
           <em className="italic text-[#0d7a75] font-normal">
-            who've been there.
+            who&apos;ve been there.
           </em>
         </h2>
 
@@ -461,8 +545,8 @@ export default function AboutPage() {
               >
                 <Quote size={20} fill="currentColor" />
               </div>
-              <blockquote className="text-sm italic text-gray-600 leading-relaxed flex-grow">
-                "{item.text}"
+              <blockquote className="text-sm italic text-gray-600 leading-relaxed grow">
+                &quot;{item.text}&quot;
               </blockquote>
               <div className="text-sm">
                 <strong className="block text-[#121e2e] font-semibold">
@@ -536,145 +620,35 @@ export default function AboutPage() {
           If this journey is part of
           <br />
           your story too,{" "}
-          <em className="italic text-[#a8e8e5] font-normal">we're here.</em>
+          <em className="italic text-[#a8e8e5] font-normal">
+            we&apos;re here.
+          </em>
         </h2>
         <p className="text-white/75 text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed">
-          You don't have to figure it out alone. Rahvana walks with you through
-          the IR-1 process — one step, one form, one checkpoint at a time.
+          You don&apos;t have to figure it out alone. Rahvana walks with you
+          through the IR-1 process — one step, one form, one checkpoint at a
+          time.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <a
-            href="#"
+          <Link
+            href="/visa-category/ir-category/ir-1"
             className="bg-white text-[#0d7a75] px-8 py-3.5 rounded-full text-sm font-semibold hover:shadow-xl transition-all transform hover:-translate-y-0.5"
           >
             Start your IR-1 journey →
-          </a>
-          <a
-            href="#"
+          </Link>
+          <Link
+            href="/resources"
             className="bg-transparent border-[1.5px] border-white/50 text-white px-8 py-3.5 rounded-full text-sm font-medium hover:border-white hover:bg-white/10 transition-all"
           >
             Browse tools & resources
-          </a>
+          </Link>
         </div>
         <p className="mt-7 text-[14px] text-white/50 tracking-wider">
           Phase 1 · IR-1 Spouse Visa Journey · U.S. Embassy Islamabad · Karachi
           · Lahore
         </p>
       </section>
-
-      {/* FOOTER */}
-      <footer className="bg-[#121e2e] pt-16 pb-10 px-8 md:px-20 text-white/70">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-16 mb-14">
-          <div className="lg:col-span-2">
-            <a
-              href="#"
-              className="flex items-center gap-2 text-2xl font-bold text-white tracking-tighter"
-            >
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                <path
-                  d="M6 26 C6 26 10 10 16 8 C22 6 26 14 22 20 C18 26 10 24 10 18 C10 12 16 12 18 16"
-                  stroke="#0d7a75"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
-              rahvana
-            </a>
-            <p className="mt-4 text-sm text-white/50 leading-relaxed max-w-xs">
-              Simplifying immigration journeys with guidance, tools, and expert
-              support. Your path to reuniting with loved ones starts here.
-            </p>
-          </div>
-
-          {[
-            {
-              title: "JOURNEYS",
-              links: [
-                "Family & Protection",
-                "Work & Business",
-                "Work Green Cards",
-                "Students & Visitors",
-              ],
-            },
-            {
-              title: "TOOLS",
-              links: [
-                "Case Strength Analyzer",
-                "Visa Path Finder",
-                "Sponsorship Calculator",
-                "PDF Tool Kit",
-              ],
-            },
-            { title: "COMPANY", links: ["About Us", "Contact"] },
-          ].map((col, i) => (
-            <div key={i}>
-              <h4 className="text-[11px] font-bold tracking-[0.12em] uppercase text-white/40 mb-4">
-                {col.title}
-              </h4>
-              <ul className="flex flex-col gap-2.5 text-[13px]">
-                {col.links.map((link, j) => (
-                  <li key={j}>
-                    <a href="#" className="hover:text-white transition-colors">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              {col.title !== "COMPANY" && (
-                <a
-                  href="#"
-                  className="inline-block mt-3 text-white text-[13px] underline underline-offset-4 hover:no-underline"
-                >
-                  Explore all {col.title === "JOURNEYS" ? "Journeys" : "Tools"}{" "}
-                  →
-                </a>
-              )}
-            </div>
-          ))}
-
-          <div>
-            <h4 className="text-[11px] font-bold tracking-[0.12em] uppercase text-white/40 mb-4">
-              CONNECT WITH US
-            </h4>
-            <ul className="flex flex-col gap-2.5 text-[13px]">
-              {["Instagram", "Facebook", "X", "Youtube", "LinkedIn"].map(
-                (social, i) => (
-                  <li key={i}>
-                    <a href="#" className="hover:text-white transition-colors">
-                      {social}
-                    </a>
-                  </li>
-                ),
-              )}
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto border-t border-white/10 pt-7 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/30">
-          <span>
-            © 2026 Rahvana. All rights reserved. · Rahvana is not a law firm and
-            does not provide legal advice.
-          </span>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-white/70">
-              Privacy Policy
-            </a>
-            <a href="#" className="hover:text-white/70">
-              Terms of Service
-            </a>
-            <a href="#" className="hover:text-white/70">
-              Cookie Policy
-            </a>
-          </div>
-        </div>
-      </footer>
-
-      {/* FEEDBACK BUTTON */}
-      <div className="fixed bottom-7 right-7 bg-[#0d7a75] text-white px-5 py-3 rounded-full text-xs font-medium flex items-center gap-2 shadow-2xl hover:-translate-y-0.5 transition-transform cursor-pointer z-50">
-        <MessageSquare size={16} />
-        Provide feedback
-      </div>
+      
     </div>
   );
 }
