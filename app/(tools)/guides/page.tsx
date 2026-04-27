@@ -24,6 +24,7 @@ import {
   // Plane,
   ChevronDown,
   LayoutGrid,
+  Crown,
 } from "lucide-react";
 
 import {
@@ -32,6 +33,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { usePlan } from "@/app/context/PlanContext";
 
 // --- Data & Types ---
 
@@ -55,43 +58,12 @@ interface Guide {
   icon: React.ElementType;
   disabled?: boolean;
   comingSoon?: boolean;
+  /** Entitlement feature key to gate this guide. */
+  entitlementFeature?: string;
 }
 
 const GUIDES: Guide[] = [
   // --- Pakistan Docs ---
-  // {
-  //   id: "pcc-sindh",
-  //   title: "PCC Playbook — Sindh",
-  //   description:
-  //     "Sindh police certificate guide: requirements, steps, timelines, and common mistakes.",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=Sindh",
-  //   icon: FileText,
-  // },
-  // {
-  //   id: "pcc-punjab",
-  //   title: "PCC Playbook — Punjab",
-  //   description: "Punjab police certificate guide (service coming soon).",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=Punjab",
-  //   icon: Shield,
-  // },
-  // {
-  //   id: "pcc-kpk",
-  //   title: "PCC Playbook — KPK",
-  //   description: "KPK police certificate guide (service coming soon).",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=KPK",
-  //   icon: Shield,
-  // },
-  // {
-  //   id: "pcc-balochistan",
-  //   title: "PCC Playbook — Balochistan",
-  //   description: "Balochistan police certificate guide (service coming soon).",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=Balochistan",
-  //   icon: Shield,
-  // },
   {
     id: "passport",
     title: "Passport",
@@ -101,6 +73,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/passport-guide",
     icon: Globe,
+    entitlementFeature: "civil_doc_guides",
   },
   {
     id: "police-verification",
@@ -111,16 +84,8 @@ const GUIDES: Guide[] = [
       "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
     href: "/guides/police-verification-guide",
     category: "Pakistan Document",
+    entitlementFeature: "civil_doc_guides",
   },
-  // {
-  //   id: "pcc-reference",
-  //   title: "PCC Reference Guide",
-  //   description:
-  //     "Comprehensive overview of Police Character Certificates for all provinces.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/police-certificate",
-  //   icon: Shield,
-  // },
   {
     id: "cnic",
     title: "CNIC",
@@ -130,6 +95,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/cnic-guide",
     icon: FileText,
+    entitlementFeature: "civil_doc_guides",
   },
   {
     id: "birth-certificate",
@@ -140,6 +106,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
+    entitlementFeature: "civil_doc_guides",
   },
   {
     id: "frc",
@@ -150,6 +117,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
+    entitlementFeature: "civil_doc_guides",
   },
   {
     id: "marriage-certificate",
@@ -160,115 +128,10 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/nikah-nama-guide",
     icon: Heart,
+    entitlementFeature: "civil_doc_guides",
   },
-  // {
-  //   id: "divorce-death",
-  //   title: "Divorce & Death",
-  //   description: "Termination of prior marriages documentation.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/prior-marriage-termination",
-  //   icon: FileCheck,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-  // {
-  //   id: "court-records",
-  //   title: "Court & Prison Records",
-  //   description: "Obtaining legal records for visa compliance.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/court-records",
-  //   icon: Scale,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-
-  // --- Embassy Logistics ---
-  // {
-  //   id: "courier-passport",
-  //   title: "Courier & Passport Delivery",
-  //   description:
-  //     "Register, choose delivery options, and troubleshoot common courier issues.",
-  //   category: "Embassy Logistics",
-  //   href: "/guides/courier-registration",
-  //   icon: Map,
-  // },
-  // {
-  //   id: "interview-prep",
-  //   title: "Interview Preparation",
-  //   description: "Required documents and what to bring to the embassy.",
-  //   category: "Embassy Logistics",
-  //   href: "/interview-prep", // Tool Link
-  //   icon: Users,
-  // },
-  // {
-  //   id: "ds260",
-  //   title: "DS-260 Form",
-  //   description: "How to complete the online immigrant visa application.",
-  //   category: "Embassy Logistics",
-  //   href: "/guides/ds260",
-  //   icon: Globe,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-
-  // --- Arrival & Travel ---
-  // {
-  //   id: "customs",
-  //   title: "Customs & Declarations",
-  //   description:
-  //     "What to declare, what to avoid, and common pitfalls when traveling.",
-  //   category: "Arrival & Travel",
-  //   href: "/guides/custom-requirements",
-  //   icon: FileCheck,
-  // },
-
-  // --- Financial & Sponsorship ---
-  // {
-  //   id: "asset-docs",
-  //   title: "Asset Documentation",
-  //   description: "Prove your financial standing with correct asset documents.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/asset-document-guide",
-  //   icon: DollarSign,
-  // },
-  // {
-  //   id: "employment-verification",
-  //   title: "Employment Verification",
-  //   description: "Employment letters, paystubs, and income proof.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/employment-certificate-guide",
-  //   icon: Briefcase,
-  // },
-  // {
-  //   id: "tax-documents",
-  //   title: "Tax Transcripts",
-  //   description: "IRS tax documents and W-2 forms for sponsorship.",
-  //   category: "Financial & Sponsorship",
-  //   href: "/guides/tax-documents",
-  //   icon: FileText,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-  // {
-  //   id: "affidavit-support",
-  //   title: "I-864 Affidavit",
-  //   description: "Complete guide to financial sponsorship requirements.",
-  //   category: "Financial & Sponsorship",
-  //   href: "/affidavit-support-calculator", // Redirect to tool
-  //   icon: DollarSign,
-  // },
 
   // --- Medical & Exam ---
-  // {
-  //   id: "medical-exam",
-  //   title: "Medical Examination",
-  //   description: "Panel physicians, appointments, and requirements.",
-  //   category: "Medical & Exam",
-  //   href: "/guides/medical-exam",
-  //   icon: Activity,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
   {
     id: "vaccinations",
     title: "Polio Vaccination",
@@ -278,36 +141,8 @@ const GUIDES: Guide[] = [
     category: "Medical & Exam",
     href: "/guides/polio-vaccination-guide",
     icon: Syringe,
+    entitlementFeature: "polio_certificate",
   },
-
-  // --- Relationship Evidence ---
-  // {
-  //   id: "relationship-evidence",
-  //   title: "Bona Fide Marriage",
-  //   description: "Photos, chat logs, and proof of genuine relationship.",
-  //   category: "Relationship Evidence",
-  //   href: "/guides/bona-marriage-guide",
-  //   icon: Heart,
-  // },
-
-  // --- Visa Strategy ---
-  // {
-  //   id: "visa-strength",
-  //   title: "Visa Case Strength",
-  //   description: "Understand your visa case strength and improve it.",
-  //   category: "Visa Strategy",
-  //   href: "/guides/visa-strength-guide",
-  //   icon: GraduationCap,
-  // },
-  // {
-  //   id: "educational-docs",
-  //   title: "Educational Certificates (US Visa)",
-  //   description:
-  //     "Complete roadmap: HEC/IBCC attestation, WES evaluation, and I-20 requirements.",
-  //   href: "/guides/educational-certificates-us-visa",
-  //   icon: BookOpen,
-  //   category: "Education & Process",
-  // },
 ];
 
 const CATEGORIES: ("All" | GuideCategory)[] = [
@@ -334,6 +169,7 @@ export default function GuidesPage({
     "All" | GuideCategory
   >("All");
   const [visibleCount, setVisibleCount] = useState(7); // Default to all
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -422,6 +258,18 @@ export default function GuidesPage({
         isEmbedded ? "" : "pt-16"
       }`}
     >
+      {/* Upgrade Modal */}
+      {upgradeModalFeature && (
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          onClose={() => setUpgradeModalFeature(null)}
+          onConfirm={(action, target) => {
+            const plan = typeof target === "string" ? target : "premium";
+            window.location.href = `/pricing?plan=${plan}`;
+          }}
+        />
+      )}
+
       {/* Ambient Glow */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
@@ -540,7 +388,12 @@ export default function GuidesPage({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
           {filteredGuides.length > 0 ? (
             filteredGuides.map((guide, index) => (
-              <GuideCard key={guide.id} guide={guide} index={index} />
+              <GuideCard
+                key={guide.id}
+                guide={guide}
+                index={index}
+                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+              />
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
@@ -571,26 +424,6 @@ const CATEGORY_STYLES: Record<
     borderGradient:
       "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
   },
-  // "Embassy Logistics": {
-  //   iconBox: "bg-blue-600 text-white border-transparent dark:bg-blue-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-blue-600 dark:text-blue-400",
-  //   borderGradient:
-  //     "from-blue-400 to-blue-300 dark:from-blue-400 dark:to-blue-300",
-  // },
-  // "Arrival & Travel": {
-  //   iconBox: "bg-sky-600 text-white border-transparent dark:bg-sky-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-sky-600 dark:text-sky-400",
-  //   borderGradient: "from-sky-400 to-sky-300 dark:from-sky-400 dark:to-sky-300",
-  // },
-  // "Financial & Sponsorship": {
-  //   iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-emerald-600 dark:text-emerald-400",
-  //   borderGradient:
-  //     "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
-  // },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
@@ -598,65 +431,97 @@ const CATEGORY_STYLES: Record<
     borderGradient:
       "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
   },
-  // "Relationship Evidence": {
-  //   iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-rose-600 dark:text-rose-400",
-  //   borderGradient:
-  //     "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
-  // },
-  // "Visa Strategy": {
-  //   iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-violet-600 dark:text-violet-400",
-  //   borderGradient:
-  //     "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
-  // },
-  // "Education & Process": {
-  //   iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-amber-600 dark:text-amber-400",
-  //   borderGradient:
-  //     "from-amber-400 to-amber-300 dark:from-amber-400 dark:to-amber-300",
-  // },
 };
 
-function GuideCard({ guide, index }: { guide: Guide; index: number }) {
+function GuideCard({
+  guide,
+  index,
+  onLockedClick,
+}: {
+  guide: Guide;
+  index: number;
+  onLockedClick: (feature: string) => void;
+}) {
+  const plan = usePlan();
   const Icon = guide.icon;
-  const isClickable = !guide.disabled;
-  const CardWrapper = isClickable ? Link : "div";
   const styles = CATEGORY_STYLES[guide.category];
+
+  // Entitlement check
+  const featureLocked =
+    !!guide.entitlementFeature &&
+    !plan.isLoading &&
+    plan.isLocked(guide.entitlementFeature);
+
+  const isNavigable = !guide.disabled;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (featureLocked && guide.entitlementFeature) {
+      e.preventDefault();
+      onLockedClick(guide.entitlementFeature);
+    }
+  };
+
+  const CardWrapper = isNavigable ? Link : "div";
 
   return (
     <CardWrapper
-      href={guide.href}
-      className={`group relative flex flex-col bg-card border border-border rounded-[30px] p-6 pt-7 mt-6 
-      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] 
-      ${
-        isClickable
-          ? "hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "opacity-80 cursor-not-allowed grayscale-[0.5]"
+      href={isNavigable ? guide.href : "#"}
+      onClick={handleClick}
+      className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
+      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
+      ${featureLocked
+        ? "border-2 border-[#8a5a08] dark:border-[#b88716] cursor-pointer shadow-[0_18px_38px_-24px_rgba(138,90,8,0.9),0_0_0_1px_rgba(255,215,112,0.28)_inset] hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgba(138,90,8,0.95),0_0_26px_rgba(212,161,44,0.22)]"
+        : isNavigable
+          ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+          : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
+      {/* Gold gradient border — always visible for locked/premium cards */}
+      {featureLocked && (
+        <div
+          className="absolute inset-0 rounded-[30px] pointer-events-none"
+          style={{
+            padding: "2.5px",
+            background:
+              "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%), repeating-linear-gradient(45deg, rgba(255,255,255,0.36) 0 1px, transparent 1px 5px)",
+            backgroundBlendMode: "overlay",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            opacity: 0.96,
+          }}
+        />
+      )}
+
       {/* Floating Icon Box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10 
-        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg 
+        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
+        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
         ${styles.iconBox}`}
       >
-        {/* Inner colored box for depth */}
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      {/* Floating Border Gradient (Pseudo-element emulation) */}
-      <div
-        className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
-      />
+      {/* Crown badge — top-right corner */}
+      {featureLocked && (
+        <div className="absolute top-3.5 right-4 z-10">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#8a5a08] bg-[radial-gradient(circle_at_30%_20%,#fff2b8_0%,#d9a62e_36%,#8a5a08_78%,#4d2e00_100%)] text-[#4d2e00] shadow-[0_7px_18px_rgba(138,90,8,0.42),inset_0_1px_0_rgba(255,255,255,0.65)]">
+            <Crown size={20} strokeWidth={3} fill="currentColor" />
+          </span>
+        </div>
+      )}
+
+      {/* Border gradient on hover (category color) */}
+      {!featureLocked && (
+        <div
+          className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
+        />
+      )}
 
       {/* Radial Glow Effect */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
@@ -685,11 +550,11 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
 
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-3.5 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-          {/* Placeholder for stats or extra info if needed */}
-        </span>
+        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
 
-        {isClickable ? (
+        {featureLocked ? (
+          <span aria-hidden="true" className="h-5" />
+        ) : isNavigable ? (
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >

@@ -15,7 +15,7 @@ export default async function FormWizardPage({ params }: Props) {
   const normalizedCode = formCode.toLowerCase().replace(/[^a-z0-9]/g, "")
 
   return (
-    <main className="min-h-screen bg-linear-to-br from-primary/10 to-primary/5">
+    <main className="min-h-screen">
       {/* 5. Only pass the string formCode (No config object) */}
       {/* FIX: Pass the normalizedCode as the formCode prop */}
       <MultiStepForm formCode={normalizedCode} /> 

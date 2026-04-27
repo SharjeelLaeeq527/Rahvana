@@ -36,6 +36,7 @@ export class ReminderEngine {
       toolAbandonedReminders,
       appointmentNotRecordedReminder,
       trackingStatusReminder,
+      step2GatheringReminder,
     ] = await Promise.allSettled([
       this.checkMissingDocuments(journeyId),
       this.checkAppointmentsApproaching(journeyId),
@@ -46,6 +47,7 @@ export class ReminderEngine {
       this.checkAbandonedToolSessions(journeyId),
       this.checkAppointmentNotRecorded(journeyId),
       this.checkTrackingStatusUpdates(journeyId),
+      this.checkStep2GatheringPending(journeyId),
     ]);
 
     // Collect results safely (ignore individual failures)
@@ -62,6 +64,7 @@ export class ReminderEngine {
     push(toolAbandonedReminders);
     push(appointmentNotRecordedReminder);
     push(trackingStatusReminder);
+    push(step2GatheringReminder);
 
     if (candidates.length === 0) return;
 
@@ -592,6 +595,92 @@ export class ReminderEngine {
         action_url: "/visa-category/ir-category/ir1-journey",
         action_label: "View Tracking",
         dedup_key: `${journeyId}:tracking_status:${status}`,
+      },
+    ];
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // CHECKER 10: Chapter 1 Step 2 — Required Documents Not Gathered
+  // Trigger: gathering_status exists in case_data (user opened Step 2)
+  //          AND one or more required documents are not "reviewed"
+  //          AND it has been 48+ hours since last update (no spam)
+  // Priority: high
+  // Auto-dismisses when all required docs are marked reviewed
+  // ─────────────────────────────────────────────────────────────
+
+  private async checkStep2GatheringPending(
+    journeyId: string,
+  ): Promise<ReminderCandidate[]> {
+    const REQUIRED_DOC_IDS = [
+      "doc_citizenship",
+      "doc_passport_ben",
+      "doc_nikah_nama",
+      "doc_mrc",
+      "doc_relationship",
+    ];
+
+    const REQUIRED_DOC_LABELS: Record<string, string> = {
+      doc_citizenship: "Proof of U.S. Citizenship",
+      doc_passport_ben: "Beneficiary Passport",
+      doc_nikah_nama: "Nikah Nama (Original)",
+      doc_mrc: "NADRA Marriage Certificate",
+      doc_relationship: "Relationship Evidence",
+    };
+
+    const DEDUP_KEY = `${journeyId}:step2_gathering_pending`;
+
+    const { data: gatheringRow } = await this.supabase
+      .from("case_data")
+      .select("data_value, updated_at")
+      .eq("journey_id", journeyId)
+      .eq("data_key", "gathering_status")
+      .single();
+
+    // Step 2 has never been opened — no reminder yet
+    if (!gatheringRow?.data_value) return [];
+
+    // Parse the gathering status JSON (strip surrounding quotes if present)
+    let gatheringStatus: Record<string, string> = {};
+    try {
+      const raw = String(gatheringRow.data_value).replace(/^"|"$/g, "");
+      gatheringStatus = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+
+    const pendingDocs = REQUIRED_DOC_IDS.filter(
+      (id) => gatheringStatus[id] !== "reviewed",
+    );
+
+    // All required docs reviewed — auto-dismiss any existing reminder
+    if (pendingDocs.length === 0) {
+      await this.supabase
+        .from("journey_reminders")
+        .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
+        .eq("dedup_key", DEDUP_KEY)
+        .eq("is_dismissed", false);
+      return [];
+    }
+
+    // Only remind if user has been inactive on this step for 48+ hours
+    const updatedAt = new Date(gatheringRow.updated_at);
+    const hoursSince =
+      (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60);
+    if (hoursSince < 48) return [];
+
+    const pendingLabels = pendingDocs.map((id) => REQUIRED_DOC_LABELS[id]);
+    const count = pendingDocs.length;
+
+    return [
+      {
+        reminder_type: "missing_document" as const,
+        priority: "high" as const,
+        title: `Complete your documents — ${count} item${count !== 1 ? "s" : ""} pending`,
+        body: `Your document checklist for Chapter 1, Step 2 is incomplete. Still needed: ${pendingLabels.join(", ")}. Mark each document as ready to keep your case on track.`,
+        step_key: "step_1_2",
+        action_url: "/visa-category/ir-category/ir-1-journey",
+        action_label: "Complete Documents",
+        dedup_key: DEDUP_KEY,
       },
     ];
   }

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { Search, ArrowRight, ChevronDown } from "lucide-react";
+import { Search, ArrowRight, ChevronDown, Crown } from "lucide-react";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import {
   DropdownMenu,
@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 // --- Types ---
 interface Service {
@@ -22,7 +24,20 @@ interface Service {
   href: string;
   icon: React.ReactNode;
   disabled?: boolean;
+  /** Entitlement feature key to gate this service. */
+  entitlementFeature?: string;
 }
+
+/** Maps service ID → entitlement feature key.
+ *  Service IDs are derived from: title.toLowerCase().replace(/\s+/g, "-")
+ */
+const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
+  "book-a-consultation":          "expert_consultation",
+  "expert-case-review":           "expert_doc_review",
+  "pcc-filing-service-—-sindh":   "pcc_filing",
+  "book-medical-appointment":     "medical_booking",
+  "urdu-→-english-translation":   "document_translation",
+};
 
 interface CategoryOption {
   id: string;
@@ -40,6 +55,7 @@ export default function ServicesPage({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("All");
   const [visibleCount, setVisibleCount] = useState(7); // Default to all
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -47,22 +63,26 @@ export default function ServicesPage({
   // Memoize services and categories to avoid recalculation on every render
   const { services, categories } = useMemo(() => {
     const servicesList: Service[] = NAV_DATA.services.tabs.flatMap((tab) =>
-      (tab.items || []).map((item) => ({
-        id: item.title.toLowerCase().replace(/\s+/g, "-"),
-        title: item.translationKey
-          ? t(`navData.services.items.${item.translationKey}.title`)
-          : item.title,
-        description: item.translationKey
-          ? t(`navData.services.items.${item.translationKey}.description`)
-          : item.description,
-        categoryLabel: tab.translationKey
-          ? t(`navData.services.tabs.${tab.translationKey}.label`)
-          : tab.label,
-        categoryId: tab.id,
-        href: item.href,
-        icon: item.icon,
-        disabled: item.disabled,
-      })),
+      (tab.items || []).map((item) => {
+        const id = item.title.toLowerCase().replace(/\s+/g, "-");
+        return {
+          id,
+          title: item.translationKey
+            ? t(`navData.services.items.${item.translationKey}.title`)
+            : item.title,
+          description: item.translationKey
+            ? t(`navData.services.items.${item.translationKey}.description`)
+            : item.description,
+          categoryLabel: tab.translationKey
+            ? t(`navData.services.tabs.${tab.translationKey}.label`)
+            : tab.label,
+          categoryId: tab.id,
+          href: item.href,
+          icon: item.icon,
+          disabled: item.disabled,
+          entitlementFeature: SERVICE_ENTITLEMENT_MAP[id],
+        };
+      }),
     );
 
     const categoriesList: CategoryOption[] = [
@@ -166,6 +186,18 @@ export default function ServicesPage({
         isEmbedded ? "" : "pt-16"
       }`}
     >
+      {/* Upgrade Modal */}
+      {upgradeModalFeature && (
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          onClose={() => setUpgradeModalFeature(null)}
+          onConfirm={(action, target) => {
+            const plan = typeof target === "string" ? target : "premium";
+            window.location.href = `/pricing?plan=${plan}`;
+          }}
+        />
+      )}
+
       {/* Ambient Glow */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
@@ -278,7 +310,12 @@ export default function ServicesPage({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
           {filteredServices.length > 0 ? (
             filteredServices.map((service, index) => (
-              <ServiceCard key={service.id} service={service} index={index} />
+              <ServiceCard
+                key={service.id}
+                service={service}
+                index={index}
+                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+              />
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
@@ -340,53 +377,102 @@ const CATEGORY_STYLES: Record<
   },
 };
 
-function ServiceCard({ service, index }: { service: Service; index: number }) {
+function ServiceCard({
+  service,
+  index,
+  onLockedClick,
+}: {
+  service: Service;
+  index: number;
+  onLockedClick: (feature: string) => void;
+}) {
   const { t } = useLanguage();
-  const isClickable = !service.disabled;
-  const CardWrapper = isClickable ? Link : "div";
+  const plan = usePlan();
   const styles =
     CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
 
+  // Entitlement check
+  const featureLocked =
+    !!service.entitlementFeature &&
+    !plan.isLoading &&
+    plan.isLocked(service.entitlementFeature);
+
+  const isNavigable = !service.disabled;
+  const CardWrapper = isNavigable ? Link : "div";
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (featureLocked && service.entitlementFeature) {
+      e.preventDefault();
+      onLockedClick(service.entitlementFeature);
+    }
+  };
+
   return (
     <CardWrapper
-      href={service.href}
-      className={`group relative flex flex-col bg-card border border-border rounded-[30px] p-6 pt-7 mt-6 
-      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] 
-      ${
-        isClickable
-          ? "hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "opacity-80 cursor-not-allowed grayscale-[0.5]"
+      href={isNavigable ? service.href : "#"}
+      onClick={handleClick}
+      className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
+      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
+      ${featureLocked
+        ? "border-2 border-[#8a5a08] dark:border-[#b88716] cursor-pointer shadow-[0_18px_38px_-24px_rgba(138,90,8,0.9),0_0_0_1px_rgba(255,215,112,0.28)_inset] hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgba(138,90,8,0.95),0_0_26px_rgba(212,161,44,0.22)]"
+        : isNavigable
+          ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+          : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
+      {/* Gold gradient border — always visible for locked/premium cards */}
+      {featureLocked && (
+        <div
+          className="absolute inset-0 rounded-[30px] pointer-events-none"
+          style={{
+            padding: "2.5px",
+            background:
+              "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%), repeating-linear-gradient(45deg, rgba(255,255,255,0.36) 0 1px, transparent 1px 5px)",
+            backgroundBlendMode: "overlay",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            opacity: 0.96,
+          }}
+        />
+      )}
+
       {/* Floating Icon Box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10 
-        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg 
+        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
+        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
         ${styles.iconBox}`}
       >
-        {/* Inner colored box for depth */}
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
-        {/* Render the icon (coming from navigationData as ReactNode) */}
         {React.isValidElement(service.icon)
           ? React.cloneElement(
               service.icon as React.ReactElement<{ className?: string }>,
-              {
-                className: "w-6 h-6 stroke-2",
-              },
+              { className: "w-6 h-6 stroke-2" },
             )
           : service.icon}
       </div>
 
-      {/* Floating Border Gradient (Pseudo-element emulation) */}
-      <div
-        className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
-      />
+      {/* Crown badge — top-right corner */}
+      {featureLocked && (
+        <div className="absolute top-3.5 right-4 z-10">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#8a5a08] bg-[radial-gradient(circle_at_30%_20%,#fff2b8_0%,#d9a62e_36%,#8a5a08_78%,#4d2e00_100%)] text-[#4d2e00] shadow-[0_7px_18px_rgba(138,90,8,0.42),inset_0_1px_0_rgba(255,255,255,0.65)]">
+            <Crown size={20} strokeWidth={3} fill="currentColor" />
+          </span>
+        </div>
+      )}
 
-      {/* Radial Glow Effect */}
+      {/* Border gradient on hover (category color) */}
+      {!featureLocked && (
+        <div
+          className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
+        />
+      )}
+
+      {/* Radial Glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
@@ -406,9 +492,11 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1"></span>
+        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
 
-        {isClickable ? (
+        {featureLocked ? (
+          <span aria-hidden="true" className="h-5" />
+        ) : isNavigable ? (
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >

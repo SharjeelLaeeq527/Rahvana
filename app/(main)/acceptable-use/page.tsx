@@ -95,7 +95,7 @@ export default function AcceptableUse() {
               prose-a:text-teal-600 prose-a:font-semibold prose-a:no-underline hover:prose-a:underline">
 
               <Section id="purpose" title="1. Purpose">
-                <p>This Acceptable Use Policy ("AUP") outlines the rules and guidelines for using Rahvana's immigration roadmap platform. By using our services, you agree to comply with this AUP. Violations may result in account suspension or termination.</p>
+                <p>This Acceptable Use Policy (&quot;AUP&quot;) outlines the rules and guidelines for using Rahvana&apos;s immigration roadmap platform. By using our services, you agree to comply with this AUP. Violations may result in account suspension or termination.</p>
               </Section>
 
               <Section id="permitted" title="2. Permitted Uses">
@@ -125,6 +125,14 @@ export default function AcceptableUse() {
                     "Submitting false or fraudulent immigration information",
                     "Impersonating USCIS, NVC, or any government agency",
                     "Using the platform to facilitate unauthorized immigration advice for compensation",
+                    "Representing Rahvana as a law firm, attorney, accredited representative, government agency, or official government service",
+                    "Selling, reselling, or brokering government services without authorization or without a lawful value-add",
+                    "Charging others for legal advice, legal strategy, filing decisions, or immigration representation through Rahvana unless you are legally authorized to do so",
+                    "Using Rahvana to create, alter, or submit forged, misleading, or deceptive documents",
+                    "Using Rahvana in any way that violates Stripe prohibited or restricted business rules, card-network rules, sanctions rules, or payment-fraud rules",
+                    "Using USCIS API-powered features to look up cases you do not own or are not authorized to monitor",
+                    "Reselling, republishing, scraping, or bulk-exporting case-status data obtained through USCIS API-powered features",
+                    "Attempting to bypass USCIS API rate limits, authentication, access controls, sandbox restrictions, production access rules, or key-management requirements",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-4 bg-red-50 border border-red-100 rounded-xl px-5 py-4">
                       <span className="text-red-500 font-bold text-base mt-0.5 shrink-0">✕</span>
@@ -141,6 +149,8 @@ export default function AcceptableUse() {
                     "Introducing malware, viruses, or malicious code",
                     "Attempting to overload our servers through automated requests",
                     "Scraping or harvesting our proprietary content or user data",
+                    "Using bots or automated tools to test stolen cards, enumerate accounts, or abuse checkout or subscription flows",
+                    "Circumventing payment, subscription, document, or entitlement controls",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-4 bg-red-50 border border-red-100 rounded-xl px-5 py-4">
                       <span className="text-red-500 font-bold text-base mt-0.5 shrink-0">✕</span>
@@ -155,6 +165,8 @@ export default function AcceptableUse() {
                     "Uploading content that infringes third-party intellectual property",
                     "Sharing personal information of others without consent",
                     "Distributing offensive, harassing, or abusive content",
+                    "Uploading documents that you do not have the right to use, store, process, or share",
+                    "Uploading malware, executable payloads, or files intended to interfere with Rahvana or third-party systems",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-4 bg-red-50 border border-red-100 rounded-xl px-5 py-4">
                       <span className="text-red-500 font-bold text-base mt-0.5 shrink-0">✕</span>

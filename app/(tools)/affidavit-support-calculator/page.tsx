@@ -3,29 +3,18 @@
 import React, { useState, useEffect } from "react";
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { useAuth } from "@/app/context/AuthContext";
-
-/**
- * Shared Affidavit Support Calculator Page.
- * This page uses the same shared component that is usetmneyd in the Visa Journey.
- */
 export default function AffidavitSupportCalculatorPage() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
-  
-  // Open the calculator automatically when the page loads
+
   useEffect(() => {
     setIsOpen(true);
   }, []);
 
-  const handleClose = () => {
-    // If they close the overlay on this page, maybe redirect them to tools or leave a "Open" button
-    setIsOpen(false);
-  };
+  const handleClose = () => setIsOpen(false);
 
   const handleSave = (result: any) => {
     console.log("Sponsorship result saved:", result);
-    // Since this is a standalone tool page, we just keep the result for now or show a success message
-    // If we want to save it to a profile, we could do it here
     setIsOpen(false);
   };
 

@@ -8,6 +8,8 @@ import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
 import { LanguageProvider } from "./context/LanguageContext";
+import { PlanProvider } from "./context/PlanContext";
+import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle";
 
 export const metadata: Metadata = {
   title: "Rahvana",
@@ -71,6 +73,7 @@ export default function RootLayout({
         </Script>
         <ToastProvider>
           <AuthProvider>
+            <PlanProvider>
             <LanguageProvider>
               {/* <ThemeProvider
             attribute="class"
@@ -85,6 +88,8 @@ export default function RootLayout({
               <Footer />
               {/* </ThemeProvider> */}
             </LanguageProvider>
+              <PlanTierDevToggle />
+            </PlanProvider>
           </AuthProvider>
         </ToastProvider>
       </body>

@@ -25,6 +25,7 @@ import {
   HelpCircleIcon,
   ToolCase,
   Wrench,
+  Info,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -383,9 +384,9 @@ export function SiteHeader({
         "ir1-journey": "/visa-category/ir-category/ir1-journey",
         "ir5-journey": "/visa-category/ir-category/ir5-journey",
         "k1-journey": "/visa-category/ir-category/k1-journey",
-        services: "/services",
-        tools: "/tools",
-        guides: "/guides",
+        services: "/resources?tab=services",
+        tools: "/resources?tab=toolbox",
+        guides: "/resources?tab=guides",
         pricing: "/pricing",
         dashboard: "/user-dashboard",
         mfa: "/mfa-setup",
@@ -415,6 +416,7 @@ export function SiteHeader({
         profile: "/profile",
         settings: "/settings",
         "portal-wallet": "/portal-wallet",
+        about: "/about",
       };
 
       const targetRoute = routes[id] || "/";
@@ -708,6 +710,25 @@ export function SiteHeader({
               )}
             </div>
             */}
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/about"
+                onClick={(e) => handleNav("about", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isHomeHeroState
+                    ? isActive("about", "/about")
+                      ? "bg-white/20 text-white"
+                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    : isHomeHeroP2State
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive("about", "/about")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                }`}
+              >
+                About
+              </Link>
+            </div>
 
             <div className="relative pt-2 pb-0">
               <Link
@@ -799,7 +820,7 @@ export function SiteHeader({
             >
               <div>
                 <Link
-                  href="/tools"
+                  href="/resources?tab=toolbox"
                   onClick={handleLinkClick}
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
@@ -807,7 +828,7 @@ export function SiteHeader({
                   Tools
                 </Link>
                 <Link
-                  href="/guides"
+                  href="/resources?tab=guides"
                   onClick={handleLinkClick}
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
@@ -815,7 +836,7 @@ export function SiteHeader({
                   Guides
                 </Link>
                 <Link
-                  href="/services"
+                  href="/resources?tab=services"
                   onClick={handleLinkClick}
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
@@ -1396,21 +1417,21 @@ export function SiteHeader({
                     >
                       <div className="ml-9 mt-1 flex flex-col gap-2 border-l-2 border-slate-100 pl-4 py-2">
                         <Link
-                          href="/tools"
+                          href="/resources?tab=toolbox"
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
                           Tools
                         </Link>
                         <Link
-                          href="/guides"
+                          href="/resources?tab=guides"
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
                           Guides
                         </Link>
                         <Link
-                          href="/services"
+                          href="/resources?tab=services"
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
@@ -1577,6 +1598,17 @@ export function SiteHeader({
               })}
 
               {/* <div className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">General</div> */}
+              <HydrationSafeButton
+                onClick={() => handleNav("about")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                  isActive("about")
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Info className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                <span className="font-bold">About</span>
+              </HydrationSafeButton>
               <HydrationSafeButton
                 onClick={() => handleNav("pricing")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${

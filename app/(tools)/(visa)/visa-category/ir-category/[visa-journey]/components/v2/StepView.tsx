@@ -164,6 +164,7 @@ import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
+import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -900,6 +901,42 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [rcptSuccess, setRcptSuccess] = React.useState(false);
   const [isRcptGuideOpen, setIsRcptGuideOpen] = React.useState(false);
   const [rcptGuideStep, setRcptGuideStep] = React.useState(0);
+
+  // Sync with metadata on mount
+  React.useEffect(() => {
+    if (state.metadata?.uscis_receipt_number) {
+      setRcptManual(prev => ({
+        ...prev,
+        receipt: state.metadata.uscis_receipt_number,
+        noticeDate: state.metadata.uscis_notice_date || "",
+        priorityDate: state.metadata.uscis_priority_date || "",
+      }));
+      
+      if (state.metadata.uscis_tracking_enabled) {
+        setRcptUiState("tracked");
+      }
+    }
+  }, [state.metadata?.uscis_receipt_number, state.metadata?.uscis_tracking_enabled]);
+
+  const handleSaveReceipt = () => {
+    const isValid = /^[A-Z]{3}[0-9]{10}$/.test(rcptManual.receipt);
+    if (!isValid) {
+      setRcptError("Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).");
+      setRcptSuccess(false);
+      return;
+    }
+    setRcptError("");
+    setRcptSuccess(true);
+    
+    actions.updateMetadata({
+      uscis_receipt_number: rcptManual.receipt,
+      uscis_notice_date: rcptManual.noticeDate,
+      uscis_priority_date: rcptManual.priorityDate,
+      uscis_tracking_enabled: true
+    });
+    
+    setRcptUiState("tracked");
+  };
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
@@ -2301,6 +2338,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             stepDescription={currentStep.step_description}
             isBeneficiaryTheme={isBeneficiaryTheme}
           />
+
+          {/* Entitlement Banner — shown when step features are locked for current plan */}
+          <StepEntitlementBanner stepKey={sId} />
 
           {/* Companion Context Badge (Step 5 Specific) */}
           {(sId === "step_1_5" || sId === "step_1_2_b") && (

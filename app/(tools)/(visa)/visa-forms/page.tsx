@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FileText,
   CheckCircle,
@@ -62,72 +62,72 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Required supplement when petitioning for a spouse. Includes biographical information about the beneficiary spouse.",
   },
-  {
-    id: "i129f",
-    code: "I-129F",
-    name: "Petition for Alien Fiancé(e)",
-    agency: "USCIS",
-    journeys: ["K1"],
-    stage: "USCIS Filing",
-    category: ["Family-based"],
-    keywords: ["fiancé", "fiancee", "k-1", "k1", "engagement"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-129f.pdf",
-    description:
-      "Petition for fiancé(e) visa (K-1). Allows fiancé to enter US to marry within 90 days. Marriage must occur before AOS filing.",
-  },
-  {
-    id: "i485",
-    code: "I-485",
-    name: "Application to Register Permanent Residence or Adjust Status",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "USCIS Filing",
-    category: ["AOS"],
-    keywords: [
-      "adjustment",
-      "status",
-      "green card",
-      "aos",
-      "permanent residence",
-    ],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-485.pdf",
-    description:
-      "Main application for adjustment of status to permanent resident. Filed by beneficiaries already in the US seeking green card.",
-  },
-  {
-    id: "i765",
-    code: "I-765",
-    name: "Application for Employment Authorization",
-    agency: "USCIS",
-    journeys: ["AOS", "K1"],
-    stage: "USCIS Filing",
-    category: ["AOS", "Employment"],
-    keywords: ["work permit", "ead", "employment", "authorization", "work"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-765.pdf",
-    description:
-      "Application for work authorization (EAD). Can be filed with I-485 for AOS or after K-1 entry and marriage.",
-  },
-  {
-    id: "i131",
-    code: "I-131",
-    name: "Application for Travel Document",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "USCIS Filing",
-    category: ["AOS", "Travel"],
-    keywords: ["advance parole", "travel", "reentry", "ap"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-131.pdf",
-    description:
-      "Application for advance parole to travel abroad while AOS is pending. Without this, leaving US can abandon AOS application.",
-  },
+  // {
+  //   id: "i129f",
+  //   code: "I-129F",
+  //   name: "Petition for Alien Fiancé(e)",
+  //   agency: "USCIS",
+  //   journeys: ["K1"],
+  //   stage: "USCIS Filing",
+  //   category: ["Family-based"],
+  //   keywords: ["fiancé", "fiancee", "k-1", "k1", "engagement"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-129f.pdf",
+  //   description:
+  //     "Petition for fiancé(e) visa (K-1). Allows fiancé to enter US to marry within 90 days. Marriage must occur before AOS filing.",
+  // },
+  // {
+  //   id: "i485",
+  //   code: "I-485",
+  //   name: "Application to Register Permanent Residence or Adjust Status",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "USCIS Filing",
+  //   category: ["AOS"],
+  //   keywords: [
+  //     "adjustment",
+  //     "status",
+  //     "green card",
+  //     "aos",
+  //     "permanent residence",
+  //   ],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-485.pdf",
+  //   description:
+  //     "Main application for adjustment of status to permanent resident. Filed by beneficiaries already in the US seeking green card.",
+  // },
+  // {
+  //   id: "i765",
+  //   code: "I-765",
+  //   name: "Application for Employment Authorization",
+  //   agency: "USCIS",
+  //   journeys: ["AOS", "K1"],
+  //   stage: "USCIS Filing",
+  //   category: ["AOS", "Employment"],
+  //   keywords: ["work permit", "ead", "employment", "authorization", "work"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-765.pdf",
+  //   description:
+  //     "Application for work authorization (EAD). Can be filed with I-485 for AOS or after K-1 entry and marriage.",
+  // },
+  // {
+  //   id: "i131",
+  //   code: "I-131",
+  //   name: "Application for Travel Document",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "USCIS Filing",
+  //   category: ["AOS", "Travel"],
+  //   keywords: ["advance parole", "travel", "reentry", "ap"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-131.pdf",
+  //   description:
+  //     "Application for advance parole to travel abroad while AOS is pending. Without this, leaving US can abandon AOS application.",
+  // },
   {
     id: "i864",
     code: "I-864",
@@ -188,36 +188,36 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Exemption from affidavit requirement if immigrant has 40 qualifying work quarters under Social Security Act.",
   },
-  {
-    id: "i134",
-    code: "I-134",
-    name: "Declaration of Financial Support",
-    agency: "USCIS",
-    journeys: ["K1"],
-    stage: "Interview Prep",
-    category: ["Financial"],
-    keywords: ["k-1", "fiancé", "support", "financial", "declaration"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-134.pdf",
-    description:
-      "Non-binding declaration of financial support for K-1 fiancé visa applicants. Shows ability to support fiancé.",
-  },
-  {
-    id: "i693",
-    code: "I-693",
-    name: "Report of Medical Examination and Vaccination Record",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "Interview Prep",
-    category: ["AOS", "Medical"],
-    keywords: ["medical", "exam", "vaccination", "health", "civil surgeon"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-693.pdf",
-    description:
-      "Medical examination by USCIS-approved civil surgeon. Required for AOS applicants. Sealed envelope given to applicant.",
-  },
+  // {
+  //   id: "i134",
+  //   code: "I-134",
+  //   name: "Declaration of Financial Support",
+  //   agency: "USCIS",
+  //   journeys: ["K1"],
+  //   stage: "Interview Prep",
+  //   category: ["Financial"],
+  //   keywords: ["k-1", "fiancé", "support", "financial", "declaration"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-134.pdf",
+  //   description:
+  //     "Non-binding declaration of financial support for K-1 fiancé visa applicants. Shows ability to support fiancé.",
+  // },
+  // {
+  //   id: "i693",
+  //   code: "I-693",
+  //   name: "Report of Medical Examination and Vaccination Record",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "Interview Prep",
+  //   category: ["AOS", "Medical"],
+  //   keywords: ["medical", "exam", "vaccination", "health", "civil surgeon"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-693.pdf",
+  //   description:
+  //     "Medical examination by USCIS-approved civil surgeon. Required for AOS applicants. Sealed envelope given to applicant.",
+  // },
   {
     id: "i751",
     code: "I-751",
@@ -233,36 +233,36 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Required to remove conditions from 2-year conditional green card (marriages under 2 years). File within 90-day window before expiration.",
   },
-  {
-    id: "n400",
-    code: "N-400",
-    name: "Application for Naturalization",
-    agency: "USCIS",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Naturalization"],
-    keywords: ["citizenship", "naturalization", "citizen", "oath"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf",
-    description:
-      "Application for U.S. citizenship. Can apply 3 years after green card (if married to USC) or 5 years (general).",
-  },
-  {
-    id: "i90",
-    code: "I-90",
-    name: "Application to Replace Permanent Resident Card",
-    agency: "USCIS",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Post-GC"],
-    keywords: ["replace", "renew", "green card", "lost", "stolen", "damaged"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-90.pdf",
-    description:
-      "Replace or renew permanent resident card. File if card is lost, stolen, damaged, expired, or has incorrect information.",
-  },
+  // {
+  //   id: "n400",
+  //   code: "N-400",
+  //   name: "Application for Naturalization",
+  //   agency: "USCIS",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Naturalization"],
+  //   keywords: ["citizenship", "naturalization", "citizen", "oath"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf",
+  //   description:
+  //     "Application for U.S. citizenship. Can apply 3 years after green card (if married to USC) or 5 years (general).",
+  // },
+  // {
+  //   id: "i90",
+  //   code: "I-90",
+  //   name: "Application to Replace Permanent Resident Card",
+  //   agency: "USCIS",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Post-GC"],
+  //   keywords: ["replace", "renew", "green card", "lost", "stolen", "damaged"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-90.pdf",
+  //   description:
+  //     "Replace or renew permanent resident card. File if card is lost, stolen, damaged, expired, or has incorrect information.",
+  // },
   {
     id: "ar11",
     code: "AR-11",
@@ -277,36 +277,36 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "All non-citizens must notify USCIS within 10 days of changing address. Can be filed online at uscis.gov.",
   },
-  {
-    id: "i102",
-    code: "I-102",
-    name: "Application for Replacement/Initial Nonimmigrant Arrival-Departure Document",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "Post-Entry",
-    category: ["Administrative"],
-    keywords: ["i-94", "arrival", "departure", "lost", "replace"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-102.pdf",
-    description:
-      "Replace lost or never-received I-94 arrival/departure record. Required for various immigration processes.",
-  },
-  {
-    id: "i407",
-    code: "I-407",
-    name: "Record of Abandonment of Lawful Permanent Resident Status",
-    agency: "USCIS",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Post-GC"],
-    keywords: ["abandon", "green card", "surrender", "give up"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-407.pdf",
-    description:
-      "Voluntary abandonment of permanent resident status. Used when permanently moving outside US.",
-  },
+  // {
+  //   id: "i102",
+  //   code: "I-102",
+  //   name: "Application for Replacement/Initial Nonimmigrant Arrival-Departure Document",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "Post-Entry",
+  //   category: ["Administrative"],
+  //   keywords: ["i-94", "arrival", "departure", "lost", "replace"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-102.pdf",
+  //   description:
+  //     "Replace lost or never-received I-94 arrival/departure record. Required for various immigration processes.",
+  // },
+  // {
+  //   id: "i407",
+  //   code: "I-407",
+  //   name: "Record of Abandonment of Lawful Permanent Resident Status",
+  //   agency: "USCIS",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Post-GC"],
+  //   keywords: ["abandon", "green card", "surrender", "give up"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-407.pdf",
+  //   description:
+  //     "Voluntary abandonment of permanent resident status. Used when permanently moving outside US.",
+  // },
 
   // ──────────────── USCIS WAIVER FORMS ────────────────
   {
@@ -389,20 +389,20 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Form to provide address and agent information to NVC. Completed online through CEAC portal.",
   },
-  {
-    id: "ds160",
-    code: "DS-160",
-    name: "Nonimmigrant Visa Application",
-    agency: "DOS",
-    journeys: ["K1"],
-    stage: "NVC/CEAC",
-    category: ["Consular"],
-    keywords: ["k-1", "nonimmigrant", "visa application", "fiancé"],
-    type: "online",
-    officialLink: "https://ceac.state.gov/genniv/",
-    description:
-      "Nonimmigrant visa application for K-1 fiancé visa applicants. Completed online at CEAC.",
-  },
+  // {
+  //   id: "ds160",
+  //   code: "DS-160",
+  //   name: "Nonimmigrant Visa Application",
+  //   agency: "DOS",
+  //   journeys: ["K1"],
+  //   stage: "NVC/CEAC",
+  //   category: ["Consular"],
+  //   keywords: ["k-1", "nonimmigrant", "visa application", "fiancé"],
+  //   type: "online",
+  //   officialLink: "https://ceac.state.gov/genniv/",
+  //   description:
+  //     "Nonimmigrant visa application for K-1 fiancé visa applicants. Completed online at CEAC.",
+  // },
   {
     id: "ds5535",
     code: "DS-5535",
@@ -526,20 +526,20 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Application for Social Security Number. Should be applied for soon after entry or when receiving work authorization.",
   },
-  {
-    id: "ssa7050",
-    code: "SSA-7050-F4",
-    name: "Request for Social Security Earnings Information",
-    agency: "SSA",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Naturalization", "Financial"],
-    keywords: ["earnings", "work history", "quarters", "ssa"],
-    type: "pdf",
-    officialLink: "https://www.ssa.gov/forms/ssa-7050.pdf",
-    description:
-      "Request detailed earnings history from Social Security Administration. May be needed for I-864W or other purposes.",
-  },
+  // {
+  //   id: "ssa7050",
+  //   code: "SSA-7050-F4",
+  //   name: "Request for Social Security Earnings Information",
+  //   agency: "SSA",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Naturalization", "Financial"],
+  //   keywords: ["earnings", "work history", "quarters", "ssa"],
+  //   type: "pdf",
+  //   officialLink: "https://www.ssa.gov/forms/ssa-7050.pdf",
+  //   description:
+  //     "Request detailed earnings history from Social Security Administration. May be needed for I-864W or other purposes.",
+  // },
 
   // ──────────────── ADDITIONAL USCIS FORMS ────────────────
   {
@@ -558,21 +558,21 @@ const VISA_FORMS: VisaForm[] = [
       "Request to waive filing fees based on financial hardship. Must demonstrate income at or below 150% of Federal Poverty Guidelines.",
   },
 
-  {
-    id: "i539",
-    code: "I-539",
-    name: "Application to Extend/Change Nonimmigrant Status",
-    agency: "USCIS",
-    journeys: ["K1", "AOS"],
-    stage: "USCIS Filing",
-    category: ["Status"],
-    keywords: ["extend", "change status", "visitor", "tourist", "b2"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-539.pdf",
-    description:
-      "Extend or change nonimmigrant status. Used by visitors, students, or other nonimmigrants seeking to extend stay or change category.",
-  },
+  // {
+  //   id: "i539",
+  //   code: "I-539",
+  //   name: "Application to Extend/Change Nonimmigrant Status",
+  //   agency: "USCIS",
+  //   journeys: ["K1", "AOS"],
+  //   stage: "USCIS Filing",
+  //   category: ["Status"],
+  //   keywords: ["extend", "change status", "visitor", "tourist", "b2"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-539.pdf",
+  //   description:
+  //     "Extend or change nonimmigrant status. Used by visitors, students, or other nonimmigrants seeking to extend stay or change category.",
+  // },
 ];
 
 export default function VisaFormSelector() {
@@ -595,20 +595,30 @@ export default function VisaFormSelector() {
     message: string;
     type: "success" | "info";
   } | null>(null);
-  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const filterPopoverRef = useRef<HTMLDivElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Close filter popover when clicking outside
   useEffect(() => {
-    if (isMobileFiltersOpen) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-
-    // Cleanup when component unmounts
-    return () => {
-      document.body.classList.remove("overflow-hidden");
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterPopoverRef.current &&
+        !filterPopoverRef.current.contains(event.target as Node) &&
+        filterButtonRef.current &&
+        !filterButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterPopoverOpen(false);
+      }
     };
-  }, [isMobileFiltersOpen]);
+
+    if (isFilterPopoverOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isFilterPopoverOpen]);
 
   const handleStartForm = (formCode: string): void => {
     const normalized = formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -686,7 +696,7 @@ export default function VisaFormSelector() {
   });
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-primary/10 via-white to-primary/5">
+    <div className="min-h-screen bg-linear-to-br from-primary/10 via-white to-primary/5 mt-10">
       <div className="site-main-px site-main-py">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
@@ -739,146 +749,12 @@ export default function VisaFormSelector() {
         {/* Search & View Toggle Section */}
 
         {/* Content Grid */}
-        <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-8 items-start">
-          {/* Sidebar Filters Mobile Backdrop */}
-          {isMobileFiltersOpen && (
-            <div
-              className="lg:hidden fixed inset-0 z-100 bg-black/50 backdrop-blur-sm transition-opacity"
-              onClick={() => setIsMobileFiltersOpen(false)}
-            />
-          )}
-
-          {/* Sidebar Filters */}
-          <aside
-            className={`
-              w-[280px] sm:w-[320px] lg:w-full space-y-6 lg:self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:overflow-x-hidden custom-scrollbar
-              ${
-                isMobileFiltersOpen
-                  ? "fixed inset-y-0 right-0 z-110 bg-white p-5 shadow-2xl overflow-y-auto"
-                  : "hidden lg:block lg:relative lg:z-auto lg:bg-transparent lg:p-0 lg:shadow-none"
-              }
-            `}
-          >
-            <div className="bg-white lg:border lg:border-gray-200 lg:rounded-xl lg:shadow-sm lg:p-5 lg:md:p-6">
-              {/* Mobile Close Button */}
-              <div className="lg:hidden flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                <span className="text-lg font-bold text-gray-900">Filters</span>
-                <button
-                  onClick={() => setIsMobileFiltersOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Search Filter */}
-
-              {/* Journey Filter (Only in Journey View) */}
-
-              <div className="hidden lg:block text-xs font-extrabold tracking-wider uppercase text-gray-400 mb-5">
-                Filters
-              </div>
-              <div className="mb-6 pb-6 border-b border-gray-100">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">
-                  Visa Journey
-                </h3>
-                <div className="flex flex-col gap-2">
-                  {[
-                    { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                    { id: "IR5", label: "IR-5 (Parent)" },
-                    { id: "K1", label: "K-1 (Fiancé)" },
-                    { id: "AOS", label: "Adjustment of Status" },
-                    { id: "Naturalization", label: "Naturalization" },
-                  ].map((journey) => (
-                    <button
-                      key={journey.id}
-                      suppressHydrationWarning
-                      onClick={() => {
-                        if (currentJourney === journey.id) {
-                          setCurrentJourney("");
-                        } else {
-                          setCurrentJourney(journey.id);
-                          setCurrentStage("USCIS Filing");
-                        }
-                      }}
-                      className={`w-full text-left px-4 py-2 text-sm border rounded-full transition-all duration-200 ${
-                        currentJourney === journey.id
-                          ? "bg-[#0d7377] text-white border-[#0d7377]"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
-                      }`}
-                    >
-                      {journey.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Agency Filter */}
-              <div className="mb-6 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">Agency</h3>
-                <div className="flex flex-col gap-2">
-                  {["USCIS", "DOS", "CBP", "SSA"].map((agency) => (
-                    <button
-                      key={agency}
-                      suppressHydrationWarning
-                      onClick={() => toggleFilter("agency", agency)}
-                      className={`w-full text-left px-4 py-2 text-sm border rounded-full transition-all duration-200 ${
-                        activeFilters.agency.includes(agency)
-                          ? "bg-[#0d7377] text-white border-[#0d7377]"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
-                      }`}
-                    >
-                      {agency}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Category Filter */}
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-gray-900 mb-3">
-                  Category
-                </h3>
-                <div className="flex flex-col gap-2">
-                  {["Family-based", "AOS", "Financial", "Waiver"].map(
-                    (category) => (
-                      <button
-                        key={category}
-                        suppressHydrationWarning
-                        onClick={() => toggleFilter("category", category)}
-                        className={`w-full text-left px-4 py-2 text-sm border rounded-full transition-all duration-200 ${
-                          activeFilters.category.includes(category)
-                            ? "bg-[#0d7377] text-white border-[#0d7377]"
-                            : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    ),
-                  )}
-                </div>
-              </div>
-
-              {/* Clear Button */}
-              {(activeFilters.agency.length > 0 ||
-                activeFilters.category.length > 0) && (
-                <button
-                  onClick={clearFilters}
-                  suppressHydrationWarning
-                  className="w-full flex items-center justify-center gap-2 text-sm font-medium text-[#0d7377] hover:bg-[#e8f6f6] py-2 rounded-lg transition-colors border border-dashed border-gray-300 mt-4"
-                >
-                  <X className="w-4 h-4" />
-                  Clear all
-                </button>
-              )}
-            </div>
-          </aside>
-
+        <div className="max-w-7xl mx-auto">
           {/* Main Content */}
           <main className="min-w-0">
             {/* Search & Tabs (Moved Inside Main Content) */}
             <div className="mb-8 md:mb-10">
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex flex-row gap-4 mb-6">
                 <div className="relative flex-1">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                     <Search className="w-4 h-4" />
@@ -892,20 +768,170 @@ export default function VisaFormSelector() {
                     placeholder="Search forms..."
                   />
                 </div>
-                <button
-                  onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
-                  className="lg:hidden flex items-center justify-center gap-2 px-6 py-3 sm:py-4 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] transition-all shadow-sm"
-                >
-                  <Filter className="w-4 h-4" />
-                  Filters
-                  {(activeFilters.agency.length > 0 ||
-                    activeFilters.category.length > 0) && (
-                    <span className="bg-[#0d7377] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-1">
-                      {activeFilters.agency.length +
-                        activeFilters.category.length}
-                    </span>
+                <div className="relative">
+                  <button
+                    ref={filterButtonRef}
+                    onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
+                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] transition-all shadow-sm"
+                  >
+                    <Filter className="w-4 h-4" />
+
+                    {/* Hide on mobile, show on sm+ */}
+                    <span className="hidden sm:inline">Filters</span>
+
+                    {(activeFilters.agency.length > 0 ||
+                      activeFilters.category.length > 0 ||
+                      currentJourney) && (
+                      <span className="bg-[#0d7377] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-1">
+                        {activeFilters.agency.length +
+                          activeFilters.category.length +
+                          (currentJourney ? 1 : 0)}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Filter Popover */}
+                  {isFilterPopoverOpen && (
+                    <div
+                      ref={filterPopoverRef}
+                      className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 w-80 max-h-[500px] overflow-y-auto"
+                    >
+                      {/* Header */}
+                      <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
+                        <h3 className="font-semibold text-gray-900">
+                          Filter Forms
+                        </h3>
+                        <button
+                          onClick={() => setIsFilterPopoverOpen(false)}
+                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Filter Content */}
+                      <div className="p-4 space-y-4">
+                        {/* Journey Filter */}
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                            Visa Journey
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {[
+                              { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
+                              // { id: "IR5", label: "IR-5 (Parent)" },
+                              // { id: "K1", label: "K-1 (Fiancé)" },
+                              // { id: "AOS", label: "Adjustment of Status" },
+                              // { id: "Naturalization", label: "Naturalization" },
+                            ].map((journey) => (
+                              <button
+                                key={journey.id}
+                                onClick={() => {
+                                  if (currentJourney === journey.id) {
+                                    setCurrentJourney("");
+                                  } else {
+                                    setCurrentJourney(journey.id);
+                                    setCurrentStage("USCIS Filing");
+                                  }
+                                }}
+                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                  currentJourney === journey.id
+                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                }`}
+                              >
+                                {journey.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Agency Filter */}
+                        <div className="pt-4 border-t border-gray-100">
+                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                            Agency
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {["USCIS"].map((agency) => (
+                              <button
+                                key={agency}
+                                onClick={() => toggleFilter("agency", agency)}
+                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                  activeFilters.agency.includes(agency)
+                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                }`}
+                              >
+                                {agency}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div className="pt-4 border-t border-gray-100">
+                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                            Category
+                          </label>
+                          <div className="flex flex-col gap-2">
+                            {["Family-based", "Financial"].map(
+                              (category) => (
+                                <button
+                                  key={category}
+                                  onClick={() =>
+                                    toggleFilter("category", category)
+                                  }
+                                  className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                    activeFilters.category.includes(category)
+                                      ? "bg-[#0d7377] text-white border-[#0d7377]"
+                                      : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {category}
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="px-4 py-3 border-t border-gray-100 space-y-3 sticky bottom-0 bg-gray-50">
+                        <div className="flex gap-2">
+                          {(activeFilters.agency.length > 0 ||
+                            activeFilters.category.length > 0 ||
+                            currentJourney) && (
+                            <button
+                              onClick={() => {
+                                clearFilters();
+                                setCurrentJourney("");
+                              }}
+                              className="flex-1 text-sm text-white bg-[#0d7377] hover:bg-[#0a5a5d] font-medium transition-colors py-2 px-3 rounded-lg"
+                            >
+                              Reset
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setIsFilterPopoverOpen(false)}
+                            className="flex-1 text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium transition-colors py-2 px-3 rounded-lg"
+                          >
+                            Done
+                          </button>
+                        </div>
+                        <div className="text-xs text-gray-600 text-center">
+                          Showing{" "}
+                          <span className="font-semibold text-gray-900">
+                            {filteredForms.length}
+                          </span>{" "}
+                          of{" "}
+                          <span className="font-semibold text-gray-900">
+                            {VISA_FORMS.length}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </button>
+                </div>
               </div>
               <div className="flex gap-3 sm:gap-4">
                 <button
@@ -1027,7 +1053,7 @@ export default function VisaFormSelector() {
             )}
 
             {/* Forms Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 mb-12">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
               {filteredForms.length > 0 ? (
                 filteredForms.map((form) => {
                   return (

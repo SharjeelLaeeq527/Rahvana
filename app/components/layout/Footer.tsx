@@ -283,12 +283,12 @@ export default function Footer() {
             >
               {t("footer.cookiePolicy") || "Cookie Policy"}
             </Link>
-            {/* <Link
+             <Link
               href="/acceptable-use"
               className="hover:text-white transition-colors"
             >
               Acceptable Use
-            </Link> */}
+            </Link> 
           </div>
         </div>
       </div>

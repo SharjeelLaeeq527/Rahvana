@@ -547,6 +547,59 @@
   background-size: 48px 48px;
 }
 
+.animated-border {
+  position: relative;
+}
+
+.animated-border::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* shorthand for top/left/right/bottom */
+  border: 2px solid #0d7377;
+  border-radius: 16px;
+  pointer-events: none;
+
+  animation: rotateBorderColors 6s ease-in-out infinite;
+
+  /* Glow effect */
+  box-shadow:
+    inset 0 0 20px rgba(13, 115, 119, 0.1),
+    0 0 20px rgba(13, 115, 119, 0.15);
+}
+
+@keyframes rotateBorderColors {
+  0% {
+    border-color: #0d7377;
+    box-shadow:
+      inset 0 0 20px rgba(13, 115, 119, 0.1),
+      0 0 20px rgba(13, 115, 119, 0.15);
+  }
+  25% {
+    border-color: #14a0a6;
+    box-shadow:
+      inset 0 0 20px rgba(20, 160, 166, 0.1),
+      0 0 20px rgba(20, 160, 166, 0.15);
+  }
+  50% {
+    border-color: #32e0c4;
+    box-shadow:
+      inset 0 0 20px rgba(50, 224, 196, 0.1),
+      0 0 20px rgba(50, 224, 196, 0.15);
+  }
+  75% {
+    border-color: #0a5a5d;
+    box-shadow:
+      inset 0 0 20px rgba(10, 90, 93, 0.1),
+      0 0 20px rgba(10, 90, 93, 0.15);
+  }
+  100% {
+    border-color: #0d7377;
+    box-shadow:
+      inset 0 0 20px rgba(13, 115, 119, 0.1),
+      0 0 20px rgba(13, 115, 119, 0.15);
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
