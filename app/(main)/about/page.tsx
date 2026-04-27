@@ -3,18 +3,12 @@
 import { motion } from "framer-motion";
 import {
   Heart,
-  Plane,
-  Mail,
-  ClipboardList,
-  Phone,
   Clock,
   AlertCircle,
   MapPin,
   FileText,
   Users,
   ArrowRight,
-  HelpCircle,
-  Bell,
   MessageSquare,
   Compass,
   Handshake,

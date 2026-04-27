@@ -6,9 +6,10 @@ import { AuthProvider } from "./context/AuthContext";
 // import { ThemeProvider } from "./components/theme-provider";
 import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
-import { PlanProvider } from "./context/PlanContext";
 import { ToastProvider } from "./components/shared/ToastProvider";
 import { LanguageProvider } from "./context/LanguageContext";
+import { PlanProvider } from "./context/PlanContext";
+import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle";
 
 export const metadata: Metadata = {
   title: "Rahvana",
@@ -73,20 +74,21 @@ export default function RootLayout({
         <ToastProvider>
           <AuthProvider>
             <PlanProvider>
-              <LanguageProvider>
-                {/* <ThemeProvider
-              attribute="class"
-              // un comment if you want bydefault device theme
-              // defaultTheme="system"
-              // enableSystem
-              disableTransitionOnChange
-            > */}
-                <ClientHeader />
-                {children}
-                <ClientWidgets />
-                <Footer />
-                {/* </ThemeProvider> */}
-              </LanguageProvider>
+            <LanguageProvider>
+              {/* <ThemeProvider
+            attribute="class"
+            // un comment if you want bydefault device theme
+            // defaultTheme="system"
+            // enableSystem
+            disableTransitionOnChange
+          > */}
+              <ClientHeader />
+              {children}
+              <ClientWidgets />
+              <Footer />
+              {/* </ThemeProvider> */}
+            </LanguageProvider>
+              <PlanTierDevToggle />
             </PlanProvider>
           </AuthProvider>
         </ToastProvider>
