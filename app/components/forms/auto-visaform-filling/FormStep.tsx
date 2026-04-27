@@ -4,7 +4,8 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Field as FormField } from "@/lib/formConfig/types";
-import { Check, Info } from "lucide-react";
+import { Check, Info, ChevronDown } from "lucide-react";
+import { US_STATES } from "@/lib/formConfig/constants";
 
 /* Inputs */
 
@@ -30,6 +31,17 @@ const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   />
 );
 
+const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
+  <select
+    {...props}
+    className={`w-full mt-1 px-4 py-3.5 rounded-xl bg-white border-2 border-[#e8f6f6] text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-[#0d7377] focus:ring-4 focus:ring-[#0d7377]/10 hover:border-[#14a0a6]/50 appearance-none cursor-pointer ${
+      props.className || ""
+    }`}
+  >
+    {props.children}
+  </select>
+);
+
 type RadioOption = { label: string; value: string; pdfKey: string };
 
 interface RadioGroupProps {
@@ -45,20 +57,17 @@ const RadioGroup = ({ name, options, value, onChange }: RadioGroupProps) => {
     options.length >= 4
       ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
       : options.length === 3
-      ? "grid-cols-1 md:grid-cols-3"
-      : options.length === 2
-      ? "grid-cols-1 md:grid-cols-2"
-      : "grid-cols-1";
+        ? "grid-cols-1 md:grid-cols-3"
+        : options.length === 2
+          ? "grid-cols-1 md:grid-cols-2"
+          : "grid-cols-1";
 
   return (
     <div className={`grid ${cols} gap-3 mt-2`}>
       {options.map((opt) => {
         const selected = value === opt.value;
         return (
-          <label
-            key={opt.value}
-            className="cursor-pointer group relative"
-          >
+          <label key={opt.value} className="cursor-pointer group relative">
             <input
               type="radio"
               name={name}
@@ -115,7 +124,12 @@ interface CheckboxCardProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const CheckboxCard = ({ name, label, checked, onChange }: CheckboxCardProps) => (
+const CheckboxCard = ({
+  name,
+  label,
+  checked,
+  onChange,
+}: CheckboxCardProps) => (
   <label className="block cursor-pointer mt-2">
     <input
       type="checkbox"
@@ -143,7 +157,9 @@ const CheckboxCard = ({ name, label, checked, onChange }: CheckboxCardProps) => 
           backgroundColor: checked ? "#0d7377" : "transparent",
         }}
       >
-        {checked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+        {checked && (
+          <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+        )}
       </div>
       <span
         className="text-sm font-medium"
@@ -164,11 +180,11 @@ interface FormStepProps {
   allVisibleFields?: FormField[];
   formData: Record<string, string>;
   onInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   /** Index of currently visible question (within `fields`). Optional: defaults to last. */
   currentQuestionIndex?: number;
-  navigationDirection?: 'next' | 'prev';
+  navigationDirection?: "next" | "prev";
   progressiveSubQuestionIndices?: Record<string, number>;
 }
 
@@ -179,7 +195,7 @@ export function FormStep({
   formData,
   onInputChange,
   currentQuestionIndex,
-  navigationDirection = 'next',
+  navigationDirection = "next",
   progressiveSubQuestionIndices = {},
 }: FormStepProps) {
   const [isClient, setIsClient] = useState(false);
@@ -218,7 +234,7 @@ export function FormStep({
   const renderSubQuestions = (field: FormField) => {
     // If field has subQuestions, check if parent should be rendered
     const hasSubQuestions = field.subQuestions && field.subQuestions.length > 0;
-    
+
     if (!hasSubQuestions) {
       // No subQuestions - just render the field normally
       return renderInput(field);
@@ -226,11 +242,14 @@ export function FormStep({
 
     // Filter subQuestions based on their conditions
     const applicableSubQuestions = (field.subQuestions || []).filter(
-      (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData)
+      (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData),
     );
 
     const progressiveIndex = progressiveSubQuestionIndices[field.key] ?? -1;
-    const visibleSubQuestions = applicableSubQuestions.slice(0, progressiveIndex + 1);
+    const visibleSubQuestions = applicableSubQuestions.slice(
+      0,
+      progressiveIndex + 1,
+    );
 
     // Only render parent field if it has options (e.g., radio buttons)
     // Skip parent if it's just a grouping label (no options)
@@ -240,7 +259,7 @@ export function FormStep({
       <div className="space-y-5">
         {/* Render parent field only if it has options (like radio buttons) */}
         {shouldRenderParent && renderInput(field)}
-        
+
         {/* Render sub-questions progressively */}
         {visibleSubQuestions.map((subQ) => (
           <motion.div
@@ -307,6 +326,29 @@ export function FormStep({
         />
       );
     }
+    if (field.type === "dropdown") {
+      const options = field.isState ? US_STATES : field.options || [];
+      <div className="relative group/select">
+        <Select
+          name={field.key}
+          value={formData[field.key] ?? ""}
+          onChange={onInputChange as any}
+          autoFocus
+        >
+          <option value="">
+            Select {field.isState ? "a State" : "an option"}
+          </option>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </Select>
+        <div className="absolute right-4 top-[calc(50%+2px)] -translate-y-1/2 pointer-events-none transition-transform group-focus-within/select:rotate-180">
+          <ChevronDown className="w-5 h-5 text-[#0d7377]" />
+        </div>
+      </div>;
+    }
     return null;
   };
 
@@ -331,7 +373,8 @@ export function FormStep({
         <div
           className="absolute -inset-4 rounded-3xl blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"
           style={{
-            background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 50%, #32e0c4 100%)",
+            background:
+              "linear-gradient(135deg, #0d7377 0%, #14a0a6 50%, #32e0c4 100%)",
           }}
           aria-hidden
         />
@@ -341,14 +384,14 @@ export function FormStep({
             key={activeField.key}
             initial={{
               opacity: 0,
-              rotateY: navigationDirection === 'next' ? 35 : -35,
-              x: navigationDirection === 'next' ? 60 : -60,
+              rotateY: navigationDirection === "next" ? 35 : -35,
+              x: navigationDirection === "next" ? 60 : -60,
             }}
             animate={{ opacity: 1, rotateY: 0, x: 0 }}
             exit={{
               opacity: 0,
-              rotateY: navigationDirection === 'next' ? -35 : 35,
-              x: navigationDirection === 'next' ? -60 : 60,
+              rotateY: navigationDirection === "next" ? -35 : 35,
+              x: navigationDirection === "next" ? -60 : 60,
             }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="relative rounded-3xl bg-white border border-[#e8f6f6] p-7 md:p-9 group"
@@ -393,9 +436,7 @@ export function FormStep({
             </div>
 
             {/* Input area with enhanced styling */}
-            <div className="space-y-5">
-              {renderSubQuestions(activeField)}
-            </div>
+            <div className="space-y-5">{renderSubQuestions(activeField)}</div>
 
             {activeField.placeholder && activeField.type !== "text" && (
               <p className="mt-4 text-xs text-gray-500 italic">
@@ -428,7 +469,8 @@ export function FormStep({
                 transition={{ delay: i * 0.05 }}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-semibold border"
                 style={{
-                  background: "linear-gradient(135deg, #e8f6f6 0%, #f0fafb 100%)",
+                  background:
+                    "linear-gradient(135deg, #e8f6f6 0%, #f0fafb 100%)",
                   borderColor: "rgba(13, 115, 119, 0.2)",
                   color: "#0a5a5d",
                   boxShadow: "0 2px 8px rgba(13, 115, 119, 0.1)",
@@ -439,9 +481,7 @@ export function FormStep({
                   style={{ color: "#0d7377" }}
                   strokeWidth={3}
                 />
-                <span className="max-w-xs truncate">
-                  Q{i + 1}
-                </span>
+                <span className="max-w-xs truncate">Q{i + 1}</span>
               </motion.div>
             ))}
           </div>
