@@ -46,7 +46,7 @@ function IconX({ className, style }: { className?: string; style?: React.CSSProp
 function ComparisonCell({ value }: { value: string }) {
   const v = value.trim();
   if (v === "Included" || v === "Unlimited") {
-    return <IconCheck className={`w-5 h-5 mx-auto ${v === "Unlimited" ? "text-amber-600" : "text-primary"}`} />;
+    return <IconCheck className="w-5 h-5 mx-auto text-primary" />;
   }
   if (v === "Not Included") {
     return <IconX className="w-5 h-5 mx-auto text-red-500" />;
@@ -206,7 +206,7 @@ function PricingContent() {
 
       {/* ── Journey Context ────────────────────────────────────────────── */}
       {activeStep === "plans" && (
-        <section className="site-main-py">
+        <section className="pt-10">
           <div className={containerClass}>
             <div className={eyebrowClass}>Simple, transparent pricing</div>
             <h1 className="text-[clamp(36px,5.5vw,64px)] leading-[1.03] tracking-tight mb-[18px] font-bold">

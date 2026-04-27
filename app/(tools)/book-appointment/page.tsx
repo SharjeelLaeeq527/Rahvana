@@ -2662,8 +2662,8 @@ export default function WilcareAppointmentForm() {
   };
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-slate-100 site-main-px site-main-py">
-      <div className="">
+    <div className="min-h-screen bg-slate-50 site-main-px site-main-py">
+      <div className="max-w-4xl mx-auto">
         <div className="mb-6 sm:mb-8 text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
             {t("bookAppointment.title")}

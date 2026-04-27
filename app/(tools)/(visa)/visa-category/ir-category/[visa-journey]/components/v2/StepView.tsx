@@ -164,6 +164,7 @@ import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
+import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -3580,6 +3581,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             stepDescription={currentStep.step_description}
             isBeneficiaryTheme={isBeneficiaryTheme}
           />
+
+          {/* Entitlement Banner — shown when step features are locked for current plan */}
+          <StepEntitlementBanner stepKey={sId} />
 
           {/* Companion Context Badge (Step 5 Specific) */}
           {(sId === "step_1_5" || sId === "step_1_2_b") && (

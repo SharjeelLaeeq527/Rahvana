@@ -13,7 +13,7 @@ import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
-import { LockBadge } from "@/app/components/entitlements/LockedFeature";
+import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -336,17 +336,10 @@ export function DashboardView({
   ];
 
   return (
-    <>
-      {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
-      )}
-      <div
-        className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide relative"
-        style={{ minHeight: "100vh" }}
-      >
+    <div
+      className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide relative"
+      style={{ minHeight: "100vh" }}
+    >
         {/* Fullscreen background for Dashboard */}
         <div
           className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
@@ -361,6 +354,9 @@ export function DashboardView({
           </h1>
 
           <div className={`flex flex-col lg:flex-row gap-8 items-start ${!showSidebar ? "justify-center" : ""}`}>
+            {upgradeModalFeature && (
+              <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+            )}
             {/* Main Content Column */}
             <div className={`flex flex-col gap-6 order-1 w-full ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}>
 
@@ -482,11 +478,11 @@ export function DashboardView({
                         </div>
                       </div>
                     );
-                  })}
-              </div>
+                    })}
+                </div>
 
-              {/* Accordions */}
-              <div className="bg-white border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] rounded-3xl overflow-hidden shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] outline outline-1 outline-[#22304a]">
+                {/* Accordions */}
+                <div className="bg-white border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] rounded-3xl overflow-hidden shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] outline outline-1 outline-[#22304a]">
                 {/* Case Details */}
                 <div className="border-t first:border-t-0 border-[#d0e4f7]">
                   <div
@@ -789,7 +785,6 @@ export function DashboardView({
           </div>
 
         </div>
-      </div>
-    </>
+    </div>
   );
 }

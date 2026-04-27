@@ -34,6 +34,9 @@ import {
   Eye,
   Download,
 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/app/context/AuthContext";
+import { createBrowserClient } from "@supabase/ssr";
 import { Loader } from "@/components/ui/spinner";
 import { PKMCenter, pkmCenters } from "./(data)/punjab-pkm-centers";
 import { balochistanCenters } from "./(data)/balochistan-pkm-centers";
