@@ -6,6 +6,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Field as FormField } from "@/lib/formConfig/types";
 import { Check } from "lucide-react";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
+import {
+  CustomDropdown,
+  type DropdownOption,
+} from "@/app/components/shared/CustomDropdown";
+import { US_STATES } from "@/lib/formConfig/constants";
 
 /* ==================== Input Components ==================== */
 
@@ -45,7 +50,7 @@ const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   />
 );
 
-type RadioOption = { label: string; value: string; pdfKey: string };
+type RadioOption = { label: string; value: string; pdfKey?: string };
 
 interface RadioGroupProps {
   name: string;
@@ -59,10 +64,10 @@ const RadioGroup = ({ name, options, value, onChange }: RadioGroupProps) => {
     options.length >= 4
       ? "grid-cols-1 md:grid-cols-2"
       : options.length === 3
-      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-      : options.length === 2
-      ? "grid-cols-1 md:grid-cols-2"
-      : "grid-cols-1";
+        ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        : options.length === 2
+          ? "grid-cols-1 md:grid-cols-2"
+          : "grid-cols-1";
 
   return (
     <div className={`grid ${cols} gap-3`}>
@@ -128,7 +133,12 @@ interface CheckboxCardProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const CheckboxCard = ({ name, label, checked, onChange }: CheckboxCardProps) => (
+const CheckboxCard = ({
+  name,
+  label,
+  checked,
+  onChange,
+}: CheckboxCardProps) => (
   <label className="block cursor-pointer">
     <input
       type="checkbox"
@@ -158,7 +168,10 @@ const CheckboxCard = ({ name, label, checked, onChange }: CheckboxCardProps) => 
       >
         {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
       </div>
-      <span className="text-sm font-medium" style={{ color: checked ? "#0a5a5d" : "#1f2937" }}>
+      <span
+        className="text-sm font-medium"
+        style={{ color: checked ? "#0a5a5d" : "#1f2937" }}
+      >
         {label}
       </span>
     </motion.div>
@@ -174,7 +187,7 @@ interface FormStepProps {
   allVisibleFields?: FormField[];
   formData: Record<string, string>;
   onInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   currentQuestionIndex?: number;
   navigationDirection?: "next" | "prev";
@@ -182,10 +195,8 @@ interface FormStepProps {
 }
 
 export function FormStep({
-  stepNumber,
   sectionTitle,
   fields,
-  allVisibleFields,
   formData,
   onInputChange,
   currentQuestionIndex,
@@ -227,7 +238,10 @@ export function FormStep({
   const parseLabel = (label: string) => {
     const parts = label.split("\n");
     if (parts.length > 1) {
-      return { main: parts[0], hint: parts.slice(1).join(" ").replace(/[()]/g, "").trim() };
+      return {
+        main: parts[0],
+        hint: parts.slice(1).join(" ").replace(/[()]/g, "").trim(),
+      };
     }
     return { main: label, hint: null };
   };
@@ -242,11 +256,14 @@ export function FormStep({
     }
 
     const applicableSubQuestions = (field.subQuestions || []).filter(
-      (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData)
+      (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData),
     );
 
     const progressiveIndex = progressiveSubQuestionIndices[field.key] ?? -1;
-    const visibleSubQuestions = applicableSubQuestions.slice(0, progressiveIndex + 1);
+    const visibleSubQuestions = applicableSubQuestions.slice(
+      0,
+      progressiveIndex + 1,
+    );
     const shouldRenderParent = field.options && field.options.length > 0;
 
     return (
@@ -261,7 +278,9 @@ export function FormStep({
             transition={{ duration: 0.25 }}
             className="space-y-2"
           >
-            <label className="block text-sm font-medium text-gray-700">{subQ.label}</label>
+            <label className="block text-sm font-medium text-gray-700">
+              {subQ.label}
+            </label>
             {renderInput(subQ as FormField)}
           </motion.div>
         ))}
@@ -296,7 +315,7 @@ export function FormStep({
       return (
         <RadioGroup
           name={field.key}
-          options={field.options!}
+          options={(field.options as RadioOption[]) || []}
           value={formData[field.key] ?? ""}
           onChange={onInputChange}
         />
@@ -323,30 +342,67 @@ export function FormStep({
         />
       );
     }
+    if (field.type === "dropdown") {
+      let options: DropdownOption[] = [];
+
+      const fieldWithIsState = field as FormField & { isState?: boolean };
+      if (fieldWithIsState.isState) {
+        options = US_STATES as DropdownOption[];
+      } else if (field.options) {
+        options = field.options.map((opt) => ({
+          label: opt.label,
+          value: opt.value,
+        }));
+      }
+
+      return (
+        <CustomDropdown
+          value={formData[field.key] ?? ""}
+          onChange={(value: string) => {
+            const event = {
+              target: {
+                name: field.key,
+                value: value,
+              },
+            } as React.ChangeEvent<HTMLInputElement>;
+            onInputChange(event);
+          }}
+          options={options}
+          placeholder={field.placeholder || `Select an option`}
+          className="border-[#d0e8e9] focus:border-[#0d7377]"
+        />
+      );
+    }
     return null;
   };
 
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg backdrop-blur-md" style={{
-        background: 'rgba(232, 246, 246, 0.6)',
-        border: '1px solid rgba(13, 115, 119, 0.2)'
-      }}>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: '#0d7377' }}>
+      <div
+        className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg backdrop-blur-md"
+        style={{
+          background: "rgba(232, 246, 246, 0.6)",
+          border: "1px solid rgba(13, 115, 119, 0.2)",
+        }}
+      >
+        <p
+          className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+          style={{ color: "#0d7377" }}
+        >
           {cleanSection}
         </p>
       </div>
 
       {/* Expandable Tooltip */}
-          {activeField.tooltip && (
-            <ExpandableTooltip
-              icon="?"
-              title="What does this mean?"
-              message={activeField.tooltip}
-              defaultOpen={false}
-            />
-          )}
+      {activeField.tooltip && (
+        <ExpandableTooltip
+          icon="?"
+          title="What does this mean?"
+          message={activeField.tooltip}
+          defaultOpen={false}
+        />
+      )}
 
       {/* Main Question Card */}
       <AnimatePresence mode="wait" initial={false}>
