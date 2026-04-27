@@ -62,72 +62,72 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Required supplement when petitioning for a spouse. Includes biographical information about the beneficiary spouse.",
   },
-  {
-    id: "i129f",
-    code: "I-129F",
-    name: "Petition for Alien Fiancé(e)",
-    agency: "USCIS",
-    journeys: ["K1"],
-    stage: "USCIS Filing",
-    category: ["Family-based"],
-    keywords: ["fiancé", "fiancee", "k-1", "k1", "engagement"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-129f.pdf",
-    description:
-      "Petition for fiancé(e) visa (K-1). Allows fiancé to enter US to marry within 90 days. Marriage must occur before AOS filing.",
-  },
-  {
-    id: "i485",
-    code: "I-485",
-    name: "Application to Register Permanent Residence or Adjust Status",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "USCIS Filing",
-    category: ["AOS"],
-    keywords: [
-      "adjustment",
-      "status",
-      "green card",
-      "aos",
-      "permanent residence",
-    ],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-485.pdf",
-    description:
-      "Main application for adjustment of status to permanent resident. Filed by beneficiaries already in the US seeking green card.",
-  },
-  {
-    id: "i765",
-    code: "I-765",
-    name: "Application for Employment Authorization",
-    agency: "USCIS",
-    journeys: ["AOS", "K1"],
-    stage: "USCIS Filing",
-    category: ["AOS", "Employment"],
-    keywords: ["work permit", "ead", "employment", "authorization", "work"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-765.pdf",
-    description:
-      "Application for work authorization (EAD). Can be filed with I-485 for AOS or after K-1 entry and marriage.",
-  },
-  {
-    id: "i131",
-    code: "I-131",
-    name: "Application for Travel Document",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "USCIS Filing",
-    category: ["AOS", "Travel"],
-    keywords: ["advance parole", "travel", "reentry", "ap"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-131.pdf",
-    description:
-      "Application for advance parole to travel abroad while AOS is pending. Without this, leaving US can abandon AOS application.",
-  },
+  // {
+  //   id: "i129f",
+  //   code: "I-129F",
+  //   name: "Petition for Alien Fiancé(e)",
+  //   agency: "USCIS",
+  //   journeys: ["K1"],
+  //   stage: "USCIS Filing",
+  //   category: ["Family-based"],
+  //   keywords: ["fiancé", "fiancee", "k-1", "k1", "engagement"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-129f.pdf",
+  //   description:
+  //     "Petition for fiancé(e) visa (K-1). Allows fiancé to enter US to marry within 90 days. Marriage must occur before AOS filing.",
+  // },
+  // {
+  //   id: "i485",
+  //   code: "I-485",
+  //   name: "Application to Register Permanent Residence or Adjust Status",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "USCIS Filing",
+  //   category: ["AOS"],
+  //   keywords: [
+  //     "adjustment",
+  //     "status",
+  //     "green card",
+  //     "aos",
+  //     "permanent residence",
+  //   ],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-485.pdf",
+  //   description:
+  //     "Main application for adjustment of status to permanent resident. Filed by beneficiaries already in the US seeking green card.",
+  // },
+  // {
+  //   id: "i765",
+  //   code: "I-765",
+  //   name: "Application for Employment Authorization",
+  //   agency: "USCIS",
+  //   journeys: ["AOS", "K1"],
+  //   stage: "USCIS Filing",
+  //   category: ["AOS", "Employment"],
+  //   keywords: ["work permit", "ead", "employment", "authorization", "work"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-765.pdf",
+  //   description:
+  //     "Application for work authorization (EAD). Can be filed with I-485 for AOS or after K-1 entry and marriage.",
+  // },
+  // {
+  //   id: "i131",
+  //   code: "I-131",
+  //   name: "Application for Travel Document",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "USCIS Filing",
+  //   category: ["AOS", "Travel"],
+  //   keywords: ["advance parole", "travel", "reentry", "ap"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-131.pdf",
+  //   description:
+  //     "Application for advance parole to travel abroad while AOS is pending. Without this, leaving US can abandon AOS application.",
+  // },
   {
     id: "i864",
     code: "I-864",
@@ -188,36 +188,36 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Exemption from affidavit requirement if immigrant has 40 qualifying work quarters under Social Security Act.",
   },
-  {
-    id: "i134",
-    code: "I-134",
-    name: "Declaration of Financial Support",
-    agency: "USCIS",
-    journeys: ["K1"],
-    stage: "Interview Prep",
-    category: ["Financial"],
-    keywords: ["k-1", "fiancé", "support", "financial", "declaration"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-134.pdf",
-    description:
-      "Non-binding declaration of financial support for K-1 fiancé visa applicants. Shows ability to support fiancé.",
-  },
-  {
-    id: "i693",
-    code: "I-693",
-    name: "Report of Medical Examination and Vaccination Record",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "Interview Prep",
-    category: ["AOS", "Medical"],
-    keywords: ["medical", "exam", "vaccination", "health", "civil surgeon"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-693.pdf",
-    description:
-      "Medical examination by USCIS-approved civil surgeon. Required for AOS applicants. Sealed envelope given to applicant.",
-  },
+  // {
+  //   id: "i134",
+  //   code: "I-134",
+  //   name: "Declaration of Financial Support",
+  //   agency: "USCIS",
+  //   journeys: ["K1"],
+  //   stage: "Interview Prep",
+  //   category: ["Financial"],
+  //   keywords: ["k-1", "fiancé", "support", "financial", "declaration"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-134.pdf",
+  //   description:
+  //     "Non-binding declaration of financial support for K-1 fiancé visa applicants. Shows ability to support fiancé.",
+  // },
+  // {
+  //   id: "i693",
+  //   code: "I-693",
+  //   name: "Report of Medical Examination and Vaccination Record",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "Interview Prep",
+  //   category: ["AOS", "Medical"],
+  //   keywords: ["medical", "exam", "vaccination", "health", "civil surgeon"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-693.pdf",
+  //   description:
+  //     "Medical examination by USCIS-approved civil surgeon. Required for AOS applicants. Sealed envelope given to applicant.",
+  // },
   {
     id: "i751",
     code: "I-751",
@@ -233,36 +233,36 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Required to remove conditions from 2-year conditional green card (marriages under 2 years). File within 90-day window before expiration.",
   },
-  {
-    id: "n400",
-    code: "N-400",
-    name: "Application for Naturalization",
-    agency: "USCIS",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Naturalization"],
-    keywords: ["citizenship", "naturalization", "citizen", "oath"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf",
-    description:
-      "Application for U.S. citizenship. Can apply 3 years after green card (if married to USC) or 5 years (general).",
-  },
-  {
-    id: "i90",
-    code: "I-90",
-    name: "Application to Replace Permanent Resident Card",
-    agency: "USCIS",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Post-GC"],
-    keywords: ["replace", "renew", "green card", "lost", "stolen", "damaged"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-90.pdf",
-    description:
-      "Replace or renew permanent resident card. File if card is lost, stolen, damaged, expired, or has incorrect information.",
-  },
+  // {
+  //   id: "n400",
+  //   code: "N-400",
+  //   name: "Application for Naturalization",
+  //   agency: "USCIS",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Naturalization"],
+  //   keywords: ["citizenship", "naturalization", "citizen", "oath"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/n-400.pdf",
+  //   description:
+  //     "Application for U.S. citizenship. Can apply 3 years after green card (if married to USC) or 5 years (general).",
+  // },
+  // {
+  //   id: "i90",
+  //   code: "I-90",
+  //   name: "Application to Replace Permanent Resident Card",
+  //   agency: "USCIS",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Post-GC"],
+  //   keywords: ["replace", "renew", "green card", "lost", "stolen", "damaged"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-90.pdf",
+  //   description:
+  //     "Replace or renew permanent resident card. File if card is lost, stolen, damaged, expired, or has incorrect information.",
+  // },
   {
     id: "ar11",
     code: "AR-11",
@@ -277,36 +277,36 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "All non-citizens must notify USCIS within 10 days of changing address. Can be filed online at uscis.gov.",
   },
-  {
-    id: "i102",
-    code: "I-102",
-    name: "Application for Replacement/Initial Nonimmigrant Arrival-Departure Document",
-    agency: "USCIS",
-    journeys: ["AOS"],
-    stage: "Post-Entry",
-    category: ["Administrative"],
-    keywords: ["i-94", "arrival", "departure", "lost", "replace"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-102.pdf",
-    description:
-      "Replace lost or never-received I-94 arrival/departure record. Required for various immigration processes.",
-  },
-  {
-    id: "i407",
-    code: "I-407",
-    name: "Record of Abandonment of Lawful Permanent Resident Status",
-    agency: "USCIS",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Post-GC"],
-    keywords: ["abandon", "green card", "surrender", "give up"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-407.pdf",
-    description:
-      "Voluntary abandonment of permanent resident status. Used when permanently moving outside US.",
-  },
+  // {
+  //   id: "i102",
+  //   code: "I-102",
+  //   name: "Application for Replacement/Initial Nonimmigrant Arrival-Departure Document",
+  //   agency: "USCIS",
+  //   journeys: ["AOS"],
+  //   stage: "Post-Entry",
+  //   category: ["Administrative"],
+  //   keywords: ["i-94", "arrival", "departure", "lost", "replace"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-102.pdf",
+  //   description:
+  //     "Replace lost or never-received I-94 arrival/departure record. Required for various immigration processes.",
+  // },
+  // {
+  //   id: "i407",
+  //   code: "I-407",
+  //   name: "Record of Abandonment of Lawful Permanent Resident Status",
+  //   agency: "USCIS",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Post-GC"],
+  //   keywords: ["abandon", "green card", "surrender", "give up"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-407.pdf",
+  //   description:
+  //     "Voluntary abandonment of permanent resident status. Used when permanently moving outside US.",
+  // },
 
   // ──────────────── USCIS WAIVER FORMS ────────────────
   {
@@ -389,20 +389,20 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Form to provide address and agent information to NVC. Completed online through CEAC portal.",
   },
-  {
-    id: "ds160",
-    code: "DS-160",
-    name: "Nonimmigrant Visa Application",
-    agency: "DOS",
-    journeys: ["K1"],
-    stage: "NVC/CEAC",
-    category: ["Consular"],
-    keywords: ["k-1", "nonimmigrant", "visa application", "fiancé"],
-    type: "online",
-    officialLink: "https://ceac.state.gov/genniv/",
-    description:
-      "Nonimmigrant visa application for K-1 fiancé visa applicants. Completed online at CEAC.",
-  },
+  // {
+  //   id: "ds160",
+  //   code: "DS-160",
+  //   name: "Nonimmigrant Visa Application",
+  //   agency: "DOS",
+  //   journeys: ["K1"],
+  //   stage: "NVC/CEAC",
+  //   category: ["Consular"],
+  //   keywords: ["k-1", "nonimmigrant", "visa application", "fiancé"],
+  //   type: "online",
+  //   officialLink: "https://ceac.state.gov/genniv/",
+  //   description:
+  //     "Nonimmigrant visa application for K-1 fiancé visa applicants. Completed online at CEAC.",
+  // },
   {
     id: "ds5535",
     code: "DS-5535",
@@ -526,20 +526,20 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Application for Social Security Number. Should be applied for soon after entry or when receiving work authorization.",
   },
-  {
-    id: "ssa7050",
-    code: "SSA-7050-F4",
-    name: "Request for Social Security Earnings Information",
-    agency: "SSA",
-    journeys: ["Naturalization"],
-    stage: "Post-Entry",
-    category: ["Naturalization", "Financial"],
-    keywords: ["earnings", "work history", "quarters", "ssa"],
-    type: "pdf",
-    officialLink: "https://www.ssa.gov/forms/ssa-7050.pdf",
-    description:
-      "Request detailed earnings history from Social Security Administration. May be needed for I-864W or other purposes.",
-  },
+  // {
+  //   id: "ssa7050",
+  //   code: "SSA-7050-F4",
+  //   name: "Request for Social Security Earnings Information",
+  //   agency: "SSA",
+  //   journeys: ["Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Naturalization", "Financial"],
+  //   keywords: ["earnings", "work history", "quarters", "ssa"],
+  //   type: "pdf",
+  //   officialLink: "https://www.ssa.gov/forms/ssa-7050.pdf",
+  //   description:
+  //     "Request detailed earnings history from Social Security Administration. May be needed for I-864W or other purposes.",
+  // },
 
   // ──────────────── ADDITIONAL USCIS FORMS ────────────────
   {
@@ -558,21 +558,21 @@ const VISA_FORMS: VisaForm[] = [
       "Request to waive filing fees based on financial hardship. Must demonstrate income at or below 150% of Federal Poverty Guidelines.",
   },
 
-  {
-    id: "i539",
-    code: "I-539",
-    name: "Application to Extend/Change Nonimmigrant Status",
-    agency: "USCIS",
-    journeys: ["K1", "AOS"],
-    stage: "USCIS Filing",
-    category: ["Status"],
-    keywords: ["extend", "change status", "visitor", "tourist", "b2"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-539.pdf",
-    description:
-      "Extend or change nonimmigrant status. Used by visitors, students, or other nonimmigrants seeking to extend stay or change category.",
-  },
+  // {
+  //   id: "i539",
+  //   code: "I-539",
+  //   name: "Application to Extend/Change Nonimmigrant Status",
+  //   agency: "USCIS",
+  //   journeys: ["K1", "AOS"],
+  //   stage: "USCIS Filing",
+  //   category: ["Status"],
+  //   keywords: ["extend", "change status", "visitor", "tourist", "b2"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-539.pdf",
+  //   description:
+  //     "Extend or change nonimmigrant status. Used by visitors, students, or other nonimmigrants seeking to extend stay or change category.",
+  // },
 ];
 
 export default function VisaFormSelector() {
@@ -819,10 +819,10 @@ export default function VisaFormSelector() {
                           <div className="flex flex-col gap-2">
                             {[
                               { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                              { id: "IR5", label: "IR-5 (Parent)" },
-                              { id: "K1", label: "K-1 (Fiancé)" },
-                              { id: "AOS", label: "Adjustment of Status" },
-                              { id: "Naturalization", label: "Naturalization" },
+                              // { id: "IR5", label: "IR-5 (Parent)" },
+                              // { id: "K1", label: "K-1 (Fiancé)" },
+                              // { id: "AOS", label: "Adjustment of Status" },
+                              // { id: "Naturalization", label: "Naturalization" },
                             ].map((journey) => (
                               <button
                                 key={journey.id}
@@ -852,7 +852,7 @@ export default function VisaFormSelector() {
                             Agency
                           </label>
                           <div className="flex flex-col gap-2">
-                            {["USCIS", "DOS", "CBP", "SSA"].map((agency) => (
+                            {["USCIS"].map((agency) => (
                               <button
                                 key={agency}
                                 onClick={() => toggleFilter("agency", agency)}
@@ -874,7 +874,7 @@ export default function VisaFormSelector() {
                             Category
                           </label>
                           <div className="flex flex-col gap-2">
-                            {["Family-based", "AOS", "Financial", "Waiver"].map(
+                            {["Family-based", "Financial"].map(
                               (category) => (
                                 <button
                                   key={category}

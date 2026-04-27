@@ -4,7 +4,8 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getFormConfig } from "@/lib/formConfig";
-import { ProgressBar } from "./ProgressBar";
+import { Header } from "./Header";
+import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
@@ -67,7 +68,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewType>("form");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [isScrollingUp, setIsScrollingUp] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
@@ -263,11 +264,18 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (showSectionIntro && introVisible) {
       // Save scroll position before intro appears
       savedScrollPosition.current = window.scrollY;
-    } else if (!showSectionIntro && !introVisible && savedScrollPosition.current > 0) {
+    } else if (
+      !showSectionIntro &&
+      !introVisible &&
+      savedScrollPosition.current > 0
+    ) {
       // Restore scroll position after intro disappears (both auto and manual)
       const position = savedScrollPosition.current;
       requestAnimationFrame(() => {
-        window.scrollTo({ top: position, behavior: 'instant' as ScrollBehavior });
+        window.scrollTo({
+          top: position,
+          behavior: "instant" as ScrollBehavior,
+        });
       });
       savedScrollPosition.current = 0;
     }
@@ -858,12 +866,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   return (
     <div className="w-full min-h-screen" style={{ backgroundColor: "#f7fbfb" }}>
-      {/* Sticky Header w/ ProgressBar */}
-      <ProgressBar
-        current={currentStep}
-        total={totalSteps}
-        progress={progress}
-        sectionName={currentSection.title}
+      {/* Sticky Header w/ Header */}
+      <Header
         formTitle={config.formTitle}
         formSubtitle={config.formSubtitle}
         onOpenMenu={() => setIsDrawerOpen(true)}
@@ -935,40 +939,76 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             className="hidden lg:block shrink-0"
           >
             <div
-              className="sticky top-6 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar rounded-2xl border p-4"
+              className={`sticky top-6 max-h-[calc(100vh-120px)] rounded-2xl transition-all duration-300 flex flex-col ${
+                isSidebarCollapsed
+                  ? "items-center justify-start p-2"
+                  : "items-stretch border p-4 overflow-y-auto custom-scrollbar"
+              }`}
               style={{
-                backgroundColor: isSidebarCollapsed ? "transparent" : "white",
-                borderColor: isSidebarCollapsed
+                backgroundColor: isSidebarCollapsed
                   ? "transparent"
-                  : "rgba(13, 115, 119, 0.1)",
-                boxShadow: isSidebarCollapsed
-                  ? "none"
-                  : "0 1px 3px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(13,115,119,0.08)",
+                  : "rgba(255, 255, 255, 0.95)",
+                borderColor: isSidebarCollapsed ? "transparent" : "#e8f6f6",
+                backdropFilter: isSidebarCollapsed ? "none" : "blur(10px)",
               }}
             >
-              <div className="flex items-center justify-between mb-4 px-1">
-                {!isSidebarCollapsed && (
-                  <h3
-                    className="text-[11px] font-bold uppercase tracking-[0.14em]"
-                    style={{ color: "#0a5a5d" }}
+              <AnimatePresence mode="wait">
+                {isSidebarCollapsed ? (
+                  <motion.div
+                    key="collapsed"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex justify-center w-full"
                   >
-                    Sections
-                  </h3>
+                    <motion.button
+                      onClick={() => setIsSidebarCollapsed(false)}
+                      className="p-2 rounded-lg"
+                      style={{ color: "#0d7377" }}
+                      whileHover={{
+                        backgroundColor: "rgba(13, 115, 119, 0.08)",
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <PanelLeftOpen className="w-5 h-5" />
+                    </motion.button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="expanded"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-full flex flex-col"
+                  >
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between mb-4 px-1">
+                      <h3
+                        className="text-[11px] font-bold uppercase tracking-[0.14em]"
+                        style={{ color: "#0a5a5d" }}
+                      >
+                        Sections
+                      </h3>
+
+                      <motion.button
+                        onClick={() => setIsSidebarCollapsed(true)}
+                        className="p-2 rounded-lg"
+                        style={{ color: "#0d7377" }}
+                        whileHover={{ backgroundColor: "#e8f6f6" }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <PanelLeftClose className="w-5 h-5" />
+                      </motion.button>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <SectionList />
+                    </div>
+                  </motion.div>
                 )}
-                <button
-                  onClick={() => setIsSidebarCollapsed((v) => !v)}
-                  className="p-1.5 rounded-lg hover:bg-[#e8f6f6] transition ml-auto"
-                  style={{ color: "#0d7377" }}
-                  aria-label="Toggle sidebar"
-                >
-                  {isSidebarCollapsed ? (
-                    <PanelLeftOpen className="w-4 h-4" />
-                  ) : (
-                    <PanelLeftClose className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-              <SectionList />
+              </AnimatePresence>
             </div>
           </motion.aside>
         )}
@@ -1140,6 +1180,16 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           )}
         </div>
       </div>
+
+      {/* Progress Footer */}
+      {view === "form" && (
+        <ProgressFooter
+          current={currentStep}
+          total={totalSteps}
+          progress={progress}
+          sections={sections}
+        />
+      )}
     </div>
   );
 }
