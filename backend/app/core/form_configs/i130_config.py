@@ -160,7 +160,7 @@ FIELD_MAPPING = {
 "Pt2Line23c_checkbox": "form1[0].#subform[2].Pt2Line23c_checkbox[0]",
 "Pt2Line23_DateMarriageEnded": "form1[0].#subform[2].Pt2Line23_DateMarriageEnded[0]",
 
-# Child 1
+# Parent 1
 "Pt2Line24_FamilyName": "form1[0].#subform[2].Pt2Line24_FamilyName[0]",
 "Pt2Line24_GivenName": "form1[0].#subform[2].Pt2Line24_GivenName[0]",
 "Pt2Line24_MiddleName": "form1[0].#subform[2].Pt2Line24_MiddleName[0]",
@@ -171,7 +171,7 @@ FIELD_MAPPING = {
 "Pt2Line28_CityTownOrVillageOfResidence": "form1[0].#subform[2].Pt2Line28_CityTownOrVillageOfResidence[0]",
 "Pt2Line29_CountryOfResidence": "form1[0].#subform[2].Pt2Line29_CountryOfResidence[0]",
 
-# Child 2
+# Parent 2
 "Pt2Line30a_FamilyName": "form1[0].#subform[2].Pt2Line30a_FamilyName[0]",
 "Pt2Line30b_GivenName": "form1[0].#subform[2].Pt2Line30b_GivenName[0]",
 "Pt2Line30c_MiddleName": "form1[0].#subform[2].Pt2Line30c_MiddleName[0]",
@@ -371,6 +371,8 @@ FIELD_MAPPING = {
 "Pt4Line16c_MiddleName": "form1[0].#subform[5].Pt4Line16c_MiddleName[0]",
 "Pt4Line17_DateMarriageEnded": "form1[0].#subform[5].Pt4Line17_DateMarriageEnded[0]",
 "Pt4Line17_DateMarriageEnded_Extra": "form1[0].#subform[5].Pt4Line17_DateMarriageEnded[1]",
+# Spouse 2 data is missing
+
 
 # Person 1
 "Pt4Line30a_FamilyName": "form1[0].#subform[5].Pt4Line30a_FamilyName[0]",
