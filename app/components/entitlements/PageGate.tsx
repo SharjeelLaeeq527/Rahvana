@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Lock, Crown, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface PageGateProps {
   feature: string;
@@ -16,6 +16,7 @@ interface PageGateProps {
 }
 
 export function PageGate({ feature, children, title, description }: PageGateProps) {
+  const router = useRouter();
   const plan = usePlan();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
@@ -80,12 +81,12 @@ export function PageGate({ feature, children, title, description }: PageGateProp
             <ArrowRight size={16} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
           </button>
           
-          <Link 
-            href="/dashboard"
+          <button 
+            onClick={() => router.back()}
             className="w-full py-3.5 rounded-xl text-[14px] font-bold text-[#6b8097] hover:bg-[#f4f7fb] hover:text-[#0c1b33] transition-colors border border-transparent hover:border-[#d0e4f7]"
           >
-            Return to Dashboard
-          </Link>
+            ← Back
+          </button>
         </div>
       </div>
     </div>
