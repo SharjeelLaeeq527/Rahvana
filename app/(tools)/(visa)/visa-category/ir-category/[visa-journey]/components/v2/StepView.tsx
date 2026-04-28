@@ -1537,13 +1537,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     const guideFeature = isTranslation ? "document_translation" : isPassportPhoto ? "photo_booth" : "step_guides";
                     
                     if (!plan.canUse(guideFeature)) {
+                      // Close this modal first, then open upgrade modal
+                      setDocActionModal({ ...docActionModal, isOpen: false });
                       stepEntitlement.openUpgradeModal();
-                      // Override the primary feature if we're clicking a specific document tool
-                      if (isTranslation || isPassportPhoto) {
-                        // The modal will use the primary feature by default, 
-                        // but if we want a specific one we might need to handle it.
-                        // For now, stepEntitlement.guard uses the STEP_PRIMARY_FEATURE.
-                      }
                       return;
                     }
 
@@ -1620,6 +1616,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <button
                   onClick={() => {
                     if (!plan.canUse("document_vault")) {
+                      // Close this modal first, then open upgrade modal
+                      setDocActionModal({ ...docActionModal, isOpen: false });
                       // Custom messages for specific steps as per matrix
                       if (sId === "step_1_15") {
                          toast.info("Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.", { duration: 6000 });
