@@ -86,6 +86,7 @@ import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
 import {
   getAllActiveSteps,
+  getActiveStepsForStage,
   getStageProgress,
   getDisplayStepNumber,
 } from "./journeyHelpers";
@@ -118,12 +119,16 @@ import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUpl
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+// LockedFeature available from "@/app/components/entitlements/LockedFeature" if needed
+import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
+import { computeDocumentList } from "@/lib/questionnaire/engine";
 import type {
   QuestionnaireResult,
   ConditionalDocument,
@@ -164,7 +169,6 @@ import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
-import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -217,6 +221,9 @@ interface FilingQuizResult {
 }
 
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
+  const plan = usePlan();
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
@@ -344,15 +351,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata?.docQuestionnaireCompleted === true;
   const [showDocQuestionnaire, setShowDocQuestionnaire] = useState(false);
 
-  // Derive document-questionnaire answers from Step 1 eligibility quest answers
-  // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
-  const derivedDocAnswers = useMemo(() => {
-    const eligibilityAnswers = state.answers?.["eligibility-suite"] as
-      | Record<string, Record<string, string | string[]>>
-      | undefined;
-    return deriveDocAnswersFromEligibility(eligibilityAnswers);
-  }, [state.answers]);
-
   // Compute effective document items: use engine-finalized list if questionnaire done,
   // otherwise fall back to the raw JSON data
   const questionnaireDocItems = useMemo(() => {
@@ -361,12 +359,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       | Record<string, string>
       | undefined;
     if (!savedAnswers) return null;
-    // Merge derived Step 1 answers underneath saved answers
-    // (saved answers take priority if both exist)
-    const mergedAnswers = { ...derivedDocAnswers, ...savedAnswers };
     const computed = computeDocumentList(
       IR1_QUESTIONNAIRE_CONFIG,
-      mergedAnswers,
+      savedAnswers,
     );
     // Map ConditionalDocument shape to the document_items shape the UI uses
     return computed.map((doc: ConditionalDocument) => ({
@@ -380,7 +375,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       status: "not-started",
       required: doc.required,
     }));
-  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
+  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -498,13 +493,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     Record<string, boolean>
   >(initialSubmissionChecklist);
 
-  const [submissionSaved, setSubmissionSaved] = useState(
-    state.metadata.submissionSaved === true,
-  );
-  const [submissionDate, setSubmissionDate] = useState(
-    (state.metadata.submissionDate as string) || "",
-  );
-
   // Step 2.10 DQ Recording States
   const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
   const [dqDate, setDqDate] = useState((state.metadata.dqDate as string) || "");
@@ -573,6 +561,47 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Step 3.8 Interview Day States
   const [isInterviewDayTutOpen, setIsInterviewDayTutOpen] = useState(false);
   const [interviewDayTutIdx, setInterviewDayTutIdx] = useState(0);
+
+  // Step 3.9 Interview Outcome States
+  const interviewOutcome = (state.metadata?.interviewOutcome as string) || '';
+  const outcome221gSubtype = (state.metadata?.outcome221gSubtype as string) || '';
+  // Legacy: if user recorded AP details before the new outcome flow, infer 221g
+  const legacyApSaved = state.metadata?.apSaved === "true" && !interviewOutcome;
+  const effectiveOutcome = legacyApSaved ? "221g" : interviewOutcome;
+  const [pendingOutcome, setPendingOutcome] = useState(effectiveOutcome);
+  const [pendingSubtype, setPendingSubtype] = useState(outcome221gSubtype);
+  const [outcomePhase, setOutcomePhase] = useState<'select' | 'subtype_221g' | 'clarify_not_sure' | 'saved'>(
+    legacyApSaved
+      ? 'saved'
+      : effectiveOutcome && effectiveOutcome !== 'not_sure' && !(effectiveOutcome === '221g' && !outcome221gSubtype)
+        ? 'saved'
+        : effectiveOutcome === '221g' && !outcome221gSubtype
+          ? 'subtype_221g'
+          : 'select'
+  );
+  const [clarifyAnswers, setClarifyAnswers] = useState<Record<string, string>>({});
+  const [clarifyStep, setClarifyStep] = useState(0);
+  const [isOutcomeSaving, setIsOutcomeSaving] = useState(false);
+  const [showOutcomeChangeConfirm, setShowOutcomeChangeConfirm] = useState(false);
+
+  // Step 3.10 Visa Issuance States
+  const [issuanceChecklist, setIssuanceChecklist] = useState<Record<number, boolean>>(() => {
+    try { return JSON.parse(state.metadata?.issuance_checklist as string || '{}'); } catch { return {}; }
+  });
+
+  // Journey read-only state (derived from metadata)
+  const journeyCompletedAt = state.metadata?.journeyCompletedAt as string | undefined;
+  const isJourneyComplete = !!journeyCompletedAt;
+  const isReadOnly = isJourneyComplete
+    ? Date.now() - new Date(journeyCompletedAt).getTime() > 7 * 24 * 60 * 60 * 1000
+    : false;
+
+  // Persist inferred interviewOutcome for legacy apSaved users (one-shot on mount)
+  useEffect(() => {
+    if (legacyApSaved) {
+      actions.updateMetadata({ interviewOutcome: "221g" });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Step 3.9 Administrative Processing States
   const [apDetails, setApDetails] = useState(() => {
@@ -858,11 +887,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
-    return currentChapter.steps.filter(
-      (step: any) =>
-        !step.branch || step.branch === "both" || step.branch === filingMethod,
-    );
-  }, [currentChapter, filingMethod]);
+    return getActiveStepsForStage(data, state.currentStage, filingMethod, state);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentChapter, filingMethod, state.metadata?.interviewOutcome, state.metadata?.outcome221gSubtype]);
 
   // (removed duplicate declarations, see above)
   const isCompleted = state.completedSteps.has(sId);
@@ -899,42 +926,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [rcptSuccess, setRcptSuccess] = React.useState(false);
   const [isRcptGuideOpen, setIsRcptGuideOpen] = React.useState(false);
   const [rcptGuideStep, setRcptGuideStep] = React.useState(0);
-
-  // Sync with metadata on mount
-  React.useEffect(() => {
-    if (state.metadata?.uscis_receipt_number) {
-      setRcptManual(prev => ({
-        ...prev,
-        receipt: state.metadata.uscis_receipt_number,
-        noticeDate: state.metadata.uscis_notice_date || "",
-        priorityDate: state.metadata.uscis_priority_date || "",
-      }));
-      
-      if (state.metadata.uscis_tracking_enabled) {
-        setRcptUiState("tracked");
-      }
-    }
-  }, [state.metadata?.uscis_receipt_number, state.metadata?.uscis_tracking_enabled]);
-
-  const handleSaveReceipt = () => {
-    const isValid = /^[A-Z]{3}[0-9]{10}$/.test(rcptManual.receipt);
-    if (!isValid) {
-      setRcptError("Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).");
-      setRcptSuccess(false);
-      return;
-    }
-    setRcptError("");
-    setRcptSuccess(true);
-    
-    actions.updateMetadata({
-      uscis_receipt_number: rcptManual.receipt,
-      uscis_notice_date: rcptManual.noticeDate,
-      uscis_priority_date: rcptManual.priorityDate,
-      uscis_tracking_enabled: true
-    });
-    
-    setRcptUiState("tracked");
-  };
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
@@ -1134,7 +1125,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </button>
                   <button
                     className="card rounded-2xl p-5 flex flex-col items-start transition bg-white border-[1.5px] border-[#c0596a]/40 hover:border-[#a13e4e]"
-                    onClick={() => setIsRcptGuideOpen(true)}
+                    onClick={() => {
+                      if (plan.isLocked("step_guides")) {
+                        setUpgradeModalFeature("step_guides");
+                        return;
+                      }
+                      setIsRcptGuideOpen(true);
+                    }}
                   >
                     <div className="card-icon icon-purple w-10 h-10 rounded-xl flex items-center justify-center mb-3 bg-[#fbeaec] border-[#c0596a]/30">
                       <BookIcon />
@@ -1233,14 +1230,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       placeholder="IOE1234567890"
                       maxLength={13}
                       value={rcptManual.receipt}
-                      onChange={(e) => {
-                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                      onChange={(e) =>
                         setRcptManual({
                           ...rcptManual,
-                          receipt: val,
-                        });
-                        if (rcptError) setRcptError("");
-                      }}
+                          receipt: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="form-field flex flex-col">
@@ -1307,10 +1302,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     Back
                   </button>
                   <button
-                    className={`primary-btn px-5 py-2 rounded-full text-white font-semibold ${isChapter1 ? "bg-[#c0596a] hover:bg-[#a13e4e]" : "bg-[#c0596a] hover:bg-[#a13e4e]"}`}
-                    onClick={handleSaveReceipt}
+                    className={`primary-btn px-5 py-2 rounded-full text-white font-semibold flex items-center gap-2 ${isChapter1 ? "bg-[#c0596a] hover:bg-[#a13e4e]" : "bg-[#c0596a] hover:bg-[#a13e4e]"} ${plan.isLocked("tracker_reminders") ? "opacity-70" : ""}`}
+                    onClick={() => {
+                      if (plan.isLocked("tracker_reminders")) {
+                        setUpgradeModalFeature("tracker_reminders");
+                      } else {
+                        setRcptUiState("tracked");
+                      }
+                    }}
                   >
                     Save Receipt & Enable Tracking
+                    {plan.isLocked("tracker_reminders") && <Lock size={13} strokeWidth={2.5} className="shrink-0" />}
                   </button>
                 </div>
               </div>
@@ -1347,12 +1349,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div
                         className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}
                       >
-                        USCIS Case Status
+                        Tracking
                       </div>
                       <div className={`text-[14px] font-semibold text-[#fff]`}>
-                        {state.metadata?.tracking_status?.uscis_status
-                          ? state.metadata.tracking_status.uscis_status.replace(/_/g, ' ')
-                          : "Monitoring Active"}
+                        Enabled
                       </div>
                     </div>
                     <div
@@ -1379,20 +1379,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         {rcptManual.priorityDate || "Not saved"}
                       </div>
                     </div>
-                    {state.metadata?.tracking_status?.uscis_status_updated && (
-                      <div
-                        className={`summary-card rounded-lg p-4 bg-[#3a2328] border border-[#c0596a]`}
-                      >
-                        <div
-                          className={`text-[10px] font-bold uppercase mb-1 text-[#fff]`}
-                        >
-                          Last Updated
-                        </div>
-                        <div className={`text-[14px] font-semibold text-[#fff]`}>
-                          {new Date(state.metadata.tracking_status.uscis_status_updated).toLocaleDateString()}
-                        </div>
-                      </div>
-                    )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                     <div
@@ -1698,18 +1684,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         {/* Launch Module with tracking buttons */}
         {tool.launch_module && (
           <div
-            className={`rounded-2xl border mb-2 relative overflow-hidden launch-module step-modal-spacing 
-              ${isChapter2 ? "bg-[#483557] border-[#b48ad6]" : isChapter1 ? "bg-[#28151c] border-[#28151c]" : "bg-[#e8f1fb] border-[#b3d6f7]"}`}
+            className={`rounded-2xl border-2 mb-2 relative overflow-hidden launch-module step-modal-spacing shadow-[0_22px_58px_rgba(22,33,38,0.18)] 
+              ${isChapter2 ? "bg-[#2F062E] border-[#8B4388]" : isChapter1 ? "bg-[#30335F] border-[#8284BF]" : "bg-[#051738] border-[#31415F]"}`}
           >
             <div
-              className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${isChapter2 ? "from-[#b48ad6] via-[#b48ad6] to-transparent" : isChapter1 ? "from-[#28151c] via-[#28151c] to-transparent" : "from-[#b3d6f7] via-[#b3d6f7] to-transparent"} opacity-80`}
+              className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${isChapter2 ? "from-[#8B4388] via-[#520A50] to-transparent" : isChapter1 ? "from-[#8284BF] via-[#B9BBE2] to-transparent" : "from-[#31415F] via-[#8284BF] to-transparent"} opacity-90`}
             />
             <div className="launch-inner p-8 md:p-[32px_34px_28px]">
               <div className="launch-top flex items-start gap-4 mb-6">
                 <div className="launch-header flex gap-4 items-start">
                   <div
                     className={`launch-icon w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 
-                    ${isChapter2 ? "bg-[#b48ad6] border-white" : isChapter1 ? "bg-[#c0596a] border-white" : "bg-[#2f6fd4] border-white"}`}
+                    ${isChapter2 ? "bg-[#520A50] border-white/35" : isChapter1 ? "bg-[#8284BF] border-white/35" : "bg-[#31415F] border-white/35"}`}
                   >
                     <Shield className="w-7 h-7 text-[#ffffff]" />
                   </div>
@@ -1718,15 +1704,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest mb-1"
                       style={{
                         color: isChapter2
-                          ? "#483557"
+                          ? "#F4E6F3"
                           : isChapter1
-                            ? "#fff"
-                            : "#2f6fd4",
+                            ? "#F0F1FB"
+                            : "#E8ECF3",
                         borderLeft: isChapter2
-                          ? "5px solid #b48ad6"
+                          ? "5px solid #8B4388"
                           : isChapter1
-                            ? "5px solid #c0596a"
-                            : "5px solid #2f6fd4",
+                            ? "5px solid #8284BF"
+                            : "5px solid #31415F",
                         paddingLeft: 10,
                       }}
                     >
@@ -1737,7 +1723,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           : "Pending with Consulate · Active Monitoring"}
                     </div>
                     <div
-                      className={`text-[clamp(21px,3vw,26px)] leading-tight ${isChapter2 ? "text-[#b48ad6]" : isChapter1 ? "accent-rose" : "text-[#2f6fd4]"}`}
+                      className="text-[clamp(21px,3vw,26px)] leading-tight text-white font-bold"
                     >
                       {tool.launch_module.status?.hero}
                     </div>
@@ -1753,27 +1739,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </span>
               </div>
               <div
-                className={`launch-divider h-px ${isChapter2 ? "bg-[#b48ad6]/20" : isChapter1 ? "bg-[#c0596a]/20" : "bg-[#2f6fd4]/20"} mb-5`}
+                className={`launch-divider h-px ${isChapter2 ? "bg-[#8B4388]/35" : isChapter1 ? "bg-[#8284BF]/35" : "bg-[#31415F]/50"} mb-5`}
               />
               {/* Metrics */}
               <div className="metrics grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
                 {tool.launch_module.metrics?.map((m: any, i: number) => (
                   <div
                     key={i}
-                    className={`metric bg-white rounded-[12px] px-4 py-3 flex flex-col border ${isChapter2 ? "border-[#b48ad6]" : isChapter1 ? "border-[#28151c]" : "border-[#2f6fd4]"}`}
+                    className={`metric bg-white/96 rounded-[12px] px-4 py-3 flex flex-col border-2 shadow-[0_8px_20px_rgba(0,0,0,0.12)] ${isChapter2 ? "border-[#8B4388]" : isChapter1 ? "border-[#B9BBE2]" : "border-[#31415F]"}`}
                   >
                     <div
-                      className={`metric-label text-[10px] font-bold uppercase tracking-widest mb-1 ${isChapter2 ? "text-[#b48ad6]" : isChapter1 ? "accent-brown" : "text-[#2f6fd4]"}`}
+                      className={`metric-label text-[10px] font-bold uppercase tracking-widest mb-1 ${isChapter2 ? "text-[#520A50]" : isChapter1 ? "text-[#4E518C]" : "text-[#051738]"}`}
                     >
                       {m.label}
                     </div>
                     <div
-                      className={`metric-value text-[14px] font-semibold ${isChapter2 ? "text-[#b48ad6]" : isChapter1 ? "accent-brown" : "text-[#2f6fd4]"}`}
+                      className="metric-value text-[14px] font-bold text-[#162126]"
                     >
                       {m.value}
                     </div>
                     <div
-                      className={`metric-sub text-[11px] mt-1 ${isChapter2 ? "text-[#b48ad6]" : isChapter1 ? "accent-brown" : "text-[#2f6fd4]"}`}
+                      className="metric-sub text-[11px] mt-1 text-[#2C3A3E]"
                     >
                       {m.sub}
                     </div>
@@ -1784,7 +1770,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="launch-actions grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                 <Button
                   className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition 
-                    ${isChapter2 ? "bg-[#b48ad6] text-white hover:bg-[#a47cc1] hover:text-white" : isChapter1 ? "bg-[#c0596a] text-white hover:bg-[#a13e53] hover:text-white" : "bg-[#2f6fd4] text-white hover:bg-[#1a4e8a] hover:text-white"}`}
+                    ${isChapter2 ? "bg-[#520A50] text-white hover:bg-[#2F062E] hover:text-white" : isChapter1 ? "bg-[#4E518C] text-white hover:bg-[#30335F] hover:text-white" : "bg-[#051738] text-white hover:bg-[#020A1A] hover:text-white"}`}
                   onClick={() => {
                     /* TODO: implement refresh logic */
                   }}
@@ -1806,7 +1792,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <Button
                   variant="outline"
                   className={`flex items-center gap-2 px-5 py-3 rounded-xl border font-semibold transition 
-                    ${isChapter2 ? "border-[#b48ad6] bg-[#f7f2fd] text-[#b48ad6] hover:bg-[#ede6f6]" : isChapter1 ? "border-white/10 bg-white/5 text-white hover:bg-white" : "border-[#2f6fd4] bg-[#e8f1fb] text-[#2f6fd4] hover:bg-[#d0e4f7]"}`}
+                    ${isChapter2 ? "border-[#8B4388] bg-[#F4E6F3] text-[#520A50] hover:bg-[#EAD2E8]" : isChapter1 ? "border-[#B9BBE2] bg-[#F0F1FB] text-[#4E518C] hover:bg-[#E4E5F6]" : "border-[#31415F] bg-[#E8ECF3] text-[#051738] hover:bg-[#D5DCE8]"}`}
                   onClick={() => setShowStatusGuide(true)}
                 >
                   <svg
@@ -2205,8 +2191,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   }
 
   const allActiveSteps = useMemo(
-    () => getAllActiveSteps(data, filingMethod),
-    [data, filingMethod],
+    () => getAllActiveSteps(data, filingMethod, state),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, filingMethod, state.metadata?.interviewOutcome, state.metadata?.outcome221gSubtype],
   );
 
   const globalIdx = allActiveSteps.findIndex(
@@ -2617,6 +2604,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
     };
     actions.toggleComplete(stepKey);
+
+    // Journey completion trigger — final steps for each path
+    const journeyFinalSteps = ['step_3_10', 'step_3_13', 'step_3_12'];
+    const isAlreadyComplete = state.completedSteps.has(stepKey);
+    if (journeyFinalSteps.includes(stepKey) && !isAlreadyComplete && !state.metadata?.journeyCompletedAt) {
+      actions.updateMetadata({ journeyCompletedAt: new Date().toISOString() });
+    }
+
     // If this step is a milestone, set the metadata field if not already set
     const metaObj = milestoneMetaMap[stepKey];
     if (
@@ -3426,6 +3421,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       <div
         key={item.id}
         onClick={() => {
+          if (plan.isLocked("civil_doc_guides")) {
+            setUpgradeModalFeature("civil_doc_guides");
+            return;
+          }
           if (hhDocsStatus[item.id] === "not-started") {
             const next = { ...hhDocsStatus, [item.id]: "in-progress" };
             setHhDocsStatus(next);
@@ -3483,6 +3482,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
+              if (plan.isLocked("document_vault")) {
+                setUpgradeModalFeature("document_vault");
+                return;
+              }
               const defId = mapDocumentNameToId(item.title);
               setActiveUploadId(item.id);
               setActiveUploadType("hh");
@@ -3582,8 +3585,39 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             isBeneficiaryTheme={isBeneficiaryTheme}
           />
 
-          {/* Entitlement Banner — shown when step features are locked for current plan */}
-          <StepEntitlementBanner stepKey={sId} />
+          {/* Plan entitlement banner */}
+          {(() => {
+            const isFreeTier = plan.entitlement('roadmap_access').state === 'preview';
+            const primaryFeature = STEP_PRIMARY_FEATURE[sId];
+            const featureLocked = primaryFeature && plan.isLocked(primaryFeature);
+            const bannerFeature = isFreeTier ? 'roadmap_access' : primaryFeature;
+            if (!isFreeTier && !featureLocked) return null;
+            return (
+              <div
+                className={`flex items-start gap-3 rounded-2xl px-4 py-3 mb-5 cursor-pointer transition-colors animate-in fade-in duration-300
+                  ${isFreeTier
+                    ? 'bg-amber-50 border border-amber-200 hover:bg-amber-100'
+                    : 'bg-[#f3f0fa] border border-[#c9b8d8] hover:bg-[#ede8f5]'
+                  }`}
+                onClick={() => bannerFeature && setUpgradeModalFeature(bannerFeature)}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isFreeTier ? 'bg-amber-100 border border-amber-300' : 'bg-[#ede8f5] border border-[#c9b8d8]'}`}>
+                  <Lock size={14} strokeWidth={2.5} className={isFreeTier ? 'text-amber-600' : 'text-[#7c5e8a]'} />
+                </div>
+                <div className="flex-1">
+                  <p className={`text-[12.5px] font-bold ${isFreeTier ? 'text-amber-800' : 'text-[#4a3b5c]'}`}>
+                    {isFreeTier ? 'Free plan — this step is locked' : 'Feature requires a higher plan'}
+                  </p>
+                  <p className={`text-[11.5px] mt-0.5 ${isFreeTier ? 'text-amber-700' : 'text-[#6b5c7e]'}`}>
+                    {bannerFeature ? plan.lockHint(bannerFeature) : 'Upgrade to unlock'}
+                  </p>
+                </div>
+                <span className={`text-[11px] font-bold shrink-0 mt-1 ${isFreeTier ? 'text-amber-700' : 'text-[#7c5e8a]'}`}>
+                  {bannerFeature ? (plan.upgradeCTA(bannerFeature) ?? 'Upgrade') : 'Upgrade'} →
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Companion Context Badge (Step 5 Specific) */}
           {(sId === "step_1_5" || sId === "step_1_2_b") && (
@@ -3605,7 +3639,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {tool.chips.map((chip: any, i: number) => (
                 <span
                   key={i}
-                  className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
+                  className={`ir1-chip text-[11px] font-bold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
                     chip.type === "role" || chip.role === "role"
                       ? isBeneficiaryTheme
                         ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
@@ -3653,7 +3687,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-[#15744f] mb-[2px]">
-                  {tool.launch_module?.return_note?.title ||
+                  {tool.launch_module.return_note?.title ||
                     "Tool launched in a new tab"}
                 </div>
                 <div className="text-[12px] text-[#3a4f63] leading-normal">
@@ -3668,7 +3702,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {tool.type === "sponsorship_calculator" && (
             <SponsorshipModule
               sponsorshipResult={sponsorshipResult}
-              onOpenCalc={() => setIsSponsorshipCalcOpen(true)}
+              onOpenCalc={() => {
+                if (plan.isLocked("sponsorship_calc")) {
+                  setUpgradeModalFeature("sponsorship_calc");
+                  return;
+                }
+                setIsSponsorshipCalcOpen(true);
+              }}
               tool={tool}
             />
           )}
@@ -3751,7 +3791,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
                 {/* Official Card - IV Tool Auto-Sync */}
                 {(() => {
-                  // Using ivLoading and ivError from component state (not creating duplicate hooks)
+                  const [ivLoading, setIvLoading] = React.useState(false);
+                  const [ivError, setIvError] = React.useState<string | null>(
+                    null,
+                  );
                   const savedMonth = state.metadata
                     ?.currentSchedulingMonthYear as string | undefined;
                   const savedUpdated = state.metadata
@@ -4125,7 +4168,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 medClinic,
                 setMedClinic,
                 isMedWizardOpen,
-                setIsMedWizardOpen,
+                setIsMedWizardOpen: (open: boolean) => {
+                  if (open && plan.isLocked("medical_booking")) {
+                    setUpgradeModalFeature("medical_booking");
+                    return;
+                  }
+                  setIsMedWizardOpen(open);
+                },
                 medWizardStep,
                 setMedWizardStep,
                 medWizardMode,
@@ -4169,7 +4218,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 pccOverlayMode,
                 setPccOverlayMode,
               }}
-              openUploadModal={openUploadModal}
+              openUploadModal={(defId: string) => {
+                if (plan.isLocked("document_vault")) {
+                  setUpgradeModalFeature("document_vault");
+                  return;
+                }
+                openUploadModal(defId);
+              }}
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               uploadedDocuments={uploadedDocuments}
@@ -4185,13 +4240,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               uploadedDocuments={uploadedDocuments}
               isReloadingDocs={isReloadingDocs}
               isDeletingIds={isDeletingIds}
-              openUploadModal={openUploadModal}
+              openUploadModal={(defId: string) => {
+                if (plan.isLocked("document_vault")) {
+                  setUpgradeModalFeature("document_vault");
+                  return;
+                }
+                openUploadModal(defId);
+              }}
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               setDocActionModal={setDocActionModal}
               updateMetadata={actions.updateMetadata}
               setActiveFinancialDoc={setActiveFinancialDoc}
-              setIsFinancialDocGuideOpen={setIsFinancialDocGuideOpen}
+              setIsFinancialDocGuideOpen={(open: boolean) => {
+                if (open && plan.isLocked("civil_doc_guides")) {
+                  setUpgradeModalFeature("civil_doc_guides");
+                  return;
+                }
+                setIsFinancialDocGuideOpen(open);
+              }}
             />
           )}
 
@@ -4220,16 +4287,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               submissionChecklistStatus={submissionChecklistStatus}
               setSubmissionChecklistStatus={setSubmissionChecklistStatus}
               setSubmissionGuideIdx={setSubmissionGuideIdx}
-              setIsSubmissionGuideOpen={setIsSubmissionGuideOpen}
-              submissionSaved={submissionSaved}
-              submissionDate={submissionDate}
-              onSave={(data) => {
-                setSubmissionSaved(data.saved);
-                setSubmissionDate(data.date);
-                actions.updateMetadata({
-                  submissionSaved: data.saved,
-                  submissionDate: data.date,
-                });
+              setIsSubmissionGuideOpen={(open: boolean) => {
+                if (open && plan.isLocked("step_guides")) {
+                  setUpgradeModalFeature("step_guides");
+                  return;
+                }
+                setIsSubmissionGuideOpen(open);
               }}
             />
           )}
@@ -4251,7 +4314,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 selectedGatheringItem,
                 setSelectedGatheringItem,
                 isGatheringGuideOpen,
-                setIsGatheringGuideOpen,
+                setIsGatheringGuideOpen: (open: boolean) => {
+                  if (open && plan.isLocked("step_guides")) {
+                    setUpgradeModalFeature("step_guides");
+                    return;
+                  }
+                  setIsGatheringGuideOpen(open);
+                },
                 gatheringGuideStep,
                 setGatheringGuideStep,
               }}
@@ -4263,7 +4332,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <MedicalExamGuideTool
               tool={tool}
               setMedicalGuideIdx={setMedicalGuideIdx}
-              setIsMedicalGuideOpen={setIsMedicalGuideOpen}
+              setIsMedicalGuideOpen={(open: boolean) => {
+                if (open && plan.isLocked("step_guides")) {
+                  setUpgradeModalFeature("step_guides");
+                  return;
+                }
+                setIsMedicalGuideOpen(open);
+              }}
             />
           )}
 
@@ -4273,7 +4348,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               tool={tool}
               courierCredentials={courierCredentials}
               setCourierGuideIdx={setCourierGuideIdx}
-              setIsCourierGuideOpen={setIsCourierGuideOpen}
+              setIsCourierGuideOpen={(open: boolean) => {
+                if (open && plan.isLocked("step_guides")) {
+                  setUpgradeModalFeature("step_guides");
+                  return;
+                }
+                setIsCourierGuideOpen(open);
+              }}
               setWalletPortalType={setWalletPortalType}
               setIsWalletViewOpen={setIsWalletViewOpen}
               setWalletMode={setWalletMode}
@@ -4295,8 +4376,582 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <InterviewDayTool
               tool={tool}
               setInterviewDayTutIdx={setInterviewDayTutIdx}
-              setIsInterviewDayTutOpen={setIsInterviewDayTutOpen}
+              setIsInterviewDayTutOpen={(open: boolean) => {
+                if (open && plan.isLocked("step_guides")) {
+                  setUpgradeModalFeature("step_guides");
+                  return;
+                }
+                setIsInterviewDayTutOpen(open);
+              }}
             />
+          )}
+
+          {/* INTERVIEW OUTCOME SELECTION (Step 3.9) */}
+          {tool.type === "interview_outcome" && (
+            <div className="flex flex-col mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              {/* Read-only banner */}
+              {isReadOnly && (
+                <div className="bg-slate-50 border border-slate-200 rounded-[14px] p-4 mb-5 flex items-center gap-3">
+                  <Lock size={16} className="text-slate-400 shrink-0" />
+                  <span className="text-[13px] text-slate-500">This journey is complete and read-only. You can still view all your materials.</span>
+                </div>
+              )}
+
+              {/* 7-day grace notice */}
+              {isJourneyComplete && !isReadOnly && (
+                <div className="bg-[#f3f0fb] border border-[#c9bef2] rounded-[14px] p-4 mb-5 flex items-start gap-3">
+                  <CheckCircle2 size={16} className="text-[#4a2d8a] shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[13px] font-bold text-[#4a2d8a] mb-0.5">Journey complete</div>
+                    <div className="text-[12px] text-[#6b5099]">You have 7 days to make any changes. After that this journey becomes read-only.</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Change outcome confirmation modal */}
+              {showOutcomeChangeConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                  <div className="bg-white rounded-[20px] p-7 max-w-md w-[calc(100%-2rem)] shadow-2xl">
+                    <div className="text-[16px] font-black text-[#0c1b33] mb-2">Change your recorded outcome?</div>
+                    <p className="text-[13px] text-[#3a4f63] leading-relaxed mb-6">
+                      Changing your interview outcome will update which steps are shown. Progress on steps from the previous path will be cleared.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowOutcomeChangeConfirm(false)}
+                        className="flex-1 py-3 rounded-xl border border-[#d0e4f7] text-[13px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-all"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowOutcomeChangeConfirm(false);
+                          setOutcomePhase('select');
+                          setPendingOutcome('');
+                          setPendingSubtype('');
+                        }}
+                        className="flex-1 py-3 rounded-xl bg-primary text-white text-[13px] font-bold hover:bg-primary/90 transition-all"
+                      >
+                        Yes, change it
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PHASE: saved — show recorded outcome summary */}
+              {outcomePhase === 'saved' && (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.06)] animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#2f6fd4]">Outcome Recorded</div>
+                    {!isReadOnly && (
+                      <button
+                        onClick={() => setShowOutcomeChangeConfirm(true)}
+                        className="text-[12px] font-bold text-primary hover:underline"
+                      >
+                        Change
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${
+                      effectiveOutcome === 'approved'
+                        ? 'bg-[#e8f5ef] border-[#a8d9be]'
+                        : effectiveOutcome === '221g'
+                          ? 'bg-[#fef8e8] border-[#f0d98a]'
+                          : 'bg-[#e8f1fb] border-[#d0e4f7]'
+                    }`}>
+                      {effectiveOutcome === 'approved'
+                        ? <CheckCircle2 size={20} className="text-[#15744f]" />
+                        : effectiveOutcome === '221g'
+                          ? <ClipboardList size={20} className="text-[#8a6200]" />
+                          : <Info size={20} className="text-[#2f6fd4]" />
+                      }
+                    </div>
+                    <div>
+                      <div className="text-[15px] font-bold text-[#0c1b33]">
+                        {effectiveOutcome === 'approved' && 'Visa Approved'}
+                        {effectiveOutcome === '221g' && '221(g) Refusal'}
+                        {effectiveOutcome === 'not_sure' && 'Outcome clarified'}
+                      </div>
+                      {effectiveOutcome === '221g' && outcome221gSubtype && (
+                        <div className="text-[12px] text-[#6b8097] mt-0.5">
+                          {outcome221gSubtype === 'docs_requested' && 'Documents / information requested'}
+                          {outcome221gSubtype === 'further_review' && 'Further review / administrative processing'}
+                          {outcome221gSubtype === 'both' && 'Documents requested + further review'}
+                          {outcome221gSubtype === 'not_sure_subtype' && 'Subtype clarified from answers'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-[#d0e4f7] text-[12px] text-[#6b8097]">
+                    {effectiveOutcome === 'approved' && 'Next step: Track Visa Issuance — your passport is on its way.'}
+                    {effectiveOutcome === '221g' && outcome221gSubtype === 'docs_requested' && 'Next step: Respond to 221(g) — review what was requested and prepare your submission.'}
+                    {effectiveOutcome === '221g' && outcome221gSubtype === 'further_review' && 'Next step: Track Post-Interview Review — monitor CEAC and stay organized.'}
+                    {effectiveOutcome === '221g' && outcome221gSubtype === 'both' && 'Next steps: Respond to 221(g) + Track Post-Interview Review.'}
+                  </div>
+                </div>
+              )}
+
+              {/* PHASE: select — primary outcome choice */}
+              {outcomePhase === 'select' && (
+                <div className="flex flex-col gap-3 mb-4">
+                  <div className="text-[13px] font-bold text-[#0c1b33] mb-1">What was the outcome of your interview?</div>
+                  {(tool.outcomes || []).map((outcome: any) => {
+                    const isPending = pendingOutcome === outcome.id;
+                    return (
+                      <button
+                        key={outcome.id}
+                        disabled={isReadOnly}
+                        onClick={() => setPendingOutcome(outcome.id)}
+                        className={`w-full text-left rounded-[16px] border-[1.5px] p-5 transition-all group ${
+                          isPending
+                            ? outcome.id === 'approved'
+                              ? 'bg-[#e8f5ef] border-[#a8d9be]'
+                              : outcome.id === '221g'
+                                ? 'bg-[#fef8e8] border-[#f0d98a]'
+                                : 'bg-[#e8f1fb] border-[#2f6fd4]'
+                            : 'bg-white border-[#d0e4f7] hover:border-[#2f6fd4] hover:shadow-[0_4px_20px_rgba(47,111,212,0.08)]'
+                        } ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border mt-0.5 ${
+                            isPending
+                              ? outcome.id === 'approved'
+                                ? 'bg-[#e8f5ef] border-[#a8d9be]'
+                                : outcome.id === '221g'
+                                  ? 'bg-[#fef8e8] border-[#f0d98a]'
+                                  : 'bg-[#e8f1fb] border-[#2f6fd4]'
+                              : 'bg-[#f4f7fb] border-[#d0e4f7]'
+                          }`}>
+                            {outcome.id === 'approved' && <CheckCircle2 size={18} className={isPending ? "text-[#15744f]" : "text-[#6b8097]"} />}
+                            {outcome.id === '221g' && <ClipboardList size={18} className={isPending ? "text-[#8a6200]" : "text-[#6b8097]"} />}
+                            {outcome.id === 'not_sure' && <Info size={18} className={isPending ? "text-[#2f6fd4]" : "text-[#6b8097]"} />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className={`text-[14px] font-bold ${isPending ? 'text-[#0c1b33]' : 'text-[#0c1b33]'}`}>{outcome.label}</div>
+                              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${
+                                outcome.badgeType === 'green' ? 'bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]'
+                                  : outcome.badgeType === 'amber' ? 'bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]'
+                                    : 'bg-[#e8f1fb] text-[#2f6fd4] border-[#d0e4f7]'
+                              }`}>
+                                {outcome.badge}
+                              </span>
+                            </div>
+                            <div className="text-[12px] text-[#6b8097] leading-relaxed">{outcome.description}</div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  {pendingOutcome && (
+                    <button
+                      disabled={isOutcomeSaving || isReadOnly}
+                      onClick={async () => {
+                        if (isReadOnly) return;
+                        if (pendingOutcome === '221g') {
+                          setOutcomePhase('subtype_221g');
+                          await actions.updateMetadata({ interviewOutcome: '221g' });
+                          return;
+                        }
+                        if (pendingOutcome === 'not_sure') {
+                          setOutcomePhase('clarify_not_sure');
+                          await actions.updateMetadata({ interviewOutcome: 'not_sure' });
+                          return;
+                        }
+                        setIsOutcomeSaving(true);
+                        try {
+                          await actions.updateMetadata({ interviewOutcome: pendingOutcome, outcome221gSubtype: '' });
+                          setOutcomePhase('saved');
+                        } finally {
+                          setIsOutcomeSaving(false);
+                        }
+                      }}
+                      className="w-full mt-2 p-4 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
+                    >
+                      {isOutcomeSaving ? 'Saving...' : 'Confirm Outcome & Unlock Next Steps'}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* PHASE: subtype_221g — 221(g) follow-up question */}
+              {outcomePhase === 'subtype_221g' && (
+                <div className="flex flex-col gap-3 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="relative bg-[#0e1e38] rounded-[16px] p-5 mb-2 overflow-hidden border border-white/10">
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-80" />
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">221(g) — Follow-up</div>
+                    <div className="text-[16px] text-white/95 leading-tight">{tool.followup_221g?.title}</div>
+                    <div className="text-[12px] text-white/50 mt-1">{tool.followup_221g?.subtitle}</div>
+                  </div>
+                  {(tool.followup_221g?.options || []).map((opt: any) => {
+                    const isPending = pendingSubtype === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        disabled={isReadOnly}
+                        onClick={() => setPendingSubtype(opt.id)}
+                        className={`w-full text-left rounded-[16px] border-[1.5px] p-4 transition-all ${
+                          isPending
+                            ? 'bg-[#fef8e8] border-[#f0d98a]'
+                            : 'bg-white border-[#d0e4f7] hover:border-[#f0d98a] hover:shadow-[0_4px_20px_rgba(12,27,51,0.05)]'
+                        } ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      >
+                        <div className={`text-[13px] font-bold ${isPending ? 'text-[#8a6200]' : 'text-[#0c1b33]'} mb-0.5`}>{opt.label}</div>
+                        <div className="text-[11px] text-[#6b8097] leading-relaxed">{opt.sub}</div>
+                      </button>
+                    );
+                  })}
+                  <div className="flex gap-3 mt-2">
+                    <button
+                      onClick={() => { setOutcomePhase('select'); setPendingSubtype(''); }}
+                      className="px-4 py-3 rounded-xl border border-[#d0e4f7] text-[13px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-all"
+                    >
+                      ← Back
+                    </button>
+                    {pendingSubtype && (
+                      <button
+                        disabled={isOutcomeSaving || isReadOnly}
+                        onClick={async () => {
+                          if (isReadOnly) return;
+                          if (pendingSubtype === 'not_sure_subtype') {
+                            setOutcomePhase('clarify_not_sure');
+                            await actions.updateMetadata({ outcome221gSubtype: 'not_sure_subtype' });
+                            return;
+                          }
+                          setIsOutcomeSaving(true);
+                          try {
+                            await actions.updateMetadata({ interviewOutcome: '221g', outcome221gSubtype: pendingSubtype });
+                            setOutcomePhase('saved');
+                          } finally {
+                            setIsOutcomeSaving(false);
+                          }
+                        }}
+                        className="flex-1 p-3.5 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
+                      >
+                        {isOutcomeSaving ? 'Saving...' : 'Confirm & Unlock Steps'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* PHASE: clarify_not_sure — step-by-step clarification */}
+              {outcomePhase === 'clarify_not_sure' && (() => {
+                const questions: any[] = tool.clarification_questions || [];
+                const currentQ = questions[clarifyStep];
+                if (!currentQ) return null;
+                const isLast = clarifyStep === questions.length - 1;
+
+                const inferOutcomeFromAnswers = (answers: Record<string, string>): { outcome: string; subtype?: string } => {
+                  if (answers.ceac_status === 'issued') return { outcome: 'approved' };
+                  if (answers.ceac_status === 'ap') {
+                    if (answers.docs_asked === 'yes') return { outcome: '221g', subtype: 'both' };
+                    return { outcome: '221g', subtype: 'further_review' };
+                  }
+                  if (answers.docs_asked === 'yes') return { outcome: '221g', subtype: 'docs_requested' };
+                  if (answers.received_letter === 'yes' && answers.docs_asked === 'no') return { outcome: '221g', subtype: 'further_review' };
+                  if (answers.passport_kept === 'kept') return { outcome: '221g', subtype: 'further_review' };
+                  return { outcome: '221g', subtype: 'not_sure_subtype' };
+                };
+
+                return (
+                  <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="relative bg-[#0e1e38] rounded-[16px] p-5 overflow-hidden border border-white/10">
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1">Clarification — Question {clarifyStep + 1} of {questions.length}</div>
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden mt-2 mb-3">
+                        <div className="h-full bg-[#6aa8f0] rounded-full transition-all duration-500" style={{ width: `${((clarifyStep + 1) / questions.length) * 100}%` }} />
+                      </div>
+                      <div className="text-[15px] text-white/95 leading-snug">{currentQ.question}</div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {currentQ.options.map((opt: any) => {
+                        const isSelected = clarifyAnswers[currentQ.id] === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => setClarifyAnswers(prev => ({ ...prev, [currentQ.id]: opt.value }))}
+                            className={`w-full text-left rounded-[14px] border-[1.5px] px-4 py-3.5 text-[13px] font-bold transition-all ${
+                              isSelected ? 'bg-[#e8f1fb] border-[#2f6fd4] text-[#2f6fd4]' : 'bg-white border-[#d0e4f7] text-[#0c1b33] hover:border-[#2f6fd4]'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-3">
+                      {clarifyStep > 0 && (
+                        <button
+                          onClick={() => setClarifyStep(s => s - 1)}
+                          className="px-4 py-3 rounded-xl border border-[#d0e4f7] text-[13px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-all"
+                        >
+                          ← Back
+                        </button>
+                      )}
+                      {clarifyAnswers[currentQ.id] && (
+                        <button
+                          disabled={isOutcomeSaving}
+                          onClick={async () => {
+                            if (isLast) {
+                              const inferred = inferOutcomeFromAnswers(clarifyAnswers);
+                              setIsOutcomeSaving(true);
+                              try {
+                                await actions.updateMetadata({
+                                  interviewOutcome: inferred.outcome,
+                                  outcome221gSubtype: inferred.subtype || '',
+                                  clarificationAnswers: clarifyAnswers,
+                                });
+                                setPendingOutcome(inferred.outcome);
+                                setPendingSubtype(inferred.subtype || '');
+                                setOutcomePhase('saved');
+                              } finally {
+                                setIsOutcomeSaving(false);
+                              }
+                            } else {
+                              setClarifyStep(s => s + 1);
+                            }
+                          }}
+                          className="flex-1 p-3.5 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 disabled:opacity-50"
+                        >
+                          {isOutcomeSaving ? 'Saving...' : isLast ? 'Determine My Path →' : 'Next →'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* VISA ISSUANCE TRACKING (Step 3.10 — Approved Path) */}
+          {tool.type === "visa_issuance" && (
+            <div className="flex flex-col mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              {/* Read-only banner */}
+              {isReadOnly && (
+                <div className="bg-slate-50 border border-slate-200 rounded-[14px] p-4 mb-5 flex items-center gap-3">
+                  <Lock size={16} className="text-slate-400 shrink-0" />
+                  <span className="text-[13px] text-slate-500">This journey is complete and read-only. You can still view and download your materials.</span>
+                </div>
+              )}
+
+              {/* Congratulations banner */}
+              <div className="relative bg-gradient-to-br from-[#0a2118] to-[#0e3326] rounded-[16px] p-6 mb-5 overflow-hidden border border-green-500/20 shadow-xl">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#15744f] via-[#34d399] to-transparent opacity-90" />
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-500/10 rounded-full blur-[60px] pointer-events-none" />
+                <div className="relative z-10">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-green-400/60 mb-1.5">{tool.congratulations?.eyebrow || 'Visa approved'}</div>
+                  <div className="text-[22px] text-white/95 leading-tight mb-2">{tool.congratulations?.title || 'Your visa has been approved.'}</div>
+                  <div className="text-[13px] text-green-200/60 leading-relaxed max-w-[520px]">{tool.congratulations?.body}</div>
+                </div>
+              </div>
+
+              {/* Delivery tracker CTA */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 mb-4 shadow-[0_4px_20px_rgba(12,27,51,0.06)]">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
+                    <Truck size={18} className="text-[#15744f]" />
+                  </div>
+                  <div>
+                    <div className="text-[14px] font-bold text-[#0c1b33]">Track Passport Delivery</div>
+                    <div className="text-[12px] text-[#6b8097]">Log into USVisaScheduling to track your shipment</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => window.open("https://www.usvisascheduling.com", "_blank")}
+                  className="w-full py-3.5 bg-[#0e1e38] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#1a3054] transition-all shadow-lg group"
+                >
+                  Open Courier Portal <ExternalLink size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
+              </div>
+
+              {/* Post-approval checklist */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 mb-4 shadow-[0_4px_20px_rgba(12,27,51,0.06)]">
+                <div className="text-[14px] font-bold text-[#0c1b33] mb-4">Arrival checklist</div>
+                <div className="flex flex-col gap-2">
+                  {(tool.checklist || []).map((item: string, idx: number) => {
+                    const checked = issuanceChecklist[idx] === true;
+                    return (
+                      <label
+                        key={idx}
+                        className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${checked ? 'bg-[#e8f5ef] border-[#a8d9be]' : 'bg-[#f4f7fb] border-transparent hover:border-[#d0e4f7]'} ${isReadOnly ? 'pointer-events-none' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={isReadOnly}
+                          onChange={async () => {
+                            const next = { ...issuanceChecklist, [idx]: !checked };
+                            setIssuanceChecklist(next);
+                            await actions.updateMetadata({ issuance_checklist: JSON.stringify(next) });
+                          }}
+                          className="mt-0.5 accent-[#15744f]"
+                        />
+                        <span className={`text-[13px] leading-snug ${checked ? 'text-[#0e5c3c] font-medium' : 'text-[#3a4f63]'}`}>{item}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Info sections */}
+              {(tool.info_sections || []).map((section: any, idx: number) => (
+                <div key={idx} className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 mb-4 shadow-[0_4px_20px_rgba(12,27,51,0.06)]">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${section.type === 'green' ? 'bg-[#e8f5ef] border-[#a8d9be]' : 'bg-[#e8f1fb] border-[#d0e4f7]'}`}>
+                      {section.icon === 'check'
+                        ? <Check size={16} className="text-[#15744f]" strokeWidth={2.5} />
+                        : <Info size={16} className="text-[#2f6fd4]" strokeWidth={2} />
+                      }
+                    </div>
+                    <div className="text-[14px] font-bold text-[#0c1b33]">{section.title}</div>
+                  </div>
+                  <div className="flex flex-col gap-2.5">
+                    {section.items.map((item: string, i: number) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
+                        <span className="text-[13px] text-[#3a4f63] leading-relaxed">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* RESPOND TO 221(g) (Step 3.11 — 221g docs path) */}
+          {tool.type === "respond_221g" && (
+            <div className="flex flex-col mt-4">
+              {/* Explainer Banner */}
+              <div className="relative bg-[#0e1e38] rounded-[16px] p-6 mb-4 overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-85" />
+                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">{tool.explainer?.eyebrow}</div>
+                <div className="text-[20px] text-white/95 mb-2.5 leading-tight">{tool.explainer?.title}</div>
+                <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">{tool.explainer?.body}</div>
+              </div>
+
+              {/* Action steps */}
+              {tool.action_steps && (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                  <div className="text-[14px] font-bold text-[#0c1b33] mb-4">Action plan</div>
+                  <div className="flex flex-col gap-2.5">
+                    {tool.action_steps.map((step: string, i: number) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-[#fef8e8] border border-[#f0d98a] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-black text-[#8a6200]">{i + 1}</div>
+                        <span className="text-[13px] text-[#3a4f63] leading-relaxed">{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AP Recorder — reuse existing apDetails state */}
+              {!isApSaved ? (
+                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] transition-all">
+                  <div className="flex items-center gap-2.5 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-[#fef8e8] border border-[#f0d98a] flex items-center justify-center shrink-0">
+                      <Calendar size={18} className="text-[#8a6200]" strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-bold text-[#0c1b33]">{tool.recorder?.title}</div>
+                      <div className="text-[12px] text-[#6b8097]">{tool.recorder?.subtitle}</div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">Date of 221(g) notice</label>
+                        <input type="date" value={apDetails.interviewDate} max={new Date().toISOString().split('T')[0]} onChange={e => setApDetails({ ...apDetails, interviewDate: e.target.value })} disabled={isReadOnly} className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all disabled:bg-slate-50" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">CEAC Status</label>
+                        <select value={apDetails.ceacStatus} onChange={e => setApDetails({ ...apDetails, ceacStatus: e.target.value })} disabled={isReadOnly} className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all disabled:bg-slate-50">
+                          <option value="">Select current status...</option>
+                          {(tool.recorder?.ceac_options || []).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">Notes (optional)</label>
+                      <textarea value={apDetails.notes} onChange={e => setApDetails({ ...apDetails, notes: e.target.value })} disabled={isReadOnly} placeholder="e.g. Documents requested: birth certificate translation..." className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all min-h-[72px] disabled:bg-slate-50" />
+                    </div>
+                    {!isReadOnly && (
+                      <button
+                        onClick={() => {
+                          if (plan.isLocked("tracker_reminders")) {
+                            setUpgradeModalFeature("tracker_reminders");
+                            return;
+                          }
+                          setIsApSaved(true);
+                          actions.updateMetadata({ apDetails, apSaved: 'true' });
+                          if (apDetails.ceacStatus === 'Refused') { triggerCeacStatusUpdate('Refused'); setRefusedPromptOpen(true); }
+                          else { triggerCeacStatusUpdate(apDetails.ceacStatus); }
+                        }}
+                        disabled={!apDetails.interviewDate}
+                        className={`w-full p-4 text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2 ${plan.isLocked("tracker_reminders") ? "bg-neutral-400 hover:translate-y-0" : "bg-primary"}`}
+                      >
+                        Save 221(g) Details & Activate Tracking
+                        {plan.isLocked("tracker_reminders") && <Lock size={13} strokeWidth={2.5} className="shrink-0" />}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white border-[1.5px] border-[#f0d98a] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#8a6200]">221(g) Details Recorded</div>
+                    {!isReadOnly && <button onClick={() => setIsApSaved(false)} className="text-[12px] font-bold text-primary hover:underline">Edit</button>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                    <div><div className="text-[11px] text-[#6b8097] mb-0.5">Notice Date</div><div className="text-[13px] font-bold text-[#0c1b33]">{apDetails.interviewDate ? new Date(apDetails.interviewDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}</div></div>
+                    <div><div className="text-[11px] text-[#6b8097] mb-0.5">CEAC Status</div><div className="text-[13px] font-bold text-[#0c1b33]">{apDetails.ceacStatus || '—'}</div></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Update Log */}
+              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-[14px] font-bold text-[#0c1b33]">Case Update Log</div>
+                  {!isReadOnly && <button onClick={() => setIsApUpdateModalOpen(true)} className="text-[12px] font-bold text-primary hover:underline cursor-pointer">+ Add update</button>}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {apUpdateLog.length === 0 ? (
+                    <div className="text-[13px] text-[#6b8097] italic py-2">No updates logged yet. Add an update each time you check CEAC or submit documents.</div>
+                  ) : apUpdateLog.map((entry: any, i: number) => (
+                    <div key={i} className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-xl p-3">
+                      <div className="text-[11px] font-bold text-[#6b8097] mb-1">{new Date(entry.date + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}{entry.ceac && ` · CEAC: ${entry.ceac}`}</div>
+                      <div className="text-[13px] text-[#3a4f63] leading-relaxed">{entry.note || 'Status checked — no change noted.'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Info sections */}
+              <div className="flex flex-col gap-3.5 mb-2">
+                {(tool.info_sections || []).map((section: any, idx: number) => (
+                  <div key={idx} className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 shadow-[0_4px_20px_rgba(12,27,51,0.06)]">
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${section.type === 'sky' ? 'bg-[#e8f1fb] border-[#d0e4f7]' : 'bg-[#e8f6f6] border-[#9fd6d6]'}`}>
+                        {section.icon === 'info' ? <Info size={16} className="text-[#2f6fd4]" strokeWidth={2} /> : <Check size={16} className="text-[#0d6b6b]" strokeWidth={2.5} />}
+                      </div>
+                      <div className="text-[14px] font-bold text-[#0c1b33]">{section.title}</div>
+                    </div>
+                    <div className="flex flex-col gap-2.5">
+                      {section.items.map((item: string, i: number) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
+                          <span className="text-[13px] text-[#3a4f63] leading-relaxed">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.9 SPECIFIC) */}
@@ -4467,6 +5122,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                     <button
                       onClick={() => {
+                        if (plan.isLocked("tracker_reminders")) {
+                          setUpgradeModalFeature("tracker_reminders");
+                          return;
+                        }
                         setIsApSaved(true);
                         actions.updateMetadata({
                           apDetails: apDetails,
@@ -4482,11 +5141,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         }
                       }}
                       disabled={!apDetails.interviewDate || ceacApiLoading}
-                      className="w-full p-4 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
+                      className={`w-full p-4 text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2 ${plan.isLocked("tracker_reminders") ? "bg-neutral-400 hover:translate-y-0" : "bg-primary"}`}
                     >
                       {ceacApiLoading
                         ? "Saving..."
                         : "Save AP Status & Activate Tracking"}
+                      {plan.isLocked("tracker_reminders") && <Lock size={13} strokeWidth={2.5} className="shrink-0" />}
                     </button>
 
                     {/* Refused sub-type prompt — shown after save if status = Refused */}
@@ -5063,6 +5723,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     },
                                   });
                                 } else {
+                                  if (plan.isLocked("civil_doc_guides")) {
+                                    setUpgradeModalFeature("civil_doc_guides");
+                                    return;
+                                  }
                                   // Mark inline guides as in-progress when opened
                                   actions.updateMetadata({
                                     civilDocsStatus: {
@@ -5075,6 +5739,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 }
                               },
                               onUpload: () => {
+                                if (plan.isLocked("document_vault")) {
+                                  setUpgradeModalFeature("document_vault");
+                                  return;
+                                }
                                 const defId = mapDocumentNameToId(item.title);
                                 setActiveUploadId(item.id);
                                 setActiveUploadType("doc");
@@ -5786,13 +6454,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // (moved to top-level, see above)
 
   return (
+    <>
+    {upgradeModalFeature && (
+      <UpgradeModal
+        feature={upgradeModalFeature}
+        onClose={() => setUpgradeModalFeature(null)}
+      />
+    )}
     <div
       className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
       style={
         isChapter3
           ? {
               backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.72)), url(/assets/images/ch3steps-bg.png)",
+                "linear-gradient(rgba(251,250,247,0.68), rgba(251,250,247,0.74)), url(/assets/images/ch3steps-bg.png)",
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -6092,7 +6767,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 isChapter3
                   ? {
                       backgroundImage:
-                        "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
+                        "linear-gradient(rgba(251,250,247,0.66), rgba(251,250,247,0.74)), url('/assets/images/ch3steps-bg.png')",
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
@@ -6102,7 +6777,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   : isChapter2
                     ? {
                         backgroundImage:
-                          "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
+                          "linear-gradient(rgba(251,250,247,0.68), rgba(251,250,247,0.74)), url('/assets/images/ch2steps-bg.png')",
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
@@ -6135,7 +6810,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {showDocQuestionnaire && currentStep.step_key === "step_1_2" && (
                 <DocumentQuestionnaire
                   config={IR1_QUESTIONNAIRE_CONFIG}
-                  initialAnswers={derivedDocAnswers}
                   onComplete={(result: QuestionnaireResult) => {
                     // Persist answers + completion flag via backend
                     actions.updateMetadata({
@@ -6268,6 +6942,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                             title: doc.name,
                                             subtitle: doc.subtitle,
                                             onReadGuide: () => {
+                                              if (plan.isLocked("civil_doc_guides")) {
+                                                setUpgradeModalFeature("civil_doc_guides");
+                                                return;
+                                              }
                                               if (
                                                 doc.guideUrl &&
                                                 doc.guideUrl !== "/guides"
@@ -6301,6 +6979,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                               }
                                             },
                                             onUpload: () => {
+                                              if (plan.isLocked("document_vault")) {
+                                                setUpgradeModalFeature("document_vault");
+                                                return;
+                                              }
                                               const defId = mapDocumentNameToId(
                                                 doc.name,
                                               );
@@ -7051,7 +7733,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       )}
 
       {selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="fixed inset-0 z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 ease-out guide-bg">
+        <div className="fixed inset-0 bg-white z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 ease-out">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -7077,7 +7759,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
 
           {/* Guide Body */}
-          <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+          <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px] bg-white">
             <div className="w-full max-w-[600px] flex flex-col">
               <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                 Step 2 · Gather Required Documents
@@ -7103,18 +7785,54 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <div className="w-full flex flex-col">
                 {selectedGuideId === "doc_passport_photos" ? (
                   <div className="mb-4">
-                    <PassportPhotoTool
-                      showHeader={false}
-                      showRequirements={true}
-                    />
+                    {plan.isLocked("photo_booth") ? (
+                      <button
+                        onClick={() => setUpgradeModalFeature("photo_booth")}
+                        className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors cursor-pointer"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-violet-500"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[14px] font-bold text-violet-700">Photo Booth is locked</p>
+                          <p className="text-[12px] text-violet-500 mt-0.5">{plan.lockHint("photo_booth")}</p>
+                        </div>
+                        <span className="px-4 py-1.5 rounded-full bg-violet-600 text-white text-[12px] font-bold">
+                          {plan.upgradeCTA("photo_booth") ?? "Unlock"}
+                        </span>
+                      </button>
+                    ) : (
+                      <PassportPhotoTool
+                        showHeader={false}
+                        showRequirements={true}
+                      />
+                    )}
                   </div>
                 ) : selectedGuideId === "doc_translations" ? (
                   <div className="mb-4">
-                    <DocumentTranslationTool
-                      showHeader={false}
-                      showRequirements={true}
-                      showRequestsLink={false}
-                    />
+                    {plan.isLocked("document_translation") ? (
+                      <button
+                        onClick={() => setUpgradeModalFeature("document_translation")}
+                        className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors cursor-pointer"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[14px] font-bold text-amber-700">Document Translation is locked</p>
+                          <p className="text-[12px] text-amber-500 mt-0.5">{plan.lockHint("document_translation")}</p>
+                        </div>
+                        <span className="px-4 py-1.5 rounded-full bg-amber-600 text-white text-[12px] font-bold">
+                          {plan.upgradeCTA("document_translation") ?? "Unlock"}
+                        </span>
+                      </button>
+                    ) : (
+                      <DocumentTranslationTool
+                        showHeader={false}
+                        showRequirements={true}
+                        showRequestsLink={false}
+                      />
+                    )}
                   </div>
                 ) : (
                   InlineGuideData[selectedGuideId].sections.map(
@@ -7514,10 +8232,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 (currentTutStep as TutorialStepData).screenTitle
                               }
                               fill
-                              className="object-cover"
+                              className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "cover" }}
+                              style={{ objectFit: "contain" }}
                               priority={tutorialIdx === 0}
                             />
                           )
@@ -7541,10 +8259,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               (currentTutStep as TutorialStepData).screenTitle
                             }
                             fill
-                            className="object-cover"
+                            className="object-contain"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                             quality={95}
-                            style={{ objectFit: "cover" }}
+                            style={{ objectFit: "contain" }}
                             priority={tutorialIdx === 0}
                           />
                         ) : (
@@ -7696,10 +8414,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 ).screenTitle
                               }
                               fill
-                              className="object-cover"
+                              className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
                               quality={95}
-                              style={{ objectFit: "cover" }}
+                              style={{ objectFit: "contain" }}
                               priority
                             />
                           ) : (
@@ -7870,7 +8588,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
       {/* Gathering Guide Overlay (Step 3.4) */}
       {isGatheringGuideOpen && selectedGatheringItem && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans guide-bg">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -7968,7 +8686,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans guide-bg">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button
@@ -8150,6 +8868,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         />
       )}
     </div>
+    </>
   );
 };
 
