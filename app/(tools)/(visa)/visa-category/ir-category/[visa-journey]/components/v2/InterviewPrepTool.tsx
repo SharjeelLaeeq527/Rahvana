@@ -7,12 +7,14 @@ interface InterviewPrepToolProps {
   tool: any;
   isPrepLaunched: boolean;
   setIsPrepLaunched: (launched: boolean) => void;
+  guard?: () => boolean;
 }
 
 export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
   tool,
   isPrepLaunched,
   setIsPrepLaunched,
+  guard,
 }) => {
   return (
     <div className="flex flex-col mt-4">
@@ -57,6 +59,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
 
           <button
             onClick={() => {
+              if (guard && !guard()) return;
               setIsPrepLaunched(true);
               window.open(
                 "https://www.rahvana.com/interview-prep",

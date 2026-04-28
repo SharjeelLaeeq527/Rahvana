@@ -407,7 +407,8 @@ export const MedicalExamTool: React.FC<{
   state: any;
   actions: any;
   medState: any;
-}> = ({ actions, medState }) => {
+  guard?: () => boolean;
+}> = ({ actions, medState, guard }) => {
   const {
     medSaved,
     setMedSaved,
@@ -493,6 +494,7 @@ export const MedicalExamTool: React.FC<{
                 <button
                   key={p.id}
                   onClick={() => {
+                    if (guard && !guard()) return;
                     setMedWizardMode(p.id);
                     setMedWizardStep(0);
                     setIsMedWizardOpen(true);
@@ -735,7 +737,8 @@ export const PolioCertificateTool: React.FC<{
   state: any;
   actions: any;
   polioState: any;
-}> = ({ actions, polioState }) => {
+  guard?: () => boolean;
+}> = ({ actions, polioState, guard }) => {
   const {
     polioLaunched,
     setPolioLaunched,
@@ -772,6 +775,7 @@ export const PolioCertificateTool: React.FC<{
         </div>
         <button
           onClick={() => {
+            if (guard && !guard()) return;
             setPolioGuideStep(0);
             setIsPolioGuideOpen(true);
           }}
@@ -802,6 +806,7 @@ export const PolioCertificateTool: React.FC<{
                 type="checkbox"
                 checked={polioChecks[i]}
                 onChange={async () => {
+                  if (guard && !guard()) return;
                   const next = [...polioChecks];
                   next[i] = !next[i];
                   setPolioChecks(next);
@@ -902,6 +907,7 @@ export const PoliceClearanceTool: React.FC<{
   state: any;
   actions: any;
   pccState: any;
+  guard?: () => boolean;
   openUploadModal?: (defId: string) => void;
   setActiveUploadId?: (id: string | null) => void;
   setActiveUploadType?: (type: "doc" | "hh" | "financial" | null) => void;
@@ -913,6 +919,7 @@ export const PoliceClearanceTool: React.FC<{
   setActiveUploadId,
   setActiveUploadType,
   uploadedDocuments,
+  guard,
 }) => {
   const {
     pccSaved,
@@ -979,6 +986,7 @@ export const PoliceClearanceTool: React.FC<{
             <button
               key={p.id}
               onClick={() => {
+                if (guard && !guard()) return;
                 setPccOverlayMode(p.id);
                 setPccOverlayStep(0);
                 setIsPccOverlayOpen(true);
@@ -1050,6 +1058,7 @@ export const PoliceClearanceTool: React.FC<{
         </div>
         <button
           onClick={async () => {
+            if (guard && !guard()) return;
             // Final validation check
             const receiptErr = validatePccField("receipt", pccData.receipt);
             const trackErr = validatePccField("track", pccData.track);
@@ -1105,6 +1114,7 @@ export const PoliceClearanceTool: React.FC<{
           </div>
           <button
             onClick={async () => {
+              if (guard && !guard()) return;
               setIsSaving(true);
               try {
                 setPccReceived(true);
@@ -1140,6 +1150,7 @@ export const PoliceClearanceTool: React.FC<{
               </div>
               <button
                 onClick={() => {
+                  if (guard && !guard()) return;
                   if (
                     openUploadModal &&
                     setActiveUploadId &&
@@ -1160,6 +1171,7 @@ export const PoliceClearanceTool: React.FC<{
           ) : (
             <button
               onClick={() => {
+                if (guard && !guard()) return;
                 if (
                   openUploadModal &&
                   setActiveUploadId &&
@@ -1250,7 +1262,8 @@ export const GatheringChecklistTool: React.FC<{
   state: any;
   actions: any;
   gatheringState: any;
-}> = ({ tool, state, actions, gatheringState }) => {
+  guard?: () => boolean;
+}> = ({ tool, state, actions, gatheringState, guard }) => {
   const {
     gatheringStatus,
     setGatheringStatus,
@@ -1319,6 +1332,7 @@ export const GatheringChecklistTool: React.FC<{
                   <div
                     key={item.id}
                     onClick={() => {
+                      if (guard && !guard()) return;
                       setSelectedGatheringItem(item);
                       setIsGatheringGuideOpen(true);
                       if (status === "not-started") {

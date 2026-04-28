@@ -168,6 +168,7 @@ import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitle
 import { useStepEntitlement } from "./useStepEntitlement";
 import { StepLockedContent } from "./StepLockedContent";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { usePlan } from "@/app/context/PlanContext";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -232,6 +233,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const isChapter3 = sId.startsWith("step_3_");
 
   // ── Step-level entitlement gating ──────────────────────────────────────────
+  const plan = usePlan();
   const stepEntitlement = useStepEntitlement(sId);
 
   // --- Robust Chapter 1 detection for all substeps ---
@@ -1529,24 +1531,50 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {/* Action Card (Guide or Tool) */}
                 <button
                   onClick={() => {
+                    const isTranslation = doc.id === "doc_translations" || doc.guideKey === "doc_translations" || doc.selectedGuideId === "doc_translations";
+                    const isPassportPhoto = doc.id === "doc_passport_photos" || doc.guideKey === "doc_passport_photos" || doc.selectedGuideId === "doc_passport_photos";
+                    
+                    const guideFeature = isTranslation ? "document_translation" : isPassportPhoto ? "photo_booth" : "step_guides";
+                    
+                    if (!plan.canUse(guideFeature)) {
+                      stepEntitlement.openUpgradeModal();
+                      // Override the primary feature if we're clicking a specific document tool
+                      if (isTranslation || isPassportPhoto) {
+                        // The modal will use the primary feature by default, 
+                        // but if we want a specific one we might need to handle it.
+                        // For now, stepEntitlement.guard uses the STEP_PRIMARY_FEATURE.
+                      }
+                      return;
+                    }
+
                     setDocActionModal({ ...docActionModal, isOpen: false });
                     if (onReadGuide) onReadGuide();
                   }}
                   className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#e8f1fb] text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                    {doc.id === "doc_translations" ||
-                    doc.guideKey === "doc_translations" ||
-                    doc.selectedGuideId === "doc_translations" ? (
-                      <Sparkles size={20} />
-                    ) : doc.id === "doc_passport_photos" ||
-                      doc.guideKey === "doc_passport_photos" ||
-                      doc.selectedGuideId === "doc_passport_photos" ? (
-                      <Camera size={20} />
-                    ) : (
-                      <BookOpen size={20} />
-                    )}
-                  </div>
+                  {(() => {
+                    const isTranslation = doc.id === "doc_translations" || doc.guideKey === "doc_translations" || doc.selectedGuideId === "doc_translations";
+                    const isPassportPhoto = doc.id === "doc_passport_photos" || doc.guideKey === "doc_passport_photos" || doc.selectedGuideId === "doc_passport_photos";
+                    const guideFeature = isTranslation ? "document_translation" : isPassportPhoto ? "photo_booth" : "step_guides";
+                    const isLocked = !plan.canUse(guideFeature);
+                    
+                    return (
+                      <div className="w-10 h-10 rounded-xl bg-[#e8f1fb] text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors relative">
+                        {isLocked && (
+                          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white text-white">
+                            <Lock size={10} strokeWidth={3} />
+                          </div>
+                        )}
+                        {isTranslation ? (
+                          <Sparkles size={20} />
+                        ) : isPassportPhoto ? (
+                          <Camera size={20} />
+                        ) : (
+                          <BookOpen size={20} />
+                        )}
+                      </div>
+                    );
+                  })()}
                   <h4 className="font-bold text-[#0f1f38] mb-1">
                     {doc.id === "doc_translations" ||
                     doc.guideKey === "doc_translations" ||
@@ -1568,17 +1596,50 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ? "Generate and validate your passport photos to meet U.S. specifications."
                         : "View requirements, pitfalls, and step-by-step instructions."}
                   </p>
+                  
+                  {(() => {
+                     const isPassportPhoto = doc.id === "doc_passport_photos" || doc.guideKey === "doc_passport_photos" || doc.selectedGuideId === "doc_passport_photos";
+                     if (isPassportPhoto) {
+                       const ent = plan.entitlement("photo_booth");
+                       if (ent.state === 'limited') {
+                         return (
+                           <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                             <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                             <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                               {ent.limit} Credits Included
+                             </span>
+                           </div>
+                         );
+                       }
+                     }
+                     return null;
+                  })()}
                 </button>
 
                 {/* Upload Card */}
                 <button
                   onClick={() => {
+                    if (!plan.canUse("document_vault")) {
+                      // Custom messages for specific steps as per matrix
+                      if (sId === "step_1_15") {
+                         toast.info("Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.", { duration: 6000 });
+                      } else if (sId === "step_1_17") {
+                         toast.info("Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.", { duration: 6000 });
+                      }
+                      stepEntitlement.openUpgradeModal();
+                      return;
+                    }
                     setDocActionModal({ ...docActionModal, isOpen: false });
                     if (onUpload) onUpload();
                   }}
                   className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#eaf7f2] text-[#1a7a5e] flex items-center justify-center mb-4 group-hover:bg-[#1a7a5e] group-hover:text-white transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-[#eaf7f2] text-[#1a7a5e] flex items-center justify-center mb-4 group-hover:bg-[#1a7a5e] group-hover:text-white transition-colors relative">
+                    {!plan.canUse("document_vault") && (
+                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white text-white">
+                        <Lock size={10} strokeWidth={3} />
+                      </div>
+                    )}
                     <Upload size={20} />
                   </div>
                   <h4 className="font-bold text-[#0f1f38] mb-1">
@@ -2467,6 +2528,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setIsSponsorshipCalcOpen(true);
               }}
               tool={tool}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -2559,6 +2621,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     "") as string;
 
                   const handleFetch = async () => {
+                    if (!stepEntitlement.guard()) return;
                     if (!postName) {
                       setIvError(
                         "No embassy/post found. Please complete Step 2.10 first.",
@@ -2666,7 +2729,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             })()}
                           </div>
                           {savedUpdated && (
-                            <div className="text-[10px] text-[#6b8097]">
+                            <div className="text-[10px] text-[#6b8097] ">
                               Last synced: {savedUpdated}
                             </div>
                           )}
@@ -2888,6 +2951,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 isApprovalSaved,
                 setIsApprovalSaved,
               }}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -2930,6 +2994,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   medWizardMode,
                   setMedWizardMode,
                 }}
+                guard={stepEntitlement.guard}
               />
             </StepLockedContent>
           )}
@@ -2949,6 +3014,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   polioChecks,
                   setPolioChecks,
                 }}
+                guard={stepEntitlement.guard}
               />
             </StepLockedContent>
           )}
@@ -2975,6 +3041,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               uploadedDocuments={uploadedDocuments}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -2995,6 +3062,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 updateMetadata={actions.updateMetadata}
                 setActiveFinancialDoc={setActiveFinancialDoc}
                 setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
+                guard={stepEntitlement.guard}
               />
             </StepLockedContent>
           )}
@@ -3035,6 +3103,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   submissionDate: data.date,
                 });
               }}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3068,6 +3137,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               tool={tool}
               setMedicalGuideIdx={setMedicalGuideIdx}
               setIsMedicalGuideOpen={setIsMedicalGuideOpen}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3082,6 +3152,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setIsWalletViewOpen={setIsWalletViewOpen}
               setWalletMode={setWalletMode}
               setIsWalletFormOpen={setIsWalletFormOpen}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3091,6 +3162,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               tool={tool}
               isPrepLaunched={isPrepLaunched}
               setIsPrepLaunched={setIsPrepLaunched}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3100,6 +3172,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               tool={tool}
               setInterviewDayTutIdx={setInterviewDayTutIdx}
               setIsInterviewDayTutOpen={setIsInterviewDayTutOpen}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3562,8 +3635,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {/* Module Header */}
                   <div className="flex items-start gap-[16px] mb-[26px]">
                     <div
-                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
+                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border relative ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
                     >
+                      {stepEntitlement.isLocked && (
+                        <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center border-2 border-[#0e1e38] text-white z-10">
+                          <Lock size={12} strokeWidth={3} />
+                        </div>
+                      )}
                       <IconComponent
                         size={22}
                         className={isChapter1 ? "text-white" : "text-white/75"}
@@ -4150,6 +4228,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   /* Saved Card */
                   <button
                     onClick={() => {
+                      if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4185,6 +4264,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   /* Unsaved Card */
                   <button
                     onClick={() => {
+                      if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4390,6 +4470,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               {tool.wallet_card && (
                 <button
                   onClick={() => {
+                    if (!stepEntitlement.guard()) return;
                     if (tool.wallet_card?.type === "nvc_fee") {
                       setIsNvcFeeModalOpen(true);
                     } else if (tool.wallet_card?.type === "ceac_creds") {
@@ -4941,6 +5022,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 isChapter1={isChapter1}
                 isChapter2={isChapter2}
                 isChapter3={isChapter3}
+                guard={stepEntitlement.guard}
               />
             </div>
           ) : currentStep.step_type === "docs" ? (
@@ -6973,6 +7055,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               }
             }
           }}
+        />
+      )}
+
+      {/* Entitlement Gating Upgrade Modal */}
+      {stepEntitlement.upgradeModalFeature && (
+        <UpgradeModal
+          feature={stepEntitlement.upgradeModalFeature}
+          onClose={stepEntitlement.closeUpgradeModal}
         />
       )}
     </div>

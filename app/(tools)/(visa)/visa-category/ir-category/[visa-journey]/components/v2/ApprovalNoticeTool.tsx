@@ -23,12 +23,14 @@ interface ApprovalNoticeToolProps {
     isApprovalSaved: boolean;
     setIsApprovalSaved: (saved: boolean) => void;
   };
+  guard?: () => boolean;
 }
 
 export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   state,
   actions,
   approvalState,
+  guard,
 }) => {
   const {
     isApprovalModalOpen,
@@ -166,6 +168,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
             </button>
             <button
               onClick={() => {
+                if (guard && !guard()) return;
                 setApprovalGuideStep(0);
                 setIsApprovalGuideOpen(true);
               }}
@@ -215,7 +218,10 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 </p>
                 <div className="flex gap-[10px] flex-wrap">
                   <button
-                    onClick={() => openUploadModal("i797-approval-notice")}
+                    onClick={() => {
+                      if (guard && !guard()) return;
+                      openUploadModal("i797-approval-notice");
+                    }}
                     className={`inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[13px] font-bold ${
                       approvalDoc
                         ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] hover:border-[#15744f]"
@@ -262,7 +268,10 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                     </span>
                   </div>
                   <button
-                    onClick={() => setIsApprovalModalOpen(true)}
+                    onClick={() => {
+                      if (guard && !guard()) return;
+                      setIsApprovalModalOpen(true);
+                    }}
                     className="mt-3 text-[11px] font-bold text-[#2f6fd4] hover:underline flex items-center gap-1"
                   >
                     <svg
@@ -280,7 +289,10 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
               <>
                 <div className="flex gap-[10px] flex-wrap mb-3">
                   <button
-                    onClick={() => openUploadModal("i797-approval-notice")}
+                    onClick={() => {
+                      if (guard && !guard()) return;
+                      openUploadModal("i797-approval-notice");
+                    }}
                     className={`inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[13px] font-bold ${
                       approvalDoc
                         ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] hover:border-[#15744f]"
@@ -298,7 +310,10 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   </button>
                 </div>
                 <button
-                  onClick={() => setIsApprovalModalOpen(true)}
+                  onClick={() => {
+                    if (guard && !guard()) return;
+                    setIsApprovalModalOpen(true);
+                  }}
                   className="inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-white text-[#0c1b33] text-[13px] font-bold hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all"
                 >
                   <svg
