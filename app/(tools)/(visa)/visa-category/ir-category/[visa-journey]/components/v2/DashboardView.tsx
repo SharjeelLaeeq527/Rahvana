@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { ChevronDown, ArrowRight, ExternalLink, Clock, Shield, AlertTriangle } from "lucide-react";
+import { ChevronDown, ArrowRight, ExternalLink, Clock, Shield, AlertTriangle, Lock } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import {
@@ -14,6 +14,8 @@ import WaitingStateCard from "./WaitingStateCard";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
+import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
+import { getActiveStepsForStage } from "./journeyHelpers";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -470,6 +472,21 @@ export function DashboardView({
                             {(stage.chapter_name || stage.name).replace(/^Stage\s[IVX]+:\s/, "")}
                           </h3>
                         </div>
+                        {/* Lock indicator — shows how many steps have locked premium features */}
+                        {!isLocked && (() => {
+                          const steps = stage.steps || [];
+                          const lockedCount = steps.filter((s: any) => {
+                            const feat = STEP_PRIMARY_FEATURE[s.step_key || s.id];
+                            return feat && plan.isLocked(feat);
+                          }).length;
+                          if (lockedCount === 0) return null;
+                          return (
+                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#ede8f5] text-[#7c5e8a] border border-[#c9b8d8] w-fit">
+                              <Lock size={8} strokeWidth={2.5} />
+                              {lockedCount} locked
+                            </div>
+                          );
+                        })()}
                         <div className="flex items-center gap-2 mt-auto">
                           <div className="flex-1 h-1.5 bg-[#d0e4f7] rounded-full overflow-hidden">
                             <div className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-primary to-primary/70" style={{ width: `${prog.pct}%` }} />

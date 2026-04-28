@@ -39,6 +39,7 @@ interface StepToolRendererProps {
   polioState?: any;
   pccState?: any;
   gatheringState?: any;
+  guard?: () => boolean;
 }
 
 export const AwaitingReviewStep: React.FC<{
@@ -100,6 +101,7 @@ export const AwaitingReviewStep: React.FC<{
 export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
   dqState,
   actions,
+  guard,
 }) => {
   const {
     dqSaved,
@@ -172,6 +174,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
           </div>
           <button
             onClick={async () => {
+              if (guard && !guard()) return;
               setIsSaving(true);
               try {
                 setDqSaved(true);
@@ -250,7 +253,8 @@ export const AppointmentReceivedTool: React.FC<{
   state: any;
   actions: any;
   interviewState: any;
-}> = ({ actions, interviewState }) => {
+  guard?: () => boolean;
+}> = ({ actions, interviewState, guard }) => {
   const {
     interviewSaved,
     setInterviewSaved,
@@ -350,6 +354,7 @@ export const AppointmentReceivedTool: React.FC<{
           </div>
           <button
             onClick={async () => {
+              if (guard && !guard()) return;
               const validationErrors = validateAppointmentFields();
               if (Object.keys(validationErrors).length > 0) {
                 setErrors(validationErrors);

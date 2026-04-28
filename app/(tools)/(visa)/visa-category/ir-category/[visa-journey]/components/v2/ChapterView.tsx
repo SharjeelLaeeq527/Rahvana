@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { ArrowLeft, ChevronRight, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ChevronRight, AlertTriangle, Lock, Crown } from "lucide-react";
 import { RoadmapData, RoadmapStep } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
+import { usePlan } from "@/app/context/PlanContext";
+import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 
 interface ChapterViewProps {
   data: RoadmapData;
@@ -21,6 +23,7 @@ export function ChapterView({
   onBack,
   onSelectStep,
 }: ChapterViewProps) {
+  const plan = usePlan();
   const chapters = data.chapters || (data as any).stages;
   const chapter = chapters[chapterIdx];
 
@@ -303,6 +306,23 @@ export function ChapterView({
                     {step.step_short_description || ""}
                   </div>
                 </div>
+                {/* Lock badge — shown when step's primary feature is locked */}
+                 {(() => {
+                   const feat = STEP_PRIMARY_FEATURE[sId];
+                   if (!feat || plan.canUse(feat)) return null;
+                   const isExec = feat === 'polio_certificate' || feat === 'action_221g';
+                   const LockIcon = isExec ? Crown : Lock;
+                   return (
+                     <div className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${
+                       isExec
+                         ? 'bg-[#fef3d8] text-[#a06000] border-[#f0c878]'
+                         : 'bg-[#ede8f5] text-[#7c5e8a] border-[#c9b8d8]'
+                     }`}>
+                       <LockIcon size={9} strokeWidth={2.5} />
+                       {isExec ? 'Executive' : 'Locked'}
+                     </div>
+                   );
+                 })()}
                 <ChevronRight
                   className="text-[#b3a6b3] opacity-30 shrink-0"
                   size={14}
