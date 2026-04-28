@@ -56,11 +56,15 @@ export function PageGate({ feature, children, title, description }: PageGateProp
         </div>
 
         <h1 className="text-2xl font-black text-[#0c1b33] mb-3 leading-tight">
-          {title || "Premium Feature"}
+          {title || "Upgrade Required"}
         </h1>
 
         <p className="text-[14px] text-[#6b8097] leading-relaxed mb-6">
-          {description || "This tool is not included in your current plan. Upgrade your plan or purchase it as an add-on to unlock full access."}
+          {description || "To access this feature, you need to upgrade your plan. This tool is not included in your current subscription."}
+        </p>
+
+        <p className="text-[12px] text-[#9aa5b1] mb-6">
+          {hint}
         </p>
 
         <div className="flex flex-col gap-3">

@@ -19,7 +19,7 @@ import {
   FileSearch,
   ArrowRight,
   ChevronDown,
-  Crown,
+  Lock,
 } from "lucide-react";
 
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -425,10 +425,10 @@ function ToolCard({
   const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
     transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
     ${featureLocked
-      ? "border-2 border-[#8a5a08] dark:border-[#b88716] cursor-pointer shadow-[0_18px_38px_-24px_rgba(138,90,8,0.9),0_0_0_1px_rgba(255,215,112,0.28)_inset] hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgba(138,90,8,0.95),0_0_26px_rgba(212,161,44,0.22)]"
+      ? "border-[1.5px] border-transparent cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.25)] hover:-translate-y-1"
       : isNavigable
-        ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-        : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+        ? "border-[1.5px] border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+        : "border-[1.5px] border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
     }
     animate-fade-up`;
 
@@ -439,21 +439,20 @@ function ToolCard({
       className={cardClasses}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Gold gradient border — always visible for locked/premium cards */}
+      {/* Sleek Professional Border for Locked/Premium cards */}
       {featureLocked && (
-        <div
-          className="absolute inset-0 rounded-[30px] pointer-events-none"
-          style={{
-            padding: "2.5px",
-            background:
-              "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%), repeating-linear-gradient(45deg, rgba(255,255,255,0.36) 0 1px, transparent 1px 5px)",
-            backgroundBlendMode: "overlay",
-            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-            opacity: 0.96,
-          }}
-        />
+        <div className="absolute inset-0 rounded-[30px] p-[1.5px] bg-gradient-to-br from-indigo-500/30 via-purple-500/30 to-pink-500/30 group-hover:from-indigo-500/70 group-hover:via-purple-500/70 group-hover:to-pink-500/70 transition-all duration-500 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude" />
+      )}
+
+      {/* Professional Ribbon for Locked/Premium cards */}
+      {featureLocked && (
+        <div className="absolute -top-[1.5px] -right-[1.5px] h-[95px] w-[95px] overflow-hidden rounded-tr-[30px] pointer-events-none z-20">
+          <div className="absolute top-[22px] right-[-28px] w-[130px] rotate-45 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 py-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.2)] border-y border-white/20 dark:border-white/10 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white flex items-center gap-[4px] drop-shadow-md">
+              <Lock size={10} strokeWidth={3} className="mb-[1px]" /> PRO
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Floating icon box */}
@@ -462,19 +461,11 @@ function ToolCard({
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      {/* Crown badge — top-right corner, only for locked/premium features */}
-      {featureLocked && (
-        <div className="absolute top-3.5 right-4 z-10">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#8a5a08] bg-[radial-gradient(circle_at_30%_20%,#fff2b8_0%,#d9a62e_36%,#8a5a08_78%,#4d2e00_100%)] text-[#4d2e00] shadow-[0_7px_18px_rgba(138,90,8,0.42),inset_0_1px_0_rgba(255,255,255,0.65)]">
-            <Crown size={20} strokeWidth={3} fill="currentColor" />
-          </span>
-        </div>
-      )}
-
       {/* Border gradient on hover (category color) */}
       {!featureLocked && (
-        <div className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`} />
+        <div className={`absolute inset-0 rounded-[30px] p-[1.5px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`} />
       )}
+
       {/* Radial glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
@@ -497,7 +488,9 @@ function ToolCard({
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
         {featureLocked ? (
-          <span aria-hidden="true" className="h-5" />
+          <span className="text-sm font-semibold flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 group-hover:underline decoration-2 underline-offset-2">
+             <Lock size={14} className="mb-[1px]" /> {t("toolsPage.unlockPro") !== "toolsPage.unlockPro" ? t("toolsPage.unlockPro") : "Unlock Pro"}
+          </span>
         ) : isNavigable ? (
           <span className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}>
             {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="w-4 h-4" />

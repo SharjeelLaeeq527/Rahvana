@@ -10,6 +10,7 @@ import { ToastProvider } from "./components/shared/ToastProvider";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle";
+import { ToolsGuard } from "./(tools)/ToolsGuard";
 
 export const metadata: Metadata = {
   title: "Rahvana",
@@ -83,7 +84,7 @@ export default function RootLayout({
             disableTransitionOnChange
           > */}
               <ClientHeader />
-              {children}
+              <ToolsGuard>{children}</ToolsGuard>
               <ClientWidgets />
               <Footer />
               {/* </ThemeProvider> */}

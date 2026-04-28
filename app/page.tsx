@@ -359,7 +359,7 @@ function HomePageContent() {
         {activeSection === "home" && (
           <div className="flex flex-col">
             {/* Use the new styled hero, but keep the same CTA and header logic */}
-        
+    
             <CinematicHeroHtmlStyle />
 
             {/* HOW RAHVANA WORKS SECTION */}
