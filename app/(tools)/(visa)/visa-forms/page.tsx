@@ -173,21 +173,21 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Simplified affidavit of support. Can be used when sponsor meets income requirements solely with current employment.",
   },
-  {
-    id: "i864w",
-    code: "I-864W",
-    name: "Intending Immigrant's Affidavit of Support Exemption",
-    agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "AOS"],
-    stage: "Interview Prep",
-    category: ["Financial"],
-    keywords: ["exemption", "work credits", "40 quarters", "social security"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-864w.pdf",
-    description:
-      "Exemption from affidavit requirement if immigrant has 40 qualifying work quarters under Social Security Act.",
-  },
+  // {
+  //   id: "i864w",
+  //   code: "I-864W",
+  //   name: "Intending Immigrant's Affidavit of Support Exemption",
+  //   agency: "USCIS",
+  //   journeys: ["IR1-CR1", "IR5", "AOS"],
+  //   stage: "Interview Prep",
+  //   category: ["Financial"],
+  //   keywords: ["exemption", "work credits", "40 quarters", "social security"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-864w.pdf",
+  //   description:
+  //     "Exemption from affidavit requirement if immigrant has 40 qualifying work quarters under Social Security Act.",
+  // },
   // {
   //   id: "i134",
   //   code: "I-134",
@@ -218,21 +218,21 @@ const VISA_FORMS: VisaForm[] = [
   //   description:
   //     "Medical examination by USCIS-approved civil surgeon. Required for AOS applicants. Sealed envelope given to applicant.",
   // },
-  {
-    id: "i751",
-    code: "I-751",
-    name: "Petition to Remove Conditions on Residence",
-    agency: "USCIS",
-    journeys: ["IR1-CR1", "AOS", "Naturalization"],
-    stage: "Post-Entry",
-    category: ["Post-GC"],
-    keywords: ["conditional", "remove conditions", "2-year", "marriage"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-751.pdf",
-    description:
-      "Required to remove conditions from 2-year conditional green card (marriages under 2 years). File within 90-day window before expiration.",
-  },
+  // {
+  //   id: "i751",
+  //   code: "I-751",
+  //   name: "Petition to Remove Conditions on Residence",
+  //   agency: "USCIS",
+  //   journeys: ["IR1-CR1", "AOS", "Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Post-GC"],
+  //   keywords: ["conditional", "remove conditions", "2-year", "marriage"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-751.pdf",
+  //   description:
+  //     "Required to remove conditions from 2-year conditional green card (marriages under 2 years). File within 90-day window before expiration.",
+  // },
   // {
   //   id: "n400",
   //   code: "N-400",
@@ -263,20 +263,20 @@ const VISA_FORMS: VisaForm[] = [
   //   description:
   //     "Replace or renew permanent resident card. File if card is lost, stolen, damaged, expired, or has incorrect information.",
   // },
-  {
-    id: "ar11",
-    code: "AR-11",
-    name: "Alien's Change of Address Card",
-    agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
-    stage: "Post-Entry",
-    category: ["Administrative"],
-    keywords: ["address", "change", "move", "relocation"],
-    type: "online",
-    officialLink: "",
-    description:
-      "All non-citizens must notify USCIS within 10 days of changing address. Can be filed online at uscis.gov.",
-  },
+  // {
+  //   id: "ar11",
+  //   code: "AR-11",
+  //   name: "Alien's Change of Address Card",
+  //   agency: "USCIS",
+  //   journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
+  //   stage: "Post-Entry",
+  //   category: ["Administrative"],
+  //   keywords: ["address", "change", "move", "relocation"],
+  //   type: "online",
+  //   officialLink: "",
+  //   description:
+  //     "All non-citizens must notify USCIS within 10 days of changing address. Can be filed online at uscis.gov.",
+  // },
   // {
   //   id: "i102",
   //   code: "I-102",
@@ -309,56 +309,56 @@ const VISA_FORMS: VisaForm[] = [
   // },
 
   // ──────────────── USCIS WAIVER FORMS ────────────────
-  {
-    id: "i601",
-    code: "I-601",
-    name: "Application for Waiver of Grounds of Inadmissibility",
-    agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
-    stage: "Interview Prep",
-    category: ["Waiver"],
-    keywords: [
-      "waiver",
-      "inadmissibility",
-      "unlawful presence",
-      "extreme hardship",
-    ],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-601.pdf",
-    description:
-      "Waiver for inadmissibility due to unlawful presence, fraud, criminal history, etc. Requires proof of extreme hardship to USC/LPR relative.",
-  },
-  {
-    id: "i601a",
-    code: "I-601A",
-    name: "Provisional Unlawful Presence Waiver",
-    agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5"],
-    stage: "Interview Prep",
-    category: ["Waiver"],
-    keywords: ["provisional", "waiver", "unlawful presence", "3/10 year bar"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-601a.pdf",
-    description:
-      "Provisional waiver for unlawful presence before consular interview. Allows applicant to wait for approval in US.",
-  },
-  {
-    id: "i212",
-    code: "I-212",
-    name: "Application for Permission to Reapply for Admission",
-    agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "AOS"],
-    stage: "Interview Prep",
-    category: ["Waiver"],
-    keywords: ["reentry", "deportation", "removal", "previous removal"],
-    type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-212.pdf",
-    description:
-      "Permission to reapply after deportation or removal. Required if previously removed or deported from US.",
-  },
+  // {
+  //   id: "i601",
+  //   code: "I-601",
+  //   name: "Application for Waiver of Grounds of Inadmissibility",
+  //   agency: "USCIS",
+  //   journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
+  //   stage: "Interview Prep",
+  //   category: ["Waiver"],
+  //   keywords: [
+  //     "waiver",
+  //     "inadmissibility",
+  //     "unlawful presence",
+  //     "extreme hardship",
+  //   ],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-601.pdf",
+  //   description:
+  //     "Waiver for inadmissibility due to unlawful presence, fraud, criminal history, etc. Requires proof of extreme hardship to USC/LPR relative.",
+  // },
+  // {
+  //   id: "i601a",
+  //   code: "I-601A",
+  //   name: "Provisional Unlawful Presence Waiver",
+  //   agency: "USCIS",
+  //   journeys: ["IR1-CR1", "IR5"],
+  //   stage: "Interview Prep",
+  //   category: ["Waiver"],
+  //   keywords: ["provisional", "waiver", "unlawful presence", "3/10 year bar"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-601a.pdf",
+  //   description:
+  //     "Provisional waiver for unlawful presence before consular interview. Allows applicant to wait for approval in US.",
+  // },
+  // {
+  //   id: "i212",
+  //   code: "I-212",
+  //   name: "Application for Permission to Reapply for Admission",
+  //   agency: "USCIS",
+  //   journeys: ["IR1-CR1", "IR5", "AOS"],
+  //   stage: "Interview Prep",
+  //   category: ["Waiver"],
+  //   keywords: ["reentry", "deportation", "removal", "previous removal"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.uscis.gov/sites/default/files/document/forms/i-212.pdf",
+  //   description:
+  //     "Permission to reapply after deportation or removal. Required if previously removed or deported from US.",
+  // },
 
   // ──────────────── DOS / NVC / CEAC FORMS ────────────────
   {
@@ -375,20 +375,20 @@ const VISA_FORMS: VisaForm[] = [
     description:
       "Main immigrant visa application completed online at CEAC. Required for all consular processing cases. Cannot be downloaded as PDF.",
   },
-  {
-    id: "ds261",
-    code: "DS-261",
-    name: "Choice of Address and Agent",
-    agency: "DOS",
-    journeys: ["IR1-CR1", "IR5"],
-    stage: "NVC/CEAC",
-    category: ["Consular"],
-    keywords: ["nvc", "address", "agent", "choice"],
-    type: "online",
-    officialLink: "https://ceac.state.gov/iv/",
-    description:
-      "Form to provide address and agent information to NVC. Completed online through CEAC portal.",
-  },
+  // {
+  //   id: "ds261",
+  //   code: "DS-261",
+  //   name: "Choice of Address and Agent",
+  //   agency: "DOS",
+  //   journeys: ["IR1-CR1", "IR5"],
+  //   stage: "NVC/CEAC",
+  //   category: ["Consular"],
+  //   keywords: ["nvc", "address", "agent", "choice"],
+  //   type: "online",
+  //   officialLink: "https://ceac.state.gov/iv/",
+  //   description:
+  //     "Form to provide address and agent information to NVC. Completed online through CEAC portal.",
+  // },
   // {
   //   id: "ds160",
   //   code: "DS-160",
@@ -403,129 +403,129 @@ const VISA_FORMS: VisaForm[] = [
   //   description:
   //     "Nonimmigrant visa application for K-1 fiancé visa applicants. Completed online at CEAC.",
   // },
-  {
-    id: "ds5535",
-    code: "DS-5535",
-    name: "Supplemental Questions for Visa Applicants",
-    agency: "DOS",
-    journeys: ["IR1-CR1", "IR5", "K1"],
-    stage: "Interview Prep",
-    category: ["Consular"],
-    keywords: [
-      "supplemental",
-      "additional questions",
-      "security check",
-      "administrative processing",
-    ],
-    type: "pdf",
-    officialLink: "https://eforms.state.gov/Forms/ds5535.pdf",
-    description:
-      "Additional questionnaire sometimes requested during administrative processing. Covers detailed travel, employment, and social media history.",
-  },
-  {
-    id: "ds5540",
-    code: "DS-5540",
-    name: "Affidavit of Support Sponsor's Financial Information",
-    agency: "DOS",
-    journeys: ["IR1-CR1", "IR5", "K1"],
-    stage: "Interview Prep",
-    category: ["Financial", "Consular"],
-    keywords: ["financial", "sponsor", "income verification"],
-    type: "pdf",
-    officialLink: "https://eforms.state.gov/Forms/ds5540.pdf",
-    description:
-      "Supplemental financial information form sometimes requested at consular interviews to verify sponsor income.",
-  },
-  {
-    id: "ds230",
-    code: "DS-230",
-    name: "Application for Immigrant Visa and Alien Registration",
-    agency: "DOS",
-    journeys: ["IR1-CR1", "IR5"],
-    stage: "Interview Prep",
-    category: ["Consular"],
-    keywords: ["immigrant visa", "paper application", "legacy"],
-    type: "pdf",
-    officialLink: "https://eforms.state.gov/Forms/ds230.pdf",
-    description:
-      "Legacy paper form (replaced by DS-260). Rarely used now but may be needed in special circumstances.",
-  },
-  {
-    id: "ds2001",
-    code: "DS-2001",
-    name: "Notification of Immigrant Visa Applicant",
-    agency: "DOS",
-    journeys: ["IR1-CR1", "IR5"],
-    stage: "Interview Prep",
-    category: ["Consular"],
-    keywords: ["notification", "instructions", "interview"],
-    type: "pdf",
-    officialLink:
-      "https://travel.state.gov/content/dam/visas/DS-2001%20--%20Notification%20of%20Applicant%20Ready%20(10-2019).pdf",
-    description:
-      "Instructions sent by consular section when case is ready for interview scheduling.",
-  },
+  // {
+  //   id: "ds5535",
+  //   code: "DS-5535",
+  //   name: "Supplemental Questions for Visa Applicants",
+  //   agency: "DOS",
+  //   journeys: ["IR1-CR1", "IR5", "K1"],
+  //   stage: "Interview Prep",
+  //   category: ["Consular"],
+  //   keywords: [
+  //     "supplemental",
+  //     "additional questions",
+  //     "security check",
+  //     "administrative processing",
+  //   ],
+  //   type: "pdf",
+  //   officialLink: "https://eforms.state.gov/Forms/ds5535.pdf",
+  //   description:
+  //     "Additional questionnaire sometimes requested during administrative processing. Covers detailed travel, employment, and social media history.",
+  // },
+  // {
+  //   id: "ds5540",
+  //   code: "DS-5540",
+  //   name: "Affidavit of Support Sponsor's Financial Information",
+  //   agency: "DOS",
+  //   journeys: ["IR1-CR1", "IR5", "K1"],
+  //   stage: "Interview Prep",
+  //   category: ["Financial", "Consular"],
+  //   keywords: ["financial", "sponsor", "income verification"],
+  //   type: "pdf",
+  //   officialLink: "https://eforms.state.gov/Forms/ds5540.pdf",
+  //   description:
+  //     "Supplemental financial information form sometimes requested at consular interviews to verify sponsor income.",
+  // },
+  // {
+  //   id: "ds230",
+  //   code: "DS-230",
+  //   name: "Application for Immigrant Visa and Alien Registration",
+  //   agency: "DOS",
+  //   journeys: ["IR1-CR1", "IR5"],
+  //   stage: "Interview Prep",
+  //   category: ["Consular"],
+  //   keywords: ["immigrant visa", "paper application", "legacy"],
+  //   type: "pdf",
+  //   officialLink: "https://eforms.state.gov/Forms/ds230.pdf",
+  //   description:
+  //     "Legacy paper form (replaced by DS-260). Rarely used now but may be needed in special circumstances.",
+  // },
+  // {
+  //   id: "ds2001",
+  //   code: "DS-2001",
+  //   name: "Notification of Immigrant Visa Applicant",
+  //   agency: "DOS",
+  //   journeys: ["IR1-CR1", "IR5"],
+  //   stage: "Interview Prep",
+  //   category: ["Consular"],
+  //   keywords: ["notification", "instructions", "interview"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://travel.state.gov/content/dam/visas/DS-2001%20--%20Notification%20of%20Applicant%20Ready%20(10-2019).pdf",
+  //   description:
+  //     "Instructions sent by consular section when case is ready for interview scheduling.",
+  // },
 
   // ──────────────── CBP FORMS ────────────────
-  {
-    id: "i94",
-    code: "I-94",
-    name: "Arrival/Departure Record",
-    agency: "CBP",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
-    stage: "Port of Entry",
-    category: ["Travel", "Administrative"],
-    keywords: ["arrival", "departure", "entry", "border", "admission"],
-    type: "online",
-    officialLink: "https://i94.cbp.dhs.gov/",
-    description:
-      "Electronic arrival/departure record. Created automatically at port of entry. Can retrieve online at i94.cbp.dhs.gov.",
-  },
-  {
-    id: "cbp6059b",
-    code: "CBP Form 6059B",
-    name: "Customs Declaration",
-    agency: "CBP",
-    journeys: ["IR1-CR1", "IR5", "K1"],
-    stage: "Port of Entry",
-    category: ["Travel"],
-    keywords: ["customs", "declaration", "arrival", "goods"],
-    type: "pdf",
-    officialLink:
-      "https://www.cbp.gov/sites/default/files/assets/documents/2019-Mar/CBP%20Form%206059B%20-%20English%20%2803-2019%29_3.pdf",
-    description:
-      "Customs declaration form completed when entering US. Declares goods being brought into country.",
-  },
-  {
-    id: "i551",
-    code: "I-551",
-    name: "Permanent Resident Card (Green Card)",
-    agency: "CBP",
-    journeys: ["IR1-CR1", "IR5", "AOS"],
-    stage: "Post-Entry",
-    category: ["Post-GC"],
-    keywords: ["green card", "permanent resident", "card"],
-    type: "action",
-    officialLink: "",
-    description:
-      "The actual green card issued after immigrant visa or AOS approval. Not a fillable form but important document.",
-  },
+  // {
+  //   id: "i94",
+  //   code: "I-94",
+  //   name: "Arrival/Departure Record",
+  //   agency: "CBP",
+  //   journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
+  //   stage: "Port of Entry",
+  //   category: ["Travel", "Administrative"],
+  //   keywords: ["arrival", "departure", "entry", "border", "admission"],
+  //   type: "online",
+  //   officialLink: "https://i94.cbp.dhs.gov/",
+  //   description:
+  //     "Electronic arrival/departure record. Created automatically at port of entry. Can retrieve online at i94.cbp.dhs.gov.",
+  // },
+  // {
+  //   id: "cbp6059b",
+  //   code: "CBP Form 6059B",
+  //   name: "Customs Declaration",
+  //   agency: "CBP",
+  //   journeys: ["IR1-CR1", "IR5", "K1"],
+  //   stage: "Port of Entry",
+  //   category: ["Travel"],
+  //   keywords: ["customs", "declaration", "arrival", "goods"],
+  //   type: "pdf",
+  //   officialLink:
+  //     "https://www.cbp.gov/sites/default/files/assets/documents/2019-Mar/CBP%20Form%206059B%20-%20English%20%2803-2019%29_3.pdf",
+  //   description:
+  //     "Customs declaration form completed when entering US. Declares goods being brought into country.",
+  // },
+  // {
+  //   id: "i551",
+  //   code: "I-551",
+  //   name: "Permanent Resident Card (Green Card)",
+  //   agency: "CBP",
+  //   journeys: ["IR1-CR1", "IR5", "AOS"],
+  //   stage: "Post-Entry",
+  //   category: ["Post-GC"],
+  //   keywords: ["green card", "permanent resident", "card"],
+  //   type: "action",
+  //   officialLink: "",
+  //   description:
+  //     "The actual green card issued after immigrant visa or AOS approval. Not a fillable form but important document.",
+  // },
 
   // ──────────────── SSA FORMS ────────────────
-  {
-    id: "ss5",
-    code: "SS-5",
-    name: "Application for a Social Security Card",
-    agency: "SSA",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
-    stage: "Post-Entry",
-    category: ["Post-Entry"],
-    keywords: ["social security", "ssn", "card", "number"],
-    type: "pdf",
-    officialLink: "https://www.ssa.gov/forms/ss-5.pdf",
-    description:
-      "Application for Social Security Number. Should be applied for soon after entry or when receiving work authorization.",
-  },
+  // {
+  //   id: "ss5",
+  //   code: "SS-5",
+  //   name: "Application for a Social Security Card",
+  //   agency: "SSA",
+  //   journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
+  //   stage: "Post-Entry",
+  //   category: ["Post-Entry"],
+  //   keywords: ["social security", "ssn", "card", "number"],
+  //   type: "pdf",
+  //   officialLink: "https://www.ssa.gov/forms/ss-5.pdf",
+  //   description:
+  //     "Application for Social Security Number. Should be applied for soon after entry or when receiving work authorization.",
+  // },
   // {
   //   id: "ssa7050",
   //   code: "SSA-7050-F4",
@@ -985,16 +985,16 @@ export default function VisaFormSelector() {
                           label: "Interview Prep",
                           desc: "Documents & medical",
                         },
-                        {
-                          id: "Port of Entry",
-                          label: "Port of Entry",
-                          desc: "Arrival procedures",
-                        },
-                        {
-                          id: "Post-Entry",
-                          label: "Post-Entry",
-                          desc: "SSN, work auth",
-                        },
+                        // {
+                        //   id: "Port of Entry",
+                        //   label: "Port of Entry",
+                        //   desc: "Arrival procedures",
+                        // },
+                        // {
+                        //   id: "Post-Entry",
+                        //   label: "Post-Entry",
+                        //   desc: "SSN, work auth",
+                        // },
                       ].map((stage, index) => {
                         // Only show stages relevant if we had stage mapping, for now showing all visual
                         const count = VISA_FORMS.filter(

@@ -266,7 +266,7 @@ export function CinematicHero() {
                     )}
                     {user && journeys && journeys.length > 0 && (
                       <Link
-                        href={"/dashboard"}
+                        href="/visa-category/ir-category/ir1-journey"
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
                         style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
                       >
