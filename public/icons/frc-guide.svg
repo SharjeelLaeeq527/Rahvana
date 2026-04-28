@@ -1,0 +1,13 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='FRC Guide'>
+        <circle cx='32' cy='32' r='14' fill='#D69A4E' opacity='0.16'/>
+        <path d='M20 44h4M20 44v-4' stroke='#5A6C98' stroke-width='1.2' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='14' y='22' width='36' height='24' rx='4' fill='#EEF3FF' stroke='#5A6C98' stroke-width='1.7'/>
+<path d='M14 28h36' fill='none' stroke='#5A6C98' stroke-width='1.7'/>
+<path d='M23 46v-3a4 4 0 0 1 8 0v3' fill='#FFFFFF' stroke='#D69A4E' stroke-width='1.5'/>
+<circle cx='27' cy='37' r='3.5' fill='#FFFFFF' stroke='#D69A4E' stroke-width='1.5'/>
+<path d='M33 46v-2.5a3.5 3.5 0 0 1 7 0v2.5' fill='#EAF5FF' stroke='#5A6C98' stroke-width='1.4'/>
+<circle cx='36.5' cy='38' r='3' fill='#EAF5FF' stroke='#5A6C98' stroke-width='1.4'/>
+<path d='M15 46v-2.5a3.5 3.5 0 0 1 7 0v2.5' fill='#EAF5FF' stroke='#5A6C98' stroke-width='1.4'/>
+<circle cx='18.5' cy='38' r='3' fill='#EAF5FF' stroke='#5A6C98' stroke-width='1.4'/>  </g>
+</svg>

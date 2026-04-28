@@ -1,0 +1,10 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Case Strength Analyser'>
+        
+        <circle cx='20.5' cy='20' r='1.6' fill='#4E7A93' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<path d='M21 38a11 11 0 1 1 22 0' fill='none' stroke='#4E7A93' stroke-width='2.2' stroke-linecap='round'/>
+<line x1='32' y1='38' x2='39' y2='29' stroke='#E97AA8' stroke-width='2.4' stroke-linecap='round'/>
+<circle cx='32' cy='38' r='2.4' fill='#E97AA8'/>
+<line x1='23' y1='36' x2='26' y2='34' stroke='#4E7A93' stroke-width='2' stroke-linecap='round'/>
+<line x1='41' y1='34' x2='44' y2='36' stroke='#4E7A93' stroke-width='2' stroke-linecap='round'/>  </g>
+</svg>

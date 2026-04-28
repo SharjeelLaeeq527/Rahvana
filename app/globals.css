@@ -615,7 +615,7 @@
   height: 10px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+.compact-scrollbar::-webkit-scrollbar-track {
   background: transparent;
   /* margin-block provides the spacing from top and bottom (the red arrows in your image) */
   margin-block: 20px;
@@ -648,9 +648,8 @@
   background-clip: padding-box;
 }
 
-.custom-scrollbar {
+.compact-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
 /* Premium Scrollbar - Teal Theme */

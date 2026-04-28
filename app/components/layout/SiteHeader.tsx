@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Bell,
@@ -116,11 +117,49 @@ export function SiteHeader({
 
   const MOBILE_ICONS: Record<string, React.ReactNode> = {
     journeys: (
-      <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/visa-journeys.svg"
+          alt="Journeys icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
     ),
-    tools: <Wand2 className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
-    guides: <BookOpen className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
-    services: <Zap className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+    tools: (
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/visa-application-tools-guides.svg"
+          alt="Tools icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
+    ),
+    guides: (
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/passport-guide.svg"
+          alt="Guides icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
+    ),
+    services: (
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/book-consultation.svg"
+          alt="Services icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
+    ),
   };
 
   const pathname = usePathname();

@@ -1,0 +1,8 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='IR-3 or IR-4'>
+        <circle cx='32' cy='32' r='14' fill='#E48D5B' opacity='0.16'/>
+        <circle cx='21' cy='42' r='1.5' fill='#4D6F9F' opacity='0.3'/><circle cx='43' cy='22' r='1.5' fill='#E48D5B' opacity='0.3'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<circle cx='32' cy='24' r='4.5' fill='#EAF5FF' stroke='#4D6F9F' stroke-width='1.8'/>
+<path d='M24 38c0-5 3.5-8 8-8s8 3 8 8' fill='#EAF5FF' stroke='#4D6F9F' stroke-width='1.8'/>
+<path d='M16 38c0-10 6-16 16-16s16 6 16 16' fill='none' stroke='#E48D5B' stroke-width='1.8' stroke-dasharray='3 4' stroke-linecap='round'/>  </g>
+</svg>

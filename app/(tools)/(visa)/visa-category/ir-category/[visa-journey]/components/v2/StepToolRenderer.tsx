@@ -815,7 +815,7 @@ export const PolioCertificateTool: React.FC<{
       </div>
 
       {isPolioGuideOpen && (
-        <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom-5 duration-300 guide-bg">
           <div className="p-6 border-b flex items-center gap-4">
             <button
               onClick={() => setIsPolioGuideOpen(false)}

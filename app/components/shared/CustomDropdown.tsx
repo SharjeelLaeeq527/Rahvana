@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -7,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search } from "lucide-react";
 
 export interface DropdownOption {
   value: string;
@@ -30,18 +32,33 @@ export const CustomDropdown = ({
   className = "",
   disabled = false,
 }: CustomDropdownProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const handleSelect = (selectedValue: string) => {
     onChange(selectedValue);
   };
 
   const selectedLabel = value ? options.find((opt) => opt.value === value)?.label : null;
 
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <Select value={value || ""} onValueChange={handleSelect} disabled={disabled}>
+      <Select 
+        value={value || ""} 
+        onValueChange={handleSelect} 
+        disabled={disabled}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSearchTerm("");
+          }
+        }}
+      >
         <SelectTrigger
           className={`w-full px-3 py-3 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white hover:border-slate-400 transition-colors text-left font-medium ${className}`}
           onClick={(e) => e.stopPropagation()}
@@ -61,11 +78,33 @@ export const CustomDropdown = ({
           )}
         </SelectTrigger>
         <SelectContent onClick={(e) => e.stopPropagation()}>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
+          <div 
+            className="flex items-center px-3 py-2 sticky top-0 bg-white z-10 border-b border-slate-100 mb-1"
+            onPointerDown={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Search className="w-4 h-4 mr-2 text-slate-400" />
+            <input
+              type="text"
+              className="flex-1 bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-400"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="max-h-[250px] overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))
+            ) : (
+              <div className="px-3 py-4 text-sm text-center text-slate-500">
+                No options found
+              </div>
+            )}
+          </div>
         </SelectContent>
       </Select>
     </div>

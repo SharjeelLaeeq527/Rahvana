@@ -1,0 +1,9 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Book Medical Appointment'>
+        <rect x='18' y='18' width='28' height='28' rx='8' fill='#D69A4E' opacity='0.17'/>
+        <path d='M20 44h4M20 44v-4' stroke='#586B7B' stroke-width='1.2' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='20' y='18' width='24' height='28' rx='4' fill='none' stroke='#586B7B' stroke-width='2.2'/>
+<path d='M26 14v8m12-8v8' fill='none' stroke='#586B7B' stroke-width='2.2' stroke-linecap='round'/>
+<line x1='20' y1='26' x2='44' y2='26' stroke='#586B7B' stroke-width='2.2'/>
+<path d='M32 31v8m-4-4h8' fill='none' stroke='#D69A4E' stroke-width='2.2' stroke-linecap='round'/>  </g>
+</svg>

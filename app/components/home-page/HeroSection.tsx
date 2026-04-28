@@ -164,16 +164,17 @@ export function CinematicHero() {
   return (
     <section
       ref={heroSectionRef}
-      className={`relative overflow-x-hidden bg-[#FCFCFC] text-gray-900 selection:bg-teal-100 selection:text-teal-900 ${
-        hasTransitioned ? "min-h-screen" : "min-h-screen"
-      }`}
+      className={`relative overflow-x-hidden bg-[#FCFCFC] text-gray-900 selection:bg-teal-100 selection:text-teal-900 min-h-screen`}
     >
       <div
         className={`relative flex pb-0 md:pb-8 ${
           hasTransitioned ? "min-h-screen" : "min-h-screen"
         } ${
-          hasTransitioned ? "items-center justify-center pt-0 md:items-center md:justify-start md:pt-0" : "items-center pt-16"
+          hasTransitioned
+            ? "items-center justify-center pt-0 mt-0 md:items-center md:justify-start md:pt-0 md:mt-0"
+            : "items-center"
         }`}
+        style={hasTransitioned ? { paddingTop: 0, marginTop: 0 } : {}}
       >
         <div
           className={`relative flex h-full w-full flex-col md:flex-row ${
@@ -184,9 +185,10 @@ export function CinematicHero() {
             layout
             className={`z-10 shrink-0 overflow-hidden will-change-transform ${
               hasTransitioned
-                    ? "relative h-[42svh] w-full max-h-[620px] rounded-t-none rounded-b-[2.4rem] sm:h-[48svh] sm:rounded-b-[2.7rem] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5 px-4 sm:px-6 md:px-0"
+                ? "relative h-[42svh] w-full max-h-[620px] rounded-t-none rounded-b-[2.4rem] sm:h-[48svh] sm:rounded-b-[2.7rem] md:h-[60vh] md:w-[60%] md:rounded-r-[2.25rem] md:rounded-l-none lg:h-[64vh] lg:w-[59%] shadow-xl shadow-teal-900/5 px-4 sm:px-6 md:px-0 pt-0 mt-0"
                 : "fixed inset-0 h-full w-full rounded-none shadow-none"
             }`}
+            style={hasTransitioned ? { paddingTop: 0, marginTop: 0 } : {}}
             transition={{ layout: { duration: layoutDuration, ease: customEase } }}
           >
             <motion.img

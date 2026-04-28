@@ -122,7 +122,7 @@ export function SubmissionTutorialOverlay({
   const currentStep = steps[currentIdx];
 
   return (
-    <div className="fixed inset-0 bg-[#fafcff] z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
+    <div className="fixed inset-0 bg-[#fafcff] z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-san guide-bgs">
       {/* Topbar */}
       <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
         <button
