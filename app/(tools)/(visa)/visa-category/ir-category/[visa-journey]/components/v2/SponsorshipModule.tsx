@@ -7,12 +7,14 @@ interface SponsorshipModuleProps {
   sponsorshipResult: any;
   onOpenCalc: () => void;
   tool: any;
+  guard?: () => boolean;
 }
 
 export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
   sponsorshipResult,
   onOpenCalc,
   tool,
+  guard,
 }) => {
   return (
     <div className="w-full">
@@ -141,9 +143,10 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                 return (
                   <div
                     key={i}
-                    onClick={() =>
-                      window.open(f.url, "_blank", "noopener,noreferrer")
-                    }
+                    onClick={() => {
+                      if (guard && !guard()) return;
+                      window.open(f.url, "_blank", "noopener,noreferrer");
+                    }}
                     className="group flex items-center justify-between p-4 bg-white border border-[#d0e4f7] rounded-xl hover:border-[#3b7dd8] transition-all cursor-pointer shadow-sm"
                   >
                     <div className="flex items-center gap-3">
@@ -164,6 +167,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (guard && !guard()) return;
                           window.open(`/visa-forms/${visaId}/wizard`, "_blank");
                         }}
                         className="inline-flex items-center justify-center gap-[6px] px-3.5 py-2 bg-primary text-white border-none rounded-[10px] text-xs font-bold cursor-pointer transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_12px_rgba(59,125,216,0.25)]"

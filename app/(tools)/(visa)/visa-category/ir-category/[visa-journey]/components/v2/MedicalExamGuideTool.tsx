@@ -7,12 +7,14 @@ interface MedicalExamGuideToolProps {
   tool: any;
   setMedicalGuideIdx: (idx: number) => void;
   setIsMedicalGuideOpen: (open: boolean) => void;
+  guard?: () => boolean;
 }
 
 export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
   tool,
   setMedicalGuideIdx,
   setIsMedicalGuideOpen,
+  guard,
 }) => {
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
@@ -74,6 +76,7 @@ export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
           </div>
           <button
             onClick={() => {
+              if (guard && !guard()) return;
               setMedicalGuideIdx(0);
               setIsMedicalGuideOpen(true);
             }}
