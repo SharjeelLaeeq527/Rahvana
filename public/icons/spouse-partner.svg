@@ -1,0 +1,8 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Spouse Partner'>
+        <circle cx='32' cy='32' r='14' fill='#6AB2A2' opacity='0.16'/>
+        <path d='M21 24h3M22.5 22.5v3M42 40h3M43.5 38.5v3' stroke='#5A6C98' stroke-width='1.2' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='20' y='18' width='16' height='22' fill='#FFFFFF' stroke='#5A6C98' stroke-width='1.8'/>
+<rect x='28' y='24' width='16' height='22' fill='#EEF3FF' stroke='#5A6C98' stroke-width='1.8'/>
+<path d='M30 29h10M30 33h10M30 37h6' fill='none' stroke='#6AB2A2' stroke-width='1.5'/>  </g>
+</svg>

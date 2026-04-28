@@ -1,0 +1,12 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='PCC Filling Service - Sindh'>
+        <path d='M32 16l14 14-14 14-14-14z' fill='#A6C96F' opacity='0.14'/>
+        <rect x='19' y='19' width='6' height='1.6' rx='0.8' fill='#4D6F9F' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='14' y='14' width='24' height='30' rx='2' fill='#FFFFFF' stroke='#4D6F9F' stroke-width='2.2'/>
+<line x1='19' y1='21' x2='33' y2='21' stroke='#4D6F9F' stroke-width='2' stroke-linecap='round'/>
+<line x1='19' y1='26' x2='28' y2='26' stroke='#4D6F9F' stroke-width='2' stroke-linecap='round'/>
+<circle cx='22' cy='33' r='2.5' fill='none' stroke='#4D6F9F' stroke-width='2'/>
+<path d='M17 40 c0-3 2.5-4.5 5-4.5 s5 1.5 5 4.5' fill='none' stroke='#4D6F9F' stroke-width='2' stroke-linecap='round'/>
+<path d='M38 50 C45 45 48 39 48 32 V24 L38 21 L28 24 V32 C28 39 31 45 38 50 Z' fill='#FDF7EB' stroke='#A6C96F' stroke-width='2' stroke-linejoin='round'/>
+<text x='38' y='39' text-anchor='middle' font-size='12' font-family='Arial, sans-serif' font-weight='bold' fill='#4D6F9F'>S</text>  </g>
+</svg>

@@ -61,7 +61,7 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
 
   return (
     <div className="fixed inset-0 z-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans guide-bg">
-      <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
+      <div className="flex items-center px-4 sm:px-6 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
         <button onClick={onClose} className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0">
           <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
         </button>
@@ -73,10 +73,10 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
-        <div className="w-full max-w-[580px] flex flex-col min-h-full">
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 sm:px-6 md:px-8 py-8 sm:py-12">
+        <div className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[650px] flex flex-col min-h-full">
           {children}
-          <div className="mt-auto pt-6 flex gap-2.5">
+          <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-2.5">
             {!isFirst && (
               <button onClick={() => setIndex(index - 1)} className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63]">
                 ← Back

@@ -1,0 +1,10 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Expert Case Review'>
+        <circle cx='32' cy='32' r='14' fill='#E97AA8' opacity='0.16'/>
+        <circle cx='20.5' cy='20' r='1.6' fill='#6A668E' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='18' y='16' width='24' height='30' rx='5' fill='#F8FBFF' stroke='#6A668E' stroke-width='1.8'/>
+<line x1='23' y1='24' x2='37' y2='24' stroke='#6A668E' stroke-width='1.8' stroke-linecap='round'/>
+<line x1='23' y1='30' x2='34' y2='30' stroke='#6A668E' stroke-width='1.8' stroke-linecap='round'/>
+<path d='M40 32l6 2v4.5c0 4-2.7 7.1-6 8.6-3.3-1.5-6-4.6-6-8.6V34z' fill='#FFEAF2' stroke='#E97AA8' stroke-width='1.7' stroke-linejoin='round'/>
+<path d='M36.8 39.4l1.9 1.9 4.4-4.4' fill='none' stroke='#D66A95' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>  </g>
+</svg>

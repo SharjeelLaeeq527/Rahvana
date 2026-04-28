@@ -1,0 +1,11 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Polio Vaccination Guide'>
+        <circle cx='32' cy='32' r='14' fill='#DF7C7C' opacity='0.16'/>
+        <path d='M43 22l1.8 1.8 2.8-2.8' stroke='#DF7C7C' stroke-width='1.2' opacity='0.5'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<path d='M32 14v10m-3-10h6' fill='none' stroke='#4C6B86' stroke-width='2' stroke-linecap='round'/>
+<rect x='28' y='24' width='8' height='16' rx='2' fill='none' stroke='#4C6B86' stroke-width='2'/>
+<line x1='28' y1='30' x2='36' y2='30' stroke='#DF7C7C' stroke-width='2'/>
+<line x1='28' y1='34' x2='36' y2='34' stroke='#DF7C7C' stroke-width='2'/>
+<path d='M32 40v8l-2 2h4l-2-2' fill='none' stroke='#4C6B86' stroke-width='2' stroke-linecap='round'/>
+<circle cx='36' cy='46' r='2' fill='#DF7C7C'/>  </g>
+</svg>

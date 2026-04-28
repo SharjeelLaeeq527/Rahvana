@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
   Brain,
@@ -47,7 +48,7 @@ interface Tool {
   description: string;
   category: ToolCategory;
   href: string;
-  icon: React.ElementType;
+  iconSrc: string;
   badge?: "Live" | "Soon" | "Beta";
   disabled?: boolean;
   comingSoon?: boolean;
@@ -63,7 +64,7 @@ const TOOLS: Tool[] = [
     description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
     category: "AI & Planning",
     href: "/visa-case-strength-checker",
-    icon: Brain,
+    iconSrc: "/icons/case-strength-analyser.svg",
     badge: "Live",
     entitlementFeature: "case_strength",
   },
@@ -73,7 +74,7 @@ const TOOLS: Tool[] = [
     description: "Step-by-step next moves after 221(g) or Administrative Processing.",
     category: "AI & Planning",
     href: "/221g-action-planner",
-    icon: LifeBuoy,
+    iconSrc: "/icons/221g-action-plan.svg",
     badge: "Live",
     entitlementFeature: "action_221g",
   },
@@ -83,7 +84,7 @@ const TOOLS: Tool[] = [
     description: "Quick quiz that points you to the right visa path + next steps.",
     category: "AI & Planning",
     href: "/visa-eligibility",
-    icon: Compass,
+    iconSrc: "/icons/visa-path-finder.svg",
     badge: "Live",
     // Public — no entitlement required
   },
@@ -93,7 +94,7 @@ const TOOLS: Tool[] = [
     description: "Prepare smarter and deliver confident answers when it matters most.",
     category: "AI & Planning",
     href: "/interview-prep",
-    icon: MessageSquare,
+    iconSrc: "/icons/interview-prep.svg",
     badge: "Live",
     entitlementFeature: "basic_interview_prep",
   },
@@ -105,7 +106,7 @@ const TOOLS: Tool[] = [
     description: "Auto-check income/assets and tell you what you still need.",
     category: "Money & Sponsorship",
     href: "/affidavit-support-calculator",
-    icon: Calculator,
+    iconSrc: "/icons/sponsorship-calculator.svg",
     badge: "Live",
     entitlementFeature: "sponsorship_calc",
   },
@@ -117,7 +118,7 @@ const TOOLS: Tool[] = [
     description: "Track interview scheduling movement and trends by category.",
     category: "Tracking",
     href: "/iv-tool",
-    icon: Clock,
+    iconSrc: "/icons/dq-case-tracker.svg",
     badge: "Live",
     entitlementFeature: "dq_status_check",
   },
@@ -127,7 +128,7 @@ const TOOLS: Tool[] = [
     description: "Check your priority date progress against the Visa Bulletin.",
     category: "Tracking",
     href: "/visa-checker",
-    icon: Calendar,
+    iconSrc: "/icons/visa-bulletin-monitor.svg",
     badge: "Live",
     entitlementFeature: "visa_bulletin_monitor",
   },
@@ -137,7 +138,7 @@ const TOOLS: Tool[] = [
     description: "Real-time USCIS case status lookup via the official Torch API.",
     category: "Tracking",
     href: "/case-status",
-    icon: FileSearch,
+    iconSrc: "/icons/checklist.svg",
     badge: "Live",
     // Public tool — no entitlement required
   },
@@ -149,7 +150,7 @@ const TOOLS: Tool[] = [
     description: "Make a compliant passport/visa photo in minutes.",
     category: "Docs & PDFs",
     href: "/passport",
-    icon: Camera,
+    iconSrc: "/icons/photo-booth.svg",
     badge: "Live",
     entitlementFeature: "photo_booth",
   },
@@ -159,7 +160,7 @@ const TOOLS: Tool[] = [
     description: "Merge • compress • convert • edit — all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",
-    icon: Files,
+    iconSrc: "/icons/pdf-toolbox.svg",
     badge: "Live",
     entitlementFeature: "pdf_toolkit",
   },
@@ -169,7 +170,7 @@ const TOOLS: Tool[] = [
     description: "Create a clean digital signature for your forms.",
     category: "Docs & PDFs",
     href: "/signature-image-processing",
-    icon: PenTool,
+    iconSrc: "/icons/snap-and-sign.svg",
     badge: "Live",
     entitlementFeature: "snap_sign",
   },
@@ -181,7 +182,7 @@ const TOOLS: Tool[] = [
     description: "Auto-fills your official form and generates a ready-to-upload PDF.",
     category: "Forms & Automation",
     href: "/visa-forms",
-    icon: Wand2,
+    iconSrc: "/icons/smart-form-filler.svg",
     badge: "Live",
     entitlementFeature: "smart_form_filler",
   },

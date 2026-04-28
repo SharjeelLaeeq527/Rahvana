@@ -1,0 +1,18 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Snap and Sign'>
+        <circle cx='32' cy='32' r='14' fill='#6FA6D8' opacity='0.16'/>
+        <circle cx='44' cy='20' r='2.1' fill='none' stroke='#6FA6D8' stroke-width='1.1' opacity='0.45'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='20' y='16' width='24' height='32' rx='2' fill='#F8FBFF' stroke='#586B7B' stroke-width='1.8'/>
+<line x1='24' y1='24' x2='38' y2='24' stroke='#586B7B' stroke-width='1.5' stroke-linecap='round'/>
+<line x1='24' y1='29' x2='32' y2='29' stroke='#586B7B' stroke-width='1.5' stroke-linecap='round'/>
+<path d='M 23 37 c 3 -3 5 4 8 0 s 3 -2 6 1' fill='none' stroke='#586B7B' stroke-width='1.8' stroke-linecap='round'/>
+<line x1='23' y1='41' x2='34' y2='41' stroke='#586B7B' stroke-width='1' stroke-linecap='round' stroke-dasharray='2 2'/>
+
+<path d='M 15 25 v -10 h 10' fill='none' stroke='#6FA6D8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M 49 25 v -10 h -10' fill='none' stroke='#6FA6D8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M 15 39 v 10 h 10' fill='none' stroke='#6FA6D8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M 49 39 v 10 h -10' fill='none' stroke='#6FA6D8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/>
+
+<path d='M 38 40 l 7 -7 a 1.5 1.5 0 0 1 2.1 2.1 l -7 7 l -3.5 0.5 z' fill='#FFFFFF' stroke='#6FA6D8' stroke-width='1.8' stroke-linejoin='round'/>
+<line x1='43' y1='35' x2='44.5' y2='36.5' stroke='#6FA6D8' stroke-width='1.5' stroke-linecap='round'/>  </g>
+</svg>

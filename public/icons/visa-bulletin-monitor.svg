@@ -1,0 +1,11 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Visa Bulletin Monitor'>
+        <circle cx='32' cy='32' r='14' fill='#C785E8' opacity='0.16'/>
+        <circle cx='43.5' cy='43.5' r='1.6' fill='#C785E8' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='18' y='16' width='28' height='32' rx='5' fill='none' stroke='#55718B' stroke-width='2.2'/>
+<line x1='24' y1='24' x2='40' y2='24' stroke='#55718B' stroke-width='2' stroke-linecap='round'/>
+<line x1='24' y1='30' x2='36' y2='30' stroke='#55718B' stroke-width='2' stroke-linecap='round'/>
+<line x1='24' y1='36' x2='38' y2='36' stroke='#55718B' stroke-width='2' stroke-linecap='round'/>
+<circle cx='40' cy='41' r='5.5' fill='white' stroke='#C785E8' stroke-width='2'/>
+<line x1='44.2' y1='45.2' x2='47' y2='48' stroke='#C785E8' stroke-width='2' stroke-linecap='round'/>  </g>
+</svg>

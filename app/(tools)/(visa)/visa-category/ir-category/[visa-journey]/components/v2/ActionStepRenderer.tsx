@@ -172,6 +172,15 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
 
+  // Responsive: track viewport width for conditional inline styles
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   // Document Vault Integration
   const { user } = useAuth();
   const {
@@ -516,6 +525,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const filteredSteps = getFilteredGuideSteps();
   const guideProgress = guideStep / (filteredSteps?.length || 1);
 
+  // Determine if info-cards section should use 2 cols or 1 col
+  const hasSecondCard = actionData.dropdown_card || actionData.mailing_card;
+
   return (
     <div
       className={`min-h-screen${isChapter3 ? " ch3step-bg" : ""}`}
@@ -533,28 +545,34 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       }
     >
       {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-5.5 py-12">
+      <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-6 sm:pt-10 md:pt-14 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
-        {(step.step_key === "step_1_11" ||
-          step.step_key === "step_1_12" ||
-          step.step_key === "step_1_13" ||
+        {(step.step_key === "step_1_11" || 
+          step.step_key === "step_1_12" || 
+          step.step_key === "step_1_13" || 
           step.step_key === "step_1_14") && (
-          <div className="text-[10px] font-bold uppercase tracking-widest text-soft mb-2 text-[#636B97]">
-            Chapter 1 · Chapter 1: USCIS Petition Filing{" "}
-            <span className="text-[#BDD7F1] mx-2">&gt;</span>{" "}
+          <div className="
+  text-[9px] sm:text-[10px] md:text-[11px]
+  font-bold uppercase tracking-[0.12em]
+  text-[#636B97]
+  mb-2
+  flex flex-wrap items-center gap-1
+">
+            Chapter 1 · Chapter 1: USCIS Petition Filing
+            <span className="text-[#BDD7F1] mx-2">&gt;</span>
             <span className="text-[#3B7DD8]">{step.step_name}</span>
           </div>
         )}
         {/* Title */}
         <h1
-          className={`text-4xl leading-tight font-black -tracking-wide mb-3 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
+          className={`page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
         >
           {step.step_name}
         </h1>
 
         {/* Subtitle */}
         <p
-          className={`text-base leading-relaxed max-w-2xl mb-5.5 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : "text-soft"}`}
+          className={`page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : "text-soft"}`}
         >
           {step.step_description}
         </p>
@@ -582,9 +600,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               step.step_key === "step_1_11"
                 ? "linear-gradient(180deg, #28151c 0%, #28151c 100%)"
                 : "linear-gradient(180deg, #122541 0%, #0f2038 100%)",
-            color: step.step_key === "step_1_11" ? "#fff" : "#fff", // white text on accent brown
+            color: "#fff",
             borderRadius: "24px",
-            padding: "24px",
+            padding: isMobile ? "16px" : "24px",
             boxShadow: "0 18px 48px rgba(12, 27, 51, 0.12)",
             marginBottom: "16px",
           }}
@@ -592,11 +610,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           {/* Heading */}
           <h2
             style={{
-              fontSize: "28px",
+              fontSize: isMobile ? "22px" : "28px",
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
-              color: step.step_key === "step_1_11" ? "#c0596a" : undefined, // white text on accent brown
+              color: step.step_key === "step_1_11" ? "#c0596a" : undefined,
             }}
           >
             {actionData.hero_heading}
@@ -611,7 +629,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 color:
                   step.step_key === "step_1_11"
                     ? "#fff"
-                    : "rgba(255, 255, 255, 0.74)", // white text on accent brown
+                    : "rgba(255, 255, 255, 0.74)",
               }}
             >
               {actionData.hero_description}
@@ -635,7 +653,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 textTransform: "uppercase",
                 marginTop: "10px",
                 marginBottom: "12px",
-                color: step.step_key === "step_1_11" ? "#7c4b26" : "#fff", // accent brown text on white badge
+                color: step.step_key === "step_1_11" ? "#7c4b26" : "#fff",
               }}
             >
               {actionData.badge}
@@ -647,7 +665,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
                 gap: "10px",
                 margin: "18px 0",
               }}
@@ -675,7 +693,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                 gap: "12px",
                 marginTop: "12px",
               }}
@@ -748,7 +766,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   justifyContent: "center",
                   width: "100%",
                   background:
-                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent, // accent rose for print step
+                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent,
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -778,9 +796,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             style={{
               display: "grid",
               gridTemplateColumns:
-                actionData.dropdown_card || actionData.mailing_card
-                  ? "1fr 1fr"
-                  : "1fr",
+                hasSecondCard && !isMobile ? "1fr 1fr" : "1fr",
               gap: "12px",
               marginTop: "12px",
             }}
@@ -791,7 +807,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 background: "#fff",
                 border: `1px solid ${COLORS.line}`,
                 borderRadius: "20px",
-                padding: "18px",
+                padding: isMobile ? "14px" : "18px",
                 boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
               }}
             >
@@ -856,7 +872,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   background: "#fff",
                   border: `1px solid ${COLORS.line}`,
                   borderRadius: "20px",
-                  padding: "18px",
+                  padding: isMobile ? "14px" : "18px",
                   boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
                 }}
               >
@@ -901,10 +917,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
                     setIsSavingPayment(true);
                     try {
-                      // Save to database via wizard actions and wait for completion
                       await actions.savePaymentMethod(value);
                       setSelectedDropdown(value);
-                      // Only show saved status after successful API call
                       setStatusSaved(true);
                     } catch (error) {
                       console.error("Failed to save payment method:", error);
@@ -925,7 +939,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   background: "#fff",
                   border: `1px solid ${COLORS.line}`,
                   borderRadius: "20px",
-                  padding: "18px",
+                  padding: isMobile ? "14px" : "18px",
                   boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
                 }}
               >
@@ -1195,35 +1209,30 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   </span>
 
                   {/* Tracking Status Section - Only for mailing with tracker */}
-                  {actionData.mailing_card &&
-                    state.metadata?.easypost_tracker_id && (
-                      <div
-                        style={{
-                          marginTop: "10px",
-                          paddingTop: "10px",
-                          borderTop: "1px solid rgba(21, 116, 79, 0.2)",
-                        }}
-                      >
-                        {/* Top Row */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: "8px",
-                            marginBottom: "4px",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {/* Left: Status */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <strong>Tracking Status:</strong>
+{actionData.mailing_card &&
+  state.metadata?.easypost_tracker_id && (
+    <div
+      style={{
+        marginTop: "10px",
+        paddingTop: "10px",
+        borderTop: "1px solid rgba(21, 116, 79, 0.2)",
+      }}
+    >
+      {/* Top Row */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+          marginBottom: "4px",
+          fontSize: "12px",
+          flexWrap: "wrap",
+        }}
+      >
+        {/* Left: Status */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <strong>Tracking Status:</strong>
 
                             {isLoadingTracking && (
                               <>
@@ -1346,7 +1355,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               background: "#fff",
               border: `1px solid ${COLORS.line}`,
               borderRadius: "22px",
-              padding: "20px",
+              padding: isMobile ? "14px" : "20px",
               boxShadow: "0 8px 22px rgba(12, 27, 51, 0.04)",
             }}
           >
@@ -1414,6 +1423,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             flexDirection: "column",
             animation: "fadeIn 0.3s ease",
           }}
+          className="px-2 sm:px-4 md:px-8 pt-6 sm:pt-10 md:pt-14"
         >
           {/* Topbar */}
           <div
@@ -1422,8 +1432,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               alignItems: "center",
               height: "72px",
               borderBottom: `1px solid ${COLORS.line}`,
-              paddingLeft: "20px",
-              paddingRight: "20px",
+              paddingLeft: isMobile ? "12px" : "20px",
+              paddingRight: isMobile ? "12px" : "20px",
               gap: "16px",
               flexShrink: 0,
               background: "#fafcff",
@@ -1442,6 +1452,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 fontSize: "20px",
                 fontWeight: "bold",
                 transition: "background 0.2s",
+                flexShrink: 0,
               }}
               onMouseEnter={(e) => {
                 (e.target as HTMLElement).style.background = "#e8f1fb";
@@ -1491,7 +1502,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               flex: 1,
               overflowY: "auto",
               background: "#fafcff",
-              padding: "48px 24px 40px",
+              padding: isMobile ? "24px 16px 32px" : "48px 24px 40px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -1522,7 +1533,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
                   <h2
                     style={{
-                      fontSize: "clamp(20px, 3.2vw, 26px)",
+                      fontSize: isMobile ? "20px" : "clamp(20px, 3.2vw, 26px)",
                       fontWeight: 900,
                       color: COLORS.navy,
                       marginBottom: "10px",
@@ -1564,6 +1575,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         alignItems: "center",
                         gap: "7px",
                         paddingLeft: "12px",
+                        overflow: "hidden",
                       }}
                     >
                       <div
@@ -1572,6 +1584,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           height: "9px",
                           borderRadius: "50%",
                           background: "#f26b6b",
+                          flexShrink: 0,
                         }}
                       />
                       <div
@@ -1580,6 +1593,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           height: "9px",
                           borderRadius: "50%",
                           background: "#f5c56a",
+                          flexShrink: 0,
                         }}
                       />
                       <div
@@ -1588,6 +1602,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           height: "9px",
                           borderRadius: "50%",
                           background: "#63c48f",
+                          flexShrink: 0,
                         }}
                       />
                       <div
@@ -1603,6 +1618,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           fontSize: "10px",
                           color: COLORS.muted,
                           fontFamily: "monospace",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: isMobile ? "160px" : "none",
                         }}
                       >
                         {filteredSteps[guideStep]?.url}
@@ -1610,7 +1629,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     </div>
                     <div
                       style={{
-                        minHeight: "280px",
+                        minHeight: isMobile ? "200px" : "280px",
                         background:
                           "linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%)",
                         color: COLORS.muted,
@@ -1777,6 +1796,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             alignItems: "center",
             justifyContent: "center",
             zIndex: 300,
+            padding: isMobile ? "16px" : "0",
           }}
           onClick={() => setShowGuideChoice(false)}
         >
@@ -1784,7 +1804,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             style={{
               background: "#fff",
               borderRadius: "24px",
-              padding: "40px",
+              padding: isMobile ? "24px 20px" : "40px",
               maxWidth: "500px",
               width: "90%",
               boxShadow: "0 20px 60px rgba(12, 27, 51, 0.16)",
@@ -1796,7 +1816,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <div style={{ textAlign: "center", marginBottom: "32px" }}>
               <h2
                 style={{
-                  fontSize: "26px",
+                  fontSize: isMobile ? "22px" : "26px",
                   fontWeight: 900,
                   color: COLORS.navy,
                   marginBottom: "12px",
@@ -1834,7 +1854,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   display: "flex",
                   alignItems: "center",
                   gap: "16px",
-                  padding: "18px 20px",
+                  padding: isMobile ? "14px 16px" : "18px 20px",
                   background: "#fff",
                   border: `2px solid ${COLORS.line}`,
                   borderRadius: "16px",
@@ -1896,7 +1916,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   display: "flex",
                   alignItems: "center",
                   gap: "16px",
-                  padding: "18px 20px",
+                  padding: isMobile ? "14px 16px" : "18px 20px",
                   background: "#fff",
                   border: `2px solid ${COLORS.line}`,
                   borderRadius: "16px",

@@ -273,6 +273,19 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       scenarioFlags: { prior_marriage_beneficiary: true },
     },
   },
+  {
+  id: "receipt-notice-uscis",
+  key: "RECEIPT_NOTICE",
+  name: "USCIS Receipt Notice (I-797C)",
+  description: "Receipt notice issued by USCIS confirming a petition was received",
+  category: "MISC",
+  applicableVisas: FAMILY_VISAS,
+  roles: ["PETITIONER", "BENEFICIARY"],
+  stages: ["USCIS", "NVC"],
+  required: true,
+  multipleFilesAllowed: false,
+  validityType: "none",
+},
 ];
 
 // ============================================================================

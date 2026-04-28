@@ -1,0 +1,14 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Marriage Registration'>
+        <circle cx='32' cy='32' r='14' fill='#6FA6D8' opacity='0.16'/>
+        <circle cx='44' cy='20' r='2.1' fill='none' stroke='#6FA6D8' stroke-width='1.1' opacity='0.45'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='18' y='15' width='28' height='34' rx='5' fill='#FFF6E7' stroke='#4D6F9F' stroke-width='1.7'/>
+<rect x='21' y='19' width='22' height='18' rx='3' fill='#FFFFFF' stroke='#E7D9BC' stroke-width='1.1'/>
+<line x1='24' y1='24' x2='40' y2='24' stroke='#4D6F9F' stroke-width='1.4' stroke-linecap='round'/>
+<line x1='24' y1='28' x2='35.5' y2='28' stroke='#4D6F9F' stroke-width='1.4' stroke-linecap='round'/>
+<path d='M23.5 39.7h17' fill='none' stroke='#4D6F9F' stroke-width='1.2' stroke-linecap='round'/>
+<path d='M24.5 42.2l6.6-6.6' fill='none' stroke='#D09658' stroke-width='2' stroke-linecap='round'/>
+<path d='M39.5 42.2l-6.6-6.6' fill='none' stroke='#6FA6D8' stroke-width='2' stroke-linecap='round'/>
+<circle cx='31.1' cy='35.6' r='1.5' fill='#FFFFFF' stroke='#D09658' stroke-width='1.1'/>
+<circle cx='32.9' cy='35.6' r='1.5' fill='#FFEAF2' stroke='#6FA6D8' stroke-width='1.1'/>  </g>
+</svg>

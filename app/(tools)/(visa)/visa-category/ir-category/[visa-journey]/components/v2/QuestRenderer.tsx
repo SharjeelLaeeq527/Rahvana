@@ -243,16 +243,16 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="max-w-[740px] mx-auto w-full animate-in fade-in duration-500 step-modal-spacing">
+      <div className="max-w-[740px] mx-auto w-full px-2 sm:px-4 md:px-8 pt-8 sm:pt-14 md:pt-20 animate-in fade-in duration-500 step-modal-spacing">
         <div className="px-0 pt-0 pb-0 step-modal-spacing">
           <div className="mb-9">
             <h1
-              className={`text-[clamp(26px,4vw,34px)] font-black mb-2.5 leading-[1.2] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
+              className={`text-[clamp(18px,7vw,32px)] sm:text-[clamp(24px,5vw,38px)] font-black mb-2.5 leading-[1.2] break-words mt-2 sm:mt-4 md:mt-6 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
             >
               {suite.title}
             </h1>
             <p
-              className={`text-[15px] max-w-[540px] leading-[1.65] ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#3a4f63]" : "text-[#3a4f63]"}`}
+              className={`text-[14px] sm:text-[15px] max-w-full md:max-w-[540px] leading-[1.65] break-words ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#3a4f63]" : "text-[#3a4f63]"}`}
             >
               {suite.subtitle}
             </p>
@@ -472,14 +472,14 @@ export function QuestRenderer({
         : true);
 
     return (
-      <div className="w-full h-full min-h-[700px] flex flex-col animate-in slide-in-from-right-4 fade-in duration-500 step-modal-spacing">
+      <div className="w-full h-full min-h-[700px] flex flex-col animate-in slide-in-from-right-4 fade-in duration-500 step-modal-spacing pt-8 sm:pt-14 md:pt-20">
         {/* Topbar */}
         <div
           className={`flex items-center p-[18px_24px] gap-[16px] shrink-0 border-b ${isChapter1 ? "border-[#c0596a]/40" : isChapter2 ? "border-[#b48ad6]" : isChapter3 ? "border-[#2f6fd4]" : "border-[#d0e4f7]"}`}
         >
           <button
             onClick={() => setView("landing")}
-            className={`cant fnd it just eit it
+            className={`
               [36px] h-[36px] rounded-full border-none flex items-center justify-center cursor-pointer transition-colors shrink-0 ${isChapter1 ? "bg-[#e6d6c3] hover:bg-[#f7ede5]" : isChapter2 ? "bg-[#ede6f6] hover:bg-[#b48ad6]/10" : isChapter3 ? "bg-[#e8f1fb] hover:bg-[#2f6fd4]/10" : "bg-[#f5f7fa] hover:bg-[#e8f1fb]"}`}
             aria-label="Close quest"
           >
@@ -509,7 +509,7 @@ export function QuestRenderer({
           </span>
         </div>
         {/* Quest Body */}
-        <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_32px] step-modal-spacing">
+        <div className="flex-1 overflow-y-auto flex flex-col items-center px-2 sm:px-4 md:px-8 py-8 sm:py-12 step-modal-spacing">
           <div className="w-full max-w-[560px] flex flex-col">
             <div
               className={`text-[11px] font-semibold uppercase tracking-widest mb-[18px] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-primary"}`}
@@ -517,7 +517,7 @@ export function QuestRenderer({
               {activeQuest.title}
             </div>
             <h2
-              className={`text-[clamp(20px,3.5vw,26px)] mb-2.5 leading-[1.35] ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
+              className={`text-[clamp(16px,6vw,24px)] sm:text-[clamp(20px,3.5vw,28px)] mb-2.5 leading-[1.35] break-words mt-2 sm:mt-4 md:mt-6 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : isChapter3 ? "text-[#0f1f38]" : "text-[#0f1f38]"}`}
             >
               {screen.question}
             </h2>

@@ -1,0 +1,12 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Police Certificate'>
+        <rect x='18' y='18' width='28' height='28' rx='8' fill='#E38FB3' opacity='0.17'/>
+        
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<path d='M32 14.8l12.2 4.2v9.2c0 8.1-5.7 14.4-12.2 17-6.5-2.6-12.2-8.9-12.2-17V19z' fill='#24528C' stroke='#55718B' stroke-width='1.6' stroke-linejoin='round'/>
+<rect x='24.3' y='22.6' width='15.4' height='16.6' rx='1.8' fill='#F4F9FF' stroke='#BED5EC' stroke-width='1.1'/>
+<line x1='27' y1='27.4' x2='37' y2='27.4' stroke='#55718B' stroke-width='1.2' stroke-linecap='round'/>
+<line x1='27' y1='31' x2='35.4' y2='31' stroke='#55718B' stroke-width='1.2' stroke-linecap='round'/>
+<circle cx='32' cy='35.1' r='3.1' fill='#FFE6EF' stroke='#E38FB3' stroke-width='1.2'/>
+<path d='M30.7 35.1l1 1 1.6-1.6' fill='none' stroke='#D56894' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'/>
+<circle cx='32' cy='41' r='1.5' fill='#FFD56E'/>  </g>
+</svg>

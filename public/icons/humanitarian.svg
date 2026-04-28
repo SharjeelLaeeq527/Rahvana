@@ -1,0 +1,7 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='Humanitarian'>
+        <path d='M23 20h18l9 12-9 12H23l-9-12z' fill='#E97AA8' opacity='0.14'/>
+        <circle cx='20.5' cy='20' r='1.6' fill='#4D6F9F' opacity='0.35'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<path d='M32 15l12 4v9c0 8-5.5 14.3-12 17-6.5-2.7-12-9-12-17v-9l12-4z' fill='none' stroke='#4D6F9F' stroke-width='2.2' stroke-linejoin='round'/>
+<path d='M28.5 29.5h7M32 26v7' fill='none' stroke='#E97AA8' stroke-width='2' stroke-linecap='round'/>  </g>
+</svg>
