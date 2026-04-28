@@ -5617,42 +5617,44 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       </div>
 
       {/* Redesigned Bottom Navigation Footer */}
-      <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center gap-2 px-4 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-        <button
-          onClick={() =>
-            prevStep &&
-            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-          }
-          className={`px-4 py-[9px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] font-medium text-[#6b8097] flex items-center gap-[5px] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-        >
-          <ArrowLeft size={12} strokeWidth={2.5} />
-          Previous
-        </button>
-
-        <div className="flex-1 flex items-center gap-2 mx-auto px-4">
-          <div className="flex-1 h-1 rounded-[10px] overflow-hidden bg-[#d0e4f7]">
-            <div
-              className={`h-full transition-all duration-500 ease-out ${isChapter1 ? "accent-rose-bg" : "bg-linear-to-r from-primary to-primary/70"}`}
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <div
-            className={`text-[11px] font-semibold whitespace-nowrap ${isChapter1 ? "accent-brown" : "text-[#6b8097]"}`}
+      <footer className="absolute bottom-0 left-0 right-0 bg-[#fafcff] border-t border-[#d0e4f7] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 px-2 sm:px-4 py-2 sm:py-0 min-h-[58px] sm:h-[58px] shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <div className="flex flex-col sm:flex-row w-full gap-2 items-stretch sm:items-center">
+          <button
+            onClick={() =>
+              prevStep &&
+              handleNavigate((prevStep as any).step_key || (prevStep as any).id)
+            }
+            className={`w-full sm:w-auto px-4 py-[11px] sm:py-[9px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] font-medium text-[#6b8097] flex items-center justify-center sm:justify-start gap-[5px] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
           >
-            Step {localIdx + 1} of {activeStepsInChapter.length}
-          </div>
-        </div>
+            <ArrowLeft size={12} strokeWidth={2.5} />
+            <span className="hidden xs:inline">Previous</span>
+          </button>
 
-        <button
-          onClick={() =>
-            nextStep &&
-            handleNavigate((nextStep as any).step_key || (nextStep as any).id)
-          }
-          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
-        >
-          Next
-          <ArrowRight size={12} strokeWidth={2.5} />
-        </button>
+          <div className="flex-1 flex flex-col sm:flex-row items-center gap-2 mx-auto px-0 sm:px-4">
+            <div className="w-full sm:flex-1 h-1 rounded-[10px] overflow-hidden bg-[#d0e4f7]">
+              <div
+                className={`h-full transition-all duration-500 ease-out ${isChapter1 ? "accent-rose-bg" : "bg-linear-to-r from-primary to-primary/70"}`}
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <div
+              className={`text-[11px] font-semibold whitespace-nowrap mt-1 sm:mt-0 ${isChapter1 ? "accent-brown" : "text-[#6b8097]"}`}
+            >
+              Step {localIdx + 1} of {activeStepsInChapter.length}
+            </div>
+          </div>
+
+          <button
+            onClick={() =>
+              nextStep &&
+              handleNavigate((nextStep as any).step_key || (nextStep as any).id)
+            }
+            className={`w-full sm:w-auto px-[18px] py-[11px] sm:py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center justify-center sm:justify-end gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          >
+            <span className="hidden xs:inline">Next</span>
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </button>
+        </div>
       </footer>
 
       {/* Sponsorship Calculator Tool Overlay */}
