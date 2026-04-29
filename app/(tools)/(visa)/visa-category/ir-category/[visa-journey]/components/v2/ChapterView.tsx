@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { ArrowLeft, ChevronRight, AlertTriangle, Lock, Crown } from "lucide-react";
-import { RoadmapData, RoadmapStep } from "../types";
+import React, { useMemo, useState } from "react";
+import { ChevronRight, AlertTriangle, Lock, Crown } from "lucide-react";
+import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
 import { usePlan } from "@/app/context/PlanContext";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { PlanTier } from "@/lib/entitlements/config";
 
 interface ChapterViewProps {
   data: RoadmapData;
@@ -24,6 +26,8 @@ export function ChapterView({
   onSelectStep,
 }: ChapterViewProps) {
   const plan = usePlan();
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  
   const chapters = data.chapters || (data as any).stages;
   const chapter = chapters[chapterIdx];
 
@@ -41,6 +45,9 @@ export function ChapterView({
 
   const isDone = prog.pct === 100;
   const isInProgress = prog.pct > 0 && prog.pct < 100;
+  
+  const isChapter1 = chapterIdx === 0;
+  const isFreeTier = plan.tier === 'free';
 
 
   // Chapter backgrounds
@@ -51,7 +58,6 @@ export function ChapterView({
   const chapter3Bg = "/assets/images/chapter-3-bg.png";
   const chapter3StepBg = "/assets/images/ch3steps-bg.png";
 
-  const isChapter1 = chapterIdx === 0;
   const isChapter2 = chapterIdx === 1;
   const isChapter3 = chapterIdx === 2;
 
@@ -59,6 +65,13 @@ export function ChapterView({
   const isChapter1Step = isChapter1 && typeof state.currentStep === "number" && state.currentStep >= 0;
   const isChapter2Step = isChapter2 && typeof state.currentStep === "number" && state.currentStep >= 0;
   const isChapter3Step = isChapter3 && typeof state.currentStep === "number" && state.currentStep >= 0;
+
+  const HARD_LOCK_RULES: Record<string, PlanTier[]> = {
+    step_1_16: ['free', 'basic'],
+    step_2_6:  ['free', 'basic'],
+    step_3_1:  ['free', 'basic'],
+    step_3_2:  ['free', 'basic', 'premium'],
+  };
 
   return (
     <div
@@ -281,8 +294,26 @@ export function ChapterView({
             return (
               <div
                 key={sId}
-                onClick={() => onSelectStep(chapterIdx, fullStepIdx)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-[13px] cursor-pointer transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
+                onClick={() => {
+                  // Free tier restriction
+                  if (isFreeTier && isChapter1 && idx > 1) {
+                    setUpgradeModalFeature('step_guides');
+                    return;
+                  }
+                
+                  // Premium + Executive tier hard locks for specific steps
+                  const restrictedTiers = HARD_LOCK_RULES[sId];
+                
+                  if (restrictedTiers && restrictedTiers.includes(plan.tier)) {
+                    const feat = STEP_PRIMARY_FEATURE[sId] || 'step_guides';
+                    setUpgradeModalFeature(feat);
+                    return;
+                  }
+                
+                  // Allowed
+                  onSelectStep(chapterIdx, fullStepIdx);
+                }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-[13px] ${isFreeTier && isChapter1 && idx > 1 ? 'cursor-not-allowed' : 'cursor-pointer'} transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
                   ${isCompleted
                     ? 'shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]'
                     : 'shadow-[0_4px_20px_rgba(36,42,66,0.13),0_2px_8px_rgba(44,62,80,0.10)] hover:shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]'}
@@ -306,22 +337,37 @@ export function ChapterView({
                     {step.step_short_description || ""}
                   </div>
                 </div>
-                {/* Lock badge — shown when step's primary feature is locked */}
+                {/* Lock badge — shown when step's primary feature is locked OR free tier limit reached */}
                  {(() => {
                    const feat = STEP_PRIMARY_FEATURE[sId];
-                   if (!feat || plan.canUse(feat)) return null;
-                   const isExec = feat === 'polio_certificate' || feat === 'action_221g';
-                   const LockIcon = isExec ? Crown : Lock;
-                   return (
-                     <div className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${
-                       isExec
-                         ? 'bg-[#fef3d8] text-[#a06000] border-[#f0c878]'
-                         : 'bg-[#ede8f5] text-[#7c5e8a] border-[#c9b8d8]'
-                     }`}>
-                       <LockIcon size={9} strokeWidth={2.5} />
-                       {isExec ? 'Executive' : 'Locked'}
-                     </div>
-                   );
+                   
+                   // Free tier Chapter 1 lock for steps beyond first 2
+                   if (isFreeTier && isChapter1 && idx > 1) {
+                     return (
+                       <div className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold border bg-[#ede8f5] text-[#7c5e8a] border-[#c9b8d8]`}>
+                         <Lock size={9} strokeWidth={2.5} />
+                         Locked
+                       </div>
+                     );
+                   }
+                   
+                   // Check if primary feature is locked
+                   if (feat && plan.isLocked(feat)) {
+                     const isExec = feat === 'polio_certificate' || feat === 'action_221g';
+                     const LockIcon = isExec ? Crown : Lock;
+                     return (
+                       <div className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${
+                         isExec
+                           ? 'bg-[#fef3d8] text-[#a06000] border-[#f0c878]'
+                           : 'bg-[#ede8f5] text-[#7c5e8a] border-[#c9b8d8]'
+                       }`}>
+                         <LockIcon size={9} strokeWidth={2.5} />
+                         {isExec ? 'Executive' : 'Locked'}
+                       </div>
+                     );
+                   }
+                   
+                   return null;
                  })()}
                 <ChevronRight
                   className="text-[#b3a6b3] opacity-30 shrink-0"
@@ -333,6 +379,14 @@ export function ChapterView({
           })}
         </div>
       </div>
+      
+      {/* Upgrade Modal for free tier step limit */}
+      {upgradeModalFeature && (
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
+      )}
     </div>
   );
 }
