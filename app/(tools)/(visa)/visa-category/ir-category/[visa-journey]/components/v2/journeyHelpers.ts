@@ -15,25 +15,35 @@ export function getDisplayStepNumber(step: RoadmapStep): number {
 }
 
 /**
- * Returns all steps for a given stage/chapter index that are applicable based on the filing method.
+ * Returns all steps for a given stage/chapter index that are applicable based on the filing method and state metadata.
  * Filters by visible_when conditions.
  */
-export function getActiveStepsForStage(data: RoadmapData, index: number, filingMethod: string | null): RoadmapStep[] {
+export function getActiveStepsForStage(data: RoadmapData, index: number, metadata: any, filingMethodFallback?: string | null): RoadmapStep[] {
   const chapters = data.chapters || (data as any).stages;
   const chapter = chapters?.[index] as RoadmapChapter;
   if (!chapter) return [];
   
-  const method = filingMethod || 'online'; // Default to online if not set
+  const method = metadata?.filingMethod || filingMethodFallback || 'online'; // Default to online if not set
   return chapter.steps.filter((step: RoadmapStep) => {
     const stepAny = step as any;
     
     // Check visible_when conditions (new priority system)
     const visibleWhen = stepAny.visible_when;
     if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-      // If filingMethod condition exists, check it
-      if (visibleWhen.filingMethod) {
-        return visibleWhen.filingMethod === method;
+      let isVisible = true;
+      for (const [key, value] of Object.entries(visibleWhen)) {
+        if (key === 'filingMethod') {
+          if (value !== method) isVisible = false;
+        } else {
+          const stateValue = metadata?.[key];
+          if (Array.isArray(value)) {
+            if (!value.includes(stateValue)) isVisible = false;
+          } else {
+            if (stateValue !== value) isVisible = false;
+          }
+        }
       }
+      return isVisible;
     }
     
     // Fallback to legacy 'branch' field
@@ -46,11 +56,11 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, filingM
 /**
  * Returns all active steps across all chapters.
  */
-export function getAllActiveSteps(data: RoadmapData, filingMethod: string | null): RoadmapStep[] {
+export function getAllActiveSteps(data: RoadmapData, metadata: any, filingMethodFallback?: string | null): RoadmapStep[] {
   const chapters = data.chapters || (data as any).stages;
   if (!chapters) return [];
   return chapters.reduce((acc: RoadmapStep[], _: any, idx: number) => {
-    return acc.concat(getActiveStepsForStage(data, idx, filingMethod));
+    return acc.concat(getActiveStepsForStage(data, idx, metadata, filingMethodFallback));
   }, [] as RoadmapStep[]);
 }
 
@@ -58,8 +68,7 @@ export function getAllActiveSteps(data: RoadmapData, filingMethod: string | null
  * Finds the first uncompleted active step across the entire journey.
  */
 export function getNextBestAction(data: RoadmapData, state: WizardState): { step: RoadmapStep; chapterIdx: number; stepIdxInChapter: number } | null {
-  const filingMethod = state.metadata?.filingMethod || state.filingType;
-  const allActive = getAllActiveSteps(data, filingMethod);
+  const allActive = getAllActiveSteps(data, state.metadata, state.filingType);
   
   const nextStep = allActive.find(s => {
     const sId = s.step_key || (s as any).id;
@@ -70,7 +79,7 @@ export function getNextBestAction(data: RoadmapData, state: WizardState): { step
   
   const chapters = data.chapters || (data as any).stages;
   for (let cIdx = 0; cIdx < chapters.length; cIdx++) {
-    const activeSteps = getActiveStepsForStage(data, cIdx, filingMethod);
+    const activeSteps = getActiveStepsForStage(data, cIdx, state.metadata, state.filingType);
     const stepInActiveIdx = activeSteps.findIndex((s: any) => 
       (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
     );
@@ -86,8 +95,7 @@ export function getNextBestAction(data: RoadmapData, state: WizardState): { step
  * Calculates progress for a specific chapter.
  */
 export function getStageProgress(data: RoadmapData, chapterIdx: number, state: WizardState) {
-  const filingMethod = state.metadata?.filingMethod || state.filingType;
-  const activeSteps = getActiveStepsForStage(data, chapterIdx, filingMethod);
+  const activeSteps = getActiveStepsForStage(data, chapterIdx, state.metadata, state.filingType);
   if (activeSteps.length === 0) return { done: 0, total: 0, pct: 0 };
   
   const done = activeSteps.filter(s => {

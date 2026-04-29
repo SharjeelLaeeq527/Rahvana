@@ -12,6 +12,7 @@ interface CourierRegistrationToolProps {
   setIsWalletViewOpen: (open: boolean) => void;
   setWalletMode: (mode: "add" | "edit") => void;
   setIsWalletFormOpen: (open: boolean) => void;
+  guard?: () => boolean;
 }
 
 export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = ({
@@ -23,6 +24,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
   setIsWalletViewOpen,
   setWalletMode,
   setIsWalletFormOpen,
+  guard,
 }) => {
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
@@ -82,6 +84,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
           </div>
           <button
             onClick={() => {
+              if (guard && !guard()) return;
               window.open(
                 "https://www.usvisascheduling.com/",
                 "_blank",
@@ -106,6 +109,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[18px]">
         <button
           onClick={() => {
+            if (guard && !guard()) return;
             setCourierGuideIdx(0);
             setIsCourierGuideOpen(true);
           }}
@@ -131,6 +135,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
 
         <button
           onClick={() => {
+            if (guard && !guard()) return;
             if (courierCredentials) {
               setWalletPortalType("COURIER");
               setIsWalletViewOpen(true);
@@ -191,6 +196,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
           <div className="flex flex-col gap-2.5 mt-3">
             <button
               onClick={() => {
+                if (guard && !guard()) return;
                 setWalletPortalType("COURIER");
                 setWalletMode("edit");
                 setIsWalletFormOpen(true);

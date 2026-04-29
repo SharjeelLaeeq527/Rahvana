@@ -178,11 +178,12 @@ interface ManualFormProps {
   onBack: () => void;
   onSaved: (r: ReceiptRecord) => void;
   existingRecord: ReceiptRecord | null;
+  guard?: () => boolean;
 }
 
 
 // Accept journeyId as prop
-const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack, onSaved, existingRecord, journeyId }) => {
+const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack, onSaved, existingRecord, journeyId, guard }) => {
   const isUpdate = existingRecord !== null;
   const [fields, setFields] = useState({
     receiptNumber: existingRecord?.receiptNumber ?? "",
@@ -197,6 +198,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack,
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
   async function handleSubmit() {
+    if (guard && !guard()) return;
     setLoading(true); setError("");
     const { record, error: err } = await postReceipt(journeyId, { ...fields, source: "manual" });
     setLoading(false);
@@ -279,11 +281,12 @@ interface UploadFormProps {
   onSaved: (r: ReceiptRecord) => void;
   onFileVault: (docId: string, files: FileList) => void;
   existingRecord: ReceiptRecord | null;
+  guard?: () => boolean;
 }
 
 
 // Accept journeyId as prop
-const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack, onSaved, onFileVault, existingRecord, journeyId }) => {
+const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack, onSaved, onFileVault, existingRecord, journeyId, guard }) => {
   const isUpdate = existingRecord !== null;
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   // These three inputs are UNCHANGED from the original
@@ -299,6 +302,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
   async function handleSubmit() {
+    if (guard && !guard()) return;
     setLoading(true); setError("");
     // 1. Upload file to Document Vault if present
     if (!uploadFile) {
@@ -435,12 +439,23 @@ type UiState = "idle" | "register" | "update";
 type TabMode  = "manual" | "upload";
 
 
+import { useStepEntitlement } from "./useStepEntitlement";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+
 interface RegisterReceiptStepProps {
   tool: any;
   journeyId: string;
+  state: any;
+  actions: any;
 }
 
-const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journeyId }) => {
+const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
+  tool,
+  journeyId,
+  state,
+  actions,
+}) => {
+  const stepEntitlement = useStepEntitlement("step_1_15");
   const [uiState,     setUiState]     = useState<UiState>("idle");
   const [activeTab,   setActiveTab]   = useState<TabMode>("manual");
   const [savedRecord, setSavedRecord] = useState<ReceiptRecord | null>(null);
@@ -632,6 +647,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
                     onSaved={handleSaved}
                     existingRecord={savedRecord}
                     journeyId={journeyId}
+                    guard={stepEntitlement.guard}
                   />
                 ) : (
                   <UploadForm
@@ -640,6 +656,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
                     onFileVault={handleFileVault}
                     existingRecord={savedRecord}
                     journeyId={journeyId}
+                    guard={stepEntitlement.guard}
                   />
                 )
               ) : (
@@ -654,7 +671,10 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
                           color: activeTab === tab ? "#c0596a" : "#6b8097",
                           background: "transparent",
                         }}
-                        onClick={() => setActiveTab(tab)}
+                        onClick={() => {
+                          if (tab === "upload" && !stepEntitlement.guard()) return;
+                          setActiveTab(tab);
+                        }}
                       >
                         {tab === "manual" ? "Enter Receipt Number" : "Upload Receipt Notice"}
                       </button>
@@ -666,6 +686,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
                       onSaved={handleSaved}
                       existingRecord={savedRecord}
                       journeyId={journeyId}
+                      guard={stepEntitlement.guard}
                     />
                   ) : (
                     <UploadForm
@@ -674,6 +695,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
                       onFileVault={handleFileVault}
                       existingRecord={savedRecord}
                       journeyId={journeyId}
+                      guard={stepEntitlement.guard}
                     />
                   )}
                 </>
