@@ -43,8 +43,8 @@ export function ChapterView({
   const filingMethod = state.metadata?.filingMethod || state.filingType;
 
   const activeSteps = useMemo(
-    () => getActiveStepsForStage(data, chapterIdx, filingMethod),
-    [data, chapterIdx, filingMethod],
+    () => getActiveStepsForStage(data, chapterIdx, state.metadata, state.filingType),
+    [data, chapterIdx, state.metadata, state.filingType],
   );
 
   const prog = useMemo(

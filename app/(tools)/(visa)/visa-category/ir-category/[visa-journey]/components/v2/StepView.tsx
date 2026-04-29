@@ -164,6 +164,10 @@ import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
+import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
+import { TrackVisaIssuanceTool } from "./TrackVisaIssuanceTool";
+import { Respond221gTool } from "./Respond221gTool";
+import { Input221gTool } from "./Input221gTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
 import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
 import { useStepEntitlement } from "./useStepEntitlement";
@@ -991,8 +995,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   }
 
   const allActiveSteps = useMemo(
-    () => getAllActiveSteps(data, filingMethod),
-    [data, filingMethod],
+    () => getAllActiveSteps(data, state.metadata, state.filingType),
+    [data, state.metadata, state.filingType],
   );
 
   const globalIdx = allActiveSteps.findIndex(
@@ -3165,7 +3169,46 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             />
           )}
 
-          {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.9 SPECIFIC) */}
+          {/* INTERVIEW OUTCOME CONTENT (Step 3.9 SPECIFIC) */}
+          {tool.type === "interview_outcome" && (
+            <InterviewOutcomeTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+
+          {/* VISA ISSUANCE CONTENT (Step 3.10 SPECIFIC) */}
+          {tool.type === "visa_issuance" && (
+            <TrackVisaIssuanceTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+          {/* INPUT 221(g) CONTENT (Step 3.10b SPECIFIC) */}
+          {tool.type === "input_221g" && (
+            <Input221gTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+
+          {/* RESPOND TO 221(g) CONTENT (Step 3.11 SPECIFIC) */}
+          {tool.type === "respond_221g" && (
+            <Respond221gTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+
+          {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.12 / 3.13 SPECIFIC) */}
           {tool.type === "adm_processing" && (
             <div className="flex flex-col mt-4">
               {/* Explainer Banner */}
@@ -3549,44 +3592,36 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
               </div>
 
-              {/* Info Sections */}
-              <div className="flex flex-col gap-3.5 mb-2">
+              {/* Info Sections — compact grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
                 {tool.info_sections.map((section: any, idx: number) => (
                   <div
                     key={idx}
-                    className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 shadow-[0_4px_20px_rgba(12,27,51,0.06)]"
+                    className="bg-[#fafcff] border border-[#d0e4f7] rounded-xl p-4"
                   >
-                    <div className="flex items-center gap-2.5 mb-4">
+                    <div className="flex items-center gap-2 mb-3">
                       <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
+                        className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 border ${
                           section.type === "sky"
                             ? "bg-[#e8f1fb] border-[#d0e4f7]"
                             : "bg-[#e8f6f6] border-[#9fd6d6]"
                         }`}
                       >
                         {section.icon === "info" ? (
-                          <Info
-                            size={16}
-                            className="text-[#2f6fd4]"
-                            strokeWidth={2}
-                          />
+                          <Info size={13} className="text-[#2f6fd4]" strokeWidth={2} />
                         ) : (
-                          <Check
-                            size={16}
-                            className="text-[#0d6b6b]"
-                            strokeWidth={2.5}
-                          />
+                          <Check size={13} className="text-[#0d6b6b]" strokeWidth={2.5} />
                         )}
                       </div>
-                      <div className="text-[14px] font-bold text-[#0c1b33]">
+                      <div className="text-[13px] font-bold text-[#0c1b33]">
                         {section.title}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2.5">
-                      {section.items.map((item: string, i: number) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
-                          <span className="text-[13px] text-[#3a4f63] leading-relaxed">
+                    <div className="flex flex-col gap-1.5">
+                      {section.items.slice(0, 4).map((item: string, i: number) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <div className="w-1 h-1 rounded-full bg-[#b8cedf] mt-[7px] shrink-0" />
+                          <span className="text-[12px] text-[#3a4f63] leading-relaxed">
                             {item}
                           </span>
                         </div>

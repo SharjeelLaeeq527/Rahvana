@@ -15,6 +15,8 @@ import {
   RefreshCw,
   Lock,
 } from "lucide-react";
+import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
+import { Input221gTool } from "./Input221gTool";
 import { useStepEntitlement } from "./useStepEntitlement";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -42,6 +44,7 @@ interface ActionStepRendererProps {
   isChapter1?: boolean;
   isChapter2?: boolean;
   isChapter3?: boolean;
+  guard?: () => boolean;
 }
 
 // Tailwind-compatible color values
@@ -1998,11 +2001,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         previewConfig.docDef &&
         previewConfig.uploadedDoc && (
           <DocumentPreviewModal
-            isOpen={previewConfig.isOpen}
+            open={previewConfig.isOpen}
             onClose={() =>
               setPreviewConfig({ ...previewConfig, isOpen: false })
             }
-            docDef={previewConfig.docDef}
+            documentDef={previewConfig.docDef}
             uploadedDoc={previewConfig.uploadedDoc}
           />
         )}
