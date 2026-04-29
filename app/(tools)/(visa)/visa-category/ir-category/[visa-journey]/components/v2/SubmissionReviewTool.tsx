@@ -19,6 +19,7 @@ interface SubmissionReviewToolProps {
   submissionSaved: boolean;
   submissionDate: string;
   onSave: (data: { saved: boolean; date: string }) => void;
+  guard?: () => boolean;
 }
 
 export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
@@ -30,6 +31,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
   submissionSaved,
   submissionDate,
   onSave,
+  guard,
 }) => {
   const [localIsSubmitted, setLocalIsSubmitted] = useState<boolean | null>(
     submissionSaved ? true : null,
@@ -44,6 +46,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
   };
 
   const handleSave = () => {
+    if (guard && !guard()) return;
     onSave({
       saved: localIsSubmitted === true,
       date: localDate,
@@ -85,6 +88,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
           </div>
           <button
             onClick={() => {
+              if (guard && !guard()) return;
               setSubmissionGuideIdx(0);
               setIsSubmissionGuideOpen(true);
             }}

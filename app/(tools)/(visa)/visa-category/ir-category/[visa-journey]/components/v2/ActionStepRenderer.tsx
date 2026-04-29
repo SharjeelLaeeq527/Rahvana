@@ -13,7 +13,12 @@ import {
   Printer,
   Download,
   RefreshCw,
+  Lock,
 } from "lucide-react";
+import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
+import { Input221gTool } from "./Input221gTool";
+import { useStepEntitlement } from "./useStepEntitlement";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { RoadmapStep } from "../types";
@@ -39,6 +44,7 @@ interface ActionStepRendererProps {
   isChapter1?: boolean;
   isChapter2?: boolean;
   isChapter3?: boolean;
+  guard?: () => boolean;
 }
 
 // Tailwind-compatible color values
@@ -171,6 +177,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   );
   const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
+
+  const stepEntitlement = useStepEntitlement(step.step_key);
 
   // Responsive: track viewport width for conditional inline styles
   const [isMobile, setIsMobile] = useState(false);
@@ -477,6 +485,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     if (trackingErr) {
       setTrackingError(trackingErr);
     }
+
+    if (!stepEntitlement.guard()) return;
 
     if (!actions?.saveMailingDetails) {
       console.error(
@@ -1353,13 +1363,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               }}
             >
               <button
-                onClick={() => handlePreview("I130_FORM")}
+                onClick={() => {
+                  if (!stepEntitlement.guard()) return;
+                  handlePreview("I130_FORM");
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background: "#c0596a",
+                  background: stepEntitlement.isLocked ? "#4a5568" : "#c0596a",
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1370,22 +1383,26 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.background = "#a94c5a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#a94c5a";
                 }}
                 onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.background = "#c0596a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#c0596a";
                 }}
               >
+                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 Print I-130
               </button>
               <button
-                onClick={() => handlePreview("I130A_FORM")}
+                onClick={() => {
+                  if (!stepEntitlement.guard()) return;
+                  handlePreview("I130A_FORM");
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background: "#c0596a",
+                  background: stepEntitlement.isLocked ? "#4a5568" : "#c0596a",
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1396,12 +1413,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.background = "#a94c5a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#a94c5a";
                 }}
                 onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.background = "#c0596a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#c0596a";
                 }}
               >
+                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 Print I-130A
               </button>
             </div>
@@ -1410,6 +1428,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             actionData.cta_button.href && (
               <button
                 onClick={() => {
+                  if (!stepEntitlement.guard()) return;
                   if (actionData.cta_button?.href) {
                     window.open(actionData.cta_button.href, "_blank");
                   }
@@ -1420,7 +1439,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   justifyContent: "center",
                   width: "100%",
                   background:
-                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent,
+                    stepEntitlement.isLocked ? "#4a5568" : (step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent),
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1432,14 +1451,19 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.background =
-                    step.step_key === "step_1_11" ? "#a94c5a" : COLORS.accent2;
+                  if (!stepEntitlement.isLocked) {
+                    (e.target as HTMLElement).style.background =
+                      step.step_key === "step_1_11" ? "#a94c5a" : COLORS.accent2;
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.background =
-                    step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent;
+                  if (!stepEntitlement.isLocked) {
+                    (e.target as HTMLElement).style.background =
+                      step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent;
+                  }
                 }}
               >
+                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 {actionData.cta_button.label}
               </button>
             )
@@ -1490,6 +1514,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
               <button
                 onClick={() => {
+                  if (!stepEntitlement.guard()) return;
                   if (step.step_key === "step_1_11") {
                     setShowGuideChoice(true);
                   } else {
@@ -1561,6 +1586,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   value={selectedDropdown}
                   onChange={async (value) => {
                     if (!value) return;
+                    if (!stepEntitlement.guard()) return;
 
                     if (!actions?.savePaymentMethod) {
                       console.error(
@@ -2631,16 +2657,19 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           <DocumentPreviewModal
             open={previewConfig.isOpen}
             onClose={() =>
-              setPreviewConfig({
-                isOpen: false,
-                docDef: null,
-                uploadedDoc: null,
-              })
+              setPreviewConfig({ ...previewConfig, isOpen: false })
             }
             documentDef={previewConfig.docDef}
             uploadedDoc={previewConfig.uploadedDoc}
           />
         )}
+
+      {stepEntitlement.upgradeModalFeature && (
+        <UpgradeModal
+          feature={stepEntitlement.upgradeModalFeature}
+          onClose={stepEntitlement.closeUpgradeModal}
+        />
+      )}
 
       <style>{`
         @media (max-width: 640px) {

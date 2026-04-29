@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, Upload } from "lucide-react";
+import { CheckCircle2, Lock } from "lucide-react";
 import { getStepIcon } from "./StepIcon";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
@@ -291,6 +291,7 @@ interface FinancialChecklistToolProps {
   updateMetadata: (data: any) => void;
   setActiveFinancialDoc: (doc: any) => void;
   setIsFinancialDocGuideOpen: (open: boolean) => void;
+  guard?: () => boolean;
 }
 
 export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
@@ -307,6 +308,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
   updateMetadata,
   setActiveFinancialDoc,
   setIsFinancialDocGuideOpen,
+  guard,
 }) => {
   return (
     <div className="flex flex-col mt-3">
@@ -446,6 +448,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                       <div
                         key={doc.id}
                         onClick={() => {
+                          if (guard && !guard()) return;
                           setDocActionModal({
                             isOpen: true,
                             doc,
@@ -480,7 +483,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                         }`}
                       >
                         <div
-                          className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px]
+                          className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px] relative
                           ${
                             isReviewed
                               ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
@@ -489,6 +492,8 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                                 : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
                           }`}
                         >
+                          {/* We don't have isLocked easily here without another hook, but StepView passes guard which handles it on click. 
+                              For visual hint, we could pass isLocked too, but guard() is enough for enforcement. */}
                           {isReviewed ? (
                             <CheckCircle2 size={18} strokeWidth={2.5} />
                           ) : (

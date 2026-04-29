@@ -91,36 +91,42 @@ export default function RoadmapLayoutV2({
   };
 
   const currentStepDisplayNum = (() => {
-    if (view !== "step" || state.currentStep === null || state.currentStep === -1)
+    if (
+      view !== "step" ||
+      state.currentStep === null ||
+      state.currentStep === -1
+    )
       return null;
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep];
     const filingMethod = state.metadata?.filingMethod || state.filingType;
+    const filingMethod = state.metadata?.filingMethod || state.filingType;
     const activeSteps =
       chapter?.steps.filter(
         (s: any) =>
-          !s.branch || s.branch === "both" || s.branch === filingMethod
+          !s.branch || s.branch === "both" || s.branch === filingMethod,
       ) ?? [];
     return step
       ? activeSteps.findIndex(
           (s: any) =>
-            (s.step_key || s.id) === (step.step_key || (step as any).id)
+            (s.step_key || s.id) === (step.step_key || (step as any).id),
         ) + 1
       : state.currentStep + 1;
   })();
 
   return (
-    <div className="roadmap-root">
-      {/* ── Top Navigation ── */}
-      <nav className="roadmap-nav">
-        {/* Back button */}
-        <div className="nav-back-slot">
+    <div
+      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500"
+    >
+      {/* Top Navigation */}
+      <nav className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40 pt-2">
+        {/* Dynamic Back / Logo */}
+        <div className="flex items-center gap-3">
           {view !== "dashboard" && (
             <button
               onClick={handleBack}
-              className="back-btn"
+              className="w-8 h-8 rounded-full border border-[#d0e4f7] flex items-center justify-center text-[#6b8097] hover:bg-[#f4f7fb] hover:text-primary transition-all active:scale-95 cursor-pointer"
               title="Back"
-              aria-label="Go back"
             >
               <ArrowLeft size={14} strokeWidth={2.5} />
             </button>
@@ -184,13 +190,14 @@ export default function RoadmapLayoutV2({
           )}
 
           <button
-            onClick={() => {
+            onClick={async () => {
               if (
                 confirm(
-                  "Are you sure you want to reset your progress? This cannot be undone."
+                  "Are you sure you want to reset your progress? This cannot be undone.",
                 )
               ) {
-                actions.resetProgress();
+                await actions.resetProgress();
+                window.location.reload();
               }
             }}
             className="reset-btn"
@@ -254,8 +261,14 @@ export default function RoadmapLayoutV2({
         }
 
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to   { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         /* ─── Nav bar ──────────────────────────────────────────── */
@@ -296,13 +309,21 @@ export default function RoadmapLayoutV2({
           justify-content: center;
           color: #6b8097;
           cursor: pointer;
-          transition: background 0.15s, color 0.15s, transform 0.1s;
+          transition:
+            background 0.15s,
+            color 0.15s,
+            transform 0.1s;
           flex-shrink: 0;
           padding: 0;
           line-height: 1;
         }
-        .back-btn:hover  { background: #f4f7fb; color: var(--primary, #2563eb); }
-        .back-btn:active { transform: scale(0.93); }
+        .back-btn:hover {
+          background: #f4f7fb;
+          color: var(--primary, #2563eb);
+        }
+        .back-btn:active {
+          transform: scale(0.93);
+        }
 
         /* ─── Breadcrumbs ──────────────────────────────────────── */
         .breadcrumbs {
@@ -355,7 +376,9 @@ export default function RoadmapLayoutV2({
           cursor: pointer;
           transition: color 0.15s;
         }
-        .breadcrumb-link:hover { color: var(--primary, #2563eb); }
+        .breadcrumb-link:hover {
+          color: var(--primary, #2563eb);
+        }
 
         .breadcrumb-current {
           color: #3a4f63;
@@ -408,7 +431,7 @@ export default function RoadmapLayoutV2({
           background: #fff;
           border-color: #d0e4f7;
           color: #3a4f63;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
         .complete-btn--idle:hover {
           border-color: var(--primary, #2563eb);
@@ -457,7 +480,9 @@ export default function RoadmapLayoutV2({
           border-radius: 50%;
           color: #cbd5e1;
           cursor: pointer;
-          transition: background 0.15s, color 0.15s;
+          transition:
+            background 0.15s,
+            color 0.15s;
           flex-shrink: 0;
           line-height: 1;
         }

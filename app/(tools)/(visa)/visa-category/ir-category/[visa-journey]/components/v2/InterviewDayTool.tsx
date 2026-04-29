@@ -7,12 +7,14 @@ interface InterviewDayToolProps {
   tool: any;
   setInterviewDayTutIdx: (idx: number) => void;
   setIsInterviewDayTutOpen: (open: boolean) => void;
+  guard?: () => boolean;
 }
 
 export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
   tool,
   setInterviewDayTutIdx,
   setIsInterviewDayTutOpen,
+  guard,
 }) => {
   return (
     <div className="flex flex-col">
@@ -57,6 +59,7 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
 
           <button
             onClick={() => {
+              if (guard && !guard()) return;
               setInterviewDayTutIdx(0);
               setIsInterviewDayTutOpen(true);
             }}
