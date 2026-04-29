@@ -113,19 +113,20 @@ export default function RoadmapLayoutV2({
   })();
 
   return (
-    <div className="roadmap-root">
-      {/* ── Top Navigation ── */}
-      <nav className="roadmap-nav">
-        {/* Back button */}
-        <div className="nav-back-slot">
+    <div
+      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500"
+    >
+      {/* Top Navigation */}
+      <nav className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40 pt-2">
+        {/* Dynamic Back / Logo */}
+        <div className="flex items-center gap-3">
           {view !== "dashboard" && (
             <button
               onClick={handleBack}
-              className="back-btn"
+              className="w-8 h-8 rounded-full border border-[#d0e4f7] flex items-center justify-center text-[#6b8097] hover:bg-[#f4f7fb] hover:text-primary transition-all active:scale-95 cursor-pointer"
               title="Back"
-              aria-label="Go back"
             >
-              <ArrowLeft size={15} strokeWidth={2.5} />
+              <ArrowLeft size={16} strokeWidth={2.5} />
             </button>
           )}
         </div>
@@ -258,9 +259,12 @@ export default function RoadmapLayoutV2({
 
         /* ─── Nav bar ──────────────────────────────────────────── */
         .roadmap-nav {
-          position: sticky;
-          top: 55px;                   /* offset for parent shell header */
-          z-index: 40;
+          position: fixed;
+          top: 55px;   /* keeps offset below your main header */
+          left: 0;
+          right: 0;
+          width: 100%;
+          z-index: 1000;
           display: flex;
           align-items: center;
           gap: 8px;
@@ -268,8 +272,6 @@ export default function RoadmapLayoutV2({
           padding: 0 12px;
           background: #fff;
           border-bottom: 1px solid #d0e4f7;
-          /* prevent any child from pushing width */
-          width: 100%;
           box-sizing: border-box;
           overflow: hidden;
         }
@@ -444,6 +446,7 @@ export default function RoadmapLayoutV2({
           max-width: 100%;
           box-sizing: border-box;
           overflow-x: hidden;
+          padding-top: 52px;
         }
 
         /* Ensure all direct child views don't break out */

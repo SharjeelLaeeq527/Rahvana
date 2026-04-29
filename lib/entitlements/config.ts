@@ -274,9 +274,9 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Basic & Premium can purchase as a standalone add-on.
    */
   polio_certificate: {
-    free:      lockedUpgrade('executive'),
-    basic:     lockedUpgrade('executive'),
-    premium:   lockedUpgrade('executive'),
+    free:      lockedUpgrade('premium'),
+    basic:     lockedUpgrade('premium'),
+    premium:   full(),
     executive: full(),
   },
 

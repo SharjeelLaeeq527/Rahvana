@@ -59,6 +59,7 @@ import {
   Clock,
   RefreshCw,
   Sparkles,
+  Crown,
 } from "lucide-react";
 
 import {
@@ -1556,11 +1557,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     
                     return (
                       <div className="w-10 h-10 rounded-xl bg-[#e8f1fb] text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors relative">
-                        {isLocked && (
-                          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white text-white">
-                            <Lock size={10} strokeWidth={3} />
-                          </div>
-                        )}
                         {isTranslation ? (
                           <Sparkles size={20} />
                         ) : isPassportPhoto ? (
@@ -1633,11 +1629,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#eaf7f2] text-[#1a7a5e] flex items-center justify-center mb-4 group-hover:bg-[#1a7a5e] group-hover:text-white transition-colors relative">
-                    {!plan.canUse("document_vault") && (
-                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white text-white">
-                        <Lock size={10} strokeWidth={3} />
-                      </div>
-                    )}
                     <Upload size={20} />
                   </div>
                   <h4 className="font-bold text-[#0f1f38] mb-1">
@@ -3635,11 +3626,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div
                       className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border relative ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
                     >
-                      {stepEntitlement.isLocked && (
-                        <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center border-2 border-[#0e1e38] text-white z-10">
-                          <Lock size={12} strokeWidth={3} />
-                        </div>
-                      )}
                       <IconComponent
                         size={22}
                         className={isChapter1 ? "text-white" : "text-white/75"}
@@ -3791,7 +3777,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             setIsLaunched(true);
                           }
                         }}
-                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer
+                        className={`relative inline-flex items-center justify-center w-full p-[16px_28px] rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
@@ -3828,8 +3814,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ) : (
                           <>
                             <span>{tool.launch_module.button_label}</span>
-                            <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
-                              <ArrowRight size={16} strokeWidth={2} />
+                            <div className="absolute -top-3 -right-3 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white text-white shadow-lg group-hover:scale-110 transition-transform duration-200">
+                              <Crown size={16} strokeWidth={2.5} />
                             </div>
                           </>
                         )}
