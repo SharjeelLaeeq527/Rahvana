@@ -93,21 +93,24 @@ export default function RoadmapLayoutV2({
 
   // Derive current step display number for breadcrumb
   const currentStepDisplayNum = (() => {
-    if (view !== "step" || state.currentStep === null || state.currentStep === -1)
+    if (
+      view !== "step" ||
+      state.currentStep === null ||
+      state.currentStep === -1
+    )
       return null;
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep];
-    const filingMethod =
-      state.metadata?.filingMethod || state.filingType;
+    const filingMethod = state.metadata?.filingMethod || state.filingType;
     const activeSteps =
       chapter?.steps.filter(
         (s: any) =>
-          !s.branch || s.branch === "both" || s.branch === filingMethod
+          !s.branch || s.branch === "both" || s.branch === filingMethod,
       ) ?? [];
     return step
       ? activeSteps.findIndex(
           (s: any) =>
-            (s.step_key || s.id) === (step.step_key || (step as any).id)
+            (s.step_key || s.id) === (step.step_key || (step as any).id),
         ) + 1
       : state.currentStep + 1;
   })();
@@ -144,22 +147,36 @@ export default function RoadmapLayoutV2({
 
           {(view === "chapter" || view === "step") && (
             <li className="breadcrumb-sep-item">
-              <ChevronRight size={11} className="breadcrumb-sep" strokeWidth={3} aria-hidden="true" />
+              <ChevronRight
+                size={11}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
               <button
                 className={`breadcrumb-item ${view === "chapter" ? "breadcrumb-current" : "breadcrumb-link"}`}
                 onClick={view === "step" ? handleBackToChapter : undefined}
                 disabled={view === "chapter"}
               >
-                <span className="breadcrumb-label">Ch. {selectedChapterIdx + 1}</span>
+                <span className="breadcrumb-label">
+                  Ch. {selectedChapterIdx + 1}
+                </span>
               </button>
             </li>
           )}
 
           {view === "step" && currentStepDisplayNum !== null && (
             <li className="breadcrumb-sep-item">
-              <ChevronRight size={11} className="breadcrumb-sep" strokeWidth={3} aria-hidden="true" />
+              <ChevronRight
+                size={11}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
               <span className="breadcrumb-item breadcrumb-current">
-                <span className="breadcrumb-label">Step {currentStepDisplayNum}</span>
+                <span className="breadcrumb-label">
+                  Step {currentStepDisplayNum}
+                </span>
               </span>
             </li>
           )}
@@ -181,13 +198,14 @@ export default function RoadmapLayoutV2({
           )}
 
           <button
-            onClick={() => {
+            onClick={async () => {
               if (
                 confirm(
-                  "Are you sure you want to reset your progress? This cannot be undone."
+                  "Are you sure you want to reset your progress? This cannot be undone.",
                 )
               ) {
-                actions.resetProgress();
+                await actions.resetProgress();
+                window.location.reload();
               }
             }}
             className="reset-btn"
@@ -241,10 +259,10 @@ export default function RoadmapLayoutV2({
         .roadmap-root {
           display: flex;
           flex-direction: column;
-          min-height: 100dvh;          /* dynamic viewport on mobile */
+          min-height: 100dvh; /* dynamic viewport on mobile */
           width: 100%;
-          max-width: 100%;             /* never wider than viewport */
-          overflow-x: hidden;          /* hard stop for horizontal scroll */
+          max-width: 100%; /* never wider than viewport */
+          overflow-x: hidden; /* hard stop for horizontal scroll */
           background: #f4f7fb;
           font-family: sans-serif;
           color: #1c2b3a;
@@ -252,14 +270,20 @@ export default function RoadmapLayoutV2({
         }
 
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to   { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         /* ─── Nav bar ──────────────────────────────────────────── */
         .roadmap-nav {
           position: sticky;
-          top: 55px;                   /* offset for parent shell header */
+          top: 55px; /* offset for parent shell header */
           z-index: 40;
           display: flex;
           align-items: center;
@@ -293,11 +317,19 @@ export default function RoadmapLayoutV2({
           justify-content: center;
           color: #6b8097;
           cursor: pointer;
-          transition: background 0.15s, color 0.15s, transform 0.1s;
+          transition:
+            background 0.15s,
+            color 0.15s,
+            transform 0.1s;
           flex-shrink: 0;
         }
-        .back-btn:hover  { background: #f4f7fb; color: var(--primary, #2563eb); }
-        .back-btn:active { transform: scale(0.93); }
+        .back-btn:hover {
+          background: #f4f7fb;
+          color: var(--primary, #2563eb);
+        }
+        .back-btn:active {
+          transform: scale(0.93);
+        }
 
         /* ─── Breadcrumbs ──────────────────────────────────────── */
         .breadcrumbs {
@@ -349,7 +381,9 @@ export default function RoadmapLayoutV2({
           cursor: pointer;
           transition: color 0.15s;
         }
-        .breadcrumb-link:hover { color: var(--primary, #2563eb); }
+        .breadcrumb-link:hover {
+          color: var(--primary, #2563eb);
+        }
 
         .breadcrumb-current {
           color: #3a4f63;
@@ -393,7 +427,7 @@ export default function RoadmapLayoutV2({
           background: #fff;
           border-color: #d0e4f7;
           color: #3a4f63;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
         .complete-btn--idle:hover {
           border-color: var(--primary, #2563eb);
@@ -427,7 +461,9 @@ export default function RoadmapLayoutV2({
           border-radius: 8px;
           color: #cbd5e1;
           cursor: pointer;
-          transition: background 0.15s, color 0.15s;
+          transition:
+            background 0.15s,
+            color 0.15s;
           flex-shrink: 0;
         }
         .reset-btn:hover {
