@@ -424,38 +424,6 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
         else newCompleted.add(stepKey);
         
-        if (!isCompleted) {
-          const chapters = activeRoadmap.chapters || activeRoadmap.stages;
-          const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
-          
-          const getActiveStepsForChapter = (chapterIdx: number) => {
-            const chapter = chapters[chapterIdx];
-            if (!chapter) return [];
-            return chapter.steps.filter((s: any) => {
-              const visibleWhen = s.visible_when;
-              if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-                if (visibleWhen.filingMethod) return visibleWhen.filingMethod === filingMethod;
-              }
-              const branch = s.branch;
-              if (!branch || branch === 'both') return true;
-              return branch === filingMethod;
-            });
-          };
-          
-          const currentChapterActive = getActiveStepsForChapter(prev.currentStage);
-          const allCurrentChapterComplete = currentChapterActive.length > 0 && 
-            currentChapterActive.every((s: any) => newCompleted.has(s.step_key || s.id));
-          
-          if (allCurrentChapterComplete && prev.currentStage < chapters.length - 1) {
-            return {
-              ...prev,
-              completedSteps: newCompleted,
-              currentStage: prev.currentStage + 1,
-              currentStep: null,
-            };
-          }
-        }
-        
         return { ...prev, completedSteps: newCompleted };
       });
 
