@@ -445,9 +445,16 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 interface RegisterReceiptStepProps {
   tool: any;
   journeyId: string;
+  state: any;
+  actions: any;
 }
 
-const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journeyId }) => {
+const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
+  tool,
+  journeyId,
+  state,
+  actions,
+}) => {
   const stepEntitlement = useStepEntitlement("step_1_15");
   const [uiState,     setUiState]     = useState<UiState>("idle");
   const [activeTab,   setActiveTab]   = useState<TabMode>("manual");
