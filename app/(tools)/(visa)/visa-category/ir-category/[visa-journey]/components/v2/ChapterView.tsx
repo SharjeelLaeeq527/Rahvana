@@ -1,12 +1,19 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { ChevronRight, AlertTriangle, Lock, Crown } from "lucide-react";
+import {
+  ChevronRight,
+  AlertTriangle,
+  Lock,
+  Crown,
+  Zap,
+  Star,
+  Sparkles,
+} from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
 import { usePlan } from "@/app/context/PlanContext";
-import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { PlanTier } from "@/lib/entitlements/config";
 
@@ -36,8 +43,8 @@ export function ChapterView({
   const filingMethod = state.metadata?.filingMethod || state.filingType;
 
   const activeSteps = useMemo(
-    () => getActiveStepsForStage(data, chapterIdx, filingMethod),
-    [data, chapterIdx, filingMethod],
+    () => getActiveStepsForStage(data, chapterIdx, state.metadata, state.filingType),
+    [data, chapterIdx, state.metadata, state.filingType],
   );
 
   const prog = useMemo(
@@ -99,6 +106,39 @@ export function ChapterView({
     step_3_7: ["free"],
     step_3_8: ["free"],
     step_3_9: ["free"],
+  };
+
+  // Helper function to determine which feature to use for modal based on tier requirement
+  const getModalFeatureForTier = (requiredPlan: PlanTier): string => {
+    if (requiredPlan === "basic") return "checklist_engine"; // Defaults to basic tier
+    if (requiredPlan === "premium") return "document_vault"; // Defaults to premium tier
+    if (requiredPlan === "executive") return "pcc_filing"; // Defaults to executive tier
+    return "step_guides";
+  };
+
+  // Helper function to check if a step is locked and why
+  const getStepLockStatus = (idx: number, sId: string) => {
+    // Free tier restriction — only first step of Chapter 1 accessible
+    if (isFreeTier && isChapter1 && idx > 0) {
+      return {
+        isLocked: true,
+        requiredPlan: "basic" as PlanTier,
+        reason: "free",
+      };
+    }
+
+    // Hard lock rules (specific tiers can't access specific steps)
+    const restrictedTiers = HARD_LOCK_RULES[sId];
+    if (restrictedTiers && restrictedTiers.includes(plan.tier)) {
+      // Find the minimum required tier to access this step
+      const allTiers: PlanTier[] = ["free", "basic", "premium", "executive"];
+      const requiredPlan =
+        (allTiers.find((t) => !restrictedTiers.includes(t)) as PlanTier) ||
+        "premium";
+      return { isLocked: true, requiredPlan, reason: "tier" };
+    }
+
+    return { isLocked: false, requiredPlan: null, reason: null };
   };
 
   return (
@@ -242,6 +282,133 @@ export function ChapterView({
           </div>
         )}
 
+        {/* Plan Card */}
+        <div
+          className="
+relative overflow-hidden
+rounded-2xl
+border-2 border-teal-600
+bg-gradient-to-br from-slate-100 via-white to-slate-50
+shadow-sm
+p-6
+mb-4
+"
+        >
+          <div
+            className="
+    absolute inset-0
+    bg-[radial-gradient(circle_at_top_right,rgba(15,118,110,0.10),transparent_55%)]
+    pointer-events-none
+  "
+          />
+
+          <div className="relative flex items-start justify-between gap-5">
+            {/* LEFT SIDE */}
+            <div className="flex-1 min-w-0">
+              {/* Badge Row */}
+              <div
+                className="
+        inline-flex items-center gap-2
+        px-3.5 py-2
+        rounded-full
+        bg-white
+        border border-slate-200
+        shadow-sm
+        mb-3
+      "
+              >
+                {plan.tier === "free" ? (
+                  <>
+                    <Lock
+                      size={14}
+                      className="text-slate-600"
+                      strokeWidth={2.5}
+                    />
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                      Free Plan
+                    </span>
+                  </>
+                ) : plan.tier === "basic" ? (
+                  <>
+                    <Star
+                      size={14}
+                      className="text-blue-600"
+                      strokeWidth={2.5}
+                    />
+                    <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">
+                      Basic Plan
+                    </span>
+                  </>
+                ) : plan.tier === "premium" ? (
+                  <>
+                    <Sparkles
+                      size={14}
+                      className="text-violet-600"
+                      strokeWidth={2.5}
+                    />
+                    <span className="text-[11px] font-bold text-violet-700 uppercase tracking-wider">
+                      Premium Plan
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Crown
+                      size={14}
+                      className="text-amber-600"
+                      strokeWidth={2.5}
+                    />
+                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">
+                      Executive Plan
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Title */}
+              <h3 className="text-[15px] font-bold text-slate-900 mb-1">
+                {plan.tier === "executive"
+                  ? "Your Current Plan"
+                  : "Upgrade Plan"}
+              </h3>
+
+              {/* Description */}
+              <p className="text-[13.5px] text-slate-600 leading-relaxed line-clamp-2">
+                {plan.tier === "free"
+                  ? "Your Free plan includes the first step of Chapter 1. Upgrade to access all the steps."
+                  : plan.tier === "basic"
+                    ? "Your Basic plan includes full roadmap access. Upgrade to Premium for step guides and vault."
+                    : plan.tier === "premium"
+                      ? "Your Premium plan unlocks guides, document vault, tracking, and all productivity tools."
+                      : "Your Executive plan includes everything plus 221g planner, mock interviews, and support."}
+              </p>
+            </div>
+
+            {/* RIGHT SIDE */}
+            {plan.tier !== "executive" && (
+              <div className="pt-[2px]">
+                <button
+                  onClick={() => setUpgradeModalFeature("checklist_engine")}
+                  className="
+            inline-flex items-center gap-2
+            px-4 py-2.5
+            rounded-xl
+            bg-gradient-to-r from-teal-600 to-emerald-600
+            hover:from-teal-700 hover:to-emerald-700
+            active:scale-[0.98]
+            text-white text-[12.5px] font-semibold
+            transition-all duration-200
+            shadow-md hover:shadow-lg
+            whitespace-nowrap
+          "
+                >
+                  <Zap size={16} strokeWidth={2.5} />
+                  Upgrade
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="flex flex-col gap-1.5">
           {activeSteps.map((step, idx) => {
             const sId = step.step_key || (step as any).id;
@@ -256,6 +423,10 @@ export function ChapterView({
             const fullStepIdx = chapter.steps.findIndex(
               (s) => (s.step_key || (s as any).id) === sId,
             );
+
+            // Check if step is locked
+            const lockStatus = getStepLockStatus(idx, sId);
+            const isStepLocked = lockStatus.isLocked;
 
             // Accent and border colors to match screenshot
             // Updated to a nicer shade of purple for Chapter 2, blue for Chapter 3
@@ -277,7 +448,15 @@ export function ChapterView({
             let iconBorder = borderColor;
             let iconText = textColor;
 
-            if (isCompleted) {
+            // If step is locked, override colors to grayed out
+            if (isStepLocked) {
+              borderColor = "border-[#d0d7e0]";
+              bgColor = "bg-[#f7f8fa]";
+              textColor = "text-[#8b94a5]";
+              iconBg = "bg-[#e5eaef]";
+              iconBorder = "border-[#c5cfd9]";
+              iconText = "text-[#8b94a5]";
+            } else if (isCompleted) {
               borderColor = isChapter3
                 ? "border-[#2b6e7a]"
                 : isChapter2
@@ -332,32 +511,25 @@ export function ChapterView({
               <div
                 key={sId}
                 onClick={() => {
-                  // Free tier restriction
-                  if (isFreeTier && isChapter1 && idx > 1) {
-                    setUpgradeModalFeature("step_guides");
-                    return;
-                  }
-
-                  // Premium + Executive tier hard locks for specific steps
-                  const restrictedTiers = HARD_LOCK_RULES[sId];
-
-                  if (restrictedTiers && restrictedTiers.includes(plan.tier)) {
-                    const feat = STEP_PRIMARY_FEATURE[sId] || "step_guides";
+                  if (isStepLocked) {
+                    // Show upgrade modal with tier-appropriate feature
+                    const feat = getModalFeatureForTier(
+                      lockStatus.requiredPlan!,
+                    );
                     setUpgradeModalFeature(feat);
                     return;
                   }
-
-                  // Allowed
+                  // Step is accessible — open it normally
                   onSelectStep(chapterIdx, fullStepIdx);
                 }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-[13px] ${isFreeTier && isChapter1 && idx > 1 ? "cursor-not-allowed" : "cursor-pointer"} transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
+                className={`flex items-center gap-3 px-4 py-3 rounded-[13px] ${isStepLocked ? "cursor-not-allowed" : "cursor-pointer"} transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
                   ${
                     isCompleted
                       ? "shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
                       : "shadow-[0_4px_20px_rgba(36,42,66,0.13),0_2px_8px_rgba(44,62,80,0.10)] hover:shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
                   }
                   active:scale-[0.98]
-                  ${isCurrent ? (isChapter3 ? "before:bg-[#2b6e7a]" : isChapter2 ? "before:bg-[#7c5e8a]" : "before:bg-[#b97c7c]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""}
+                  ${!isStepLocked && isCurrent ? (isChapter3 ? "before:bg-[#2b6e7a]" : isChapter2 ? "before:bg-[#7c5e8a]" : "before:bg-[#b97c7c]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""}
                 `}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
@@ -366,7 +538,13 @@ export function ChapterView({
                     shadow-[0_1.5px_6px_rgba(36,42,66,0.10)]
                   `}
                 >
-                  {isCompleted ? "✓" : idx + 1}
+                  {isStepLocked ? (
+                    <Lock size={14} strokeWidth={2.5} />
+                  ) : isCompleted ? (
+                    "✓"
+                  ) : (
+                    idx + 1
+                  )}
                 </div>
                 <div className="flex-1">
                   <div
@@ -375,50 +553,42 @@ export function ChapterView({
                     {step.step_name || (step as any).name}
                   </div>
                   <div
-                    className={`text-[11.5px] font-semibold mt-0.25 ${isCompleted ? "text-white" : "text-[#23232b]"}`}
+                    className={`text-[11.5px] font-semibold mt-0.25 ${isStepLocked ? "text-[#a8b5c0]" : isCompleted ? "text-white" : "text-[#23232b]"}`}
                   >
                     {step.step_short_description || ""}
                   </div>
                 </div>
-                {/* Lock badge — shown when step's primary feature is locked OR free tier limit reached */}
-                {(() => {
-                  const feat = STEP_PRIMARY_FEATURE[sId];
-
-                  // Free tier Chapter 1 lock for steps beyond first 2
-                  if (isFreeTier && isChapter1 && idx > 1) {
-                    return (
-                      <div
-                        className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold border bg-[#ede8f5] text-[#7c5e8a] border-[#c9b8d8]`}
-                      >
-                        <Lock size={9} strokeWidth={2.5} />
-                        Locked
-                      </div>
-                    );
-                  }
-
-                  // Check if primary feature is locked
-                  if (feat && plan.isLocked(feat)) {
-                    const isExec =
-                      feat === "polio_certificate" || feat === "action_221g";
-                    const LockIcon = isExec ? Crown : Lock;
-                    return (
-                      <div
-                        className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold border ${
-                          isExec
-                            ? "bg-[#fef3d8] text-[#a06000] border-[#f0c878]"
-                            : "bg-[#ede8f5] text-[#7c5e8a] border-[#c9b8d8]"
-                        }`}
-                      >
-                        <LockIcon size={9} strokeWidth={2.5} />
-                        {isExec ? "Executive" : "Locked"}
-                      </div>
-                    );
-                  }
-
-                  return null;
-                })()}
+                {/* Plan badge — shown only for locked steps */}
+                {isStepLocked && (
+                  <div
+                    className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-bold border transition-all ${
+                      lockStatus.requiredPlan === "basic"
+                        ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                        : lockStatus.requiredPlan === "premium"
+                          ? "bg-violet-50 text-violet-700 border-violet-200 shadow-sm"
+                          : "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
+                    }`}
+                  >
+                    {lockStatus.requiredPlan === "basic" ? (
+                      <>
+                        <Star size={12} strokeWidth={2.5} />
+                        <span>Basic</span>
+                      </>
+                    ) : lockStatus.requiredPlan === "premium" ? (
+                      <>
+                        <Sparkles size={12} strokeWidth={2.5} />
+                        <span>Premium</span>
+                      </>
+                    ) : (
+                      <>
+                        <Crown size={12} strokeWidth={2.5} />
+                        <span>Executive</span>
+                      </>
+                    )}
+                  </div>
+                )}
                 <ChevronRight
-                  className="text-[#b3a6b3] opacity-30 shrink-0"
+                  className={`shrink-0 ${isStepLocked ? "text-[#c5cfd9] opacity-50" : "text-[#b3a6b3] opacity-30"}`}
                   size={14}
                   strokeWidth={3}
                 />

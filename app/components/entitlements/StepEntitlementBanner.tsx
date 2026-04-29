@@ -149,13 +149,13 @@ export function StepEntitlementBanner({
         </div>
 
         {/* Dismiss */}
-        <button
+        {/* <button
           onClick={() => setDismissed(true)}
           className="shrink-0 mt-0.5 text-[#9aa5b1] hover:text-[#4a5568] transition-colors"
           aria-label="Dismiss"
         >
           <X size={14} strokeWidth={2} />
-        </button>
+        </button> */}
       </div>
     </>
   );

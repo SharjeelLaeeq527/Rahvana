@@ -31,8 +31,8 @@ export function StageView({
   const isChapter3 = stageIdx === 2;
   const stage = data.chapters[stageIdx];
   const activeSteps = useMemo(
-    () => getActiveStepsForStage(data, stageIdx, state.metadata.filingMethod),
-    [data, stageIdx, state.metadata.filingMethod],
+    () => getActiveStepsForStage(data, stageIdx, state.metadata, state.filingType),
+    [data, stageIdx, state.metadata, state.filingType],
   );
 
   const prog = useMemo(
