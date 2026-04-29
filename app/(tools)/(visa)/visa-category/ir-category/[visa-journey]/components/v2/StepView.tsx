@@ -335,14 +335,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     deleteDocument,
   } = useDocumentVaultStore();
 
-  // Guarded upload — checks entitlement before opening the vault upload modal
-  const guardedOpenUploadModal = useCallback(
-    (defId: string) => {
-      if (!stepEntitlement.guard()) return;
-      openUploadModal(defId);
-    },
-    [stepEntitlement, openUploadModal],
-  );
 
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<
@@ -3982,7 +3974,52 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 const defId = mapDocumentNameToId(item.title);
                                 setActiveUploadId(item.id);
                                 setActiveUploadType("doc");
-                                guardedOpenUploadModal(defId);
+                                if (!stepEntitlement.guard()) return;
+
+                                if (item.id === "doc_citizenship") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "U.S. passport",
+                                      "U.S. birth certificate",
+                                      "Certificate of Naturalization (Form N-550)",
+                                      "Certificate of Citizenship (Form N-560)",
+                                      "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                    ],
+                                  });
+                                } else if (item.id === "doc_relationship") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "Communication history",
+                                      "Photos together",
+                                      "Travel history",
+                                      "Shared finances",
+                                      "Shared residence",
+                                      "Family evidence",
+                                      "Affidavits",
+                                    ],
+                                  });
+                                } else if (item.id === "doc_translations") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "Translated Nikah Nama",
+                                      "Translated NADRA MRC",
+                                      "Translated Birth Certificate",
+                                      "Translated Divorce Decree",
+                                      "Other Translated Civil Documents",
+                                    ],
+                                  });
+                                } else {
+                                  openUploadModal(defId);
+                                }
                               },
                             });
                           }}
@@ -5221,14 +5258,59 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                                 }
                                               }
                                             },
-                                            onUpload: () => {
-                                              const defId = mapDocumentNameToId(
-                                                doc.name,
-                                              );
+                                                                            onUpload: () => {
+                                              const defId = mapDocumentNameToId(doc.name);
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
-                                              guardedOpenUploadModal(defId);
+
+                                              if (!stepEntitlement.guard()) return;
+
+                                              if (doc.id === "doc_citizenship") {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "U.S. passport",
+                                                    "U.S. birth certificate",
+                                                    "Certificate of Naturalization (Form N-550)",
+                                                    "Certificate of Citizenship (Form N-560)",
+                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                                  ],
+                                                });
+                                              } else if (doc.id === "doc_relationship") {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Communication history",
+                                                    "Photos together",
+                                                    "Travel history",
+                                                    "Shared finances",
+                                                    "Shared residence",
+                                                    "Family evidence",
+                                                    "Affidavits",
+                                                  ],
+                                                });
+                                              } else if (doc.id === "doc_translations") {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Translated Nikah Nama",
+                                                    "Translated NADRA MRC",
+                                                    "Translated Birth Certificate",
+                                                    "Translated Divorce Decree",
+                                                    "Other Translated Civil Documents",
+                                                  ],
+                                                });
+                                              } else {
+                                                openUploadModal(defId);
+                                              }
                                             },
+
                                           });
                                         }}
                                         className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
