@@ -855,11 +855,11 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     return null;
   }, [chapters]);
 
-  // Retrieve Courier tool data for Step 3.6 overlay
+  // Retrieve Courier tool data (search for any step that exposes a courier tool)
   const courierToolData = useMemo(() => {
     if (!chapters) return null;
     for (const ch of chapters) {
-      const step = ch.steps?.find((s: any) => s.step_key === "step_3_6");
+      const step = ch.steps?.find((s: any) => s.tool_data?.type === "courier_registration");
       if (step?.tool_data) return step.tool_data;
     }
     return null;
@@ -4679,8 +4679,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               ))}
             </div>
           )}
-
-          {/* Disclaimer */}
+{/* Disclaimer */}
           <p
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
@@ -4726,11 +4725,12 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
         {/* Next */}
         <button
-          onClick={() =>
-            nextStep &&
-            handleNavigate((nextStep as any).step_key || (nextStep as any).id)
-          }
-          className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          onClick={() => {
+            if (!nextStep || !isCompleted) return;
+            handleNavigate((nextStep as any).step_key || (nextStep as any).id);
+          }}
+          aria-disabled={!isCompleted}
+          className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all ${!isCompleted ? "opacity-50 cursor-not-allowed" : "hover:brightness-110 active:scale-95"} shrink-0 shadow-sm shadow-primary/20 ${!nextStep ? "invisible pointer-events-none" : ""}`}
         >
           Next
           <ArrowRight size={13} strokeWidth={2.5} />
@@ -5108,63 +5108,47 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   }}
                 />
               )}
-            <div className="w-full flex flex-col items-center px-4 sm:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                {/* Questionnaire CTA — only for step_1_2 when not yet completed */}
-                {/* uncomment this line */}
+            <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+
+                {/* Questionnaire CTA */}
                 {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
-             <div className="
-                  max-w-3xl w-full mx-auto
-                  px-3 sm:px-4 md:px-8
-                  pt-10 sm:pt-12 md:pt-14
-                  pb-8 md:pb-12
-                  flex flex-col gap-3
-                  ">
+                <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
                   <button
                     onClick={() => setShowDocQuestionnaire(true)}
-                    className="w-full p-[20px_24px] rounded-[16px] border-[2px] border-primary bg-[rgba(59,125,216,0.06)] hover:bg-[rgba(59,125,216,0.12)] hover:shadow-[0_4px_20px_rgba(59,125,216,0.15)] hover:-translate-y-px transition-all cursor-pointer text-left group"
+                    className="w-full rounded-2xl border-2 border-primary bg-[rgba(59,125,216,0.06)] hover:bg-[rgba(59,125,216,0.12)] hover:shadow-[0_4px_20px_rgba(59,125,216,0.15)] hover:-translate-y-px transition-all cursor-pointer text-left group p-4 sm:p-6"
                   >
-                    <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-[6px]">
+                    <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-primary mb-1 sm:mb-1.5">
                       Recommended · Takes 1 minute
                     </div>
-
-                    <h3 className="text-[16px] font-semibold text-[#0f1f38] mb-[4px]">
+                    <h3 className="text-sm sm:text-base font-semibold text-[#0f1f38] mb-0.5 sm:mb-1 leading-snug">
                       Personalize Your Document Checklist
                     </h3>
-                    <p className="text-[13px] text-[#6b8097] leading-[1.5] mb-[10px]">
-                      Answer a few questions about your situation so we can add
-                      or remove documents that apply to you specifically.
+                    <p className="text-xs sm:text-[13px] text-[#6b8097] leading-relaxed mb-2 sm:mb-3">
+                      Answer a few questions about your situation so we can add or remove documents that apply to you specifically.
                     </p>
-                    <div className="flex items-center gap-[6px] text-[13px] font-semibold text-primary">
+                    <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-primary">
                       <span>Start Personalization</span>
-                      <ArrowRight size={14} strokeWidth={2} />
+                      <ArrowRight size={13} strokeWidth={2} />
                     </div>
                   </button>
                 </div>
                 {/* )} */}
 
-                {/* Header for Docs */}
+                {/* Document Cards */}
                 {(() => {
-                  // Use questionnaire-computed docs if available, otherwise fall back to JSON data
                   const effectiveDocItems =
                     sId === "step_1_2" && questionnaireDocItems
                       ? questionnaireDocItems
-                      : (currentStep as any).document_items ||
-                        currentStep.document_items;
+                      : (currentStep as any).document_items || currentStep.document_items;
                   return (
                     <>
-                   
-                      {/* Document Cards */}
-                      <div className="w-full max-w-[740px]">
+                      <div className="w-full max-w-[740px] px-0">
                         <div className="w-full">
                           {(() => {
                             const docItems = effectiveDocItems;
                             if (!docItems) return [];
                             const uniqueGroups = Array.from(
-                              new Set(
-                                docItems.map(
-                                  (d: any) => d.group || "Required Now",
-                                ),
-                              ),
+                              new Set(docItems.map((d: any) => d.group || "Required Now")),
                             );
                             const defaultOrder = [
                               "Required Now",
@@ -5176,54 +5160,42 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                             return (uniqueGroups as string[]).sort((a, b) => {
                               const idxA = defaultOrder.indexOf(a);
                               const idxB = defaultOrder.indexOf(b);
-                              if (idxA !== -1 && idxB !== -1)
-                                return idxA - idxB;
+                              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
                               if (idxA !== -1) return -1;
                               if (idxB !== -1) return 1;
                               return a.localeCompare(b);
                             });
                           })().map((groupName) => {
-                            // const docItems =
-                            //   (currentStep as any).document_items ||
-                            //   currentStep.document_items;
                             const docItems = effectiveDocItems;
                             const groupItems = docItems?.filter(
-                              (d: any) =>
-                                (d.group || "Required Now") === groupName,
+                              (d: any) => (d.group || "Required Now") === groupName,
                             );
 
-                            if (!groupItems || groupItems.length === 0)
-                              return null;
+                            if (!groupItems || groupItems.length === 0) return null;
 
                             return (
                               <div
                                 key={groupName}
-                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-[32px]"
+                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-6 sm:mb-8"
                               >
-                                <div className="flex items-center gap-[10px] mb-[14px]">
-                                  <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap">
+                                {/* Group Header */}
+                                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                                  <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap shrink-0">
                                     {groupName}
                                   </span>
-                                  <div className="h-px flex-1 bg-primary/30" />
+                                  <div className="h-px flex-1 bg-primary/30 min-w-0" />
                                 </div>
 
-                                <div className="flex flex-col">
+                                <div className="flex flex-col gap-2 sm:gap-2.5">
                                   {groupItems.map((doc: any, idx: number) => {
-                                    const docReviewStatus =
-                                      state.metadata?.docReviewStatus?.[doc.id];
+                                    const docReviewStatus = state.metadata?.docReviewStatus?.[doc.id];
                                     const isReviewed =
-                                      docReviewStatus === "reviewed" ||
-                                      state.documentChecklist[doc.name];
-                                    const hasAttachment =
-                                      state.docUploads[doc.name] ||
-                                      state.notes[doc.name];
+                                      docReviewStatus === "reviewed" || state.documentChecklist[doc.name];
+                                    const hasAttachment = state.docUploads[doc.name] || state.notes[doc.name];
                                     const isInProgress =
-                                      (hasAttachment && !isReviewed) ||
-                                      docReviewStatus === "in-progress";
-                                    const isPetitioner =
-                                      doc.tag === "petitioner";
-                                    const isBeneficiary =
-                                      doc.tag === "beneficiary";
+                                      (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
+                                    const isPetitioner = doc.tag === "petitioner";
+                                    const isBeneficiary = doc.tag === "beneficiary";
 
                                     return (
                                       <div
@@ -5235,228 +5207,173 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                             title: doc.name,
                                             subtitle: doc.subtitle,
                                             onReadGuide: () => {
-                                              if (
-                                                doc.guideUrl &&
-                                                doc.guideUrl !== "/guides"
-                                              ) {
-                                                window.open(
-                                                  doc.guideUrl,
-                                                  "_blank",
-                                                );
-                                                if (
-                                                  actions.updateDocumentStatus &&
-                                                  doc.id
-                                                ) {
-                                                  actions.updateDocumentStatus(
-                                                    doc.id,
-                                                    "reviewed",
-                                                  );
+                                              if (doc.guideUrl && doc.guideUrl !== "/guides") {
+                                                window.open(doc.guideUrl, "_blank");
+                                                if (actions.updateDocumentStatus && doc.id) {
+                                                  actions.updateDocumentStatus(doc.id, "reviewed");
                                                 }
                                               } else {
-                                                setSelectedGuideId(
-                                                  doc.id || null,
-                                                );
-                                                if (
-                                                  actions.updateDocumentStatus &&
-                                                  doc.id
-                                                ) {
-                                                  actions.updateDocumentStatus(
-                                                    doc.id,
-                                                    "in-progress",
-                                                  );
+                                                setSelectedGuideId(doc.id || null);
+                                                if (actions.updateDocumentStatus && doc.id) {
+                                                  actions.updateDocumentStatus(doc.id, "in-progress");
                                                 }
                                               }
                                             },
                                             onUpload: () => {
-                                              const defId = mapDocumentNameToId(
-                                                doc.name,
-                                              );
+                                              const defId = mapDocumentNameToId(doc.name);
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
                                               openUploadModal(defId);
                                             },
                                           });
                                         }}
-                                        className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
-                                          ${
-                                            isReviewed
-                                              ? "bg-[#eaf7ff] border-[#b8daff]"
-                                              : isInProgress
-                                                ? "bg-[#fff9e6] border-[#fde68a]/50"
-                                                : "bg-white border-[#d0e4f7]"
+                                        className={`group flex items-start sm:items-center gap-3 sm:gap-4 
+                                          px-3 sm:px-5 py-3.5 sm:py-5 
+                                          rounded-xl sm:rounded-2xl border-[1.5px] 
+                                          transition-all cursor-pointer relative 
+                                          shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] 
+                                          hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] 
+                                          hover:-translate-y-px active:translate-y-0 
+                                          active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)]
+                                          ${isReviewed
+                                            ? "bg-[#eaf7ff] border-[#b8daff]"
+                                            : isInProgress
+                                              ? "bg-[#fff9e6] border-[#fde68a]/50"
+                                              : "bg-white border-[#d0e4f7]"
                                           }`}
                                       >
+                                        {/* Icon */}
                                         <div
-                                          className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px]
-                                  ${
-                                    isReviewed
-                                      ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
-                                      : isInProgress
-                                        ? "bg-white border-[#fde68a] text-[#d97706]"
-                                        : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
-                                  }`}
+                                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 border
+                                            ${isReviewed
+                                              ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
+                                              : isInProgress
+                                                ? "bg-white border-[#fde68a] text-[#d97706]"
+                                                : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
+                                            }`}
                                         >
                                           {isReviewed ? (
-                                            <CheckCircle2
-                                              size={18}
-                                              strokeWidth={2.5}
-                                            />
+                                            <CheckCircle2 size={16} strokeWidth={2.5} className="sm:w-[18px] sm:h-[18px]" />
                                           ) : (
                                             (() => {
+                                              const iconSize = 16;
                                               switch (doc.icon) {
-                                                case "ShieldCheck":
-                                                  return (
-                                                    <ShieldCheck size={18} />
-                                                  );
-                                                case "User":
-                                                  return <User size={18} />;
-                                                case "FileText":
-                                                  return <FileText size={18} />;
-                                                case "FileCheck":
-                                                  return (
-                                                    <FileCheck size={18} />
-                                                  );
-                                                case "MessageSquare":
-                                                  return (
-                                                    <MessageSquare size={18} />
-                                                  );
-                                                case "Scale":
-                                                  return <Scale size={18} />;
-                                                case "Globe":
-                                                  return <Globe size={18} />;
-                                                case "ClipboardList":
-                                                  return (
-                                                    <ClipboardList size={18} />
-                                                  );
-                                                case "Lock":
-                                                  return <Lock size={18} />;
-                                                case "Camera":
-                                                  return <Camera size={18} />;
-                                                default:
-                                                  return <FileText size={18} />;
+                                                case "ShieldCheck": return <ShieldCheck size={iconSize} />;
+                                                case "User": return <User size={iconSize} />;
+                                                case "FileText": return <FileText size={iconSize} />;
+                                                case "FileCheck": return <FileCheck size={iconSize} />;
+                                                case "MessageSquare": return <MessageSquare size={iconSize} />;
+                                                case "Scale": return <Scale size={iconSize} />;
+                                                case "Globe": return <Globe size={iconSize} />;
+                                                case "ClipboardList": return <ClipboardList size={iconSize} />;
+                                                case "Lock": return <Lock size={iconSize} />;
+                                                case "Camera": return <Camera size={iconSize} />;
+                                                default: return <FileText size={iconSize} />;
                                               }
                                             })()
                                           )}
                                         </div>
+
+                                        {/* Content */}
                                         <div className="flex-1 min-w-0">
-                                          <h3 className="text-[15px] font-semibold text-[#0f1f38] mb-[4px] leading-[1.3] truncate">
+                                          <h3 className="text-[13px] sm:text-[15px] font-semibold text-[#0f1f38] mb-0.5 leading-snug truncate">
                                             {doc.name}
                                           </h3>
-                                          <p className="text-[13px] text-[#6b8097] leading-[1.4] mb-[7px] truncate">
+                                          <p className="text-[11px] sm:text-[13px] text-[#6b8097] leading-relaxed mb-1.5 sm:mb-2 line-clamp-2 sm:truncate">
                                             {doc.subtitle}
                                           </p>
-                                          <div className="flex flex-wrap gap-[6px]">
+                                          <div className="flex flex-wrap gap-1 sm:gap-1.5">
                                             {doc.tag && (
                                               <span
-                                                className={`px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em]
-                                                 ${
-                                                   isPetitioner
-                                                     ? "bg-[#e8f1fb] text-primary/80"
-                                                     : isBeneficiary
-                                                       ? "bg-[#eaf7f2] text-[#1a7a5e]"
-                                                       : "bg-[#f3f0fb] text-[#4a2d80]"
-                                                 }`}
+                                                className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em]
+                                                  ${isPetitioner
+                                                    ? "bg-[#e8f1fb] text-primary/80"
+                                                    : isBeneficiary
+                                                      ? "bg-[#eaf7f2] text-[#1a7a5e]"
+                                                      : "bg-[#f3f0fb] text-[#4a2d80]"
+                                                  }`}
                                               >
-                                                {doc.tag
-                                                  .charAt(0)
-                                                  .toUpperCase() +
-                                                  doc.tag.slice(1)}
+                                                {doc.tag.charAt(0).toUpperCase() + doc.tag.slice(1)}
                                               </span>
                                             )}
                                             {isBeneficiary && (
-                                              <span className="px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
+                                              <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
                                                 Rahvana Guide
                                               </span>
                                             )}
                                           </div>
                                         </div>
 
-                                        <div className="shrink-0 flex items-center gap-2">
+                                        {/* Status + Actions */}
+                                        <div className="shrink-0 flex items-center gap-1.5 self-start sm:self-center mt-0.5 sm:mt-0">
+                                          {/* Status Badge */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(
-                                              doc.name,
+                                            const defId = mapDocumentNameToId(doc.name);
+                                            const isUploadedInVault = uploadedDocuments.some(
+                                              (ud) => ud.documentDefId === defId,
                                             );
-                                            const isUploadedInVault =
-                                              uploadedDocuments.some(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
-                                            const uploadedDoc =
-                                              uploadedDocuments.find(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
+                                            const uploadedDoc = uploadedDocuments.find(
+                                              (ud) => ud.documentDefId === defId,
+                                            );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(
-                                                  uploadedDoc.id,
-                                                )
+                                              ? isDeletingIds.includes(uploadedDoc.id)
                                               : false;
 
-                                            if (isDeleting) return null; // Badge hidden while deleting
+                                            if (isDeleting) return null;
 
-                                            const displayStatus =
-                                              isUploadedInVault
-                                                ? "Uploaded"
-                                                : isReloadingDocs
-                                                  ? "Checking..."
-                                                  : isReviewed
-                                                    ? "Reviewed"
-                                                    : isInProgress
-                                                      ? "In progress"
-                                                      : "Not started";
+                                            const displayStatus = isUploadedInVault
+                                              ? "Uploaded"
+                                              : isReloadingDocs
+                                                ? "Checking..."
+                                                : isReviewed
+                                                  ? "Reviewed"
+                                                  : isInProgress
+                                                    ? "In progress"
+                                                    : "Not started";
 
-                                            const statusClasses =
-                                              isUploadedInVault
-                                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                                : isReloadingDocs
-                                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                                  : isReviewed
-                                                    ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                                    : isInProgress
-                                                      ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
+                                            const statusClasses = isUploadedInVault
+                                              ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                              : isReloadingDocs
+                                                ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                                : isReviewed
+                                                  ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                                  : isInProgress
+                                                    ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                                    : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                                             return (
                                               <div
-                                                className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                                className={`hidden xs:flex px-2 sm:px-3 py-1 rounded-full border text-[10px] sm:text-[12px] font-medium tracking-normal transition-all whitespace-nowrap ${statusClasses}`}
                                               >
                                                 {displayStatus}
                                               </div>
                                             );
                                           })()}
 
+                                          {/* Upload State / Dropdown */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(
-                                              doc.name,
+                                            const defId = mapDocumentNameToId(doc.name);
+                                            const uploadedDoc = uploadedDocuments.find(
+                                              (ud) => ud.documentDefId === defId,
                                             );
-                                            const uploadedDoc =
-                                              uploadedDocuments.find(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(
-                                                  uploadedDoc.id,
-                                                )
+                                              ? isDeletingIds.includes(uploadedDoc.id)
                                               : false;
 
-                                            if (
-                                              isReloadingDocs &&
-                                              !uploadedDoc
-                                            ) {
+                                            if (isReloadingDocs && !uploadedDoc) {
                                               return (
-                                                <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
-                                                  <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                                  Checking...
+                                                <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground font-medium animate-pulse">
+                                                  <div className="h-2.5 w-2.5 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                                  <span className="hidden sm:inline">Checking...</span>
                                                 </div>
                                               );
                                             }
 
                                             if (isDeleting) {
                                               return (
-                                                <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
-                                                  <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
-                                                  Deleting...
+                                                <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-red-500 font-medium animate-pulse">
+                                                  <div className="h-2.5 w-2.5 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                                  <span className="hidden sm:inline">Deleting...</span>
                                                 </div>
                                               );
                                             }
@@ -5466,46 +5383,35 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <button
-                                                      onClick={(e) =>
-                                                        e.stopPropagation()
-                                                      }
-                                                      className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                                      onClick={(e) => e.stopPropagation()}
+                                                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
                                                     >
-                                                      <MoreVertical size={18} />
+                                                      <MoreVertical size={15} className="sm:w-[18px] sm:h-[18px]" />
                                                     </button>
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent
                                                     side="top"
                                                     align="end"
-                                                    className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                                    className="w-[130px] sm:w-[140px] rounded-xl shadow-xl border-muted/20"
                                                   >
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        window.open(
-                                                          `/api/documents/${uploadedDoc.id}/download`,
-                                                          "_blank",
-                                                        );
+                                                        window.open(`/api/documents/${uploadedDoc.id}/download`, "_blank");
                                                       }}
-                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5"
                                                     >
-                                                      <Eye
-                                                        size={16}
-                                                        className="text-primary"
-                                                      />
+                                                      <Eye size={14} className="text-primary sm:w-4 sm:h-4" />
                                                       Preview
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setDocumentToDelete({
-                                                          id: uploadedDoc.id,
-                                                          name: doc.name,
-                                                        });
+                                                        setDocumentToDelete({ id: uploadedDoc.id, name: doc.name });
                                                       }}
-                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                                     >
-                                                      <Trash2 size={16} />
+                                                      <Trash2 size={14} className="sm:w-4 sm:h-4" />
                                                       Delete
                                                     </DropdownMenuItem>
                                                   </DropdownMenuContent>
@@ -5526,12 +5432,13 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                         </div>
                       </div>
 
-                      <div className="mt-[48px] px-[20px] py-[16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.65] text-center max-w-[740px] w-full mb-[24px]">
-                        Rahvana provides structured guidance only. This is not
-                        legal advice.
-                        <br />
-                        Consult a licensed immigration attorney for
-                        case-specific decisions.
+                      {/* Footer Disclaimer */}
+                      <div className="mt-10 sm:mt-12 mx-3 sm:mx-0 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center max-w-[740px] w-full mb-5 sm:mb-6">
+                        <span className="block text-[10px] sm:text-[12px] leading-relaxed">
+                          Rahvana provides structured guidance only. This is not legal advice.{" "}
+                          <br className="hidden sm:block" />
+                          Consult a licensed immigration attorney for case-specific decisions.
+                        </span>
                       </div>
                     </>
                   );
@@ -5818,7 +5725,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         </div>
       </div>
 
-      {/* Redesigned Bottom Navigation Footer */}
+           {/* Redesigned Bottom Navigation Footer */}
      <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
   {/* Prev */}
   <button
@@ -5847,16 +5754,18 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
   {/* Next */}
   <button
-    onClick={() =>
-      nextStep &&
-      handleNavigate((nextStep as any).step_key || (nextStep as any).id)
-    }
-    className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+    onClick={() => {
+      if (!nextStep || !isCompleted) return;
+      handleNavigate((nextStep as any).step_key || (nextStep as any).id);
+    }}
+    onKeyDown={(e) => { if (e.key === 'Enter' && (!nextStep || !isCompleted)) e.preventDefault(); }}
+    className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all ${!isCompleted ? "opacity-50 cursor-not-allowed" : "hover:brightness-110 active:scale-95"} shrink-0 shadow-sm shadow-primary/20 ${!nextStep ? "invisible pointer-events-none" : ""}`}
   >
     Next
     <ArrowRight size={13} strokeWidth={2.5} />
   </button>
 </footer>
+
 
       {/* Sponsorship Calculator Tool Overlay */}
       <SponsorshipCalculatorTool

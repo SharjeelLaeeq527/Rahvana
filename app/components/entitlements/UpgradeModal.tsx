@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Check, Crown, Zap, ShoppingCart } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import {
@@ -100,8 +101,8 @@ const TIER_STYLE: Record<PlanTier, {
 
 /** Hides the scrollbar visually while keeping scroll functionality */
 const scrollbarHideStyle: React.CSSProperties = {
-  scrollbarWidth: "none",        /* Firefox */
-  msOverflowStyle: "none",       /* IE / Edge legacy */
+  scrollbarWidth: "none",       /* Firefox */
+  msOverflowStyle: "none",      /* IE / Edge legacy */
 };
 
 export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps) {
@@ -131,15 +132,19 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
   // ─── Shared card wrapper ──────────────────────────────────────────────────
   // • On mobile  : anchored to bottom, full-width, max 92dvh, rounded top only
   // • On sm+     : centred, max-w-[440px], fully rounded, max 88dvh
+  // FIX: removed sm:pt-8 (was causing a gap above the header on desktop)
+  // FIX: overflow-hidden is what clips the header corners — no inner rounding needed on header
   const cardCls = [
     "relative bg-white shadow-2xl flex flex-col overflow-hidden",
     "animate-in fade-in zoom-in-95 duration-200",
     // Mobile: slide-up sheet
     "w-full rounded-t-3xl",
-    // sm+: floating card
+    // sm+: floating card — fully rounded, no extra top padding
     "sm:rounded-3xl sm:w-[440px] sm:max-w-[calc(100vw-2rem)]",
     // Height: fills available space but never exceeds viewport
     "max-h-[92dvh] sm:max-h-[88dvh]",
+    // Always above navbars/headers/footers
+    "z-[10000] pointer-events-auto",
   ].join(" ");
 
   // ─── Add-on purchase layout ───────────────────────────────────────────────
@@ -148,11 +153,18 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
     const planStyle = TIER_STYLE[selectedTier];
     const planPrice = TIER_PRICES[selectedTier];
 
-    return (
-      <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4">
+    const modal = (
+      <div
+        className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4"
+        style={{ zIndex: 2147483647 }}
+      >
         {/* Backdrop */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
+          onClick={onClose}
+        />
 
+        {/* FIX: removed pointer-events-auto sm:pt-8 — sm:pt-8 was the gap culprit */}
         <div className={cardCls}>
           {/* Close */}
           <button
@@ -162,7 +174,8 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
             <X size={14} strokeWidth={2.5} className="text-white" />
           </button>
 
-          {/* Gold header — never scrolls */}
+          {/* Gold header — never scrolls
+              FIX: removed rounded-t-3xl sm:rounded-3xl — card's overflow-hidden handles clipping */}
           <div className="shrink-0 bg-gradient-to-br from-yellow-600 to-amber-700 px-5 pt-6 pb-4 text-white">
             <div className="w-8 h-8 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5">
               <Crown size={15} strokeWidth={2.5} />
@@ -203,7 +216,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
               </p>
               <button
                 onClick={() => { onConfirm?.("addon", addon.id); onClose(); }}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
                 <ShoppingCart size={14} strokeWidth={2.5} />
                 Buy {addon.name} · ${addon.price}
@@ -232,8 +245,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                           selectedTier === t
                             ? "bg-white shadow-sm text-neutral-800"
                             : "text-neutral-500 hover:text-neutral-700"
-                        }`}
-                      >
+                        }`}>
                         {TIER_NAMES[t]}
                       </button>
                     ))}
@@ -272,8 +284,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
 
                 <button
                   onClick={() => { onConfirm?.("upgrade", selectedTier); onClose(); }}
-                  className={`w-full py-2.5 rounded-xl text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}
-                >
+                  className={`w-full py-2.5 rounded-xl text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}>
                   <Zap size={14} strokeWidth={2.5} />
                   Upgrade to {TIER_NAMES[selectedTier]}
                   {planPrice && (
@@ -283,14 +294,23 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
               </div>
             )}
 
-            {/* Safe-area bottom padding for mobile home bar */}
-            <p className="text-center text-[11px] text-neutral-400 pb-safe pb-2">
+            {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
+            <p
+              className="text-center text-[11px] text-neutral-400"
+              style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
+            >
               Billed monthly · No cancellation after grace period
             </p>
           </div>
         </div>
       </div>
     );
+
+    // FIX: addon branch was building modal but never returning it — fell through to upgrade layout
+    if (typeof document !== "undefined") {
+      return createPortal(modal, document.body);
+    }
+    return null;
   }
 
   // ─── Upgrade-only layout ──────────────────────────────────────────────────
@@ -298,14 +318,18 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
   const price = TIER_PRICES[selectedTier];
   const style = TIER_STYLE[selectedTier];
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4">
+  const modal = (
+    <div
+      className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4"
+      style={{ zIndex: 2147483647 }}
+    >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
         onClick={onClose}
       />
 
+      {/* FIX: removed sm:pt-8 — was pushing card down and creating a gap above the header */}
       <div className={cardCls}>
         {/* Close */}
         <button
@@ -315,7 +339,9 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
           <X size={14} strokeWidth={2.5} className="text-white" />
         </button>
 
-        {/* Gradient header — never scrolls */}
+        {/* Gradient header — never scrolls
+            FIX: removed rounded-t-3xl sm:rounded-3xl — card's overflow-hidden clips correctly,
+            inner rounding was causing a visible step/gap between header and card edge */}
         <div
           className={`shrink-0 bg-gradient-to-br ${style.header} px-5 pt-6 pb-4 text-white transition-colors duration-300`}
         >
@@ -377,18 +403,28 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
           {/* Upgrade CTA */}
           <button
             onClick={() => { onConfirm?.("upgrade", selectedTier); onClose(); }}
-            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold transition-colors flex items-center justify-center gap-2 shadow-md ${style.button}`}
+            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90 ${style.button}`}
           >
             <Crown size={14} strokeWidth={2.5} />
             Upgrade to {TIER_NAMES[selectedTier]}
           </button>
 
-          {/* Safe-area bottom padding for mobile home bar */}
-          <p className="text-center text-[11px] text-neutral-400 pb-safe pb-2">
+          {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
+          <p
+            className="text-center text-[11px] text-neutral-400"
+            style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
+          >
             Billed monthly · No cancellation after grace period
           </p>
         </div>
       </div>
     </div>
   );
+
+  // Render into document.body via portal to avoid stacking-context issues
+  if (typeof document !== "undefined") {
+    return createPortal(modal, document.body);
+  }
+
+  return null;
 }

@@ -24,9 +24,9 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, metadat
   if (!chapter) return [];
   
   const method = metadata?.filingMethod || filingMethodFallback || 'online'; // Default to online if not set
-  return chapter.steps.filter((step: RoadmapStep) => {
+  // Filter steps by visibility and branch
+  const filtered = chapter.steps.filter((step: RoadmapStep) => {
     const stepAny = step as any;
-    
     // Check visible_when conditions (new priority system)
     const visibleWhen = stepAny.visible_when;
     if (visibleWhen && Object.keys(visibleWhen).length > 0) {
@@ -45,12 +45,19 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, metadat
       }
       return isVisible;
     }
-    
     // Fallback to legacy 'branch' field
     const branch = stepAny.branch;
     if (!branch || branch === 'both') return true;
     return branch === method;
   });
+
+  // Sort by display_order, then step_number as fallback
+  filtered.sort((a: any, b: any) => {
+    const aOrder = a.display_order ?? a.step_number ?? 0;
+    const bOrder = b.display_order ?? b.step_number ?? 0;
+    return aOrder - bOrder;
+  });
+  return filtered;
 }
 
 /**
