@@ -100,7 +100,6 @@ export default function RoadmapLayoutV2({
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep];
     const filingMethod = state.metadata?.filingMethod || state.filingType;
-    const filingMethod = state.metadata?.filingMethod || state.filingType;
     const activeSteps =
       chapter?.steps.filter(
         (s: any) =>

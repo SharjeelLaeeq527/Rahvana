@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  CheckCircle2,
+  CheckCircle,
   Package,
   Truck,
   MapPin,
   Clock,
   AlertCircle,
   Loader,
-  CheckCircle,
   Printer,
   Download,
   RefreshCw,
   Lock,
+  Crown,
 } from "lucide-react";
 import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
 import { Input221gTool } from "./Input221gTool";
@@ -179,6 +179,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
 
   const stepEntitlement = useStepEntitlement(step.step_key);
+  // Executive-only (crown) logic
+  const isCrown = stepEntitlement.featureKey === "polio_certificate" || stepEntitlement.featureKey === "action_221g";
 
   // Responsive: track viewport width for conditional inline styles
   const [isMobile, setIsMobile] = useState(false);
@@ -1212,7 +1214,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         .asr-spin { animation: spin 1s linear infinite; }
       `}</style>
       {/* Main Content */}
-      <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-6 sm:pt-10 md:pt-14 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
+      <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-1 sm:pt-10 md:pt-3 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
         {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
@@ -1487,8 +1489,15 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 borderRadius: "20px",
                 padding: isMobile ? "14px" : "18px",
                 boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
+                position: "relative",
               }}
             >
+              {/* Crown icon for Executive-only guide */}
+              {isCrown && (
+                <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
+                  <Crown size={20} color="#a06000" />
+                </div>
+              )}
               <h3
                 style={{
                   fontSize: "16px",
@@ -1553,8 +1562,15 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   borderRadius: "20px",
                   padding: isMobile ? "14px" : "18px",
                   boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
+                  position: "relative",
                 }}
               >
+                {/* Crown icon for Executive-only upload/payment */}
+                {isCrown && (
+                  <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
+                    <Crown size={20} color="#a06000" />
+                  </div>
+                )}
                 <h3
                   style={{
                     fontSize: "16px",
@@ -1621,8 +1637,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   borderRadius: "20px",
                   padding: isMobile ? "14px" : "18px",
                   boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
+                  position: "relative",
                 }}
               >
+                {/* Crown icon for Executive-only tracking */}
+                {isCrown && (
+                  <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
+                    <Crown size={20} color="#a06000" />
+                  </div>
+                )}
+                                <CheckCircle size={18} style={{ flexShrink: 0 }} />
                 <h3
                   style={{
                     fontSize: "16px",
@@ -1856,7 +1880,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   marginTop: "12px",
                 }}
               >
-                <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
+                <CheckCircle size={18} style={{ flexShrink: 0 }} />
 
                 <div style={{ flex: 1 }}>
                   {/* Common Heading */}

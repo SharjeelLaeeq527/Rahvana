@@ -8,6 +8,8 @@ import {
   Calendar,
   Save,
   X,
+  Lock,
+  Crown,
 } from "lucide-react";
 
 interface SubmissionReviewToolProps {
@@ -20,6 +22,8 @@ interface SubmissionReviewToolProps {
   submissionDate: string;
   onSave: (data: { saved: boolean; date: string }) => void;
   guard?: () => boolean;
+  isStatusLocked?: boolean;
+  onLockedClick?: () => void;
 }
 
 export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
@@ -32,6 +36,8 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
   submissionDate,
   onSave,
   guard,
+  isStatusLocked = false,
+  onLockedClick,
 }) => {
   const [localIsSubmitted, setLocalIsSubmitted] = useState<boolean | null>(
     submissionSaved ? true : null,
@@ -67,7 +73,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
               <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[4px]">
                 {tool.launch_module.label}
               </div>
-              <div className="text-[clamp(18px,2.6vw,22px)]  text-white/92 leading-[1.25]">
+              <div className="text-[clamp(18px,2.6vw,22px)] text-white/92 leading-[1.25]">
                 {tool.launch_module.title}
               </div>
             </div>
@@ -183,93 +189,122 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
       </div>
 
       {/* Submission Status Section */}
-      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[24px_22px] shadow-[0_4px_16px_rgba(15,31,56,0.04)]">
+      <div
+        onClick={isStatusLocked ? onLockedClick : undefined}
+        className={`relative bg-white border-[1.5px] rounded-[16px] p-[24px_22px] shadow-[0_4px_16px_rgba(15,31,56,0.04)] transition-all ${
+          isStatusLocked
+            ? "border-[#d0e4f7] cursor-pointer hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
+            : "border-[#d0e4f7]"
+        }`}
+      >
+        {/* Crown lock badge */}
+        {isStatusLocked && (
+          <div className="absolute top-[12px] right-[12px] flex items-center gap-[3px] bg-[#fef3d8] border border-[#f0c878] rounded-full px-[7px] py-[2px]">
+            <Crown size={9} strokeWidth={2.4} className="text-[#a06000]" />
+            <span className="text-[10px] font-bold text-[#a06000]">Premium</span>
+          </div>
+        )}
+
         <div className="flex items-center gap-[12px] mb-[20px]">
-          <div className="w-[40px] h-[40px] rounded-[10px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
-            <Send size={20} className="text-primary" />
+          <div
+            className={`w-[40px] h-[40px] rounded-[10px] border flex items-center justify-center shrink-0 transition-opacity ${
+              isStatusLocked
+                ? "bg-[#e8f1fb] border-[#d0e4f7] opacity-50"
+                : "bg-[#e8f1fb] border-[#d0e4f7]"
+            }`}
+          >
+            <Send size={20} className={isStatusLocked ? "text-[#6b8097]" : "text-primary"} />
           </div>
           <div>
-            <div className="text-[15px] font-bold text-[#0c1b33]">
+            <div className={`text-[15px] font-bold ${isStatusLocked ? "text-[#6b8097]" : "text-[#0c1b33]"}`}>
               Document Submission Status
             </div>
-            <div className="text-[12px] text-[#6b8097]">
+            <div className={`text-[12px] ${isStatusLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}>
               Have you officially submitted your documents on the CEAC portal?
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-[18px]">
-          <div className="grid grid-cols-2 gap-[10px]">
-            <button
-              onClick={() => setLocalIsSubmitted(true)}
-              className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
-                localIsSubmitted === true
-                  ? "bg-[#e8f5ef] border-[#15744f] text-[#15744f]"
-                  : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#f8fafc]"
-              }`}
-            >
-              <Check size={16} />
-              Yes, Submitted
-            </button>
-            <button
-              onClick={() => {
-                setLocalIsSubmitted(false);
-                setLocalDate("");
-              }}
-              className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
-                localIsSubmitted === false
-                  ? "bg-[#fef2f2] border-[#b91c1c] text-[#b91c1c]"
-                  : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#f8fafc]"
-              }`}
-            >
-              <X className="h-4 w-4" />
-              Not Yet
-            </button>
+        {/* Locked overlay — amber CTA */}
+        {isStatusLocked ? (
+          <div className="flex items-center gap-1 text-[12px] font-semibold text-[#a06000]">
+            <Lock size={11} strokeWidth={2.2} />
+            <span>Unlock to record submission status</span>
           </div>
+        ) : (
+          <div className="flex flex-col gap-[18px]">
+            <div className="grid grid-cols-2 gap-[10px]">
+              <button
+                onClick={() => setLocalIsSubmitted(true)}
+                className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
+                  localIsSubmitted === true
+                    ? "bg-[#e8f5ef] border-[#15744f] text-[#15744f]"
+                    : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#f8fafc]"
+                }`}
+              >
+                <Check size={16} />
+                Yes, Submitted
+              </button>
+              <button
+                onClick={() => {
+                  setLocalIsSubmitted(false);
+                  setLocalDate("");
+                }}
+                className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
+                  localIsSubmitted === false
+                    ? "bg-[#fef2f2] border-[#b91c1c] text-[#b91c1c]"
+                    : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#f8fafc]"
+                }`}
+              >
+                <X className="h-4 w-4" />
+                Not Yet
+              </button>
+            </div>
 
-          {localIsSubmitted === true && (
-            <div className="flex flex-col gap-[10px] animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="text-[13px] font-semibold text-[#3a4f63] flex items-center gap-2">
-                <Calendar size={14} />
-                When did you submit?
+            {localIsSubmitted === true && (
+              <div className="flex flex-col gap-[10px] animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="text-[13px] font-semibold text-[#3a4f63] flex items-center gap-2">
+                  <Calendar size={14} />
+                  When did you submit?
+                </div>
+                <input
+                  type="date"
+                  value={localDate}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setLocalDate(e.target.value)}
+                  className="w-full p-[12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] outline-none focus:border-primary transition-all bg-white text-[#0c1b33]"
+                />
               </div>
-              <input
-                type="date"
-                value={localDate}
-                max={new Date().toISOString().split("T")[0]}
-                onChange={(e) => setLocalDate(e.target.value)}
-                className="w-full p-[12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] outline-none focus:border-primary transition-all bg-white text-[#0c1b33]"
-              />
-            </div>
-          )}
+            )}
 
-          <div className="mt-[6px]">
-            <button
-              onClick={handleSave}
-              disabled={
-                localIsSubmitted === null ||
-                (localIsSubmitted === true && !localDate)
-              }
-              className={`w-full p-[14px] rounded-[12px] font-sans text-[15px] font-semibold flex items-center justify-center gap-[9px] transition-all ${
-                localIsSubmitted === null ||
-                (localIsSubmitted === true && !localDate)
-                  ? "bg-slate-100 text-slate-400 cursor-not-allowed border-transparent"
-                  : "bg-primary text-white cursor-pointer hover:bg-primary/90 hover:-translate-y-0.5 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"
-              }`}
-            >
-              <Save size={18} />
-              {submissionSaved
-                ? "Update Submission Info"
-                : "Save Submission Status"}
-            </button>
+            <div className="mt-[6px]">
+              <button
+                onClick={handleSave}
+                disabled={
+                  localIsSubmitted === null ||
+                  (localIsSubmitted === true && !localDate)
+                }
+                className={`w-full p-[14px] rounded-[12px] font-sans text-[15px] font-semibold flex items-center justify-center gap-[9px] transition-all ${
+                  localIsSubmitted === null ||
+                  (localIsSubmitted === true && !localDate)
+                    ? "bg-slate-100 text-slate-400 cursor-not-allowed border-transparent"
+                    : "bg-primary text-white cursor-pointer hover:bg-primary/90 hover:-translate-y-0.5 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"
+                }`}
+              >
+                <Save size={18} />
+                {submissionSaved
+                  ? "Update Submission Info"
+                  : "Save Submission Status"}
+              </button>
+            </div>
+
+            {submissionSaved && (
+              <div className="text-center text-[11px] text-[#15744f] font-medium bg-[#e8f5ef] py-1.5 rounded-full border border-[#a8d9be]/50">
+                Submission recorded successfully
+              </div>
+            )}
           </div>
-
-          {submissionSaved && (
-            <div className="text-center text-[11px] text-[#15744f] font-medium bg-[#e8f5ef] py-1.5 rounded-full border border-[#a8d9be]/50">
-              Submission recorded successfully
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
