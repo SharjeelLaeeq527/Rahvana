@@ -38,7 +38,7 @@ interface DashboardViewProps {
 }
 
 // Dashboard background image
-const dashboardBg = "/assets/images/dashboard.png"; // Place your image in public/assets/images/dove-bg.jpg
+const dashboardBg = "/assets/images/dashboard.png"; 
 
 export function DashboardView({
   data,
@@ -713,28 +713,20 @@ export function DashboardView({
                                 (state.metadata && state.metadata[m.sid!]);
                         return (
                           <div
-                            key={i}
-                            className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-gradient-to-r from-[#3a4a66] to-[#6aa8f0] last:border-0 transition-all shadow-[0_8px_32px_rgba(36,42,66,0.13)] outline outline-1 outline-[#22304a] ${
-                              isDone
-                                ? "bg-[#e8f5ef] border-l-4 border-[#a8d9be]"
-                                : "bg-white border-l-4 border-[#d0e4f7]"
-                            }`}
-                          >
-                            <div
-                              className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
-                                isDone
-                                  ? "bg-[#15744f] text-white border-[#15744f] shadow"
-                                  : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-                              }`}
+                              key={i}
+                              className={`flex items-center gap-3 py-2 px-2 rounded-xl border-b border-[#d0e4f7]/50 last:border-0 bg-white ${isDone ? "bg-[#e8f5ef]" : ""}`}
                             >
-                              {isDone ? "✓" : "•"}
+                              <div
+                                className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${isDone ? "bg-[#15744f] text-white border-[#15744f]" : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"}`}
+                              >
+                                {isDone ? "✓" : "•"}
+                              </div>
+                              <span
+                                className="text-[12.5px] text-[#6b8097] font-medium"
+                              >
+                                {m.label}
+                              </span>
                             </div>
-                            <span
-                              className={`text-[13px] font-semibold ${isDone ? "text-[#15744f]" : "text-[#6b8097]"}`}
-                            >
-                              {m.label}
-                            </span>
-                          </div>
                         );
                       })}
                     </div>
