@@ -2519,12 +2519,6 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           {/* SPONSORSHIP CALCULATOR TOOL RENDERING */}
           {tool.type === "sponsorship_calculator" && (
           <div className="relative">
-            {!plan.canUse("sponsorship_calc") && (
-              <div className="absolute top-0 right-0 z-10 flex items-center gap-[3px] bg-[#fef3d8] border border-[#f0c878] rounded-full px-[7px] py-[2px]">
-                <Crown size={9} strokeWidth={2.4} className="text-[#a06000]" />
-                <span className="text-[10px] font-bold text-[#a06000]">Premium</span>
-              </div>
-            )}
             <SponsorshipModule
               sponsorshipResult={sponsorshipResult}
               onOpenCalc={() => {
@@ -3081,12 +3075,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
   {tool.type === "submission_review" && (
   <div className="relative">
-    {!plan.canUse("step_guides") && (
-      <div className="absolute top-0 right-0 z-10 flex items-center gap-[3px] bg-[#fef3d8] border border-[#f0c878] rounded-full px-[7px] py-[2px]">
-        <Crown size={9} strokeWidth={2.4} className="text-[#a06000]" />
-        <span className="text-[10px] font-bold text-[#a06000]">Premium</span>
-      </div>
-    )}
+    
       <SubmissionReviewTool
     tool={tool}
     submissionChecklistStatus={submissionChecklistStatus}
@@ -4431,13 +4420,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           }`}
         >
           {/* Crown lock badge — shown only when locked */}
-          {isGuideLocked && (
-            <div className="absolute top-[10px] right-[10px] flex items-center gap-[3px] bg-[#fef3d8] border border-[#f0c878] rounded-full px-[7px] py-[2px]">
-              <Crown size={9} strokeWidth={2.4} className="text-[#a06000]" />
-              <span className="text-[10px] font-bold text-[#a06000]">Premium</span>
-            </div>
-          )}
-
+          
           {tool.wallet_card ? (
             /* Vertical Design (Original - Shared) */
             <>
@@ -4476,17 +4459,17 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 }`}
               >
                 {isGuideLocked ? (
-                  <>
-                    <Lock size={11} strokeWidth={2.2} />
-                    <span>Unlock guide</span>
-                    <ArrowRight size={11} strokeWidth={2} />
-                  </>
-                ) : (
-                  <>
-                    <span>View guide</span>
-                    <ArrowRight size={11} strokeWidth={2} />
-                  </>
-                )}
+  <>
+    <Crown size={11} strokeWidth={2.4} />
+    <span>View guide</span>
+    <ArrowRight size={11} strokeWidth={2} />
+  </>
+) : (
+  <>
+    <span>View guide</span>
+    <ArrowRight size={11} strokeWidth={2} />
+  </>
+)}
               </div>
             </>
           ) : (
@@ -4522,18 +4505,18 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 </p>
               </div>
               <div
-                className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors shrink-0 ${
-                  isGuideLocked
-                    ? "bg-[#fef3d8] text-[#a06000] group-hover:bg-[#f0c878] group-hover:text-[#6b3a00]"
-                    : "bg-[#f4f7fb] text-[#6b8097] group-hover:bg-primary group-hover:text-white"
-                }`}
-              >
-                {isGuideLocked ? (
-                  <Lock size={13} strokeWidth={2.5} />
-                ) : (
-                  <ArrowRight size={14} strokeWidth={2.5} />
-                )}
-              </div>
+  className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors shrink-0 ${
+    isGuideLocked
+      ? "bg-[#fef3d8] text-[#a06000] group-hover:bg-[#f0c878] group-hover:text-[#6b3a00]"
+      : "bg-[#f4f7fb] text-[#6b8097] group-hover:bg-primary group-hover:text-white"
+  }`}
+>
+  {isGuideLocked ? (
+    <Crown size={13} strokeWidth={2.4} />
+  ) : (
+    <ArrowRight size={14} strokeWidth={2.5} />
+  )}
+</div>
             </>
           )}
         </button>
@@ -4569,13 +4552,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       `}
     >
       {/* Crown lock badge */}
-      {isWalletLocked && (
-        <div className="absolute top-[10px] right-[10px] flex items-center gap-[3px] bg-[#fef3d8] border border-[#f0c878] rounded-full px-[7px] py-[2px]">
-          <Crown size={9} strokeWidth={2.4} className="text-[#a06000]" />
-          <span className="text-[10px] font-bold text-[#a06000]">Premium</span>
-        </div>
-      )}
-
+     
       <div className="flex items-center gap-[10px] mb-[12px]">
         <div
           className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
