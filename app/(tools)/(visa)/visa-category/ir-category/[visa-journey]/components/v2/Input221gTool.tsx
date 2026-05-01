@@ -39,20 +39,6 @@ export const Input221gTool: React.FC<Input221gToolProps> = ({
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300 w-full">
-      {tool.intro && (
-        <div className="relative bg-[#0e1e38] rounded-[16px] p-6 mb-4 overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-85" />
-          <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">
-            {tool.intro.eyebrow}
-          </div>
-          <div className="text-[20px] text-white/95 mb-2.5 leading-tight">
-            {tool.intro.title}
-          </div>
-          <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">
-            {tool.intro.body}
-          </div>
-        </div>
-      )}
 
       {!isSaved ? (
         <div className="mb-4">

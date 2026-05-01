@@ -5578,11 +5578,6 @@
               { "label": "221(g) Checklist", "type": "amber" },
               { "label": "Action Required", "type": "red" }
             ],
-            "intro": {
-              "eyebrow": "Replicate your 221(g) letter",
-              "title": "Check every box that matches your letter",
-              "body": "Look at the 221(g) letter (or slip) you received at the embassy window. Tick every item the officer checked off. This becomes your action plan. Be exact — only check what was specifically listed."
-            },
             "disclaimer": "Rahvana provides structured guidance only. Always follow the exact instructions in your 221(g) letter."
           }
         },
