@@ -5392,8 +5392,6 @@
                 "id": "approved",
                 "label": "Approved",
                 "description": "The officer approved your visa. Your passport will be held and delivered via the courier service you registered.",
-                "badge": "Congratulations",
-                "badgeType": "green",
                 "icon": "check-circle"
               },
               {
@@ -5408,8 +5406,6 @@
                 "id": "not_sure",
                 "label": "Not Sure",
                 "description": "Unsure what happened? We will ask a few quick questions to help you identify your situation and route you correctly.",
-                "badge": "Let us help",
-                "badgeType": "sky",
                 "icon": "help-circle"
               }
             ],

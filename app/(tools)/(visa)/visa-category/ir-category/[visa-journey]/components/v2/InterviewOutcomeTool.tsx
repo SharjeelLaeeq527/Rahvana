@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import confetti from "canvas-confetti";
 import { CheckCircle2, Clipboard, HelpCircle, ArrowRight, Sparkles } from "lucide-react";
 
 interface InterviewOutcomeToolProps {
@@ -77,6 +78,18 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
     
     return { outcome: "221g", label: "221(g) / Administrative Processing", description: "Based on your answers, your case is most likely undergoing further review or 221(g) processing." };
   };
+
+  useEffect(() => {
+    if (selectedOutcome !== "approved") return;
+    const end = Date.now() + 2200;
+    const colors = ["#15744f", "#6aa8f0", "#f0d98a", "#a8d9be", "#ffffff"];
+    const frame = () => {
+      confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors });
+      confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+  }, [selectedOutcome]);
 
   const recommendation = getRecommendation();
   const currentQuestion = tool.clarification_questions?.[currentQuestionIdx];
@@ -296,7 +309,21 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
         </div>
       )}
 
-      {selectedOutcome && selectedOutcome !== "not_sure" && (
+      {selectedOutcome === "approved" && (
+        <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-6 animate-in fade-in zoom-in-95 duration-300">
+          <div className="text-[11px] font-bold uppercase tracking-widest text-[#15744f] mb-1">
+            Congratulations
+          </div>
+          <div className="text-[20px] font-bold text-[#0c1b33] leading-tight mb-2">
+            Your visa has been approved!
+          </div>
+          <div className="text-[13px] text-[#15744f]/90 leading-relaxed">
+            Your next steps have been unlocked. Head to the next step to track your passport delivery.
+          </div>
+        </div>
+      )}
+
+      {selectedOutcome && selectedOutcome !== "not_sure" && selectedOutcome !== "approved" && (
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex items-center gap-4 animate-in fade-in duration-300">
           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#15744f] shrink-0">
             <CheckCircle2 size={20} />
