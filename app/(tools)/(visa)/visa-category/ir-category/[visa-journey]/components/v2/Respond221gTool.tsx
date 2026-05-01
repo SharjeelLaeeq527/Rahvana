@@ -68,10 +68,10 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
             </div>
             <div>
               <div className="text-[13px] font-bold text-[#0c1b33]">
-                Log your document submission
+                Record Your Document Submission
               </div>
               <div className="text-[11px] text-[#6b8097]">
-                Record when and how you submitted the requested documents
+                Enter the date and method you used to submit your packet to the embassy
               </div>
             </div>
           </div>
@@ -110,14 +110,14 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
             disabled={!submissionDate}
             className="w-full p-3 bg-primary text-white rounded-xl text-[13px] font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
           >
-            Save Submission Details
+            Save Details
           </button>
         </div>
       ) : (
         <div className="bg-white border-[1.5px] border-[#f0d98a] rounded-[14px] p-4 mb-5 shadow-sm animate-in fade-in duration-300">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[10px] font-bold uppercase tracking-widest text-[#8a6200]">
-              Submission Recorded
+              Submission Logged
             </div>
             <button
               onClick={() => setIsSaved(false)}
@@ -160,9 +160,9 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
         <div className="bg-amber-50/80 border border-amber-200 rounded-[14px] p-5 flex items-start gap-3">
           <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
           <div className="text-[13px] text-amber-800 leading-relaxed">
-            <span className="font-bold">No checklist data found.</span> Go back
-            to the &quot;Input 221(g) Checklist&quot; step and select the items
-            from your 221(g) letter to generate your personalized action plan.
+            <span className="font-bold">No requirements found.</span> Go back
+            to the &quot;Review Your 221(g) Letter&quot; step and select every
+            item the embassy requested to generate your personalized action plan.
           </div>
         </div>
       )}

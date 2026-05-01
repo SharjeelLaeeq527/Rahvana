@@ -5521,35 +5521,6 @@
               "Check the visa expiry date — you must use it before it expires",
               "Note your priority date and any conditions listed on the visa"
             ],
-            "launch_module": {
-              "button_label": "Track Courier Delivery",
-              "url": "https://www.usvisascheduling.com",
-              "icon": "truck"
-            },
-            "info_sections": [
-              {
-                "title": "After you receive your visa",
-                "type": "green",
-                "icon": "check",
-                "items": [
-                  "Verify all information on the visa stamp is correct — name, DOB, visa class, expiry",
-                  "Plan your travel before the visa expires — immigrant visas are typically valid for 6 months",
-                  "You must enter the U.S. before the visa expiry date",
-                  "Upon entry, Customs and Border Protection (CBP) will issue your green card — it arrives by mail within a few weeks"
-                ]
-              },
-              {
-                "title": "What to keep after entry",
-                "type": "sky",
-                "icon": "info",
-                "items": [
-                  "Keep the I-94 record (automatically issued at entry — accessible at i94.cbp.dhs.gov)",
-                  "Keep the sealed medical envelope if you were given one to hand-carry",
-                  "Your green card arrives within 2–6 weeks — watch for it in the mail",
-                  "Save copies of all immigration documents"
-                ]
-              }
-            ],
             "disclaimer": "Rahvana provides structured guidance only. Visa delivery timelines depend on the courier service. Verify all visa details upon receipt."
           }
         },
@@ -5557,9 +5528,9 @@
           "step_key": "step_3_10b",
           "step_number": 10,
           "step_type": "tool",
-          "step_name": "Input 221(g) Checklist",
-          "step_description": "You received a 221(g). Replicate the checklist from your letter — tick off exactly what the embassy requested so we can generate your action plan.",
-          "step_short_description": "Replicate your 221(g) document checklist",
+          "step_name": "Review Your 221(g) Letter",
+          "step_description": "Open your 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
+          "step_short_description": "Select what the embassy requested from your letter",
           "who": "Beneficiary",
           "where": "Your 221(g) letter",
           "estimated_duration_days": 1,
@@ -5568,14 +5539,14 @@
           "visible_when": { "interviewOutcome": "221g" },
           "actions": [
             "Open your 221(g) letter",
-            "Tick every box that matches your letter",
-            "Input any required names or details",
-            "Confirm and save — your action plan will be generated"
+            "Select every item the embassy has requested",
+            "Fill in any required names or details",
+            "Save — your personalized action plan will be generated"
           ],
           "tool_data": {
             "type": "input_221g",
             "chips": [
-              { "label": "221(g) Checklist", "type": "amber" },
+              { "label": "221(g) Review", "type": "amber" },
               { "label": "Action Required", "type": "red" }
             ],
             "disclaimer": "Rahvana provides structured guidance only. Always follow the exact instructions in your 221(g) letter."
@@ -5586,9 +5557,9 @@
           "step_key": "step_3_11",
           "step_number": 11,
           "step_type": "tool",
-          "step_name": "Respond to 221(g)",
-          "step_description": "The consulate has requested documents or information. Use this step to understand the request, prepare your response, and track your submission.",
-          "step_short_description": "221(g) document response and action plan",
+          "step_name": "Submit Your 221(g) Documents",
+          "step_description": "Gather exactly what the embassy requested, submit your packet via the specified method, and log your submission to stay organized.",
+          "step_short_description": "Gather, submit, and track your requested documents",
           "who": "Beneficiary",
           "where": "Embassy / CEAC",
           "estimated_duration_days": 14,
@@ -5599,27 +5570,26 @@
             "outcome221gSubtype": ["docs_requested", "both"]
           },
           "actions": [
-            "Read the 221(g) letter carefully",
-            "Identify exactly what was requested",
-            "Gather or prepare the requested items",
-            "Submit via the method specified in the notice",
-            "Record submission details in the tracker"
+            "Read your 221(g) letter thoroughly",
+            "Gather every item that was requested — exactly as specified",
+            "Submit your packet via the method stated in the notice",
+            "Log your submission date and method in the tracker below"
           ],
           "tool_data": {
             "type": "respond_221g",
             "chips": [
-              { "label": "221(g) Response", "type": "amber" },
+              { "label": "Document Submission", "type": "amber" },
               { "label": "Action Required", "type": "red" },
-              { "label": "Document Request", "type": "sky" }
+              { "label": "221(g) Response", "type": "sky" }
             ],
             "explainer": {
-              "eyebrow": "221(g) — Documents or information requested",
-              "title": "The consulate has asked for something specific",
-              "body": "A 221(g) notice is not a final denial. The officer needs additional documents or information before a decision can be made. Review the notice carefully, provide exactly what was requested, and submit via the specified method. Once submitted, the case moves into review."
+              "eyebrow": "221(g) — Document Submission Required",
+              "title": "The embassy needs specific documents from you",
+              "body": "A 221(g) notice is not a final refusal. The officer requires additional documents or information before a decision can be made. Gather exactly what was requested, submit via the method stated in the notice, and log your submission below. Once submitted, your case moves into consular review."
             },
             "recorder": {
-              "title": "Record your 221(g) details",
-              "subtitle": "Log what was requested and when you submitted",
+              "title": "Log Your Document Submission",
+              "subtitle": "Record the date and method you used to submit your packet",
               "ceac_options": [
                 "In Transit",
                 "Ready",
