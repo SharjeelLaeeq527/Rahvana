@@ -4725,17 +4725,16 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
         {/* Next */}
         <button
-          onClick={() => {
-            if (!nextStep || !isCompleted) return;
-            handleNavigate((nextStep as any).step_key || (nextStep as any).id);
-          }}
-          aria-disabled={!isCompleted}
-          className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all ${!isCompleted ? "opacity-50 cursor-not-allowed" : "hover:brightness-110 active:scale-95"} shrink-0 shadow-sm shadow-primary/20 ${!nextStep ? "invisible pointer-events-none" : ""}`}
-        >
-          Next
-          <ArrowRight size={13} strokeWidth={2.5} />
-        </button>
-      </footer>
+            onClick={() =>
+              nextStep &&
+              handleNavigate((nextStep as any).step_key || (nextStep as any).id)
+            }
+            className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          >
+            Next
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </button>
+        </footer>
       </div>
     );
   }
@@ -5753,17 +5752,16 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   </div>
 
   {/* Next */}
-  <button
-    onClick={() => {
-      if (!nextStep || !isCompleted) return;
-      handleNavigate((nextStep as any).step_key || (nextStep as any).id);
-    }}
-    onKeyDown={(e) => { if (e.key === 'Enter' && (!nextStep || !isCompleted)) e.preventDefault(); }}
-    className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all ${!isCompleted ? "opacity-50 cursor-not-allowed" : "hover:brightness-110 active:scale-95"} shrink-0 shadow-sm shadow-primary/20 ${!nextStep ? "invisible pointer-events-none" : ""}`}
-  >
-    Next
-    <ArrowRight size={13} strokeWidth={2.5} />
-  </button>
+   <button
+          onClick={() =>
+            nextStep &&
+            handleNavigate((nextStep as any).step_key || (nextStep as any).id)
+          }
+          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+        >
+          Next
+          <ArrowRight size={12} strokeWidth={2.5} />
+        </button>
 </footer>
 
 
