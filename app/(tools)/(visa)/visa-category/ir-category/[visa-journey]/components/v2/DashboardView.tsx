@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { getJourneyLockStatus } from "@/lib/journey-lock";
 import {
   getNextBestAction,
   getStageProgress,
@@ -103,6 +104,11 @@ export function DashboardView({
   const nextActionData = useMemo(
     () => getNextBestAction(data, state),
     [data, state],
+  );
+
+  const lockStatus = useMemo(
+    () => getJourneyLockStatus(state.metadata || {}),
+    [state.metadata],
   );
 
   const alerts = useMemo(() => {
@@ -417,6 +423,56 @@ export function DashboardView({
                 description="Congratulations — you have completed every step of the roadmap. Your journey is now in read-only mode for reference."
                 status="complete"
               />
+            )}
+
+            {/* Journey Locked — 14-day window expired */}
+            {lockStatus.isLocked && (
+              <div className="bg-[#1a1a2e] border border-[#3a3a5c] rounded-2xl p-5 flex items-start gap-4 animate-in fade-in duration-300">
+                <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <Lock size={18} className="text-white/60" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-white/40 mb-1">
+                    Journey Locked
+                  </div>
+                  <div className="text-[15px] font-bold text-white/90 mb-1">
+                    This journey is now in read-only mode
+                  </div>
+                  <div className="text-[13px] text-white/55 leading-relaxed">
+                    The 14-day editing window following your{" "}
+                    {lockStatus.outcomeType === "approved" ? "visa approval" : "221(g) notice"}{" "}
+                    has ended. Your roadmap is preserved for reference. Contact support if you need to make changes.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Lock Warning — approaching lock (≤ 3 days remaining) */}
+            {lockStatus.isWarning && !lockStatus.isLocked && (
+              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-2xl p-5 flex items-start gap-4 animate-in fade-in duration-300">
+                <div className="w-10 h-10 bg-[#f0d98a]/30 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertTriangle size={18} className="text-[#8a6200]" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-[#8a6200]/60 mb-1">
+                    Journey Locking Soon
+                  </div>
+                  <div className="text-[15px] font-bold text-[#0c1b33] mb-1">
+                    {lockStatus.daysRemaining === 1
+                      ? "Your journey locks tomorrow"
+                      : `Your journey locks in ${lockStatus.daysRemaining} days`}
+                  </div>
+                  <div className="text-[13px] text-[#8a6200]/80 leading-relaxed">
+                    After{" "}
+                    {lockStatus.lockDate?.toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                    , this journey will become read-only. Complete any remaining steps before then.
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Visa Approved — show when outcome confirmed but journey not yet closed */}

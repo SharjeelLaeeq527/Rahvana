@@ -581,6 +581,63 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     actionUrl: '/visa-category/ir-category/ir1-journey',
   },
 
+  // ══════════════════════════════════════════════════════════
+  // CHAPTER 3 — Journey Lock Warnings (post-interview outcome)
+  // Fires when interviewOutcomeSetAt is set (approved OR 221g).
+  // Journey auto-locks 14 days after outcome is recorded.
+  // ══════════════════════════════════════════════════════════
+
+  {
+    id: 'c3_journey_lock_notice',
+    group: 'c3_journey_lock',
+    chapter: 3,
+    kind: 'ACTION',
+    origin: 'journey',
+    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewOutcomeSetAt' },
+    suppressWhen: { type: 'never' },
+    delayDays: 0,
+    priority: 'high',
+    channels: ['push'],
+    title: 'Your journey will be locked in 14 days',
+    body: 'Your interview outcome has been recorded. This journey will automatically enter read-only mode in 14 days. Complete any remaining steps before then — no edits will be possible once it is locked.',
+    actionLabel: 'View Roadmap',
+    actionUrl: '/visa-category/ir-category/ir1-journey',
+  },
+
+  {
+    id: 'c3_journey_lock_3d',
+    group: 'c3_journey_lock',
+    chapter: 3,
+    kind: 'URGENT',
+    origin: 'journey',
+    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewOutcomeSetAt' },
+    suppressWhen: { type: 'never' },
+    delayDays: 11,
+    priority: 'critical',
+    channels: ['push_and_email'],
+    title: 'Journey locks in 3 days — complete any pending steps',
+    body: 'Your journey will enter read-only mode in 3 days. After that, no edits or step completions will be possible. Review your roadmap now and finish any outstanding items before the deadline.',
+    actionLabel: 'Review Roadmap',
+    actionUrl: '/visa-category/ir-category/ir1-journey',
+  },
+
+  {
+    id: 'c3_journey_lock_1d',
+    group: 'c3_journey_lock',
+    chapter: 3,
+    kind: 'URGENT',
+    origin: 'journey',
+    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewOutcomeSetAt' },
+    suppressWhen: { type: 'never' },
+    delayDays: 13,
+    priority: 'critical',
+    channels: ['push_and_email'],
+    title: 'Journey locks TOMORROW',
+    body: 'This is your final reminder. Your journey will enter read-only mode tomorrow. Complete any remaining steps today — no changes will be possible after it is locked.',
+    actionLabel: 'Complete Remaining Steps',
+    actionUrl: '/visa-category/ir-category/ir1-journey',
+  },
+
 ]
 
 // ─────────────────────────────────────────────────────────────

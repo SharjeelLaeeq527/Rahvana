@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import { getJourneyLockStatus } from "@/lib/journey-lock";
 
 export interface WizardState {
   currentStage: number;
@@ -318,6 +319,15 @@ export function useWizard(options: UseWizardOptions = {}) {
     toggleComplete: async (stepKey: string) => {
       console.log("[useWizard] toggleComplete called for:", stepKey);
 
+      const { isLocked } = getJourneyLockStatus(state.metadata);
+      if (isLocked) {
+        toast.error("Journey locked", {
+          description: "This journey is in read-only mode. The 14-day window following your interview outcome has ended.",
+          duration: 4000,
+        });
+        return;
+      }
+
       if (!state.backendId) {
         console.warn("[useWizard] toggleComplete: No backendId found");
         return;
@@ -482,6 +492,15 @@ export function useWizard(options: UseWizardOptions = {}) {
     },
 
     updateMetadata: async (metadata: Record<string, any>) => {
+      const { isLocked } = getJourneyLockStatus(state.metadata);
+      if (isLocked) {
+        toast.error("Journey locked", {
+          description: "This journey is in read-only mode. The 14-day window following your interview outcome has ended.",
+          duration: 4000,
+        });
+        return;
+      }
+
       const hasChanges = Object.entries(metadata).some(
         ([key, val]) => JSON.stringify(state.metadata[key]) !== JSON.stringify(val)
       );
