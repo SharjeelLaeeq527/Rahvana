@@ -43,7 +43,13 @@ export function ChapterView({
   const filingMethod = state.metadata?.filingMethod || state.filingType;
 
   const activeSteps = useMemo(
-    () => getActiveStepsForStage(data, chapterIdx, state.metadata, state.filingType),
+    () =>
+      getActiveStepsForStage(
+        data,
+        chapterIdx,
+        state.metadata,
+        state.filingType,
+      ),
     [data, chapterIdx, state.metadata, state.filingType],
   );
 
@@ -84,21 +90,21 @@ export function ChapterView({
     state.currentStep >= 0;
 
   const HARD_LOCK_RULES: Record<string, PlanTier[]> = {
-    step_1_16: ["free", "basic"],
+    step_1_16: ["free"],
     step_2_1: ["free"],
     step_2_2: ["free"],
     step_2_3: ["free"],
     step_2_4: ["free"],
     step_2_5: ["free"],
-    step_2_6: ["free", "basic"],
+    step_2_6: ["free"],
     step_2_7: ["free"],
     step_2_8: ["free"],
     step_2_9: ["free"],
     step_2_10: ["free"],
     step_2_11: ["free"],
     step_2_12: ["free"],
-    step_3_1: ["free", "basic"],
-    step_3_2: ["free", "basic"],
+    step_3_1: ["free"],
+    step_3_2: ["free"],
     step_3_3: ["free"],
     step_3_4: ["free"],
     step_3_5: ["free"],
@@ -374,7 +380,7 @@ mb-4
               {/* Description */}
               <p className="text-[13.5px] text-slate-600 leading-relaxed line-clamp-2">
                 {plan.tier === "free"
-                  ? "Your Free plan includes the first step of Chapter 1. Upgrade to access all the steps."
+                  ? "Your Free plan includes limited access. Upgrade to unlock the full experience."
                   : plan.tier === "basic"
                     ? "Your Basic plan includes full roadmap access. Upgrade to Premium for step guides and vault."
                     : plan.tier === "premium"
@@ -558,35 +564,7 @@ mb-4
                     {step.step_short_description || ""}
                   </div>
                 </div>
-                {/* Plan badge — shown only for locked steps */}
-                {isStepLocked && (
-                  <div
-                    className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-bold border transition-all ${
-                      lockStatus.requiredPlan === "basic"
-                        ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
-                        : lockStatus.requiredPlan === "premium"
-                          ? "bg-violet-50 text-violet-700 border-violet-200 shadow-sm"
-                          : "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
-                    }`}
-                  >
-                    {lockStatus.requiredPlan === "basic" ? (
-                      <>
-                        <Star size={12} strokeWidth={2.5} />
-                        <span>Basic</span>
-                      </>
-                    ) : lockStatus.requiredPlan === "premium" ? (
-                      <>
-                        <Sparkles size={12} strokeWidth={2.5} />
-                        <span>Premium</span>
-                      </>
-                    ) : (
-                      <>
-                        <Crown size={12} strokeWidth={2.5} />
-                        <span>Executive</span>
-                      </>
-                    )}
-                  </div>
-                )}
+                
                 <ChevronRight
                   className={`shrink-0 ${isStepLocked ? "text-[#c5cfd9] opacity-50" : "text-[#b3a6b3] opacity-30"}`}
                   size={14}

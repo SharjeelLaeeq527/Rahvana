@@ -128,7 +128,7 @@ export default function InterviewPrepResultPage() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto mt-16">
     <ToastProvider>
       <ResultPage 
         sessionId={sessionId || ''} 

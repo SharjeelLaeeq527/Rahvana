@@ -5,12 +5,24 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, Info, Shuffle, Zap, Check, X, Loader2 } from "lucide-react";
+import {
+  BookOpen,
+  Info,
+  Shuffle,
+  Zap,
+  Check,
+  X,
+  Loader2,
+  Crown,
+} from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
 import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { getEntitlement } from "@/lib/entitlements/config";
 
 interface ResultPageProps {
   sessionId: string;
@@ -60,6 +72,17 @@ export const ResultPage = ({
     null,
   );
 
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  const RAPID_FIRE_TIER_REQUIREMENT = "premium"; // Only premium+ can access
+
+  const plan = usePlan();
+
+  const canAccessRapidFire = (): boolean => {
+    const entitlement = getEntitlement("interview_rapid_fire", plan.tier);
+    return entitlement.state === "full";
+  };
+
   // Shuffle algorithm
   const shuffleQuestions = (
     questions: GeneratedQuestion[],
@@ -83,6 +106,10 @@ export const ResultPage = ({
   };
 
   const handleRapidFirePageStart = () => {
+    if (!canAccessRapidFire()) {
+      setShowUpgradeModal(true);
+      return;
+    }
     setMode("rapid");
     setShowRapidFirePage(true);
   };
@@ -299,6 +326,11 @@ export const ResultPage = ({
                 className={
                   mode === "rapid" ? "bg-orange-600 hover:bg-orange-700" : ""
                 }
+                title={
+                  !canAccessRapidFire()
+                    ? "Upgrade to Premium to unlock Rapid Fire Mode"
+                    : ""
+                }
               >
                 <Zap className="h-4 w-4 mr-2" />
                 Rapid Fire Mode
@@ -467,7 +499,10 @@ export const ResultPage = ({
                                   />
                                   <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-3 z-50 shadow-xl border border-slate-700">
                                     <div className="text-teal-300 font-medium mb-1 flex items-center gap-1">
-                                      <Info size={14} className="text-teal-300" />
+                                      <Info
+                                        size={14}
+                                        className="text-teal-300"
+                                      />
                                       Tip
                                     </div>
                                     <p>{selectedQuestion.tooltip}</p>
@@ -482,7 +517,9 @@ export const ResultPage = ({
                             </h3>
                           </div>
                           <div className="text-center space-y-1">
-                            <p className="text-teal-100 text-xs">Click to reveal</p>
+                            <p className="text-teal-100 text-xs">
+                              Click to reveal
+                            </p>
                             <div className="flex justify-center">
                               <div className="w-4 h-4 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
                                 <div className="w-1 h-1 bg-white/80 rounded-full"></div>
@@ -638,10 +675,20 @@ export const ResultPage = ({
                     <div className="flex gap-4 justify-center">
                       <Button
                         onClick={handleRapidFirePageStart}
-                        className="bg-orange-600 hover:bg-orange-700 px-8 py-3 text-lg"
+                        className="relative group bg-orange-600 hover:bg-orange-700 px-8 py-3 text-lg flex items-center gap-2"
                       >
-                        <Zap className="w-5 h-5 mr-2" />
                         Start Rapid Fire Session
+                        {!canAccessRapidFire() && (
+                          <Crown
+                            className="
+        w-6 h-6
+        text-yellow-300
+        stroke-[2.8]
+        transition-transform duration-200
+        group-hover:scale-110
+      "
+                          />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -799,6 +846,13 @@ export const ResultPage = ({
             </div>
           )}
         </div>
+
+        {showUpgradeModal && (
+          <UpgradeModal
+            feature="interview_rapid_fire"
+            onClose={() => setShowUpgradeModal(false)}
+          />
+        )}
       </div>
     );
   }
