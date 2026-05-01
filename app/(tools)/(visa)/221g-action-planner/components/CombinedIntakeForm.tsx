@@ -2881,7 +2881,6 @@ export default function CombinedIntakeForm({
                 </Button>
               </div>
             </div>
-            </div>
           )}
           {currentStep === 3 && <StepReviewGenerate />}
           {currentStep === 4 && <StepExportPacket />}
