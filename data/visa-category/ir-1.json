@@ -5125,7 +5125,7 @@
                 }
               ]
             },
-            "disclaimer": "Rahvana provides structured guidance only. Always verify required documents with your specific embassy's interview instructions."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         },
         {
@@ -5193,9 +5193,9 @@
                   "Practice out loud, not just in your head"
                 ]
               }
-            ]
-          },
-          "disclaimer": "Rahvana provides structured guidance only. Interview preparation does not guarantee any outcome. Always answer consular questions truthfully."
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+          }
         },
         {
           "step_key": "step_3_8",
@@ -5358,10 +5358,10 @@
                 "icon": "x-circle",
                 "sub": "The officer denies the visa under a specific ground. A refusal typically comes with a written reason. Consult an immigration attorney if this occurs."
               }
-            ]
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           },
-          "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed.",
-          "disclaimer": "Rahvana provides structured guidance only. All interview outcomes depend entirely on the consular officer's determination. Nothing here constitutes legal advice."
+          "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed."
         },
         {
           "step_key": "step_3_9",
@@ -5475,7 +5475,7 @@
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. All interview outcomes depend on the consular officer's determination. Nothing here constitutes legal advice."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         },
         {
@@ -5517,7 +5517,7 @@
               "Check the visa expiry date — you must use it before it expires",
               "Note your priority date and any conditions listed on the visa"
             ],
-            "disclaimer": "Rahvana provides structured guidance only. Visa delivery timelines depend on the courier service. Verify all visa details upon receipt."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         },
         {
@@ -5545,7 +5545,7 @@
               { "label": "221(g) Review", "type": "amber" },
               { "label": "Action Required", "type": "red" }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. Always follow the exact instructions in your 221(g) letter."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         },
         {
@@ -5636,7 +5636,7 @@
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. All 221(g) cases are reviewed at the consulate's discretion. Nothing here constitutes legal advice."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         },
         {
@@ -5718,7 +5718,7 @@
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured tracking guidance only. Administrative Processing timelines are entirely within the U.S. government's control. Nothing here constitutes legal advice."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         },
         {
@@ -5800,7 +5800,7 @@
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured tracking guidance only. Review timelines are entirely within the U.S. government's control. Nothing here constitutes legal advice."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         }
       ]

@@ -4739,7 +4739,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
-              "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
+              "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."}
           </p>
         </div>
       </div>
