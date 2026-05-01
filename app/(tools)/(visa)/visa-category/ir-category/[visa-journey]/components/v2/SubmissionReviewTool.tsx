@@ -201,7 +201,6 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
         {isStatusLocked && (
           <div className="absolute top-[12px] right-[12px] flex items-center gap-[3px] bg-[#fef3d8] border border-[#f0c878] rounded-full px-[7px] py-[2px]">
             <Crown size={9} strokeWidth={2.4} className="text-[#a06000]" />
-            <span className="text-[10px] font-bold text-[#a06000]">Premium</span>
           </div>
         )}
 
