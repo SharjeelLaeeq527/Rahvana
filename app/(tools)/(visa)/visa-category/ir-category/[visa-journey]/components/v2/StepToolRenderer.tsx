@@ -1407,3 +1407,4 @@ export const GatheringChecklistTool: React.FC<{
     </div>
   );
 };
+

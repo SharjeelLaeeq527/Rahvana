@@ -148,7 +148,7 @@ import {
 } from "./GuideTutorialOverlays";
 import {
   DqRecordingTool,
-  // InterviewSchedulingTool,
+  InterviewSchedulingTool,
   AppointmentReceivedTool,
   MedicalExamTool,
   PolioCertificateTool,
@@ -164,8 +164,14 @@ import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
 import { InterviewDayTool } from "./InterviewDayTool";
+import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
+import { TrackVisaIssuanceTool } from "./TrackVisaIssuanceTool";
+import { Respond221gTool } from "./Respond221gTool";
+import { Input221gTool } from "./Input221gTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
 import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
+import { useStepEntitlement } from "./useStepEntitlement";
+import { StepLockedContent } from "./StepLockedContent";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
@@ -230,6 +236,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
+  // ── Step-level entitlement gating ──────────────────────────────────────────
+  const plan = usePlan();
+  const stepEntitlement = useStepEntitlement(sId);
+
   // --- Robust Chapter 1 detection for all substeps ---
   // Status Guide Tutorial Overlay state
   const [showStatusGuide, setShowStatusGuide] = useState(false);
@@ -291,7 +301,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       note: "Your next task should match the actual update USCIS gives you.",
     },
   ];
-const plan = usePlan();
 const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | null>(null);
   // Add Evidence Note modal state
   const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] =
@@ -412,7 +421,14 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
     state.metadata.filingMethodConfirmed || false,
   );
   const [isLaunched, setIsLaunched] = useState(false);
-
+  // Guarded upload — checks entitlement before opening the vault upload modal
+  const guardedOpenUploadModal = useCallback(
+    (defId: string) => {
+      if (!stepEntitlement.guard()) return;
+      openUploadModal(defId);
+    },
+    [stepEntitlement, openUploadModal],
+  );
   // Wallet States
   const [uscisCredentials, setUscisCredentials] =
     useState<PortalCredential | null>(null);
@@ -452,10 +468,17 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
   // Financial Documents States (Step 6)
   const [activeFinancialDoc, setActiveFinancialDoc] = useState<any>(null);
   const [isFinancialDocGuideOpen, setIsFinancialDocGuideOpen] = useState(false);
+  const guardedSetIsFinancialDocGuideOpen = useCallback(
+    (open: boolean) => {
+      if (open && !stepEntitlement.guard()) return;
+      setIsFinancialDocGuideOpen(open);
+    },
+    [stepEntitlement],
+  );
   const financialDocsStatus =
     (state.metadata.financialDocsStatus as Record<string, string>) || {};
 
-  // Tutorial State
+ 
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
   const [tutorialPath, setTutorialPath] = useState<
@@ -964,27 +987,28 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     );
   } else if (sId === "step_1_16" && currentStep.tool_data) {
     customRenderer = (
-      <TrackCaseStatusStep
-        tool={currentStep.tool_data}
-        state={state}
-        actions={actions}
-        journeyId={journeyId}
-      />
+      <StepLockedContent stepKey={sId} mode="overlay">
+        <TrackCaseStatusStep
+          tool={currentStep.tool_data}
+          state={state}
+          actions={actions}
+          journeyId={journeyId}
+        />
+      </StepLockedContent>
     );
   }
 
-  const allActiveSteps = useMemo(
-    () => getAllActiveSteps(data, filingMethod),
-    [data, filingMethod],
+    const allActiveSteps = useMemo(
+    () => getAllActiveSteps(data, state.metadata, state.filingType),
+    [data, state.metadata, state.filingType],
   );
 
-  const globalIdx = allActiveSteps.findIndex(
+   const globalIdx = allActiveSteps.findIndex(
     (s) => (s.step_key || (s as any).id) === sId,
   );
   const localIdx = activeStepsInChapter.findIndex(
     (s: any) => (s.step_key || s.id) === sId,
-  );
-
+  ); 
   const chapterProg = useMemo(
     () => getStageProgress(data, state.currentStage, state),
     [data, state.currentStage, state],
@@ -1450,231 +1474,250 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       }
     }
   };
- const renderDocActionModal = () => {
-    if (!docActionModal.doc) return null;
-    const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
- 
-    const canReadGuide = plan.canUse("step_guides");
-    const canUpload = plan.canUse("document_vault");
- 
-    return (
-      <>
-        {docActionUpgradeFeature && (
-          <UpgradeModal
-            feature={docActionUpgradeFeature}
-            onClose={() => setDocActionUpgradeFeature(null)}
-          />
-        )}
- 
-        <Dialog
-          open={docActionModal.isOpen}
-          onOpenChange={(open) =>
-            setDocActionModal({ ...docActionModal, isOpen: open })
-          }
-        >
-          <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
-            <div className="relative overflow-hidden bg-white">
-              {/* Background Decorations */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
- 
-              <div className="relative p-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                    {(() => {
-                      switch (doc.icon) {
-                        case "ShieldCheck":
-                          return <ShieldCheck size={24} />;
-                        case "User":
-                          return <User size={24} />;
-                        case "FileText":
-                          return <FileText size={24} />;
-                        case "FileCheck":
-                          return <FileCheck size={24} />;
-                        case "MessageSquare":
-                          return <MessageSquare size={24} />;
-                        case "Scale":
-                          return <Scale size={24} />;
-                        case "Globe":
-                          return <Globe size={24} />;
-                        case "ClipboardList":
-                          return <ClipboardList size={24} />;
-                        case "Lock":
-                          return <Lock size={24} />;
-                        case "Camera":
-                          return <Camera size={24} />;
-                        default:
-                          return <FileText size={24} />;
-                      }
-                    })()}
-                  </div>
-                  <div>
-                    <DialogTitle className="text-xl font-bold text-[#0f1f38]">
-                      {title || doc.name || doc.title}
-                    </DialogTitle>
-                    <p className="text-sm text-[#6b8097]">
-                      {subtitle ||
-                        doc.subtitle ||
-                        doc.sub ||
-                        "Choose an action to proceed with this document"}
-                    </p>
-                  </div>
-                </div>
- 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* ── Read Guide / Launch Tool Card ───────────────────── */}
-                  <button
-                    onClick={() => {
-                      if (!canReadGuide) {
-                        setDocActionModal({ ...docActionModal, isOpen: false });
-                        setDocActionUpgradeFeature("step_guides");
-                        return;
-                      }
-                      setDocActionModal({ ...docActionModal, isOpen: false });
-                      if (onReadGuide) onReadGuide();
-                    }}
-                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
-                      ${
-                        canReadGuide
-                          ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
-                          : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
-                      }`}
-                  >
-                    {/* Crown badge — top-right, only when locked */}
-                    {!canReadGuide && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                        <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
-                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                          Upgrade
-                        </span>
-                      </div>
-                    )}
- 
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
-                        ${
-                          canReadGuide
-                            ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
-                            : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
-                        }`}
-                    >
-                      {doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations" ? (
-                        <Sparkles size={20} />
-                      ) : doc.id === "doc_passport_photos" ||
-                        doc.guideKey === "doc_passport_photos" ||
-                        doc.selectedGuideId === "doc_passport_photos" ? (
-                        <Camera size={20} />
-                      ) : (
-                        <BookOpen size={20} />
-                      )}
-                    </div>
- 
-                    <h4 className="font-bold text-[#0f1f38] mb-1">
-                      {doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations" ||
-                      doc.id === "doc_passport_photos" ||
-                      doc.guideKey === "doc_passport_photos" ||
-                      doc.selectedGuideId === "doc_passport_photos"
-                        ? "Launch the Tool"
-                        : "Read the Guide"}
-                    </h4>
-                    <p className="text-xs text-[#6b8097] leading-relaxed">
-                      {doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations"
-                        ? "Use our automated tool to prepare certified translations for your documents."
-                        : doc.id === "doc_passport_photos" ||
-                          doc.guideKey === "doc_passport_photos" ||
-                          doc.selectedGuideId === "doc_passport_photos"
-                          ? "Generate and validate your passport photos to meet U.S. specifications."
-                          : "View requirements, pitfalls, and step-by-step instructions."}
-                    </p>
- 
-                    {/* Locked hint text */}
-                    {!canReadGuide && (
-                      <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
-                        <Lock size={9} strokeWidth={2.5} />
-                        Not included in your current plan
-                      </p>
-                    )}
-                  </button>
- 
-                  {/* ── Upload Document Card ─────────────────────────────── */}
-                  <button
-                    onClick={() => {
-                      if (!canUpload) {
-                        setDocActionModal({ ...docActionModal, isOpen: false });
-                        setDocActionUpgradeFeature("document_vault");
-                        return;
-                      }
-                      setDocActionModal({ ...docActionModal, isOpen: false });
-                      if (onUpload) onUpload();
-                    }}
-                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
-                      ${
-                        canUpload
-                          ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
-                          : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
-                      }`}
-                  >
-                    {/* Crown badge — top-right, only when locked */}
-                    {!canUpload && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                        <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
-                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                          Upgrade
-                        </span>
-                      </div>
-                    )}
- 
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
-                        ${
-                          canUpload
-                            ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
-                            : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
-                        }`}
-                    >
-                      <Upload size={20} />
-                    </div>
- 
-                    <h4 className="font-bold text-[#0f1f38] mb-1">
-                      Upload Document
-                    </h4>
-                    <p className="text-xs text-[#6b8097] leading-relaxed">
-                      Attach and submit your document for processing.
-                    </p>
- 
-                    {/* Locked hint text */}
-                    {!canUpload && (
-                      <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
-                        <Lock size={9} strokeWidth={2.5} />
-                        Not included in your current plan
-                      </p>
-                    )}
-                  </button>
-                </div>
- 
-                <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
-                  <button
-                    onClick={() =>
-                      setDocActionModal({ ...docActionModal, isOpen: false })
+const renderDocActionModal = () => {
+  if (!docActionModal.doc) return null;
+  const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
+
+  const isTranslation =
+    doc.id === "doc_translations" ||
+    doc.guideKey === "doc_translations" ||
+    doc.selectedGuideId === "doc_translations";
+  const isPassportPhoto =
+    doc.id === "doc_passport_photos" ||
+    doc.guideKey === "doc_passport_photos" ||
+    doc.selectedGuideId === "doc_passport_photos";
+
+  const guideFeature = isTranslation
+    ? "document_translation"
+    : isPassportPhoto
+      ? "photo_booth"
+      : "step_guides";
+
+  const canReadGuide = plan.canUse(guideFeature);
+  const canUpload = plan.canUse("document_vault");
+
+  return (
+    <>
+      {docActionUpgradeFeature && (
+        <UpgradeModal
+          feature={docActionUpgradeFeature}
+          onClose={() => setDocActionUpgradeFeature(null)}
+        />
+      )}
+
+      <Dialog
+        open={docActionModal.isOpen}
+        onOpenChange={(open) =>
+          setDocActionModal({ ...docActionModal, isOpen: open })
+        }
+      >
+        <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
+          <div className="relative overflow-hidden bg-white">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
+
+            <div className="relative p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  {(() => {
+                    switch (doc.icon) {
+                      case "ShieldCheck": return <ShieldCheck size={24} />;
+                      case "User": return <User size={24} />;
+                      case "FileText": return <FileText size={24} />;
+                      case "FileCheck": return <FileCheck size={24} />;
+                      case "MessageSquare": return <MessageSquare size={24} />;
+                      case "Scale": return <Scale size={24} />;
+                      case "Globe": return <Globe size={24} />;
+                      case "ClipboardList": return <ClipboardList size={24} />;
+                      case "Lock": return <Lock size={24} />;
+                      case "Camera": return <Camera size={24} />;
+                      default: return <FileText size={24} />;
                     }
-                    className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
-                  >
-                    Close
-                  </button>
+                  })()}
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold text-[#0f1f38]">
+                    {title || doc.name || doc.title}
+                  </DialogTitle>
+                  <p className="text-sm text-[#6b8097]">
+                    {subtitle ||
+                      doc.subtitle ||
+                      doc.sub ||
+                      "Choose an action to proceed with this document"}
+                  </p>
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* ── Read Guide / Launch Tool Card ── */}
+                <button
+                  onClick={() => {
+                    if (!canReadGuide) {
+                      setDocActionModal({ ...docActionModal, isOpen: false });
+                      setDocActionUpgradeFeature(guideFeature);
+                      return;
+                    }
+                    setDocActionModal({ ...docActionModal, isOpen: false });
+                    if (onReadGuide) onReadGuide();
+                  }}
+                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                    ${
+                      canReadGuide
+                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
+                    }`}
+                >
+                  {/* Crown badge — only when locked */}
+                  {!canReadGuide && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
+
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                      ${
+                        canReadGuide
+                          ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
+                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
+                      }`}
+                  >
+                    {isTranslation ? (
+                      <Sparkles size={20} />
+                    ) : isPassportPhoto ? (
+                      <Camera size={20} />
+                    ) : (
+                      <BookOpen size={20} />
+                    )}
+                  </div>
+
+                  <h4 className="font-bold text-[#0f1f38] mb-1">
+                    {isTranslation || isPassportPhoto
+                      ? "Launch the Tool"
+                      : "Read the Guide"}
+                  </h4>
+                  <p className="text-xs text-[#6b8097] leading-relaxed">
+                    {isTranslation
+                      ? "Use our automated tool to prepare certified translations for your documents."
+                      : isPassportPhoto
+                        ? "Generate and validate your passport photos to meet U.S. specifications."
+                        : "View requirements, pitfalls, and step-by-step instructions."}
+                  </p>
+
+                  {/* Photo booth credits badge — only when unlocked and limited */}
+                  {isPassportPhoto && canReadGuide && (() => {
+                    const ent = plan.entitlement("photo_booth");
+                    if (ent.state === "limited") {
+                      return (
+                        <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                            {ent.limit} Credits Included
+                          </span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {/* Locked hint text */}
+                  {!canReadGuide && (
+                    <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
+                      <Lock size={9} strokeWidth={2.5} />
+                      Not included in your current plan
+                    </p>
+                  )}
+                </button>
+
+                {/* ── Upload Document Card ── */}
+                <button
+                  onClick={() => {
+                    if (!canUpload) {
+                      setDocActionModal({ ...docActionModal, isOpen: false });
+                      // Context-specific toast for certain steps
+                      if (sId === "step_1_15") {
+                        toast.info(
+                          "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
+                          { duration: 6000 },
+                        );
+                      } else if (sId === "step_1_17") {
+                        toast.info(
+                          "Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.",
+                          { duration: 6000 },
+                        );
+                      }
+                      setDocActionUpgradeFeature("document_vault");
+                      return;
+                    }
+                    setDocActionModal({ ...docActionModal, isOpen: false });
+                    if (onUpload) onUpload();
+                  }}
+                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                    ${
+                      canUpload
+                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
+                    }`}
+                >
+                  {/* Crown badge — only when locked */}
+                  {!canUpload && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
+
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                      ${
+                        canUpload
+                          ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
+                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
+                      }`}
+                  >
+                    <Upload size={20} />
+                  </div>
+
+                  <h4 className="font-bold text-[#0f1f38] mb-1">
+                    Upload Document
+                  </h4>
+                  <p className="text-xs text-[#6b8097] leading-relaxed">
+                    Attach and submit your document for processing.
+                  </p>
+
+                  {/* Locked hint text */}
+                  {!canUpload && (
+                    <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
+                      <Lock size={9} strokeWidth={2.5} />
+                      Not included in your current plan
+                    </p>
+                  )}
+                </button>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
+                <button
+                  onClick={() =>
+                    setDocActionModal({ ...docActionModal, isOpen: false })
+                  }
+                  className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </>
-    );
-  };
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
 
   const getHhDocItems = (count: number, rels: Record<number, string>) => {
     const items: any[] = [];
@@ -1997,7 +2040,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               ))}
             </div>
             <button
-              onClick={() => {
+                onClick={() => {
+                if (!stepEntitlement.guard()) return;
                 setUseCeacGuideData(true);
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
@@ -2021,6 +2065,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   <button
                     key={card.id}
                     onClick={() => {
+                      if (!stepEntitlement.guard()) return;
                       const pathMap: Record<
                         string,
                         "household_member" | "joint_sponsor"
@@ -2278,6 +2323,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       <div
         key={item.id}
         onClick={() => {
+        if (!stepEntitlement.guard()) return;
           if (hhDocsStatus[item.id] === "not-started") {
             const next = { ...hhDocsStatus, [item.id]: "in-progress" };
             setHhDocsStatus(next);
@@ -2436,6 +2482,14 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
           {/* Entitlement Banner — shown when step features are locked for current plan */}
           <StepEntitlementBanner stepKey={sId} />
+          
+          {/* UpgradeModal — triggered by stepEntitlement.guard() when user clicks locked content */}
+          {stepEntitlement.upgradeModalFeature && (
+            <UpgradeModal
+              feature={stepEntitlement.upgradeModalFeature}
+              onClose={stepEntitlement.closeUpgradeModal}
+            />
+          )}
 
           {/* Companion Context Badge (Step 5 Specific) */}
           {(sId === "step_1_5" || sId === "step_1_2_b") && (
@@ -2518,20 +2572,16 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
           {/* SPONSORSHIP CALCULATOR TOOL RENDERING */}
           {tool.type === "sponsorship_calculator" && (
-          <div className="relative">
             <SponsorshipModule
               sponsorshipResult={sponsorshipResult}
               onOpenCalc={() => {
-                if (!plan.canUse("sponsorship_calc")) {
-                  setUpgradeModalFeature("sponsorship_calc");
-                  return;
-                }
+                if (!stepEntitlement.guard()) return;
                 setIsSponsorshipCalcOpen(true);
               }}
               tool={tool}
+              guard={stepEntitlement.guard}
             />
-          </div>
-        )}
+          )}
 
           {/* DQ RECORDING TOOL RENDERING */}
           {tool.type === "dq_recording" && (
@@ -2552,8 +2602,10 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 dqCountry,
                 setDqCountry,
               }}
+              guard={stepEntitlement.guard}
             />
           )}
+
 
           {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
           {tool.type === "interview_scheduling" && (
@@ -2621,6 +2673,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                     "") as string;
 
                   const handleFetch = async () => {
+                    if (!stepEntitlement.guard()) return;
                     if (!postName) {
                       setIvError(
                         "No embassy/post found. Please complete Step 2.10 first.",
@@ -2950,6 +3003,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 isApprovalSaved,
                 setIsApprovalSaved,
               }}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -2967,10 +3021,12 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 consulateLocation,
                 setConsulateLocation,
               }}
+              guard={stepEntitlement.guard}
             />
           )}
 
           {tool.type === "medical_exam" && (
+            <StepLockedContent stepKey={sId} mode="overlay">
             <MedicalExamTool
               state={state}
               actions={actions}
@@ -2990,25 +3046,31 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 medWizardMode,
                 setMedWizardMode,
               }}
+              guard={stepEntitlement.guard}
             />
+            </StepLockedContent>
           )}
 
           {tool.type === "polio_certificate" && (
-            <PolioCertificateTool
-              state={state}
-              actions={actions}
-              polioState={{
-                polioLaunched,
-                setPolioLaunched,
-                isPolioGuideOpen,
-                setIsPolioGuideOpen,
-                polioGuideStep,
-                setPolioGuideStep,
-                polioChecks,
-                setPolioChecks,
-              }}
-            />
+                        <StepLockedContent stepKey={sId} mode="overlay">
+              <PolioCertificateTool
+                state={state}
+                actions={actions}
+                polioState={{
+                  polioLaunched,
+                  setPolioLaunched,
+                  isPolioGuideOpen,
+                  setIsPolioGuideOpen,
+                  polioGuideStep,
+                  setPolioGuideStep,
+                  polioChecks,
+                  setPolioChecks,
+                }}
+                guard={stepEntitlement.guard}
+              />
+            </StepLockedContent>
           )}
+
 
           {tool.type === "police_clearance" && (
             <PoliceClearanceTool
@@ -3032,26 +3094,30 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               uploadedDocuments={uploadedDocuments}
+               guard={stepEntitlement.guard}
             />
           )}
 
           {/* FINANCIAL CHECKLIST (Step 2.6 SPECIFIC) */}
           {tool.type === "financial_checklist" && (
-            <FinancialChecklistTool
-              selectedScenario={selectedScenario}
-              setSelectedScenario={setSelectedScenario}
-              financialDocsStatus={financialDocsStatus}
-              uploadedDocuments={uploadedDocuments}
-              isReloadingDocs={isReloadingDocs}
-              isDeletingIds={isDeletingIds}
-              openUploadModal={openUploadModal}
-              setActiveUploadId={setActiveUploadId}
-              setActiveUploadType={setActiveUploadType}
-              setDocActionModal={setDocActionModal}
-              updateMetadata={actions.updateMetadata}
-              setActiveFinancialDoc={setActiveFinancialDoc}
-              setIsFinancialDocGuideOpen={setIsFinancialDocGuideOpen}
-            />
+           <StepLockedContent stepKey={sId} mode="overlay">
+              <FinancialChecklistTool
+                selectedScenario={selectedScenario}
+                setSelectedScenario={setSelectedScenario}
+                financialDocsStatus={financialDocsStatus}
+                uploadedDocuments={uploadedDocuments}
+                isReloadingDocs={isReloadingDocs}
+                isDeletingIds={isDeletingIds}
+                openUploadModal={guardedOpenUploadModal}
+                setActiveUploadId={setActiveUploadId}
+                setActiveUploadType={setActiveUploadType}
+                setDocActionModal={setDocActionModal}
+                updateMetadata={actions.updateMetadata}
+                setActiveFinancialDoc={setActiveFinancialDoc}
+                setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
+                guard={stepEntitlement.guard}
+              />
+            </StepLockedContent>
           )}
 
           {/* Step 2.7 Household Member Builder Rendering */}
@@ -3104,6 +3170,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         submissionDate: data.date,
       });
     }}
+    guard={stepEntitlement.guard}
+
   />
 
   </div>
@@ -3139,6 +3207,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               tool={tool}
               setMedicalGuideIdx={setMedicalGuideIdx}
               setIsMedicalGuideOpen={setIsMedicalGuideOpen}
+              guard={stepEntitlement.guard}
+
             />
           )}
 
@@ -3153,6 +3223,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               setIsWalletViewOpen={setIsWalletViewOpen}
               setWalletMode={setWalletMode}
               setIsWalletFormOpen={setIsWalletFormOpen}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3162,6 +3233,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               tool={tool}
               isPrepLaunched={isPrepLaunched}
               setIsPrepLaunched={setIsPrepLaunched}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3171,6 +3243,45 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               tool={tool}
               setInterviewDayTutIdx={setInterviewDayTutIdx}
               setIsInterviewDayTutOpen={setIsInterviewDayTutOpen}
+              guard={stepEntitlement.guard}
+            />
+          )}
+          
+          {/* INTERVIEW OUTCOME CONTENT (Step 3.9 SPECIFIC) */}
+          {tool.type === "interview_outcome" && (
+            <InterviewOutcomeTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+           {/* VISA ISSUANCE CONTENT (Step 3.10 SPECIFIC) */}
+          {tool.type === "visa_issuance" && (
+            <TrackVisaIssuanceTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+          {/* INPUT 221(g) CONTENT (Step 3.10b SPECIFIC) */}
+          {tool.type === "input_221g" && (
+            <Input221gTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+
+          {/* RESPOND TO 221(g) CONTENT (Step 3.11 SPECIFIC) */}
+          {tool.type === "respond_221g" && (
+            <Respond221gTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3776,6 +3887,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                     <div className="flex flex-col gap-[11px]">
                       <button
                         onClick={() => {
+                          if (!stepEntitlement.guard()) return;
                           if (tool.launch_module.href) {
                             window.open(
                               tool.launch_module.href,
@@ -3925,6 +4037,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                               title: item.title,
                               subtitle: item.sub,
                               onReadGuide: () => {
+                                if (!stepEntitlement.guard()) return;
                                 if (item.external_href) {
                                   window.open(
                                     item.external_href,
@@ -3949,11 +4062,56 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                   setIsCivilDocGuideOpen(true);
                                 }
                               },
-                              onUpload: () => {
+                               onUpload: () => {
                                 const defId = mapDocumentNameToId(item.title);
                                 setActiveUploadId(item.id);
                                 setActiveUploadType("doc");
-                                openUploadModal(defId);
+                                if (!stepEntitlement.guard()) return;
+
+                                if (item.id === "doc_citizenship") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "U.S. passport",
+                                      "U.S. birth certificate",
+                                      "Certificate of Naturalization (Form N-550)",
+                                      "Certificate of Citizenship (Form N-560)",
+                                      "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                    ],
+                                  });
+                                } else if (item.id === "doc_relationship") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "Communication history",
+                                      "Photos together",
+                                      "Travel history",
+                                      "Shared finances",
+                                      "Shared residence",
+                                      "Family evidence",
+                                      "Affidavits",
+                                    ],
+                                  });
+                                } else if (item.id === "doc_translations") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "Translated Nikah Nama",
+                                      "Translated NADRA MRC",
+                                      "Translated Birth Certificate",
+                                      "Translated Divorce Decree",
+                                      "Other Translated Civil Documents",
+                                    ],
+                                  });
+                                } else {
+                                  openUploadModal(defId);
+                                }
                               },
                             });
                           }}
@@ -4182,6 +4340,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 {/* Tutorial / Guide Card */}
                 <button
                   onClick={() => {
+                    if (!stepEntitlement.guard()) return;
                     setTutorialIdx(0);
                     setIsTutorialOpen(true);
                   }}
@@ -4216,7 +4375,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) ? (
                   /* Saved Card */
                   <button
-                    onClick={() => {
+                     onClick={() => {
+                      if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4252,6 +4412,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   /* Unsaved Card */
                   <button
                     onClick={() => {
+                       if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4636,9 +4797,11 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   key={card.id}
                   onClick={() => {
                     if (card.type === "tutorial") {
+                      if (!stepEntitlement.guard()) return;
                       setTutorialIdx(0);
                       setIsTutorialOpen(true);
                     } else if (card.href) {
+                      if (!stepEntitlement.guard()) return;
                       window.open(card.href, "_blank", "noopener,noreferrer");
                     }
                   }}
@@ -5087,6 +5250,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 isChapter1={isChapter1}
                 isChapter2={isChapter2}
                 isChapter3={isChapter3}
+                 guard={stepEntitlement.guard}
               />
             </div>
           ) : currentStep.step_type === "docs" ? (
