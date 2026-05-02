@@ -1,6 +1,6 @@
 # Chapter1 
 
-## Step 2: Gather Required Documents
+#
 
 ### Basic Tier: 
 
@@ -130,7 +130,7 @@ Premium Tier includes this feature.
 
 Executive Tier includes this feature.
 
-## Step 13: Receive Approval Notice (I-797)
+##  13: Receive Approval Notice (I-797)
 
 ### Basic Tier: 
 
@@ -208,11 +208,11 @@ Premium Tier includes this feature.
 
 Executive Tier includes this feature.
 
-## Step 2: Pay NVC Fees
+##  2: Pay NVC Fees
 
 ### Basic Tier: 
 
-Basic tier does not include the step by step payment guide. The button for the guide will have the symbol which indicates that this feature is not included in their subscription. Clicking it will give them the option to either upgrade to a higher tier which includes this feature or purchase this guide alone. The save fee payment status is included for the basic tier.
+Basic tier does not include the step by step payment guide. The button for the guide will have the symbol which indicates that this feature is not included in their subscription. Clicking it will give them the option to either upgrade to a higher tier which includes this feature or purchase this guide alone. The save fee payment status is included for the basic tier.Step
 
 ### Premium Tier:
 
@@ -303,11 +303,6 @@ Premium Tier includes this feature.
 
 Executive Tier includes this feature.
 
-## Step 10: Record Documentary Qualification
-
-### Basic Tier: 
-
-Basic tier does not include tracking capabilities. The user can only save their DQ information but will not get tracking capabilities. When the user clicks the button “Save DQ & Activate Tracking” a message will appear which tells the user that the tracking capability is not included in their current plan and that they will need to upgrade to a higher tier to unlock this feature.
 
 ### Premium Tier:
 

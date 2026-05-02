@@ -1325,7 +1325,7 @@
                 "label": "Step 2 of 10 — Go to myUSCIS",
                 "heading": "Navigate to myUSCIS",
                 "instruction": "After signing in, you will be directed to the <strong>myUSCIS portal homepage</strong>. This is your central hub for filing forms, checking case status, and managing your USCIS cases.",
-                "url": "myaccount.uscis.gov/dashboard",
+                "url": "my.uscis.gov",
                 "screenTitle": "USCIS Portal",
                 "screenDesc": "MyUSCIS account access",
                 "media": {
@@ -1420,7 +1420,7 @@
                 "label": "Step 7 of 10 — Begin the I-130 Form",
                 "heading": "Start filling out Form I-130",
                 "instruction": "The USCIS portal will walk you through the form <strong>section by section</strong>. Enter your information carefully — progress saves automatically as you go.",
-                "url": "my.uscis.gov/account/onboarding/filing/new",
+                "url": "my.uscis.gov",
                 "screenTitle": "Form I-130",
                 "screenDesc": "Begin the application form",
                 "media": {
@@ -1827,7 +1827,7 @@
                 "label": "Step 1 of 5 — Review Your Petition",
                 "heading": "Open the filing review",
                 "instruction": "Sign in to your USCIS account, open your I-130 draft, and navigate to the <strong>review step</strong>. The portal will display a full summary of everything you have entered.",
-                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/review-your-petition",
+                "url": "myaccount.uscis.gov",
                 "screenTitle": "Filing Review",
                 "screenDesc": "Watch the review process",
                 "media": {
@@ -1849,7 +1849,7 @@
                 "label": "Step 2 of 5 — Open the Review Summary",
                 "heading": "Examine the complete filing summary",
                 "instruction": "Watch as the portal displays your complete filing summary. Review each section carefully to ensure <strong>all information is accurate and complete</strong>.",
-                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/your-application-summary",
+                "url": "my.uscis.gov",
                 "screenTitle": "Review Summary",
                 "screenDesc": "See your complete application",
                 "media": {
@@ -1871,7 +1871,7 @@
                 "label": "Step 3 of 5 — Confirm Your Attached Evidence",
                 "heading": "Verify all supporting documents",
                 "instruction": "Within the review, verify that each piece of supporting evidence is correctly attached. Check that file names match the documents they represent and that nothing is missing.",
-                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/your-application-summary",
+                "url": "my.uscis.gov",
                 "screenTitle": "Evidence Confirmation",
                 "screenDesc": "Review attached documents",
                 "media": {
@@ -1890,7 +1890,7 @@
                 "label": "Step 4 of 5 — Enter Your Full Legal Name",
                 "heading": "Digitally sign your petition",
                 "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name — first, middle (if applicable), and last — exactly as it appears in official documents.",
-                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/your-signature",
+                "url": "my.uscis.gov",
                 "screenTitle": "Electronic Signature",
                 "screenDesc": "Sign with your full legal name",
                 "media": {
@@ -1921,7 +1921,7 @@
                 "label": "Step 5 of 5 — Pay the I-130 Fees",
                 "heading": "Complete the filing fee payment",
                 "instruction": "After signing, the portal advances to the payment step. Confirm the filing fee displayed ($625 for online I-130 filing). <strong>Enter your payment information</strong> to complete submission.",
-                "url": "my.uscis.gov/forms/petition-for-a-relative/12345678/review-and-submit/pay-and-submit",
+                "url": "pay.gov",
                 "screenTitle": "Filing Fee Payment",
                 "screenDesc": "Pay $625 filing fee",
                 "media": {
@@ -2019,7 +2019,7 @@
                 "title": "Navigate to the Print Hard Copies step",
                 "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
                 "url": "uscis-petition",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
@@ -2027,7 +2027,7 @@
                 "title": "Open the preview modal and click Print",
                 "text": "After clicking the button, the preview modal will open. Look for the <strong>Print icon</strong> in the top toolbar and click it to open your system's print dialog.",
                 "url": "preview-modal",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/2-click-print-icon.png\" alt=\"Click print icon\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/2-click-print-icon.png\" alt=\"Click print icon\" style=\"width:100%;\" />",
                 "note": "The print icon typically appears as a printer symbol in the document toolbar."
               },
               {
@@ -2035,7 +2035,7 @@
                 "title": "Select destination and pages",
                 "text": "In the print dialog, select your printer destination from the available options. Choose which pages you want to print or keep the default to print all pages.",
                 "url": "print-options",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/3-click-destination.png\" alt=\"Select print destination\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/3-click-destination.png\" alt=\"Select print destination\" style=\"width:100%; \" />",
                 "note": "Make sure you have a compatible printer connected and selected."
               },
               {
@@ -2043,7 +2043,7 @@
                 "title": "Set paper size and orientation",
                 "text": "Select the correct paper size: <strong>Letter</strong> (8.5\" × 11\") for US filing, or <strong>A4</strong> (210 × 297mm) for Pakistan or other international locations. Ensure orientation matches your document.",
                 "url": "paper-setup",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; \" />",
                 "note": "USCIS accepts both Letter and A4 sizes. Check your local requirements."
               },
               {
@@ -2051,7 +2051,7 @@
                 "title": "Enable collate option for proper sequencing",
                 "text": "In the advanced print options, make sure to check the <strong>Collate</strong> checkbox. This ensures all your pages are printed in the correct sequence so your final packet is properly organized.",
                 "url": "print-collate",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/enable-collate.png\" alt=\"Check collate option\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/enable-collate.png\" alt=\"Check collate option\" style=\"width:100%; \" />",
                 "note": "Collating prevents pages from being mixed up if you're printing multiple copies."
               },
               {
@@ -2059,7 +2059,7 @@
                 "title": "Click Print and wait for completion",
                 "text": "Click the <strong>Print</strong> button and wait for your printer to complete the print job. Don't close the preview or dialog until printing is finished.",
                 "url": "final-print",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/5-click-print-button.png\" alt=\"Print completion\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/5-click-print-button.png\" alt=\"Print completion\" style=\"width:100%; \" />",
                 "note": "Check that all pages printed clearly and are not faded or cut off before proceeding."
               },
               {
@@ -2067,7 +2067,7 @@
                 "title": "Navigate to the Print Hard Copies step",
                 "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
                 "url": "uscis-petition",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
@@ -2075,7 +2075,7 @@
                 "title": "Open preview modal and click Download",
                 "text": "After clicking the button, the preview modal will open. Look for the <strong>Download icon</strong> in the top toolbar and click it to download the document to your computer.",
                 "url": "preview-modal",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/6-click-download-icon.png\" alt=\"Click download icon\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/6-click-download-icon.png\" alt=\"Click download icon\" style=\"width:100%; \" />",
                 "note": "The download icon typically appears as a downward arrow or download symbol in the document toolbar."
               },
               {
@@ -2083,7 +2083,7 @@
                 "title": "Choose save location and filename",
                 "text": "When the save dialog appears, select the destination folder on your computer where you want to store the file. Give it a clear name like <strong>I-130_Final.pdf</strong> or <strong>I-130A_Completed.pdf</strong> and click <strong>Save</strong>.",
                 "url": "save-location",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/7-save.png\" alt=\"Save file location\" style=\"width:100%; height:100%; display:block; object-fit:cover;\" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/7-save.png\" alt=\"Save file location\" style=\"width:100%; \" />",
                 "note": "Choose a memorable location such as a dedicated immigration folder so you can find it later."
               }
             ]
@@ -2442,14 +2442,12 @@
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
           "dependencies": [
-            "step_1_10",
-            "step_1_14"
+            "step_1_10"
           ],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
             "id": "step_1_15",
-            "type": "uscis_receipt_tracking",
             "title": "Register Receipt Notice & Track Case",
             "subtitle": "Once USCIS accepts the filing, bring the receipt notice back into Rahvana so the case can be registered, tracked, and monitored for meaningful status changes.",
             "chips": [
@@ -2988,7 +2986,7 @@
                 "heading": "Locate your NVC Case Number",
                 "screenTitle": "Locate your NVC Case Number",
                 "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong> — beginning with your consulate code, followed by the year and case digits.",
-                "url": "ceac.state.gov/iv/login.aspx",
+                "url": "NVC Case Number Location",
                 "ss_label": "NVC Case Number Location",
                 "ss_headline": "Notice of NVC Receipt",
                 "ss_desc": "ISL2026XXXXXX",
@@ -3098,7 +3096,7 @@
                 "heading": "Open CEAC and sign in",
                 "screenTitle": "Open CEAC and sign in",
                 "instruction": "Go to the CEAC portal and sign in using the NVC Case Number and Invoice ID from your Welcome Letter.",
-                "url": "ceac.state.gov/iv/login.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Sign In to Your Immigrant Visa Case",
                 "ss_desc": "Sign In",
@@ -3112,7 +3110,7 @@
                 "heading": "Enter your case information",
                 "screenTitle": "Enter your case information",
                 "instruction": "Enter your case number and invoice ID exactly as they appear in the NVC Welcome Letter. Both fields are required to access the case.",
-                "url": "ceac.state.gov/iv/login.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "Case Access",
                 "ss_headline": "Case Number & Invoice ID Required",
                 "ss_desc": "ISL2026XXXXXX — Invoice ID confirmed",
@@ -3127,7 +3125,7 @@
                 "heading": "Go to the fee payment section",
                 "screenTitle": "Go to the fee payment section",
                 "instruction": "After entering CEAC, navigate to the payment or invoices area. This is where NVC fee invoices are listed and where you can initiate payment.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "CEAC Dashboard",
                 "ss_headline": "Fee Payment",
                 "ss_desc": "Fee Payment — Available",
@@ -3141,7 +3139,7 @@
                 "heading": "Review the required fee invoices",
                 "screenTitle": "Review the required fee invoices",
                 "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "Fee Invoices",
                 "ss_headline": "Review Fees",
                 "ss_desc": "Affidavit of Support Fee / Immigrant Visa Fee",
@@ -3156,7 +3154,7 @@
                 "heading": "Follow the payment prompts carefully",
                 "screenTitle": "Follow the payment prompts carefully",
                 "instruction": "Proceed through the CEAC payment flow. Complete the payment method selection and confirm the transaction according to the portal prompts.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "Payment",
                 "ss_headline": "Confirm and Pay",
                 "ss_desc": "Submit Payment",
@@ -3170,7 +3168,7 @@
                 "label": "Step 6 of 6 — Return and save",
                 "heading": "Return here and save your payment record",
                 "instruction": "Once payment is submitted, return to this Rahvana step and save the fee status in the Portal Wallet for reference throughout your NVC processing.",
-                "url": "rahvana.com/portal-wallet",
+                "url": "Save to Portal Wallet",
                 "ss_label": "Payment Submitted",
                 "ss_headline": "Return to Rahvana",
                 "ss_desc": "Use the credential vault to save your fee payment status."
@@ -3274,7 +3272,6 @@
                 "heading": "Sign in to CEAC",
                 "screenTitle": "Sign in to CEAC",
                 "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed before DS-260 is available.",
-                "url": "ceac.state.gov/iv/login.aspx",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Immigrant Visa Case — Sign In",
                 "ss_desc": "NVC Case Number: ISL2026XXXXXX, Invoice ID: ••••••••••••••••",
@@ -3288,7 +3285,6 @@
                 "heading": "Open the DS-260 section",
                 "screenTitle": "Open the DS-260 section",
                 "instruction": "Once fee payment is processed, DS-260 becomes available inside your CEAC case. Navigate to the DS-260 area and select Start or Resume.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "CEAC Case",
                 "ss_headline": "DS-260 Immigrant Visa Application",
                 "ss_desc": "Available after NVC fee processing is confirmed.",
@@ -3303,7 +3299,6 @@
                 "heading": "Start your DS-260",
                 "screenTitle": "Start your DS-260",
                 "instruction": "Click Start or Resume to begin. The form is divided into multiple sections. Use your Rahvana-generated PDF as a reference while completing each section.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
                 "ss_label": "DS-260 Form",
                 "ss_headline": "Begin Application",
                 "ss_desc": "Work through the form section by section using your prepared answers.",
@@ -3317,7 +3312,6 @@
                 "heading": "Complete section by section",
                 "screenTitle": "Complete section by section",
                 "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
-                "url": "ceac.state.gov/IVApp/IVApp/complete/complete_gettingstarted.aspx?node=GetStarted",
                 "ss_label": "Form Progress",
                 "ss_headline": "Section-by-Section",
                 "ss_desc": "Personal info → Travel history → Work/education → Security questions → Review",
@@ -3332,7 +3326,6 @@
                 "heading": "Review your answers carefully",
                 "screenTitle": "Review your answers carefully",
                 "instruction": "Use the review stage to check for errors or missing information before certifying. This is your last opportunity to make edits.",
-                "url": "ceac.state.gov/IVApp/IVApp/complete/complete_socialsecuritynumber.aspx?node=SSN",
                 "ss_label": "Review",
                 "ss_headline": "Review All Answers",
                 "ss_desc": "Check each section before proceeding to final certification.",
@@ -3346,7 +3339,6 @@
                 "heading": "Sign and submit the DS-260",
                 "screenTitle": "Sign and submit the DS-260",
                 "instruction": "The final step requires certification. Read carefully before submitting — changes after submission are not straightforward.",
-                "url": "ceac.state.gov/IVApp/IVApp/review/review_personal.aspx?node=ReviewPersonal",
                 "ss_label": "Certification",
                 "ss_headline": "Sign and Submit",
                 "ss_desc": "Certify accuracy of your application before final submission.",
@@ -3361,7 +3353,6 @@
                 "heading": "Save your confirmation page",
                 "screenTitle": "Save your confirmation page",
                 "instruction": "After submission, CEAC displays a confirmation page. Save or print this for your records as proof that DS-260 has been received.",
-                "url": "ceac.state.gov/IVApp/IVApp/esign/complete_done.aspx?node=Done",
                 "ss_label": "Certification",
                 "ss_headline": "DS-260 Submitted",
                 "ss_desc": "Application Received",
@@ -3698,7 +3689,7 @@
                 "heading": "Sign in to CEAC",
                 "screenTitle": "Sign in to CEAC",
                 "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed and DS-260 completed before you can upload civil documents.",
-                "url": "ceac.state.gov.iv/login.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "CEAC Login",
                 "ss_headline": "Access Your Case",
                 "ss_desc": "Sign in with Case Number and Invoice ID",
@@ -3715,7 +3706,7 @@
                 "heading": "Confirm all fees are paid",
                 "screenTitle": "Confirm all fees are paid",
                 "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($345) have been successfully processed.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "Fee Status",
                 "ss_headline": "NVC Fees Paid",
                 "ss_desc": "AOS + IV fees required before document upload",
@@ -3732,7 +3723,7 @@
                 "heading": "Navigate to the civil documents section",
                 "screenTitle": "Navigate to the civil documents section",
                 "instruction": "In CEAC, locate and open the civil documents upload area. This is where you will attach the required birth certificates, marriage records, police certificates, and other supporting documents.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "Document Upload",
                 "ss_headline": "Civil Documents Section",
                 "ss_desc": "Begin document submission",
@@ -3885,7 +3876,7 @@
                 "heading": "Verify your overall submission status",
                 "screenTitle": "Verify your overall submission status",
                 "instruction": "After uploading all civil documents, check the overall status in CEAC to confirm all items have been received and are marked as 'Submitted' or 'Received.' This gives you confidence before proceeding.",
-                "url": "ceac.state.gov/iv/ivsummary.aspx",
+                "url": "ceac.state.gov",
                 "ss_label": "Status Check",
                 "ss_headline": "Submission Status",
                 "ss_desc": "Confirm all documents marked as received",
@@ -5376,41 +5367,259 @@
           "step_key": "step_3_9",
           "step_number": 9,
           "step_type": "tool",
-          "step_name": "Track Administrative Processing",
-          "step_description": "If your case was placed in Administrative Processing (AP) after the interview, use this step to record status details, track updates, and stay organized while you wait.",
-          "step_short_description": "AP tracker + update log + 221(g)",
+          "step_name": "Confirm Interview Outcome",
+          "step_description": "Record what happened at your consular interview. Your selection unlocks the correct next steps for your specific situation.",
+          "step_short_description": "Record your interview result",
           "who": "Beneficiary",
-          "where": "ceac.state.gov",
+          "where": "Post-interview",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 9,
           "actions": [
-            "If placed in AP, check CEAC weekly",
-            "Check email regularly",
-            "Respond immediately if contacted",
-            "Be patient - no way to expedite"
+            "Select your interview outcome",
+            "If 221(g), record situation type",
+            "Unlock relevant next steps"
           ],
           "tool_data": {
-            "type": "adm_processing",
+            "type": "interview_outcome",
             "chips": [
+              { "label": "Post-Interview", "type": "purple" },
+              { "label": "Outcome Tracking", "type": "sky" },
+              { "label": "Unlocks Next Steps", "type": "gold" }
+            ],
+            "outcomes": [
               {
-                "label": "Administrative Processing",
-                "type": "gold"
+                "id": "approved",
+                "label": "Approved",
+                "description": "The officer approved your visa. Your passport will be held and delivered via the courier service you registered.",
+                "badge": "Congratulations",
+                "badgeType": "green",
+                "icon": "check-circle"
               },
               {
-                "label": "Case Tracking",
-                "type": "sky"
+                "id": "221g",
+                "label": "221(g) Refusal",
+                "description": "The officer issued a 221(g) notice. This is not a final denial — your case may require additional documents or further review.",
+                "badge": "More steps ahead",
+                "badgeType": "amber",
+                "icon": "clipboard"
               },
               {
-                "label": "Post-Interview",
-                "type": "green"
+                "id": "not_sure",
+                "label": "Not Sure",
+                "description": "Unsure what happened? We will ask a few quick questions to help you identify your situation and route you correctly.",
+                "badge": "Let us help",
+                "badgeType": "sky",
+                "icon": "help-circle"
               }
             ],
+            "followup_221g": {
+              "title": "What best describes your 221(g) situation?",
+              "subtitle": "Your answer determines which next steps are unlocked.",
+              "options": [
+                {
+                  "id": "docs_requested",
+                  "label": "I was asked to submit documents or information",
+                  "sub": "The officer gave you a 221(g) sheet listing specific items to provide"
+                },
+                {
+                  "id": "further_review",
+                  "label": "My case was placed in further review / administrative processing",
+                  "sub": "No specific documents were requested — the case just needs more time"
+                },
+                {
+                  "id": "both",
+                  "label": "Both — documents requested and further review",
+                  "sub": "Documents were requested and the case also requires additional review"
+                },
+                {
+                  "id": "not_sure_subtype",
+                  "label": "I'm not sure",
+                  "sub": "We will ask a few clarifying questions to help identify your situation"
+                }
+              ]
+            },
+            "clarification_questions": [
+              {
+                "id": "received_letter",
+                "question": "Did you receive a 221(g) letter or refusal sheet at the window?",
+                "options": [
+                  { "value": "yes", "label": "Yes — I was handed a paper or sheet" },
+                  { "value": "no", "label": "No — I was only told verbally" },
+                  { "value": "not_sure", "label": "Not sure" }
+                ]
+              },
+              {
+                "id": "docs_asked",
+                "question": "Were you asked to submit specific documents?",
+                "options": [
+                  { "value": "yes", "label": "Yes — specific items were listed or requested" },
+                  { "value": "no", "label": "No — nothing specific was mentioned" },
+                  { "value": "not_sure", "label": "Not sure" }
+                ]
+              },
+              {
+                "id": "passport_kept",
+                "question": "Was your passport kept at the embassy or returned to you?",
+                "options": [
+                  { "value": "kept", "label": "Kept at the embassy" },
+                  { "value": "returned", "label": "Returned to me" },
+                  { "value": "not_sure", "label": "Not sure" }
+                ]
+              },
+              {
+                "id": "ceac_status",
+                "question": "What does CEAC currently show, if you have checked?",
+                "options": [
+                  { "value": "issued", "label": "Issued" },
+                  { "value": "ap", "label": "Administrative Processing" },
+                  { "value": "refused", "label": "Refused" },
+                  { "value": "ready", "label": "Ready" },
+                  { "value": "not_checked", "label": "I haven't checked CEAC yet" }
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. All interview outcomes depend on the consular officer's determination. Nothing here constitutes legal advice."
+          }
+        },
+        {
+          "step_key": "step_3_10",
+          "step_number": 10,
+          "step_type": "tool",
+          "step_name": "Track Visa Issuance",
+          "step_description": "Your visa has been approved. Track the delivery of your passport and visa packet via your registered courier service.",
+          "step_short_description": "Passport delivery and visa issuance",
+          "who": "Beneficiary",
+          "where": "USVisaScheduling courier portal",
+          "estimated_duration_days": 7,
+          "is_required": true,
+          "display_order": 10,
+          "visible_when": { "interviewOutcome": "approved" },
+          "actions": [
+            "Log into USVisaScheduling courier portal",
+            "Confirm delivery address and schedule",
+            "Track passport shipment",
+            "Receive passport with visa stamp",
+            "Verify visa details are correct"
+          ],
+          "tool_data": {
+            "type": "visa_issuance",
+            "chips": [
+              { "label": "Visa Approved", "type": "green" },
+              { "label": "Delivery Tracking", "type": "sky" },
+              { "label": "Final Step", "type": "purple" }
+            ],
+            "congratulations": {
+              "eyebrow": "Visa approved",
+              "title": "Your visa has been approved — congratulations.",
+              "body": "The consular officer has approved your immigrant visa. Your passport will be delivered via the courier service you registered. Track the shipment, verify the visa details once received, and prepare for your move."
+            },
+            "checklist": [
+              "Log into your USVisaScheduling account and confirm the delivery address",
+              "Track the shipment — delivery typically takes a few business days",
+              "When received, verify your name, date of birth, and visa category are correct",
+              "Check the visa expiry date — you must use it before it expires",
+              "Note your priority date and any conditions listed on the visa"
+            ],
+            "launch_module": {
+              "button_label": "Track Courier Delivery",
+              "url": "https://www.usvisascheduling.com",
+              "icon": "truck"
+            },
+            "info_sections": [
+              {
+                "title": "After you receive your visa",
+                "type": "green",
+                "icon": "check",
+                "items": [
+                  "Verify all information on the visa stamp is correct — name, DOB, visa class, expiry",
+                  "Plan your travel before the visa expires — immigrant visas are typically valid for 6 months",
+                  "You must enter the U.S. before the visa expiry date",
+                  "Upon entry, Customs and Border Protection (CBP) will issue your green card — it arrives by mail within a few weeks"
+                ]
+              },
+              {
+                "title": "What to keep after entry",
+                "type": "sky",
+                "icon": "info",
+                "items": [
+                  "Keep the I-94 record (automatically issued at entry — accessible at i94.cbp.dhs.gov)",
+                  "Keep the sealed medical envelope if you were given one to hand-carry",
+                  "Your green card arrives within 2–6 weeks — watch for it in the mail",
+                  "Save copies of all immigration documents"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. Visa delivery timelines depend on the courier service. Verify all visa details upon receipt."
+          }
+        },
+        {
+          "step_key": "step_3_10b",
+          "step_number": 10,
+          "step_type": "tool",
+          "step_name": "Input 221(g) Checklist",
+          "step_description": "You received a 221(g). Replicate the checklist from your letter — tick off exactly what the embassy requested so we can generate your action plan.",
+          "step_short_description": "Replicate your 221(g) document checklist",
+          "who": "Beneficiary",
+          "where": "Your 221(g) letter",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 10,
+          "visible_when": { "interviewOutcome": "221g" },
+          "actions": [
+            "Open your 221(g) letter",
+            "Tick every box that matches your letter",
+            "Input any required names or details",
+            "Confirm and save — your action plan will be generated"
+          ],
+          "tool_data": {
+            "type": "input_221g",
+            "chips": [
+              { "label": "221(g) Checklist", "type": "amber" },
+              { "label": "Action Required", "type": "red" }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. Always follow the exact instructions in your 221(g) letter."
+          }
+        },
+        {
+
+          "step_key": "step_3_11",
+          "step_number": 11,
+          "step_type": "tool",
+          "step_name": "Respond to 221(g)",
+          "step_description": "The consulate has requested documents or information. Use this step to understand the request, prepare your response, and track your submission.",
+          "step_short_description": "221(g) document response and action plan",
+          "who": "Beneficiary",
+          "where": "Embassy / CEAC",
+          "estimated_duration_days": 14,
+          "is_required": true,
+          "display_order": 11,
+          "visible_when": {
+            "interviewOutcome": "221g",
+            "outcome221gSubtype": ["docs_requested", "both"]
+          },
+          "actions": [
+            "Read the 221(g) letter carefully",
+            "Identify exactly what was requested",
+            "Gather or prepare the requested items",
+            "Submit via the method specified in the notice",
+            "Record submission details in the tracker"
+          ],
+          "tool_data": {
+            "type": "respond_221g",
+            "chips": [
+              { "label": "221(g) Response", "type": "amber" },
+              { "label": "Action Required", "type": "red" },
+              { "label": "Document Request", "type": "sky" }
+            ],
             "explainer": {
-              "eyebrow": "What Administrative Processing means",
-              "title": "AP is not a refusal — it means more review is needed",
-              "body": "Administrative Processing (AP) occurs when the consulate needs additional time to review your case background, security checks, or has requested additional documents. Most AP cases resolve and result in visa issuance. Timelines vary significantly and are outside Rahvana's or the applicant's control."
+              "eyebrow": "221(g) — Documents or information requested",
+              "title": "The consulate has asked for something specific",
+              "body": "A 221(g) notice is not a final denial. The officer needs additional documents or information before a decision can be made. Review the notice carefully, provide exactly what was requested, and submit via the specified method. Once submitted, the case moves into review."
             },
             "recorder": {
-              "title": "Record your AP details",
-              "subtitle": "Save this now so Rahvana can track and remind you",
+              "title": "Record your 221(g) details",
+              "subtitle": "Log what was requested and when you submitted",
               "ceac_options": [
                 "In Transit",
                 "Ready",
@@ -5421,51 +5630,211 @@
                 "Not Available"
               ],
               "docs_requested_options": [
-                {
-                  "label": "Select...",
-                  "value": ""
-                },
-                {
-                  "label": "Yes — documents requested",
-                  "value": "yes"
-                },
-                {
-                  "label": "No — no additional docs requested",
-                  "value": "no"
-                },
-                {
-                  "label": "Unknown / not confirmed",
-                  "value": "unknown"
-                }
+                { "label": "Select...", "value": "" },
+                { "label": "Yes — documents requested", "value": "yes" },
+                { "label": "No — no additional docs requested", "value": "no" },
+                { "label": "Unknown / not confirmed", "value": "unknown" }
+              ]
+            },
+            "action_steps": [
+              "Read the 221(g) letter from start to finish — every word matters",
+              "List every item requested — do not guess or assume scope",
+              "Gather each item exactly as specified — format, translation, notarization if required",
+              "Submit by the method and to the address stated in the notice",
+              "Keep a copy of everything you submit",
+              "Log the submission date and method in the tracker below"
+            ],
+            "info_sections": [
+              {
+                "title": "How to respond to a 221(g)",
+                "type": "sky",
+                "icon": "info",
+                "items": [
+                  "Submit exactly what was requested — nothing more, nothing less",
+                  "If the notice specifies a method (drop box, mail, email), use that method",
+                  "If the notice specifies a deadline, meet it — do not delay",
+                  "Keep a complete copy of everything you submit",
+                  "After submission, check CEAC weekly for status changes",
+                  "Monitor the email registered with the consulate for any follow-up"
+                ]
+              },
+              {
+                "title": "What happens after submission",
+                "type": "teal",
+                "icon": "check",
+                "items": [
+                  "After submission, the case typically moves to Administrative Processing while the consulate reviews what you sent",
+                  "CEAC may show 'Administrative Processing' during this period",
+                  "Resolution timelines vary — from days to several months depending on the case",
+                  "If approved after 221(g) review, your passport will be delivered via the courier you registered"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. All 221(g) cases are reviewed at the consulate's discretion. Nothing here constitutes legal advice."
+          }
+        },
+        {
+          "step_key": "step_3_12",
+          "step_number": 12,
+          "step_type": "tool",
+          "step_name": "Track Post-Interview Review",
+          "step_description": "Your case has been placed in further review or administrative processing after the interview. Use this step to monitor CEAC status and stay organized during the wait.",
+          "step_short_description": "Administrative processing and review tracker",
+          "who": "Beneficiary",
+          "where": "ceac.state.gov",
+          "estimated_duration_days": 90,
+          "is_required": true,
+          "display_order": 12,
+          "visible_when": {
+            "interviewOutcome": "221g",
+            "outcome221gSubtype": ["further_review", "both"]
+          },
+          "actions": [
+            "Check CEAC status weekly",
+            "Monitor registered email for correspondence",
+            "Log each status check in the update log",
+            "Respond immediately if contacted by consulate",
+            "Be patient — AP timelines are outside your control"
+          ],
+          "tool_data": {
+            "type": "adm_processing",
+            "chips": [
+              { "label": "Post-Interview Review", "type": "gold" },
+              { "label": "CEAC Tracking", "type": "sky" },
+              { "label": "Administrative Processing", "type": "amber" }
+            ],
+            "explainer": {
+              "eyebrow": "What post-interview review means",
+              "title": "Your case is under review — this is not a refusal",
+              "body": "Administrative Processing after a visa interview means the consulate needs additional time — for security checks, background review, or other internal processing. Most cases in AP eventually result in visa issuance. Timelines vary and are entirely within the U.S. government's control."
+            },
+            "recorder": {
+              "title": "Record your AP/review details",
+              "subtitle": "Save this so Rahvana can track and remind you",
+              "ceac_options": [
+                "In Transit",
+                "Ready",
+                "Administrative Processing",
+                "Issued",
+                "Refused",
+                "Pending",
+                "Not Available"
+              ],
+              "docs_requested_options": [
+                { "label": "Select...", "value": "" },
+                { "label": "Yes — documents requested", "value": "yes" },
+                { "label": "No — no additional docs requested", "value": "no" },
+                { "label": "Unknown / not confirmed", "value": "unknown" }
               ]
             },
             "info_sections": [
               {
-                "title": "What to do during Administrative Processing",
+                "title": "What to do during review",
                 "type": "sky",
                 "icon": "info",
                 "items": [
-                  "Check CEAC status regularly — aim for weekly checks without obsessing over it daily",
-                  "If additional documents were requested, submit them promptly and exactly as specified",
-                  "Monitor the email address you registered with the consulate for any correspondence",
-                  "Log each CEAC status check in the update log above to track any changes over time",
-                  "Ensure your passport remains valid — if AP extends significantly, verify validity",
-                  "If AP extends beyond 180 days, consider consulting an immigration attorney about options"
+                  "Check CEAC status weekly — note any changes and log them below",
+                  "Monitor the email registered with the consulate — correspondence may arrive at any time",
+                  "Respond immediately if the consulate contacts you",
+                  "Ensure your passport remains valid throughout the review period",
+                  "If review exceeds 180 days with no update, consider a congressional inquiry or attorney consultation"
                 ]
               },
               {
-                "title": "What Administrative Processing does not mean",
+                "title": "What post-interview review does not mean",
                 "type": "teal",
                 "icon": "check",
                 "items": [
-                  "AP is not a visa refusal — your case is still being reviewed",
-                  "AP does not mean there is a problem with your relationship or documents",
-                  "Most AP cases eventually result in visa issuance — though no timeline can be guaranteed",
-                  "Contacting the embassy frequently typically does not speed up the process and may not receive a useful response"
+                  "Review is not a visa refusal — your case is still active",
+                  "It does not mean there is a problem with your relationship or documents",
+                  "Most cases in administrative processing eventually result in approval",
+                  "Contacting the embassy repeatedly does not speed up the process"
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured tracking guidance only. Administrative Processing timelines are entirely within the U.S. government's control. Nothing here constitutes legal advice. Consult a licensed immigration attorney if needed."
+            "disclaimer": "Rahvana provides structured tracking guidance only. Administrative Processing timelines are entirely within the U.S. government's control. Nothing here constitutes legal advice."
+          }
+        },
+        {
+          "step_key": "step_3_13",
+          "step_number": 13,
+          "step_type": "tool",
+          "step_name": "Monitor Case Status",
+          "step_description": "Your documents have been submitted in response to the 221(g). Now monitor CEAC for updates and stay organized as the consulate reviews your submission.",
+          "step_short_description": "Post-submission case monitoring",
+          "who": "Beneficiary",
+          "where": "ceac.state.gov",
+          "estimated_duration_days": 60,
+          "is_required": true,
+          "display_order": 13,
+          "visible_when": {
+            "interviewOutcome": "221g",
+            "outcome221gSubtype": ["docs_requested", "both"]
+          },
+          "actions": [
+            "Confirm submission was received",
+            "Check CEAC weekly for status changes",
+            "Log updates in the tracker",
+            "Watch email for consulate correspondence",
+            "Track toward resolution"
+          ],
+          "tool_data": {
+            "type": "adm_processing",
+            "chips": [
+              { "label": "Post-Submission", "type": "sky" },
+              { "label": "Case Monitoring", "type": "purple" },
+              { "label": "Awaiting Resolution", "type": "gold" }
+            ],
+            "explainer": {
+              "eyebrow": "Post-submission monitoring",
+              "title": "Documents submitted — now monitoring for resolution",
+              "body": "You have submitted your 221(g) response. The consulate is now reviewing your submission alongside any required background processing. This phase can take days to months depending on the case. Use this tracker to log status checks and stay organized while you wait."
+            },
+            "recorder": {
+              "title": "Record status updates",
+              "subtitle": "Log each CEAC check to track progress over time",
+              "ceac_options": [
+                "In Transit",
+                "Ready",
+                "Administrative Processing",
+                "Issued",
+                "Refused",
+                "Pending",
+                "Not Available"
+              ],
+              "docs_requested_options": [
+                { "label": "Select...", "value": "" },
+                { "label": "Yes — documents requested", "value": "yes" },
+                { "label": "No — no additional docs requested", "value": "no" },
+                { "label": "Unknown / not confirmed", "value": "unknown" }
+              ]
+            },
+            "info_sections": [
+              {
+                "title": "What to do while monitoring",
+                "type": "sky",
+                "icon": "info",
+                "items": [
+                  "Check CEAC weekly and log each check — note the status and any changes",
+                  "Watch for 'Issued' status on CEAC — that signals the visa has been approved and processed",
+                  "Monitor your registered email for any additional requests from the consulate",
+                  "If CEAC changes from AP to 'Refused', read your written notice carefully before drawing conclusions",
+                  "If 180 days pass with no update, consider a congressional inquiry or attorney consultation"
+                ]
+              },
+              {
+                "title": "Possible outcomes from this stage",
+                "type": "teal",
+                "icon": "check",
+                "items": [
+                  "Approved — CEAC shows 'Issued', passport delivered via courier",
+                  "Additional review — AP continues; keep monitoring and logging",
+                  "Further documents — respond promptly to any new requests",
+                  "Refused — read the written notice carefully; consult an attorney"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured tracking guidance only. Review timelines are entirely within the U.S. government's control. Nothing here constitutes legal advice."
           }
         }
       ]

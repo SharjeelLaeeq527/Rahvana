@@ -39,6 +39,7 @@ interface StepToolRendererProps {
   polioState?: any;
   pccState?: any;
   gatheringState?: any;
+  guard?: () => boolean;
 }
 
 export const AwaitingReviewStep: React.FC<{
@@ -100,6 +101,7 @@ export const AwaitingReviewStep: React.FC<{
 export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
   dqState,
   actions,
+  guard,
 }) => {
   const {
     dqSaved,
@@ -113,7 +115,8 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
     dqCountry,
     setDqCountry,
   } = dqState;
-  const [isSaving, setIsSaving] = React.useState(false);
+const [isSaving, setIsSaving] = React.useState(false);
+const [showUpgradePrompt, setShowUpgradePrompt] = React.useState(false);
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
@@ -170,9 +173,33 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
               <option value="Karachi">Karachi</option>
             </select>
           </div>
+          {showUpgradePrompt && (
+          <div className="mb-3 flex items-start gap-3 rounded-[14px] border border-[#f0d98a] bg-[#fef8e8] px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex-1 min-w-0">
+              <p className="text-[12.5px] font-bold text-[#0c1b33] mb-0.5">
+                Tracking Not Included in Your Plan
+              </p>
+              <p className="text-[12px] text-[#4a5568] leading-[1.6]">
+                Case tracking, reminders, and status monitoring are not available on the Basic plan. Upgrade to unlock automatic tracking when your DQ is saved.
+              </p>
+              <button
+                onClick={() => {/* wire to upgrade modal */}}
+                className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-bold text-[#2f6fd4] hover:text-[#1a4fa0] transition-colors group"
+              >
+                View upgrade options
+                <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>
+        )}
           <button
             onClick={async () => {
-              setIsSaving(true);
+            if (guard && !guard()) {
+              setShowUpgradePrompt(true); // ← show nudge instead of silent fail
+              return;
+            }
+            setShowUpgradePrompt(false);
+            setIsSaving(true);
               try {
                 setDqSaved(true);
                 await actions.updateMetadata({
@@ -250,7 +277,8 @@ export const AppointmentReceivedTool: React.FC<{
   state: any;
   actions: any;
   interviewState: any;
-}> = ({ actions, interviewState }) => {
+  guard?: () => boolean;
+}> = ({ actions, interviewState, guard }) => {
   const {
     interviewSaved,
     setInterviewSaved,
@@ -350,6 +378,7 @@ export const AppointmentReceivedTool: React.FC<{
           </div>
           <button
             onClick={async () => {
+              if (guard && !guard()) return;
               const validationErrors = validateAppointmentFields();
               if (Object.keys(validationErrors).length > 0) {
                 setErrors(validationErrors);
@@ -402,7 +431,8 @@ export const MedicalExamTool: React.FC<{
   state: any;
   actions: any;
   medState: any;
-}> = ({ actions, medState }) => {
+  guard?: () => boolean;
+}> = ({ actions, medState, guard }) => {
   const {
     medSaved,
     setMedSaved,
@@ -488,6 +518,7 @@ export const MedicalExamTool: React.FC<{
                 <button
                   key={p.id}
                   onClick={() => {
+                    if (guard && !guard()) return;
                     setMedWizardMode(p.id);
                     setMedWizardStep(0);
                     setIsMedWizardOpen(true);
@@ -730,7 +761,8 @@ export const PolioCertificateTool: React.FC<{
   state: any;
   actions: any;
   polioState: any;
-}> = ({ actions, polioState }) => {
+  guard?: () => boolean;
+}> = ({ actions, polioState, guard }) => {
   const {
     polioLaunched,
     setPolioLaunched,
@@ -767,6 +799,7 @@ export const PolioCertificateTool: React.FC<{
         </div>
         <button
           onClick={() => {
+            if (guard && !guard()) return;
             setPolioGuideStep(0);
             setIsPolioGuideOpen(true);
           }}
@@ -797,6 +830,7 @@ export const PolioCertificateTool: React.FC<{
                 type="checkbox"
                 checked={polioChecks[i]}
                 onChange={async () => {
+                  if (guard && !guard()) return;
                   const next = [...polioChecks];
                   next[i] = !next[i];
                   setPolioChecks(next);
@@ -897,6 +931,7 @@ export const PoliceClearanceTool: React.FC<{
   state: any;
   actions: any;
   pccState: any;
+  guard?: () => boolean;
   openUploadModal?: (defId: string) => void;
   setActiveUploadId?: (id: string | null) => void;
   setActiveUploadType?: (type: "doc" | "hh" | "financial" | null) => void;
@@ -908,6 +943,7 @@ export const PoliceClearanceTool: React.FC<{
   setActiveUploadId,
   setActiveUploadType,
   uploadedDocuments,
+  guard,
 }) => {
   const {
     pccSaved,
@@ -974,6 +1010,7 @@ export const PoliceClearanceTool: React.FC<{
             <button
               key={p.id}
               onClick={() => {
+                if (guard && !guard()) return;
                 setPccOverlayMode(p.id);
                 setPccOverlayStep(0);
                 setIsPccOverlayOpen(true);
@@ -1045,6 +1082,7 @@ export const PoliceClearanceTool: React.FC<{
         </div>
         <button
           onClick={async () => {
+            if (guard && !guard()) return;
             // Final validation check
             const receiptErr = validatePccField("receipt", pccData.receipt);
             const trackErr = validatePccField("track", pccData.track);
@@ -1100,6 +1138,7 @@ export const PoliceClearanceTool: React.FC<{
           </div>
           <button
             onClick={async () => {
+              if (guard && !guard()) return;
               setIsSaving(true);
               try {
                 setPccReceived(true);
@@ -1135,6 +1174,7 @@ export const PoliceClearanceTool: React.FC<{
               </div>
               <button
                 onClick={() => {
+                  if (guard && !guard()) return;
                   if (
                     openUploadModal &&
                     setActiveUploadId &&
@@ -1155,6 +1195,7 @@ export const PoliceClearanceTool: React.FC<{
           ) : (
             <button
               onClick={() => {
+                if (guard && !guard()) return;
                 if (
                   openUploadModal &&
                   setActiveUploadId &&
@@ -1245,7 +1286,8 @@ export const GatheringChecklistTool: React.FC<{
   state: any;
   actions: any;
   gatheringState: any;
-}> = ({ tool, state, actions, gatheringState }) => {
+  guard?: () => boolean;
+}> = ({ tool, state, actions, gatheringState, guard }) => {
   const {
     gatheringStatus,
     setGatheringStatus,
@@ -1314,6 +1356,7 @@ export const GatheringChecklistTool: React.FC<{
                   <div
                     key={item.id}
                     onClick={() => {
+                      if (guard && !guard()) return;
                       setSelectedGatheringItem(item);
                       setIsGatheringGuideOpen(true);
                       if (status === "not-started") {
@@ -1364,3 +1407,4 @@ export const GatheringChecklistTool: React.FC<{
     </div>
   );
 };
+

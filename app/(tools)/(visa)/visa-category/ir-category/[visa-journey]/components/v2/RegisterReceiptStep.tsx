@@ -1,6 +1,7 @@
 // components/RegisterReceiptStep.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Globe } from "lucide-react";
+import { Globe, Crown, Lock } from "lucide-react";
+import { usePlan } from "@/app/context/PlanContext";
 import { GuideTutorialOverlay } from "./GuideTutorialOverlays";
 import {
   fmtDate,
@@ -33,6 +34,53 @@ const EditIcon = () => (
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
+);
+
+// ─── Inline upgrade nudge banner ───────────────────────────────────────────────
+
+interface UpgradeNudgeProps {
+  title: string;
+  description: string;
+  onUpgrade: () => void;
+  onDismiss: () => void;
+}
+
+const UpgradeNudge: React.FC<UpgradeNudgeProps> = ({ title, description, onUpgrade, onDismiss }) => (
+  <div
+    className="rounded-2xl p-4 mb-4 animate-in fade-in slide-in-from-top-2 duration-200"
+    style={{ background: "#fbeaec", border: "1.5px solid rgba(192,89,106,0.5)" }}
+  >
+    <div className="flex items-start gap-3">
+      <div
+        className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+        style={{ background: "#c0596a" }}
+      >
+        <Crown className="w-4 h-4 text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[14px] font-bold mb-1" style={{ color: "#28151c" }}>{title}</div>
+        <div className="text-[13px] leading-[1.6]" style={{ color: "#5a3040" }}>{description}</div>
+        <div className="flex gap-2 mt-3 flex-wrap">
+          <button
+            onClick={onUpgrade}
+            className="px-4 py-1.5 rounded-full text-[13px] font-bold text-white transition-colors"
+            style={{ background: "#c0596a" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#a13e4e")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#c0596a")}
+          >
+            Upgrade Plan
+          </button>
+          <button
+            onClick={onDismiss}
+            className="px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors"
+            style={{ border: "1.5px solid rgba(192,89,106,0.5)", color: "#c0596a", background: "transparent" }}
+          >
+            Maybe later
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 );
 
 // ─── Vault document shape ──────────────────────────────────────────────────────
@@ -104,14 +152,12 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
    API CALLS
 ───────────────────────────────────────────────────────────── */
 
-
-// Requires journeyId to be passed in
 async function postReceipt(
   journeyId: string,
   payload: RegisterReceiptPayload
 ): Promise<{ record: ReceiptRecord | null; error: string }> {
   try {
-    const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}` , {
+    const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -137,8 +183,6 @@ async function postReceipt(
   }
 }
 
-
-// Requires journeyId to be passed in
 async function fetchReceipt(journeyId: string) {
   try {
     const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
@@ -171,18 +215,26 @@ const ErrorBanner: React.FC<{ message: string }> = ({ message }) =>
   ) : null;
 
 // ─── Manual entry form ─────────────────────────────────────────────────────────
-// existingRecord: null  → first-time registration (receipt number editable)
-// existingRecord: {...} → updating existing record (receipt number locked)
 
 interface ManualFormProps {
   onBack: () => void;
   onSaved: (r: ReceiptRecord) => void;
   existingRecord: ReceiptRecord | null;
+  guard?: () => boolean;
+  /** If true, the Save button shows an upgrade nudge instead of saving */
+  trackingLocked?: boolean;
+  onTrackingLocked?: () => void;
 }
 
-
-// Accept journeyId as prop
-const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack, onSaved, existingRecord, journeyId }) => {
+const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
+  onBack,
+  onSaved,
+  existingRecord,
+  journeyId,
+  guard,
+  trackingLocked,
+  onTrackingLocked,
+}) => {
   const isUpdate = existingRecord !== null;
   const [fields, setFields] = useState({
     receiptNumber: existingRecord?.receiptNumber ?? "",
@@ -196,7 +248,14 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack,
     setFields((f) => ({ ...f, [k]: e.target.value }));
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
+
   async function handleSubmit() {
+    // If tracking is locked for this tier, show the upgrade nudge instead
+    if (trackingLocked && !isUpdate) {
+      onTrackingLocked?.();
+      return;
+    }
+    if (guard && !guard()) return;
     setLoading(true); setError("");
     const { record, error: err } = await postReceipt(journeyId, { ...fields, source: "manual" });
     setLoading(false);
@@ -220,12 +279,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack,
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Receipt Number</label>
           <input
             className="rounded-lg px-4 py-3 text-[15px] outline-none"
-            style={{
-              border: "1.5px solid #d0e4f7",
-              color: "#1c2b3a",
-              background: "#fff",
-              cursor: "text",
-            }}
+            style={{ border: "1.5px solid #d0e4f7", color: "#1c2b3a", background: "#fff", cursor: "text" }}
             placeholder="IOE1234567890"
             maxLength={13}
             value={fields.receiptNumber}
@@ -256,14 +310,31 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({ onBack,
       <div className="rounded-lg p-3 text-[13px] mb-5" style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)", color: "#28151c" }}>
         Always confirm the receipt number before saving — it is the primary key used for case tracking.
       </div>
+
+      {/* Tracking locked notice for Basic tier (new registration only) */}
+      {trackingLocked && !isUpdate && (
+        <div className="rounded-xl p-3 mb-4 flex items-start gap-2.5" style={{ background: "#fef9e7", border: "1px solid #f0d98a" }}>
+          <Lock className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#8a6200" }} />
+          <p className="text-[12.5px] leading-[1.6]" style={{ color: "#8a6200" }}>
+            <strong>Tracking is not included in your current plan.</strong> Your details will be saved, but automatic case status monitoring requires a higher tier. You can upgrade any time to enable tracking.
+          </p>
+        </div>
+      )}
+
       <div className="flex gap-2">
-        <button className="px-5 py-2 rounded-full text-[14px] font-semibold" style={{ background: "#fff", border: "1.5px solid #c0596a", color: "#c0596a" }}
+        <button className="px-5 py-2 rounded-full text-[14px] font-semibold"
+          style={{ background: "#fff", border: "1.5px solid #c0596a", color: "#c0596a" }}
           onClick={onBack} disabled={loading}>Back</button>
-        <button className="px-5 py-2 rounded-full text-[14px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ background: "#c0596a" }} onClick={handleSubmit} disabled={loading}
+        <button
+          className="px-5 py-2 rounded-full text-[14px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+          style={{ background: "#c0596a" }}
+          onClick={handleSubmit}
+          disabled={loading}
           onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#a13e4e")}
-          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#c0596a")}>
-          {loading ? "Saving…" : isUpdate ? "Save Changes" : "Save Receipt & Enable Tracking"}
+          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#c0596a")}
+        >
+          {trackingLocked && !isUpdate && <Lock className="w-3.5 h-3.5" />}
+          {loading ? "Saving…" : isUpdate ? "Save Changes" : trackingLocked ? "Save Receipt (Tracking Locked)" : "Save Receipt & Enable Tracking"}
         </button>
       </div>
     </div>
@@ -279,14 +350,12 @@ interface UploadFormProps {
   onSaved: (r: ReceiptRecord) => void;
   onFileVault: (docId: string, files: FileList) => void;
   existingRecord: ReceiptRecord | null;
+  guard?: () => boolean;
 }
 
-
-// Accept journeyId as prop
-const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack, onSaved, onFileVault, existingRecord, journeyId }) => {
+const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack, onSaved, onFileVault, existingRecord, journeyId, guard }) => {
   const isUpdate = existingRecord !== null;
   const [uploadFile, setUploadFile] = useState<File | null>(null);
-  // These three inputs are UNCHANGED from the original
   const [fields, setFields] = useState({
     receiptNumber: existingRecord?.receiptNumber ?? "",
     noticeDate:    existingRecord?.noticeDate    ?? "",
@@ -298,9 +367,10 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
     setFields((f) => ({ ...f, [k]: e.target.value }));
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
+
   async function handleSubmit() {
+    if (guard && !guard()) return;
     setLoading(true); setError("");
-    // 1. Upload file to Document Vault if present
     if (!uploadFile) {
       setError("Please select a receipt notice file to upload.");
       setLoading(false);
@@ -310,27 +380,18 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("documentDefId", RECEIPT_NOTICE_DOC_ID);
-      formData.append("role", "PETITIONER"); // or "BENEFICIARY" if needed
-      formData.append("personName", "Petitioner"); // Optionally use actual name if available
+      formData.append("role", "PETITIONER");
+      formData.append("personName", "Petitioner");
       formData.append("caseId", fields.receiptNumber);
       formData.append("notes", "Uploaded via receipt registration step");
-
-      const response = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch("/api/documents/upload", { method: "POST", body: formData });
       const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || "Failed to upload receipt notice to vault.");
-        setLoading(false);
-        return;
-      }
+      if (!response.ok) { setError(data.error || "Failed to upload receipt notice to vault."); setLoading(false); return; }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error during upload.");
       setLoading(false);
       return;
     }
-    // 2. Save receipt record as before
     const { record, error: err2 } = await postReceipt(journeyId, { ...fields, source: "upload" });
     setLoading(false);
     if (err2) { setError(err2); return; }
@@ -352,21 +413,12 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
         Receipt Notice File
       </label>
       <div className="flex items-center gap-3 mb-4">
-        <input
-          type="file"
-          accept=".pdf,.png,.jpg,.jpeg"
-          id="receipt-upload-input"
-          className="hidden"
+        <input type="file" accept=".pdf,.png,.jpg,.jpeg" id="receipt-upload-input" className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0] ?? null;
-            // 1. existing local-state update — unchanged
             setUploadFile(file);
-            // 2. forward to document vault
-            if (e.target.files && e.target.files.length > 0) {
-              onFileVault(RECEIPT_NOTICE_DOC_ID, e.target.files);
-            }
-          }}
-        />
+            if (e.target.files && e.target.files.length > 0) onFileVault(RECEIPT_NOTICE_DOC_ID, e.target.files);
+          }} />
         <label htmlFor="receipt-upload-input" className="px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer"
           style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.4)", color: "#c0596a" }}>
           Choose File
@@ -378,25 +430,13 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
       <div className="rounded-lg p-3 mb-5 text-[13px]" style={{ background: "#f4f7fb", border: "1px solid #d0e4f7", color: "#3a4f63" }}>
         Accepted formats: PDF, PNG, JPG. Confirm the receipt number and dates below before saving.
       </div>
-      {/* ── These three inputs are UNCHANGED ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
         <div className="md:col-span-2 flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Confirm Receipt Number</label>
-          <input
-            className="rounded-lg px-4 py-3 text-[15px] outline-none"
-            style={{
-              border: "1.5px solid #d0e4f7",
-              color: "#1c2b3a",
-              background: "#fff",
-              cursor: "text",
-            }}
-            placeholder="IOE1234567890"
-            maxLength={13}
-            value={fields.receiptNumber}
-            onChange={set("receiptNumber")}
-            onFocus={focusBorder}
-            onBlur={blurBorder}
-          />
+          <input className="rounded-lg px-4 py-3 text-[15px] outline-none"
+            style={{ border: "1.5px solid #d0e4f7", color: "#1c2b3a", background: "#fff", cursor: "text" }}
+            placeholder="IOE1234567890" maxLength={13}
+            value={fields.receiptNumber} onChange={set("receiptNumber")} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Notice Date</label>
@@ -410,10 +450,11 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
         </div>
       </div>
       <div className="rounded-lg p-3 text-[13px] mb-5" style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)", color: "#28151c" }}>
-        Always confirm the receipt number with the user before turning on tracking. Upload parsing can help, but values should never be saved silently without review.
+        Always confirm the receipt number with the user before turning on tracking.
       </div>
       <div className="flex gap-2 justify-end">
-        <button className="px-5 py-2 rounded-full text-[14px] font-semibold" style={{ background: "#fff", border: "1.5px solid #c0596a", color: "#c0596a" }}
+        <button className="px-5 py-2 rounded-full text-[14px] font-semibold"
+          style={{ background: "#fff", border: "1.5px solid #c0596a", color: "#c0596a" }}
           onClick={onBack} disabled={loading}>Back</button>
         <button className="px-5 py-2 rounded-full text-[14px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
           style={{ background: "#c0596a" }} onClick={handleSubmit} disabled={loading}
@@ -428,34 +469,48 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
-// "idle"     = default view, cards + timeline (if record exists)
-// "register" = first-time registration form open
-// "update"   = update form open (receipt number locked)
 type UiState = "idle" | "register" | "update";
 type TabMode  = "manual" | "upload";
 
+import { useStepEntitlement } from "./useStepEntitlement";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 interface RegisterReceiptStepProps {
   tool: any;
   journeyId: string;
+  state: any;
+  actions: any;
 }
 
-const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journeyId }) => {
-  const [uiState,     setUiState]     = useState<UiState>("idle");
-  const [activeTab,   setActiveTab]   = useState<TabMode>("manual");
-  const [savedRecord, setSavedRecord] = useState<ReceiptRecord | null>(null);
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
-  const [guideStep,   setGuideStep]   = useState(0);
-  const [guideSteps,  setGuideSteps]  = useState<any[]>([]);
+const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
+  tool,
+  journeyId,
+  state,
+  actions,
+}) => {
+  const stepEntitlement = useStepEntitlement("step_1_15");
+  const plan = usePlan();
 
-  // Document vault — same shape as uploadedDocs in DocumentChecklist
-  const [vaultDocs, setVaultDocs] = useState<Record<string, VaultFile[]>>({});
+  // Basic tier cannot use upload or guide; tracking is locked on save
+  const isBasic = plan.tier === "basic";
+
+  const [uiState,            setUiState]            = useState<UiState>("idle");
+  const [activeTab,          setActiveTab]           = useState<TabMode>("manual");
+  const [savedRecord,        setSavedRecord]         = useState<ReceiptRecord | null>(null);
+  const [isGuideOpen,        setIsGuideOpen]         = useState(false);
+  const [guideStep,          setGuideStep]           = useState(0);
+  const [guideSteps,         setGuideSteps]          = useState<any[]>([]);
+  const [vaultDocs,          setVaultDocs]           = useState<Record<string, VaultFile[]>>({});
+
+  // ── Upgrade modal state ─────────────────────────────────────────────────────
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  // Inline nudge: shown inside the manual form when user clicks Save with locked tracking
+  const [showTrackingNudge,   setShowTrackingNudge]   = useState(false);
 
   useEffect(() => {
     import("@/data/receipt-guide-steps.json").then((mod) => setGuideSteps(mod.default));
   });
 
-  // Load any existing receipt on mount — sets savedRecord if one exists
   useEffect(() => {
     if (!journeyId) return;
     fetchReceipt(journeyId).then(({ record }) => {
@@ -463,14 +518,13 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
     });
   }, [journeyId]);
 
-  // Called by both forms on a successful save — refreshes from server then returns to idle
   const handleSaved = useCallback(async (record: ReceiptRecord) => {
     setUiState("idle");
+    setShowTrackingNudge(false);
     const { record: fresh } = await fetchReceipt(journeyId);
     setSavedRecord(fresh ?? record);
   }, [journeyId]);
 
-  // Document vault handler — identical signature to onFileUpload in DocumentChecklist
   const handleFileVault = useCallback((docId: string, files: FileList) => {
     const incoming: VaultFile[] = Array.from(files).map((file) => ({
       file,
@@ -480,19 +534,22 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
         : file.size > 100_000 ? "good"
         : "needs-review",
     }));
-    setVaultDocs((prev) => ({
-      ...prev,
-      [docId]: [...(prev[docId] ?? []), ...incoming],
-    }));
+    setVaultDocs((prev) => ({ ...prev, [docId]: [...(prev[docId] ?? []), ...incoming] }));
   }, []);
 
   const hasExistingReceipt = savedRecord !== null;
 
-  // Card 1 click: if no receipt → open registration; if one exists → open update
   const handleRegisterCardClick = () => {
+    setShowTrackingNudge(false);
     setActiveTab("manual");
     setUiState(hasExistingReceipt ? "update" : "register");
   };
+
+  // Called when Basic user clicks "Upload Receipt Notice" tab or upload button
+  const handleUploadLocked = () => setUpgradeModalFeature("receipt_upload");
+
+  // Called when Basic user clicks Save (tracking locked)
+  const handleTrackingLocked = () => setShowTrackingNudge(true);
 
   return (
     <div className="min-h-screen w-full ch1step-bg">
@@ -560,78 +617,118 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
             </div>
           </div>
 
-          {/* ── Two cards — ALWAYS visible ── */}
+          {/* ── Two action cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
 
-            {/* Card 1 */}
-            <button
-              className="rounded-2xl p-5 flex flex-col items-start text-left"
-              style={{ background: "#fff", border: "1.5px solid #d0e4f7", transition: "border-color 0.22s, box-shadow 0.22s, transform 0.22s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#2f6fd4"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(47,111,212,0.10)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#d0e4f7"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
-              onClick={handleRegisterCardClick}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-[14px]"
-                style={{ background: "#e8f5ef", border: "1px solid #a8d9be" }}>
-                <CheckIcon />
-              </div>
-              <div className="text-[15px] font-semibold mb-[5px]" style={{ color: "#0c1b33" }}>
-                {hasExistingReceipt ? "Receipt Notice Registered" : "I Received My Receipt Notice"}
-              </div>
-              <div className="text-[13px] leading-[1.55]" style={{ color: "#6b8097" }}>
-                {hasExistingReceipt
-                  ? `Tracking active for ${savedRecord!.receiptNumber}. Tap to update dates or the case label.`
-                  : "Move into the registration step and save the receipt details inside Rahvana."}
-              </div>
-              <div className="flex items-center gap-[5px] font-semibold text-[12px] mt-[13px]" style={{ color: "#2f6fd4" }}>
-                {hasExistingReceipt
-                  ? <><EditIcon />&nbsp;Update details</>
-                  : <>Register notice <ArrowRight /></>}
-              </div>
-            </button>
+            {/* Card 1 — Register / Update */}
+            <div className="relative">
+              <button
+                className="rounded-2xl p-5 flex flex-col items-start text-left w-full"
+                style={{
+                  background: "#fff",
+                  border: "1.5px solid #d0e4f7",
+                  transition: "border-color 0.22s, box-shadow 0.22s, transform 0.22s",
+                  ...(stepEntitlement.isLocked ? { opacity: 0.7, cursor: "not-allowed" } : {}),
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#2f6fd4"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(47,111,212,0.10)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#d0e4f7"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
+                onClick={handleRegisterCardClick}
+                disabled={stepEntitlement.isLocked}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-[14px]"
+                  style={{ background: "#e8f5ef", border: "1px solid #a8d9be" }}>
+                  <CheckIcon />
+                </div>
+                <div className="text-[15px] font-semibold mb-[5px]" style={{ color: "#0c1b33" }}>
+                  {hasExistingReceipt ? "Receipt Notice Registered" : "I Received My Receipt Notice"}
+                </div>
+                <div className="text-[13px] leading-[1.55]" style={{ color: "#6b8097" }}>
+                  {hasExistingReceipt
+                    ? `Tracking active for ${savedRecord!.receiptNumber}. Tap to update dates or the case label.`
+                    : "Move into the registration step and save the receipt details inside Rahvana."}
+                </div>
+                <div className="flex items-center gap-[5px] font-semibold text-[12px] mt-[13px]" style={{ color: "#2f6fd4" }}>
+                  {hasExistingReceipt ? <><EditIcon />&nbsp;Update details</> : <>Register notice <ArrowRight /></>}
+                </div>
+              </button>
+              {plan.tier === "basic" && <Crown size={20} className="absolute top-2 right-2 text-yellow-500" />}
+            </div>
 
-            {/* Card 2 */}
-            <button
-              className="rounded-2xl p-5 flex flex-col items-start text-left"
-              style={{ background: "#fff", border: "1.5px solid #d0e4f7", transition: "border-color 0.22s, box-shadow 0.22s, transform 0.22s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#2f6fd4"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(47,111,212,0.10)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#d0e4f7"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
-              onClick={() => { setGuideStep(0); setIsGuideOpen(true); }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-[14px]"
-                style={{ background: "#f3f0fb", border: "1px solid #c9bef2" }}>
-                <BookIcon />
-              </div>
-              <div className="text-[15px] font-semibold mb-[5px]" style={{ color: "#0c1b33" }}>
-                Where Do I Find the Receipt Number?
-              </div>
-              <div className="text-[13px] leading-[1.55]" style={{ color: "#6b8097" }}>
-                Open a short walkthrough that shows where to look and what information to bring back.
-              </div>
-              <div className="flex items-center gap-[5px] font-semibold text-[12px] mt-[13px]" style={{ color: "#2f6fd4" }}>
-                Open guide <ArrowRight />
-              </div>
-            </button>
+            {/* Card 2 — Guide (locked for Basic) */}
+            <div className="relative">
+              <button
+                className="rounded-2xl p-5 flex flex-col items-start text-left w-full"
+                style={{
+                  background: isBasic ? "#f9f9fb" : "#fff",
+                  border: `1.5px solid ${isBasic ? "#e2e8f0" : "#d0e4f7"}`,
+                  transition: "border-color 0.22s, box-shadow 0.22s, transform 0.22s",
+                  opacity: isBasic ? 0.72 : 1,
+                  cursor: isBasic ? "default" : "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isBasic) { e.currentTarget.style.borderColor = "#2f6fd4"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(47,111,212,0.10)"; e.currentTarget.style.transform = "translateY(-1px)"; }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isBasic) { e.currentTarget.style.borderColor = "#d0e4f7"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }
+                }}
+                onClick={() => {
+                  if (isBasic) { setUpgradeModalFeature("receipt_guide"); return; }
+                  if (!stepEntitlement.isLocked) { setGuideStep(0); setIsGuideOpen(true); }
+                }}
+                disabled={stepEntitlement.isLocked && !isBasic}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-[14px]"
+                  style={{ background: "#f3f0fb", border: "1px solid #c9bef2", position: "relative" }}>
+                  <BookIcon />
+                </div>
+                <div className="text-[15px] font-semibold mb-[5px]" style={{ color: "#0c1b33" }}>
+                  Where Do I Find the Receipt Number?
+                </div>
+                <div className="text-[13px] leading-[1.55]" style={{ color: "#6b8097" }}>
+                  {isBasic
+                    ? "Step-by-step walkthrough included in Premium and above."
+                    : "Open a short walkthrough that shows where to look and what information to bring back."}
+                </div>
+                <div className="flex items-center gap-[5px] font-semibold text-[12px] mt-[13px]"
+                  style={{ color: isBasic ? "#c0596a" : "#2f6fd4" }}>
+                  {isBasic ? <><Crown size={11} />Upgrade to unlock</> : <>Open guide <ArrowRight /></>}
+                </div>
+              </button>
+              {isBasic && (
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)" }}>
+                  <Lock size={11} style={{ color: "#c0596a" }} />
+                </div>
+              )}
+            </div>
 
           </div>
 
           <p className="text-[11.5px] text-center mt-[6px] mb-4" style={{ color: "#6b8097", lineHeight: 1.6 }}>
-            {hasExistingReceipt
-              ? "One receipt number per case. Use (Update details)" : "Best next move: wait until USCIS accepts the filing, then return here with the receipt number or receipt notice."}
+            {hasExistingReceipt ? "One receipt number per case. Use (Update details)" : "Best next move: wait until USCIS accepts the filing, then return here with the receipt number or receipt notice."}
           </p>
+
+          {/* Tracking nudge — shown inline after Save is clicked with locked tracking */}
+          {showTrackingNudge && (
+            <UpgradeNudge
+              title="Case tracking requires an upgrade"
+              description="Your receipt details have been saved. Automatic case status monitoring — where Rahvana checks USCIS on your behalf and alerts you to changes — is available on Premium and Executive plans."
+              onUpgrade={() => { setShowTrackingNudge(false); setUpgradeModalFeature("receipt_tracking"); }}
+              onDismiss={() => setShowTrackingNudge(false)}
+            />
+          )}
 
           {/* ── Registration / update form ── */}
           {(uiState === "register" || uiState === "update") && (
             <>
-              {/* Only allow registration if no record exists; allow update if record exists */}
               {hasExistingReceipt ? (
-                // Update mode: allow editing all fields, but only show the form for the method originally used
                 savedRecord?.source === "manual" ? (
                   <ManualForm
                     onBack={() => setUiState("idle")}
                     onSaved={handleSaved}
                     existingRecord={savedRecord}
                     journeyId={journeyId}
+                    guard={stepEntitlement.guard}
                   />
                 ) : (
                   <UploadForm
@@ -640,40 +737,62 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
                     onFileVault={handleFileVault}
                     existingRecord={savedRecord}
                     journeyId={journeyId}
+                    guard={stepEntitlement.guard}
                   />
                 )
               ) : (
                 <>
+                  {/* Tab bar — Upload tab locked for Basic */}
                   <div className="flex gap-2 mb-4 flex-wrap" style={{ borderBottom: "1px solid #e5e7eb" }}>
-                    {(["manual", "upload"] as const).map((tab) => (
-                      <button
-                        key={tab}
-                        className="px-5 py-2 text-[15px] font-semibold transition-colors duration-150"
-                        style={{
-                          borderBottom: activeTab === tab ? "2px solid #c0596a" : "2px solid transparent",
-                          color: activeTab === tab ? "#c0596a" : "#6b8097",
-                          background: "transparent",
-                        }}
-                        onClick={() => setActiveTab(tab)}
-                      >
-                        {tab === "manual" ? "Enter Receipt Number" : "Upload Receipt Notice"}
-                      </button>
-                    ))}
+                    {(["manual", "upload"] as const).map((tab) => {
+                      const tabLocked = tab === "upload" && isBasic;
+                      return (
+                        <button
+                          key={tab}
+                          className="px-5 py-2 text-[15px] font-semibold transition-colors duration-150 flex items-center gap-1.5"
+                          style={{
+                            borderBottom: activeTab === tab ? "2px solid #c0596a" : "2px solid transparent",
+                            color: tabLocked ? "#a0aec0" : activeTab === tab ? "#c0596a" : "#6b8097",
+                            background: "transparent",
+                            cursor: tabLocked ? "pointer" : "pointer",
+                          }}
+                          onClick={() => {
+                            if (tabLocked) { handleUploadLocked(); return; }
+                            setActiveTab(tab);
+                          }}
+                        >
+                          {tabLocked && <Lock size={12} style={{ color: "#a0aec0" }} />}
+                          {tab === "manual" ? "Enter Receipt Number" : "Upload Receipt Notice"}
+                          {tabLocked && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                              style={{ background: "#fbeaec", color: "#c0596a" }}>
+                              Premium
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
+
                   {activeTab === "manual" ? (
                     <ManualForm
                       onBack={() => setUiState("idle")}
                       onSaved={handleSaved}
                       existingRecord={savedRecord}
                       journeyId={journeyId}
+                      guard={stepEntitlement.guard}
+                      trackingLocked={isBasic}
+                      onTrackingLocked={handleTrackingLocked}
                     />
                   ) : (
+                    /* Should never reach here for Basic since tab click opens modal, but guard anyway */
                     <UploadForm
                       onBack={() => setActiveTab("manual")}
                       onSaved={handleSaved}
                       onFileVault={handleFileVault}
                       existingRecord={savedRecord}
                       journeyId={journeyId}
+                      guard={stepEntitlement.guard}
                     />
                   )}
                 </>
@@ -681,7 +800,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
             </>
           )}
 
-          {/* ── Confirmation + timeline — visible in idle state when a record exists ── */}
+          {/* ── Confirmation + timeline ── */}
           {savedRecord && uiState === "idle" && (
             <>
               <div className="rounded-2xl p-4 sm:p-6 mb-2" style={{ background: "#efe0e6", border: "1.5px solid #c0596a" }}>
@@ -692,20 +811,15 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
                   Rahvana now has the core case reference needed to monitor status changes.
                 </div>
               </div>
-
               <div className="w-full">
                 <StatusTimelinePanel record={savedRecord} />
               </div>
-
-              {/* Vault file confirmation */}
               {vaultDocs[RECEIPT_NOTICE_DOC_ID]?.length > 0 && (
                 <div className="rounded-xl px-5 py-3 mt-3 flex items-center gap-3"
                   style={{ background: "#f4f7fb", border: "1px solid #d0e4f7" }}>
                   <span style={{ color: "#2f6fd4", fontSize: 18 }}>📄</span>
                   <div>
-                    <div className="text-[13px] font-semibold" style={{ color: "#1c2b3a" }}>
-                      Receipt notice saved to document vault
-                    </div>
+                    <div className="text-[13px] font-semibold" style={{ color: "#1c2b3a" }}>Receipt notice saved to document vault</div>
                     <div className="text-[11px]" style={{ color: "#6b8097" }}>
                       {vaultDocs[RECEIPT_NOTICE_DOC_ID].map((v) => v.file.name).join(", ")}
                       {" · "}{vaultDocs[RECEIPT_NOTICE_DOC_ID][0].quality}
@@ -733,6 +847,18 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({ tool, journey
           )}
         </div>
       </div>
+
+      {/* ── Upgrade modal ── */}
+      {upgradeModalFeature && (
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          onClose={() => setUpgradeModalFeature(null)}
+          onConfirm={(action, target) => {
+            // Delegate to your existing upgrade/purchase flow
+            console.log("upgrade", action, target);
+          }}
+        />
+      )}
     </div>
   );
 };
