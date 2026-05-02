@@ -3,14 +3,12 @@
 import { useState, useMemo } from "react";
 import {
   CopyIcon,
-  PrinterIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
   SaveIcon,
   CheckCircle2,
   FileText,
   ClipboardList,
-  Mail,
   Clock,
   Check,
   AlertCircle,
@@ -43,7 +41,7 @@ export default function ActionPlanResults({
 }: ActionPlanResultsProps) {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
-  const [activeTab, setActiveTab] = useState<"plan" | "checklist" | "letter">("plan");
+  const [activeTab, setActiveTab] = useState<"plan" | "checklist">("plan");
   const [currentStageIdx, setCurrentStageIdx] = useState(0);
 
   const data = useMemo(() => {
@@ -110,7 +108,6 @@ export default function ActionPlanResults({
   const tabs = [
     { key: "plan" as const, label: "Action Plan", icon: FileText },
     { key: "checklist" as const, label: "Checklist", icon: ClipboardList },
-    { key: "letter" as const, label: "Cover Letter", icon: Mail },
   ];
 
   return (
@@ -295,7 +292,6 @@ export default function ActionPlanResults({
             <div className="space-y-1.5">
               {[
                 "221(g) Refusal Letter / Slip",
-                "Response Cover Letter (Signed)",
                 cl.passport && "Passport (Original)",
                 cl.medical_examination && "Sealed Medical Results",
               ]
@@ -354,7 +350,6 @@ export default function ActionPlanResults({
             </div>
             <div className="space-y-2">
               {[
-                "Cover letter is signed and dated",
                 "Documents in correct order",
                 "Kept copies of everything",
               ].map((t, i) => (
@@ -363,134 +358,6 @@ export default function ActionPlanResults({
                   {t}
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════ TAB: COVER LETTER ══════════════ */}
-      {activeTab === "letter" && (
-        <div className="animate-in fade-in duration-200">
-          <div className="flex justify-end gap-2 mb-3">
-            <button
-              onClick={() => handleCopyText(buildLetterText(cb, cl, today))}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f1f5f9] text-[11px] font-bold text-[#3a4f63] hover:bg-[#e2e8f0] transition-all"
-            >
-              <CopyIcon size={12} /> Copy
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-[11px] font-bold shadow-sm hover:opacity-90 transition-all"
-            >
-              <PrinterIcon size={12} /> Print
-            </button>
-          </div>
-
-          <div className="bg-white border border-[#d0e4f7] rounded-2xl overflow-hidden shadow-sm">
-            <div className="p-8 md:p-10 font-serif text-[#1c2b3a] leading-relaxed space-y-8">
-              {/* Header */}
-              <div className="not-italic font-sans space-y-0.5">
-                <div className="text-[14px] font-bold text-[#0c1b33]">{today}</div>
-                <div className="text-[13px] text-[#6b8097]">{cb.consularPost}</div>
-                <div className="text-[12px] text-[#6b8097]">Immigrant Visa Unit</div>
-              </div>
-
-              {/* Subject */}
-              <div className="font-sans not-italic border-b border-[#e8f1fb] pb-4">
-                <div className="text-[15px] font-bold text-[#0c1b33]">
-                  Subject: Response to INA 221(g) Refusal
-                </div>
-                {cb.caseNumber && (
-                  <div className="text-[12px] text-primary font-medium mt-0.5">
-                    Case Number: {cb.caseNumber}
-                  </div>
-                )}
-              </div>
-
-              {/* Body */}
-              <div className="space-y-5 text-[14px] italic">
-                <p>Dear Consular Officer,</p>
-                <p>
-                  I am writing in response to the Section 221(g) refusal issued
-                  following my interview on{" "}
-                  {cb.interviewDate
-                    ? new Date(cb.interviewDate).toLocaleDateString()
-                    : "[Date]"}
-                  . I am submitting the requested documents as instructed.
-                </p>
-              </div>
-
-              {/* Applicant Info Card */}
-              <div className="bg-[#f8fafc] rounded-xl border border-[#e8f1fb] p-5 font-sans not-italic">
-                <div className="text-[9px] font-bold uppercase tracking-widest text-[#6b8097] mb-3">
-                  Applicant Information
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    ["Name", cb.beneficiaryName || "[Your Name]"],
-                    ["Case #", cb.caseNumber || "[Case Number]"],
-                    ["Category", cb.visaCategory || "IR-1"],
-                    [
-                      "Interview",
-                      cb.interviewDate
-                        ? new Date(cb.interviewDate).toLocaleDateString()
-                        : "—",
-                    ],
-                  ].map(([label, val], i) => (
-                    <div key={i}>
-                      <div className="text-[10px] text-[#6b8097]">{label}</div>
-                      <div className="text-[13px] font-bold text-[#0c1b33]">{val}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Enclosed Docs */}
-              <div className="font-sans not-italic space-y-3">
-                <div className="text-[13px] font-bold text-[#0c1b33]">
-                  Enclosed Documents:
-                </div>
-                <div className="space-y-1.5 ml-1">
-                  {[
-                    "221(g) Refusal Notice",
-                    cl.passport && "Passport (Original)",
-                    cl.medical_examination && "Medical Examination Results",
-                    cl.i864_affidavit && "I-864 Affidavit of Support",
-                    cl.nadra_birth_cert && "NADRA Birth Certificate",
-                    cl.nadra_marriage_cert && "NADRA Marriage Certificate",
-                    cl.nikah_nama && "Original Nikah Nama",
-                    cl.nadra_divorce_cert && "NADRA Divorce Certificate",
-                    cl.police_certificate && "Police Clearance Certificate",
-                    cl.english_translation && "Certified English Translations",
-                  ]
-                    .filter(Boolean)
-                    .map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 text-[13px] text-[#3a4f63]">
-                        <div className="w-1 h-1 rounded-full bg-[#b8cedf]" />
-                        {item}
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* Closing */}
-              <div className="space-y-8 not-italic font-sans pt-4">
-                <p className="text-[13px] text-[#3a4f63] italic font-serif">
-                  All documents are submitted in accordance with the instructions
-                  provided in the 221(g) letter.
-                </p>
-                <div>
-                  <div className="text-[13px] text-[#3a4f63] mb-8">Sincerely,</div>
-                  <div className="border-t border-[#3a4f63] w-48 pt-1.5">
-                    <div className="text-[14px] font-bold text-[#0c1b33]">
-                      {cb.beneficiaryName || "[Signature]"}
-                    </div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-[#6b8097]">
-                      Applicant
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -524,13 +391,8 @@ function ChecklistRow({ num, text }: { num: number; text: string }) {
 function buildChecklistText(cl: FormSelections) {
   const items = [
     "1. 221(g) Refusal Letter",
-    "2. Cover Letter",
-    cl.passport && "3. Passport",
-    cl.medical_examination && "4. Medical Results",
+    cl.passport && "2. Passport",
+    cl.medical_examination && "3. Medical Results",
   ].filter(Boolean);
   return items.join("\n");
-}
-
-function buildLetterText(cb: FormData, cl: FormSelections, today: string) {
-  return `${today}\n${cb.consularPost}\nImmigrant Visa Unit\n\nSubject: Response to 221(g) – Case ${cb.caseNumber || ""}\n\nDear Consular Officer,\n\nI am submitting the requested documents in response to the Section 221(g) refusal.\n\nSincerely,\n${cb.beneficiaryName || "[Your Name]"}`;
 }
