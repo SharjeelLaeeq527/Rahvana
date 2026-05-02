@@ -111,11 +111,6 @@ export const TrackVisaIssuanceTool: React.FC<TrackVisaIssuanceToolProps> = ({
         </div>
       )}
 
-      {tool.disclaimer && (
-        <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center mt-2">
-          {tool.disclaimer}
-        </p>
-      )}
     </div>
   );
 };

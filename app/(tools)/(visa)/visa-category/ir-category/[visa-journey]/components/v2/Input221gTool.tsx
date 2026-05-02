@@ -67,27 +67,22 @@ export const Input221gTool: React.FC<Input221gToolProps> = ({
                 <Check size={14} strokeWidth={2.5} />
               </div>
               <div className="text-[12px] font-bold uppercase tracking-widest">
-                Checklist Saved
+                Requirements Logged
               </div>
             </div>
             <button
               onClick={handleEdit}
               className="text-[12px] font-bold text-primary hover:underline"
             >
-              Edit Checklist
+              Edit
             </button>
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            Your 221(g) checklist has been recorded. Your custom action plan is ready in the next step.
+            Your 221(g) requirements have been logged. Your personalized action plan is ready in the next step.
           </div>
         </div>
       )}
 
-      {tool.disclaimer && (
-        <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center mt-2">
-          {tool.disclaimer}
-        </p>
-      )}
     </div>
   );
 };
