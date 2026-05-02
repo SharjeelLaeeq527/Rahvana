@@ -147,7 +147,7 @@ export function SubmissionTutorialOverlay({
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center">
+      <div className="flex-1 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center guide-bg">
         <div className="w-full max-w-[580px] flex flex-col">
           <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-primary mb-3.5">
             Submission Guide · {currentStep.label}

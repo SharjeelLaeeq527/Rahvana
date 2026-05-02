@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  CheckCircle2,
+  CheckCircle,
   Package,
   Truck,
   MapPin,
   Clock,
   AlertCircle,
   Loader,
-  CheckCircle,
   Printer,
   Download,
   RefreshCw,
   Lock,
+  Crown,
 } from "lucide-react";
 import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
 import { Input221gTool } from "./Input221gTool";
@@ -179,6 +179,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
 
   const stepEntitlement = useStepEntitlement(step.step_key);
+  // Executive-only (crown) logic
+  const isCrown = stepEntitlement.featureKey === "polio_certificate" || stepEntitlement.featureKey === "action_221g";
 
   // Responsive: track viewport width for conditional inline styles
   const [isMobile, setIsMobile] = useState(false);
@@ -554,8 +556,665 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           : undefined
       }
     >
+       <style>{`
+        /* Reset/base */
+        .asr-root {
+          min-height: 100vh;
+        }
+ 
+        /* ── Layout wrapper ── */
+        .asr-wrapper {
+          max-width: 768px;
+          width: 100%;
+          margin: 0 auto;
+          padding: clamp(12px, 4vw, 32px) clamp(12px, 4vw, 32px) clamp(24px, 5vw, 48px);
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+ 
+        /* ── Eyebrow ── */
+        .asr-eyebrow {
+          font-size: clamp(8px, 1.8vw, 11px);
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: #636B97;
+          margin-bottom: 8px;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 4px;
+          line-height: 1.4;
+        }
+        .asr-eyebrow-sep { color: #BDD7F1; margin: 0 6px; }
+        .asr-eyebrow-current { color: #3B7DD8; }
+ 
+        /* ── Title ── */
+        .asr-title {
+          font-size: clamp(24px, 5.5vw, 40px);
+          font-weight: 800;
+          line-height: 1.12;
+          letter-spacing: -0.02em;
+          margin-bottom: 4px;
+        }
+        .asr-title--ch1 { color: #7c4b26; }
+        .asr-title--ch2 { color: #27192e; }
+        .asr-title--default { color: #0c1b33; }
+ 
+        /* ── Description ── */
+        .asr-desc {
+          font-size: clamp(14px, 2vw, 16px);
+          line-height: 1.7;
+          max-width: 560px;
+          margin-bottom: 16px;
+        }
+        .asr-desc--ch1 { color: #7c4b26; }
+        .asr-desc--ch2 { color: #b48ad6; }
+        .asr-desc--default { color: #3a4f63; }
+ 
+        /* ── Chips ── */
+        .asr-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 16px;
+        }
+        .asr-chip {
+          font-size: clamp(9px, 1.5vw, 11px);
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          padding: 4px 12px;
+          border-radius: 999px;
+          border: 1px solid;
+          white-space: nowrap;
+        }
+        .asr-chip--default {
+          background: #e8f1fb;
+          border-color: #d0e4f7;
+          color: #2f6fd4;
+        }
+        .asr-chip--ch1 {
+          background: #c0596a;
+          border-color: #f7c5cc;
+          color: #fff;
+        }
+        .asr-chip--ch2 {
+          background: transparent;
+          border-color: #e3c6f7;
+          color: #b48ad6;
+        }
+ 
+        /* ── Hero Section ── */
+        .asr-hero {
+          background: linear-gradient(180deg, #28151c 0%, #28151c 100%);
+          color: #fff;
+          border-radius: clamp(16px, 3vw, 24px);
+          padding: clamp(14px, 3.5vw, 28px);
+          box-shadow: 0 18px 48px rgba(12,27,51,0.12);
+          margin-bottom: 4px;
+        }
+        .asr-hero__heading {
+          font-size: clamp(20px, 4.5vw, 30px);
+          font-weight: 800;
+          line-height: 1.15;
+          margin-bottom: 6px;
+        }
+        .asr-hero__heading--rose { color: #c0596a; }
+        .asr-hero__desc {
+          font-size: clamp(13px, 1.8vw, 14px);
+          line-height: 1.65;
+          color: rgba(255,255,255,0.74);
+        }
+        .asr-hero__desc--white { color: #fff; }
+        .asr-badge {
+          display: inline-flex;
+          padding: 7px 12px;
+          border-radius: 999px;
+          font-size: clamp(9px, 1.4vw, 11px);
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-top: 10px;
+          margin-bottom: 12px;
+        }
+        .asr-badge--default {
+          background: rgba(255,255,255,0.08);
+          color: #fff;
+        }
+        .asr-badge--rose {
+          background: #fff;
+          color: #7c4b26;
+        }
+ 
+        /* ── Action Tips Grid ── */
+        .asr-tips-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+          gap: 10px;
+          margin: 16px 0;
+        }
+        .asr-tip {
+          background: rgba(255,255,255,0.06);
+          padding: 12px;
+          border-radius: 14px;
+          font-size: clamp(12px, 1.6vw, 13px);
+          line-height: 1.45;
+          color: rgba(255,255,255,0.82);
+        }
+ 
+        /* ── CTA Buttons ── */
+        .asr-cta-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+          gap: 12px;
+          margin-top: 12px;
+        }
+        .asr-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          border: none;
+          border-radius: 14px;
+          padding: clamp(12px, 2vw, 15px) 18px;
+          font-size: clamp(13px, 2vw, 15px);
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.2s, opacity 0.2s, transform 0.2s;
+          font-family: inherit;
+          text-align: center;
+          line-height: 1.3;
+        }
+        .asr-btn--rose { background: #c0596a; color: #fff; }
+        .asr-btn--rose:hover { background: #a94c5a; }
+        .asr-btn--accent { background: #2f6fd4; color: #fff; }
+        .asr-btn--accent:hover { background: #2460bb; }
+        .asr-btn--sky { background: #e8f1fb; color: #1a3054; }
+        .asr-btn--sky:hover { opacity: 0.8; }
+        .asr-btn:disabled { cursor: not-allowed; opacity: 0.6; }
+ 
+        /* ── Info Cards Row ── */
+        .asr-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+          gap: 12px;
+          margin-top: 12px;
+        }
+        .asr-card {
+          background: #fff;
+          border: 1px solid #d7e3ef;
+          border-radius: clamp(14px, 3vw, 20px);
+          padding: clamp(14px, 2.5vw, 20px);
+          box-shadow: 0 8px 20px rgba(12,27,51,0.04);
+        }
+        .asr-card__title {
+          font-size: clamp(14px, 2vw, 16px);
+          font-weight: 700;
+          color: #0c1b33;
+          margin-bottom: 6px;
+        }
+        .asr-card__sub {
+          font-size: clamp(12px, 1.6vw, 13px);
+          line-height: 1.6;
+          color: #6b8097;
+          margin-bottom: 14px;
+        }
+ 
+        /* ── Mailing Inputs ── */
+        .asr-input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .asr-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .asr-label {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #6b8097;
+        }
+        .asr-input {
+          padding: 12px 14px;
+          border: 1px solid #d7e3ef;
+          border-radius: 10px;
+          font-size: clamp(13px, 1.8vw, 14px);
+          font-family: inherit;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          color: #1c2b3a;
+          background: #fff;
+          outline: none;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .asr-input:focus {
+          border-color: #2f6fd4;
+          box-shadow: 0 0 0 3px rgba(47,111,212,0.12);
+        }
+        .asr-input--error {
+          border-color: #ef4444 !important;
+          box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+        }
+        .asr-error-msg {
+          font-size: 11px;
+          font-weight: 500;
+          color: #dc2626;
+          margin-top: 2px;
+          animation: fadeIn 0.2s ease-in;
+        }
+ 
+        /* ── Status Banner ── */
+        .asr-status-banner {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          background: #e8f5ef;
+          border: 1px solid #b8dbc8;
+          border-radius: 14px;
+          padding: clamp(12px, 2vw, 14px) 16px;
+          color: #15744f;
+          font-size: clamp(12px, 1.6vw, 13px);
+          margin-top: 12px;
+        }
+        .asr-status-banner__icon { flex-shrink: 0; }
+        .asr-status-banner__body { flex: 1; min-width: 0; }
+        .asr-status-banner__heading {
+          display: block;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+        .asr-status-banner__msg {
+          font-size: clamp(11px, 1.5vw, 12px);
+          display: block;
+          margin-bottom: 8px;
+        }
+ 
+        /* ── Tracking Status Row ── */
+        .asr-tracking-section {
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid rgba(21,116,79,0.2);
+        }
+        .asr-tracking-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          margin-bottom: 4px;
+          font-size: clamp(11px, 1.5vw, 12px);
+          flex-wrap: wrap;
+        }
+        .asr-tracking-status {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .asr-tracking-last-checked {
+          font-size: 11px;
+          color: rgba(21,116,79,0.7);
+          margin-bottom: 6px;
+        }
+        .asr-tracking-update-info {
+          font-size: clamp(11px, 1.5vw, 12px);
+          color: rgba(21,116,79,0.6);
+          margin-bottom: 4px;
+          font-weight: 500;
+        }
+ 
+        /* ── Action Items Section ── */
+        .asr-action-items {
+          margin-top: 16px;
+          background: #fff;
+          border: 1px solid #d7e3ef;
+          border-radius: clamp(16px, 3vw, 22px);
+          padding: clamp(14px, 2.5vw, 20px);
+          box-shadow: 0 8px 22px rgba(12,27,51,0.04);
+        }
+        .asr-action-items__title {
+          font-size: clamp(11px, 1.5vw, 13px);
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #6b8097;
+          margin-bottom: 12px;
+        }
+        .asr-action-item {
+          display: flex;
+          gap: 12px;
+          padding: 12px;
+          border-radius: 14px;
+          background: #fbfdff;
+          border: 1px solid #e5edf6;
+          margin-top: 8px;
+        }
+        .asr-action-item:first-child { margin-top: 0; }
+        .asr-action-item__body {
+          flex: 1;
+          font-size: clamp(12px, 1.6vw, 13px);
+          line-height: 1.55;
+          color: #6b8097;
+          min-width: 0;
+        }
+        .asr-action-item__title {
+          display: block;
+          font-size: clamp(13px, 1.8vw, 14px);
+          font-weight: 700;
+          margin-bottom: 2px;
+          color: #0c1b33;
+        }
+ 
+        /* ── Full-Screen Guide Modal ── */
+        .asr-guide-modal {
+          position: fixed;
+          inset: 0;
+          background: #fafcff;
+          z-index: 200;
+          display: flex;
+          flex-direction: column;
+          animation: fadeIn 0.3s ease;
+          overflow: hidden;
+        }
+        .asr-guide-topbar {
+          display: flex;
+          align-items: center;
+          height: clamp(56px, 8vw, 72px);
+          border-bottom: 1px solid #d7e3ef;
+          padding: 0 clamp(12px, 3vw, 24px);
+          gap: 16px;
+          flex-shrink: 0;
+          background: #fafcff;
+        }
+        .asr-guide-close-btn {
+          width: 36px;
+          height: 36px;
+          min-width: 36px;
+          border-radius: 50%;
+          background: #f4f7fb;
+          border: none;
+          cursor: pointer;
+          color: #3a4f63;
+          font-size: 20px;
+          font-weight: bold;
+          transition: background 0.2s;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .asr-guide-close-btn:hover { background: #e8f1fb; }
+        .asr-progress-bar {
+          flex: 1;
+          height: 6px;
+          background: #d0e4f7;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .asr-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #2f6fd4, #69a5ef);
+          transition: width 0.4s ease-out;
+        }
+        .asr-guide-counter {
+          font-size: 12px;
+          font-weight: 700;
+          color: #6b8097;
+          min-width: 50px;
+          text-align: right;
+          flex-shrink: 0;
+        }
+        .asr-guide-body {
+          flex: 1;
+          overflow-y: auto;
+          background: #fafcff;
+          padding: clamp(20px, 4vw, 48px) clamp(12px, 4vw, 32px) clamp(24px, 4vw, 40px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .asr-guide-content {
+          max-width: 580px;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        .asr-guide-step-label {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #2f6fd4;
+          margin-bottom: 12px;
+        }
+        .asr-guide-step-title {
+          font-size: clamp(18px, 3.5vw, 26px);
+          font-weight: 900;
+          color: #0c1b33;
+          margin-bottom: 10px;
+          line-height: 1.3;
+        }
+        .asr-guide-step-text {
+          font-size: clamp(13px, 1.8vw, 14px);
+          color: #3a4f63;
+          line-height: 1.7;
+          margin-bottom: 18px;
+        }
+        .asr-browser-mock {
+          border: 1.5px solid #d7e3ef;
+          border-radius: 10px;
+          overflow: hidden;
+          background: #fff;
+          box-shadow: 0 14px 32px rgba(12,27,51,0.08);
+          margin-bottom: 18px;
+        }
+        .asr-browser-bar {
+          height: 34px;
+          background: #eef3fa;
+          border-bottom: 1px solid #d7e3ef;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding-left: 12px;
+          overflow: hidden;
+        }
+        .asr-browser-dot {
+          width: 9px;
+          height: 9px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .asr-browser-url {
+          margin-left: 8px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          padding: 0 10px;
+          background: #fff;
+          border-radius: 8px;
+          font-size: 10px;
+          color: #6b8097;
+          font-family: monospace;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: clamp(140px, 40vw, 360px);
+        }
+        .asr-browser-content {
+          min-height: clamp(160px, 30vw, 280px);
+          background: linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%);
+          color: #6b8097;
+          font-size: 13px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+        }
+        .asr-guide-note {
+          padding: 12px 14px;
+          border-radius: 14px;
+          background: #fef8e8;
+          border: 1px solid #f0d98a;
+          color: #8a6200;
+          font-size: clamp(12px, 1.6vw, 13px);
+          line-height: 1.55;
+          margin-bottom: 20px;
+        }
+        .asr-guide-nav {
+          display: flex;
+          gap: 10px;
+          margin-top: auto;
+          flex-wrap: wrap;
+        }
+        .asr-btn--back {
+          padding: 12px 20px;
+          background: transparent;
+          color: #3a4f63;
+          border: 1.5px solid #d7e3ef;
+          border-radius: 10px;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: clamp(13px, 1.8vw, 14px);
+          transition: all 0.2s;
+          font-family: inherit;
+          white-space: nowrap;
+        }
+        .asr-btn--back:hover { border-color: #3a4f63; color: #0c1b33; }
+        .asr-btn--next {
+          flex: 1;
+          min-width: 120px;
+          padding: 12px 20px;
+          background: #2f6fd4;
+          border: none;
+          border-radius: 10px;
+          color: #fff;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: clamp(13px, 1.8vw, 14px);
+          transition: all 0.2s;
+          font-family: inherit;
+          text-align: center;
+        }
+        .asr-btn--next:hover { background: #2460bb; transform: translateY(-2px); }
+        .asr-btn--done {
+          flex: 1;
+          min-width: 120px;
+          padding: 12px 20px;
+          background: #15744f;
+          border: none;
+          border-radius: 10px;
+          color: #fff;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: clamp(13px, 1.8vw, 14px);
+          transition: all 0.2s;
+          font-family: inherit;
+          text-align: center;
+        }
+        .asr-btn--done:hover { background: #0e5c3c; transform: translateY(-2px); }
+ 
+        /* ── Guide Choice Modal (overlay) ── */
+        .asr-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 300;
+          padding: clamp(12px, 4vw, 24px);
+        }
+        .asr-choice-modal {
+          background: #fff;
+          border-radius: clamp(16px, 3vw, 24px);
+          padding: clamp(20px, 5vw, 40px);
+          max-width: 500px;
+          width: 100%;
+          box-shadow: 0 20px 60px rgba(12,27,51,0.16);
+          animation: slideUp 0.3s ease;
+          position: relative;
+        }
+        .asr-choice-modal__heading {
+          font-size: clamp(20px, 4vw, 26px);
+          font-weight: 900;
+          color: #0c1b33;
+          margin-bottom: 12px;
+          line-height: 1.3;
+          text-align: center;
+        }
+        .asr-choice-modal__sub {
+          font-size: clamp(13px, 2vw, 15px);
+          color: #3a4f63;
+          line-height: 1.6;
+          text-align: center;
+          margin-bottom: 28px;
+        }
+        .asr-choice-options {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .asr-choice-option {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: clamp(12px, 2.5vw, 18px) clamp(14px, 2.5vw, 20px);
+          background: #fff;
+          border: 2px solid #d7e3ef;
+          border-radius: 16px;
+          cursor: pointer;
+          transition: border-color 0.2s;
+          text-align: left;
+          width: 100%;
+          font-family: inherit;
+        }
+        .asr-choice-option:hover { border-color: #2f6fd4; }
+        .asr-choice-icon {
+          width: clamp(40px, 7vw, 48px);
+          height: clamp(40px, 7vw, 48px);
+          min-width: clamp(40px, 7vw, 48px);
+          border-radius: 12px;
+          background: #e8f1fb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .asr-choice-label {
+          font-size: clamp(13px, 2vw, 15px);
+          font-weight: 700;
+          color: #0c1b33;
+          margin-bottom: 2px;
+        }
+        .asr-choice-sub {
+          font-size: clamp(11px, 1.5vw, 13px);
+          color: #6b8097;
+        }
+ 
+        /* ── Animations ── */
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+ 
+        /* ── Spinner ── */
+        .asr-spin { animation: spin 1s linear infinite; }
+      `}</style>
       {/* Main Content */}
-      <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-6 sm:pt-10 md:pt-14 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
+      <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-1 sm:pt-10 md:pt-3 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
         {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
@@ -606,10 +1265,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         {/* Hero Section */}
         <section
           style={{
-            background:
-              step.step_key === "step_1_11"
-                ? "linear-gradient(180deg, #28151c 0%, #28151c 100%)"
-                : "linear-gradient(180deg, #122541 0%, #0f2038 100%)",
+            background: "linear-gradient(180deg, #28151c 0%, #28151c 100%)",
             color: "#fff",
             borderRadius: "24px",
             padding: isMobile ? "16px" : "24px",
@@ -833,8 +1489,15 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 borderRadius: "20px",
                 padding: isMobile ? "14px" : "18px",
                 boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
+                position: "relative",
               }}
             >
+              {/* Crown icon for Executive-only guide */}
+              {isCrown && (
+                <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
+                  <Crown size={20} color="#a06000" />
+                </div>
+              )}
               <h3
                 style={{
                   fontSize: "16px",
@@ -899,8 +1562,15 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   borderRadius: "20px",
                   padding: isMobile ? "14px" : "18px",
                   boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
+                  position: "relative",
                 }}
               >
+                {/* Crown icon for Executive-only upload/payment */}
+                {isCrown && (
+                  <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
+                    <Crown size={20} color="#a06000" />
+                  </div>
+                )}
                 <h3
                   style={{
                     fontSize: "16px",
@@ -967,8 +1637,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   borderRadius: "20px",
                   padding: isMobile ? "14px" : "18px",
                   boxShadow: "0 8px 20px rgba(12, 27, 51, 0.04)",
+                  position: "relative",
                 }}
               >
+                {/* Crown icon for Executive-only tracking */}
+                {isCrown && (
+                  <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
+                    <Crown size={20} color="#a06000" />
+                  </div>
+                )}
+                                <CheckCircle size={18} style={{ flexShrink: 0 }} />
                 <h3
                   style={{
                     fontSize: "16px",
@@ -1202,7 +1880,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   marginTop: "12px",
                 }}
               >
-                <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
+                <CheckCircle size={18} style={{ flexShrink: 0 }} />
 
                 <div style={{ flex: 1 }}>
                   {/* Common Heading */}

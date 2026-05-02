@@ -124,10 +124,7 @@ import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool"
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import {
-  computeDocumentList,
-  deriveDocAnswersFromEligibility,
-} from "@/lib/questionnaire/engine";
+import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
 import type {
   QuestionnaireResult,
   ConditionalDocument,
@@ -151,7 +148,7 @@ import {
 } from "./GuideTutorialOverlays";
 import {
   DqRecordingTool,
-  // InterviewSchedulingTool,
+  InterviewSchedulingTool,
   AppointmentReceivedTool,
   MedicalExamTool,
   PolioCertificateTool,
@@ -175,8 +172,8 @@ import CaseRegistrationForm from "./CaseRegistrationForm";
 import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
 import { useStepEntitlement } from "./useStepEntitlement";
 import { StepLockedContent } from "./StepLockedContent";
-import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -239,7 +236,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
-
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = usePlan();
   const stepEntitlement = useStepEntitlement(sId);
@@ -305,6 +301,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       note: "Your next task should match the actual update USCIS gives you.",
     },
   ];
+const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | null>(null);
   // Add Evidence Note modal state
   const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] =
     useState(false);
@@ -337,7 +334,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     isDeletingIds,
     deleteDocument,
   } = useDocumentVaultStore();
-
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<
     "doc" | "hh" | "financial" | null
@@ -400,11 +396,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       status: "not-started",
       required: doc.required,
     }));
-  }, [
-    isDocQuestionnaireCompleted,
-    state.metadata?.docQuestionnaireAnswers,
-    derivedDocAnswers,
-  ]);
+  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -429,7 +421,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata.filingMethodConfirmed || false,
   );
   const [isLaunched, setIsLaunched] = useState(false);
-
   // Guarded upload — checks entitlement before opening the vault upload modal
   const guardedOpenUploadModal = useCallback(
     (defId: string) => {
@@ -438,7 +429,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     },
     [stepEntitlement, openUploadModal],
   );
-
   // Wallet States
   const [uscisCredentials, setUscisCredentials] =
     useState<PortalCredential | null>(null);
@@ -488,7 +478,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const financialDocsStatus =
     (state.metadata.financialDocsStatus as Record<string, string>) || {};
 
-  // Tutorial State
+ 
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
   const [tutorialPath, setTutorialPath] = useState<
@@ -635,7 +625,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // CEAC tracking — refused sub-type prompt
   const [refusedPromptOpen, setRefusedPromptOpen] = useState(false);
   const [ceacApiLoading, setCeacApiLoading] = useState(false);
-
+const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   // Step 1.17 Approval Notice States
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [isApprovalGuideOpen, setIsApprovalGuideOpen] = useState(false);
@@ -714,6 +704,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
     setRefusedPromptOpen(false);
   };
+
+  {upgradeModalFeature && (
+  <UpgradeModal
+    feature={upgradeModalFeature}
+    onClose={() => setUpgradeModalFeature(null)}
+  />
+)}
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
   const [gatheringStatus, setGatheringStatus] = useState<
@@ -881,11 +878,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     return null;
   }, [chapters]);
 
-  // Retrieve Courier tool data for Step 3.6 overlay
+  // Retrieve Courier tool data (search for any step that exposes a courier tool)
   const courierToolData = useMemo(() => {
     if (!chapters) return null;
     for (const ch of chapters) {
-      const step = ch.steps?.find((s: any) => s.step_key === "step_3_6");
+      const step = ch.steps?.find((s: any) => s.tool_data?.type === "courier_registration");
       if (step?.tool_data) return step.tool_data;
     }
     return null;
@@ -943,41 +940,36 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Sync with metadata on mount
   React.useEffect(() => {
     if (state.metadata?.uscis_receipt_number) {
-      setRcptManual((prev) => ({
+      setRcptManual(prev => ({
         ...prev,
         receipt: state.metadata.uscis_receipt_number,
         noticeDate: state.metadata.uscis_notice_date || "",
         priorityDate: state.metadata.uscis_priority_date || "",
       }));
-
+      
       if (state.metadata.uscis_tracking_enabled) {
         setRcptUiState("tracked");
       }
     }
-  }, [
-    state.metadata?.uscis_receipt_number,
-    state.metadata?.uscis_tracking_enabled,
-  ]);
+  }, [state.metadata?.uscis_receipt_number, state.metadata?.uscis_tracking_enabled]);
 
   const handleSaveReceipt = () => {
     const isValid = /^[A-Z]{3}[0-9]{10}$/.test(rcptManual.receipt);
     if (!isValid) {
-      setRcptError(
-        "Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).",
-      );
+      setRcptError("Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).");
       setRcptSuccess(false);
       return;
     }
     setRcptError("");
     setRcptSuccess(true);
-
+    
     actions.updateMetadata({
       uscis_receipt_number: rcptManual.receipt,
       uscis_notice_date: rcptManual.noticeDate,
       uscis_priority_date: rcptManual.priorityDate,
-      uscis_tracking_enabled: true,
+      uscis_tracking_enabled: true
     });
-
+    
     setRcptUiState("tracked");
   };
 
@@ -1006,18 +998,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   }
 
-  const allActiveSteps = useMemo(
+    const allActiveSteps = useMemo(
     () => getAllActiveSteps(data, state.metadata, state.filingType),
     [data, state.metadata, state.filingType],
   );
 
-  const globalIdx = allActiveSteps.findIndex(
+   const globalIdx = allActiveSteps.findIndex(
     (s) => (s.step_key || (s as any).id) === sId,
   );
   const localIdx = activeStepsInChapter.findIndex(
     (s: any) => (s.step_key || s.id) === sId,
-  );
-
+  ); 
   const chapterProg = useMemo(
     () => getStageProgress(data, state.currentStage, state),
     [data, state.currentStage, state],
@@ -1483,12 +1474,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   };
+const renderDocActionModal = () => {
+  if (!docActionModal.doc) return null;
+  const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
 
-  const renderDocActionModal = () => {
-    if (!docActionModal.doc) return null;
-    const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
+  const isTranslation =
+    doc.id === "doc_translations" ||
+    doc.guideKey === "doc_translations" ||
+    doc.selectedGuideId === "doc_translations";
+  const isPassportPhoto =
+    doc.id === "doc_passport_photos" ||
+    doc.guideKey === "doc_passport_photos" ||
+    doc.selectedGuideId === "doc_passport_photos";
 
-    return (
+  const guideFeature = isTranslation
+    ? "document_translation"
+    : isPassportPhoto
+      ? "photo_booth"
+      : "step_guides";
+
+  const canReadGuide = plan.canUse(guideFeature);
+  const canUpload = plan.canUse("document_vault");
+
+  return (
+    <>
+      {docActionUpgradeFeature && (
+        <UpgradeModal
+          feature={docActionUpgradeFeature}
+          onClose={() => setDocActionUpgradeFeature(null)}
+        />
+      )}
+
       <Dialog
         open={docActionModal.isOpen}
         onOpenChange={(open) =>
@@ -1506,28 +1522,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                   {(() => {
                     switch (doc.icon) {
-                      case "ShieldCheck":
-                        return <ShieldCheck size={24} />;
-                      case "User":
-                        return <User size={24} />;
-                      case "FileText":
-                        return <FileText size={24} />;
-                      case "FileCheck":
-                        return <FileCheck size={24} />;
-                      case "MessageSquare":
-                        return <MessageSquare size={24} />;
-                      case "Scale":
-                        return <Scale size={24} />;
-                      case "Globe":
-                        return <Globe size={24} />;
-                      case "ClipboardList":
-                        return <ClipboardList size={24} />;
-                      case "Lock":
-                        return <Lock size={24} />;
-                      case "Camera":
-                        return <Camera size={24} />;
-                      default:
-                        return <FileText size={24} />;
+                      case "ShieldCheck": return <ShieldCheck size={24} />;
+                      case "User": return <User size={24} />;
+                      case "FileText": return <FileText size={24} />;
+                      case "FileCheck": return <FileCheck size={24} />;
+                      case "MessageSquare": return <MessageSquare size={24} />;
+                      case "Scale": return <Scale size={24} />;
+                      case "Globe": return <Globe size={24} />;
+                      case "ClipboardList": return <ClipboardList size={24} />;
+                      case "Lock": return <Lock size={24} />;
+                      case "Camera": return <Camera size={24} />;
+                      default: return <FileText size={24} />;
                     }
                   })()}
                 </div>
@@ -1545,115 +1550,95 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Action Card (Guide or Tool) */}
+                {/* ── Read Guide / Launch Tool Card ── */}
                 <button
                   onClick={() => {
-                    const isTranslation =
-                      doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations";
-                    const isPassportPhoto =
-                      doc.id === "doc_passport_photos" ||
-                      doc.guideKey === "doc_passport_photos" ||
-                      doc.selectedGuideId === "doc_passport_photos";
-
-                    const guideFeature = isTranslation
-                      ? "document_translation"
-                      : isPassportPhoto
-                        ? "photo_booth"
-                        : "step_guides";
-
-                    if (!plan.canUse(guideFeature)) {
-                      // Close this modal first, then open upgrade modal
+                    if (!canReadGuide) {
                       setDocActionModal({ ...docActionModal, isOpen: false });
-                      stepEntitlement.openUpgradeModal();
+                      setDocActionUpgradeFeature(guideFeature);
                       return;
                     }
-
                     setDocActionModal({ ...docActionModal, isOpen: false });
                     if (onReadGuide) onReadGuide();
                   }}
-                  className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                    ${
+                      canReadGuide
+                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
+                    }`}
                 >
-                  {(() => {
-                    const isTranslation =
-                      doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations";
-                    const isPassportPhoto =
-                      doc.id === "doc_passport_photos" ||
-                      doc.guideKey === "doc_passport_photos" ||
-                      doc.selectedGuideId === "doc_passport_photos";
-                    const guideFeature = isTranslation
-                      ? "document_translation"
-                      : isPassportPhoto
-                        ? "photo_booth"
-                        : "step_guides";
-                    const isLocked = !plan.canUse(guideFeature);
+                  {/* Crown badge — only when locked */}
+                  {!canReadGuide && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
 
-                    return (
-                      <div className="w-10 h-10 rounded-xl bg-[#e8f1fb] text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors relative">
-                        {isTranslation ? (
-                          <Sparkles size={20} />
-                        ) : isPassportPhoto ? (
-                          <Camera size={20} />
-                        ) : (
-                          <BookOpen size={20} />
-                        )}
-                      </div>
-                    );
-                  })()}
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                      ${
+                        canReadGuide
+                          ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
+                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
+                      }`}
+                  >
+                    {isTranslation ? (
+                      <Sparkles size={20} />
+                    ) : isPassportPhoto ? (
+                      <Camera size={20} />
+                    ) : (
+                      <BookOpen size={20} />
+                    )}
+                  </div>
+
                   <h4 className="font-bold text-[#0f1f38] mb-1">
-                    {doc.id === "doc_translations" ||
-                    doc.guideKey === "doc_translations" ||
-                    doc.selectedGuideId === "doc_translations" ||
-                    doc.id === "doc_passport_photos" ||
-                    doc.guideKey === "doc_passport_photos" ||
-                    doc.selectedGuideId === "doc_passport_photos"
+                    {isTranslation || isPassportPhoto
                       ? "Launch the Tool"
                       : "Read the Guide"}
                   </h4>
                   <p className="text-xs text-[#6b8097] leading-relaxed">
-                    {doc.id === "doc_translations" ||
-                    doc.guideKey === "doc_translations" ||
-                    doc.selectedGuideId === "doc_translations"
+                    {isTranslation
                       ? "Use our automated tool to prepare certified translations for your documents."
-                      : doc.id === "doc_passport_photos" ||
-                          doc.guideKey === "doc_passport_photos" ||
-                          doc.selectedGuideId === "doc_passport_photos"
+                      : isPassportPhoto
                         ? "Generate and validate your passport photos to meet U.S. specifications."
                         : "View requirements, pitfalls, and step-by-step instructions."}
                   </p>
 
-                  {(() => {
-                    const isPassportPhoto =
-                      doc.id === "doc_passport_photos" ||
-                      doc.guideKey === "doc_passport_photos" ||
-                      doc.selectedGuideId === "doc_passport_photos";
-                    if (isPassportPhoto) {
-                      const ent = plan.entitlement("photo_booth");
-                      if (ent.state === "limited") {
-                        return (
-                          <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                            <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
-                              {ent.limit} Credits Included
-                            </span>
-                          </div>
-                        );
-                      }
+                  {/* Photo booth credits badge — only when unlocked and limited */}
+                  {isPassportPhoto && canReadGuide && (() => {
+                    const ent = plan.entitlement("photo_booth");
+                    if (ent.state === "limited") {
+                      return (
+                        <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                            {ent.limit} Credits Included
+                          </span>
+                        </div>
+                      );
                     }
                     return null;
                   })()}
+
+                  {/* Locked hint text */}
+                  {!canReadGuide && (
+                    <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
+                      <Lock size={9} strokeWidth={2.5} />
+                      Not included in your current plan
+                    </p>
+                  )}
                 </button>
 
-                {/* Upload Card */}
+                {/* ── Upload Document Card ── */}
                 <button
                   onClick={() => {
-                    if (!plan.canUse("document_vault")) {
-                      // Close this modal first, then open upgrade modal
+                    if (!canUpload) {
                       setDocActionModal({ ...docActionModal, isOpen: false });
-                      // Custom messages for specific steps as per matrix
+                      // Context-specific toast for certain steps
                       if (sId === "step_1_15") {
                         toast.info(
                           "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
@@ -1665,23 +1650,54 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           { duration: 6000 },
                         );
                       }
-                      stepEntitlement.openUpgradeModal();
+                      setDocActionUpgradeFeature("document_vault");
                       return;
                     }
                     setDocActionModal({ ...docActionModal, isOpen: false });
                     if (onUpload) onUpload();
                   }}
-                  className="group relative text-left p-6 rounded-2xl border-[1.5px] border-[#d0e4f7] bg-white transition-all hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                    ${
+                      canUpload
+                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
+                    }`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#eaf7f2] text-[#1a7a5e] flex items-center justify-center mb-4 group-hover:bg-[#1a7a5e] group-hover:text-white transition-colors relative">
+                  {/* Crown badge — only when locked */}
+                  {!canUpload && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
+
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                      ${
+                        canUpload
+                          ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
+                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
+                      }`}
+                  >
                     <Upload size={20} />
                   </div>
+
                   <h4 className="font-bold text-[#0f1f38] mb-1">
                     Upload Document
                   </h4>
                   <p className="text-xs text-[#6b8097] leading-relaxed">
                     Attach and submit your document for processing.
                   </p>
+
+                  {/* Locked hint text */}
+                  {!canUpload && (
+                    <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
+                      <Lock size={9} strokeWidth={2.5} />
+                      Not included in your current plan
+                    </p>
+                  )}
                 </button>
               </div>
 
@@ -1699,8 +1715,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
         </DialogContent>
       </Dialog>
-    );
-  };
+    </>
+  );
+};
 
   const getHhDocItems = (count: number, rels: Record<number, string>) => {
     const items: any[] = [];
@@ -2023,7 +2040,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               ))}
             </div>
             <button
-              onClick={() => {
+                onClick={() => {
                 if (!stepEntitlement.guard()) return;
                 setUseCeacGuideData(true);
                 setTutorialIdx(0);
@@ -2306,7 +2323,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       <div
         key={item.id}
         onClick={() => {
-          if (!stepEntitlement.guard()) return;
+        if (!stepEntitlement.guard()) return;
           if (hhDocsStatus[item.id] === "not-started") {
             const next = { ...hhDocsStatus, [item.id]: "in-progress" };
             setHhDocsStatus(next);
@@ -2367,7 +2384,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               const defId = mapDocumentNameToId(item.title);
               setActiveUploadId(item.id);
               setActiveUploadType("hh");
-              guardedOpenUploadModal(defId);
+              openUploadModal(defId);
             }}
             className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
           >
@@ -2465,7 +2482,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Entitlement Banner — shown when step features are locked for current plan */}
           <StepEntitlementBanner stepKey={sId} />
-
+          
           {/* UpgradeModal — triggered by stepEntitlement.guard() when user clicks locked content */}
           {stepEntitlement.upgradeModalFeature && (
             <UpgradeModal
@@ -2588,6 +2605,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               guard={stepEntitlement.guard}
             />
           )}
+
 
           {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
           {tool.type === "interview_scheduling" && (
@@ -2763,7 +2781,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             })()}
                           </div>
                           {savedUpdated && (
-                            <div className="text-[10px] text-[#6b8097] ">
+                            <div className="text-[10px] text-[#6b8097]">
                               Last synced: {savedUpdated}
                             </div>
                           )}
@@ -3009,32 +3027,32 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {tool.type === "medical_exam" && (
             <StepLockedContent stepKey={sId} mode="overlay">
-              <MedicalExamTool
-                state={state}
-                actions={actions}
-                medState={{
-                  medSaved,
-                  setMedSaved,
-                  medDate,
-                  setMedDate,
-                  medTime,
-                  setMedTime,
-                  medClinic,
-                  setMedClinic,
-                  isMedWizardOpen,
-                  setIsMedWizardOpen,
-                  medWizardStep,
-                  setMedWizardStep,
-                  medWizardMode,
-                  setMedWizardMode,
-                }}
-                guard={stepEntitlement.guard}
-              />
+            <MedicalExamTool
+              state={state}
+              actions={actions}
+              medState={{
+                medSaved,
+                setMedSaved,
+                medDate,
+                setMedDate,
+                medTime,
+                setMedTime,
+                medClinic,
+                setMedClinic,
+                isMedWizardOpen,
+                setIsMedWizardOpen,
+                medWizardStep,
+                setMedWizardStep,
+                medWizardMode,
+                setMedWizardMode,
+              }}
+              guard={stepEntitlement.guard}
+            />
             </StepLockedContent>
           )}
 
           {tool.type === "polio_certificate" && (
-            <StepLockedContent stepKey={sId} mode="overlay">
+                        <StepLockedContent stepKey={sId} mode="overlay">
               <PolioCertificateTool
                 state={state}
                 actions={actions}
@@ -3052,6 +3070,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               />
             </StepLockedContent>
           )}
+
 
           {tool.type === "police_clearance" && (
             <PoliceClearanceTool
@@ -3071,17 +3090,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 pccOverlayMode,
                 setPccOverlayMode,
               }}
-              openUploadModal={guardedOpenUploadModal}
+              openUploadModal={openUploadModal}
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               uploadedDocuments={uploadedDocuments}
-              guard={stepEntitlement.guard}
+               guard={stepEntitlement.guard}
             />
           )}
 
           {/* FINANCIAL CHECKLIST (Step 2.6 SPECIFIC) */}
           {tool.type === "financial_checklist" && (
-            <StepLockedContent stepKey={sId} mode="overlay">
+           <StepLockedContent stepKey={sId} mode="overlay">
               <FinancialChecklistTool
                 selectedScenario={selectedScenario}
                 setSelectedScenario={setSelectedScenario}
@@ -3109,7 +3128,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               hhDocsStatus={hhDocsStatus}
               setHhDocsStatus={setHhDocsStatus}
               updateMetadata={actions.updateMetadata}
-              openUploadModal={guardedOpenUploadModal}
+              openUploadModal={openUploadModal}
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               setActiveHhDoc={setActiveHhDoc}
@@ -3120,26 +3139,43 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
           {tool.type === "household_member" && renderHouseholdBuilder()}
 
-          {tool.type === "submission_review" && (
-            <SubmissionReviewTool
-              tool={tool}
-              submissionChecklistStatus={submissionChecklistStatus}
-              setSubmissionChecklistStatus={setSubmissionChecklistStatus}
-              setSubmissionGuideIdx={setSubmissionGuideIdx}
-              setIsSubmissionGuideOpen={setIsSubmissionGuideOpen}
-              submissionSaved={submissionSaved}
-              submissionDate={submissionDate}
-              onSave={(data) => {
-                setSubmissionSaved(data.saved);
-                setSubmissionDate(data.date);
-                actions.updateMetadata({
-                  submissionSaved: data.saved,
-                  submissionDate: data.date,
-                });
-              }}
-              guard={stepEntitlement.guard}
-            />
-          )}
+  {tool.type === "submission_review" && (
+  <div className="relative">
+    
+      <SubmissionReviewTool
+    tool={tool}
+    submissionChecklistStatus={submissionChecklistStatus}
+    setSubmissionChecklistStatus={setSubmissionChecklistStatus}
+    setSubmissionGuideIdx={setSubmissionGuideIdx}
+    setIsSubmissionGuideOpen={(open) => {
+      if (!plan.canUse("step_guides")) {
+        setUpgradeModalFeature("step_guides");
+        return;
+      }
+      setIsSubmissionGuideOpen(open);
+    }}
+    submissionSaved={submissionSaved}
+    submissionDate={submissionDate}
+    isStatusLocked={!plan.canUse("tracker_reminders")}
+    onLockedClick={() => setUpgradeModalFeature("tracker_reminders")}
+    onSave={(data) => {
+      if (!plan.canUse("tracker_reminders")) {
+        setUpgradeModalFeature("tracker_reminders");
+        return;
+      }
+      setSubmissionSaved(data.saved);
+      setSubmissionDate(data.date);
+      actions.updateMetadata({
+        submissionSaved: data.saved,
+        submissionDate: data.date,
+      });
+    }}
+    guard={stepEntitlement.guard}
+
+  />
+
+  </div>
+)}
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && (
@@ -3172,6 +3208,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setMedicalGuideIdx={setMedicalGuideIdx}
               setIsMedicalGuideOpen={setIsMedicalGuideOpen}
               guard={stepEntitlement.guard}
+
             />
           )}
 
@@ -3209,7 +3246,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               guard={stepEntitlement.guard}
             />
           )}
-
+          
           {/* INTERVIEW OUTCOME CONTENT (Step 3.9 SPECIFIC) */}
           {tool.type === "interview_outcome" && (
             <InterviewOutcomeTool
@@ -3219,8 +3256,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               guard={stepEntitlement.guard}
             />
           )}
-
-          {/* VISA ISSUANCE CONTENT (Step 3.10 SPECIFIC) */}
+           {/* VISA ISSUANCE CONTENT (Step 3.10 SPECIFIC) */}
           {tool.type === "visa_issuance" && (
             <TrackVisaIssuanceTool
               tool={tool}
@@ -3249,7 +3285,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             />
           )}
 
-          {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.12 / 3.13 SPECIFIC) */}
+          {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.9 SPECIFIC) */}
           {tool.type === "adm_processing" && (
             <div className="flex flex-col mt-4">
               {/* Explainer Banner */}
@@ -3636,16 +3672,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
               </div>
 
-              {/* Info Sections — compact grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+              {/* Info Sections */}
+              <div className="flex flex-col gap-3.5 mb-2">
                 {tool.info_sections.map((section: any, idx: number) => (
                   <div
                     key={idx}
-                    className="bg-[#fafcff] border border-[#d0e4f7] rounded-xl p-4"
+                    className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 shadow-[0_4px_20px_rgba(12,27,51,0.06)]"
                   >
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2.5 mb-4">
                       <div
-                        className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 border ${
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
                           section.type === "sky"
                             ? "bg-[#e8f1fb] border-[#d0e4f7]"
                             : "bg-[#e8f6f6] border-[#9fd6d6]"
@@ -3653,33 +3689,31 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       >
                         {section.icon === "info" ? (
                           <Info
-                            size={13}
+                            size={16}
                             className="text-[#2f6fd4]"
                             strokeWidth={2}
                           />
                         ) : (
                           <Check
-                            size={13}
+                            size={16}
                             className="text-[#0d6b6b]"
                             strokeWidth={2.5}
                           />
                         )}
                       </div>
-                      <div className="text-[13px] font-bold text-[#0c1b33]">
+                      <div className="text-[14px] font-bold text-[#0c1b33]">
                         {section.title}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                      {section.items
-                        .slice(0, 4)
-                        .map((item: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <div className="w-1 h-1 rounded-full bg-[#b8cedf] mt-[7px] shrink-0" />
-                            <span className="text-[12px] text-[#3a4f63] leading-relaxed">
-                              {item}
-                            </span>
-                          </div>
-                        ))}
+                    <div className="flex flex-col gap-2.5">
+                      {section.items.map((item: string, i: number) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
+                          <span className="text-[13px] text-[#3a4f63] leading-relaxed">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -3713,7 +3747,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {/* Module Header */}
                   <div className="flex items-start gap-[16px] mb-[26px]">
                     <div
-                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border relative ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
+                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
                     >
                       <IconComponent
                         size={22}
@@ -3866,7 +3900,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             setIsLaunched(true);
                           }
                         }}
-                        className={`relative inline-flex items-center justify-center w-full p-[16px_28px] rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer
+                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
@@ -3903,8 +3937,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ) : (
                           <>
                             <span>{tool.launch_module.button_label}</span>
-                            <div className="absolute -top-3 -right-3 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white text-white shadow-lg group-hover:scale-110 transition-transform duration-200">
-                              <Crown size={16} strokeWidth={2.5} />
+                            <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
+                              <ArrowRight size={16} strokeWidth={2} />
                             </div>
                           </>
                         )}
@@ -4027,12 +4061,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       [item.id]: "in-progress",
                                     },
                                   });
-                                  if (!stepEntitlement.guard()) return;
                                   setActiveCivilDoc(item);
                                   setIsCivilDocGuideOpen(true);
                                 }
                               },
-                              onUpload: () => {
+                               onUpload: () => {
                                 const defId = mapDocumentNameToId(item.title);
                                 setActiveUploadId(item.id);
                                 setActiveUploadType("doc");
@@ -4345,7 +4378,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) ? (
                   /* Saved Card */
                   <button
-                    onClick={() => {
+                     onClick={() => {
                       if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
@@ -4382,7 +4415,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   /* Unsaved Card */
                   <button
                     onClick={() => {
-                      if (!stepEntitlement.guard()) return;
+                       if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4516,173 +4549,249 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* Guide / Wallet Cards Row */}
-          {(tool.guide_card || tool.wallet_card) && (
-            <div
-              className={`grid grid-cols-1 ${
-                tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
-              } gap-[12px] mb-[28px]`}
-            >
-              {tool.guide_card && (
-                <button
-                  onClick={() => {
-                    if (!stepEntitlement.guard()) return;
-                    setTutorialIdx(0);
-                    setIsTutorialOpen(true);
-                  }}
-                  className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex ${
-                    tool.wallet_card
-                      ? "p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px"
-                      : "p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
+{(tool.guide_card || tool.wallet_card) && (
+  <div
+    className={`grid grid-cols-1 ${
+      tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
+    } gap-[12px] mb-[28px]`}
+  >
+    {tool.guide_card && (() => {
+      const guideFeatureKey = "step_guides";
+      const isGuideLocked = !plan.canUse(guideFeatureKey);
+
+      return (
+        <button
+          onClick={() => {
+            if (isGuideLocked) {
+              setUpgradeModalFeature(guideFeatureKey);
+            } else {
+              setTutorialIdx(0);
+              setIsTutorialOpen(true);
+            }
+          }}
+          className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative ${
+            tool.wallet_card
+              ? `p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] ${
+                  isGuideLocked
+                    ? "hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
+                    : "hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+                } hover:-translate-y-px`
+              : `p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
+                  isGuideLocked
+                    ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
+                    : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
+                }`
+          }`}
+        >
+          {/* Crown lock badge — shown only when locked */}
+          
+          {tool.wallet_card ? (
+            /* Vertical Design (Original - Shared) */
+            <>
+              <div className="flex items-center gap-[10px] mb-[12px]">
+                <div
+                  className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 transition-opacity ${
+                    isGuideLocked
+                      ? "bg-[#f3f0fb] border-[#c9bef2] opacity-50"
+                      : "bg-[#f3f0fb] border-[#c9bef2]"
                   }`}
                 >
-                  {tool.wallet_card ? (
-                    /* Vertical Design (Original - Shared) */
-                    <>
-                      <div className="flex items-center gap-[10px] mb-[12px]">
-                        <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                          <Monitor
-                            size={18}
-                            className="text-[#4a2d8a]"
-                            strokeWidth={1.7}
-                          />
-                        </div>
-                      </div>
-                      <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                        {tool.guide_card.title}
-                      </h3>
-                      <p className="text-[12px] text-[#6b8097] leading-normal">
-                        {tool.guide_card.subtitle}
-                      </p>
-                      <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
-                        <span>View guide</span>
-                        <ArrowRight size={11} strokeWidth={2} />
-                      </div>
-                    </>
-                  ) : (
-                    /* Horizontal Design (New Reference - Solo) */
-                    <>
-                      <div className="w-[52px] h-[52px] rounded-[14px] bg-[#f3f0fb] border border-[#c9bef2]/60 flex items-center justify-center shrink-0">
-                        <Monitor
-                          size={22}
-                          className="text-[#4a2d8a]"
-                          strokeWidth={1.7}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-[15px] font-bold text-[#0c1b33] mb-1 sm:mb-1.5 truncate">
-                          {tool.guide_card.title}
-                        </h3>
-
-                        <p className="text-[13px] text-[#6b8097] leading-relaxed sm:leading-normal line-clamp-2">
-                          {tool.guide_card.subtitle}
-                        </p>
-                      </div>
-                      <div className="w-[32px] h-[32px] rounded-full bg-[#f4f7fb] flex items-center justify-center text-[#6b8097] group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
-                        <ArrowRight size={14} strokeWidth={2.5} />
-                      </div>
-                    </>
-                  )}
-                </button>
-              )}
-
-              {tool.wallet_card && (
-                <button
-                  onClick={() => {
-                    if (!stepEntitlement.guard()) return;
-                    if (tool.wallet_card?.type === "nvc_fee") {
-                      setIsNvcFeeModalOpen(true);
-                    } else if (tool.wallet_card?.type === "ceac_creds") {
-                      setIsCeacModalOpen(true);
-                    }
-                  }}
-                  className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col
-                    ${
-                      (tool.wallet_card?.type === "ceac_creds" &&
-                        ceacCredentials) ||
-                      (tool.wallet_card?.type === "nvc_fee" &&
-                        state.metadata.nvcFeeStatus)
-                        ? "border-[#a8d9be] bg-[#e8f5ef]"
-                        : "border-[#d0e4f7] hover:border-primary"
-                    }
-                  `}
+                  <Monitor
+                    size={18}
+                    className="text-[#4a2d8a]"
+                    strokeWidth={1.7}
+                  />
+                </div>
+              </div>
+              <h3
+                className={`text-[14px] font-semibold mb-1 ${
+                  isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
+                }`}
+              >
+                {tool.guide_card.title}
+              </h3>
+              <p
+                className={`text-[12px] leading-normal ${
+                  isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
+                }`}
+              >
+                {tool.guide_card.subtitle}
+              </p>
+              <div
+                className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+                  isGuideLocked ? "text-[#a06000]" : "text-primary"
+                }`}
+              >
+                {isGuideLocked ? (
+  <>
+    <Crown size={11} strokeWidth={2.4} />
+    <span>View guide</span>
+    <ArrowRight size={11} strokeWidth={2} />
+  </>
+) : (
+  <>
+    <span>View guide</span>
+    <ArrowRight size={11} strokeWidth={2} />
+  </>
+)}
+              </div>
+            </>
+          ) : (
+            /* Horizontal Design (New Reference - Solo) */
+            <>
+              <div
+                className={`w-[52px] h-[52px] rounded-[14px] border flex items-center justify-center shrink-0 transition-opacity ${
+                  isGuideLocked
+                    ? "bg-[#f3f0fb] border-[#c9bef2]/60 opacity-50"
+                    : "bg-[#f3f0fb] border-[#c9bef2]/60"
+                }`}
+              >
+                <Monitor
+                  size={22}
+                  className="text-[#4a2d8a]"
+                  strokeWidth={1.7}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3
+                  className={`text-[15px] font-bold mb-1 sm:mb-1.5 truncate ${
+                    isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
+                  }`}
                 >
-                  <div className="flex items-center gap-[10px] mb-[12px]">
-                    <div
-                      className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0
-                      ${
-                        (tool.wallet_card?.type === "ceac_creds" &&
-                          ceacCredentials) ||
-                        (tool.wallet_card?.type === "nvc_fee" &&
-                          state.metadata.nvcFeeStatus)
-                          ? "bg-[#e8f5ef] border-[#a8d9be]"
-                          : tool.wallet_card?.type === "ceac_creds"
-                            ? "bg-[#e8f5ef] border-[#a8d9be]"
-                            : "bg-[#e6f6f6] border-[#9fd8d8]"
-                      }
-                    `}
-                    >
-                      {tool.wallet_card?.type === "ceac_creds" ? (
-                        <Lock
-                          size={18}
-                          className="text-[#15744f]"
-                          strokeWidth={1.7}
-                        />
-                      ) : (
-                        <CreditCard
-                          size={18}
-                          className="text-[#0f7373]"
-                          strokeWidth={1.7}
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <h3
-                    className={`text-[14px] font-semibold mb-1 ${
-                      (tool.wallet_card?.type === "ceac_creds" &&
-                        ceacCredentials) ||
-                      (tool.wallet_card?.type === "nvc_fee" &&
-                        state.metadata.nvcFeeStatus)
-                        ? "text-[#15744f]"
-                        : "text-[#0c1b33]"
-                    }`}
-                  >
-                    {(tool.wallet_card?.type === "ceac_creds" &&
-                      ceacCredentials) ||
-                    (tool.wallet_card?.type === "nvc_fee" &&
-                      state.metadata.nvcFeeStatus)
-                      ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
-                      : tool.wallet_card?.title}
-                  </h3>
-                  <p className="text-[12px] text-[#6b8097] leading-normal">
-                    {tool.wallet_card?.subtitle}
-                  </p>
-                  <div
-                    className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-                      (tool.wallet_card?.type === "ceac_creds" &&
-                        ceacCredentials) ||
-                      (tool.wallet_card?.type === "nvc_fee" &&
-                        state.metadata.nvcFeeStatus)
-                        ? "text-[#15744f]"
-                        : "text-primary"
-                    }`}
-                  >
-                    <span>
-                      {(tool.wallet_card?.type === "ceac_creds" &&
-                        ceacCredentials) ||
-                      (tool.wallet_card?.type === "nvc_fee" &&
-                        state.metadata.nvcFeeStatus)
-                        ? "View saved details"
-                        : tool.wallet_card?.type === "ceac_creds"
-                          ? "Open credential vault"
-                          : "Update payment record"}
-                    </span>
-                    <ArrowRight size={11} strokeWidth={2} />
-                  </div>
-                </button>
-              )}
-            </div>
+                  {tool.guide_card.title}
+                </h3>
+                <p
+                  className={`text-[13px] leading-relaxed sm:leading-normal line-clamp-2 ${
+                    isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
+                  }`}
+                >
+                  {tool.guide_card.subtitle}
+                </p>
+              </div>
+              <div
+  className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors shrink-0 ${
+    isGuideLocked
+      ? "bg-[#fef3d8] text-[#a06000] group-hover:bg-[#f0c878] group-hover:text-[#6b3a00]"
+      : "bg-[#f4f7fb] text-[#6b8097] group-hover:bg-primary group-hover:text-white"
+  }`}
+>
+  {isGuideLocked ? (
+    <Crown size={13} strokeWidth={2.4} />
+  ) : (
+    <ArrowRight size={14} strokeWidth={2.5} />
+  )}
+</div>
+            </>
           )}
+        </button>
+      );
+    })()}
 
+    {tool.wallet_card && (() => {
+  const walletFeatureKey = "tracker_reminders";
+  const isWalletLocked = !plan.canUse(walletFeatureKey);
+
+  return (
+    <button
+      onClick={() => {
+        if (isWalletLocked) {
+          setUpgradeModalFeature(walletFeatureKey);
+          return;
+        }
+        if (tool.wallet_card?.type === "nvc_fee") {
+          setIsNvcFeeModalOpen(true);
+        } else if (tool.wallet_card?.type === "ceac_creds") {
+          setIsCeacModalOpen(true);
+        }
+      }}
+      className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col relative
+        ${
+          isWalletLocked
+            ? "border-[#d0e4f7] hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
+            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+              ? "border-[#a8d9be] bg-[#e8f5ef]"
+              : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+        }
+      `}
+    >
+      {/* Crown lock badge */}
+     
+      <div className="flex items-center gap-[10px] mb-[12px]">
+        <div
+          className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
+            isWalletLocked
+              ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
+              : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+                (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+                ? "bg-[#e8f5ef] border-[#a8d9be]"
+                : tool.wallet_card?.type === "ceac_creds"
+                  ? "bg-[#e8f5ef] border-[#a8d9be]"
+                  : "bg-[#e6f6f6] border-[#9fd8d8]"
+          }`}
+        >
+          {tool.wallet_card?.type === "ceac_creds" ? (
+            <Lock size={18} className="text-[#15744f]" strokeWidth={1.7} />
+          ) : (
+            <CreditCard size={18} className={isWalletLocked ? "text-[#0f7373]" : "text-[#0f7373]"} strokeWidth={1.7} />
+          )}
+        </div>
+      </div>
+
+      <h3
+        className={`text-[14px] font-semibold mb-1 ${
+          isWalletLocked
+            ? "text-[#6b8097]"
+            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+              ? "text-[#15744f]"
+              : "text-[#0c1b33]"
+        }`}
+      >
+        {!isWalletLocked &&
+        ((tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+          (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus))
+          ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
+          : tool.wallet_card?.title}
+      </h3>
+
+      <p className={`text-[12px] leading-normal ${isWalletLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}>
+        {tool.wallet_card?.subtitle}
+      </p>
+
+      <div
+        className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+          isWalletLocked
+            ? "text-[#a06000]"
+            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+              ? "text-[#15744f]"
+              : "text-primary"
+        }`}
+      >
+        {isWalletLocked ? (
+          <>
+            <Lock size={11} strokeWidth={2.2} />
+            <span>Unlock feature</span>
+            <ArrowRight size={11} strokeWidth={2} />
+          </>
+        ) : (
+          <span>
+            {(tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+            (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+              ? "View saved details"
+              : tool.wallet_card?.type === "ceac_creds"
+                ? "Open credential vault"
+                : "Update payment record"}
+            <ArrowRight size={11} strokeWidth={2} className="inline ml-1" />
+          </span>
+        )}
+      </div>
+    </button>
+  );
+})()}
+  </div>
+)}
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
@@ -4736,8 +4845,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               ))}
             </div>
           )}
-
-          {/* Disclaimer */}
+{/* Disclaimer */}
           <p
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
@@ -4749,35 +4857,40 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   };
 
-  if (customRenderer) {
+   if (customRenderer) {
     return (
       <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
         <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
           {customRenderer}
         </div>
-        <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center gap-2 px-4 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-          <button
-            onClick={() =>
-              prevStep &&
-              handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-            }
-            className={`px-4 py-[9px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] font-medium text-[#6b8097] flex items-center gap-[5px] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-          >
-            <ArrowLeft size={12} strokeWidth={2.5} />
-            Previous
-          </button>
-          <div className="flex-1 flex items-center gap-2 mx-auto px-4">
-            <div className="flex-1 h-1 bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-              <div
-                className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500 ease-out"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <div className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-              Step {localIdx + 1} of {activeStepsInChapter.length}
-            </div>
+              <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        {/* Prev */}
+        <button
+          onClick={() =>
+            prevStep &&
+            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
+          }
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+        >
+          <ArrowLeft size={13} strokeWidth={2.5} />
+          Prev
+        </button>
+
+        {/* Progress */}
+        <div className="flex-1 flex items-center gap-2">
+          <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
+              style={{ width: `${progressPct}%` }}
+            />
           </div>
-          <button
+          <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+            {localIdx + 1} / {activeStepsInChapter.length}
+          </span>
+        </div>
+
+        {/* Next */}
+        <button
             onClick={() =>
               nextStep &&
               handleNavigate((nextStep as any).step_key || (nextStep as any).id)
@@ -5140,7 +5253,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 isChapter1={isChapter1}
                 isChapter2={isChapter2}
                 isChapter3={isChapter3}
-                guard={stepEntitlement.guard}
+                 guard={stepEntitlement.guard}
               />
             </div>
           ) : currentStep.step_type === "docs" ? (
@@ -5161,64 +5274,47 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   }}
                 />
               )}
-              <div className="w-full flex flex-col items-center px-4 sm:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                {/* Questionnaire CTA — only for step_1_2 when not yet completed */}
-                {/* uncomment this line */}
+            <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+
+                {/* Questionnaire CTA */}
                 {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
-                <div
-                  className="
-                  max-w-3xl w-full mx-auto
-                  px-3 sm:px-4 md:px-8
-                  pt-10 sm:pt-12 md:pt-14
-                  pb-8 md:pb-12
-                  flex flex-col gap-3
-                  "
-                >
+                <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
                   <button
                     onClick={() => setShowDocQuestionnaire(true)}
-                    className="w-full p-[20px_24px] rounded-[16px] border-[2px] border-primary bg-[rgba(59,125,216,0.06)] hover:bg-[rgba(59,125,216,0.12)] hover:shadow-[0_4px_20px_rgba(59,125,216,0.15)] hover:-translate-y-px transition-all cursor-pointer text-left group"
+                    className="w-full rounded-2xl border-2 border-primary bg-[rgba(59,125,216,0.06)] hover:bg-[rgba(59,125,216,0.12)] hover:shadow-[0_4px_20px_rgba(59,125,216,0.15)] hover:-translate-y-px transition-all cursor-pointer text-left group p-4 sm:p-6"
                   >
-                    <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-[6px]">
+                    <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-primary mb-1 sm:mb-1.5">
                       Recommended · Takes 1 minute
                     </div>
-
-                    <h3 className="text-[16px] font-semibold text-[#0f1f38] mb-[4px]">
+                    <h3 className="text-sm sm:text-base font-semibold text-[#0f1f38] mb-0.5 sm:mb-1 leading-snug">
                       Personalize Your Document Checklist
                     </h3>
-                    <p className="text-[13px] text-[#6b8097] leading-[1.5] mb-[10px]">
-                      Answer a few questions about your situation so we can add
-                      or remove documents that apply to you specifically.
+                    <p className="text-xs sm:text-[13px] text-[#6b8097] leading-relaxed mb-2 sm:mb-3">
+                      Answer a few questions about your situation so we can add or remove documents that apply to you specifically.
                     </p>
-                    <div className="flex items-center gap-[6px] text-[13px] font-semibold text-primary">
+                    <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-primary">
                       <span>Start Personalization</span>
-                      <ArrowRight size={14} strokeWidth={2} />
+                      <ArrowRight size={13} strokeWidth={2} />
                     </div>
                   </button>
                 </div>
                 {/* )} */}
 
-                {/* Header for Docs */}
+                {/* Document Cards */}
                 {(() => {
-                  // Use questionnaire-computed docs if available, otherwise fall back to JSON data
                   const effectiveDocItems =
                     sId === "step_1_2" && questionnaireDocItems
                       ? questionnaireDocItems
-                      : (currentStep as any).document_items ||
-                        currentStep.document_items;
+                      : (currentStep as any).document_items || currentStep.document_items;
                   return (
                     <>
-                      {/* Document Cards */}
-                      <div className="w-full max-w-[740px]">
+                      <div className="w-full max-w-[740px] px-0">
                         <div className="w-full">
                           {(() => {
                             const docItems = effectiveDocItems;
                             if (!docItems) return [];
                             const uniqueGroups = Array.from(
-                              new Set(
-                                docItems.map(
-                                  (d: any) => d.group || "Required Now",
-                                ),
-                              ),
+                              new Set(docItems.map((d: any) => d.group || "Required Now")),
                             );
                             const defaultOrder = [
                               "Required Now",
@@ -5230,54 +5326,42 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             return (uniqueGroups as string[]).sort((a, b) => {
                               const idxA = defaultOrder.indexOf(a);
                               const idxB = defaultOrder.indexOf(b);
-                              if (idxA !== -1 && idxB !== -1)
-                                return idxA - idxB;
+                              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
                               if (idxA !== -1) return -1;
                               if (idxB !== -1) return 1;
                               return a.localeCompare(b);
                             });
                           })().map((groupName) => {
-                            // const docItems =
-                            //   (currentStep as any).document_items ||
-                            //   currentStep.document_items;
                             const docItems = effectiveDocItems;
                             const groupItems = docItems?.filter(
-                              (d: any) =>
-                                (d.group || "Required Now") === groupName,
+                              (d: any) => (d.group || "Required Now") === groupName,
                             );
 
-                            if (!groupItems || groupItems.length === 0)
-                              return null;
+                            if (!groupItems || groupItems.length === 0) return null;
 
                             return (
                               <div
                                 key={groupName}
-                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-[32px]"
+                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-6 sm:mb-8"
                               >
-                                <div className="flex items-center gap-[10px] mb-[14px]">
-                                  <span className="text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap">
+                                {/* Group Header */}
+                                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                                  <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap shrink-0">
                                     {groupName}
                                   </span>
-                                  <div className="h-px flex-1 bg-primary/30" />
+                                  <div className="h-px flex-1 bg-primary/30 min-w-0" />
                                 </div>
 
-                                <div className="flex flex-col">
+                                <div className="flex flex-col gap-2 sm:gap-2.5">
                                   {groupItems.map((doc: any, idx: number) => {
-                                    const docReviewStatus =
-                                      state.metadata?.docReviewStatus?.[doc.id];
+                                    const docReviewStatus = state.metadata?.docReviewStatus?.[doc.id];
                                     const isReviewed =
-                                      docReviewStatus === "reviewed" ||
-                                      state.documentChecklist[doc.name];
-                                    const hasAttachment =
-                                      state.docUploads[doc.name] ||
-                                      state.notes[doc.name];
+                                      docReviewStatus === "reviewed" || state.documentChecklist[doc.name];
+                                    const hasAttachment = state.docUploads[doc.name] || state.notes[doc.name];
                                     const isInProgress =
-                                      (hasAttachment && !isReviewed) ||
-                                      docReviewStatus === "in-progress";
-                                    const isPetitioner =
-                                      doc.tag === "petitioner";
-                                    const isBeneficiary =
-                                      doc.tag === "beneficiary";
+                                      (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
+                                    const isPetitioner = doc.tag === "petitioner";
+                                    const isBeneficiary = doc.tag === "beneficiary";
 
                                     return (
                                       <div
@@ -5289,281 +5373,173 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                             title: doc.name,
                                             subtitle: doc.subtitle,
                                             onReadGuide: () => {
-                                              if (
-                                                doc.guideUrl &&
-                                                doc.guideUrl !== "/guides"
-                                              ) {
-                                                window.open(
-                                                  doc.guideUrl,
-                                                  "_blank",
-                                                );
-                                                if (
-                                                  actions.updateDocumentStatus &&
-                                                  doc.id
-                                                ) {
-                                                  actions.updateDocumentStatus(
-                                                    doc.id,
-                                                    "reviewed",
-                                                  );
+                                              if (doc.guideUrl && doc.guideUrl !== "/guides") {
+                                                window.open(doc.guideUrl, "_blank");
+                                                if (actions.updateDocumentStatus && doc.id) {
+                                                  actions.updateDocumentStatus(doc.id, "reviewed");
                                                 }
                                               } else {
-                                                setSelectedGuideId(
-                                                  doc.id || null,
-                                                );
-                                                if (
-                                                  actions.updateDocumentStatus &&
-                                                  doc.id
-                                                ) {
-                                                  actions.updateDocumentStatus(
-                                                    doc.id,
-                                                    "in-progress",
-                                                  );
+                                                setSelectedGuideId(doc.id || null);
+                                                if (actions.updateDocumentStatus && doc.id) {
+                                                  actions.updateDocumentStatus(doc.id, "in-progress");
                                                 }
                                               }
                                             },
                                             onUpload: () => {
-                                              const defId = mapDocumentNameToId(
-                                                doc.name,
-                                              );
+                                              const defId = mapDocumentNameToId(doc.name);
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
-
-                                              if (!stepEntitlement.guard())
-                                                return;
-
-                                              if (
-                                                doc.id === "doc_citizenship"
-                                              ) {
-                                                setMultipleUploadModalState({
-                                                  isOpen: true,
-                                                  categoryId: defId,
-                                                  documentName: doc.name,
-                                                  options: [
-                                                    "U.S. passport",
-                                                    "U.S. birth certificate",
-                                                    "Certificate of Naturalization (Form N-550)",
-                                                    "Certificate of Citizenship (Form N-560)",
-                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
-                                                  ],
-                                                });
-                                              } else if (
-                                                doc.id === "doc_relationship"
-                                              ) {
-                                                setMultipleUploadModalState({
-                                                  isOpen: true,
-                                                  categoryId: defId,
-                                                  documentName: doc.name,
-                                                  options: [
-                                                    "Communication history",
-                                                    "Photos together",
-                                                    "Travel history",
-                                                    "Shared finances",
-                                                    "Shared residence",
-                                                    "Family evidence",
-                                                    "Affidavits",
-                                                  ],
-                                                });
-                                              } else if (
-                                                doc.id === "doc_translations"
-                                              ) {
-                                                setMultipleUploadModalState({
-                                                  isOpen: true,
-                                                  categoryId: defId,
-                                                  documentName: doc.name,
-                                                  options: [
-                                                    "Translated Nikah Nama",
-                                                    "Translated NADRA MRC",
-                                                    "Translated Birth Certificate",
-                                                    "Translated Divorce Decree",
-                                                    "Other Translated Civil Documents",
-                                                  ],
-                                                });
-                                              } else {
-                                                openUploadModal(defId);
-                                              }
+                                              openUploadModal(defId);
                                             },
                                           });
                                         }}
-                                        className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
-                                          ${
-                                            isReviewed
-                                              ? "bg-[#eaf7ff] border-[#b8daff]"
-                                              : isInProgress
-                                                ? "bg-[#fff9e6] border-[#fde68a]/50"
-                                                : "bg-white border-[#d0e4f7]"
+                                        className={`group flex items-start sm:items-center gap-3 sm:gap-4 
+                                          px-3 sm:px-5 py-3.5 sm:py-5 
+                                          rounded-xl sm:rounded-2xl border-[1.5px] 
+                                          transition-all cursor-pointer relative 
+                                          shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] 
+                                          hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] 
+                                          hover:-translate-y-px active:translate-y-0 
+                                          active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)]
+                                          ${isReviewed
+                                            ? "bg-[#eaf7ff] border-[#b8daff]"
+                                            : isInProgress
+                                              ? "bg-[#fff9e6] border-[#fde68a]/50"
+                                              : "bg-white border-[#d0e4f7]"
                                           }`}
                                       >
+                                        {/* Icon */}
                                         <div
-                                          className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px]
-                                  ${
-                                    isReviewed
-                                      ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
-                                      : isInProgress
-                                        ? "bg-white border-[#fde68a] text-[#d97706]"
-                                        : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
-                                  }`}
+                                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 border
+                                            ${isReviewed
+                                              ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
+                                              : isInProgress
+                                                ? "bg-white border-[#fde68a] text-[#d97706]"
+                                                : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
+                                            }`}
                                         >
                                           {isReviewed ? (
-                                            <CheckCircle2
-                                              size={18}
-                                              strokeWidth={2.5}
-                                            />
+                                            <CheckCircle2 size={16} strokeWidth={2.5} className="sm:w-[18px] sm:h-[18px]" />
                                           ) : (
                                             (() => {
+                                              const iconSize = 16;
                                               switch (doc.icon) {
-                                                case "ShieldCheck":
-                                                  return (
-                                                    <ShieldCheck size={18} />
-                                                  );
-                                                case "User":
-                                                  return <User size={18} />;
-                                                case "FileText":
-                                                  return <FileText size={18} />;
-                                                case "FileCheck":
-                                                  return (
-                                                    <FileCheck size={18} />
-                                                  );
-                                                case "MessageSquare":
-                                                  return (
-                                                    <MessageSquare size={18} />
-                                                  );
-                                                case "Scale":
-                                                  return <Scale size={18} />;
-                                                case "Globe":
-                                                  return <Globe size={18} />;
-                                                case "ClipboardList":
-                                                  return (
-                                                    <ClipboardList size={18} />
-                                                  );
-                                                case "Lock":
-                                                  return <Lock size={18} />;
-                                                case "Camera":
-                                                  return <Camera size={18} />;
-                                                default:
-                                                  return <FileText size={18} />;
+                                                case "ShieldCheck": return <ShieldCheck size={iconSize} />;
+                                                case "User": return <User size={iconSize} />;
+                                                case "FileText": return <FileText size={iconSize} />;
+                                                case "FileCheck": return <FileCheck size={iconSize} />;
+                                                case "MessageSquare": return <MessageSquare size={iconSize} />;
+                                                case "Scale": return <Scale size={iconSize} />;
+                                                case "Globe": return <Globe size={iconSize} />;
+                                                case "ClipboardList": return <ClipboardList size={iconSize} />;
+                                                case "Lock": return <Lock size={iconSize} />;
+                                                case "Camera": return <Camera size={iconSize} />;
+                                                default: return <FileText size={iconSize} />;
                                               }
                                             })()
                                           )}
                                         </div>
+
+                                        {/* Content */}
                                         <div className="flex-1 min-w-0">
-                                          <h3 className="text-[15px] font-semibold text-[#0f1f38] mb-[4px] leading-[1.3] truncate">
+                                          <h3 className="text-[13px] sm:text-[15px] font-semibold text-[#0f1f38] mb-0.5 leading-snug truncate">
                                             {doc.name}
                                           </h3>
-                                          <p className="text-[13px] text-[#6b8097] leading-[1.4] mb-[7px] truncate">
+                                          <p className="text-[11px] sm:text-[13px] text-[#6b8097] leading-relaxed mb-1.5 sm:mb-2 line-clamp-2 sm:truncate">
                                             {doc.subtitle}
                                           </p>
-                                          <div className="flex flex-wrap gap-[6px]">
+                                          <div className="flex flex-wrap gap-1 sm:gap-1.5">
                                             {doc.tag && (
                                               <span
-                                                className={`px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em]
-                                                 ${
-                                                   isPetitioner
-                                                     ? "bg-[#e8f1fb] text-primary/80"
-                                                     : isBeneficiary
-                                                       ? "bg-[#eaf7f2] text-[#1a7a5e]"
-                                                       : "bg-[#f3f0fb] text-[#4a2d80]"
-                                                 }`}
+                                                className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em]
+                                                  ${isPetitioner
+                                                    ? "bg-[#e8f1fb] text-primary/80"
+                                                    : isBeneficiary
+                                                      ? "bg-[#eaf7f2] text-[#1a7a5e]"
+                                                      : "bg-[#f3f0fb] text-[#4a2d80]"
+                                                  }`}
                                               >
-                                                {doc.tag
-                                                  .charAt(0)
-                                                  .toUpperCase() +
-                                                  doc.tag.slice(1)}
+                                                {doc.tag.charAt(0).toUpperCase() + doc.tag.slice(1)}
                                               </span>
                                             )}
                                             {isBeneficiary && (
-                                              <span className="px-[9px] py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
+                                              <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
                                                 Rahvana Guide
                                               </span>
                                             )}
                                           </div>
                                         </div>
 
-                                        <div className="shrink-0 flex items-center gap-2">
+                                        {/* Status + Actions */}
+                                        <div className="shrink-0 flex items-center gap-1.5 self-start sm:self-center mt-0.5 sm:mt-0">
+                                          {/* Status Badge */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(
-                                              doc.name,
+                                            const defId = mapDocumentNameToId(doc.name);
+                                            const isUploadedInVault = uploadedDocuments.some(
+                                              (ud) => ud.documentDefId === defId,
                                             );
-                                            const isUploadedInVault =
-                                              uploadedDocuments.some(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
-                                            const uploadedDoc =
-                                              uploadedDocuments.find(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
+                                            const uploadedDoc = uploadedDocuments.find(
+                                              (ud) => ud.documentDefId === defId,
+                                            );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(
-                                                  uploadedDoc.id,
-                                                )
+                                              ? isDeletingIds.includes(uploadedDoc.id)
                                               : false;
 
-                                            if (isDeleting) return null; // Badge hidden while deleting
+                                            if (isDeleting) return null;
 
-                                            const displayStatus =
-                                              isUploadedInVault
-                                                ? "Uploaded"
-                                                : isReloadingDocs
-                                                  ? "Checking..."
-                                                  : isReviewed
-                                                    ? "Reviewed"
-                                                    : isInProgress
-                                                      ? "In progress"
-                                                      : "Not started";
+                                            const displayStatus = isUploadedInVault
+                                              ? "Uploaded"
+                                              : isReloadingDocs
+                                                ? "Checking..."
+                                                : isReviewed
+                                                  ? "Reviewed"
+                                                  : isInProgress
+                                                    ? "In progress"
+                                                    : "Not started";
 
-                                            const statusClasses =
-                                              isUploadedInVault
-                                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                                : isReloadingDocs
-                                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                                  : isReviewed
-                                                    ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                                    : isInProgress
-                                                      ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
+                                            const statusClasses = isUploadedInVault
+                                              ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                              : isReloadingDocs
+                                                ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                                : isReviewed
+                                                  ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                                  : isInProgress
+                                                    ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                                    : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                                             return (
                                               <div
-                                                className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                                                className={`hidden xs:flex px-2 sm:px-3 py-1 rounded-full border text-[10px] sm:text-[12px] font-medium tracking-normal transition-all whitespace-nowrap ${statusClasses}`}
                                               >
                                                 {displayStatus}
                                               </div>
                                             );
                                           })()}
 
+                                          {/* Upload State / Dropdown */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(
-                                              doc.name,
+                                            const defId = mapDocumentNameToId(doc.name);
+                                            const uploadedDoc = uploadedDocuments.find(
+                                              (ud) => ud.documentDefId === defId,
                                             );
-                                            const uploadedDoc =
-                                              uploadedDocuments.find(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(
-                                                  uploadedDoc.id,
-                                                )
+                                              ? isDeletingIds.includes(uploadedDoc.id)
                                               : false;
 
-                                            if (
-                                              isReloadingDocs &&
-                                              !uploadedDoc
-                                            ) {
+                                            if (isReloadingDocs && !uploadedDoc) {
                                               return (
-                                                <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
-                                                  <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                                  Checking...
+                                                <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground font-medium animate-pulse">
+                                                  <div className="h-2.5 w-2.5 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                                  <span className="hidden sm:inline">Checking...</span>
                                                 </div>
                                               );
                                             }
 
                                             if (isDeleting) {
                                               return (
-                                                <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
-                                                  <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
-                                                  Deleting...
+                                                <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-red-500 font-medium animate-pulse">
+                                                  <div className="h-2.5 w-2.5 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                                  <span className="hidden sm:inline">Deleting...</span>
                                                 </div>
                                               );
                                             }
@@ -5573,46 +5549,35 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <button
-                                                      onClick={(e) =>
-                                                        e.stopPropagation()
-                                                      }
-                                                      className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                                      onClick={(e) => e.stopPropagation()}
+                                                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
                                                     >
-                                                      <MoreVertical size={18} />
+                                                      <MoreVertical size={15} className="sm:w-[18px] sm:h-[18px]" />
                                                     </button>
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent
                                                     side="top"
                                                     align="end"
-                                                    className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                                                    className="w-[130px] sm:w-[140px] rounded-xl shadow-xl border-muted/20"
                                                   >
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        window.open(
-                                                          `/api/documents/${uploadedDoc.id}/download`,
-                                                          "_blank",
-                                                        );
+                                                        window.open(`/api/documents/${uploadedDoc.id}/download`, "_blank");
                                                       }}
-                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5"
                                                     >
-                                                      <Eye
-                                                        size={16}
-                                                        className="text-primary"
-                                                      />
+                                                      <Eye size={14} className="text-primary sm:w-4 sm:h-4" />
                                                       Preview
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setDocumentToDelete({
-                                                          id: uploadedDoc.id,
-                                                          name: doc.name,
-                                                        });
+                                                        setDocumentToDelete({ id: uploadedDoc.id, name: doc.name });
                                                       }}
-                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                                     >
-                                                      <Trash2 size={16} />
+                                                      <Trash2 size={14} className="sm:w-4 sm:h-4" />
                                                       Delete
                                                     </DropdownMenuItem>
                                                   </DropdownMenuContent>
@@ -5633,12 +5598,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
                       </div>
 
-                      <div className="mt-[48px] px-[20px] py-[16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.65] text-center max-w-[740px] w-full mb-[24px]">
-                        Rahvana provides structured guidance only. This is not
-                        legal advice.
-                        <br />
-                        Consult a licensed immigration attorney for
-                        case-specific decisions.
+                      {/* Footer Disclaimer */}
+                      <div className="mt-10 sm:mt-12 mx-3 sm:mx-0 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center max-w-[740px] w-full mb-5 sm:mb-6">
+                        <span className="block text-[10px] sm:text-[12px] leading-relaxed">
+                          Rahvana provides structured guidance only. This is not legal advice.{" "}
+                          <br className="hidden sm:block" />
+                          Consult a licensed immigration attorney for case-specific decisions.
+                        </span>
                       </div>
                     </>
                   );
@@ -5648,17 +5614,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           ) : currentStep.step_type === "filing" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               <div className="flex flex-col w-full max-w-[660px] pb-[80px] px-[24px]">
-                <h1
-                  className="
+               <h1 className="
                 mt-8 sm:mt-10 md:mt-0
                 text-[clamp(26px,4vw,34px)]
                 font-black
                 text-[#0f1f38]
                 leading-[1.2]
-                "
-                >
-                  {currentStep.step_name}
-                </h1>
+                ">
+                {currentStep.step_name}
+              </h1>
                 <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
                   {currentStep.filing_data?.subtitle ||
                     currentStep.step_description}
@@ -5927,34 +5891,35 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </div>
       </div>
 
-      {/* Redesigned Bottom Navigation Footer */}
-      <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center gap-2 px-4 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-        <button
-          onClick={() =>
-            prevStep &&
-            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-          }
-          className={`px-4 py-[9px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] font-medium text-[#6b8097] flex items-center gap-[5px] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-        >
-          <ArrowLeft size={12} strokeWidth={2.5} />
-          Previous
-        </button>
+           {/* Redesigned Bottom Navigation Footer */}
+     <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+  {/* Prev */}
+  <button
+    onClick={() =>
+      prevStep &&
+      handleNavigate((prevStep as any).step_key || (prevStep as any).id)
+    }
+    className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+  >
+    <ArrowLeft size={13} strokeWidth={2.5} />
+    Prev
+  </button>
 
-        <div className="flex-1 flex items-center gap-2 mx-auto px-4">
-          <div className="flex-1 h-1 rounded-[10px] overflow-hidden bg-[#d0e4f7]">
-            <div
-              className={`h-full transition-all duration-500 ease-out ${isChapter1 ? "accent-rose-bg" : "bg-linear-to-r from-primary to-primary/70"}`}
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <div
-            className={`text-[11px] font-semibold whitespace-nowrap ${isChapter1 ? "accent-brown" : "text-[#6b8097]"}`}
-          >
-            Step {localIdx + 1} of {activeStepsInChapter.length}
-          </div>
-        </div>
+  {/* Progress */}
+  <div className="flex-1 flex items-center gap-2">
+    <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
+      <div
+        className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
+        style={{ width: `${progressPct}%` }}
+      />
+    </div>
+    <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+      {localIdx + 1} / {activeStepsInChapter.length}
+    </span>
+  </div>
 
-        <button
+  {/* Next */}
+   <button
           onClick={() =>
             nextStep &&
             handleNavigate((nextStep as any).step_key || (nextStep as any).id)
@@ -5964,7 +5929,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           Next
           <ArrowRight size={12} strokeWidth={2.5} />
         </button>
-      </footer>
+</footer>
+
 
       {/* Sponsorship Calculator Tool Overlay */}
       <SponsorshipCalculatorTool
@@ -6132,8 +6098,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         />
       )}
 
-      {selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="fixed inset-0 z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300 ease-out guide-bg">
+{selectedGuideId && InlineGuideData[selectedGuideId] && (
+        <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out guide-bg">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6174,7 +6140,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     : `Rahvana Guide — ${InlineGuideData[selectedGuideId].title}`}
                 </span>
               </div>
-              <h2 className="font-black  text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
+              <h2 className="font-black text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
                 {InlineGuideData[selectedGuideId].title}
               </h2>
               <p className="text-[14px] text-[#3a4f63] mb-[28px] leading-[1.6]">
@@ -6225,25 +6191,19 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 <button
                   onClick={async () => {
                     if (actions.updateDocumentStatus && selectedGuideId) {
-                      // Mark as reviewed
                       await actions.updateDocumentStatus(
                         selectedGuideId,
                         "reviewed",
                       );
-
-                      // Check if all documents are now reviewed for auto-complete
-                      // Use top-level sId
                       if (sId === "step_1_2") {
                         const docItems = currentStep.document_items || [];
                         const allReviewed = docItems.every((doc: any) => {
-                          if (doc.id === selectedGuideId) return true; // This one will be reviewed
+                          if (doc.id === selectedGuideId) return true;
                           return (
                             state.metadata?.docReviewStatus?.[doc.id] ===
                               "reviewed" || state.documentChecklist[doc.name]
                           );
                         });
-
-                        // Auto-complete step if all documents are reviewed
                         if (allReviewed && !isCompleted) {
                           handleToggleComplete();
                         }
@@ -6325,6 +6285,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           ceacOptions={(currentStep.tool_data as any).recorder.ceac_options}
         />
       )}
+
       {/* Tutorial Overlay */}
       {isTutorialOpen &&
         (() => {
@@ -6334,7 +6295,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             const currentTutStep = steps[tutorialIdx];
 
             return (
-              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
+              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
                 {/* Tutorial Topbar */}
                 <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                   <button
@@ -6362,7 +6323,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
 
                 {/* Tutorial Body */}
-                <div className="flex-1 bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center overflow-y-auto min-h-0">
+                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center guide-bg">
                   <div className="w-full max-w-[580px] flex flex-col">
                     <div
                       className={`text-[11px] font-semibold tracking-widest uppercase mb-4 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -6395,21 +6356,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
                       </div>
 
-                      {/* Content Area — Fallback UI Pattern */}
+                      {/* Content Area — fixed: aspectRatio only, no minHeight conflict */}
                       <div
-                        className="relative w-full flex items-center justify-center bg-[#f8f9fb]"
-                        style={{
-                          padding: 0,
-                          minHeight: "400px",
-                          aspectRatio: "4/3",
-                        }}
+                        className="relative w-full bg-[#f8f9fb]"
+                        style={{ aspectRatio: "4/3" }}
                       >
-                        <div className="flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center">
-                          <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit">
+                        <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center justify-center overflow-hidden">
+                          <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
                             {currentTutStep.vlabel}
                           </span>
-
-                          <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
+                          <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
                             {currentTutStep.heading}
                           </div>
                         </div>
@@ -6425,7 +6381,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       </div>
                     )}
 
-                    {/* Tutorial Controls — Now inside scrollable area */}
+                    {/* Tutorial Controls */}
                     <div className="flex items-center justify-center py-[20px]">
                       <div className="w-full flex gap-[10px] items-center">
                         {tutorialIdx > 0 && (
@@ -6462,23 +6418,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             );
           }
 
-          // Use tool-specific tutorial_steps if available (steps 7, 8),
-          // otherwise fall back to the static USCIS_TUTORIAL_STEPS (step 6)
           const tool = currentStep?.tool_data;
           const dynamicStepsRaw = tool?.tutorial_steps;
 
-          // Handle both array (old format) and object (new format with household_member/joint_sponsor)
           let dynamicSteps: any[] | null = null;
           let isDynamic = false;
-          const effectivePath = tutorialPath || "household_member"; // Default to household_member if not set
+          const effectivePath = tutorialPath || "household_member";
 
           if (dynamicStepsRaw) {
             if (Array.isArray(dynamicStepsRaw)) {
-              // Old format: array of steps
               dynamicSteps = dynamicStepsRaw;
               isDynamic = dynamicStepsRaw.length > 0;
             } else if (typeof dynamicStepsRaw === "object") {
-              // New format: object with paths (household_member/joint_sponsor)
               dynamicSteps = (dynamicStepsRaw as any)[effectivePath];
               isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
             }
@@ -6494,7 +6445,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           const currentTutStep = steps[tutorialIdx];
 
           return (
-            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
+            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
               {/* Tutorial Topbar */}
               <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                 <button
@@ -6523,7 +6474,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
 
               {/* Tutorial Body */}
-              <div className="flex-1 bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center overflow-y-auto min-h-0">
+              <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center guide-bg">
                 <div className="w-full max-w-[580px] flex flex-col">
                   <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
@@ -6543,9 +6494,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                   {/* Screenshot Block */}
                   {isDynamic ? (
-                    /* Dynamic steps: browser chrome + structured visual (from HTML reference) */
+                    /* Dynamic steps: browser chrome + structured visual */
                     <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
-                      {/* Browser Chrome Bar — always visible */}
+                      {/* Browser Chrome Bar */}
                       <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
                         <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
                         <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
@@ -6557,14 +6508,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
                       </div>
 
-                      {/* Content Area — real image/video OR structured placeholder */}
+                      {/* Content Area — aspectRatio only, no minHeight */}
                       <div
-                        className="relative w-full flex items-center justify-center bg-[#f8f9fb]"
-                        style={{
-                          padding: 0,
-                          minHeight: "400px",
-                          aspectRatio: "4/3",
-                        }}
+                        className="relative w-full bg-[#f8f9fb]"
+                        style={{ aspectRatio: "4/3" }}
                       >
                         {(currentTutStep as TutorialStepData).media?.src ? (
                           (currentTutStep as TutorialStepData).media?.type ===
@@ -6596,10 +6543,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 (currentTutStep as TutorialStepData).screenTitle
                               }
                               fill
-                              className="object-cover"
-                              sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
+                              className="object-contain"
+                              sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
-                              style={{ objectFit: "cover" }}
                               priority={tutorialIdx === 0}
                             />
                           )
@@ -6623,39 +6569,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               (currentTutStep as TutorialStepData).screenTitle
                             }
                             fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
+                            className="object-contain"
+                            sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                             quality={95}
-                            style={{ objectFit: "cover" }}
                             priority={tutorialIdx === 0}
                           />
                         ) : (
-                          <div className="flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center">
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit">
+                          /* Fallback placeholder — absolute to fill ratio box */
+                          <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] items-center justify-center overflow-hidden">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
                               {(currentTutStep as TutorialStepData).ss_label}
                             </span>
 
-                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
+                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
                               {(currentTutStep as TutorialStepData)
                                 .ss_headline ||
                                 (currentTutStep as TutorialStepData)
                                   .screenTitle}
                             </div>
 
-                            {/* {(currentTutStep as TutorialStepData).instruction && (
-                              <div
-                                className="text-[14px] text-[#3a4f63] leading-[1.6] text-center w-fit"
-                                dangerouslySetInnerHTML={{
-                                  __html: (currentTutStep as TutorialStepData)
-                                    .instruction!,
-                                }}
-                              />
-                            )} */}
-
                             {((currentTutStep as TutorialStepData).ss_desc ||
                               (currentTutStep as TutorialStepData)
                                 .screenDesc) && (
-                              <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center w-fit">
+                              <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center">
                                 {(currentTutStep as TutorialStepData).ss_desc ||
                                   (currentTutStep as TutorialStepData)
                                     .screenDesc}
@@ -6664,7 +6600,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                             {(currentTutStep as TutorialStepData)
                               .ss_highlight && (
-                              <div className="px-[16px] py-[12px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-primary text-center w-fit">
+                              <div className="px-[16px] py-[12px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-primary text-center">
                                 ✓{" "}
                                 {
                                   (currentTutStep as TutorialStepData)
@@ -6676,14 +6612,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             {(currentTutStep as TutorialStepData).fields &&
                               (currentTutStep as TutorialStepData).fields!
                                 .length > 0 && (
-                                <div className="flex flex-col gap-[8px] w-full">
+                                <div className="flex flex-col gap-[8px] w-full max-w-[320px]">
                                   {(
                                     currentTutStep as TutorialStepData
                                   ).fields!.map((field, idx) =>
                                     field.type === "btn" ? (
                                       <div
                                         key={idx}
-                                        className="w-full px-[16px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
+                                        className="w-full px-[16px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90 text-center"
                                       >
                                         {field.label}
                                       </div>
@@ -6716,7 +6652,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         )}
                       </div>
 
-                      {/* Caption Bar — always visible; green tint for "success" captionClass */}
+                      {/* Caption Bar */}
                       <div
                         className={`p-[8px_14px_10px] border-t text-[11px] leading-normal ${
                           (currentTutStep as TutorialStepData).caption_class ===
@@ -6729,9 +6665,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       </div>
                     </div>
                   ) : (
-                    /* Static USCIS steps: Mac-like browser window with three dots */
+                    /* Static USCIS steps */
                     <div className="w-full bg-[#eef3fa] border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-5 flex flex-col">
-                      {/* Browser Chrome Bar with three dots */}
+                      {/* Browser Chrome Bar */}
                       <div className="bg-[#d0e4f7] border-b border-[#d0e4f7] h-[32px] flex items-center px-[14px] gap-[7px]">
                         <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
                         <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
@@ -6747,16 +6683,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
                       </div>
 
-                      {/* Content Area */}
+                      {/* Content Area — aspectRatio only, no minHeight */}
                       <div
-                        className="relative flex items-center justify-center bg-[#f8f9fb]"
-                        style={{
-                          padding: 0,
-                          minHeight: "400px",
-                          aspectRatio: "4/3",
-                        }}
+                        className="relative w-full bg-[#f8f9fb]"
+                        style={{ aspectRatio: "4/3" }}
                       >
-                        {/* Show real image or video if src is provided */}
                         {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
                           .media?.src ? (
                           (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])
@@ -6778,10 +6709,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 ).screenTitle
                               }
                               fill
-                              className="object-cover"
-                              sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 1000px"
+                              className="object-contain"
+                              sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
-                              style={{ objectFit: "cover" }}
                               priority
                             />
                           ) : (
@@ -6809,8 +6739,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             />
                           )
                         ) : (
-                          <div className="flex flex-col gap-[16px] px-[24px] py-[12px] w-full items-center">
-                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center w-fit">
+                          /* Fallback placeholder — absolute to fill ratio box */
+                          <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[12px] items-center justify-center overflow-hidden">
+                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
                               {(
                                 currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
                               ).ss_headline ||
@@ -6825,7 +6756,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               (
                                 currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
                               ).screenDesc) && (
-                              <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center w-fit">
+                              <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center">
                                 {(
                                   currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
                                 ).ss_desc ||
@@ -6835,7 +6766,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               </div>
                             )}
 
-                            {/* Highlight Box */}
                             {Array.isArray(
                               (
                                 currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
@@ -6844,7 +6774,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               ((
                                 currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
                               )?.fields?.length ?? 0) > 0 && (
-                                <div className="flex flex-col gap-[8px] w-full">
+                                <div className="flex flex-col gap-[8px] w-full max-w-[320px]">
                                   {(
                                     (
                                       currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]
@@ -6853,7 +6783,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                     field?.type === "btn" ? (
                                       <div
                                         key={idx}
-                                        className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90"
+                                        className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90 text-center"
                                       >
                                         {field.label}
                                       </div>
@@ -6911,7 +6841,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   )}
 
                   {/* Nav buttons */}
-                  <div className="flex gap-[10px] items-center">
+                  <div className="flex gap-[10px] items-center pb-2">
                     {tutorialIdx > 0 && (
                       <button
                         onClick={() => setTutorialIdx(tutorialIdx - 1)}
@@ -6941,6 +6871,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
           );
         })()}
+
       {/* Submission Guide Overlay (Step 8) */}
       <SubmissionTutorialOverlay
         isOpen={isSubmissionGuideOpen}
@@ -6952,7 +6883,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
       {/* Gathering Guide Overlay (Step 3.4) */}
       {isGatheringGuideOpen && selectedGatheringItem && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans guide-bg">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans guide-bg">
           {/* Guide Topbar */}
           <div className="flex items-center px-2 sm:px-4 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6974,7 +6905,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           </div>
 
           {/* Guide Body */}
-          <div className="flex-1 overflow-y-auto flex flex-col items-center px-2 sm:px-4 md:px-8 py-8 sm:py-12">
+          <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center px-2 sm:px-4 md:px-8 py-8 sm:py-12">
             <div className="w-full max-w-[600px]">
               <div className="text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-[#2f6fd4] mb-[16px]">
                 Step 4 · Original Documents Checklist
@@ -7050,7 +6981,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-200 bg-white flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-280 font-sans guide-bg">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans guide-bg">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button
@@ -7078,7 +7009,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
+            <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
               {(() => {
                 const s = (currentStep.tool_data as any).tutorial[
                   medicalGuideIdx
@@ -7093,7 +7024,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-[14px]">
                       Medical Exam Guide · {s.label}
                     </div>
-                    <h2 className="text-[clamp(20px,3.2vw,26px)]  text-[#0c1b33] mb-[8px] leading-[1.3]">
+                    <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] mb-[8px] leading-[1.3]">
                       {s.heading}
                     </h2>
                     <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[22px]">
@@ -7196,10 +7127,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!
           }
           onUploadComplete={async () => {
-            // Refresh the vault store to include the newly uploaded document
             await reloadDocuments();
 
-            // Update journey status based on what was being uploaded
             if (activeUploadId && activeUploadType) {
               const currentHhStatus =
                 (state.metadata.hhDocsStatus as any) || {};
@@ -7213,9 +7142,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   ...currentHhStatus,
                   [activeUploadId]: "reviewed",
                 };
-                // Update local state for immediate feedback
                 setHhDocsStatus(nextHhStatus);
-                // Update persistent metadata
                 actions.updateMetadata({
                   hhDocsStatus: nextHhStatus,
                 });
@@ -7229,14 +7156,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               }
             }
           }}
-        />
-      )}
-
-      {/* Entitlement Gating Upgrade Modal */}
-      {stepEntitlement.upgradeModalFeature && (
-        <UpgradeModal
-          feature={stepEntitlement.upgradeModalFeature}
-          onClose={stepEntitlement.closeUpgradeModal}
         />
       )}
     </div>
