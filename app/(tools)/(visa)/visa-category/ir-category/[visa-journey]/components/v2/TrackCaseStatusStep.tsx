@@ -142,7 +142,7 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions }) => {
   }
 
   return (
-      <div className="min-h-screen w-full ch1step-bg">
+      <div className="min-h-screen w-full">
     {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
     <div className="max-w-[760px] mx-auto px-4 py-8 md:px-6 md:py-12 flex flex-col gap-3 step step-modal-spacing">
   {/* Title & Desc */}

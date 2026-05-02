@@ -542,19 +542,19 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
   return (
     <div
-      className={`min-h-screen${isChapter3 ? " ch3step-bg" : ""}`}
-      style={
-        isChapter3
-          ? {
-              backgroundImage: "url('/assets/images/ch3steps-bg.png')",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundAttachment: "fixed",
-              minHeight: "100vh",
-            }
-          : undefined
-      }
+      className={`min-h-screen`}
+      // style={
+      //   isChapter3
+      //     ? {
+      //         backgroundImage: "url('/assets/images/ch3steps-bg.png')",
+      //         backgroundSize: "cover",
+      //         backgroundPosition: "center",
+      //         backgroundRepeat: "no-repeat",
+      //         backgroundAttachment: "fixed",
+      //         minHeight: "100vh",
+      //       }
+      //     : undefined
+      // }
     >
        <style>{`
         /* Reset/base */

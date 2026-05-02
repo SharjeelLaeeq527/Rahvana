@@ -56,7 +56,7 @@ export function StageView({
       : "Not started";
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 scrollbar-hide ch3step-bg"> 
+    <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 scrollbar-hide"> 
       <div className="max-w-4xl mx-auto">
         <button
           onClick={onBack}
@@ -139,7 +139,7 @@ export function StageView({
               <div
                 key={step.step_key}
                 onClick={() => onSelectStep(stageIdx, fullStepIdx)}
-                className={`group flex items-center gap-5 p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 delay-${idx * 50} ch3step-bg
+                className={`group flex items-center gap-5 p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500 delay-${idx * 50} 
                   ${isCompleted ? "border-emerald-100 bg-emerald-50/20" : isNext ? "border-primary shadow-xl shadow-primary/5 ring-4 ring-primary/5 scale-[1.01]" : "border-slate-100 hover:border-slate-200 hover:shadow-md active:scale-[0.99]"}`}
               >
                 {/* Visual indicator for completed step */}

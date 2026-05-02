@@ -4908,18 +4908,7 @@ const renderDocActionModal = () => {
 
   return (
     <div
-      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
-      style={
-        isChapter3
-          ? {
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.72)), url(/assets/images/ch3steps-bg.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }
-          : undefined
-      }
+      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans`}
     >
       <div
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
@@ -5195,7 +5184,7 @@ const renderDocActionModal = () => {
         >
           {currentStep.step_type === "quest" ? (
             <div
-              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
+              className={`w-full min-h-[600px] flex flex-col items-center`}
             >
               <QuestRenderer
                 quest={currentStep.quest_data as unknown as QuestSuite}
@@ -5211,29 +5200,29 @@ const renderDocActionModal = () => {
             renderToolStep()
           ) : currentStep.step_type === "action" ? (
             <div
-              style={
-                isChapter3
-                  ? {
-                      backgroundImage:
-                        "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                      backgroundAttachment: "fixed",
-                      minHeight: "100vh",
-                    }
-                  : isChapter2
-                    ? {
-                        backgroundImage:
-                          "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        backgroundRepeat: "no-repeat",
-                        backgroundAttachment: "fixed",
-                        minHeight: "100vh",
-                      }
-                    : {}
-              }
+              // style={
+                // isChapter3
+                //   ? {
+                //       backgroundImage:
+                //         "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
+                //       backgroundSize: "cover",
+                //       backgroundPosition: "center",
+                //       backgroundRepeat: "no-repeat",
+                //       backgroundAttachment: "fixed",
+                //       minHeight: "100vh",
+                //     }
+                //   : isChapter2
+                //     ? {
+                //         backgroundImage:
+                //           "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
+                //         backgroundSize: "cover",
+                //         backgroundPosition: "center",
+                //         backgroundRepeat: "no-repeat",
+                //         backgroundAttachment: "fixed",
+                //         minHeight: "100vh",
+                //       }
+                //     : {}
+              // }
             >
               <ActionStepRenderer
                 step={currentStep}
@@ -6096,7 +6085,7 @@ const renderDocActionModal = () => {
       )}
 
 {selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out guide-bg">
+        <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out ">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6292,7 +6281,7 @@ const renderDocActionModal = () => {
             const currentTutStep = steps[tutorialIdx];
 
             return (
-              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
+              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out">
                 {/* Tutorial Topbar */}
                 <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                   <button
@@ -6320,7 +6309,7 @@ const renderDocActionModal = () => {
                 </div>
 
                 {/* Tutorial Body */}
-                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center guide-bg">
+                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center ">
                   <div className="w-full max-w-[580px] flex flex-col">
                     <div
                       className={`text-[11px] font-semibold tracking-widest uppercase mb-4 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -6442,7 +6431,7 @@ const renderDocActionModal = () => {
           const currentTutStep = steps[tutorialIdx];
 
           return (
-            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
+            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out ">
               {/* Tutorial Topbar */}
               <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                 <button
@@ -6471,7 +6460,7 @@ const renderDocActionModal = () => {
               </div>
 
               {/* Tutorial Body */}
-              <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center guide-bg">
+              <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center ">
                 <div className="w-full max-w-[580px] flex flex-col">
                   <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
@@ -6880,7 +6869,7 @@ const renderDocActionModal = () => {
 
       {/* Gathering Guide Overlay (Step 3.4) */}
       {isGatheringGuideOpen && selectedGatheringItem && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans guide-bg">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans">
           {/* Guide Topbar */}
           <div className="flex items-center px-2 sm:px-4 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6978,7 +6967,7 @@ const renderDocActionModal = () => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans guide-bg">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans ">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button

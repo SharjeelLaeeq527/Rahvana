@@ -552,7 +552,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
   const handleTrackingLocked = () => setShowTrackingNudge(true);
 
   return (
-    <div className="min-h-screen w-full ch1step-bg">
+    <div className="min-h-screen w-full ">
       <div className="bg-cover bg-center w-full min-h-screen relative">
         <div className="max-w-[720px] w-full mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col step-modal-spacing">
 

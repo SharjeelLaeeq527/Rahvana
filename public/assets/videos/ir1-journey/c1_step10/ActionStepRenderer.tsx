@@ -61,7 +61,7 @@ const CHAPTER_THEME = {
     statusBg: "#fbeaec",
     statusBorder: "#f0c0c8",
     statusColor: "#c0596a",
-    bgClass: "ch1step-bg",
+    // bgClass: "ch1step-bg",
   },
   ch2: {
     heroBg: "linear-gradient(180deg, #1e0f2e 0%, #180b28 100%)",
@@ -79,7 +79,7 @@ const CHAPTER_THEME = {
     statusBg: "#f3f0fb",
     statusBorder: "#c9bef2",
     statusColor: "#865aa7",
-    bgClass: "ch2step-bg",
+    // bgClass: "ch2step-bg",
   },
   ch3: {
     heroBg: "linear-gradient(180deg, #0c2620 0%, #081e19 100%)",
@@ -97,7 +97,7 @@ const CHAPTER_THEME = {
     statusBg: "#e8f5f3",
     statusBorder: "#9fd0ca",
     statusColor: "#2a7a6b",
-    bgClass: "ch3step-bg",
+    // bgClass: "ch3step-bg",
   },
   default: {
     heroBg: "linear-gradient(180deg, #122541 0%, #0f2038 100%)",
@@ -341,8 +341,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const guideProgress = guideStep / (actionData.guide_steps?.length || 1);
 
   return (
-    <div className={`min-h-screen relative ${theme.bgClass}`}>
-      {/* Chapter background image overlay (ch2 / ch3) */}
+    <div className={`min-h-screen relative ${theme}`}>
+      {/* Chapter background image overlay (ch2 / ch3)
       {(isChapter2 || isChapter3) && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
@@ -353,7 +353,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             opacity: 0.5,
           }}
         />
-      )}
+      )} */}
 
       {/* Main Content */}
       <div className={`max-w-3xl mx-auto px-4 sm:px-5 md:px-5.5 py-8 sm:py-10 md:py-12 ${isChapter1 || isChapter2 || isChapter3 ? "step-modal-spacing" : ""} relative z-10`}>
@@ -806,7 +806,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             zIndex: 200,
             flexDirection: "column",
             animation: "fadeIn 0.3s ease",
-          }} guide-bg
+          }} 
         >
           {/* Topbar */}
           <div

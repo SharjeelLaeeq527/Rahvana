@@ -59,12 +59,12 @@ export function ChapterView({
   const isFreeTier = plan.tier === "free";
 
   // Chapter backgrounds
-  const chapter1Bg = "/assets/images/chapter1-bg.png";
-  const chapter1StepBg = "/assets/images/ch1steps-bg.png";
-  const chapter2Bg = "/assets/images/chapter-2-bg.png";
-  const chapter2StepBg = "/assets/images/ch2steps-bg.png";
-  const chapter3Bg = "/assets/images/chapter-3-bg.png";
-  const chapter3StepBg = "/assets/images/ch3steps-bg.png";
+  // const chapter1Bg = "/assets/images/chapter1-bg.png";
+  // const chapter1StepBg = "/assets/images/ch1steps-bg.png";
+  // const chapter2Bg = "/assets/images/chapter-2-bg.png";
+  // const chapter2StepBg = "/assets/images/ch2steps-bg.png";
+  // const chapter3Bg = "/assets/images/chapter-3-bg.png";
+  // const chapter3StepBg = "/assets/images/ch3steps-bg.png";
 
   const isChapter2 = chapterIdx === 1;
   const isChapter3 = chapterIdx === 2;
@@ -156,8 +156,8 @@ export function ChapterView({
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
-            backgroundImage: `url(${chapter3Bg})`,
-            opacity: 0.5,
+            //backgroundImage: `url(${chapter3Bg})`,
+            //opacity: 0.5,
           }}
         />
       )}
@@ -165,8 +165,8 @@ export function ChapterView({
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
-            backgroundImage: `url(${chapter1Bg})`,
-            opacity: 0.35,
+           // backgroundImage: `url(${chapter1Bg})`,
+           // opacity: 0.35,
           }}
         />
       )}
@@ -176,7 +176,7 @@ export function ChapterView({
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
           style={{
-            backgroundImage: `url(${chapter2Bg})`,
+            //backgroundImage: `url(${chapter2Bg})`,
             opacity: 0.5,
           }}
         />
