@@ -2,8 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Bell,
   BellOff,
@@ -21,11 +20,10 @@ import {
   BookOpen,
   FolderLock,
   Wand2,
-  Sparkles,
   HelpCircleIcon,
   ToolCase,
   Wrench,
-  Info,
+  Home,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -44,6 +42,23 @@ interface HeaderProps {
   user?: User | null;
   profile?: UserProfile | null;
 }
+
+type JourneyListItem = {
+  journey?: {
+    id?: string;
+    status?: string;
+  };
+};
+
+type HeaderNotification = {
+  id: string;
+  title: string;
+  body?: string;
+  priority?: "critical" | "high" | string;
+  action_label?: string;
+  action_url?: string;
+  is_dismissed?: boolean;
+};
 
 // --------------------------------------------------------------------------
 //  Hydration-safe button – suppresses warnings for extension-injected attrs
@@ -117,49 +132,11 @@ export function SiteHeader({
 
   const MOBILE_ICONS: Record<string, React.ReactNode> = {
     journeys: (
-      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
-        <Image
-          src="/icons/visa-journeys.svg"
-          alt="Journeys icon"
-          width={55}
-          height={55}
-          className="h-[55px] w-[55px]"
-        />
-      </div>
+      <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
     ),
-    tools: (
-      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
-        <Image
-          src="/icons/visa-application-tools-guides.svg"
-          alt="Tools icon"
-          width={55}
-          height={55}
-          className="h-[55px] w-[55px]"
-        />
-      </div>
-    ),
-    guides: (
-      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
-        <Image
-          src="/icons/passport-guide.svg"
-          alt="Guides icon"
-          width={55}
-          height={55}
-          className="h-[55px] w-[55px]"
-        />
-      </div>
-    ),
-    services: (
-      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
-        <Image
-          src="/icons/book-consultation.svg"
-          alt="Services icon"
-          width={55}
-          height={55}
-          className="h-[55px] w-[55px]"
-        />
-      </div>
-    ),
+    tools: <Wand2 className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+    guides: <BookOpen className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+    services: <Zap className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
   };
 
   const pathname = usePathname();
@@ -170,14 +147,18 @@ export function SiteHeader({
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Real notification data
-  const [notifList, setNotifList] = useState<any[]>([]);
+  const [notifList, setNotifList] = useState<HeaderNotification[]>([]);
   const [notifJourneyId, setNotifJourneyId] = useState<string | null>(null);
   const [expandedNotifs, setExpandedNotifs] = useState<Set<string>>(new Set());
   const toggleExpand = (id: string) =>
     setExpandedNotifs((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
     });
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -193,19 +174,6 @@ export function SiteHeader({
     services: null,
   });
   const megaMenuContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const handleLinkClick = (e: React.MouseEvent) => {
-    if (
-      e.metaKey || // CMD (Mac)
-      e.ctrlKey || // CTRL (Windows)
-      e.shiftKey ||
-      e.button === 1 // Middle click
-    ) {
-      return; // browser ko handle karne do
-    }
-
-    setIsMenuOpen(false);
-  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -256,73 +224,60 @@ export function SiteHeader({
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
 
-  const fetchNotifications = useCallback(async () => {
+  // Fetch real notifications when bell opens
+  const fetchNotifications = async () => {
     try {
+      // Step 1: get active journey ID
       let jId = notifJourneyId;
       if (!jId) {
-        const res = await fetch("/api/journeys");
+        const res = await fetch('/api/journeys');
         if (res.ok) {
           const data = await res.json();
-          const active =
-            data?.data?.find((j: any) => j.journey?.status === "in_progress") ||
-            data?.data?.[0];
+          const journeys = (data?.data ?? []) as JourneyListItem[];
+          const active = journeys.find((j) => j.journey?.status === 'in_progress') || journeys[0];
           jId = active?.journey?.id ?? null;
           if (jId) setNotifJourneyId(jId);
         }
       }
       if (!jId) return;
+
+      // Step 2: fetch reminders
       const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
       if (r.ok) {
         const d = await r.json();
         setNotifList(d.reminders ?? []);
       }
     } catch {}
-  }, [notifJourneyId]);
-
-  // Fetch on mount — so bell badge and data are ready before user clicks
-  useEffect(() => {
-    if (resolvedUser) fetchNotifications();
-  }, [resolvedUser]);
-
-  // Re-fetch every 2 minutes in background to keep count fresh
-  useEffect(() => {
-    if (!resolvedUser) return;
-    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [resolvedUser, fetchNotifications]);
-
-  // Re-fetch immediately when any data save triggers refresh-reminders
-  useEffect(() => {
-    if (!resolvedUser) return;
-    window.addEventListener("refresh-reminders", fetchNotifications);
-    return () => window.removeEventListener("refresh-reminders", fetchNotifications);
-  }, [resolvedUser, fetchNotifications]);
+  };
 
   const handleBellClick = () => {
-    setNotificationsOpen((prev) => !prev);
+    setNotificationsOpen((prev) => {
+      if (!prev) fetchNotifications();
+      return !prev;
+    });
   };
 
   const dismissNotif = async (id: string) => {
     setNotifList((prev) => prev.filter((n) => n.id !== id));
     if (notifJourneyId) {
       await fetch(`/api/v1/journeys/${notifJourneyId}/reminders/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "dismiss" }),
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'dismiss' }),
       }).catch(() => {});
     }
   };
 
   const unreadCount = notifList.filter((n) => !n.is_dismissed).length;
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = process.env.NODE_ENV === 'development';
   const [seeding, setSeeding] = useState(false);
 
   const seedDemoNotifs = async () => {
     if (!notifJourneyId) return;
     setSeeding(true);
-    await fetch("/api/dev/seed-notifications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    await fetch('/api/dev/seed-notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ journeyId: notifJourneyId }),
     }).catch(() => {});
     await fetchNotifications();
@@ -332,9 +287,9 @@ export function SiteHeader({
   const clearDemoNotifs = async () => {
     if (!notifJourneyId) return;
     setSeeding(true);
-    await fetch("/api/dev/seed-notifications", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+    await fetch('/api/dev/seed-notifications', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ journeyId: notifJourneyId }),
     }).catch(() => {});
     await fetchNotifications();
@@ -363,10 +318,6 @@ export function SiteHeader({
   };
 
   const handleNav = (id: string, e?: React.MouseEvent) => {
-    if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1)) {
-      return;
-    }
-
     setIsMenuOpen(false);
     setActiveMenu(null);
 
@@ -374,16 +325,16 @@ export function SiteHeader({
       if (e) e.preventDefault();
       onNavigate(id);
     } else {
-      if (e) e.preventDefault();
-
       const routes: Record<string, string> = {
         home: "/",
+        homepage: "/homepage",
         journeys: "/visa-category/ir-category",
         "my-journeys": "/my-journeys",
         "my-guides": "/guides/my-guides",
         "ir1-journey": "/visa-category/ir-category/ir1-journey",
         "ir5-journey": "/visa-category/ir-category/ir5-journey",
         "k1-journey": "/visa-category/ir-category/k1-journey",
+        resources: "/resources",
         services: "/resources?tab=services",
         tools: "/resources?tab=toolbox",
         guides: "/resources?tab=guides",
@@ -416,7 +367,6 @@ export function SiteHeader({
         profile: "/profile",
         settings: "/settings",
         "portal-wallet": "/portal-wallet",
-        about: "/about",
       };
 
       const targetRoute = routes[id] || "/";
@@ -430,7 +380,6 @@ export function SiteHeader({
     return false;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrolled, setScrolled] = useState(false);
   const [heroTransitioned, setHeroTransitioned] = useState(false);
   useEffect(() => {
@@ -451,26 +400,27 @@ export function SiteHeader({
     };
   }, []);
 
-  const isHomeHeroState = pathname === "/" && !scrolled && !heroTransitioned;
-  const isHomeHeroP2State = pathname === "/" && !scrolled && heroTransitioned;
+  const isHeroRoute = pathname === "/" || pathname === "/homepage";
+  const isHomeHeroState = false;
+  const isHomeHeroP2State = isHeroRoute && !scrolled && !heroTransitioned;
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-300 ${
+      className={`fixed z-[100] transition-all duration-300 ${
         isHomeHeroState || isHomeHeroP2State
-          ? "bg-transparent border-none shadow-none py-4"
-          : "bg-background shadow-lg py-2"
+          ? "left-2 right-2 top-2 w-auto bg-transparent sm:left-3 sm:right-3 sm:top-3"
+          : "top-0 left-0 right-0 w-full bg-background/80 backdrop-blur-md shadow-lg py-2"
       }`}
-      style={
-        isHomeHeroState || isHomeHeroP2State
-          ? { background: "rgba(0,0,0,0)", boxShadow: "none", border: "none" }
-          : {}
-      }
+      style={isHomeHeroState || isHomeHeroP2State ? { background: "rgba(0,0,0,0)", boxShadow: "none", border: "none" } : {}}
     >
       {/* ------------------------------------------------------------------ */}
       {/* Desktop navigation */}
       {/* ------------------------------------------------------------------ */}
       <div
-        className={`w-full flex items-center justify-between px-8 ${isHomeHeroState ? "text-white" : ""}`}
+        className={`flex w-full items-center justify-between transition-all duration-300 ${
+          isHomeHeroState || isHomeHeroP2State
+            ? "h-[58px] rounded-[14px] border border-white/55 bg-white/65 px-4 text-[#0f172a] shadow-[0_12px_40px_rgba(15,23,42,0.16)] backdrop-blur-[18px] sm:px-5 lg:px-6"
+            : "px-8"
+        }`}
       >
         {/* Left side */}
         <div className="flex items-center gap-4">
@@ -515,9 +465,7 @@ export function SiteHeader({
                     ? "!text-[#0d7377]"
                     : "text-rahvana-primary"
               }`}
-              style={
-                isHomeHeroP2State ? { color: "#0d7377", fill: "#0d7377" } : {}
-              }
+              style={isHomeHeroP2State ? { color: '#0d7377', fill: '#0d7377' } : {}}
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
               <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -532,24 +480,38 @@ export function SiteHeader({
           <nav className="hidden lg:flex items-center gap-1">
             <div className="relative pt-2 pb-0">
               <Link
+                href="/homepage"
+                onClick={(e) => handleNav("homepage", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isHomeHeroState
+                    ? (isActive("homepage", "/homepage") ? "bg-white/20 text-white" : "text-white/90 hover:bg-white/15 hover:text-white")
+                    : isHomeHeroP2State
+                      ? (isActive("homepage", "/homepage") ? "bg-[#0d7377]/10 text-[#0d7377]" : "text-[#0f172a] hover:bg-[#0d7377]/10 hover:text-[#0d7377]")
+                      : (isActive("homepage", "/homepage") ? "bg-muted text-[#0d7377]" : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]")
+                }`}
+              >
+                Homepage
+              </Link>
+            </div>
+            <div className="relative pt-2 pb-0">
+              <Link
                 href="/visa-category/ir-category/ir1-journey"
                 onClick={(e) => handleNav("ir1-journey", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive(
+                    ? (isActive(
                         "ir1-journey",
                         "/visa-category/ir-category/ir1-journey",
-                      )
-                      ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                      ) ? "bg-white/20 text-white" : "text-white/90 hover:bg-white/15 hover:text-white")
                     : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive(
-                            "ir1-journey",
-                            "/visa-category/ir-category/ir1-journey",
-                          )
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      ? (isActive(
+                          "ir1-journey",
+                          "/visa-category/ir-category/ir1-journey",
+                        ) ? "bg-[#0d7377]/10 text-[#0d7377]" : "text-[#0f172a] hover:bg-[#0d7377]/10 hover:text-[#0d7377]")
+                      : (isActive(
+                          "ir1-journey",
+                          "/visa-category/ir-category/ir1-journey",
+                        ) ? "bg-muted text-[#0d7377]" : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]")
                 }`}
               >
                 IR-1 Journey
@@ -600,14 +562,10 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isHomeHeroState
-                    ? isActive("resources") || activeMenu === "resources"
-                      ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    ? (isActive("resources", "/resources") || activeMenu === "resources" ? "bg-white/20 text-white" : "text-white/90 hover:bg-white/15 hover:text-white")
                     : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("resources") || activeMenu === "resources"
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      ? (isActive("resources", "/resources") || activeMenu === "resources" ? "bg-[#0d7377]/10 text-[#0d7377]" : "text-[#0f172a] hover:bg-[#0d7377]/10 hover:text-[#0d7377]")
+                      : (isActive("resources", "/resources") || activeMenu === "resources" ? "bg-muted text-[#0d7377]" : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]")
                 }`}
               >
                 Resources
@@ -710,25 +668,6 @@ export function SiteHeader({
               )}
             </div>
             */}
-            <div className="relative pt-2 pb-0">
-              <Link
-                href="/about"
-                onClick={(e) => handleNav("about", e)}
-                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  isHomeHeroState
-                    ? isActive("about", "/about")
-                      ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("about", "/about")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                About
-              </Link>
-            </div>
 
             <div className="relative pt-2 pb-0">
               <Link
@@ -736,14 +675,10 @@ export function SiteHeader({
                 onClick={(e) => handleNav("pricing", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive("pricing", "/pricing")
-                      ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    ? (isActive("pricing", "/pricing") ? "bg-white/20 text-white" : "text-white/90 hover:bg-white/15 hover:text-white")
                     : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("pricing", "/pricing")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      ? (isActive("pricing", "/pricing") ? "bg-[#0d7377]/10 text-[#0d7377]" : "text-[#0f172a] hover:bg-[#0d7377]/10 hover:text-[#0d7377]")
+                      : (isActive("pricing", "/pricing") ? "bg-muted text-[#0d7377]" : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]")
                 }`}
               >
                 Pricing
@@ -755,14 +690,10 @@ export function SiteHeader({
                 onClick={(e) => handleNav("faq", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive("faq")
-                      ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    ? (isActive("faq") ? "bg-white/20 text-white" : "text-white/90 hover:bg-white/15 hover:text-white")
                     : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("faq")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      ? (isActive("faq") ? "bg-[#0d7377]/10 text-[#0d7377]" : "text-[#0f172a] hover:bg-[#0d7377]/10 hover:text-[#0d7377]")
+                      : (isActive("faq") ? "bg-muted text-[#0d7377]" : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]")
                 }`}
               >
                 FAQ
@@ -774,14 +705,10 @@ export function SiteHeader({
                 onClick={(e) => handleNav("contact", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive("contact")
-                      ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    ? (isActive("contact") ? "bg-white/20 text-white" : "text-white/90 hover:bg-white/15 hover:text-white")
                     : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("contact")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      ? (isActive("contact") ? "bg-[#0d7377]/10 text-[#0d7377]" : "text-[#0f172a] hover:bg-[#0d7377]/10 hover:text-[#0d7377]")
+                      : (isActive("contact") ? "bg-muted text-[#0d7377]" : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]")
                 }`}
               >
                 Contact
@@ -815,21 +742,21 @@ export function SiteHeader({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full border border-slate-200 bg-white shadow-xl rounded-xl p-4 mt-2"
+              className="absolute top-full border border-white/30 bg-white/70 backdrop-blur-md shadow-xl rounded-xl p-4 mt-2"
               style={{ width: "200px", left: `${arrowOffset - 90}px` }}
             >
               <div>
                 <Link
                   href="/resources?tab=toolbox"
-                  onClick={handleLinkClick}
+                  onClick={() => handleNav("tools")}
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
                   <Wrench className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
-                  Tools
+                  Toolbox
                 </Link>
                 <Link
                   href="/resources?tab=guides"
-                  onClick={handleLinkClick}
+                  onClick={() => handleNav("guides")}
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
                   <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
@@ -837,7 +764,7 @@ export function SiteHeader({
                 </Link>
                 <Link
                   href="/resources?tab=services"
-                  onClick={handleLinkClick}
+                  onClick={() => handleNav("services")}
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
                   <Briefcase className="h-4 w-4 text-amber-500 dark:text-amber-400" />
@@ -846,6 +773,7 @@ export function SiteHeader({
                 <div className="my-2 border-t border-border" />
                 <Link
                   href="/resources"
+                  onClick={() => handleNav("resources")}
                   className="block py-2 px-2 text-sm font-semibold text-[#0d7377] hover:underline transition-colors"
                 >
                   View all Resources &rarr;
@@ -910,36 +838,17 @@ export function SiteHeader({
                       isHomeHeroState
                         ? "text-white"
                         : isHomeHeroP2State
-                          ? "text-white"
+                          ? "text-[#0d7377]"
                           : "text-rahvana-primary"
                     }`}
-                    style={{
-                      padding: 0,
-                      minWidth: 40,
-                      minHeight: 40,
-                      background: "none",
-                      boxShadow: "none",
-                      border: "none",
-                    }}
+                    style={{padding: 0, minWidth: 40, minHeight: 40, background: 'none', boxShadow: 'none', border: 'none'}}
                   >
-                    <div className="relative inline-flex">
-                      <Bell
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                        style={
-                          isHomeHeroP2State
-                            ? { color: "#fff" }
-                            : isHomeHeroState
-                              ? { color: "#fff" }
-                              : { color: "var(--rahvana-primary, #0d7377)" }
-                        }
-                      />
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-white/50">
-                          {unreadCount > 9 ? "9+" : unreadCount}
-                        </span>
-                      )}
-                    </div>
+                    <Bell className="h-5 w-5" aria-hidden="true" style={isHomeHeroP2State ? { color: '#0d7377' } : isHomeHeroState ? { color: '#fff' } : { color: 'var(--rahvana-primary, #0d7377)' }} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
                   </HydrationSafeButton>
 
                   <AnimatePresence>
@@ -949,18 +858,16 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-slate-200 bg-white z-9999 overflow-hidden origin-top-right"
+                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-white/30 bg-white/70 backdrop-blur-md z-9999 overflow-hidden origin-top-right"
                       >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
                           <div className="flex items-center gap-2">
                             <Bell className="w-4 h-4 text-[#0d7377]" />
-                            <span className="text-sm font-bold text-foreground">
-                              Notifications
-                            </span>
+                            <span className="text-sm font-bold text-foreground">Notifications</span>
                           </div>
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                            {unreadCount > 0 ? `${unreadCount} New` : "0 New"}
+                            {unreadCount > 0 ? `${unreadCount} New` : '0 New'}
                           </span>
                         </div>
 
@@ -972,34 +879,21 @@ export function SiteHeader({
                                 <BellOff className="w-6 h-6 text-muted-foreground/50" />
                               </div>
                               <div className="text-center space-y-1">
-                                <p className="text-sm font-semibold text-foreground">
-                                  All caught up!
-                                </p>
-                                <p className="text-xs text-muted-foreground max-w-[180px] mx-auto leading-relaxed">
-                                  No pending notifications right now.
-                                </p>
+                                <p className="text-sm font-semibold text-foreground">All caught up!</p>
+                                <p className="text-xs text-muted-foreground max-w-[180px] mx-auto leading-relaxed">No pending notifications right now.</p>
                               </div>
                             </div>
                           ) : (
                             <div className="divide-y divide-border">
-                              {notifList.slice(0, 6).map((n: any) => {
+                              {notifList.slice(0, 6).map((n) => {
                                 const isExpanded = expandedNotifs.has(n.id);
                                 const bodyLong = n.body && n.body.length > 80;
                                 return (
-                                  <div
-                                    key={n.id}
-                                    className={`px-4 py-3 flex gap-3 items-start transition-colors ${n.priority === "critical" || n.priority === "high" ? "bg-orange-50/50 hover:bg-orange-50" : "hover:bg-muted/30"}`}
-                                  >
-                                    <div
-                                      className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-[#0d7377]"}`}
-                                    />
+                                  <div key={n.id} className={`px-4 py-3 flex gap-3 items-start transition-colors ${n.priority === 'critical' || n.priority === 'high' ? 'bg-orange-50/50 hover:bg-orange-50' : 'hover:bg-muted/30'}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${n.priority === 'critical' ? 'bg-red-500' : n.priority === 'high' ? 'bg-orange-400' : 'bg-[#0d7377]'}`} />
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-[12px] font-bold text-foreground">
-                                        {n.title}
-                                      </p>
-                                      <p
-                                        className={`text-[11px] text-muted-foreground mt-0.5 leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}
-                                      >
+                                      <p className="text-[12px] font-bold text-foreground">{n.title}</p>
+                                      <p className={`text-[11px] text-muted-foreground mt-0.5 leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
                                         {n.body}
                                       </p>
                                       {bodyLong && (
@@ -1007,26 +901,16 @@ export function SiteHeader({
                                           onClick={() => toggleExpand(n.id)}
                                           className="text-[10px] font-bold text-[#0d7377] hover:underline mt-0.5"
                                         >
-                                          {isExpanded
-                                            ? "Show less ↑"
-                                            : "Read more ↓"}
+                                          {isExpanded ? 'Show less ↑' : 'Read more ↓'}
                                         </button>
                                       )}
                                       {n.action_label && n.action_url && (
-                                        <a
-                                          href={n.action_url}
-                                          className="text-[10px] font-black text-[#0d7377] hover:underline mt-1 inline-block uppercase tracking-wide"
-                                        >
+                                        <a href={n.action_url} className="text-[10px] font-black text-[#0d7377] hover:underline mt-1 inline-block uppercase tracking-wide">
                                           {n.action_label} →
                                         </a>
                                       )}
                                     </div>
-                                    <button
-                                      onClick={() => dismissNotif(n.id)}
-                                      className="text-muted-foreground hover:text-red-400 text-[10px] shrink-0 mt-0.5"
-                                    >
-                                      ✕
-                                    </button>
+                                    <button onClick={() => dismissNotif(n.id)} className="text-muted-foreground hover:text-red-400 text-[10px] shrink-0 mt-0.5">✕</button>
                                   </div>
                                 );
                               })}
@@ -1039,9 +923,7 @@ export function SiteHeader({
                           {notifList.length > 0 && (
                             <button
                               className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
-                              onClick={() =>
-                                notifList.forEach((n) => dismissNotif(n.id))
-                              }
+                              onClick={() => notifList.forEach((n) => dismissNotif(n.id))}
                             >
                               Dismiss all
                             </button>
@@ -1062,9 +944,7 @@ export function SiteHeader({
                               disabled={seeding}
                               className="flex-1 py-1.5 rounded-lg bg-orange-500 text-white text-[10px] font-black hover:bg-orange-600 disabled:opacity-50 transition-colors"
                             >
-                              {seeding
-                                ? "Loading..."
-                                : "Load Demo Notifications"}
+                              {seeding ? 'Loading...' : 'Load Demo Notifications'}
                             </button>
                             <button
                               onClick={clearDemoNotifs}
@@ -1077,9 +957,7 @@ export function SiteHeader({
                         )}
                         {isDev && !notifJourneyId && (
                           <div className="px-3 py-2 border-t border-orange-200 bg-orange-50 text-center">
-                            <p className="text-[10px] text-orange-600 font-medium">
-                              Complete a step first to enable demo seeding
-                            </p>
+                            <p className="text-[10px] text-orange-600 font-medium">Complete a step first to enable demo seeding</p>
                           </div>
                         )}
                       </motion.div>
@@ -1113,37 +991,19 @@ export function SiteHeader({
                   isHomeHeroState
                     ? "text-white"
                     : isHomeHeroP2State
-                      ? "text-white"
+                      ? "text-[#5b5265]"
                       : "text-rahvana-primary"
                 }`}
-                style={{
-                  background: "none",
-                  boxShadow: "none",
-                  border: "none",
-                  width: "auto",
-                  height: "auto",
-                  padding: 0,
-                  borderRadius: 0,
-                }}
+                style={{background: 'none', boxShadow: 'none', border: 'none', width: 'auto', height: 'auto', padding: 0, borderRadius: 0}}
               >
-                <span
-                  style={
-                    isHomeHeroP2State
-                      ? { color: "#fff" }
-                      : isHomeHeroState
-                        ? { color: "#fff" }
-                        : { color: "var(--rahvana-primary, #0d7377)" }
-                  }
-                >
-                  {(
-                    profile?.full_name ||
-                    user?.user_metadata?.full_name ||
-                    user?.user_metadata?.name ||
-                    "U"
-                  )
-                    .charAt(0)
-                    .toUpperCase()}
-                </span>
+                <span style={isHomeHeroP2State ? { color: '#5b5265' } : isHomeHeroState ? { color: '#fff' } : { color: 'var(--rahvana-primary, #0d7377)' }}>{(
+                  profile?.full_name ||
+                  user?.user_metadata?.full_name ||
+                  user?.user_metadata?.name ||
+                  "U"
+                )
+                  .charAt(0)
+                  .toUpperCase()}</span>
               </HydrationSafeButton>
 
               <AnimatePresence>
@@ -1152,7 +1012,7 @@ export function SiteHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-slate-200 bg-white z-9999 transform origin-top-right"
+                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-white/30 bg-white/70 backdrop-blur-md z-9999 transform origin-top-right"
                   >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">
@@ -1344,14 +1204,22 @@ export function SiteHeader({
 
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="flex flex-col px-4 gap-1">
+              <HydrationSafeButton
+                onClick={() => handleNav("homepage")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                  isActive("homepage", "/homepage")
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Home className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                <span className="font-bold">Homepage</span>
+              </HydrationSafeButton>
               {/* IR-1 Journey Link */}
               <HydrationSafeButton
                 onClick={() => handleNav("ir1-journey")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive(
-                    "ir1-journey",
-                    "/visa-category/ir-category/ir1-journey",
-                  )
+                  isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
                     ? "bg-[#0d7377]/10 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -1421,7 +1289,7 @@ export function SiteHeader({
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
-                          Tools
+                          Toolbox
                         </Link>
                         <Link
                           href="/resources?tab=guides"
@@ -1439,7 +1307,8 @@ export function SiteHeader({
                         </Link>
                         <div className="my-1 border-t border-slate-100" />
                         <Link
-                          href="#"
+                          href="/resources"
+                          onClick={() => setIsMenuOpen(false)}
                           className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
                         >
                           View all Resources &rarr;
@@ -1453,12 +1322,7 @@ export function SiteHeader({
               {/* Dynamic Mobile Menu Sections */}
               {Object.values(NAV_DATA).map((section) => {
                 // Skip journeys and tools, guides, services sections
-                if (
-                  section.id === "journeys" ||
-                  section.id === "tools" ||
-                  section.id === "guides" ||
-                  section.id === "services"
-                ) {
+                if (section.id === "journeys" || section.id === "tools" || section.id === "guides" || section.id === "services") {
                   return null;
                 }
                 return (
@@ -1497,39 +1361,36 @@ export function SiteHeader({
                           transition={{ duration: 0.2, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="ml-9 mt-1 flex flex-col gap-4 border-l-2 border-slate-100 pl-4 py-2">
-                            {section.tabs.map((tab) => (
-                              <div key={tab.id} className="flex flex-col gap-2">
-                                {/* Tab Label */}
-                                <div className="text-sm font-semibold text-slate-900">
-                                  {tab.label}
-                                </div>
+                        <div className="ml-9 mt-1 flex flex-col gap-4 border-l-2 border-slate-100 pl-4 py-2">
+                          {section.tabs.map((tab) => (
+                            <div key={tab.id} className="flex flex-col gap-2">
+                              {/* Tab Label */}
+                              <div className="text-sm font-semibold text-slate-900">
+                                {tab.label}
+                              </div>
 
-                                {/* Render Categories if present */}
-                                {tab.categories?.map((cat, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex flex-col gap-1"
-                                  >
-                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                                      {cat.label}
-                                    </div>
-                                    {cat.items.map((item, i) => (
-                                      <Link
-                                        key={i}
-                                        href={item.href}
-                                        onClick={handleLinkClick}
-                                        className={`block py-2 text-sm transition-all rounded-md px-2 ${
-                                          item.disabled
-                                            ? "text-slate-400 cursor-not-allowed"
-                                            : isActive(item.title, item.href)
-                                              ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
-                                              : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
-                                        }`}
-                                      >
-                                        <span className="flex items-center gap-2">
-                                          {item.title}
-                                          {/* {item.badge && (
+                              {/* Render Categories if present */}
+                              {tab.categories?.map((cat, idx) => (
+                                <div key={idx} className="flex flex-col gap-1">
+                                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                    {cat.label}
+                                  </div>
+                                  {cat.items.map((item, i) => (
+                                    <Link
+                                      key={i}
+                                      href={item.href}
+                                      onClick={() => setIsMenuOpen(false)}
+                                      className={`block py-2 text-sm transition-all rounded-md px-2 ${
+                                        item.disabled
+                                          ? "text-slate-400 cursor-not-allowed"
+                                          : isActive(item.title, item.href)
+                                            ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
+                                            : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                                      }`}
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        {item.title}
+                                        {/* {item.badge && (
                                         <span
                                           className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                                             item.badge === "Live"
@@ -1540,29 +1401,29 @@ export function SiteHeader({
                                           {item.badge}
                                         </span>
                                       )} */}
-                                        </span>
-                                      </Link>
-                                    ))}
-                                  </div>
-                                ))}
+                                      </span>
+                                    </Link>
+                                  ))}
+                                </div>
+                              ))}
 
-                                {/* Render Direct Items if present */}
-                                {tab.items?.map((item, i) => (
-                                  <Link
-                                    key={i}
-                                    href={item.href}
-                                    onClick={handleLinkClick}
-                                    className={`block py-2 text-sm transition-all rounded-md px-2 ${
-                                      item.disabled
-                                        ? "text-slate-400 cursor-not-allowed"
-                                        : isActive(item.title, item.href)
-                                          ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
-                                          : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
-                                    }`}
-                                  >
-                                    <span className="flex items-center gap-2">
-                                      {item.title}
-                                      {/* {item.badge && (
+                              {/* Render Direct Items if present */}
+                              {tab.items?.map((item, i) => (
+                                <Link
+                                  key={i}
+                                  href={item.href}
+                                  onClick={() => setIsMenuOpen(false)}
+                                  className={`block py-2 text-sm transition-all rounded-md px-2 ${
+                                    item.disabled
+                                      ? "text-slate-400 cursor-not-allowed"
+                                      : isActive(item.title, item.href)
+                                        ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
+                                        : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                                  }`}
+                                >
+                                  <span className="flex items-center gap-2">
+                                    {item.title}
+                                    {/* {item.badge && (
                                     <span
                                       className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                                         item.badge === "Live"
@@ -1573,24 +1434,24 @@ export function SiteHeader({
                                       {item.badge}
                                     </span>
                                   )} */}
-                                    </span>
-                                  </Link>
-                                ))}
-                              </div>
-                            ))}
+                                  </span>
+                                </Link>
+                              ))}
+                            </div>
+                          ))}
 
-                            {/* Footer Link */}
-                            {section.footerLink && (
-                              <Link
-                                href={section.footerLink.href}
-                                onClick={handleLinkClick}
-                                className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
-                              >
-                                {section.footerLink.label} &rarr;
-                              </Link>
-                            )}
-                          </div>
-                        </motion.div>
+                          {/* Footer Link */}
+                          {section.footerLink && (
+                            <Link
+                              href={section.footerLink.href}
+                              onClick={() => setIsMenuOpen(false)}
+                              className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
+                            >
+                              {section.footerLink.label} &rarr;
+                            </Link>
+                          )}
+                        </div>
+                      </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
@@ -1598,17 +1459,6 @@ export function SiteHeader({
               })}
 
               {/* <div className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">General</div> */}
-              <HydrationSafeButton
-                onClick={() => handleNav("about")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive("about")
-                    ? "bg-[#0d7377]/10 text-[#0d7377]"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <Info className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                <span className="font-bold">About</span>
-              </HydrationSafeButton>
               <HydrationSafeButton
                 onClick={() => handleNav("pricing")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${

@@ -439,9 +439,7 @@ export function DashboardView({
                     This journey is now in read-only mode
                   </div>
                   <div className="text-[13px] text-white/55 leading-relaxed">
-                    The 14-day editing window following your{" "}
-                    {lockStatus.outcomeType === "approved" ? "visa approval" : "221(g) notice"}{" "}
-                    has ended. Your roadmap is preserved for reference. Contact support if you need to make changes.
+                    The 14-day editing window following your CEAC status being marked as Issued has ended. Your roadmap is preserved for reference. Contact support if you need to make changes.
                   </div>
                 </div>
               </div>

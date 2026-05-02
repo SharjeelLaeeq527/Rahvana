@@ -3421,6 +3421,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         actions.updateMetadata({
                           apDetails: apDetails,
                           apSaved: "true",
+                          ...(apDetails.ceacStatus === "Issued" && !state.metadata?.ceacIssuedAt
+                            ? { ceacIssuedAt: new Date().toISOString() }
+                            : {}),
                         });
                         // Trigger CEAC notification system
                         if (apDetails.ceacStatus === "Refused") {

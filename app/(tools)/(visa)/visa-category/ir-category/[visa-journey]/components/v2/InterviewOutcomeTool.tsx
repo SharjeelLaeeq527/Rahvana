@@ -40,15 +40,9 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
     }
     // Update metadata immediately if not 221g or not_sure
     if (outcomeId !== "not_sure" && outcomeId !== "221g") {
-      actions.updateMetadata({
-        interviewOutcome: outcomeId,
-        ...(!state.metadata?.interviewOutcomeSetAt && { interviewOutcomeSetAt: new Date().toISOString() }),
-      });
+      actions.updateMetadata({ interviewOutcome: outcomeId });
     } else if (outcomeId === "221g") {
-      actions.updateMetadata({
-        interviewOutcome: outcomeId,
-        ...(!state.metadata?.interviewOutcomeSetAt && { interviewOutcomeSetAt: new Date().toISOString() }),
-      });
+      actions.updateMetadata({ interviewOutcome: outcomeId });
     }
   };
 

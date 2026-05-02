@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { motion as BannerMotion } from "framer-motion";
+import { motion as BannerMotion } from "motion/react";
 import * as Icons from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Wizard } from "./components/home-page/Wizard";
@@ -359,7 +359,6 @@ function HomePageContent() {
         {activeSection === "home" && (
           <div className="flex flex-col">
             {/* Use the new styled hero, but keep the same CTA and header logic */}
-    
             <CinematicHeroHtmlStyle />
 
             {/* HOW RAHVANA WORKS SECTION */}
@@ -700,7 +699,7 @@ function HomePageContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[
                     {
-                      iconSrc: "/icons/case-strength-analyser.svg",
+                      icon: <Icons.Brain className="w-7 h-7 " />,
                       title:
                         t("homePage.toolsItems.0.title") ||
                         "Case Strength Analyzer",
@@ -710,7 +709,7 @@ function HomePageContent() {
                       url: "/visa-case-strength-checker",
                     },
                     {
-                      iconSrc: "/icons/221g-action-plan.svg",
+                      icon: <Icons.LifeBuoy className="w-7 h-7 " />,
                       title:
                         t("homePage.toolsItems.1.title") ||
                         "221(g) Action Planner",
@@ -720,7 +719,7 @@ function HomePageContent() {
                       url: "/221g-action-planner",
                     },
                     {
-                      iconSrc: "/icons/visa-path-finder.svg",
+                      icon: <Icons.Compass className="w-7 h-7" />,
                       title:
                         t("homePage.toolsItems.2.title") || "Visa Path Finder",
                       desc:
@@ -729,7 +728,7 @@ function HomePageContent() {
                       url: "/visa-eligibility",
                     },
                     {
-                      iconSrc: "/icons/sponsorship-calculator.svg",
+                      icon: <Icons.Calculator className="w-7 h-7" />,
                       title:
                         t("homePage.toolsItems.3.title") ||
                         "Sponsorship Calculator",
@@ -739,7 +738,7 @@ function HomePageContent() {
                       url: "/affidavit-support-calculator",
                     },
                     {
-                      iconSrc: "/icons/pdf-toolbox.svg",
+                      icon: <Icons.Files className="w-7 h-7 " />,
                       title: t("homePage.toolsItems.4.title") || "PDF Tool Kit",
                       desc:
                         t("homePage.toolsItems.4.desc") ||
@@ -747,7 +746,7 @@ function HomePageContent() {
                       url: "/pdf-processing",
                     },
                     {
-                      iconSrc: "/icons/smart-form-filler.svg",
+                      icon: <Icons.Wand2 className="w-7 h-7" />,
                       title:
                         t("homePage.toolsItems.5.title") || "Smart Form Filler",
                       desc:
@@ -766,14 +765,8 @@ function HomePageContent() {
                       className="group relative bg-muted/30 rounded-2xl p-8 border border-border transition-all hover:border-rahvana-primary/30 hover:shadow-xl cursor-pointer overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-linear-to-tr from-rahvana-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform">
-                        <Image
-                          src={tool.iconSrc}
-                          alt={`${tool.title} icon`}
-                          width={38}
-                          height={38}
-                          className="w-[38px] h-[38px]"
-                        />
+                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform [&>svg]:text-white!">
+                        {tool.icon}
                       </div>
                       <h3 className="text-xl font-bold text-foreground mb-2">
                         {tool.title}
@@ -913,7 +906,7 @@ function HomePageContent() {
 
                     <div className="mt-6 pl-4">
                       <HydrationSafeButton
-                        onClick={() => router.push("/services")}
+                        onClick={() => router.push("/resources?tab=services")}
                         className="inline-flex items-center gap-2 text-sm font-bold text-rahvana-primary hover:text-rahvana-primary-dark transition-colors cursor-pointer"
                       >
                         {t("homePage.servicesViewAll")}{" "}

@@ -583,7 +583,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
 
   // ══════════════════════════════════════════════════════════
   // CHAPTER 3 — Journey Lock Warnings (post-interview outcome)
-  // Fires when interviewOutcomeSetAt is set (approved OR 221g).
+  // Fires when ceacIssuedAt is set (approved OR 221g).
   // Journey auto-locks 14 days after outcome is recorded.
   // ══════════════════════════════════════════════════════════
 
@@ -593,13 +593,13 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'ACTION',
     origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewOutcomeSetAt' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'ceacIssuedAt' },
     suppressWhen: { type: 'never' },
     delayDays: 0,
     priority: 'high',
     channels: ['push'],
     title: 'Your journey will be locked in 14 days',
-    body: 'Your interview outcome has been recorded. This journey will automatically enter read-only mode in 14 days. Complete any remaining steps before then — no edits will be possible once it is locked.',
+    body: 'Your CEAC status has been marked as Issued. This journey will automatically enter read-only mode in 14 days. Complete any remaining steps before then — no edits will be possible once it is locked.',
     actionLabel: 'View Roadmap',
     actionUrl: '/visa-category/ir-category/ir1-journey',
   },
@@ -610,7 +610,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewOutcomeSetAt' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'ceacIssuedAt' },
     suppressWhen: { type: 'never' },
     delayDays: 11,
     priority: 'critical',
@@ -627,7 +627,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     chapter: 3,
     kind: 'URGENT',
     origin: 'journey',
-    trigger: { type: 'metadata_key_exists', metadataKey: 'interviewOutcomeSetAt' },
+    trigger: { type: 'metadata_key_exists', metadataKey: 'ceacIssuedAt' },
     suppressWhen: { type: 'never' },
     delayDays: 13,
     priority: 'critical',
