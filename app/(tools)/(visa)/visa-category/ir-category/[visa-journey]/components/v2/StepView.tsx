@@ -90,6 +90,7 @@ import {
   getStageProgress,
   getDisplayStepNumber,
 } from "./journeyHelpers";
+import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
@@ -888,18 +889,12 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     return null;
   }, [chapters]);
 
-  const filingMethod =
-    state.metadata?.filingMethod || state.filingType || "online";
-
-  const getIcon = getStepIcon;
+  const filingMethod = state.metadata?.filingMethod || state.filingType || "online";
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
-    return currentChapter.steps.filter(
-      (step: any) =>
-        !step.branch || step.branch === "both" || step.branch === filingMethod,
-    );
-  }, [currentChapter, filingMethod]);
+    return getActiveStepsForStage(data, state.currentStage ?? 0, state.metadata, state.filingType);
+  }, [data, currentChapter, state.currentStage, state.metadata, state.filingType]);
 
   // (removed duplicate declarations, see above)
   const isCompleted = state.completedSteps.has(sId);
