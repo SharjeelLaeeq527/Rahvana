@@ -52,9 +52,10 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, metadat
   });
 
   // Sort by display_order, then step_number as fallback
+  // Sort by display_number_override (if present), then display_order, then step_number
   filtered.sort((a: any, b: any) => {
-    const aOrder = a.display_order ?? a.step_number ?? 0;
-    const bOrder = b.display_order ?? b.step_number ?? 0;
+    const aOrder = a.display_number_override ?? a.display_order ?? a.step_number ?? 0;
+    const bOrder = b.display_number_override ?? b.display_order ?? b.step_number ?? 0;
     return aOrder - bOrder;
   });
   return filtered;
