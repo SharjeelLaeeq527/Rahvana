@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { motion as BannerMotion } from "motion/react";
+import { motion as BannerMotion } from "framer-motion";
 import * as Icons from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Wizard } from "./components/home-page/Wizard";
@@ -28,8 +28,20 @@ import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { FAQS, JOURNEYS, LIFECYCLE_STEPS } from "@/data/home-page-data";
+import {
+  FAQS,
+  heroAnnotationFont,
+  heroAnnotations,
+} from "@/data/home-page-data";
 import { Loader } from "@/components/ui/spinner";
+import {
+  RealDashboardScene,
+  TwoWaysScene,
+  ConsultationBanner
+} from "./components/home-page/Components";
+
+export const journeyHref = "/visa-category/ir-category/ir1-journey";
+export const toolsHref = "/tools";
 
 const renderWithAbbr = (text: string) => {
   if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
@@ -77,7 +89,12 @@ const LiveBackground = () => {
           bottom: "-14%",
         }}
         animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 1,
+        }}
       />
       <BannerMotion.div
         className="absolute h-[160px] w-[160px] rounded-full mix-blend-screen opacity-10 sm:h-[300px] sm:w-[300px]"
@@ -88,7 +105,12 @@ const LiveBackground = () => {
           top: "12%",
         }}
         animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        transition={{
+          duration: 9,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 2,
+        }}
       />
 
       <div
@@ -110,7 +132,12 @@ const LiveBackground = () => {
         animate={{ rotate: 360 }}
         transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
       >
-        <Icons.Globe className="h-20 w-20 sm:h-32 sm:w-32" color="#afdbdb" strokeWidth={0.5} opacity={0.4} />
+        <Icons.Globe
+          className="h-20 w-20 sm:h-32 sm:w-32"
+          color="#afdbdb"
+          strokeWidth={0.5}
+          opacity={0.4}
+        />
 
         <BannerMotion.div
           className="absolute"
@@ -119,7 +146,12 @@ const LiveBackground = () => {
           style={{ width: "300px", height: "300px" }}
         >
           <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rotate-90">
-            <Icons.Plane className="h-4 w-4 sm:h-7 sm:w-7" color="#db8090" fill="#db8090" opacity={0.7} />
+            <Icons.Plane
+              className="h-4 w-4 sm:h-7 sm:w-7"
+              color="#db8090"
+              fill="#db8090"
+              opacity={0.7}
+            />
           </div>
         </BannerMotion.div>
 
@@ -130,7 +162,11 @@ const LiveBackground = () => {
           style={{ width: "360px", height: "360px" }}
         >
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 -rotate-90">
-            <Icons.Plane className="h-3.5 w-3.5 sm:h-5 sm:w-5" color="#cdadcc" opacity={0.5} />
+            <Icons.Plane
+              className="h-3.5 w-3.5 sm:h-5 sm:w-5"
+              color="#cdadcc"
+              opacity={0.5}
+            />
           </div>
         </BannerMotion.div>
       </BannerMotion.div>
@@ -144,7 +180,11 @@ const LiveBackground = () => {
         animate={{ y: [0, -20, 0], rotate: [-5, 5, -5] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <Icons.FileText className="h-4 w-4 sm:h-7 sm:w-7" color="#cdadcc" strokeWidth={1.5} />
+        <Icons.FileText
+          className="h-4 w-4 sm:h-7 sm:w-7"
+          color="#cdadcc"
+          strokeWidth={1.5}
+        />
       </BannerMotion.div>
 
       <BannerMotion.div
@@ -154,9 +194,18 @@ const LiveBackground = () => {
           border: "1px solid rgba(219, 128, 144, 0.2)",
         }}
         animate={{ y: [0, 15, 0], scale: [1, 1.05, 1], rotate: [5, -5, 5] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 1,
+        }}
       >
-        <Icons.MessagesSquare className="h-4 w-4 sm:h-7 sm:w-7" color="#db8090" strokeWidth={1.5} />
+        <Icons.MessagesSquare
+          className="h-4 w-4 sm:h-7 sm:w-7"
+          color="#db8090"
+          strokeWidth={1.5}
+        />
       </BannerMotion.div>
 
       <BannerMotion.div
@@ -166,54 +215,66 @@ const LiveBackground = () => {
           border: "1px solid rgba(175, 219, 219, 0.2)",
         }}
         animate={{ y: [0, -12, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        transition={{
+          duration: 4.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 0.5,
+        }}
       >
-        <Icons.MapPin className="h-4 w-4 sm:h-6 sm:w-6" color="#afdbdb" strokeWidth={1.5} />
+        <Icons.MapPin
+          className="h-4 w-4 sm:h-6 sm:w-6"
+          color="#afdbdb"
+          strokeWidth={1.5}
+        />
       </BannerMotion.div>
     </div>
   );
 };
 
-function ConsultationBanner({ onConsultationClick }: { onConsultationClick: () => void }) {
-  return (
-    <section className="w-full px-3 py-6 sm:px-4 md:px-6 md:py-8">
-      <div
-        className="relative flex min-h-[280px] w-full items-center overflow-hidden rounded-2xl bg-[#0d7377] shadow-[0_20px_40px_rgba(13,115,119,0.25)] sm:min-h-[300px] sm:rounded-[1.4rem]"
-      >
-        <LiveBackground />
+// function ConsultationBanner({
+//   onConsultationClick,
+// }: {
+//   onConsultationClick: () => void;
+// }) {
+//   return (
+//     <section className="w-full px-3 py-6 sm:px-4 md:px-6 md:py-8">
+//       <div className="relative flex min-h-[280px] w-full items-center overflow-hidden rounded-2xl bg-[#0d7377] shadow-[0_20px_40px_rgba(13,115,119,0.25)] sm:min-h-[300px] sm:rounded-[1.4rem]">
+//         <LiveBackground />
 
-        <div className="pointer-events-none relative z-10 flex w-full flex-col justify-center p-5 sm:p-7 md:w-[68%] md:p-9 lg:w-3/5 lg:p-10">
-          <BannerMotion.div
-            className="pointer-events-auto"
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <h2 className="mb-2 text-2xl font-bold tracking-tight text-white drop-shadow-sm sm:mb-3 sm:text-3xl lg:mb-4 lg:text-5xl">
-              Book a Consultation
-            </h2>
+//         <div className="pointer-events-none relative z-10 flex w-full flex-col justify-center p-5 sm:p-7 md:w-[68%] md:p-9 lg:w-3/5 lg:p-10">
+//           <BannerMotion.div
+//             className="pointer-events-auto"
+//             initial={{ opacity: 0, x: -20 }}
+//             whileInView={{ opacity: 1, x: 0 }}
+//             viewport={{ once: true }}
+//             transition={{ duration: 0.6, ease: "easeOut" }}
+//           >
+//             <h2 className="mb-2 text-2xl font-bold tracking-tight text-white drop-shadow-sm sm:mb-3 sm:text-3xl lg:mb-4 lg:text-5xl">
+//               Book a Consultation
+//             </h2>
 
-            <p className="mb-4 max-w-[60ch] text-[15px] font-light leading-relaxed text-white/95 drop-shadow-sm sm:mb-5 sm:text-base lg:mb-6 lg:text-lg">
-              Get personalized advice from specialists who understand your journey.
-            </p>
+//             <p className="mb-4 max-w-[60ch] text-[15px] font-light leading-relaxed text-white/95 drop-shadow-sm sm:mb-5 sm:text-base lg:mb-6 lg:text-lg">
+//               Get personalized advice from specialists who understand your
+//               journey.
+//             </p>
 
-            <BannerMotion.button
-              type="button"
-              onClick={onConsultationClick}
-              className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold shadow-lg transition-colors sm:w-auto sm:px-7 sm:py-3.5 sm:text-base"
-              style={{ backgroundColor: "#db8090", color: "#ffffff" }}
-              whileHover={{ scale: 1.02, backgroundColor: "#e294a2" }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Book a Consultation
-            </BannerMotion.button>
-          </BannerMotion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
+//             <BannerMotion.button
+//               type="button"
+//               onClick={onConsultationClick}
+//               className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold shadow-lg transition-colors sm:w-auto sm:px-7 sm:py-3.5 sm:text-base"
+//               style={{ backgroundColor: "#db8090", color: "#ffffff" }}
+//               whileHover={{ scale: 1.02, backgroundColor: "#e294a2" }}
+//               whileTap={{ scale: 0.98 }}
+//             >
+//               Book a Consultation
+//             </BannerMotion.button>
+//           </BannerMotion.div>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
 
 export default function HomePage() {
   return (
@@ -298,6 +359,7 @@ function HomePageContent() {
     setActiveSection("ir1-journey");
   };
 
+  const [heroScene, setHeroScene] = useState(0);
   useEffect(() => {
     if (!user) return;
 
@@ -359,658 +421,181 @@ function HomePageContent() {
         {activeSection === "home" && (
           <div className="flex flex-col">
             {/* Use the new styled hero, but keep the same CTA and header logic */}
-            <CinematicHeroHtmlStyle />
 
-            {/* HOW RAHVANA WORKS SECTION */}
-            <section className="py-12 md:py-24 bg-muted/30" id="about">
-              <div className="w-full mx-auto site-main-px">
-                <div className="text-center  mx-auto mb-16">
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
-                  >
-                    <Icons.TrendingUp className="w-4 h-4" />
-                    {t("homePage.howItWorksBadge1")}
-                  </motion.span>
-                  <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    {t("homePage.howItWorksTitle")}
-                  </h2>
-                  <p className="text-lg text-muted-foreground">
-                    {t("homePage.howItWorksDescription")}
-                  </p>
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold my-2"
-                  >
-                    <Icons.Route className="w-4 h-4" />
-                    {t("homePage.howItWorksBadge2")}
-                  </motion.span>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    className="relative aspect-square w-full sm:w-[340px] md:w-[480px] lg:w-full mx-auto"
-                  >
-                    {/* SVG Layer for all lines */}
-                    <svg
-                      className="absolute inset-0 w-full h-full -rotate-90"
-                      viewBox="0 0 100 100"
-                    >
-                      {/* Background Dashed Circle */}
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        stroke="currentColor"
-                        strokeWidth="0.2"
-                        strokeDasharray="1 2"
-                        fill="none"
-                        className="text-border"
-                      />
-
-                      {/* Animated Drawing Circle */}
-                      <motion.circle
-                        cx="50"
-                        cy="50"
-                        r="35"
-                        stroke="currentColor"
-                        strokeWidth="0.8"
-                        strokeLinecap="round"
-                        fill="none"
-                        className="text-rahvana-primary"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 2, ease: "easeInOut" }}
-                      />
-                    </svg>
-
-                    {/* Pulsing beacon in middle */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-rahvana-primary/5 flex items-center justify-center">
-                      <div className="w-4 h-4 rounded-full bg-rahvana-primary animate-ping opacity-75"></div>
-                      <div className="absolute w-2 h-2 rounded-full bg-rahvana-primary"></div>
-                    </div>
-
-                    {/* Step Nodes with Staggered Entrance */}
-                    <motion.div
-                      variants={{
-                        visible: {
-                          transition: {
-                            staggerChildren: 0.15,
-                          },
-                        },
-                      }}
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true }}
-                    >
-                      {LIFECYCLE_STEPS.map((stepData, i) => {
-                        const step = i + 1;
-                        const angle = (360 / LIFECYCLE_STEPS.length) * i;
-                        const isActive = activeStep === step;
-                        return (
-                          <motion.div
-                            key={step}
-                            onClick={() => setActiveStep(step)}
-                            variants={{
-                              hidden: { opacity: 0, scale: 0.8 },
-                              visible: { opacity: 1, scale: 1 },
-                            }}
-                            animate={{
-                              scale: isActive ? 1.25 : 1,
-                            }}
-                            className={`absolute w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 z-10 ${
-                              isActive
-                                ? "bg-rahvana-primary text-white shadow-xl ring-4 md:ring-8 ring-rahvana-primary/10"
-                                : "bg-card text-muted-foreground border border-border hover:border-rahvana-primary hover:text-rahvana-primary hover:scale-110 shadow-md"
-                            }`}
-                            style={{
-                              left: `${(50 + 35 * Math.sin((angle * Math.PI) / 180)).toFixed(3)}%`,
-                              top: `${(50 - 35 * Math.cos((angle * Math.PI) / 180)).toFixed(3)}%`,
-                              translate: "-50% -50%",
-                            }}
-                          >
-                            <HydrationSafeButton className="w-full h-full rounded-full flex items-center justify-center p-0 bg-transparent border-0">
-                              <span className="sr-only">Step {step}</span>
-                              {React.createElement(stepData.icon, {
-                                className:
-                                  "w-4 h-4 md:w-6 md:h-6 pointer-events-none",
-                              })}
-                            </HydrationSafeButton>
-                          </motion.div>
-                        );
-                      })}
-                    </motion.div>
-                  </motion.div>
-
-                  <div className="space-y-8">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeStep}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="bg-card rounded-3xl p-8 shadow-xl border border-border"
-                      >
-                        <div className="flex items-center gap-4 mb-6">
-                          <div className="w-12 h-12 rounded-full bg-rahvana-primary text-white flex items-center justify-center text-xl font-bold">
-                            0{activeStep}
-                          </div>
-                          <h3 className="text-2xl font-bold text-foreground">
-                            {t(`homePage.steps.step${activeStep}.title`) ||
-                              LIFECYCLE_STEPS[activeStep - 1].title}
-                          </h3>
-                        </div>
-                        <p className="text-muted-foreground leading-relaxed mb-8 text-lg">
-                          {t(`homePage.steps.step${activeStep}.desc`) ||
-                            LIFECYCLE_STEPS[activeStep - 1].desc}
-                        </p>
-                        <ul className="space-y-4 mb-10">
-                          {LIFECYCLE_STEPS[activeStep - 1].items.map(
-                            (item, i) => (
-                              <li
-                                key={i}
-                                className="flex items-center gap-3 text-foreground font-medium bg-muted/50 p-3 rounded-xl border border-border"
-                              >
-                                <Icons.Check className="w-5 h-5 text-rahvana-primary" />
-                                {t(
-                                  `homePage.steps.step${activeStep}.items.${i}`,
-                                ) || item}
-                              </li>
-                            ),
-                          )}
-                        </ul>
-
-                        <div className="flex flex-wrap items-center justify-between gap-3 md:gap-4 pt-6 border-t border-border sm:flex-nowrap">
-                          <button
-                            onClick={() =>
-                              setActiveStep((prev) => Math.max(1, prev - 1))
-                            }
-                            disabled={activeStep === 1}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                              activeStep === 1
-                                ? "opacity-30 cursor-not-allowed text-muted-foreground"
-                                : "text-rahvana-primary hover:bg-rahvana-primary-pale"
-                            }`}
-                          >
-                            <Icons.ChevronLeft className="w-5 h-5" />
-                            {t("homePage.howItWorksPrevious")}
-                          </button>
-
-                          <div className="flex gap-1.5">
-                            {LIFECYCLE_STEPS.map((_, i) => (
-                              <div
-                                key={i}
-                                className={`w-2 h-2 rounded-full transition-all ${i + 1 === activeStep ? "bg-rahvana-primary w-4" : "bg-border"}`}
-                              />
-                            ))}
-                          </div>
-
-                          <button
-                            onClick={() =>
-                              setActiveStep((prev) =>
-                                Math.min(LIFECYCLE_STEPS.length, prev + 1),
-                              )
-                            }
-                            disabled={activeStep === LIFECYCLE_STEPS.length}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-all ${
-                              activeStep === LIFECYCLE_STEPS.length
-                                ? "opacity-30 cursor-not-allowed text-muted-foreground"
-                                : "bg-rahvana-primary text-white shadow-lg hover:bg-rahvana-primary-dark hover:-translate-y-0.5"
-                            }`}
-                          >
-                            {t("homePage.howItWorksNext")}
-                            <Icons.ChevronRight className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                </div>
+            <section className="relative overflow-hidden border-b border-[#d9e2e1] bg-[#fbfaf7] lg:h-screen lg:min-h-[720px]">
+              <div className="absolute inset-0">
+                <Image
+                  src="/assets/images/heroimage.png"
+                  alt=""
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="object-cover object-[58%_48%]"
+                />
               </div>
-            </section>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_42%,rgba(255,255,255,0.24),transparent_27%),radial-gradient(circle_at_71%_52%,rgba(13,115,119,0.16),transparent_30%),radial-gradient(circle_at_center,rgba(5,12,22,0)_38%,rgba(5,12,22,0.34)_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,22,0)_34%,rgba(5,12,22,0.22)_64%,rgba(5,12,22,0.88)_100%)]" />
 
-            {/* JOURNEYS SECTION */}
-            <section
-              className="relative py-8 md:py-12 bg-muted/30 overflow-hidden"
-              id="journeys"
-            >
-              <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-                <svg width="100%" height="100%">
-                  <pattern
-                    id="grid"
-                    width="40"
-                    height="40"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <path
-                      d="M 40 0 L 0 0 0 40"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                    />
-                  </pattern>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                </svg>
-              </div>
-              <div className="w-full mx-auto site-main-px relative z-10">
-                <div className="text-center w-full mx-auto mb-10">
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
-                  >
-                    <Icons.Compass className="w-4 h-4" />
-                    {t("homePage.journeysBadge")}
-                  </motion.span>
-                  <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    viewport={{ once: true }}
-                    className="text-3xl md:text-5xl font-bold text-foreground mb-4"
-                  >
-                    {t("homePage.journeysTitle")}
-                  </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    viewport={{ once: true }}
-                    className="text-lg text-muted-foreground"
-                  >
-                    {t("homePage.journeysDescription")}
-                  </motion.p>
-                </div>
+              <div className="hidden lg:block">
+                <h1 className="absolute left-1/2 top-[104px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-[clamp(48px,5vw,76px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)] xl:top-[108px]">
+                  <span className="inline-block pb-2">
+                    Navigate your IR-1 journey with clarity.
+                  </span>
+                </h1>
 
-                <div className="flex justify-center gap-3 mb-12 flex-wrap">
-                  {[
-                    "Family & Protection",
-                    "Work & Business",
-                    "Work Green Cards",
-                    "Students & Visitors",
-                  ].map((tab) => (
-                    <HydrationSafeButton
-                      key={tab}
-                      onClick={() => setJourneyTab(tab)}
-                      className={`px-6 py-3 rounded-full text-sm font-semibold transition-all border ${
-                        journeyTab === tab
-                          ? "bg-rahvana-primary border-rahvana-primary text-white shadow-md"
-                          : "bg-background border-border text-muted-foreground hover:border-rahvana-primary hover:text-rahvana-primary"
-                      }`}
+                <div className="absolute left-[5vw] top-[40vh] z-20 w-[300px] rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] xl:left-[10vw] xl:top-[38vh] xl:w-[350px] xl:px-8 xl:py-[30px] 2xl:left-[13vw] 2xl:w-[390px]">
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={heroScene}
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -14 }}
+                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                      className={`${heroAnnotationFont.className} text-[28px] leading-[1.44] text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)] xl:text-[31px] xl:leading-[1.46]`}
                     >
-                      {t(`homePage.categoryLabels.${tab}`) || tab}
-                    </HydrationSafeButton>
-                  ))}
+                      {heroAnnotations[heroScene]}
+                    </motion.p>
+                  </AnimatePresence>
                 </div>
 
-                <div className="relative group min-h-125 flex items-center justify-center">
-                  <StackedCarousel
-                    items={JOURNEYS.map((j) => ({
-                      ...j,
-                      title:
-                        t(
-                          `homePage.journeysObj.${j.category}.${j.code}.title`,
-                        ) || j.title,
-                      desc:
-                        t(
-                          `homePage.journeysObj.${j.category}.${j.code}.desc`,
-                        ) || j.desc,
-                    })).filter((j) => j.category === journeyTab)}
-                    onNavigate={handleNavigate}
-                    onNotify={() => setShowComingSoon(true)}
+                <svg
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-[27vw] top-[46vh] z-10 h-[118px] w-[32vw] overflow-visible xl:left-[33vw] xl:top-[45vh] xl:w-[25vw] 2xl:left-[34vw]"
+                  viewBox="0 0 470 140"
+                  fill="none"
+                >
+                  <defs>
+                    <filter
+                      id="heroConnectorGlow"
+                      x="-40%"
+                      y="-80%"
+                      width="180%"
+                      height="260%"
+                    >
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <path
+                    d="M8 86 C92 84 118 18 196 35 C275 52 300 111 462 58"
+                    stroke="rgba(255,255,255,0.65)"
+                    strokeWidth="2"
+                    strokeDasharray="4 8"
+                    strokeLinecap="round"
                   />
-                </div>
-              </div>
-            </section>
+                  <circle
+                    cx="216"
+                    cy="40"
+                    r="4.5"
+                    fill="rgba(255,255,255,0.96)"
+                    filter="url(#heroConnectorGlow)"
+                  />
+                  <circle
+                    cx="216"
+                    cy="40"
+                    r="12"
+                    fill="rgba(255,255,255,0.15)"
+                  />
+                </svg>
 
-            {/* QUICK TOOLS SECTION */}
-            <section
-              className="relative py-8 md:py-12 bg-background"
-              id="tools"
-            >
-              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
-                <div className="text-center  mx-auto mb-10">
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
-                  >
-                    <Icons.Wrench className="w-4 h-4" />
-                    {t("homePage.toolsBadge")}
-                  </motion.span>
-                  <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    {t("homePage.toolsTitle")}
-                  </h2>
-                  <p className="text-lg text-muted-foreground">
-                    {t("homePage.toolsDescription")}
+                <div className="absolute right-[3vw] top-[24vh] z-20 h-[clamp(470px,50vh,560px)] w-[clamp(560px,54vw,720px)] xl:right-[6vw] xl:top-[23vh] xl:h-[clamp(500px,52vh,590px)] xl:w-[clamp(650px,47vw,760px)] 2xl:right-[11vw] 2xl:w-[clamp(700px,47vw,860px)]">
+                  <RealDashboardScene compact onSceneChange={setHeroScene} />
+                </div>
+
+                <div className="absolute bottom-[34px] left-[6vw] right-[6vw] z-20 flex items-center justify-between gap-8 xl:left-[15vw] xl:right-[15vw] xl:gap-8">
+                  <h1 className="sr-only">
+                    Navigate your IR-1 journey with clarity.
+                  </h1>
+                  <p className="max-w-[820px] text-[16px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
+                    <span className="block xl:whitespace-nowrap">
+                      Rahvana gives you a structured step-by-step IR-1 roadmap
+                      Ã¢â‚¬â€ from petition filing to interview readiness
+                      Ã¢â‚¬â€
+                    </span>
+                    <span className="block xl:whitespace-nowrap">
+                      with guided steps, document organization, progress
+                      tracking, and focused tools when you need them.
+                    </span>
                   </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[
-                    {
-                      icon: <Icons.Brain className="w-7 h-7 " />,
-                      title:
-                        t("homePage.toolsItems.0.title") ||
-                        "Case Strength Analyzer",
-                      desc:
-                        t("homePage.toolsItems.0.desc") ||
-                        "Get AI-powered insights into your case status, processing times, and what to expect next.",
-                      url: "/visa-case-strength-checker",
-                    },
-                    {
-                      icon: <Icons.LifeBuoy className="w-7 h-7 " />,
-                      title:
-                        t("homePage.toolsItems.1.title") ||
-                        "221(g) Action Planner",
-                      desc:
-                        t("homePage.toolsItems.1.desc") ||
-                        "Navigate administrative processing with step-by-step guidance and status tracking.",
-                      url: "/221g-action-planner",
-                    },
-                    {
-                      icon: <Icons.Compass className="w-7 h-7" />,
-                      title:
-                        t("homePage.toolsItems.2.title") || "Visa Path Finder",
-                      desc:
-                        t("homePage.toolsItems.2.desc") ||
-                        "Answer a few questions and discover the best visa options for your unique situation.",
-                      url: "/visa-eligibility",
-                    },
-                    {
-                      icon: <Icons.Calculator className="w-7 h-7" />,
-                      title:
-                        t("homePage.toolsItems.3.title") ||
-                        "Sponsorship Calculator",
-                      desc:
-                        t("homePage.toolsItems.3.desc") ||
-                        "Calculate financial requirements and determine if you meet the sponsorship threshold.",
-                      url: "/affidavit-support-calculator",
-                    },
-                    {
-                      icon: <Icons.Files className="w-7 h-7 " />,
-                      title: t("homePage.toolsItems.4.title") || "PDF Tool Kit",
-                      desc:
-                        t("homePage.toolsItems.4.desc") ||
-                        "Merge, split, and organize your immigration documents with ease.",
-                      url: "/pdf-processing",
-                    },
-                    {
-                      icon: <Icons.Wand2 className="w-7 h-7" />,
-                      title:
-                        t("homePage.toolsItems.5.title") || "Smart Form Filler",
-                      desc:
-                        t("homePage.toolsItems.5.desc") ||
-                        "Auto-complete immigration forms with your saved profile data.",
-                      url: "/visa-forms",
-                    },
-                  ].map((tool, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      viewport={{ once: true }}
-                      onClick={() => router.push(tool.url)}
-                      className="group relative bg-muted/30 rounded-2xl p-8 border border-border transition-all hover:border-rahvana-primary/30 hover:shadow-xl cursor-pointer overflow-hidden"
+                  <div className="flex shrink-0 items-center gap-3.5">
+                    <Link
+                      href={journeyHref}
+                      className="inline-flex min-h-[57px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.38)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(13,115,119,0.46)]"
                     >
-                      <div className="absolute inset-0 bg-linear-to-tr from-rahvana-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="w-14 h-14 rounded-xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white mb-6 transform group-hover:scale-110 transition-transform [&>svg]:text-white!">
-                        {tool.icon}
-                      </div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">
-                        {tool.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                        {tool.desc}
-                      </p>
-                      <div className="flex items-center gap-2 text-sm font-bold text-rahvana-primary group-hover:gap-3 transition-all">
-                        {t("homePage.toolTryItOut")}{" "}
-                        <Icons.ArrowRight className="w-4 h-4" />
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-                <div className="mt-12 text-center">
-                  <HydrationSafeButton
-                    onClick={() => router.push("/tools")}
-                    className="inline-flex items-center gap-2 px-8 py-3 text-base font-bold text-rahvana-primary border-2 border-rahvana-primary rounded-full hover:bg-rahvana-primary hover:text-white transition-all cursor-pointer"
-                  >
-                    {t("homePage.toolsExploreAll")}{" "}
-                    <Icons.ArrowRight className="w-5 h-5" />
-                  </HydrationSafeButton>
+                      Start IR-1 Journey
+                      <Icons.ArrowRight className="size-5" />
+                    </Link>
+                    <Link
+                      href="#how-it-works"
+                      className="inline-flex min-h-[57px] items-center justify-center rounded-[18px] border border-white/55 bg-[#08111f]/34 px-8 text-base font-black text-white shadow-[0_14px_32px_rgba(0,0,0,0.20)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/12"
+                    >
+                      See How It Works
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </section>
 
-            {/* SERVICES SECTION */}
-            <section
-              className="relative py-8 md:py-12 bg-muted/10 overflow-hidden"
-              id="services"
-            >
-              <div className="w-full site-main-px">
-                <div className="text-center mx-auto mb-10">
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
-                  >
-                    <Icons.Briefcase className="w-4 h-4" />
-                    {t("homePage.servicesBadge")}
-                  </motion.span>
-                  <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    viewport={{ once: true }}
-                    className="text-3xl md:text-5xl font-bold text-foreground mb-4"
-                  >
-                    {t("homePage.servicesTitle")}
-                  </motion.h2>
-                  <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    viewport={{ once: true }}
-                    className="text-lg text-muted-foreground"
-                  >
-                    {t("homePage.servicesDescription")}
-                  </motion.p>
+              <div className="relative z-10 flex min-h-screen flex-col gap-7 px-5 pb-10 pt-24 sm:px-7 lg:hidden">
+                <h1 className="text-center text-[clamp(2.4rem,8.6vw,4.6rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
+                  <span className="inline-block pb-2">
+                    Navigate your IR-1 journey with clarity.
+                  </span>
+                </h1>
+
+                <div className="mx-auto h-[460px] w-full max-w-[760px] sm:h-[520px]">
+                  <RealDashboardScene compact onSceneChange={setHeroScene} />
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full mx-auto">
-                  {/* Left Column: Interactive List */}
-                  <div className="w-full lg:w-5/12 flex flex-col gap-3">
-                    {ALL_SERVICES.filter(
-                      (s) => s.href !== "/book-consultation" && !s.disabled,
-                    )
-                      .slice(0, 5)
-                      .map((service, idx) => {
-                        const isActive = activeService === idx;
-                        return (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.1, duration: 0.4 }}
-                            viewport={{ once: true }}
-                            onClick={() => setActiveService(idx)}
-                            className={`group relative flex items-center p-3 sm:p-4 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-300 border ${
-                              isActive
-                                ? "bg-card border-rahvana-primary shadow-md"
-                                : "bg-transparent border-transparent hover:bg-muted/50 hover:border-border"
-                            }`}
-                          >
-                            <div
-                              className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl transition-all duration-300 mr-3 sm:mr-4 shrink-0 ${
-                                isActive
-                                  ? "bg-rahvana-primary text-white shadow-md shadow-rahvana-primary/20 scale-105 sm:scale-110 [&>svg]:text-current!"
-                                  : "bg-muted text-muted-foreground group-hover:bg-primary/90 group-hover:text-white [&>svg]:text-current!"
-                              }`}
-                            >
-                              {React.cloneElement(
-                                service.icon as React.ReactElement<{
-                                  className?: string;
-                                }>,
-                                {
-                                  className: "w-4 h-4 sm:w-5 sm:h-5",
-                                },
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4
-                                className={`font-bold text-sm sm:text-base truncate transition-colors ${
-                                  isActive
-                                    ? "text-foreground"
-                                    : "text-muted-foreground group-hover:text-foreground"
-                                }`}
-                              >
-                                {renderWithAbbr(
-                                  // t(`homePage.servicesList.${idx}.title`) ||
-                                  service.title,
-                                )}
-                              </h4>
-                              <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-80 uppercase tracking-wider mt-0.5 sm:mt-1">
-                                {
-                                  // t(
-                                  //   `homePage.categoryLabels.${service.category}`,
-                                  // ) ||
-                                  service.category
-                                }
-                              </p>
-                            </div>
-                            {/* Active indicator line */}
-                            {/* {isActive && (
-                              <motion.div
-                                layoutId="activeIndicator"
-                                className="absolute left-0 w-1 h-1/2 bg-rahvana-primary rounded-r-full"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                              />
-                            )} */}
-                          </motion.div>
-                        );
-                      })}
+                <div className="mx-auto w-full max-w-[640px] rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.26),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px]">
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={heroScene}
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -14 }}
+                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                      className={`${heroAnnotationFont.className} text-[29px] leading-[1.35] text-white/95 [text-shadow:0_2px_12px_rgba(0,0,0,0.28)]`}
+                    >
+                      {heroAnnotations[heroScene]}
+                    </motion.p>
+                  </AnimatePresence>
+                </div>
 
-                    <div className="mt-6 pl-4">
-                      <HydrationSafeButton
-                        onClick={() => router.push("/resources?tab=services")}
-                        className="inline-flex items-center gap-2 text-sm font-bold text-rahvana-primary hover:text-rahvana-primary-dark transition-colors cursor-pointer"
-                      >
-                        {t("homePage.servicesViewAll")}{" "}
-                        <Icons.ArrowRight className="w-4 h-4" />
-                      </HydrationSafeButton>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Dynamic Showcase Card */}
-                  <div className="w-full lg:w-7/12 relative min-h-[400px]">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeService}
-                        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.98 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="absolute inset-0 rounded-3xl bg-card border border-border overflow-hidden shadow-2xl flex flex-col justify-between"
-                      >
-                        {/* Decorative Background */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-rahvana-primary-pale/30 rounded-full blur-3xl -mx-20 -my-20 pointer-events-none"></div>
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-rahvana-primary-pale/20 rounded-full blur-2xl -mx-10 -my-10 pointer-events-none"></div>
-
-                        <div className="relative z-10 p-6 sm:p-8 md:p-12 flex-1 flex flex-col">
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8 border-b border-border/50 pb-6">
-                            <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-2xl bg-linear-to-br from-rahvana-primary to-rahvana-primary-light flex items-center justify-center text-white shadow-lg shadow-rahvana-primary/20 [&>svg]:text-white! [&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-8 sm:[&>svg]:h-8 md:[&>svg]:w-10 md:[&>svg]:h-10 shrink-0">
-                              {
-                                ALL_SERVICES.filter(
-                                  (s) =>
-                                    !s.disabled &&
-                                    s.href !== "/book-consultation",
-                                )[activeService]?.icon
-                              }
-                            </div>
-                            <div className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full bg-rahvana-primary-pale text-rahvana-primary">
-                              {
-                                // t(
-                                //   `homePage.categoryLabels.${
-                                //     ALL_SERVICES.filter(
-                                //       (s) =>
-                                //         !s.disabled &&
-                                //         s.href !== "/book-consultation",
-                                //     )[activeService]?.category
-                                //   }`,
-                                // ) ||
-                                ALL_SERVICES.filter(
-                                  (s) =>
-                                    !s.disabled &&
-                                    s.href !== "/book-consultation",
-                                )[activeService]?.category
-                              }
-                            </div>
-                          </div>
-
-                          <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
-                            {renderWithAbbr(
-                              // t(
-                              //   `homePage.servicesList.${activeService}.title`,
-                              // ) ||
-                              ALL_SERVICES.filter(
-                                (s) =>
-                                  !s.disabled &&
-                                  s.href !== "/book-consultation",
-                              )[activeService]?.title || "",
-                            )}
-                          </h3>
-                          <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 flex-1">
-                            {renderWithAbbr(
-                              // t(
-                              //   `homePage.servicesList.${activeService}.desc`,
-                              // ) ||
-                              ALL_SERVICES.filter(
-                                (s) =>
-                                  !s.disabled &&
-                                  s.href !== "/book-consultation",
-                              )[activeService]?.description || "",
-                            )}
-                          </p>
-
-                          <div className="mt-auto">
-                            <HydrationSafeButton
-                              // disabled
-                              onClick={() => {
-                                router.push(
-                                  ALL_SERVICES.filter(
-                                    (s) =>
-                                      !s.disabled &&
-                                      s.href !== "/book-consultation",
-                                  )[activeService]?.href,
-                                );
-                              }}
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-rahvana-primary rounded-xl transition-all shadow-md cursor-pointer"
-                            >
-                              {t("homePage.servicesGetStarted")}{" "}
-                              <Icons.ArrowRight className="w-5 h-5" />
-                            </HydrationSafeButton>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
+                <div className="mx-auto flex w-full max-w-[760px] flex-col gap-5">
+                  <p className="text-base leading-7 text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] sm:text-lg">
+                    <span className="block">
+                      Rahvana gives you a structured step-by-step IR-1 roadmap
+                      Ã¢â‚¬â€ from petition filing to interview readiness
+                      Ã¢â‚¬â€
+                    </span>
+                    <span className="block">
+                      with guided steps, document organization, progress
+                      tracking, and focused tools when you need them.
+                    </span>
+                  </p>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Link
+                      href={journeyHref}
+                      className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.34)] transition hover:-translate-y-0.5"
+                    >
+                      Start IR-1 Journey
+                      <Icons.ArrowRight className="size-5" />
+                    </Link>
+                    <Link
+                      href="#how-it-works"
+                      className="inline-flex min-h-[56px] items-center justify-center rounded-[18px] border border-white/55 bg-[#08111f]/34 px-8 text-base font-black text-white shadow-[0_14px_32px_rgba(0,0,0,0.20)] backdrop-blur-xl transition hover:-translate-y-0.5"
+                    >
+                      See How It Works
+                    </Link>
                   </div>
                 </div>
               </div>
             </section>
+
+            <TwoWaysScene />
 
             <ConsultationBanner onConsultationClick={handleConsultationClick} />
 
