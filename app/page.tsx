@@ -512,8 +512,7 @@ function HomePageContent() {
                   <p className="max-w-[820px] text-[16px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
                     <span className="block xl:whitespace-nowrap">
                       Rahvana gives you a structured step-by-step IR-1 roadmap
-                      Ã¢â‚¬â€ from petition filing to interview readiness
-                      Ã¢â‚¬â€
+                      — from petition filing to interview readiness —
                     </span>
                     <span className="block xl:whitespace-nowrap">
                       with guided steps, document organization, progress
@@ -568,8 +567,7 @@ function HomePageContent() {
                   <p className="text-base leading-7 text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] sm:text-lg">
                     <span className="block">
                       Rahvana gives you a structured step-by-step IR-1 roadmap
-                      Ã¢â‚¬â€ from petition filing to interview readiness
-                      Ã¢â‚¬â€
+                      — from petition filing to interview readiness —
                     </span>
                     <span className="block">
                       with guided steps, document organization, progress
