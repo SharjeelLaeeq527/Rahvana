@@ -2442,7 +2442,8 @@
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
           "dependencies": [
-            "step_1_10"
+            "step_1_10",
+            "step_1_14"
           ],
           "is_required": true,
           "display_order": 15,

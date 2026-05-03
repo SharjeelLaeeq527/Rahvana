@@ -2,15 +2,13 @@ import { RoadmapData, RoadmapStep, RoadmapChapter } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 /**
- * Get the display number for a step, considering display_number_override.
+ * Get the display number for a step.
  */
 export function getDisplayStepNumber(step: RoadmapStep): number {
   const stepAny = step as any;
-  // If display_number_override exists, use it (for paper path steps showing as 4-6 instead of 11-13)
   if (stepAny.display_number_override !== undefined) {
     return stepAny.display_number_override;
   }
-  // Otherwise use the step_number
   return stepAny.step_number || 1;
 }
 

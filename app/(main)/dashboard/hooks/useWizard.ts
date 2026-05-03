@@ -335,38 +335,76 @@ export function useWizard(options: UseWizardOptions = {}) {
 
       const isCompleted = state.completedSteps.has(stepKey);
 
-      // ENFORCE SEQUENTIAL COMPLETION (ONLY when marking as completed)
+      // ENFORCE DEPENDENCY-BASED COMPLETION (ONLY when marking as completed)
       if (!isCompleted) {
         const chapters = activeRoadmap.chapters || activeRoadmap.stages || [];
         const filingMethod = state.metadata?.filingMethod || state.filingType || 'online';
-        
-        const allActiveSteps: any[] = [];
-        chapters.forEach((chapter: any) => {
-          const activeSteps = (chapter.steps || []).filter((s: any) => {
-            const visibleWhen = s.visible_when;
-            if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-              if (visibleWhen.filingMethod) return visibleWhen.filingMethod === filingMethod;
+
+        const isStepActiveForCurrentFlow = (s: any): boolean => {
+          const visibleWhen = s.visible_when;
+          if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+            if (
+              visibleWhen.filingMethod &&
+              visibleWhen.filingMethod !== filingMethod
+            ) {
+              return false;
             }
-            const branch = s.branch;
-            if (!branch || branch === 'both') return true;
-            return branch === filingMethod;
+            if (visibleWhen.filingMethodConfirmed !== undefined) {
+              const isConfirmed = Boolean(state.metadata?.filingMethodConfirmed);
+              if (Boolean(visibleWhen.filingMethodConfirmed) !== isConfirmed) {
+                return false;
+              }
+            }
+          }
+
+          const branch = s.branch;
+          if (!branch || branch === 'both') return true;
+          return branch === filingMethod;
+        };
+
+        const activeStepKeys = new Set<string>();
+        chapters.forEach((chapter: any) => {
+          (chapter.steps || []).forEach((s: any) => {
+            if (isStepActiveForCurrentFlow(s)) {
+              activeStepKeys.add(s.step_key || s.id);
+            }
           });
-          allActiveSteps.push(...activeSteps);
         });
+        
+        // Find the target step to get its explicit dependencies
+        let targetStep: any = null;
+        for (const chapter of chapters) {
+          const found = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === stepKey);
+          if (found) {
+            targetStep = found;
+            break;
+          }
+        }
 
-        const targetIdx = allActiveSteps.findIndex(s => (s.step_key || s.id) === stepKey);
-
-        if (targetIdx > 0) {
-           const previousSteps = allActiveSteps.slice(0, targetIdx);
-           const firstIncomplete = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
-           
-           if (firstIncomplete) {
-             toast.error(`Previous step pending: "${firstIncomplete.step_name}"`, {
-               description: "Steps must be completed in order. Please finish the preceding tasks first.",
-               duration: 4000
-             });
-             return; // HARD BLOCK
-           }
+        // Check explicit dependencies from the step definition
+        if (targetStep && targetStep.dependencies && targetStep.dependencies.length > 0) {
+          const incompleteDep = targetStep.dependencies.find(
+            (depKey: string) =>
+              activeStepKeys.has(depKey) && !state.completedSteps.has(depKey),
+          );
+          
+          if (incompleteDep) {
+            // Find the dependency step name for better error message
+            let depStepName = incompleteDep;
+            for (const chapter of chapters) {
+              const depStep = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === incompleteDep);
+              if (depStep) {
+                depStepName = depStep.step_name;
+                break;
+              }
+            }
+            
+            toast.error(`Required step pending: "${depStepName}"`, {
+              description: "Please complete the required preceding step first.",
+              duration: 4000
+            });
+            return; // HARD BLOCK
+          }
         }
       }
 
