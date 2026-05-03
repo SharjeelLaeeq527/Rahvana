@@ -723,7 +723,7 @@ export function HeroI130StepPanel({
 }) {
   const tool = {
     launch_module: {
-      eyebrow: "Autoform Filler Ãƒâ€šÃ‚Â· USCIS Form I-130",
+      eyebrow: "Autoform Filler · USCIS Form I-130",
       heading: "Guided completion, start to finish",
       features: [
         "Question-by-question guided flow",
@@ -732,7 +732,7 @@ export function HeroI130StepPanel({
         "Pakistan-context defaults where relevant",
       ],
       button_label: "Launch I-130 Autoform Filler",
-      note: "Opens in a new browser tab ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â you can return to the roadmap anytime",
+      note: "Opens in a new browser tab — you can return to the roadmap anytime",
     },
   };
 
@@ -749,7 +749,7 @@ export function HeroI130StepPanel({
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
             Use Rahvana&apos;s guided Autoform Filler to complete the I-130
-            Petition for Alien Relative ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â with structured
+            Petition for Alien Relative — with structured
             step-by-step support, clear prompts, and a built-in review flow.
           </p>
 
@@ -1140,7 +1140,7 @@ export function TwoWaysSection() {
                 need right now.
               </p>
 
-              {/* Active scene label Ã¢â‚¬â€ fixed-height container prevents layout shift */}
+              {/* Active scene label — fixed-height container prevents layout shift */}
               <div style={{ minHeight: 88, marginTop: 24, overflow: "hidden" }}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
@@ -1178,7 +1178,7 @@ export function TwoWaysSection() {
                 </AnimatePresence>
               </div>
 
-              {/* Step selector Ã¢â‚¬â€ fixed height per row, no expanding content */}
+              {/* Step selector — fixed height per row, no expanding content */}
               <div
                 style={{
                   marginTop: 20,
@@ -1360,7 +1360,7 @@ export function TwoWaysSection() {
         </div>
       </section>
 
-      {/* -- Mobile / tablet (below xl) Ã¢â‚¬â€ stacked narrative cards -- */}
+      {/* -- Mobile / tablet (below xl) — stacked narrative cards -- */}
       <section
         aria-label="Two ways to use Rahvana"
         className="block xl:hidden"
@@ -1640,7 +1640,7 @@ export function GuidedRoadmapScene() {
           </div>
         </div>
 
-        <div style={{ ml: "auto", display: "flex", alignItems: "center", gap: 14, marginLeft: "auto" }}>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ position: "relative", cursor: "pointer" }}>
             <Bell size={17} className="text-[#64748b] hover:text-[#0d7377] transition-colors" />
             <div style={{ position: "absolute", top: -1, right: -1, width: 6, height: 6, borderRadius: "50%", background: "#ef4444", border: "1.5px solid white" }} />
@@ -1731,7 +1731,7 @@ export function GuidedRoadmapScene() {
                   <span style={{ fontSize: 8.5, fontWeight: 900, color: "#94a3b8", textTransform: "uppercase" }}>
                     Ch. {ch.number}
                   </span>
-                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: ch.pct === 100 ? "#10b981" : "#0d7377" }} />
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: (ch.pct as number) === 100 ? "#10b981" : "#0d7377" }} />
                 </div>
                 <div style={{ fontSize: 10, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, height: 24, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                   {ch.name.replace(/^Chapter\s\d+:\s/, "")}
@@ -2329,7 +2329,7 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto grid max-w-[1240px] items-start gap-12 lg:grid-cols-[0.42fr_0.58fr] lg:gap-12 xl:gap-14"
+        className="relative mx-auto grid max-w-[1240px] items-center gap-12 lg:grid-cols-[0.45fr_0.55fr] lg:gap-12 xl:gap-14"
       >
         <div className="flex flex-col">
           <p className="mb-5 inline-flex h-[30px] w-fit items-center rounded-full bg-[#dcf3ec]/95 px-3.5 text-[11px] font-bold uppercase tracking-[0.03em] text-[#24564c] shadow-[0_0_24px_rgba(209,255,239,0.72)]">
@@ -2339,10 +2339,10 @@ export function ConsultationBanner({
             id="consultation-heading"
             className="max-w-[460px] text-[clamp(42px,4.4vw,66px)] font-black leading-[0.96] tracking-[-0.05em] text-[#12233a]"
           >
-            You donÃ¢â‚¬â„¢t have to do it alone.
+            You don't have to do it alone.
           </h2>
           <p className="mt-5 max-w-[430px] text-[17px] leading-[1.58] text-[#2f3f4c] sm:text-lg">
-            If the roadmap feels like too much or a tool isnÃ¢â‚¬â„¢t enough,
+            If the roadmap feels like too much or a tool isn't enough,
             book a consultation for one-on-one help with your case.
           </p>
 
@@ -2396,7 +2396,7 @@ export function ConsultationPreviewVisual() {
     { label: "Document preparation", icon: Layers },
     { label: "Interview / process clarity", icon: Mic },
   ];
-  const slots = ["Tue Ã‚Â· 2:30 PM", "Wed Ã‚Â· 11:00 AM", "Thu Ã‚Â· 4:00 PM"];
+  const slots = ["Tue · 2:30 PM", "Wed · 11:00 AM", "Thu · 4:00 PM"];
   const outcomes = [
     { label: "A clearer next step", icon: Compass },
     { label: "Better understanding of your case", icon: Lightbulb },
@@ -2404,7 +2404,7 @@ export function ConsultationPreviewVisual() {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_254px] md:gap-5 lg:grid-cols-[minmax(0,460px)_254px]">
+    <div className="flex items-center justify-center lg:items-center lg:justify-start lg:grid lg:gap-4 md:grid-cols-[minmax(0,1fr)_254px] md:gap-5 lg:grid-cols-[minmax(0,460px)_254px] mt-6 lg:mt-8">
       <div className="rounded-[20px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-6 shadow-[0_16px_30px_rgba(37,41,46,0.08)] sm:p-[26px]">
         <span className="mb-5 inline-flex h-[30px] items-center rounded-full bg-[#cfeee3] px-3.5 text-[11px] font-bold uppercase tracking-[0.03em] text-[#24564c]">
           One-on-one guidance
@@ -2443,6 +2443,9 @@ export function ConsultationPreviewVisual() {
               Availability
             </h4>
           </div>
+          <p className="mb-3 text-[13px] text-[#6b7785]">
+            Scheduled around your convenience. Choose what works best for you.
+          </p>
           <div className="flex flex-col gap-3">
             {slots.map((slot) => (
               <div
