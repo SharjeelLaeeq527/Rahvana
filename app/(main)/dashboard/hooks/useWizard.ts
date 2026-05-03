@@ -82,9 +82,20 @@ export function useWizard(options: UseWizardOptions = {}) {
         return chapter.steps.filter((s: any) => {
           const visibleWhen = s.visible_when;
           if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-            if (visibleWhen.filingMethod) {
-              return visibleWhen.filingMethod === filingMethod;
+            let isVisible = true;
+            for (const [key, value] of Object.entries<any>(visibleWhen)) {
+              if (key === 'filingMethod') {
+                if (value !== filingMethod) isVisible = false;
+              } else {
+                const stateValue = prev.metadata?.[key];
+                if (Array.isArray(value)) {
+                  if (!(value as any[]).includes(stateValue)) isVisible = false;
+                } else {
+                  if (stateValue !== value) isVisible = false;
+                }
+              }
             }
+            return isVisible;
           }
           const branch = s.branch;
           if (!branch || branch === 'both') return true;
@@ -222,6 +233,23 @@ export function useWizard(options: UseWizardOptions = {}) {
 
           for (let ci = 0; ci < roadmapChapters.length; ci++) {
             const chapterSteps = (roadmapChapters[ci].steps || []).filter((s: any) => {
+              const visibleWhen = s.visible_when;
+              if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+                let isVisible = true;
+                for (const [key, value] of Object.entries<any>(visibleWhen)) {
+                  if (key === 'filingMethod') {
+                    if (value !== filingMethod) isVisible = false;
+                  } else {
+                    const stateValue = metadata?.[key];
+                    if (Array.isArray(value)) {
+                      if (!(value as any[]).includes(stateValue)) isVisible = false;
+                    } else {
+                      if (stateValue !== value) isVisible = false;
+                    }
+                  }
+                }
+                return isVisible;
+              }
               const branch = s.branch;
               return !branch || branch === 'both' || branch === filingMethod;
             });
@@ -345,7 +373,20 @@ export function useWizard(options: UseWizardOptions = {}) {
           const activeSteps = (chapter.steps || []).filter((s: any) => {
             const visibleWhen = s.visible_when;
             if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-              if (visibleWhen.filingMethod) return visibleWhen.filingMethod === filingMethod;
+              let isVisible = true;
+              for (const [key, value] of Object.entries<any>(visibleWhen)) {
+                if (key === 'filingMethod') {
+                  if (value !== filingMethod) isVisible = false;
+                } else {
+                  const stateValue = state.metadata?.[key];
+                  if (Array.isArray(value)) {
+                    if (!(value as any[]).includes(stateValue)) isVisible = false;
+                  } else {
+                    if (stateValue !== value) isVisible = false;
+                  }
+                }
+              }
+              return isVisible;
             }
             const branch = s.branch;
             if (!branch || branch === 'both') return true;
