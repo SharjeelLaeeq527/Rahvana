@@ -76,10 +76,10 @@ export default function Actual221GFormChecker({
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">
-          221(g) Form Checker
+          What Did Your 221(g) Letter Request?
         </CardTitle>
         <CardDescription>
-          Check the boxes that match your actual 221(g) letter
+          Select every item your letter asked for — we'll build your action plan from this
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -95,7 +95,7 @@ export default function Actual221GFormChecker({
         <div className="space-y-4">
           <div className="p-6 bg-card rounded-lg border-2 border-border shadow-sm">
             <h4 className="font-bold text-lg mb-6 text-foreground">
-              221(g) FORM - REQUIRED DOCUMENTS
+              SELECT WHAT WAS REQUESTED
             </h4>
 
             {/* Administrative processing */}

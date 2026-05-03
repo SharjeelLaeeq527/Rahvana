@@ -146,6 +146,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   isCompleted,
   state: propsState,
   actions: propsActions,
+  onToggleComplete,
   isChapter1 = false,
   isChapter2 = false,
   isChapter3 = false,
@@ -1227,7 +1228,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   mb-2
   flex flex-wrap items-center gap-1
 ">
-            Chapter 1 · Chapter 1: USCIS Petition Filing
+            Chapter 1: USCIS Petition Filing
             <span className="text-[#BDD7F1] mx-2">&gt;</span>
             <span className="text-[#3B7DD8]">{step.step_name}</span>
           </div>
@@ -2127,7 +2128,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             flexDirection: "column",
             animation: "fadeIn 0.3s ease",
           }}
-          className="px-2 sm:px-4 md:px-8 pt-6 sm:pt-10 md:pt-14"
+          className="px-1 sm:px-3 md:px-6 pt-2 sm:pt- md:"
         >
           {/* Topbar */}
           <div
@@ -2450,7 +2451,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       </button>
                     ) : (
                       <button
-                        onClick={() => setShowGuide(false)}
+                        onClick={() => {
+                          if (!stepEntitlement.guard()) return;
+                          onToggleComplete();
+                          setShowGuide(false);
+                        }}
                         style={{
                           flex: 1,
                           padding: "12px 20px",

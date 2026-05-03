@@ -90,6 +90,7 @@ import {
   getStageProgress,
   getDisplayStepNumber,
 } from "./journeyHelpers";
+import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
@@ -888,18 +889,12 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     return null;
   }, [chapters]);
 
-  const filingMethod =
-    state.metadata?.filingMethod || state.filingType || "online";
-
-  const getIcon = getStepIcon;
+  const filingMethod = state.metadata?.filingMethod || state.filingType || "online";
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
-    return currentChapter.steps.filter(
-      (step: any) =>
-        !step.branch || step.branch === "both" || step.branch === filingMethod,
-    );
-  }, [currentChapter, filingMethod]);
+    return getActiveStepsForStage(data, state.currentStage ?? 0, state.metadata, state.filingType);
+  }, [data, currentChapter, state.currentStage, state.metadata, state.filingType]);
 
   // (removed duplicate declarations, see above)
   const isCompleted = state.completedSteps.has(sId);
@@ -1387,6 +1382,18 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         key: "receiptNum",
         value: () => new Date().toISOString().slice(0, 10),
       }, // I-130 submitted to USCIS
+      step_1_6: {
+        key: "uscisPortalSaved",
+        value: () => "true",
+      }, // Portal credentials saved
+      step_1_7: {
+        key: "filingFeeDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Filing fee paid
+      step_1_8: {
+        key: "submissionDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Online submission sent
       step_2_10: {
         key: "dqDate",
         value: () => new Date().toISOString().slice(0, 10),
@@ -1408,6 +1415,10 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         value: () => "INVC-" + Math.floor(Math.random() * 1000000),
       }, // NVC invoice ID (demo value)
       step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
+      step_1_17: {
+        key: "approvalDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // I-130 approval notice received
     };
     actions.toggleComplete(stepKey);
     // If this step is a milestone, set the metadata field if not already set
@@ -3457,6 +3468,9 @@ const renderDocActionModal = () => {
                         actions.updateMetadata({
                           apDetails: apDetails,
                           apSaved: "true",
+                          ...(apDetails.ceacStatus === "Issued" && !state.metadata?.ceacIssuedAt
+                            ? { ceacIssuedAt: new Date().toISOString() }
+                            : {}),
                         });
                         // Trigger CEAC notification system
                         if (apDetails.ceacStatus === "Refused") {
@@ -4847,7 +4861,7 @@ const renderDocActionModal = () => {
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
-              "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
+              "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."}
           </p>
         </div>
       </div>
@@ -4908,7 +4922,19 @@ const renderDocActionModal = () => {
 
   return (
     <div
+    // className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
       className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans`}
+      // style={
+      //   isChapter3
+      //     ? {
+      //         backgroundImage:
+      //           "linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.72)), url(/assets/images/ch3steps-bg.png)",
+      //         backgroundSize: "cover",
+      //         backgroundPosition: "center",
+      //         backgroundRepeat: "no-repeat",
+      //       }
+      //     : undefined
+      // }
     >
       <div
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
@@ -5184,6 +5210,7 @@ const renderDocActionModal = () => {
         >
           {currentStep.step_type === "quest" ? (
             <div
+            //              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
               className={`w-full min-h-[600px] flex flex-col items-center`}
             >
               <QuestRenderer
@@ -5201,27 +5228,27 @@ const renderDocActionModal = () => {
           ) : currentStep.step_type === "action" ? (
             <div
               // style={
-                // isChapter3
-                //   ? {
-                //       backgroundImage:
-                //         "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
-                //       backgroundSize: "cover",
-                //       backgroundPosition: "center",
-                //       backgroundRepeat: "no-repeat",
-                //       backgroundAttachment: "fixed",
-                //       minHeight: "100vh",
-                //     }
-                //   : isChapter2
-                //     ? {
-                //         backgroundImage:
-                //           "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
-                //         backgroundSize: "cover",
-                //         backgroundPosition: "center",
-                //         backgroundRepeat: "no-repeat",
-                //         backgroundAttachment: "fixed",
-                //         minHeight: "100vh",
-                //       }
-                //     : {}
+              //   isChapter3
+              //     ? {
+              //         backgroundImage:
+              //           "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
+              //         backgroundSize: "cover",
+              //         backgroundPosition: "center",
+              //         backgroundRepeat: "no-repeat",
+              //         backgroundAttachment: "fixed",
+              //         minHeight: "100vh",
+              //       }
+              //     : isChapter2
+              //       ? {
+              //           backgroundImage:
+              //             "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
+              //           backgroundSize: "cover",
+              //           backgroundPosition: "center",
+              //           backgroundRepeat: "no-repeat",
+              //           backgroundAttachment: "fixed",
+              //           minHeight: "100vh",
+              //         }
+              //       : {}
               // }
             >
               <ActionStepRenderer
@@ -6085,7 +6112,7 @@ const renderDocActionModal = () => {
       )}
 
 {selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out ">
+        <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out bg-white">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6309,7 +6336,7 @@ const renderDocActionModal = () => {
                 </div>
 
                 {/* Tutorial Body */}
-                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center ">
+                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
                   <div className="w-full max-w-[580px] flex flex-col">
                     <div
                       className={`text-[11px] font-semibold tracking-widest uppercase mb-4 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -6431,7 +6458,7 @@ const renderDocActionModal = () => {
           const currentTutStep = steps[tutorialIdx];
 
           return (
-            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out ">
+            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
               {/* Tutorial Topbar */}
               <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                 <button
@@ -6460,8 +6487,8 @@ const renderDocActionModal = () => {
               </div>
 
               {/* Tutorial Body */}
-              <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center ">
-                <div className="w-full max-w-[580px] flex flex-col">
+              <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
+                <div className="w-full max-w-[580px] flex flex-col"> 
                   <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
                       ? currentTutStep.label
@@ -6869,7 +6896,7 @@ const renderDocActionModal = () => {
 
       {/* Gathering Guide Overlay (Step 3.4) */}
       {isGatheringGuideOpen && selectedGatheringItem && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans bg-white">
           {/* Guide Topbar */}
           <div className="flex items-center px-2 sm:px-4 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6967,7 +6994,7 @@ const renderDocActionModal = () => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans ">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans bg-white">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button

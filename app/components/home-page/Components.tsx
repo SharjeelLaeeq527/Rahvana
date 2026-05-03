@@ -17,13 +17,32 @@ import {
   Mic,
   Layers,
   Calendar,
+  Brain,
+  LifeBuoy,
+  MessageSquare,
+  Calculator,
+  Clock,
+  Camera,
+  Files,
+  PenTool,
+  Wand2,
+  FileSearch,
+  Bell,
+  User,
 } from "lucide-react";
 import { getFormConfig } from "@/lib/formConfig";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  useMotionValue,
+  useTransform,
+  animate,
+} from "framer-motion";
 import Image from "next/image";
 import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep";
 // import { ProgressBar } from "@/app/components/forms/auto-visaform-filling/ProgressBar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import {
   chapters,
@@ -1575,6 +1594,7 @@ export function TwoWaysMobile({
 
 export function GuidedRoadmapScene() {
   const reduceMotion = useReducedMotion();
+  const [activeChapter, setActiveChapter] = useState(0);
 
   return (
     <div
@@ -1582,655 +1602,692 @@ export function GuidedRoadmapScene() {
         width: 600,
         height: 500,
         borderRadius: 32,
-        background: "white",
+        background: "#f8fafc",
         border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
         position: "absolute",
         left: 40,
         top: 30,
-        display: "grid",
-        gridTemplateColumns: "160px 1fr",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      {/* left rail */}
+      {/* ── Nav bar (Dashboard style) ── */}
       <div
         style={{
-          padding: "24px 14px",
+          height: 50,
+          background: "white",
+          borderBottom: "1px solid #e2e8f0",
           display: "flex",
-          flexDirection: "column",
-          gap: 10,
-          borderRight: "1px solid #eef2f6",
-          background: "#f9fafb",
+          alignItems: "center",
+          padding: "0 18px",
+          gap: 12,
+          flexShrink: 0,
         }}
       >
-        {chapters.map((ch, i) => (
-          <div
-            key={ch.number}
-            style={{
-              borderRadius: 18,
-              minHeight: 74,
-              padding: "12px 12px",
-              border: i === 0 ? "1.5px solid #0d7377" : "1px solid #e2e8f0",
-              background: i === 0 ? "white" : "transparent",
-              boxShadow: i === 0 ? "0 4px 16px rgba(13,115,119,0.10)" : "none",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                color: "#6b8097",
-              }}
-            >
-              Chapter {ch.number}
-            </div>
-            <div
-              style={{
-                marginTop: 4,
-                fontSize: 12,
-                fontWeight: 800,
-                lineHeight: 1.3,
-                color: i === 0 ? "#0d7377" : "#162126",
-              }}
-            >
-              {ch.name}
-            </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 26, height: 26, borderRadius: 8, background: "#0d7377", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <LayoutDashboard size={13} color="white" strokeWidth={3} />
           </div>
-        ))}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 10.5, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.05em", color: "#1e293b", lineHeight: 1 }}>
+              Case Dashboard
+            </span>
+            <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b", marginTop: 1 }}>
+              IR-1 · Islamabad Embassy
+            </span>
+          </div>
+        </div>
+
+        <div style={{ ml: "auto", display: "flex", alignItems: "center", gap: 14, marginLeft: "auto" }}>
+          <div style={{ position: "relative", cursor: "pointer" }}>
+            <Bell size={17} className="text-[#64748b] hover:text-[#0d7377] transition-colors" />
+            <div style={{ position: "absolute", top: -1, right: -1, width: 6, height: 6, borderRadius: "50%", background: "#ef4444", border: "1.5px solid white" }} />
+          </div>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e2e8f0", cursor: "pointer" }}>
+            <User size={15} className="text-[#64748b]" />
+          </div>
+        </div>
       </div>
 
-      {/* main panel */}
-      <div
-        style={{
-          padding: "22px 18px 16px 18px",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        {/* status row */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* ── Main content (Hero + 3-Col Grid + Alerts) ── */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            style={{
-              display: "inline-flex",
-              borderRadius: 999,
-              border: "1px solid #B9BBE2",
-              background: "#F0F1FB",
-              padding: "4px 10px",
-              fontSize: 10,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "#4E518C",
-            }}
-          >
-            ACTIVE CHAPTER
-          </span>
-          <div
-            style={{
-              borderRadius: 14,
-              border: "1px solid #b5e0d0",
-              background: "#e8f5ef",
-              padding: "5px 12px",
-              textAlign: "right",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                color: "#15744f",
-              }}
-            >
-              PROGRESS
-            </div>
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 800,
-                color: "#162126",
-                lineHeight: 1.2,
-              }}
-            >
-              41%
-            </div>
-          </div>
-        </div>
-
-        {/* title */}
-        <h3
-          style={{
-            fontSize: 26,
-            lineHeight: 1.15,
-            fontWeight: 800,
-            maxWidth: 300,
-            color: "#162126",
-            marginTop: 10,
-            marginBottom: 0,
-          }}
-        >
-          USCIS Petition Filing
-        </h3>
-
-        {/* support text */}
-        <p
-          style={{
-            fontSize: 13,
-            lineHeight: 1.65,
-            color: "#4a5c62",
-            maxWidth: 320,
-            marginTop: 6,
-            marginBottom: 0,
-          }}
-        >
-          File Form I-130 with USCIS to begin the IR-1 spouse visa process with
-          the next task already surfaced.
-        </p>
-
-        {/* progress bar */}
-        <div
-          style={{
-            width: "100%",
-            height: 7,
-            borderRadius: 999,
-            background: "#eef1f7",
-            marginTop: 10,
-            overflow: "hidden",
-          }}
-        >
-          <motion.div
-            style={{ height: "100%", borderRadius: 999, background: "#0d7377" }}
-            initial={reduceMotion ? false : { width: 0 }}
-            animate={{ width: "41%" }}
-            transition={
-              reduceMotion
-                ? { duration: 0 }
-                : { duration: 0.9, ease: "easeOut" }
-            }
-          />
-        </div>
-
-        {/* step stack */}
-        <div
-          style={{
-            marginTop: 12,
+            flex: 1,
+            padding: "14px",
             display: "flex",
             flexDirection: "column",
-            gap: 7,
-            flex: 1,
+            gap: 10,
+            overflowY: "auto",
+            scrollbarWidth: "none",
           }}
         >
-          {chapters[0].steps.slice(0, 4).map((step, idx) => {
-            const [, name, desc, status] = step;
-            const isCurrent = status === "current";
-            const isDone = status === "done";
-            return (
-              <div
-                key={name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  borderRadius: 14,
-                  border: isCurrent
-                    ? "1.5px solid #0d7377"
-                    : "1px solid #e2e8f0",
-                  background: isCurrent ? "#f4fbfa" : "white",
-                  padding: "7px 10px",
-                  boxShadow: isCurrent
-                    ? "0 4px 14px rgba(13,115,119,0.09)"
-                    : "none",
-                }}
-              >
-                <span
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    background: isDone
-                      ? "#15744f"
-                      : isCurrent
-                        ? "#0d7377"
-                        : "#f0f3f7",
-                    color: isDone || isCurrent ? "white" : "#6b8097",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    fontSize: 10,
-                    fontWeight: 800,
-                  }}
-                >
-                  {isDone ? (
-                    <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
-                  ) : (
-                    idx + 1
-                  )}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 800,
-                      color: "#162126",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {name}
-                  </div>
-                  <div style={{ fontSize: 11, color: "#4a5c62", marginTop: 1 }}>
-                    {desc}
-                  </div>
-                </div>
-                {isCurrent && (
-                  <span
-                    style={{
-                      borderRadius: 999,
-                      background: "#0d7377",
-                      color: "white",
-                      padding: "3px 8px",
-                      fontSize: 9,
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                      flexShrink: 0,
-                    }}
-                  >
-                    CURRENT
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* next action */}
-        <div
-          style={{
-            marginTop: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            borderRadius: 16,
-            border: "1px solid #b5e0d0",
-            background: "#e8f5ef",
-            padding: "10px 14px",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                color: "#15744f",
-              }}
-            >
-              NEXT ACTION
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 800,
-                color: "#162126",
-                marginTop: 2,
-              }}
-            >
-              Continue with filing method review
-            </div>
-          </div>
-          <span
+          {/* Hero Card (Next Action) */}
+          <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              borderRadius: 12,
-              background: "#0d7377",
+              background: "linear-gradient(135deg, #0c1b33 0%, #162a4a 100%)",
+              borderRadius: 18,
+              padding: "16px",
               color: "white",
-              padding: "8px 14px",
-              fontSize: 12,
-              fontWeight: 700,
-              flexShrink: 0,
+              position: "relative",
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.1)",
+              boxShadow: "0 10px 24px rgba(12,27,51,0.15)",
             }}
           >
-            Continue
-            <ArrowRight style={{ width: 12, height: 12 }} />
-          </span>
+            <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", background: "rgba(13,115,119,0.3)", padding: "3px 7px", borderRadius: 6, color: "#5ce1e6", letterSpacing: "0.05em", width: "fit-content", marginBottom: 8 }}>
+              Current Priority
+            </div>
+            
+            <h3 style={{ fontSize: 16, fontWeight: 900, marginBottom: 5, lineHeight: 1.1, letterSpacing: "-0.01em" }}>
+              Review Filing Methods
+            </h3>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.4, maxWidth: "95%", marginBottom: 14 }}>
+              Determine whether to file Form I-130 online ($625) or via paper mail ($675).
+            </p>
+            
+            <button
+              style={{
+                background: "#0d7377",
+                color: "white",
+                border: "none",
+                borderRadius: 10,
+                padding: "7px 16px",
+                fontSize: 11.5,
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                cursor: "pointer",
+              }}
+            >
+              Continue Journey
+              <ArrowRight size={13} strokeWidth={3} />
+            </button>
+          </div>
+
+          {/* Chapters 3-Column Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {chapters.map((ch, i) => (
+              <div
+                key={ch.number}
+                onClick={() => setActiveChapter(i)}
+                style={{
+                  background: "white",
+                  borderRadius: 14,
+                  padding: "8px 10px",
+                  border: activeChapter === i ? "2px solid #0d7377" : "1px solid #e2e8f0",
+                  cursor: "pointer",
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 5,
+                  boxShadow: activeChapter === i ? "0 6px 16px rgba(13,115,119,0.1)" : "0 2px 4px rgba(0,0,0,0.02)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 8.5, fontWeight: 900, color: "#94a3b8", textTransform: "uppercase" }}>
+                    Ch. {ch.number}
+                  </span>
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: ch.pct === 100 ? "#10b981" : "#0d7377" }} />
+                </div>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, height: 24, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {ch.name.replace(/^Chapter\s\d+:\s/, "")}
+                </div>
+                <div style={{ marginTop: "auto" }}>
+                  <div style={{ width: "100%", height: 3, borderRadius: 99, background: "#f1f5f9", overflow: "hidden" }}>
+                    <div style={{ width: `${ch.pct}%`, height: "100%", background: activeChapter === i ? "#0d7377" : "#cbd5e1", borderRadius: 99 }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Smart Alerts / Case Insights */}
+          <div style={{ background: "#f8fafc", borderRadius: 16, padding: "10px 12px", border: "1px dashed #cbd5e1" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+              <Signpost size={12} className="text-[#0d7377]" />
+              <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", color: "#475569", letterSpacing: "0.05em" }}>
+                Case Insights
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 8, background: "white", padding: "8px 10px", borderRadius: 10, border: "1px solid #e2e8f0" }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b", marginTop: 4, flexShrink: 0 }} />
+              <div style={{ fontSize: 10, color: "#475569", lineHeight: 1.4 }}>
+                <strong style={{ color: "#1e293b" }}>Document Alert:</strong> Fresh NADRA records are required for Islamabad embassy cases.
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Access Footer */}
+          <div style={{ marginTop: "auto", display: "flex", gap: 6, paddingTop: 6 }}>
+            {["Fee Guide", "Checklist", "FAQs"].map(txt => (
+              <div key={txt} style={{ flex: 1, padding: "6px", background: "white", borderRadius: 10, border: "1px solid #e2e8f0", fontSize: 9, fontWeight: 800, color: "#64748b", textAlign: "center", cursor: "pointer" }}>
+                {txt}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Sidebar (Tracking & Stats) ── */}
+        <div
+          style={{
+            width: 190,
+            background: "white",
+            borderLeft: "1px solid #e2e8f0",
+            padding: "14px 12px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            flexShrink: 0,
+          }}
+        >
+          {/* Live Status */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} className="animate-pulse" />
+              <span style={{ fontSize: 9.5, fontWeight: 900, textTransform: "uppercase", color: "#1e293b", letterSpacing: "0.08em" }}>
+                Live Status
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              {caseFields.slice(0, 3).map(([label, value]) => (
+                <div key={label} style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: 8.5, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>{label}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "#1e293b" }}>{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ height: 1, background: "#f1f5f9" }} />
+
+          {/* Milestone Quick-Look */}
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 9.5, fontWeight: 900, textTransform: "uppercase", color: "#1e293b", letterSpacing: "0.08em" }}>
+                Milestones
+              </span>
+              <span style={{ fontSize: 9.5, fontWeight: 900, color: "#0d7377", background: "#f0fdfa", padding: "1px 5px", borderRadius: 5 }}>3/10</span>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {milestones.slice(0, 3).map(([label, done]) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 4,
+                      background: done ? "#0d7377" : "#f1f5f9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: done ? "none" : "1.5px solid #e2e8f0",
+                    }}
+                  >
+                    {done && <Check size={9} color="white" strokeWidth={4} />}
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: done ? "#0d7377" : "#64748b" }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer Card */}
+          <div style={{ marginTop: "auto", padding: "10px", borderRadius: 14, background: "#0c1b33", color: "white", textAlign: "center" }}>
+            <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 3 }}>
+              Next Verification
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: "#5ce1e6" }}>
+              TBD
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+// ── tools ──
+const featuredTools = [
+  { icon: Brain,         label: "Case Strength",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe" },
+  { icon: LifeBuoy,      label: "Action Plan",    bg: "#ecfdf5", fg: "#059669", border: "#d1fae5" },
+  { icon: Compass,       label: "Path Finder",    bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5" },
+  { icon: MessageSquare, label: "Interview Prep", bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe" },
+  { icon: Calculator,    label: "Sponsorship",    bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6" },
+  { icon: Clock,         label: "DQ Watch",       bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff" },
+  { icon: Calendar,      label: "Bulletin",       bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1" },
+  { icon: Camera,        label: "Photo Booth",    bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3" },
+  { icon: Files,         label: "PDF Toolkit",    bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd" },
+  { icon: Wand2,         label: "Form Filler",    bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa" },
+  { icon: FileSearch,    label: "Case Status",    bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" },
+];
+
+// ── constants ─────────────────────────────────────────────────────────────────
+
+const ITEM_W   = 108;
+const GAP      = 20;
+const STRIDE   = ITEM_W + GAP;
+const DURATION = 28; // seconds per full loop
+
+// ── carousel with rAF centre-pop ─────────────────────────────────────────────
+
+function ToolCarousel() {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const rafRef  = useRef<number>(0);
+
+  // inject @keyframes once
+  useEffect(() => {
+    const id   = "tc-kf-v2";
+    const loop = featuredTools.length * STRIDE;
+    if (!document.getElementById(id)) {
+      const s   = document.createElement("style");
+      s.id      = id;
+      s.textContent = `
+        @keyframes tcSlide {
+          from { transform: translateX(0px); }
+          to   { transform: translateX(-${loop}px); }
+        }
+        .tc-track {
+          display: flex;
+          gap: ${GAP}px;
+          padding-left: ${GAP}px;
+          width: max-content;
+          animation: tcSlide ${DURATION}s linear infinite;
+          will-change: transform;
+        }
+        .tc-track:hover { animation-play-state: paused; }
+      `;
+      document.head.appendChild(s);
+    }
+  }, []);
+
+  // rAF: measure every icon's distance from carousel centre → set inline styles
+  useEffect(() => {
+    const run = () => {
+      const wrap = wrapRef.current;
+      if (wrap) {
+        const wRect   = wrap.getBoundingClientRect();
+        const centerX = wRect.left + wRect.width / 2;
+        const hotZone = wRect.width * 0.14; // slightly tighter pop region
+
+        wrap.querySelectorAll<HTMLElement>(".tc-icon-box").forEach((el) => {
+          const r    = el.getBoundingClientRect();
+          const elCX = r.left + r.width / 2;
+          const dist = Math.abs(elCX - centerX);
+          const t    = Math.max(0, 1 - dist / hotZone); // 0…1
+
+          const scale  = 1 + t * 0.22; // reduced from 0.42
+          const lift   = -t * 5;    // reduced from 11
+          const border = el.dataset.border ?? "rgba(0,0,0,0.1)";
+          const shadow = `0 ${4 + t * 12}px ${12 + t * 18}px -4px ${border}`; // softer shadow
+
+          el.style.transform  = `translateY(${lift}px) scale(${scale})`;
+          el.style.boxShadow  = shadow;
+          el.style.zIndex     = t > 0.5 ? "10" : "1";
+        });
+      }
+      rafRef.current = requestAnimationFrame(run);
+    };
+    rafRef.current = requestAnimationFrame(run);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  const items = [...featuredTools, ...featuredTools, ...featuredTools];
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        position  : "absolute",
+        bottom    : 0, left: 0,
+        width     : "100%",
+        height    : 138,
+        overflow  : "hidden",
+        borderTop : "1px solid #e8edf2",
+        background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
+        display   : "flex",
+        alignItems: "center",
+        WebkitMaskImage:
+          "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
+        maskImage:
+          "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
+      }}
+    >
+      {/* centre spotlight glow */}
+      <div aria-hidden style={{
+        position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
+        background:
+          "radial-gradient(ellipse 28% 100% at 50% 50%,rgba(13,115,119,0.05),transparent 70%)",
+      }}/>
+
+      <div className="tc-track">
+        {items.map((tool, idx) => {
+          const Icon = tool.icon;
+          return (
+            <div key={idx} style={{
+              display:"flex", flexDirection:"column", alignItems:"center",
+              gap:9, width:ITEM_W, flexShrink:0, position:"relative",
+            }}>
+              {/* icon box — scaled by rAF */}
+              <div
+                className="tc-icon-box"
+                data-border={tool.border}
+                style={{
+                  width:54, height:54,
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  borderRadius:16,
+                  background:tool.bg,
+                  border:`1.5px solid ${tool.border}`,
+                  boxShadow:`0 6px 16px -4px ${tool.border}`,
+                  position:"relative", overflow:"hidden",
+                  // CSS transition smooths the rAF updates at 60fps
+                  transition:"transform 0.14s cubic-bezier(.22,1,.36,1), box-shadow 0.14s ease",
+                  transformOrigin:"50% 100%", // pop upward
+                  cursor:"default",
+                }}
+              >
+                <div aria-hidden style={{
+                  position:"absolute", inset:0,
+                  background:
+                    "radial-gradient(circle at 28% 28%,rgba(255,255,255,0.55),transparent 65%)",
+                }}/>
+                <Icon size={24} color={tool.fg} strokeWidth={2} style={{position:"relative"}}/>
+              </div>
+
+              <span style={{
+                fontSize:9.5, fontWeight:800, textTransform:"uppercase",
+                letterSpacing:"0.07em", color:"#5a6a72",
+                textAlign:"center", lineHeight:1.3, maxWidth:90,
+                pointerEvents:"none",
+              }}>
+                {tool.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Main scene ────────────────────────────────────────────────────────────────
+// Outer container is 600×500 (positioned at left:40, top:30 by TwoWaysVisual).
+// Everything inside must stay within those bounds.
+
 export function IndividualToolsScene() {
   return (
     <div
       style={{
-        width: 600,
-        height: 500,
-        borderRadius: 32,
-        background: "white",
-        border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position: "absolute",
-        left: 40,
-        top: 30,
-        overflow: "hidden",
+        width        : 600,
+        height       : 500,
+        borderRadius : 32,
+        background   : "white",
+        border       : "1px solid #dde8e6",
+        boxShadow    : "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        position     : "absolute",
+        left         : 40,
+        top          : 30,
+        overflow     : "hidden",
       }}
     >
-      <div style={{ position: "relative", width: "100%", height: "100%" }}>
-        {/* hero tool card */}
+      {/* ── Top section: hero card + supporting cards ── */}
+      <div style={{ position: "relative", width: "100%", height: 362 }}>
+
+        {/* Hero tool card  ─── 288×310, left:22, top:24 */}
         <div
           style={{
-            position: "absolute",
-            left: 26,
-            top: 28,
-            width: 300,
-            height: 300,
-            borderRadius: 28,
-            background: "white",
-            border: "2px solid #0d7377",
-            boxShadow: "0 16px 48px rgba(13,115,119,0.13)",
-            padding: "18px 16px",
-            display: "flex",
-            flexDirection: "column",
+            position      : "absolute",
+            left          : 22,
+            top           : 24,
+            width         : 288,
+            height        : 310,
+            borderRadius  : 24,
+            background    : "white",
+            border        : "2px solid #0d7377",
+            boxShadow     : "0 16px 48px rgba(13,115,119,0.14)",
+            padding       : "16px 16px",
+            display       : "flex",
+            flexDirection : "column",
           }}
         >
           <span
             style={{
-              display: "inline-flex",
-              borderRadius: 999,
-              border: "1px solid #b5e0d0",
-              background: "#e8f5ef",
-              padding: "3px 10px",
-              fontSize: 10,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "#15744f",
-              alignSelf: "flex-start",
+              display       : "inline-flex",
+              borderRadius  : 999,
+              border        : "1px solid #b5e0d0",
+              background    : "#e8f5ef",
+              padding       : "3px 10px",
+              fontSize      : 9.5,
+              fontWeight    : 800,
+              textTransform : "uppercase",
+              letterSpacing : "0.1em",
+              color         : "#15744f",
+              alignSelf     : "flex-start",
             }}
           >
             Focused task
           </span>
+
           <h3
             style={{
-              fontSize: 20,
-              fontWeight: 800,
-              lineHeight: 1.15,
-              color: "#162126",
-              marginTop: 10,
+              fontSize   : 19,
+              fontWeight : 800,
+              lineHeight : 1.15,
+              color      : "#162126",
+              marginTop  : 10,
               marginBottom: 0,
             }}
           >
             Affidavit Support Calculator
           </h3>
+
           <p
             style={{
-              fontSize: 13,
+              fontSize  : 12.5,
               lineHeight: 1.6,
-              color: "#4a5c62",
-              marginTop: 6,
+              color     : "#4a5c62",
+              marginTop : 6,
               marginBottom: 0,
             }}
           >
             Determine sponsorship setup and likely form path.
           </p>
+
           <div
             style={{
-              marginTop: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: 7,
+              marginTop     : "auto",
+              display       : "flex",
+              flexDirection : "column",
+              gap           : 7,
             }}
           >
             {[
-              ["Sponsor income", "$48,000"],
+              ["Sponsor income",  "$48,000"],
               ["Required income", "$25,550"],
             ].map(([label, value]) => (
               <div
                 key={label}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  borderRadius: 12,
-                  border: "1px solid #e2e8f0",
-                  background: "#f7fafc",
-                  padding: "7px 12px",
+                  display        : "flex",
+                  alignItems     : "center",
+                  justifyContent : "space-between",
+                  borderRadius   : 10,
+                  border         : "1px solid #e2e8f0",
+                  background     : "#f7fafc",
+                  padding        : "6px 12px",
                 }}
               >
-                <span
-                  style={{ fontSize: 12, color: "#4a5c62", fontWeight: 600 }}
-                >
-                  {label}
-                </span>
-                <span
-                  style={{ fontSize: 13, fontWeight: 800, color: "#162126" }}
-                >
-                  {value}
-                </span>
+                <span style={{ fontSize: 11.5, color: "#4a5c62", fontWeight: 600 }}>{label}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 800, color: "#162126" }}>{value}</span>
               </div>
             ))}
+
             <div
               style={{
-                borderRadius: 12,
-                border: "1px solid #b5e0d0",
-                background: "#e8f5ef",
-                padding: "8px 12px",
+                borderRadius: 10,
+                border      : "1px solid #b5e0d0",
+                background  : "#e8f5ef",
+                padding     : "7px 12px",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  color: "#15744f",
-                }}
-              >
-                <Check style={{ width: 12, height: 12 }} strokeWidth={3} />
-                <span style={{ fontSize: 12, fontWeight: 800 }}>
-                  Income appears sufficient
-                </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#15744f" }}>
+                <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
+                <span style={{ fontSize: 11.5, fontWeight: 800 }}>Income appears sufficient</span>
               </div>
               <p
                 style={{
-                  fontSize: 11,
+                  fontSize  : 10.5,
                   lineHeight: 1.5,
-                  color: "#4a5c62",
-                  marginTop: 3,
+                  color     : "#4a5c62",
+                  marginTop : 3,
                   marginBottom: 0,
                 }}
               >
-                The calculator recommends the likely form path and supporting
-                evidence to prepare next.
+                Recommends the likely form path and supporting evidence to prepare next.
               </p>
             </div>
           </div>
         </div>
 
-        {/* related tools label */}
+        {/* ── Right column: label + 2 mini cards + recommendation card ── */}
+
+        {/* "Related tools" label */}
         <div
           style={{
-            position: "absolute",
-            left: 356,
-            top: 30,
-            fontSize: 10,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.12em",
-            color: "#a0b0b8",
+            position      : "absolute",
+            left          : 328,
+            top           : 26,
+            fontSize      : 9.5,
+            fontWeight    : 700,
+            textTransform : "uppercase",
+            letterSpacing : "0.12em",
+            color         : "#a0b0b8",
           }}
         >
           Related tools
         </div>
 
-        {/* supporting card 1 */}
+        {/* Mini card 1 — PDF Toolkit */}
         <div
           style={{
-            position: "absolute",
-            left: 350,
-            top: 52,
-            width: 100,
-            height: 86,
-            borderRadius: 18,
-            background: "white",
-            border: "1px solid #dde8e6",
-            padding: "12px 10px",
-            boxShadow: "0 4px 14px rgba(15,23,42,0.06)",
+            position     : "absolute",
+            left         : 324,
+            top          : 46,
+            width        : 118,
+            height       : 80,
+            borderRadius : 16,
+            background   : "white",
+            border       : "1px solid #dde8e6",
+            padding      : "11px 12px",
+            boxShadow    : "0 4px 14px rgba(15,23,42,0.06)",
           }}
         >
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 800,
-              color: "#162126",
-              lineHeight: 1.2,
-            }}
-          >
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#162126", lineHeight: 1.2 }}>
             PDF Toolkit
           </div>
-          <div
-            style={{
-              fontSize: 11,
-              lineHeight: 1.4,
-              color: "#6b8097",
-              marginTop: 4,
-            }}
-          >
+          <div style={{ fontSize: 10.5, lineHeight: 1.4, color: "#6b8097", marginTop: 4 }}>
             Prepare upload-ready files
           </div>
         </div>
 
-        {/* supporting card 2 */}
+        {/* Mini card 2 — Interview Prep */}
         <div
           style={{
-            position: "absolute",
-            left: 468,
-            top: 52,
-            width: 108,
-            height: 86,
-            borderRadius: 18,
-            background: "white",
-            border: "1px solid #dde8e6",
-            padding: "12px 10px",
-            boxShadow: "0 4px 14px rgba(15,23,42,0.06)",
+            position     : "absolute",
+            left         : 458,
+            top          : 46,
+            width        : 118,
+            height       : 80,
+            borderRadius : 16,
+            background   : "white",
+            border       : "1px solid #dde8e6",
+            padding      : "11px 12px",
+            boxShadow    : "0 4px 14px rgba(15,23,42,0.06)",
           }}
         >
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 800,
-              color: "#162126",
-              lineHeight: 1.2,
-            }}
-          >
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#162126", lineHeight: 1.2 }}>
             Interview Prep
           </div>
-          <div
-            style={{
-              fontSize: 11,
-              lineHeight: 1.4,
-              color: "#6b8097",
-              marginTop: 4,
-            }}
-          >
+          <div style={{ fontSize: 10.5, lineHeight: 1.4, color: "#6b8097", marginTop: 4 }}>
             Practice one focused task
           </div>
         </div>
 
-        {/* form recommendation card */}
+        {/* Form recommendation card — fits in right column */}
         <div
           style={{
-            position: "absolute",
-            left: 344,
-            top: 160,
-            width: 236,
-            borderRadius: 22,
-            background: "white",
-            border: "1px solid #dde8e6",
-            padding: "14px 16px",
-            boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
+            position     : "absolute",
+            left         : 320,
+            top          : 142,
+            width        : 258,
+            borderRadius : 20,
+            background   : "white",
+            border       : "1px solid #dde8e6",
+            padding      : "14px 16px",
+            boxShadow    : "0 4px 16px rgba(15,23,42,0.06)",
           }}
         >
           <div
             style={{
-              fontSize: 9,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "#6b8097",
+              fontSize      : 9,
+              fontWeight    : 800,
+              textTransform : "uppercase",
+              letterSpacing : "0.1em",
+              color         : "#6b8097",
             }}
           >
             Likely form recommendation
           </div>
+
           <div
             style={{
-              marginTop: 10,
-              borderRadius: 14,
-              background: "#051738",
-              padding: "12px 14px",
+              marginTop  : 10,
+              borderRadius: 12,
+              background : "#051738",
+              padding    : "11px 14px",
             }}
           >
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 800,
-                color: "white",
-                lineHeight: 1.1,
-              }}
-            >
+            <div style={{ fontSize: 21, fontWeight: 800, color: "white", lineHeight: 1.1 }}>
               Form I-864EZ
             </div>
             <p
               style={{
-                fontSize: 11,
+                fontSize  : 10.5,
                 lineHeight: 1.55,
-                color: "rgba(255,255,255,0.72)",
-                marginTop: 6,
+                color     : "rgba(255,255,255,0.72)",
+                marginTop : 5,
                 marginBottom: 0,
               }}
             >
-              Suggested when the petitioner is the only sponsor and income is
-              enough from qualifying employment.
+              Suggested when the petitioner is the sole sponsor and income qualifies from employment.
             </p>
           </div>
+
           <div
             style={{
-              marginTop: 10,
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 6,
+              marginTop           : 10,
+              display             : "grid",
+              gridTemplateColumns : "1fr 1fr",
+              gap                 : 6,
             }}
           >
             {["Tax transcript", "Pay stubs"].map((item) => (
               <div
                 key={item}
                 style={{
-                  borderRadius: 10,
-                  border: "1px solid #e2e8f0",
-                  background: "#f7fafc",
-                  padding: "6px 8px",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#2C3A3E",
+                  borderRadius: 8,
+                  border      : "1px solid #e2e8f0",
+                  background  : "#f7fafc",
+                  padding     : "5px 8px",
+                  fontSize    : 10,
+                  fontWeight  : 700,
+                  color       : "#2C3A3E",
                 }}
               >
                 {item}
@@ -2238,19 +2295,10 @@ export function IndividualToolsScene() {
             ))}
           </div>
         </div>
-
-        {/* bottom-right background fill */}
-        <div
-          style={{
-            position: "absolute",
-            left: 344,
-            top: 360,
-            right: 0,
-            bottom: 0,
-            background: "#f7faf9",
-          }}
-        />
       </div>
+
+      {/* ── bottom carousel strip with centre-pop ── */}
+      <ToolCarousel />
     </div>
   );
 }
@@ -2336,11 +2384,6 @@ export function ConsultationBanner({
 
         <ConsultationPreviewVisual />
 
-        <Sparkles
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-9 -right-4 size-12 text-white/70 drop-shadow-[0_0_20px_rgba(255,255,255,0.82)] sm:size-14 lg:-bottom-11 lg:-right-8"
-          strokeWidth={1.6}
-        />
       </motion.div>
     </section>
   );
@@ -2417,10 +2460,9 @@ export function ConsultationPreviewVisual() {
             <h4 className="m-0 text-[18px] font-black leading-tight tracking-[-0.02em] text-[#111827]">
               What you&apos;ll leave with
             </h4>
-            <Sparkles
-              className="mt-0.5 size-6 shrink-0 text-[#154f50]"
-              strokeWidth={1.7}
-            />
+            <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: 10, height: 10, background: "#d97706", borderRadius: 2 }} />
+            </div>
           </div>
           <div className="flex flex-col gap-4">
             {outcomes.map(({ label, icon: Icon }) => (

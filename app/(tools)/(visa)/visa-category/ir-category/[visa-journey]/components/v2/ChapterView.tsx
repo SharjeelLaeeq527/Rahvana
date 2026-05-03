@@ -155,19 +155,19 @@ export function ChapterView({
       {isChapter3 && !isChapter3Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-            //backgroundImage: `url(${chapter3Bg})`,
-            //opacity: 0.5,
-          }}
+          // style={{
+          //   backgroundImage: `url(${chapter3Bg})`,
+          //   opacity: 0.5,
+          // }}
         />
       )}
       {isChapter1 && !isChapter1Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-           // backgroundImage: `url(${chapter1Bg})`,
-           // opacity: 0.35,
-          }}
+          // style={{
+          //   backgroundImage: `url(${chapter1Bg})`,
+          //   opacity: 0.35,
+          // }}
         />
       )}
       {/* For Chapter 1 and 2, show only their main backgrounds, never the step backgrounds */}
@@ -175,10 +175,10 @@ export function ChapterView({
       {isChapter2 && !isChapter2Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-            //backgroundImage: `url(${chapter2Bg})`,
-            opacity: 0.5,
-          }}
+          // style={{
+          //   backgroundImage: `url(${chapter2Bg})`,
+          //   opacity: 0.5,
+          // }}
         />
       )}
 

@@ -346,12 +346,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {(isChapter2 || isChapter3) && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-            backgroundImage: isChapter2
-              ? "url(/assets/images/ch2steps-bg.png)"
-              : "url(/assets/images/ch3steps-bg.png)",
-            opacity: 0.5,
-          }}
+          // style={{
+          //   backgroundImage: isChapter2
+          //     ? "url(/assets/images/ch2steps-bg.png)"
+          //     : "url(/assets/images/ch3steps-bg.png)",
+          //   opacity: 0.5,
+          // }}
         />
       )} */}
 
