@@ -1855,57 +1855,185 @@ export function GuidedRoadmapScene() {
 
 // ── tools ──
 const featuredTools = [
-  { icon: Brain,         label: "Case Strength",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe" },
-  { icon: LifeBuoy,      label: "Action Plan",    bg: "#ecfdf5", fg: "#059669", border: "#d1fae5" },
-  { icon: Compass,       label: "Path Finder",    bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5" },
-  { icon: MessageSquare, label: "Interview Prep", bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe" },
-  { icon: Calculator,    label: "Sponsorship",    bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6" },
-  { icon: Clock,         label: "DQ Watch",       bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff" },
-  { icon: Calendar,      label: "Bulletin",       bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1" },
-  { icon: Camera,        label: "Photo Booth",    bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3" },
-  { icon: Files,         label: "PDF Toolkit",    bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd" },
-  { icon: Wand2,         label: "Form Filler",    bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa" },
-  { icon: FileSearch,    label: "Case Status",    bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" },
+  { id: "strength",    icon: Brain,         label: "Case Strength",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe" },
+  { id: "action",      icon: LifeBuoy,      label: "Action Plan",    bg: "#ecfdf5", fg: "#059669", border: "#d1fae5" },
+  { id: "path",        icon: Compass,       label: "Path Finder",    bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5" },
+  { id: "interview",   icon: MessageSquare, label: "Interview Prep", bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe" },
+  { id: "sponsorship", icon: Calculator,    label: "Sponsorship",    bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6" },
+  { id: "dq",          icon: Clock,         label: "DQ Watch",       bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff" },
+  { id: "bulletin",    icon: Calendar,      label: "Bulletin",       bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1" },
+  { id: "photo",       icon: Camera,        label: "Photo Booth",    bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3" },
+  { id: "pdf",         icon: Files,         label: "PDF Toolkit",    bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd" },
+  { id: "filler",      icon: Wand2,         label: "Form Filler",    bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa" },
+  { id: "status",      icon: FileSearch,    label: "Case Status",    bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" },
 ];
+
+const toolContent: Record<string, any> = {
+  strength: {
+    eyebrow: "Analysis Tool",
+    title: "Case Strength Meter",
+    desc: "Analyze your family links, domicile, and evidence quality.",
+    stats: [["Approval Probability", "High"], ["Evidence Score", "88/100"]],
+    badge: "Strong family ties detected",
+    badgeDesc: "Your case shows consistent communication and financial interdependence.",
+    recoTitle: "Evidence Recommendation",
+    recoMain: "Joint Bank Statements",
+    recoDesc: "Adding 3-6 months of joint statements can further solidify your domicile evidence.",
+    recoTags: ["Joint Taxes", "Lease/Deed"]
+  },
+  action: {
+    eyebrow: "Strategy Guide",
+    title: "Step-by-Step Action Plan",
+    desc: "Customized checklist based on your current IR-1 stage.",
+    stats: [["Next Deadline", "In 12 Days"], ["Tasks Pending", "4"]],
+    badge: "NVC Stage approaching",
+    badgeDesc: "You are currently in the transition phase from USCIS to NVC.",
+    recoTitle: "Next Priority Task",
+    recoMain: "Order Police Certificates",
+    recoDesc: "Pakistan police certificates can take 2 weeks. Start this process now.",
+    recoTags: ["NADRA FRC", "Passport Scan"]
+  },
+  path: {
+    eyebrow: "Navigation",
+    title: "Journey Navigator",
+    desc: "Visualizing your remaining milestones and estimated dates.",
+    stats: [["Est. Interview", "Oct 2026"], ["Journey Progress", "32%"]],
+    badge: "Path optimized for ISL",
+    badgeDesc: "Timeline adjusted based on Islamabad embassy processing trends.",
+    recoTitle: "Timeline Insights",
+    recoMain: "Documentary Qualified",
+    recoDesc: "Estimated time to reach DQ status is currently 4.5 months for IR-1.",
+    recoTags: ["NVC Queue", "Interview Wait"]
+  },
+  interview: {
+    eyebrow: "Preparation",
+    title: "Interview Simulator",
+    desc: "Practice common Islamabad Embassy interview questions.",
+    stats: [["Questions Ready", "45+"], ["Focus Area", "Relationship"]],
+    badge: "High focus on domicile",
+    badgeDesc: "Officers are currently scrutinizing US domicile for Pakistan cases.",
+    recoTitle: "Sample Question",
+    recoMain: "How do you stay in touch?",
+    recoDesc: "Prepare to show chat logs, call history, and money transfer receipts.",
+    recoTags: ["Common Traps", "Body Language"]
+  },
+  sponsorship: {
+    eyebrow: "Focused Task",
+    title: "Affidavit Support Calculator",
+    desc: "Determine sponsorship setup and likely form path.",
+    stats: [["Sponsor income", "$48,000"], ["Required income", "$25,550"]],
+    badge: "Income appears sufficient",
+    badgeDesc: "Recommends the likely form path and supporting evidence to prepare.",
+    recoTitle: "Likely form recommendation",
+    recoMain: "Form I-864EZ",
+    recoDesc: "Suggested when the petitioner is the sole sponsor and income qualifies.",
+    recoTags: ["Tax transcript", "Pay stubs"]
+  },
+  dq: {
+    eyebrow: "Monitoring",
+    title: "DQ Watchdog",
+    desc: "Tracking NVC processing times and common RFE traps.",
+    stats: [["Avg. NVC Review", "18 Days"], ["Common Error", "Signatures"]],
+    badge: "Active RFE monitoring",
+    badgeDesc: "We track the latest rejection trends to help you avoid delays.",
+    recoTitle: "Critical Checklist",
+    recoMain: "Signature Verification",
+    recoDesc: "Ensure all PDF forms have hand-written signatures before scanning.",
+    recoTags: ["File Sizes", "Scan Clarity"]
+  },
+  bulletin: {
+    eyebrow: "Priority Watch",
+    title: "Visa Bulletin Tracker",
+    desc: "Priority date monitoring and movement predictions.",
+    stats: [["Next Release", "5 Days"], ["Current Movement", "2 Months"]],
+    badge: "IR-1 is current",
+    badgeDesc: "Immediate relatives do not have a wait list for priority dates.",
+    recoTitle: "NVC Fee Payment",
+    recoMain: "Pay ASAP upon invoice",
+    recoDesc: "Paying fees immediately prevents NVC system lag and secures your place.",
+    recoTags: ["AOS Fee", "IV Fee"]
+  },
+  photo: {
+    eyebrow: "Compliance",
+    title: "Photo Booth Validator",
+    desc: "Verify your US visa photo against strict requirements.",
+    stats: [["Success Rate", "99%"], ["Common Fail", "Shadows"]],
+    badge: "ISL Studio database",
+    badgeDesc: "Matches requirements used by major studios in Islamabad/Lahore.",
+    recoTitle: "Photo Requirement",
+    recoMain: "2x2 Inches White Background",
+    recoDesc: "No glasses allowed. Neutral expression with both ears visible.",
+    recoTags: ["Head Size", "Lighting"]
+  },
+  pdf: {
+    eyebrow: "Optimization",
+    title: "PDF Toolkit",
+    desc: "Organizing documents for NVC upload (max 2MB limit).",
+    stats: [["Max File Size", "2.0 MB"], ["Format Required", "PDF/JPG"]],
+    badge: "NVC-Ready scans",
+    badgeDesc: "Optimized resolution for CEAC system compatibility and readability.",
+    recoTitle: "Scanning Tip",
+    recoMain: "300 DPI Resolution",
+    recoDesc: "Balance clarity with file size. Use grayscale for non-photo documents.",
+    recoTags: ["Merge PDFs", "Compress File"]
+  },
+  filler: {
+    eyebrow: "Automation",
+    title: "Smart Form Assistant",
+    desc: "Guided logic for complex sections of DS-260 and I-130.",
+    stats: [["Forms Covered", "I-130, DS-260"], ["Help Prompts", "120+"]],
+    badge: "Contextual Pakistani data",
+    badgeDesc: "Pre-filled address patterns and relationship terminology for Pakistan.",
+    recoTitle: "Section Highlight",
+    recoMain: "Social Media History",
+    recoDesc: "NVC now requires 5 years of social media handles. Have them ready.",
+    recoTags: ["Previous Travel", "Work History"]
+  },
+  status: {
+    eyebrow: "Tracking",
+    title: "Case Status Pro",
+    desc: "Automated status checking with historical trend analysis.",
+    stats: [["Last Check", "30m ago"], ["Current Status", "At NVC"]],
+    badge: "24/7 Automated monitor",
+    badgeDesc: "Get instant notifications if your USCIS or CEAC status changes.",
+    recoTitle: "Status Insight",
+    recoMain: "Case Creation",
+    recoDesc: "Usually takes 2-6 weeks for NVC to create case after USCIS approval.",
+    recoTags: ["Welcome Letter", "NVC ID"]
+  },
+};
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
 const ITEM_W   = 108;
 const GAP      = 20;
 const STRIDE   = ITEM_W + GAP;
-const DURATION = 28; // seconds per full loop
+const DURATION = 28;
 
-// ── carousel with rAF centre-pop ─────────────────────────────────────────────
 
-function ToolCarousel() {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const rafRef  = useRef<number>(0);
+// ── carousel with JS scroll & rAF centre-pop ──────────────────────────────────
 
-  // inject @keyframes once
+function ToolCarousel({ activeIdx }: { activeIdx: number }) {
+  const wrapRef  = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const rafRef   = useRef<number>(0);
+  const loopWidth = featuredTools.length * STRIDE;
+  
+  // Calculate continuous scroll position
+  const [scrollPos, setScrollPos] = useState(0);
+  const prevIdx = useRef(activeIdx);
+  const internalOffset = useRef(0);
+
   useEffect(() => {
-    const id   = "tc-kf-v2";
-    const loop = featuredTools.length * STRIDE;
-    if (!document.getElementById(id)) {
-      const s   = document.createElement("style");
-      s.id      = id;
-      s.textContent = `
-        @keyframes tcSlide {
-          from { transform: translateX(0px); }
-          to   { transform: translateX(-${loop}px); }
-        }
-        .tc-track {
-          display: flex;
-          gap: ${GAP}px;
-          padding-left: ${GAP}px;
-          width: max-content;
-          animation: tcSlide ${DURATION}s linear infinite;
-          will-change: transform;
-        }
-        .tc-track:hover { animation-play-state: paused; }
-      `;
-      document.head.appendChild(s);
+    // If activeIdx advanced by 1, move scroll by 1 STRIDE
+    if (activeIdx !== prevIdx.current) {
+      let diff = activeIdx - prevIdx.current;
+      if (diff < 0) diff += featuredTools.length; // wrap around
+      internalOffset.current += diff * STRIDE;
+      setScrollPos(internalOffset.current);
+      prevIdx.current = activeIdx;
     }
-  }, []);
+  }, [activeIdx]);
 
   // rAF: measure every icon's distance from carousel centre → set inline styles
   useEffect(() => {
@@ -1914,7 +2042,7 @@ function ToolCarousel() {
       if (wrap) {
         const wRect   = wrap.getBoundingClientRect();
         const centerX = wRect.left + wRect.width / 2;
-        const hotZone = wRect.width * 0.14; // slightly tighter pop region
+        const hotZone = wRect.width * 0.14; // pop region
 
         wrap.querySelectorAll<HTMLElement>(".tc-icon-box").forEach((el) => {
           const r    = el.getBoundingClientRect();
@@ -1922,10 +2050,10 @@ function ToolCarousel() {
           const dist = Math.abs(elCX - centerX);
           const t    = Math.max(0, 1 - dist / hotZone); // 0…1
 
-          const scale  = 1 + t * 0.22; // reduced from 0.42
-          const lift   = -t * 5;    // reduced from 11
+          const scale  = 1 + t * 0.22;
+          const lift   = -t * 5;
           const border = el.dataset.border ?? "rgba(0,0,0,0.1)";
-          const shadow = `0 ${4 + t * 12}px ${12 + t * 18}px -4px ${border}`; // softer shadow
+          const shadow = `0 ${4 + t * 12}px ${12 + t * 18}px -4px ${border}`;
 
           el.style.transform  = `translateY(${lift}px) scale(${scale})`;
           el.style.boxShadow  = shadow;
@@ -1938,7 +2066,10 @@ function ToolCarousel() {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  const items = [...featuredTools, ...featuredTools, ...featuredTools];
+  // Use plenty of clones so it can scroll infinitely
+  const items = [...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools];
+  // Center offset so the first item is in the middle initially
+  const initialOffset = 300 - (ITEM_W / 2) - GAP; 
 
   return (
     <div
@@ -1959,14 +2090,23 @@ function ToolCarousel() {
           "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
       }}
     >
-      {/* centre spotlight glow */}
       <div aria-hidden style={{
         position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
         background:
           "radial-gradient(ellipse 28% 100% at 50% 50%,rgba(13,115,119,0.05),transparent 70%)",
       }}/>
 
-      <div className="tc-track">
+      <div 
+        ref={trackRef}
+        style={{
+          display: "flex",
+          gap: GAP,
+          paddingLeft: GAP,
+          transform: `translateX(${initialOffset - scrollPos}px)`,
+          transition: "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)", // smooth slide between items
+          willChange: "transform",
+        }}
+      >
         {items.map((tool, idx) => {
           const Icon = tool.icon;
           return (
@@ -1974,7 +2114,6 @@ function ToolCarousel() {
               display:"flex", flexDirection:"column", alignItems:"center",
               gap:9, width:ITEM_W, flexShrink:0, position:"relative",
             }}>
-              {/* icon box — scaled by rAF */}
               <div
                 className="tc-icon-box"
                 data-border={tool.border}
@@ -1986,9 +2125,8 @@ function ToolCarousel() {
                   border:`1.5px solid ${tool.border}`,
                   boxShadow:`0 6px 16px -4px ${tool.border}`,
                   position:"relative", overflow:"hidden",
-                  // CSS transition smooths the rAF updates at 60fps
-                  transition:"transform 0.14s cubic-bezier(.22,1,.36,1), box-shadow 0.14s ease",
-                  transformOrigin:"50% 100%", // pop upward
+                  transition:"transform 0.1s ease-out, box-shadow 0.1s ease",
+                  transformOrigin:"50% 100%", 
                   cursor:"default",
                 }}
               >
@@ -2017,10 +2155,26 @@ function ToolCarousel() {
 }
 
 // ── Main scene ────────────────────────────────────────────────────────────────
-// Outer container is 600×500 (positioned at left:40, top:30 by TwoWaysVisual).
-// Everything inside must stay within those bounds.
 
 export function IndividualToolsScene() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [visible, setVisible]     = useState(true);
+
+  // Auto-advance: pause 2.5s at current, then crossfade to next
+  useEffect(() => {
+    const pause = window.setTimeout(() => {
+      setVisible(false);
+      window.setTimeout(() => {
+        setActiveIdx((i) => (i + 1) % featuredTools.length);
+        setVisible(true);
+      }, 300); // fade-out duration
+    }, 2700);
+    return () => window.clearTimeout(pause);
+  }, [activeIdx]);
+
+  const tool    = featuredTools[activeIdx];
+  const content = toolContent[tool.id];
+
   return (
     <div
       style={{
@@ -2036,195 +2190,118 @@ export function IndividualToolsScene() {
         overflow     : "hidden",
       }}
     >
-      {/* ── Top section: hero card + supporting cards ── */}
-      <div style={{ position: "relative", width: "100%", height: 362 }}>
-
-        {/* Hero tool card  ─── 288×310, left:22, top:24 */}
+      {/* ── Info panel — fades on tool change ── */}
+      <div
+        style={{
+          position   : "relative",
+          width      : "100%",
+          height     : 362,
+          opacity    : visible ? 1 : 0,
+          transform  : visible ? "translateY(0)" : "translateY(6px)",
+          transition : "opacity 0.28s ease, transform 0.28s ease",
+        }}
+      >
+        {/* Hero card — left column */}
         <div
           style={{
             position      : "absolute",
-            left          : 22,
-            top           : 24,
-            width         : 288,
-            height        : 310,
+            left          : 22, top : 24,
+            width         : 288, height: 310,
             borderRadius  : 24,
             background    : "white",
-            border        : "2px solid #0d7377",
-            boxShadow     : "0 16px 48px rgba(13,115,119,0.14)",
-            padding       : "16px 16px",
+            border        : `2px solid ${tool.fg}`,
+            boxShadow     : `0 16px 48px ${tool.border}55`,
+            padding       : "16px",
             display       : "flex",
             flexDirection : "column",
           }}
         >
+          {/* Eyebrow badge */}
           <span
             style={{
               display       : "inline-flex",
               borderRadius  : 999,
-              border        : "1px solid #b5e0d0",
-              background    : "#e8f5ef",
+              border        : `1px solid ${tool.border}`,
+              background    : tool.bg,
               padding       : "3px 10px",
-              fontSize      : 9.5,
-              fontWeight    : 800,
+              fontSize      : 9.5, fontWeight: 800,
               textTransform : "uppercase",
               letterSpacing : "0.1em",
-              color         : "#15744f",
+              color         : tool.fg,
               alignSelf     : "flex-start",
             }}
           >
-            Focused task
+            {content.eyebrow}
           </span>
 
-          <h3
-            style={{
-              fontSize   : 19,
-              fontWeight : 800,
-              lineHeight : 1.15,
-              color      : "#162126",
-              marginTop  : 10,
-              marginBottom: 0,
-            }}
-          >
-            Affidavit Support Calculator
+          <h3 style={{ fontSize:19, fontWeight:800, lineHeight:1.15, color:"#162126", margin:"10px 0 0" }}>
+            {content.title}
           </h3>
-
-          <p
-            style={{
-              fontSize  : 12.5,
-              lineHeight: 1.6,
-              color     : "#4a5c62",
-              marginTop : 6,
-              marginBottom: 0,
-            }}
-          >
-            Determine sponsorship setup and likely form path.
+          <p style={{ fontSize:12.5, lineHeight:1.6, color:"#4a5c62", margin:"6px 0 0" }}>
+            {content.desc}
           </p>
 
-          <div
-            style={{
-              marginTop     : "auto",
-              display       : "flex",
-              flexDirection : "column",
-              gap           : 7,
-            }}
-          >
-            {[
-              ["Sponsor income",  "$48,000"],
-              ["Required income", "$25,550"],
-            ].map(([label, value]) => (
+          <div style={{ marginTop:"auto", display:"flex", flexDirection:"column", gap:7 }}>
+            {content.stats.map(([label, value]: [string, string]) => (
               <div
                 key={label}
                 style={{
-                  display        : "flex",
-                  alignItems     : "center",
-                  justifyContent : "space-between",
-                  borderRadius   : 10,
-                  border         : "1px solid #e2e8f0",
-                  background     : "#f7fafc",
-                  padding        : "6px 12px",
+                  display:"flex", alignItems:"center", justifyContent:"space-between",
+                  borderRadius:10, border:"1px solid #e2e8f0",
+                  background:"#f7fafc", padding:"6px 12px",
                 }}
               >
-                <span style={{ fontSize: 11.5, color: "#4a5c62", fontWeight: 600 }}>{label}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 800, color: "#162126" }}>{value}</span>
+                <span style={{ fontSize:11.5, color:"#4a5c62", fontWeight:600 }}>{label}</span>
+                <span style={{ fontSize:12.5, fontWeight:800, color:"#162126" }}>{value}</span>
               </div>
             ))}
 
-            <div
-              style={{
-                borderRadius: 10,
-                border      : "1px solid #b5e0d0",
-                background  : "#e8f5ef",
-                padding     : "7px 12px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#15744f" }}>
-                <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
-                <span style={{ fontSize: 11.5, fontWeight: 800 }}>Income appears sufficient</span>
+            {/* Status badge */}
+            <div style={{ borderRadius:10, border:`1px solid ${tool.border}`, background:tool.bg, padding:"7px 12px" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:6, color:tool.fg }}>
+                <Check style={{ width:11, height:11 }} strokeWidth={3} />
+                <span style={{ fontSize:11.5, fontWeight:800 }}>{content.badge}</span>
               </div>
-              <p
-                style={{
-                  fontSize  : 10.5,
-                  lineHeight: 1.5,
-                  color     : "#4a5c62",
-                  marginTop : 3,
-                  marginBottom: 0,
-                }}
-              >
-                Recommends the likely form path and supporting evidence to prepare next.
+              <p style={{ fontSize:10.5, lineHeight:1.5, color:"#4a5c62", margin:"3px 0 0" }}>
+                {content.badgeDesc}
               </p>
             </div>
           </div>
         </div>
 
-        {/* ── Right column: label + 2 mini cards + recommendation card ── */}
-
-        {/* "Related tools" label */}
-        <div
-          style={{
-            position      : "absolute",
-            left          : 328,
-            top           : 26,
-            fontSize      : 9.5,
-            fontWeight    : 700,
-            textTransform : "uppercase",
-            letterSpacing : "0.12em",
-            color         : "#a0b0b8",
-          }}
-        >
-          Related tools
+        {/* Right column ── eyebrow */}
+        <div style={{ position:"absolute", left:328, top:26, fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.12em", color:"#a0b0b8" }}>
+          Related guides
         </div>
 
-        {/* Mini card 1 — PDF Toolkit */}
+        {/* Guide card */}
         <div
           style={{
             position     : "absolute",
-            left         : 324,
-            top          : 46,
-            width        : 118,
-            height       : 80,
+            left         : 324, top: 46,
+            width        : 252, height: 80,
             borderRadius : 16,
             background   : "white",
             border       : "1px solid #dde8e6",
-            padding      : "11px 12px",
+            padding      : "11px 14px",
             boxShadow    : "0 4px 14px rgba(15,23,42,0.06)",
+            display      : "flex", alignItems:"center", gap:12,
           }}
         >
-          <div style={{ fontSize: 12, fontWeight: 800, color: "#162126", lineHeight: 1.2 }}>
-            PDF Toolkit
+          <div style={{ width:42, height:42, borderRadius:12, background:tool.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <Lightbulb size={20} color={tool.fg} />
           </div>
-          <div style={{ fontSize: 10.5, lineHeight: 1.4, color: "#6b8097", marginTop: 4 }}>
-            Prepare upload-ready files
+          <div>
+            <div style={{ fontSize:12, fontWeight:800, color:"#162126", lineHeight:1.2 }}>How to use {tool.label}</div>
+            <div style={{ fontSize:10.5, lineHeight:1.4, color:"#6b8097", marginTop:4 }}>Step-by-step guide & FAQs</div>
           </div>
         </div>
 
-        {/* Mini card 2 — Interview Prep */}
+        {/* Insight / recommendation card */}
         <div
           style={{
             position     : "absolute",
-            left         : 458,
-            top          : 46,
-            width        : 118,
-            height       : 80,
-            borderRadius : 16,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "11px 12px",
-            boxShadow    : "0 4px 14px rgba(15,23,42,0.06)",
-          }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 800, color: "#162126", lineHeight: 1.2 }}>
-            Interview Prep
-          </div>
-          <div style={{ fontSize: 10.5, lineHeight: 1.4, color: "#6b8097", marginTop: 4 }}>
-            Practice one focused task
-          </div>
-        </div>
-
-        {/* Form recommendation card — fits in right column */}
-        <div
-          style={{
-            position     : "absolute",
-            left         : 320,
-            top          : 142,
+            left         : 320, top: 142,
             width        : 258,
             borderRadius : 20,
             background   : "white",
@@ -2233,72 +2310,36 @@ export function IndividualToolsScene() {
             boxShadow    : "0 4px 16px rgba(15,23,42,0.06)",
           }}
         >
-          <div
-            style={{
-              fontSize      : 9,
-              fontWeight    : 800,
-              textTransform : "uppercase",
-              letterSpacing : "0.1em",
-              color         : "#6b8097",
-            }}
-          >
-            Likely form recommendation
+          <div style={{ fontSize:9, fontWeight:800, textTransform:"uppercase", letterSpacing:"0.1em", color:"#6b8097" }}>
+            {content.recoTitle}
           </div>
 
-          <div
-            style={{
-              marginTop  : 10,
-              borderRadius: 12,
-              background : "#051738",
-              padding    : "11px 14px",
-            }}
-          >
-            <div style={{ fontSize: 21, fontWeight: 800, color: "white", lineHeight: 1.1 }}>
-              Form I-864EZ
-            </div>
-            <p
-              style={{
-                fontSize  : 10.5,
-                lineHeight: 1.55,
-                color     : "rgba(255,255,255,0.72)",
-                marginTop : 5,
-                marginBottom: 0,
-              }}
-            >
-              Suggested when the petitioner is the sole sponsor and income qualifies from employment.
+          <div style={{ marginTop:10, borderRadius:12, background:"#051738", padding:"11px 14px" }}>
+            <div style={{ fontSize:19, fontWeight:800, color:"white", lineHeight:1.1 }}>{content.recoMain}</div>
+            <p style={{ fontSize:10.5, lineHeight:1.55, color:"rgba(255,255,255,0.72)", margin:"5px 0 0" }}>
+              {content.recoDesc}
             </p>
           </div>
 
-          <div
-            style={{
-              marginTop           : 10,
-              display             : "grid",
-              gridTemplateColumns : "1fr 1fr",
-              gap                 : 6,
-            }}
-          >
-            {["Tax transcript", "Pay stubs"].map((item) => (
+          <div style={{ marginTop:10, display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+            {content.recoTags.map((tag: string) => (
               <div
-                key={item}
+                key={tag}
                 style={{
-                  borderRadius: 8,
-                  border      : "1px solid #e2e8f0",
-                  background  : "#f7fafc",
-                  padding     : "5px 8px",
-                  fontSize    : 10,
-                  fontWeight  : 700,
-                  color       : "#2C3A3E",
+                  borderRadius:8, border:"1px solid #e2e8f0",
+                  background:"#f7fafc", padding:"5px 8px",
+                  fontSize:10, fontWeight:700, color:"#2C3A3E", textAlign:"center",
                 }}
               >
-                {item}
+                {tag}
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── bottom carousel strip with centre-pop ── */}
-      <ToolCarousel />
+      {/* ── Bottom carousel strip ── */}
+      <ToolCarousel activeIdx={activeIdx} />
     </div>
   );
 }
