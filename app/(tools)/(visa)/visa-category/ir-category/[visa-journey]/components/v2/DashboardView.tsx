@@ -578,6 +578,7 @@ export function DashboardView({
                   const isLocked = !isStageUnlocked(data, originalIdx, state);
                   const isDone = prog.pct === 100;
                   const isActive = !isLocked && prog.pct > 0 && !isDone;
+                  const useChapterPalette = originalIdx < 2;
 
                   const isDarkCard = isDone;
 
@@ -590,12 +591,36 @@ export function DashboardView({
           outline outline-1 outline-[#e2e8f0]
           ${
             isLocked
-              ? "bg-white opacity-50 cursor-default border-2 border-[#d0e4f7]"
+              ? originalIdx === 0
+                ? "bg-white opacity-50 cursor-default border-2 border-[#c6c8ea]"
+                : originalIdx === 1
+                  ? "bg-white opacity-50 cursor-default border-2 border-[#d5abd2]"
+                  : originalIdx === 2
+                    ? "bg-white opacity-50 cursor-default border-2 border-[#b7c2d4]"
+                    : "bg-white opacity-50 cursor-default border-2 border-[#d0e4f7]"
               : isDone
-              ? "bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#0f766e] border border-[#334155] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(76,29,149,0.18),0_4px_12px_rgba(15,118,110,0.12)]"
+              ? originalIdx === 0
+                ? "bg-[#8284bf] border border-[#c6c8ea] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(130,132,191,0.18)]"
+                : originalIdx === 1
+                  ? "bg-[#520a50] border border-[#d5abd2] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(82,10,80,0.18)]"
+                  : originalIdx === 2
+                    ? "bg-[#051738] border border-[#b7c2d4] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(5,23,56,0.18)]"
+                    : "bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#0f766e] border border-[#334155] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(76,29,149,0.18),0_4px_12px_rgba(15,118,110,0.12)]"
                 : isActive
-                  ? "bg-primary/10 border-2 border-primary cursor-pointer hover:-translate-y-[2px]"
-                  : "bg-white border-2 border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:-translate-y-[2px]"
+                  ? originalIdx === 0
+                    ? "bg-[#f0f1fb] border-2 border-[#8284bf] cursor-pointer hover:-translate-y-[2px]"
+                    : originalIdx === 1
+                      ? "bg-[#f4e6f3] border-2 border-[#520a50] cursor-pointer hover:-translate-y-[2px]"
+                      : originalIdx === 2
+                        ? "bg-[#e8ecf3] border-2 border-[#051738] cursor-pointer hover:-translate-y-[2px]"
+                        : "bg-primary/10 border-2 border-primary cursor-pointer hover:-translate-y-[2px]"
+                  : originalIdx === 0
+                    ? "bg-white border-2 border-[#c6c8ea] cursor-pointer hover:border-[#8284bf] hover:-translate-y-[2px]"
+                    : originalIdx === 1
+                      ? "bg-white border-2 border-[#d5abd2] cursor-pointer hover:border-[#520a50] hover:-translate-y-[2px]"
+                      : originalIdx === 2
+                        ? "bg-white border-2 border-[#b7c2d4] cursor-pointer hover:border-[#051738] hover:-translate-y-[2px]"
+                        : "bg-white border-2 border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:-translate-y-[2px]"
           }`}
                     >
                       {/* Header */}
@@ -637,7 +662,9 @@ export function DashboardView({
                               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold w-fit ${
                                 isDarkCard
                                   ? "bg-white/10 text-[#e0e7ff] border border-white/20"
-                                  : "bg-[#ede9fe] text-[#5b21b6] border border-[#c4b5fd]"
+                                  : useChapterPalette
+                                    ? "bg-[#f4e6f3] text-[#520a50] border border-[#d5abd2]"
+                                    : "bg-[#ede9fe] text-[#5b21b6] border border-[#c4b5fd]"
                               }`}
                             >
                               <Lock size={8} strokeWidth={2.5} />
@@ -650,14 +677,34 @@ export function DashboardView({
                       <div className="flex items-center gap-2 mt-auto">
                         <div
                           className={`flex-1 h-1.5 rounded-full overflow-hidden ${
-                            isDarkCard ? "bg-[#1e293b]" : "bg-[#e2e8f0]"
+                            isDarkCard
+                              ? "bg-[#1e293b]"
+                              : useChapterPalette || originalIdx === 2
+                                ? originalIdx === 0
+                                  ? "bg-[#f0f1fb]"
+                                  : originalIdx === 1
+                                    ? "bg-[#f4e6f3]"
+                                    : "bg-[#e8ecf3]"
+                                : "bg-[#e2e8f0]"
                           }`}
                         >
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
                               isDarkCard
-                                ? "bg-gradient-to-r from-[#6366f1] to-[#14b8a6]"
-                                : "bg-gradient-to-r from-primary to-primary/70"
+                                ? originalIdx === 0
+                                  ? "bg-[#8284bf]"
+                                  : originalIdx === 1
+                                    ? "bg-[#520a50]"
+                                    : originalIdx === 2
+                                      ? "bg-[#051738]"
+                                      : "bg-gradient-to-r from-[#6366f1] to-[#14b8a6]"
+                                : originalIdx === 0
+                                  ? "bg-[#8284bf]"
+                                  : originalIdx === 1
+                                    ? "bg-[#520a50]"
+                                    : originalIdx === 2
+                                      ? "bg-[#051738]"
+                                      : "bg-gradient-to-r from-primary to-primary/70"
                             }`}
                             style={{ width: `${prog.pct}%` }}
                           />

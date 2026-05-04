@@ -637,14 +637,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           color: #2f6fd4;
         }
         .asr-chip--ch1 {
-          background: #c0596a;
-          border-color: #f7c5cc;
+          background: #8284bf;
+          border-color: #c6c8ea;
           color: #fff;
         }
         .asr-chip--ch2 {
           background: transparent;
-          border-color: #e3c6f7;
-          color: #b48ad6;
+          border-color: #d5abd2;
+          color: #520a50;
         }
  
         /* ── Hero Section ── */
@@ -662,7 +662,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           line-height: 1.15;
           margin-bottom: 6px;
         }
-        .asr-hero__heading--rose { color: #c0596a; }
+        .asr-hero__heading--rose { color: #8284bf; }
         .asr-hero__desc {
           font-size: clamp(13px, 1.8vw, 14px);
           line-height: 1.65;
@@ -728,8 +728,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           text-align: center;
           line-height: 1.3;
         }
-        .asr-btn--rose { background: #c0596a; color: #fff; }
-        .asr-btn--rose:hover { background: #a94c5a; }
+        .asr-btn--rose { background: #8284bf; color: #fff; }
+        .asr-btn--rose:hover { background: #7a7aaa; }
         .asr-btn--accent { background: #2f6fd4; color: #fff; }
         .asr-btn--accent:hover { background: #2460bb; }
         .asr-btn--sky { background: #e8f1fb; color: #1a3054; }
@@ -1255,7 +1255,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
-                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? "accent-rose-bg border-rose-200 text-[#ffff]" : isChapter2 ? "accent-purple-bg border-[#e3c6f7] text-[#b48ad6]" : "bg-[#e8f1fb] border-[#d0e4f7] text-[#2f6fd4]"}`}
+                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? "accent-rose-bg border-rose-200 text-[#ffff]" : isChapter2 ? "accent-purple-bg border-[#d5abd2] text-[#520a50]" : "bg-[#e8ecf3] border-[#b7c2d4] text-[#051738]"}`}
               >
                 {chip.label}
               </span>
@@ -1266,7 +1266,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         {/* Hero Section */}
         <section
           style={{
-            background: "linear-gradient(180deg, #28151c 0%, #28151c 100%)",
+            background: isChapter1 ? "linear-gradient(180deg, #8284bf 0%, #4e518c 100%)" : isChapter2 ? "linear-gradient(180deg, #520a50 0%, #2f062e 100%)" : "linear-gradient(180deg, #051738 0%, #020a1a 100%)",
             color: "#fff",
             borderRadius: "24px",
             padding: isMobile ? "16px" : "24px",
@@ -1281,7 +1281,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
-              color: step.step_key === "step_1_11" ? "#c0596a" : undefined,
+              color: step.step_key === "step_1_11" ? "#8284bf" : undefined,
             }}
           >
             {actionData.hero_heading}
@@ -1375,7 +1375,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background: stepEntitlement.isLocked ? "#4a5568" : "#c0596a",
+                  background: stepEntitlement.isLocked ? "#4a5568" : isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738",
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1386,10 +1386,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#a94c5a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#7a7aaa" : isChapter2 ? "#3d0b3d" : "#041028";
                 }}
                 onMouseLeave={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#c0596a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738";
                 }}
               >
                 {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
@@ -1405,7 +1405,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background: stepEntitlement.isLocked ? "#4a5568" : "#c0596a",
+                  background: stepEntitlement.isLocked ? "#4a5568" : isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738",
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1416,10 +1416,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#a94c5a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#7a7aaa" : isChapter2 ? "#3d0b3d" : "#041028";
                 }}
                 onMouseLeave={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = "#c0596a";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738";
                 }}
               >
                 {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
@@ -1442,7 +1442,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   justifyContent: "center",
                   width: "100%",
                   background:
-                    stepEntitlement.isLocked ? "#4a5568" : (step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent),
+                    stepEntitlement.isLocked ? "#4a5568" : (step.step_key === "step_1_11" ? "#8284bf" : COLORS.accent),
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1456,13 +1456,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 onMouseEnter={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? "#a94c5a" : COLORS.accent2;
+                      step.step_key === "step_1_11" ? "#7a7aaa" : COLORS.accent2;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? "#c0596a" : COLORS.accent;
+                      step.step_key === "step_1_11" ? "#8284bf" : COLORS.accent;
                   }
                 }}
               >

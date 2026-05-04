@@ -48,7 +48,7 @@ interface UpgradeNudgeProps {
 const UpgradeNudge: React.FC<UpgradeNudgeProps> = ({ title, description, onUpgrade, onDismiss }) => (
   <div
     className="rounded-2xl p-4 mb-4 animate-in fade-in slide-in-from-top-2 duration-200"
-    style={{ background: "#fbeaec", border: "1.5px solid rgba(192,89,106,0.5)" }}
+    style={{ background: "#f0f1fb", border: "1.5px solid rgba(130,132,191,0.3)" }}
   >
     <div className="flex items-start gap-3">
       <div
@@ -58,22 +58,22 @@ const UpgradeNudge: React.FC<UpgradeNudgeProps> = ({ title, description, onUpgra
         <Crown className="w-4 h-4 text-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[14px] font-bold mb-1" style={{ color: "#28151c" }}>{title}</div>
+        <div className="text-[14px] font-bold mb-1" style={{ color: "#8284bf" }}>{title}</div>
         <div className="text-[13px] leading-[1.6]" style={{ color: "#5a3040" }}>{description}</div>
         <div className="flex gap-2 mt-3 flex-wrap">
           <button
             onClick={onUpgrade}
             className="px-4 py-1.5 rounded-full text-[13px] font-bold text-white transition-colors"
-            style={{ background: "#c0596a" }}
+            style={{ background: "#8284bf" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#a13e4e")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "#c0596a")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#8284bf")}
           >
             Upgrade Plan
           </button>
           <button
             onClick={onDismiss}
             className="px-4 py-1.5 rounded-full text-[13px] font-semibold transition-colors"
-            style={{ border: "1.5px solid rgba(192,89,106,0.5)", color: "#c0596a", background: "transparent" }}
+            style={{ border: "1.5px solid rgba(130,132,191,0.3)", color: "#8284bf", background: "transparent" }}
           >
             Maybe later
           </button>
@@ -109,13 +109,13 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
     <div
       className="w-full rounded-2xl overflow-hidden flex flex-col mt-6"
       style={{
-        background: "#28151c",
-        border: "1.5px solid #c0596a",
+        background: "#8284bf",
+        border: "1.5px solid #c6c8ea",
         boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
       }}
     >
-      <div className="px-6 py-4" style={{ borderBottom: "1px solid #c0596a33" }}>
-        <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#c0596a" }}>
+      <div className="px-6 py-4" style={{ borderBottom: "1px solid #8284bf33" }}>
+        <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#8284bf" }}>
           Post-Filing Checkpoint
         </div>
         <div className="text-[18px] font-semibold text-white">
@@ -125,8 +125,8 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
       <div className="px-6 py-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-6">
           {summaryCards.map(({ k, v }) => (
-            <div key={k} className="rounded-xl p-3" style={{ background: "#3a2328", border: "1px solid #c0596a55" }}>
-              <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#c0596a99" }}>{k}</div>
+            <div key={k} className="rounded-xl p-3" style={{ background: "#f0f1fb", border: "1px solid #c6c8ea" }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#8284bf" }}>{k}</div>
               <div className="text-[13px] font-semibold text-white">{v}</div>
             </div>
           ))}
@@ -134,8 +134,8 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
         <div className="h-px mb-5" style={{ background: "#c0596a33" }} />
         <div className="flex flex-col gap-2">
           {items.map((item, i) => (
-            <div key={i} className="flex gap-3 items-start rounded-xl p-3" style={{ background: "#3a2328", border: "1px solid #c0596a55" }}>
-              <span className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style={{ background: "#c0596a" }} />
+            <div key={i} className="flex gap-3 items-start rounded-xl p-3" style={{ background: "#f0f1fb", border: "1px solid #c6c8ea" }}>
+              <span className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style={{ background: "#8284bf" }} />
               <div>
                 <div className="text-[13px] font-bold text-white">{item.title}</div>
                 <div className="text-[12px] text-white/60">{item.sub}</div>

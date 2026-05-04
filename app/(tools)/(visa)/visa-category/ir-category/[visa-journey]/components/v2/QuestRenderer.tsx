@@ -240,14 +240,14 @@ export function QuestRenderer({
         <div className="mb-6 sm:mb-8">
           <h1
             className={`text-2xl sm:text-3xl md:text-4xl font-black mb-2 leading-tight break-words ${
-              isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-[#0f1f38]"
+              isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"
             }`}
           >
             {suite.title}
           </h1>
           <p
             className={`text-sm sm:text-base leading-relaxed ${
-              isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : "text-[#3a4f63]"
+              isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : "text-[#020a1a]"
             }`}
           >
             {suite.subtitle}
@@ -258,12 +258,12 @@ export function QuestRenderer({
         <div className="mb-6 sm:mb-8">
           <div
             className={`w-full h-[5px] rounded-full overflow-hidden ${
-              isChapter1 ? "bg-[#e6d6c3]" : isChapter2 ? "bg-[#ede6f6]" : isChapter3 ? "bg-[#e8f1fb]" : "bg-primary/30"
+              isChapter1 ? "bg-[#e6d6c3]" : isChapter2 ? "bg-[#f4e6f3]" : isChapter3 ? "bg-[#e8ecf3]" : "bg-primary/30"
             }`}
           >
             <div
               className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                isChapter1 ? "bg-[#a97c50]" : isChapter2 ? "bg-[#b48ad6]" : isChapter3 ? "bg-[#2f6fd4]" : "bg-primary"
+                isChapter1 ? "bg-[#a97c50]" : isChapter2 ? "bg-[#520a50]" : isChapter3 ? "bg-[#051738]" : "bg-primary"
               }`}
               style={{ width: `${progressPct}%` }}
             />
@@ -323,14 +323,14 @@ export function QuestRenderer({
                 <div className="flex-1 min-w-0">
                   <h3
                     className={`text-sm sm:text-[15px] font-semibold leading-snug break-words ${
-                      isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-[#0f1f38]"
+                      isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"
                     }`}
                   >
                     {q.title}
                   </h3>
                   <p
                     className={`text-xs sm:text-[13px] leading-relaxed mt-0.5 break-words ${
-                      isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"
+                      isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
                     }`}
                   >
                     {q.subtitle}
@@ -357,7 +357,7 @@ export function QuestRenderer({
         {/* Disclaimer */}
         <div
           className={`mt-10 sm:mt-12 px-4 py-3.5 rounded-[9px] text-[11px] sm:text-[12px] leading-relaxed text-center ${
-            isChapter1 ? "accent-rose bg-[#f7ede5]" : isChapter2 ? "bg-[#ede6f6] text-[#b48ad6]" : "bg-[#e8f1fb] text-[#6b8097]"
+            isChapter1 ? "accent-rose bg-[#f7ede5]" : isChapter2 ? "bg-[#f4e6f3] text-[#520a50]" : "bg-[#e8ecf3] text-[#051738]"
           }`}
         >
           Rahvana provides structured guidance only. This is not legal advice.
@@ -390,14 +390,14 @@ export function QuestRenderer({
           </div>
           <h2
             className={`text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4 tracking-tight italic break-words ${
-              isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-[#0f1f38]"
+              isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"
             }`}
           >
             {result?.title || "Evaluating Result..."}
           </h2>
           <p
             className={`mb-8 sm:mb-10 leading-relaxed max-w-[400px] mx-auto text-[14px] sm:text-[16px] ${
-              isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"
+              isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
             }`}
           >
             {result?.body || "Please wait while we calculate your status."}
@@ -433,10 +433,10 @@ export function QuestRenderer({
         : true);
 
     const accentColor = isChapter1
-      ? { bar: "bg-[#c0596a]", barBg: "bg-[#e6d6c3]", border: "border-[#c0596a]/40", closeBg: "bg-[#e6d6c3] hover:bg-[#f7ede5]", closeStroke: "stroke-[#c0596a]", label: "accent-brown", btn: "bg-[#a97c50] text-white shadow-[#a97c50]/20 hover:bg-[#7c5737]" }
+      ? { bar: "bg-[#8284bf]", barBg: "bg-[#e6d6c3]", border: "border-[#8284bf]/40", closeBg: "bg-[#e6d6c3] hover:bg-[#f7ede5]", closeStroke: "stroke-[#8284bf]", label: "accent-brown", btn: "bg-[#a97c50] text-white shadow-[#a97c50]/20 hover:bg-[#7c5737]" }
       : isChapter2
-      ? { bar: "bg-[#b48ad6]", barBg: "bg-[#ede6f6]", border: "border-[#b48ad6]", closeBg: "bg-[#ede6f6] hover:bg-[#b48ad6]/10", closeStroke: "stroke-[#b48ad6]", label: "text-[#b48ad6]", btn: "bg-[#b48ad6] text-white shadow-[#b48ad6]/20 hover:bg-[#9a6fc0]" }
-      : { bar: "bg-[#2f6fd4]", barBg: "bg-[#e8f1fb]", border: "border-[#2f6fd4]", closeBg: "bg-[#e8f1fb] hover:bg-[#2f6fd4]/10", closeStroke: "stroke-[#2f6fd4]", label: "text-[#2f6fd4]", btn: "bg-[#2f6fd4] text-white shadow-[#2f6fd4]/20 hover:bg-[#0f1f38]" };
+      ? { bar: "bg-[#520a50]", barBg: "bg-[#f4e6f3]", border: "border-[#520a50]", closeBg: "bg-[#f4e6f3] hover:bg-[#520a50]/10", closeStroke: "stroke-[#520a50]", label: "text-[#520a50]", btn: "bg-[#520a50] text-white shadow-[#520a50]/20 hover:bg-[#2f062e]" }
+      : { bar: "bg-[#051738]", barBg: "bg-[#e8ecf3]", border: "border-[#051738]", closeBg: "bg-[#e8ecf3] hover:bg-[#051738]/10", closeStroke: "stroke-[#051738]", label: "text-[#051738]", btn: "bg-[#051738] text-white shadow-[#051738]/20 hover:bg-[#020a1a]" };
 
     return (
       <div className="w-full flex flex-col animate-in slide-in-from-right-4 pt-15 fade-in duration-500">
@@ -482,7 +482,7 @@ export function QuestRenderer({
             {/* Question */}
             <h2
               className={`text-xl sm:text-2xl md:text-[28px] mb-2 leading-snug break-words ${
-                isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-[#0f1f38]"
+                isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"
               }`}
             >
               {screen.question}
@@ -491,7 +491,7 @@ export function QuestRenderer({
             {screen.helper && (
               <p
                 className={`text-sm sm:text-[14px] mb-5 sm:mb-7 leading-relaxed ${
-                  isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#3a4f63]"
+                  isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
                 }`}
               >
                 {screen.helper}
@@ -521,11 +521,11 @@ export function QuestRenderer({
                   <div
                     id={`hint-panel-${screen.id}`}
                     className={`mt-4 p-4 sm:p-5 rounded-[16px] animate-in slide-in-from-top-2 duration-300 ${
-                      isChapter1 ? "bg-[#f7ede5] border-[#a97c50]/40" : "bg-[#f0f7ff] border border-[#d0e4f7]"
+                      isChapter1 ? "bg-[#f7ede5] border-[#a97c50]/40" : isChapter2 ? "bg-[#f4e6f3] border border-[#d5abd2]" : "bg-[#e8ecf3] border border-[#b7c2d4]"
                     }`}
                   >
                     {screen.hint.intro && (
-                      <p className={`text-[13px] font-bold mb-2 ${isChapter1 ? "accent-brown" : "text-[#0f1f38]"}`}>
+                      <p className={`text-[13px] font-bold mb-2 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"}`}>
                         {screen.hint.intro}
                       </p>
                     )}
@@ -552,34 +552,34 @@ export function QuestRenderer({
                     : val === opt.value;
 
                 const selectedCls = isChapter1
-                  ? "border-[#c0596a] bg-[#fbeaec] shadow-[0_0_0_3px_rgba(192,89,106,0.10)]"
+                  ? "border-[#8284bf] bg-[#f0f1fb] shadow-[0_0_0_3px_rgba(130,132,191,0.10)]"
                   : isChapter2
-                  ? "border-[#b48ad6] bg-[#ede6f6] shadow-[0_0_0_3px_rgba(180,138,214,0.10)]"
+                  ? "border-[#520a50] bg-[#f4e6f3] shadow-[0_0_0_3px_rgba(82,10,80,0.10)]"
                   : isChapter3
-                  ? "border-[#2f6fd4] bg-[#e8f1fb] shadow-[0_0_0_3px_rgba(47,111,212,0.10)]"
+                  ? "border-[#051738] bg-[#e8ecf3] shadow-[0_0_0_3px_rgba(5,23,56,0.10)]"
                   : "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(59,125,216,0.12)]";
 
                 const defaultCls = isChapter1
-                  ? "border-[#c0596a]/40 bg-white hover:border-[#c0596a] hover:bg-[#fbeaec]"
+                  ? "border-[#8284bf]/40 bg-white hover:border-[#8284bf] hover:bg-[#f0f1fb]"
                   : isChapter2
-                  ? "border-[#b48ad6]/40 bg-white hover:border-[#b48ad6] hover:bg-[#ede6f6]"
+                  ? "border-[#520a50]/40 bg-white hover:border-[#520a50] hover:bg-[#f4e6f3]"
                   : isChapter3
-                  ? "border-[#2f6fd4]/40 bg-white hover:border-[#2f6fd4] hover:bg-[#e8f1fb]"
-                  : "border-[#d0e4f7] bg-white hover:border-primary hover:bg-primary/5";
+                  ? "border-[#051738]/40 bg-white hover:border-[#051738] hover:bg-[#e8ecf3]"
+                  : "border-[#b7c2d4] bg-white hover:border-primary hover:bg-primary/5";
 
                 const radioCls = isSelected
-                  ? isChapter1 ? "border-[#c0596a] bg-[#c0596a]"
-                    : isChapter2 ? "border-[#b48ad6] bg-[#b48ad6]"
-                    : isChapter3 ? "border-[#2f6fd4] bg-[#2f6fd4]"
+                  ? isChapter1 ? "border-[#8284bf] bg-[#8284bf]"
+                    : isChapter2 ? "border-[#520a50] bg-[#520a50]"
+                    : isChapter3 ? "border-[#051738] bg-[#051738]"
                     : "border-primary bg-primary"
-                  : isChapter1 ? "border-[#c0596a]/40 bg-white"
-                    : isChapter2 ? "border-[#b48ad6]/40 bg-white"
-                    : isChapter3 ? "border-[#2f6fd4]/40 bg-white"
-                    : "border-[#d0e4f7] bg-white";
+                  : isChapter1 ? "border-[#8284bf]/40 bg-white"
+                    : isChapter2 ? "border-[#520a50]/40 bg-white"
+                    : isChapter3 ? "border-[#051738]/40 bg-white"
+                    : "border-[#b7c2d4] bg-white";
 
                 const labelCls = isSelected
-                  ? isChapter1 ? "accent-brown" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#0f1f38]"
-                  : isChapter1 ? "accent-brown/80" : isChapter2 ? "text-[#b48ad6]/80" : isChapter3 ? "text-[#2f6fd4]/80" : "text-[#1c2b3a]";
+                  ? isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : isChapter3 ? "text-[#051738]" : "text-[#051738]"
+                  : isChapter1 ? "accent-brown/80" : isChapter2 ? "text-[#520a50]/80" : isChapter3 ? "text-[#051738]/80" : "text-[#020a1a]";
 
                 return (
                   <button
@@ -597,7 +597,7 @@ export function QuestRenderer({
                         {opt.label}
                       </div>
                       {opt.sub && (
-                        <div className={`text-xs sm:text-[13px] mt-0.5 leading-relaxed break-words ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#b48ad6]" : isChapter3 ? "text-[#2f6fd4]" : "text-[#6b8097]"}`}>
+                        <div className={`text-xs sm:text-[13px] mt-0.5 leading-relaxed break-words ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#6b8097]"}`}>
                           {opt.sub}
                         </div>
                       )}

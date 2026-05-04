@@ -201,7 +201,7 @@ export function ChapterView({
             shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]
             transition-all duration-300 hover:scale-[1.018] hover:shadow-[0_16px_56px_rgba(36,42,66,0.22),0_6px_24px_rgba(44,62,80,0.18)]
             border-solid
-            ${isChapter3 ? "border-[#2b6e7a]" : isChapter2 ? "border-[#7c5e8a]" : "border-[#b97c7c]"}
+            ${isChapter3 ? "border-[#051738]" : isChapter2 ? "border-[#520a50]" : "border-[#8284bf]"}
           `}
         >
           <div
@@ -209,21 +209,21 @@ export function ChapterView({
               ${
                 isDone
                   ? isChapter3
-                    ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
+                    ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
                     : isChapter2
-                      ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
-                      : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
+                      ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
+                      : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
                   : isInProgress
                     ? isChapter3
-                      ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
+                      ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
                       : isChapter2
-                        ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
-                        : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
+                        ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
+                        : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
                     : isChapter3
-                      ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
+                      ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
                       : isChapter2
-                        ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
-                        : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
+                        ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
+                        : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
               }`}
           >
             {isDone
@@ -244,22 +244,22 @@ export function ChapterView({
 
           <div className="flex items-center gap-2.5">
             <div
-              className={`flex-1 h-[7px] rounded-[13px] overflow-hidden ${isChapter3 ? "bg-[#eaf4f6]" : isChapter2 ? "bg-[#f3f0fa]" : "bg-[#f7e0ec]"}`}
+              className={`flex-1 h-[7px] rounded-[13px] overflow-hidden ${isChapter3 ? "bg-[#e8ecf3]" : isChapter2 ? "bg-[#f4e6f3]" : "bg-[#f0f1fb]"}`}
             >
               <div
                 className="h-full rounded-[13px] transition-all duration-500 shadow-[0_2.5px_12px_rgba(36,42,66,0.18)]"
                 style={{
                   width: `${prog.pct}%`,
                   background: isChapter3
-                    ? "#2b6e7a"
+                    ? "#051738"
                     : isChapter2
-                      ? "#7c5e8a"
-                      : "#b97c7c",
+                      ? "#520a50"
+                      : "#8284bf",
                 }}
               />
             </div>
             <div
-              className={`text-[12px] font-bold ${isChapter3 ? "text-[#217a8b]" : isChapter2 ? "text-[#7a326a]" : "text-[#a06ca7]"}`}
+              className={`text-[12px] font-bold ${isChapter3 ? "text-[#051738]" : isChapter2 ? "text-[#2f062e]" : "text-[#4e518c]"}`}
             >
               {prog.pct}%
             </div>
@@ -433,17 +433,17 @@ mb-4
             // --- Enhanced accent color palette and depth for step cards ---
             // Harmonized, premium step card colors
             let borderColor = isChapter3
-              ? "border-[#2b6e7a]"
+              ? "border-[#051738]"
               : isChapter2
-                ? "border-[#7c5e8a]"
-                : "border-[#b97c7c]";
+                ? "border-[#520a50]"
+                : "border-[#8284bf]";
             let bgColor =
               "bg-gradient-to-br from-white via-white/95 to-neutral-50";
             let textColor = isChapter3
-              ? "text-[#2b6e7a]"
+              ? "text-[#051738]"
               : isChapter2
-                ? "text-[#7c5e8a]"
-                : "text-[#b97c7c]";
+                ? "text-[#520a50]"
+                : "text-[#8284bf]";
             let iconBg = "bg-white";
             let iconBorder = borderColor;
             let iconText = textColor;
@@ -458,50 +458,50 @@ mb-4
               iconText = "text-[#8b94a5]";
             } else if (isCompleted) {
               borderColor = isChapter3
-                ? "border-[#2b6e7a]"
+                ? "border-[#051738]"
                 : isChapter2
-                  ? "border-[#7c5e8a]"
-                  : "border-[#b97c7c]";
+                  ? "border-[#520a50]"
+                  : "border-[#8284bf]";
               bgColor = isChapter3
-                ? "bg-[#2b6e7a]"
+                ? "bg-[#051738]"
                 : isChapter2
-                  ? "bg-[#7c5e8a]"
-                  : "bg-[#b97c7c]";
+                  ? "bg-[#520a50]"
+                  : "bg-[#8284bf]";
               textColor = "text-white";
               iconBg = "bg-white/20";
               iconBorder = isChapter3
-                ? "border-[#b2dbe0]"
+                ? "border-[#b7c2d4]"
                 : isChapter2
-                  ? "border-[#d6cbe0]"
-                  : "border-[#e7bfc2]";
+                  ? "border-[#d5abd2]"
+                  : "border-[#c6c8ea]";
               iconText = "text-white";
             } else if (isCurrent) {
               borderColor = isChapter3
-                ? "border-[#2b6e7a]"
+                ? "border-[#051738]"
                 : isChapter2
-                  ? "border-[#7c5e8a]"
-                  : "border-[#b97c7c]";
+                  ? "border-[#520a50]"
+                  : "border-[#8284bf]";
               bgColor = "bg-white/80 backdrop-blur-sm"; // softly transparent for all chapters
               textColor = isChapter3
-                ? "text-[#217a8b]" // deep teal accent
+                ? "text-[#051738]" // deep blue accent
                 : isChapter2
-                  ? "text-[#7c5e8a]" // deep lavender accent
-                  : "text-[#b97c7c]"; // deep rose accent
+                  ? "text-[#520a50]" // deep purple accent
+                  : "text-[#8284bf]"; // purple accent
               iconBg = "bg-white";
               iconBorder = borderColor;
               iconText = textColor;
             } else {
               borderColor = isChapter3
-                ? "border-[#b2dbe0]"
+                ? "border-[#b7c2d4]"
                 : isChapter2
-                  ? "border-[#d6cbe0]"
-                  : "border-[#e7bfc2]";
+                  ? "border-[#d5abd2]"
+                  : "border-[#c6c8ea]";
               bgColor = "bg-white";
               textColor = isChapter3
-                ? "text-[#2b6e7a]"
+                ? "text-[#051738]"
                 : isChapter2
-                  ? "text-[#7c5e8a]"
-                  : "text-[#b97c7c]";
+                  ? "text-[#520a50]"
+                  : "text-[#8284bf]";
               iconBg = "bg-white";
               iconBorder = borderColor;
               iconText = textColor;
@@ -529,7 +529,7 @@ mb-4
                       : "shadow-[0_4px_20px_rgba(36,42,66,0.13),0_2px_8px_rgba(44,62,80,0.10)] hover:shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
                   }
                   active:scale-[0.98]
-                  ${!isStepLocked && isCurrent ? (isChapter3 ? "before:bg-[#2b6e7a]" : isChapter2 ? "before:bg-[#7c5e8a]" : "before:bg-[#b97c7c]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""}
+                  ${!isStepLocked && isCurrent ? (isChapter3 ? "before:bg-[#051738]" : isChapter2 ? "before:bg-[#520a50]" : "before:bg-[#8284bf]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""}
                 `}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >

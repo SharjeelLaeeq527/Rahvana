@@ -988,6 +988,9 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           state={state}
           actions={actions}
           journeyId={journeyId}
+          isChapter1={isChapter1}
+          isChapter2={isChapter2}
+          isChapter3={isChapter3}
         />
       </StepLockedContent>
     );
@@ -2057,7 +2060,16 @@ const renderDocActionModal = () => {
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
-              className="w-full py-4 px-7 bg-[#b48ad6] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#561864] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full py-4 px-7 text-white rounded-[12px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+              style={{
+                backgroundColor: isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isChapter1 ? "#6a6a9f" : isChapter2 ? "#3a073a" : "#031020";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738";
+              }}
             >
               Start CEAC Guide
             </button>
@@ -3749,7 +3761,7 @@ const renderDocActionModal = () => {
                   className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
                   style={{
                     background: isChapter1
-                      ? "linear-gradient(90deg, #c0596a 0%, #28151c 100%)"
+                      ? "linear-gradient(90deg, #8284bf 0%, #28151c 100%)"
                       : stripeGradient,
                   }}
                 />
@@ -3758,7 +3770,7 @@ const renderDocActionModal = () => {
                   {/* Module Header */}
                   <div className="flex items-start gap-[16px] mb-[26px]">
                     <div
-                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
+                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#8284bf] border-[#8284bf]" : isChapter2 ? "bg-[#520a50] border-[#520a50]" : "bg-white/[0.055] border-white/10"}`}
                     >
                       <IconComponent
                         size={22}
@@ -3781,7 +3793,7 @@ const renderDocActionModal = () => {
                   </div>
 
                   <div
-                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[#c0596a]/30" : "bg-white/9"}`}
+                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[#8284bf]/30" : isChapter2 ? "bg-[#520a50]/30" : "bg-white/9"}`}
                   />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
@@ -3847,20 +3859,22 @@ const renderDocActionModal = () => {
                       (feat: string, i: number) => (
                         <div
                           key={i}
-                          className={`${isChapter1 ? "bg-[#3a232a] border border-[#c0596a]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          className={`${isChapter1 ? "bg-[#3a2a38] border border-[#8284bf]/30" : isChapter2 ? "bg-[#2a1528] border border-[#520a50]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
                         >
                           <div
                             className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
                               isChapter1
-                                ? "bg-[#c0596a]"
-                                : tool.launch_module.stripe_variant === "gold"
-                                  ? "bg-[rgba(212,168,47,0.7)]"
-                                  : tool.launch_module.stripe_variant ===
-                                      "green"
-                                    ? "bg-[rgba(100,220,160,0.6)]"
-                                    : isBeneficiaryTheme
-                                      ? "bg-[#20a8a8bf]"
-                                      : "bg-[#6aa8f0b3]"
+                                ? "bg-[#8284bf]"
+                                : isChapter2
+                                  ? "bg-[#520a50]"
+                                  : tool.launch_module.stripe_variant === "gold"
+                                    ? "bg-[rgba(212,168,47,0.7)]"
+                                    : tool.launch_module.stripe_variant ===
+                                        "green"
+                                      ? "bg-[rgba(100,220,160,0.6)]"
+                                      : isBeneficiaryTheme
+                                        ? "bg-[#20a8a8bf]"
+                                        : "bg-[#6aa8f0b3]"
                             }`}
                           />
                           <div
@@ -3915,14 +3929,14 @@ const renderDocActionModal = () => {
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
-                                ? "bg-[#c0596a] pointer-events-none"
+                                ? "bg-[#8284bf] pointer-events-none"
                                 : isChapter2
-                                  ? "bg-[#b48ad6] pointer-events-none"
+                                  ? "bg-[#520a50] pointer-events-none"
                                   : "bg-[#3b7dd8] pointer-events-none"
                               : isChapter1
-                                ? "bg-[#c0596a] hover:bg-[#a13e4e] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)]"
+                                ? "bg-[#8284bf] hover:bg-[#6a6a9f] text-white shadow-[0_4px_20px_rgba(130,132,191,0.25)]"
                                 : isChapter2
-                                  ? "bg-[#b48ad6] text-white shadow-[0_4px_20px_rgba(180,138,214,0.25)] hover:bg-[#a47cc1] hover:text-white hover:shadow-[0_8px_32px_rgba(180,138,214,0.35)] hover:translate-y-[-2px]"
+                                  ? "bg-[#520a50] text-white shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[#3a073a] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)] hover:translate-y-[-2px]"
                                   : "bg-[#2f6fd4] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
                           }`}
                         style={
@@ -3931,7 +3945,7 @@ const renderDocActionModal = () => {
                             : !isLaunched || !tool.launch_module.return_note
                               ? {
                                   backgroundColor: isChapter2
-                                    ? "#b48ad6"
+                                    ? "#520a50"
                                     : accentColor,
                                 }
                               : {}
