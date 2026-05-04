@@ -1029,6 +1029,30 @@ export const twoWaysPaths = [
 
 type TwoWaysIndex = 0 | 1;
 
+/** Scales the 680×560 visual to exactly fill its container width. */
+function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const update = () => setScale(Math.min(1, el.offsetWidth / 680));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div ref={wrapRef} className="w-full" style={{ height: Math.round(560 * scale) }}>
+      <div style={{ width: 680, height: 560, transformOrigin: "top left", transform: `scale(${scale})` }}>
+        <TwoWaysVisual index={index} />
+      </div>
+    </div>
+  );
+}
+
 export function TwoWaysSection() {
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -1044,345 +1068,172 @@ export function TwoWaysSection() {
 
   const selectPath = (index: TwoWaysIndex) => {
     setActiveIndex(index);
+    setIsPaused(true);
   };
 
   return (
-    <>
-      {/* -- Desktop: sticky scroll story (xl+) ---------------------------- */}
-      <section
-        id="path"
-        aria-label="Two ways to use Rahvana"
-        className="relative hidden xl:block"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onFocus={() => setIsPaused(true)}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setIsPaused(false);
-          }
-        }}
+    <section
+      id="path"
+      aria-label="Two ways to use Rahvana"
+      className="relative overflow-x-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsPaused(false); }}
+      style={{
+        background: "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+        borderTop: "1px solid #e1ebe8",
+        borderBottom: "1px solid #e1ebe8",
+      }}
+    >
+      {/* Decorative radial highlights */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-72"
+        aria-hidden="true"
         style={{
-          minHeight: "min(920px, 100svh)",
-          padding: "96px 0",
           background:
-            "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-          borderTop: "1px solid #e1ebe8",
-          borderBottom: "1px solid #e1ebe8",
+            "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
+            "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
         }}
+      />
+
+      <div
+        className="relative mx-auto px-5 sm:px-8 lg:px-10 py-14 sm:py-16 lg:py-20 xl:py-24"
+        style={{ maxWidth: 1360 }}
       >
-        {/* Decorative radial highlights */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-72"
-          aria-hidden="true"
-          style={{
-            background:
-              "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
-              "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
-          }}
-        />
+        {/* Responsive grid — stacked on mobile/tablet, side-by-side on lg+ */}
+        <div className="grid grid-cols-1 items-center gap-y-10 lg:grid-cols-[minmax(0,400px)_1fr] lg:gap-x-10 xl:grid-cols-[minmax(0,440px)_1fr] xl:gap-x-20">
 
-        <div className="overflow-hidden">
-          <div
-            className="relative mx-auto grid"
-            style={{
-              maxWidth: 1360,
-              paddingLeft: 40,
-              paddingRight: 40,
-              gridTemplateColumns: "minmax(320px, 440px) minmax(0, 1fr)",
-              columnGap: 80,
-              alignItems: "center",
-            }}
-          >
-            {/* -- Left: static anchoring content + dynamic step indicators -- */}
-            <div style={{ alignSelf: "center" }}>
-              {/* Eyebrow */}
-              <p
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "#0d7377",
-                  margin: 0,
-                }}
-              >
-                TWO WAYS TO MOVE FORWARD
-              </p>
+          {/* Left column: text + selectors + CTAs */}
+          <div>
+            <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
+              TWO WAYS TO MOVE FORWARD
+            </p>
 
-              {/* Heading */}
-              <h2
-                style={{
-                  fontSize: "clamp(44px,4.6vw,64px)",
-                  lineHeight: 0.98,
-                  fontWeight: 800,
-                  color: "#162126",
-                  marginTop: 18,
-                  marginBottom: 0,
-                  maxWidth: 440,
-                }}
-              >
-                Choose how you want to use Rahvana.
-              </h2>
+            <h2
+              className="mt-4 mb-0 font-extrabold text-[#162126]"
+              style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
+            >
+              Choose how you want to use Rahvana.
+            </h2>
 
-              {/* Support paragraph */}
-              <p
-                style={{
-                  fontSize: 17,
-                  lineHeight: 1.68,
-                  color: "#4a5c62",
-                  marginTop: 18,
-                  marginBottom: 0,
-                  maxWidth: 420,
-                }}
-              >
-                Follow the guided IR-1 roadmap, use focused tools and resources
-                independently, and choose the support style that fits what you
-                need right now.
-              </p>
+            <p
+              className="mt-4 mb-0 text-[#4a5c62]"
+              style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
+            >
+              Follow the guided IR-1 roadmap, use focused tools and resources
+              independently, and choose the support style that fits what you need
+              right now.
+            </p>
 
-              {/* Active scene label Ã¢â‚¬â€ fixed-height container prevents layout shift */}
-              <div style={{ minHeight: 88, marginTop: 24, overflow: "hidden" }}>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            {/* Active label — fixed height prevents layout shift */}
+            <div style={{ minHeight: 80, marginTop: 22, overflow: "hidden" }}>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeIndex}
+                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
+                    {twoWaysPaths[activeIndex].eyebrow}
+                  </p>
+                  <h3
+                    className="mb-0 mt-1.5 font-extrabold text-[#162126]"
+                    style={{ fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.2, maxWidth: 420 }}
                   >
-                    <p
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        letterSpacing: "0.11em",
-                        textTransform: "uppercase",
-                        color: "#0d7377",
-                        margin: 0,
-                      }}
-                    >
-                      {twoWaysPaths[activeIndex].eyebrow}
-                    </p>
-                    <h3
-                      style={{
-                        fontSize: 21,
-                        lineHeight: 1.2,
-                        fontWeight: 800,
-                        color: "#162126",
-                        maxWidth: 420,
-                        margin: "7px 0 0 0",
-                      }}
-                    >
-                      {twoWaysPaths[activeIndex].shortTitle}
-                    </h3>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Step selector Ã¢â‚¬â€ fixed height per row, no expanding content */}
-              <div
-                style={{
-                  marginTop: 20,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 7,
-                }}
-              >
-                {twoWaysPaths.map((path, i) => {
-                  const isActive = activeIndex === i;
-                  return (
-                    <button
-                      key={path.title}
-                      type="button"
-                      onClick={() => selectPath(i as TwoWaysIndex)}
-                      aria-current={isActive ? "true" : undefined}
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        padding: "12px 14px",
-                        borderRadius: 14,
-                        border: isActive
-                          ? "1.5px solid #0d7377"
-                          : "1px solid #e2ebe8",
-                        background: isActive ? "#f4fbfa" : "transparent",
-                        boxShadow: isActive
-                          ? "0 5px 18px rgba(13,115,119,0.10)"
-                          : "none",
-                        cursor: "pointer",
-                        textAlign: "left",
-                        transition:
-                          "background 0.22s, border-color 0.22s, box-shadow 0.22s",
-                        WebkitTapHighlightColor: "transparent",
-                      }}
-                    >
-                      {/* Number pill */}
-                      <span
-                        style={{
-                          flexShrink: 0,
-                          width: 24,
-                          height: 24,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 10,
-                          fontWeight: 800,
-                          background: isActive ? "#0d7377" : "transparent",
-                          color: isActive ? "white" : "#9aaeac",
-                          border: isActive ? "none" : "1.5px solid #c8d5d3",
-                          transition:
-                            "background 0.22s, color 0.22s, border-color 0.22s",
-                        }}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      {/* Label + teaser */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontSize: 15,
-                            fontWeight: 800,
-                            lineHeight: 1.25,
-                            color: isActive ? "#0d7377" : "#162126",
-                            transition: "color 0.22s",
-                          }}
-                        >
-                          {path.title}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 12,
-                            lineHeight: 1.4,
-                            color: isActive ? "#4a5c62" : "#9aaeac",
-                            marginTop: 2,
-                            transition: "color 0.22s",
-                          }}
-                        >
-                          {path.teaser}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* CTAs */}
-              <div
-                style={{
-                  marginTop: 22,
-                  display: "flex",
-                  gap: 10,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Link
-                  href={journeyHref}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 7,
-                    height: 42,
-                    paddingLeft: 18,
-                    paddingRight: 18,
-                    borderRadius: 13,
-                    background: "#0d7377",
-                    fontSize: 13.5,
-                    fontWeight: 700,
-                    color: "white",
-                    textDecoration: "none",
-                    boxShadow: "0 10px 24px rgba(13,115,119,0.22)",
-                  }}
-                >
-                  Start the Roadmap
-                  <ArrowRight style={{ width: 13, height: 13 }} />
-                </Link>
-                <Link
-                  href={toolsHref}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    height: 42,
-                    paddingLeft: 16,
-                    paddingRight: 16,
-                    borderRadius: 13,
-                    border: "1.5px solid #c8d5d3",
-                    background: "white",
-                    fontSize: 13.5,
-                    fontWeight: 700,
-                    color: "#162126",
-                    textDecoration: "none",
-                  }}
-                >
-                  Browse Resources
-                </Link>
-              </div>
+                    {twoWaysPaths[activeIndex].shortTitle}
+                  </h3>
+                </motion.div>
+              </AnimatePresence>
             </div>
 
-            {/* -- Right: support copy + visual stage */}
-            <div
-              style={{
-                alignSelf: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 22,
-              }}
-            >
-              {reduceMotion ? (
-                <>
-                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                  <TwoWaysVisual index={activeIndex} />
-                </>
-              ) : (
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
+            {/* Path selector buttons */}
+            <div className="mt-5 flex flex-col gap-1.5">
+              {twoWaysPaths.map((path, i) => {
+                const isActive = activeIndex === i;
+                return (
+                  <button
+                    key={path.title}
+                    type="button"
+                    onClick={() => selectPath(i as TwoWaysIndex)}
+                    aria-current={isActive ? "true" : undefined}
+                    className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 22,
+                      border: isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
+                      background: isActive ? "#f4fbfa" : "transparent",
+                      boxShadow: isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
+                      WebkitTapHighlightColor: "transparent",
+                      cursor: "pointer",
                     }}
-                    initial={{ opacity: 0, y: 18, scale: 0.988 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -12, scale: 0.992 }}
-                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                    <TwoWaysVisual index={activeIndex} />
-                  </motion.div>
-                </AnimatePresence>
-              )}
+                    <span
+                      className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black transition-[background,color,border-color]"
+                      style={{
+                        width: 24, height: 24,
+                        background: isActive ? "#0d7377" : "transparent",
+                        color: isActive ? "white" : "#9aaeac",
+                        border: isActive ? "none" : "1.5px solid #c8d5d3",
+                      }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className="text-[15px] font-black leading-tight transition-colors"
+                        style={{ color: isActive ? "#0d7377" : "#162126" }}
+                      >
+                        {path.title}
+                      </div>
+                      <div
+                        className="mt-0.5 text-[12px] leading-snug transition-colors"
+                        style={{ color: isActive ? "#4a5c62" : "#9aaeac" }}
+                      >
+                        {path.teaser}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* CTAs */}
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              <Link
+                href={journeyHref}
+                className="inline-flex h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13.5px] font-bold text-white no-underline"
+                style={{ boxShadow: "0 10px 24px rgba(13,115,119,0.22)" }}
+              >
+                Start the Roadmap
+                <ArrowRight className="size-3.5" />
+              </Link>
+              <Link
+                href={toolsHref}
+                className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] no-underline"
+              >
+                Browse Resources
+              </Link>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* -- Mobile / tablet (below xl) Ã¢â‚¬â€ stacked narrative cards -- */}
-      <section
-        aria-label="Two ways to use Rahvana"
-        className="block xl:hidden"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onFocus={() => setIsPaused(true)}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setIsPaused(false);
-          }
-        }}
-        style={{
-          padding: "64px 20px 72px",
-          background:
-            "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-          borderTop: "1px solid #e1ebe8",
-          borderBottom: "1px solid #e1ebe8",
-        }}
-      >
-        <TwoWaysMobile activeIndex={activeIndex} onSelect={selectPath} />
-      </section>
-    </>
+          {/* Right column: support text + responsive visual */}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeIndex}
+              className="flex min-w-0 flex-col gap-5"
+              initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.988 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -12, scale: 0.992 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+              <ResponsiveVisual index={activeIndex} />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1396,45 +1247,19 @@ export function TwoWaysSupportText({
   path: (typeof twoWaysPaths)[number];
 }) {
   return (
-    <div
-      style={{
-        width: 680,
-        maxWidth: "100%",
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          fontSize: 11,
-          lineHeight: 1.2,
-          fontWeight: 800,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color: "#0d7377",
-        }}
-      >
+    <div className="w-full">
+      <p className="m-0 text-[11px] font-black uppercase tracking-[0.08em] text-[#0d7377]">
         {path.supportEyebrow}
       </p>
       <h3
-        style={{
-          margin: "7px 0 0 0",
-          fontSize: 24,
-          lineHeight: 1.18,
-          fontWeight: 800,
-          letterSpacing: "-0.02em",
-          color: "#162126",
-        }}
+        className="mb-0 mt-1.5 font-extrabold tracking-tight text-[#162126]"
+        style={{ fontSize: "clamp(18px,1.8vw,24px)", lineHeight: 1.18 }}
       >
         {path.supportLead}
       </h3>
       <p
-        style={{
-          margin: "8px 0 0 0",
-          maxWidth: 520,
-          fontSize: 15,
-          lineHeight: 1.62,
-          color: "#4a5c62",
-        }}
+        className="mt-2 mb-0 text-[#4a5c62]"
+        style={{ fontSize: "clamp(13px,1.1vw,15px)", lineHeight: 1.62, maxWidth: 520 }}
       >
         {path.supportText}
       </p>
