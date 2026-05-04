@@ -187,6 +187,7 @@ export default function RoadmapLayoutV2({
             </button>
           )}
 
+          {/* DEV ONLY — reset button, uncomment for local testing
           <button
             onClick={async () => {
               if (
@@ -204,6 +205,7 @@ export default function RoadmapLayoutV2({
           >
             <X size={14} />
           </button>
+          */}
         </div>
       </nav>
 
