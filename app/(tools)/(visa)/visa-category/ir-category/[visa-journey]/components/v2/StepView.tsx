@@ -3305,6 +3305,10 @@ const renderDocActionModal = () => {
               state={state}
               actions={actions}
               guard={stepEntitlement.guard}
+              setDocActionModal={setDocActionModal}
+              openUploadModal={openUploadModal}
+              setActiveUploadId={setActiveUploadId}
+              setActiveUploadType={setActiveUploadType}
             />
           )}
 

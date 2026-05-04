@@ -526,11 +526,9 @@ function HomePageContent() {
                     <p className="mx-auto text-center text-[15px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
                       <span className="">
                         Rahvana gives you a structured step-by-step IR-1 roadmap
-                        from petition filing to interview readiness{" "}
-                        {/* </span>
-                      <span className="block xl:inline"> */}
-                        with guided steps, document organization, progress
-                        tracking, and focused tools when you need them.
+                        from petition filing to interview readiness with guided
+                        steps, document organization, progress tracking, and
+                        focused tools when you need them.
                       </span>
                     </p>
                   </div>
@@ -619,7 +617,7 @@ function HomePageContent() {
                 </div>
 
                 {/* Bottom CTA Section */}
-                <div className="mt-auto pt-4 z-20 flex items-center justify-between gap-6 w-full pointer-events-auto">
+                <div className="mt-auto pt-6 z-20 flex items-center justify-between gap-6 w-full pointer-events-auto">
                   <div className="w-[50%]">
                     <p className="text-left text-[17px] leading-[1.65] text-white/90 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)]">
                       Rahvana gives you a structured step-by-step IR-1 roadmap
@@ -651,7 +649,7 @@ function HomePageContent() {
                   <RealDashboardScene compact onSceneChange={setHeroScene} />
                 </div>
 
-                <div className="mx-auto w-full max-w-[640px] rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.26),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px]">
+                <div className="mx-auto w-full max-w-[640px] rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 mt-12 shadow-[0_24px_70px_rgba(15,23,42,0.26),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px]">
                   <AnimatePresence mode="wait">
                     <motion.p
                       key={heroScene}
@@ -670,11 +668,9 @@ function HomePageContent() {
                   <p className="text-base leading-7 text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] sm:text-lg">
                     <span className="block">
                       Rahvana gives you a structured step-by-step IR-1 roadmap
-                      from petition filing to interview readiness
-                    </span>
-                    <span className="block">
-                      with guided steps, document organization, progress
-                      tracking, and focused tools when you need them.
+                      from petition filing to interview readiness with guided
+                      steps, document organization, progress tracking, and
+                      focused tools when you need them.
                     </span>
                   </p>
                   <div className="flex flex-col gap-3 sm:flex-row">

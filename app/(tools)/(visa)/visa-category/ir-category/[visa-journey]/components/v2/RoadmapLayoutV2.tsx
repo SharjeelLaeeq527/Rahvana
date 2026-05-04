@@ -6,6 +6,7 @@ import { DashboardView } from "./DashboardView";
 import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { getActiveStepsForStage } from "./journeyHelpers";
 import {
   ChevronRight,
   ArrowLeft,
@@ -13,7 +14,6 @@ import {
   LayoutDashboard,
   X,
 } from "lucide-react";
-import { getActiveStepsForStage } from "./journeyHelpers";
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -101,12 +101,9 @@ export default function RoadmapLayoutV2({
       return null;
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep ?? 0];
-    const activeSteps = getActiveStepsForStage(
-      data,
-      state.currentStage ?? 0,
-      state.metadata,
-      state.filingType,
-    );
+    const activeSteps = chapter
+      ? getActiveStepsForStage(data, state.currentStage ?? 0, state.metadata, state.filingType)
+      : [];
     return step
       ? activeSteps.findIndex(
           (s: any) =>
