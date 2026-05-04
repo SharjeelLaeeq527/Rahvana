@@ -13,6 +13,10 @@ interface Respond221gToolProps {
   state: any;
   actions: any;
   guard?: () => boolean;
+  setDocActionModal?: (data: any) => void;
+  openUploadModal?: (defId: string) => void;
+  setActiveUploadId?: (id: string | null) => void;
+  setActiveUploadType?: (type: "doc" | "hh" | "financial" | null) => void;
 }
 
 export const Respond221gTool: React.FC<Respond221gToolProps> = ({
@@ -20,6 +24,10 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
   state,
   actions,
   guard,
+  setDocActionModal,
+  openUploadModal,
+  setActiveUploadId,
+  setActiveUploadType,
 }) => {
   const [submissionDate, setSubmissionDate] = useState<string>(
     state.metadata?.response221gDate || ""
@@ -153,6 +161,12 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
         onBackToForm={() => {}}
         onSaveToProfile={async () => {}}
         guard={guard}
+        setDocActionModal={setDocActionModal}
+        openUploadModal={openUploadModal}
+        setActiveUploadId={setActiveUploadId}
+        setActiveUploadType={setActiveUploadType}
+        updateMetadata={actions.updateMetadata}
+        uploadedItemIds={state.metadata?.respond221gUploaded as Record<string, boolean> | undefined}
       />
     </div>
   );

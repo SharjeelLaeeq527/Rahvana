@@ -34,6 +34,12 @@ interface ActionPlanResultsProps {
   onSaveToProfile: () => Promise<void>;
   planGeneratedAt?: number;
   guard?: () => boolean;
+  setDocActionModal?: (data: any) => void;
+  openUploadModal?: (defId: string) => void;
+  setActiveUploadId?: (id: string | null) => void;
+  setActiveUploadType?: (type: "doc" | "hh" | "financial" | null) => void;
+  updateMetadata?: (data: Record<string, any>) => void;
+  uploadedItemIds?: Record<string, boolean>;
 }
 
 /* ─── Doc item type ─────────────────────────────────────────── */
@@ -42,20 +48,11 @@ interface DocItem {
   vaultId?: string;
   label: string;
   sub: string;
-  alwaysShow?: boolean; // items like the 221g letter itself
 }
 
 /* ─── Map FormSelections → checklist items ──────────────────── */
 function buildDocItems(cl: FormSelections): DocItem[] {
   const items: DocItem[] = [];
-
-  // Always first — the letter itself (no upload needed, just reference)
-  items.push({
-    id: "221g_letter",
-    label: "221(g) Refusal Letter / Slip",
-    sub: "The original notice from the consular officer — keep your physical copy",
-    alwaysShow: true,
-  });
 
   if (cl.passport)
     items.push({
@@ -65,18 +62,10 @@ function buildDocItems(cl: FormSelections): DocItem[] {
       sub: "Submit via courier to the embassy",
     });
 
-  if (cl.medical_examination)
-    items.push({
-      id: "medical_examination",
-      vaultId: "medical-results-envelope",
-      label: "Sealed Medical Examination Envelope",
-      sub: "From panel physician — do not open the sealed envelope",
-    });
-
   if (cl.nadra_family_reg)
     items.push({
       id: "nadra_family_reg",
-      vaultId: "nadra-mrc",
+      vaultId: "misc-document",
       label: cl.nadra_family_reg_name
         ? `NADRA Family Registration Certificate — ${cl.nadra_family_reg_name}`
         : "NADRA Family Registration Certificate",
@@ -94,6 +83,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
   if (cl.nadra_birth_cert_petitioner)
     items.push({
       id: "birth_cert_pet",
+      vaultId: "misc-document",
       label: "NADRA Birth Certificate — Petitioner",
       sub: "Computerised birth certificate from NADRA",
     });
@@ -125,7 +115,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
   if (cl.nadra_divorce_cert_petitioner)
     items.push({
       id: "divorce_cert_pet",
-      vaultId: "divorce-decree-beneficiary",
+      vaultId: "misc-document",
       label: "NADRA Divorce Certificate — Petitioner",
       sub: "Computerised divorce certificate from NADRA",
     });
@@ -133,6 +123,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
   if (cl.us_divorce_decree)
     items.push({
       id: "us_divorce",
+      vaultId: "misc-document",
       label: "U.S. Divorce Decree",
       sub: "Court-issued final divorce decree",
     });
@@ -220,6 +211,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
   if (cl.dna_test)
     items.push({
       id: "dna",
+      vaultId: "misc-document",
       label: cl.dna_test_name ? `DNA Test Results — ${cl.dna_test_name}` : "DNA Test Results",
       sub: "Results from an approved DNA testing facility",
     });
@@ -227,6 +219,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
   if (cl.other)
     items.push({
       id: "other",
+      vaultId: "misc-document",
       label: cl.other_details ? `Other: ${cl.other_details}` : "Other Documents",
       sub: "As specified in your 221(g) letter",
     });
@@ -241,6 +234,12 @@ export default function ActionPlanResults({
   onBackToForm,
   onSaveToProfile,
   guard,
+  setDocActionModal,
+  openUploadModal,
+  setActiveUploadId,
+  setActiveUploadType,
+  updateMetadata,
+  uploadedItemIds,
 }: ActionPlanResultsProps) {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
@@ -248,8 +247,7 @@ export default function ActionPlanResults({
   const [currentStageIdx, setCurrentStageIdx] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const { openUploadModal, uploadedDocuments, isReloadingDocs } =
-    useDocumentVaultStore();
+  const { uploadedDocuments, isReloadingDocs } = useDocumentVaultStore();
 
   const data = useMemo(() => {
     if (!formData || !selectedItems) return null;
@@ -288,7 +286,9 @@ export default function ActionPlanResults({
   // vault counts (skip the always-show 221g letter — no vaultId)
   const uploadableItems = docItems.filter((i) => !!i.vaultId);
   const uploadedCount = uploadableItems.filter((item) =>
-    uploadedDocuments?.some((d: any) => d.documentDefId === item.vaultId)
+    item.vaultId === "misc-document"
+      ? !!(uploadedItemIds?.[item.id])
+      : !!(uploadedItemIds?.[item.id]) || uploadedDocuments?.some((d: any) => d.documentDefId === item.vaultId)
   ).length;
   const pct =
     uploadableItems.length > 0
@@ -314,9 +314,36 @@ export default function ActionPlanResults({
     }
   };
 
-  const handleUpload = (vaultId: string) => {
+  const handleDocItemClick = (item: DocItem) => {
     if (guard && !guard()) return;
-    openUploadModal(vaultId);
+    if (!item.vaultId) return;
+
+    const markUploaded = () => {
+      if (updateMetadata) {
+        updateMetadata({
+          respond221gUploaded: { ...(uploadedItemIds || {}), [item.id]: true },
+        });
+      }
+    };
+
+    if (setDocActionModal) {
+      setDocActionModal({
+        isOpen: true,
+        doc: { id: item.id, title: item.label, sub: item.sub, icon: "FileText" },
+        title: item.label,
+        subtitle: item.sub,
+        onReadGuide: undefined,
+        onUpload: () => {
+          if (setActiveUploadId) setActiveUploadId(item.id);
+          if (setActiveUploadType) setActiveUploadType("doc");
+          if (openUploadModal) openUploadModal(item.vaultId!);
+          markUploaded();
+        },
+      });
+    } else {
+      if (openUploadModal) openUploadModal(item.vaultId!);
+      markUploaded();
+    }
   };
 
   const handleDownloadAll = async () => {
@@ -592,23 +619,28 @@ export default function ActionPlanResults({
           {/* Document rows */}
           <div className="flex flex-col gap-1.5 mb-4">
             {docItems.map((item, i) => {
-              const isUploaded = !!(
-                item.vaultId &&
-                uploadedDocuments?.some(
-                  (d: any) => d.documentDefId === item.vaultId
-                )
-              );
+              // misc-document is shared — rely only on per-item metadata tracking
+              // specific vault IDs — use vault check as source of truth
+              const isUploaded = item.vaultId === "misc-document"
+                ? !!(uploadedItemIds?.[item.id])
+                : !!(uploadedItemIds?.[item.id]) || !!(
+                    item.vaultId &&
+                    uploadedDocuments?.some((d: any) => d.documentDefId === item.vaultId)
+                  );
               const canUpload = !!item.vaultId;
 
               return (
                 <div
                   key={item.id}
+                  onClick={() => canUpload && handleDocItemClick(item)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl border-[1.5px] transition-all ${
+                    canUpload ? "cursor-pointer" : "cursor-default"
+                  } ${
                     isUploaded
-                      ? "bg-[#e8f5ef] border-[#a8d9be]"
-                      : item.alwaysShow
-                      ? "bg-[#fef8e8] border-[#f0d98a]"
-                      : "bg-white border-[#e8f1fb] hover:border-primary/20"
+                      ? "bg-[#e8f5ef] border-[#a8d9be] hover:border-[#7ec8a4]"
+                      : canUpload
+                      ? "bg-white border-[#e8f1fb] hover:border-primary hover:shadow-[0_4px_12px_rgba(47,111,212,0.08)] hover:-translate-y-[1px]"
+                      : "bg-white border-[#e8f1fb]"
                   }`}
                 >
                   {/* Number badge */}
@@ -616,8 +648,6 @@ export default function ActionPlanResults({
                     className={`w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold shrink-0 ${
                       isUploaded
                         ? "bg-[#15744f] text-white"
-                        : item.alwaysShow
-                        ? "bg-[#f0d98a] text-[#8a6200]"
                         : "bg-[#f1f5f9] border border-[#d0e4f7] text-primary"
                     }`}
                   >
@@ -641,32 +671,18 @@ export default function ActionPlanResults({
                   {/* Action */}
                   {isReloadingDocs ? (
                     <RefreshCw size={12} className="animate-spin text-[#6b8097] shrink-0" />
-                  ) : item.alwaysShow ? (
-                    <span className="shrink-0 text-[10px] font-semibold text-[#8a6200] bg-[#fef8e8] px-2 py-0.5 rounded-full border border-[#f0d98a]">
-                      Keep original
-                    </span>
                   ) : isUploaded ? (
-                    <div className="shrink-0 flex items-center gap-2">
+                    <div className="shrink-0 flex items-center gap-1.5">
                       <span className="text-[10px] font-bold text-[#15744f] uppercase tracking-wider">
                         Saved ✓
                       </span>
-                      {canUpload && (
-                        <button
-                          onClick={() => handleUpload(item.vaultId!)}
-                          className="text-[11px] font-bold text-primary hover:underline"
-                        >
-                          Replace
-                        </button>
-                      )}
+                      <ChevronRight size={13} className="text-[#15744f] opacity-50" strokeWidth={2.5} />
                     </div>
                   ) : canUpload ? (
-                    <button
-                      onClick={() => handleUpload(item.vaultId!)}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-[11px] font-bold rounded-lg hover:bg-primary/90 transition-all active:scale-95 shadow-sm"
-                    >
-                      <Upload size={11} strokeWidth={2.5} />
-                      Save to Vault
-                    </button>
+                    <div className="shrink-0 flex items-center gap-1">
+                      <Upload size={12} className="text-primary opacity-60" strokeWidth={2} />
+                      <ChevronRight size={13} className="text-[#6b8097] opacity-40" strokeWidth={2.5} />
+                    </div>
                   ) : (
                     <span className="shrink-0 text-[10px] font-semibold text-[#6b8097] bg-[#f4f7fb] px-2 py-0.5 rounded-full border border-[#d0e4f7]">
                       Manual
