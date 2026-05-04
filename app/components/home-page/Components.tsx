@@ -529,7 +529,7 @@ export function HeroDashboardPanel({
           </div>
         </section>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="flex flex-col gap-3 2xl:grid 2xl:grid-cols-3">
           {chapters.map((chapter, index) => (
             <motion.div
               key={chapter.name}
