@@ -166,14 +166,20 @@ export const formFields: Field[] = [
 
   // Full Name
   {
-    key: "family_name",
-    pdfKey: "family_name",
-    label: "What is your last name?",
-    type: "text",
+    key: "full_name_group",
+    pdfKey: "N/A",
+    label: "What is your full name?",
+    type: "hidden",
     section: "Information About You (Petitioner)",
-    placeholder: "Last Name",
-    maxLength: 35,
     subQuestions: [
+      {
+        key: "family_name",
+        pdfKey: "family_name",
+        label: "What is your last name?",
+        type: "text",
+        placeholder: "Last Name",
+        maxLength: 35,
+      },
       {
         key: "given_name",
         pdfKey: "given_name",
