@@ -309,6 +309,7 @@ export async function POST(request: NextRequest) {
       version,
       expirationDate,
       isExpired: false,
+      isRead: false,
       status: 'UPLOADED',
       notes,
     };

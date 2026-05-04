@@ -701,6 +701,4 @@ export default function PricingSection() {
       <PricingContent />
     </Suspense>
   );
-}   </Suspense>
-  );
 }

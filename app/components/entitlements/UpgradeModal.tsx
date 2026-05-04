@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Check, Crown, Zap, ShoppingCart } from "lucide-react";
+import { X, Check, Crown, Zap, ShoppingCart, Loader2 } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { useAuth } from "@/app/context/AuthContext";
 import {
   getEntitlement,
   TIER_NAMES,
@@ -120,6 +121,47 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
 
   const defaultTier: PlanTier = fullUpgradeTiers[0] ?? upgradeTiers[0] ?? "basic";
   const [selectedTier, setSelectedTier] = useState<PlanTier>(defaultTier);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { user } = useAuth();
+
+  const handleCheckout = async (action: "upgrade" | "addon", target: string) => {
+    if (onConfirm) {
+      onConfirm(action, target as PlanTier);
+      onClose();
+      return;
+    }
+
+    if (!user) return;
+    setIsProcessing(true);
+
+    try {
+      const isUpgrade = action === "upgrade" && currentTier !== "free";
+      
+      const payload = {
+        userId: user.id,
+        isUpgrade,
+        currentTier: currentTier !== "free" ? currentTier : undefined,
+        productTier: action === "upgrade" ? target : (currentTier !== "free" ? currentTier : "basic"),
+        addons: action === "addon" ? [target] : undefined,
+      };
+
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setIsProcessing(false);
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setIsProcessing(false);
+    }
+  };
 
   if (upgradeTiers.length === 0) {
     onClose();
@@ -215,11 +257,12 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                 One-time purchase · No subscription required
               </p>
               <button
-                onClick={() => { onConfirm?.("addon", addon.id); onClose(); }}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                disabled={isProcessing}
+                onClick={() => handleCheckout("addon", addon.id)}
+                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-70 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
-                <ShoppingCart size={14} strokeWidth={2.5} />
-                Buy {addon.name} · ${addon.price}
+                {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <ShoppingCart size={14} strokeWidth={2.5} />}
+                {isProcessing ? "Processing..." : `Buy ${addon.name} · $${addon.price}`}
               </button>
             </div>
 
@@ -283,11 +326,12 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                 </ul>
 
                 <button
-                  onClick={() => { onConfirm?.("upgrade", selectedTier); onClose(); }}
-                  className={`w-full py-2.5 rounded-xl text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}>
-                  <Zap size={14} strokeWidth={2.5} />
-                  Upgrade to {TIER_NAMES[selectedTier]}
-                  {planPrice && (
+                  disabled={isProcessing}
+                  onClick={() => handleCheckout("upgrade", selectedTier)}
+                  className={`w-full py-2.5 rounded-xl text-white text-[13px] disabled:opacity-70 font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}>
+                  {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} strokeWidth={2.5} />}
+                  {isProcessing ? "Processing..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
+                  {!isProcessing && planPrice && (
                     <span className="font-normal text-white/80">· ${planPrice.monthly}/mo</span>
                   )}
                 </button>
@@ -402,11 +446,12 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
 
           {/* Upgrade CTA */}
           <button
-            onClick={() => { onConfirm?.("upgrade", selectedTier); onClose(); }}
-            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90 ${style.button}`}
+            disabled={isProcessing}
+            onClick={() => handleCheckout("upgrade", selectedTier)}
+            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold disabled:opacity-70 transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90 ${style.button}`}
           >
-            <Crown size={14} strokeWidth={2.5} />
-            Upgrade to {TIER_NAMES[selectedTier]}
+            {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Crown size={14} strokeWidth={2.5} />}
+            {isProcessing ? "Processing..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
           </button>
 
           {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}

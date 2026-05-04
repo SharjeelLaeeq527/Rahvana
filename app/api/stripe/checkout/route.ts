@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productTier, userId, consultationId, addons, visaCategory } = body;
+    const { productTier, userId, consultationId, addons, visaCategory, isUpgrade, currentTier } = body;
 
     // Validate required fields
     if (!userId) {
@@ -31,6 +31,12 @@ export async function POST(request: NextRequest) {
     }
 
     const userEmail = userData.user.email!;
+
+    // Fetch profile for default visa category and old subscription ID
+    const { data: profile } = await supabase.from('user_profiles').select('metadata').eq('id', userId).single();
+    const dbVisaCategory = profile?.metadata?.plan_visa_category || profile?.metadata?.visa_category;
+    const effectiveVisaCategory = visaCategory || dbVisaCategory || 'IR-1 / CR-1';
+    const oldSubscriptionId = profile?.metadata?.stripe_subscription_id;
 
     // Get or create Stripe customer
     let stripeCustomerId: string | undefined;
@@ -79,26 +85,44 @@ export async function POST(request: NextRequest) {
       sessionParams.mode = 'subscription';
 
       // Check visa category for custom annual price (e.g. CR-2 has lower price)
-      let annualPrice = product.price;
-      if (visaCategory) {
-        const category = VISA_CATEGORIES.find(v => v.id === visaCategory);
+      let targetAnnualPrice: number = product.price;
+      let currentAnnualPrice = 0;
+
+      if (effectiveVisaCategory) {
+        const category = VISA_CATEGORIES.find(v => v.id === effectiveVisaCategory);
         if (category) {
           const plan = category.plans.find(p => p.id === tierLower);
-          if (plan) annualPrice = plan.price;
+          if (plan) targetAnnualPrice = plan.price;
+          
+          if (isUpgrade && currentTier) {
+            const cPlan = category.plans.find(p => p.id === currentTier);
+            if (cPlan) currentAnnualPrice = cPlan.price;
+          }
         }
+      } else if (isUpgrade && currentTier) {
+        let currentProduct: any = null;
+        if (currentTier === 'basic') currentProduct = PRODUCTS.BASIC;
+        if (currentTier === 'premium') currentProduct = PRODUCTS.PREMIUM;
+        if (currentTier === 'executive') currentProduct = PRODUCTS.EXECUTIVE;
+        if (currentProduct) currentAnnualPrice = currentProduct.price;
+      }
+
+      let effectiveAnnualPrice = targetAnnualPrice;
+      if (isUpgrade && currentTier && targetAnnualPrice > currentAnnualPrice) {
+        effectiveAnnualPrice = targetAnnualPrice - currentAnnualPrice;
       }
 
       // FIX 1: Use exact monthlyPrice from PRODUCTS, or divide custom annual price by 12
       const monthlyPrice =
-        annualPrice === product.price
+        effectiveAnnualPrice === product.price
           ? product.monthlyPrice  // $29.08, $58.25, $91.58
-          : Math.round((annualPrice / 12) * 100) / 100;
+          : Math.round((effectiveAnnualPrice / 12) * 100) / 100;
 
       // Add main plan — use saved recurringPriceId if price matches default
       const useRecurringId =
         product.recurringPriceId &&
         product.recurringPriceId.length >= 10 &&
-        annualPrice === product.price; // only use saved ID if price is default
+        effectiveAnnualPrice === product.price; // only use saved ID if price is default
 
       if (useRecurringId) {
         sessionParams.line_items!.push({
@@ -128,8 +152,10 @@ export async function POST(request: NextRequest) {
         stripe_customer_id: stripeCustomerId!,
         product_type: 'journey_plan',
         product_id: productTier,
-        product_name: product.name,
-        visa_category: visaCategory || 'IR-1 / CR-1',
+        product_name: product.name + (isUpgrade ? ' (Upgrade)' : ''),
+        visa_category: effectiveVisaCategory,
+        is_upgrade: isUpgrade ? 'true' : 'false',
+        old_subscription_id: isUpgrade ? (oldSubscriptionId || '') : '',
       };
 
       // Add-ons — one-time items alongside subscription
