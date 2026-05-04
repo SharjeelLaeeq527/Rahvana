@@ -109,6 +109,7 @@ export interface DocumentDefinition {
     scenarioFlags?: Partial<ScenarioFlags>;
   };
   hideUntilUploaded?: boolean;
+  translationOf?: string; // ID of the original document this is a translation for
 }
 
 export interface DocumentWizardStep {

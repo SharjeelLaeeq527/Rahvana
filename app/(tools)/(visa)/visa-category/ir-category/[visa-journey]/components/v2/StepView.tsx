@@ -4120,7 +4120,6 @@ const renderDocActionModal = () => {
                                       "Translated NADRA MRC",
                                       "Translated Birth Certificate",
                                       "Translated Divorce Decree",
-                                      "Other Translated Civil Documents",
                                     ],
                                   });
                                 } else {
@@ -5402,7 +5401,59 @@ const renderDocActionModal = () => {
                                               const defId = mapDocumentNameToId(doc.name);
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
-                                              openUploadModal(defId);
+
+                                              if (!stepEntitlement.guard())
+                                                return;
+
+                                              if (
+                                                doc.id === "doc_citizenship"
+                                              ) {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "U.S. passport",
+                                                    "U.S. birth certificate",
+                                                    "Certificate of Naturalization (Form N-550)",
+                                                    "Certificate of Citizenship (Form N-560)",
+                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                                  ],
+                                                });
+                                              } else if (
+                                                doc.id === "doc_relationship"
+                                              ) {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Communication history",
+                                                    "Photos together",
+                                                    "Travel history",
+                                                    "Shared finances",
+                                                    "Shared residence",
+                                                    "Family evidence",
+                                                    "Affidavits",
+                                                  ],
+                                                });
+                                              } else if (
+                                                doc.id === "doc_translations"
+                                              ) {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Translated Nikah Nama",
+                                                    "Translated NADRA MRC",
+                                                    "Translated Birth Certificate",
+                                                    "Translated Divorce Decree",
+                                                  ],
+                                                });
+                                              } else {
+                                                openUploadModal(defId);
+                                              }
                                             },
                                           });
                                         }}
