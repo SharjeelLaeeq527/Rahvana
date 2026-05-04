@@ -560,31 +560,31 @@ mb-4
                 </div>
                 {/* Plan badge — shown only for locked steps */}
                 {isStepLocked && (
-                  <div
-                    className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-bold border transition-all ${
-                      lockStatus.requiredPlan === "basic"
-                        ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
-                        : lockStatus.requiredPlan === "premium"
-                          ? "bg-violet-50 text-violet-700 border-violet-200 shadow-sm"
-                          : "bg-amber-50 text-amber-700 border-amber-200 shadow-sm"
-                    }`}
-                  >
-                    {lockStatus.requiredPlan === "basic" ? (
-                      <>
-                        <Star size={12} strokeWidth={2.5} />
-                        <span>Basic</span>
-                      </>
-                    ) : lockStatus.requiredPlan === "premium" ? (
-                      <>
-                        <Sparkles size={12} strokeWidth={2.5} />
-                        <span>Premium</span>
-                      </>
-                    ) : (
-                      <>
-                        <Crown size={12} strokeWidth={2.5} />
-                        <span>Executive</span>
-                      </>
-                    )}
+  <div
+    className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all ${
+      lockStatus.requiredPlan === "basic"
+        ? "bg-[#e8f4f4] text-[#2d7a7a] border-[#a8d4d4] shadow-sm"        
+        : lockStatus.requiredPlan === "premium"
+          ? "bg-[#f0f0f0] text-[#5a5a6e] border-[#c0c0cc] shadow-sm"     
+          : "bg-[#fdf6e3] text-[#9a6f00] border-[#e8c96a] shadow-sm"      
+    }`}
+  >
+    {lockStatus.requiredPlan === "basic" ? (
+      <>
+        <span className="plan-icon plan-icon--basic" />
+        <span>Basic</span>
+      </>
+    ) : lockStatus.requiredPlan === "premium" ? (
+      <>
+        <span className="plan-icon plan-icon--premium" />
+        <span>Premium</span>
+      </>
+    ) : (
+      <>
+        <span className="plan-icon plan-icon--executive" />
+        <span>Executive</span>
+      </>
+    )}
                   </div>
                 )}
                 <ChevronRight

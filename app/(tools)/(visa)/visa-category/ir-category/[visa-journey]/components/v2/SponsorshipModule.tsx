@@ -19,7 +19,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
   return (
     <div className="w-full">
       {/* Launch Module */}
-      <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+      <div className="relative bg-[#1a0a18] border border-[#520a50]/30 rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#3b7dd8] to-[#3b7dd8]/70 opacity-70" />
         <div className="p-[32px_34px_28px]">
           <div className="flex items-start gap-[16px] mb-[22px]">
@@ -47,7 +47,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                 key={i}
                 className="bg-white/5 border border-white/10 rounded-[10px] px-[13px] py-[11px] flex items-start gap-[9px]"
               >
-                <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                <div className="w-[5px] h-[5px] rounded-full bg-[rgb(156, 103, 125)] shrink-0 mt-[5px]" />
                 <div className="text-[13px] text-white/55 leading-[1.4]">
                   {feat}
                 </div>
@@ -56,7 +56,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
           </div>
           <button
             onClick={onOpenCalc}
-            className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#b48ad6] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#561864] hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+            className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#520a50] pointer-events-none text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all bg-[#520a50] text-white shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[#3a073a] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)]"
           >
             {tool.launch_module.buttonText || "Start Sponsorship Calculator"}
           </button>

@@ -113,7 +113,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
           approvalDoc && !isBasic
             ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] hover:border-[#15744f]"
             : isBasic
-              ? "bg-[#fbeaec] border-[rgba(192,89,106,0.4)] text-[#c0596a]"
+              ? "bg-[#fbeaec] border-[rgba(130,132,191,0.4)] text-[#8284bf]"
               : "bg-white border-[#d0e4f7] text-[#0c1b33] hover:border-[#2f6fd4] hover:text-[#2f6fd4]"
         }`}
       >
@@ -131,7 +131,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
             : "Upload approval notice"}
         {isBasic && (
           <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: "rgba(192,89,106,0.15)", color: "#c0596a" }}>
+            style={{ background: "rgba(130,132,191,0.15)", color: "#8284bf" }}>
             Premium
           </span>
         )}
@@ -140,12 +140,12 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
   );
  const UploadLockedNote = () => (
     <div className="mt-2 flex items-start gap-2 rounded-xl p-3"
-      style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)" }}>
-      <Crown size={14} className="shrink-0 mt-0.5" style={{ color: "#c0596a" }} />
+      style={{ background: "#fbeaec", border: "1px solid rgba(130,132,191,0.3)" }}>
+      <Crown size={14} className="shrink-0 mt-0.5" style={{ color: "#8284bf" }} />
       <p className="text-[12px] leading-[1.6]" style={{ color: "#5a3040" }}>
         Uploading your approval notice automatically saves it to the document vault and extracts key information — approval date, receipt number, and more. This feature is available on <strong>Premium and above</strong>.{" "}
         <button onClick={() => setUpgradeModalFeature("approval_notice_upload")}
-          className="underline font-bold" style={{ color: "#c0596a" }}>
+          className="underline font-bold" style={{ color: "#8284bf" }}>
           Upgrade to unlock
         </button>
       </p>
@@ -156,7 +156,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
     <div className={`flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[#1c2b3a] min-h-screen`}>
  
       {/* LAUNCH MODULE */}
-      <section className="bg-[#28151c] rounded-[16px] border border-white/10 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden relative">
+      <section className="bg-[#251f32] rounded-[16px] border border-white/10 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden relative">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#4b85e7] via-[#82b8ff] to-transparent opacity-80" />
         <div className="p-[30px_32px_28px]">
           <div className="flex flex-col sm:flex-row justify-between gap-4 items-start mb-[18px]">
@@ -168,7 +168,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                 </svg>
               </div>
               <div>
-                <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-[#c0596a] mb-[4px]">
+                <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-[#8284bf] mb-[4px]">
                   {data.launchModule.eyebrow}
                 </div>
                 <h2 className="text-[clamp(22px,3vw,27px)] leading-[1.18] text-white/95 mb-[7px]">
@@ -179,7 +179,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                 </p>
               </div>
             </div>
-            <div className="px-3 py-2 rounded-full bg-[#a8d9be1f] border border-[#a8d9be4d] text-[#c0596a] text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
+            <div className="px-3 py-2 rounded-full bg-[#a8d9be1f] border border-[#a8d9be4d] text-[#8284bf] text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
               {data.launchModule.badge}
             </div>
           </div>
@@ -196,7 +196,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
             <button
               onClick={handleReceivedBtn}
-              className="flex items-center justify-center gap-[10px] p-[15px_18px] rounded-[12px] text-[14px] font-semibold bg-[#c0596a] hover:bg-[rgb(243,110,134)] hover:text-[#fff] shadow-[0_4px_20px_rgba(47,111,212,0.35)] transition-all hover:-translate-y-[1px]"
+              className="flex items-center justify-center gap-[10px] p-[15px_18px] rounded-[12px] text-[14px] font-semibold bg-[#8284bf] hover:bg-[#6d5fb0] hover:text-[#fff] shadow-[0_4px_20px_rgba(47,111,212,0.35)] transition-all hover:-translate-y-[1px]"
             >
               <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] stroke-white fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round">
                 <polyline points="20 6 9 17 4 12" />

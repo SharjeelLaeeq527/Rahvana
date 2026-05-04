@@ -31,6 +31,8 @@ import {
   DocumentDefinition,
 } from "@/lib/document-vault/types";
 import { useAuth } from "@/app/context/AuthContext";
+import { PlanTier } from "@/lib/entitlements/config";
+import { usePlan } from "@/app/context/PlanContext";
 
 interface ActionStepRendererProps {
   step: RoadmapStep;
@@ -140,6 +142,82 @@ const getTrackingStatusDisplay = (status: any) => {
   // ✅ STEP 2: fallback safely
   return statusMap[normalized] ?? statusMap.unknown;
 };
+ function PlanTierBadge({ tier }: { tier: PlanTier | null }) {
+  if (!tier || tier === "free") return null;
+ 
+  const styles: Record<
+    string,
+    { wrapper: string; iconClass: string; label: string }
+  > = {
+    basic: {
+      wrapper:
+        "border-[#a8d4d4] bg-[#e8f4f4] shadow-sm",
+      iconClass: "plan-icon plan-icon--basic",
+      label: "Basic",
+    },
+    premium: {
+      wrapper:
+        "border-[#c0c0cc] bg-[#f0f0f0] shadow-sm",
+      iconClass: "plan-icon plan-icon--premium",
+      label: "Premium",
+    },
+    executive: {
+      wrapper:
+        "border-[#e8c96a] bg-[#fdf6e3] shadow-sm",
+      iconClass: "plan-icon plan-icon--executive",
+      label: "Executive",
+    },
+  };
+ 
+  const s = styles[tier];
+  if (!s) return null;
+ 
+  return (
+    <span
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-full border ${s.wrapper}`}
+    >
+      <span className={s.iconClass} />
+    </span>
+  );
+}
+function useRequiredTier(featureKey: string | null): PlanTier | null {
+  const plan = usePlan();
+ 
+  if (!featureKey) return null;
+ 
+  // Walk tiers from lowest to highest; return the first tier that can use the feature
+  const tiers: PlanTier[] = ["free", "basic", "premium", "executive"];
+  for (const t of tiers) {
+   
+    break;
+  }
+ 
+  const executiveFeatures = [
+    "polio_certificate",
+    "action_221g",
+    "pcc_filing",
+    "mock_interview",
+    "expert_doc_review_executive",
+  ];
+  const premiumFeatures = [
+    "step_guides",
+    "document_vault",
+    "expert_consultation",
+    "medical_booking",
+    "document_translation",
+    "expert_doc_review",
+    "checklist_tracking",
+  ];
+  const basicFeatures = ["checklist_engine", "roadmap_access"];
+ 
+  if (executiveFeatures.includes(featureKey)) return "executive";
+  if (premiumFeatures.includes(featureKey)) return "premium";
+  if (basicFeatures.includes(featureKey)) return "basic";
+ 
+  // Fallback: if the feature is currently locked for the user, show their
+  // required next tier; otherwise null (no badge needed).
+  return plan.isLocked(featureKey) ? "premium" : null;
+}
 
 export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   step,
@@ -181,8 +259,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
   const stepEntitlement = useStepEntitlement(step.step_key);
   // Executive-only (crown) logic
-  const isCrown = stepEntitlement.featureKey === "polio_certificate" || stepEntitlement.featureKey === "action_221g";
-
+  // const isCrown = stepEntitlement.featureKey === "polio_certificate" || stepEntitlement.featureKey === "action_221g";
+ const requiredTier = useRequiredTier(stepEntitlement.featureKey);
+  // Only show the badge when the step is actually locked for this user
+  const showTierBadge = stepEntitlement.isLocked && requiredTier !== null;
+ 
   // Responsive: track viewport width for conditional inline styles
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -649,7 +730,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
  
         /* ── Hero Section ── */
         .asr-hero {
-          background: linear-gradient(180deg, #28151c 0%, #28151c 100%);
+          background: linear-gradient(180deg, #251f32 0%, #251f32 100%);
           color: #fff;
           border-radius: clamp(16px, 3vw, 24px);
           padding: clamp(14px, 3.5vw, 28px);
@@ -1493,10 +1574,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 position: "relative",
               }}
             >
-              {/* Crown icon for Executive-only guide */}
-              {isCrown && (
-                <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
-                  <Crown size={20} color="#a06000" />
+              {/* Tier badge — top-right, only when step is locked */}
+              {showTierBadge && (
+                <div style={{ position: "absolute", top: 10, right: 12, zIndex: 2 }}>
+                  <PlanTierBadge tier={requiredTier} />
                 </div>
               )}
               <h3
@@ -1566,10 +1647,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   position: "relative",
                 }}
               >
-                {/* Crown icon for Executive-only upload/payment */}
-                {isCrown && (
-                  <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
-                    <Crown size={20} color="#a06000" />
+                {showTierBadge && (
+                  <div style={{ position: "absolute", top: 10, right: 12, zIndex: 2 }}>
+                    <PlanTierBadge tier={requiredTier} />
                   </div>
                 )}
                 <h3
@@ -1641,10 +1721,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   position: "relative",
                 }}
               >
-                {/* Crown icon for Executive-only tracking */}
-                {isCrown && (
-                  <div style={{ position: "absolute", top: 8, right: 10, zIndex: 2 }}>
-                    <Crown size={20} color="#a06000" />
+                {showTierBadge && (
+                  <div style={{ position: "absolute", top: 10, right: 12, zIndex: 2 }}>
+                    <PlanTierBadge tier={requiredTier} />
                   </div>
                 )}
                                 <CheckCircle size={18} style={{ flexShrink: 0 }} />

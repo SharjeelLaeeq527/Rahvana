@@ -48,24 +48,24 @@ interface UpgradeNudgeProps {
 const UpgradeNudge: React.FC<UpgradeNudgeProps> = ({ title, description, onUpgrade, onDismiss }) => (
   <div
     className="rounded-2xl p-4 mb-4 animate-in fade-in slide-in-from-top-2 duration-200"
-    style={{ background: "#f0f1fb", border: "1.5px solid rgba(130,132,191,0.3)" }}
+            style={{ background: "#f0f1fb", border: "1.5px solid rgba(130,132,191,0.3)" }}
   >
     <div className="flex items-start gap-3">
       <div
         className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-        style={{ background: "#c0596a" }}
+        style={{ background: "#8284bf" }}
       >
         <Crown className="w-4 h-4 text-white" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-[14px] font-bold mb-1" style={{ color: "#8284bf" }}>{title}</div>
-        <div className="text-[13px] leading-[1.6]" style={{ color: "#5a3040" }}>{description}</div>
+        <div className="text-[13px] leading-[1.6]" style={{ color: "#4a2f55" }}>{description}</div>
         <div className="flex gap-2 mt-3 flex-wrap">
           <button
             onClick={onUpgrade}
             className="px-4 py-1.5 rounded-full text-[13px] font-bold text-white transition-colors"
             style={{ background: "#8284bf" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#a13e4e")}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#6d5fb0")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "#8284bf")}
           >
             Upgrade Plan
@@ -131,7 +131,7 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
             </div>
           ))}
         </div>
-        <div className="h-px mb-5" style={{ background: "#c0596a33" }} />
+        <div className="h-px mb-5" style={{ background: "#8284bf33" }} />
         <div className="flex flex-col gap-2">
           {items.map((item, i) => (
             <div key={i} className="flex gap-3 items-start rounded-xl p-3" style={{ background: "#f0f1fb", border: "1px solid #c6c8ea" }}>
@@ -246,7 +246,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
   const [error,   setError]   = useState("");
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields((f) => ({ ...f, [k]: e.target.value }));
-  const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
+  const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#8284bf");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
 
   async function handleSubmit() {
@@ -264,7 +264,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
   }
 
   return (
-    <div className="rounded-2xl p-8 md:p-10 mb-6" style={{ background: "#fff", border: "1.5px solid rgba(192,89,106,0.4)" }}>
+    <div className="rounded-2xl p-8 md:p-10 mb-6" style={{ background: "#fff", border: "1.5px solid rgba(130,132,191,0.4)" }}>
       <div className="text-[22px] mb-2 font-semibold" style={{ color: "#28151c" }}>
         {isUpdate ? "Update receipt details" : "Register the receipt notice"}
       </div>
@@ -307,7 +307,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
             onChange={set("caseLabel")} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
       </div>
-      <div className="rounded-lg p-3 text-[13px] mb-5" style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)", color: "#28151c" }}>
+      <div className="rounded-lg p-3 text-[13px] mb-5" style={{ background: "#f0f1fb", border: "1px solid rgba(130,132,191,0.3)", color: "#28151c" }}>
         Always confirm the receipt number before saving — it is the primary key used for case tracking.
       </div>
 
@@ -323,15 +323,15 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
 
       <div className="flex gap-2">
         <button className="px-5 py-2 rounded-full text-[14px] font-semibold"
-          style={{ background: "#fff", border: "1.5px solid #c0596a", color: "#c0596a" }}
+          style={{ background: "#fff", border: "1.5px solid #8284bf", color: "#8284bf" }}
           onClick={onBack} disabled={loading}>Back</button>
         <button
           className="px-5 py-2 rounded-full text-[14px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-          style={{ background: "#c0596a" }}
+          style={{ background: "#8284bf" }}
           onClick={handleSubmit}
           disabled={loading}
-          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#a13e4e")}
-          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#c0596a")}
+          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#6d5fb0")}
+          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#8284bf")}
         >
           {trackingLocked && !isUpdate && <Lock className="w-3.5 h-3.5" />}
           {loading ? "Saving…" : isUpdate ? "Save Changes" : trackingLocked ? "Save Receipt (Tracking Locked)" : "Save Receipt & Enable Tracking"}
@@ -365,7 +365,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
   const [error,   setError]   = useState("");
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields((f) => ({ ...f, [k]: e.target.value }));
-  const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#c0596a");
+  const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#8284bf");
   const blurBorder  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = "#d0e4f7");
 
   async function handleSubmit() {
@@ -399,7 +399,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
   }
 
   return (
-    <div className="rounded-2xl p-8 md:p-10 mb-6" style={{ background: "#fff", border: "1.5px solid rgba(192,89,106,0.4)" }}>
+    <div className="rounded-2xl p-8 md:p-10 mb-6" style={{ background: "#fff", border: "1.5px solid rgba(130,132,191,0.4)" }}>
       <div className="text-[22px] mb-2 font-semibold" style={{ color: "#28151c" }}>
         {isUpdate ? "Upload a new notice file" : "Upload receipt notice"}
       </div>
@@ -420,7 +420,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
             if (e.target.files && e.target.files.length > 0) onFileVault(RECEIPT_NOTICE_DOC_ID, e.target.files);
           }} />
         <label htmlFor="receipt-upload-input" className="px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer"
-          style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.4)", color: "#c0596a" }}>
+          style={{ background: "#f0f1fb", border: "1px solid rgba(130,132,191,0.4)", color: "#8284bf" }}>
           Choose File
         </label>
         <span className="text-[13px]" style={{ color: "#6b8097" }}>
@@ -449,17 +449,17 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
             type="date" value={fields.priorityDate} onChange={set("priorityDate")} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
       </div>
-      <div className="rounded-lg p-3 text-[13px] mb-5" style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)", color: "#28151c" }}>
+      <div className="rounded-lg p-3 text-[13px] mb-5" style={{ background: "#f0f1fb", border: "1px solid rgba(130,132,191,0.3)", color: "#28151c" }}>
         Always confirm the receipt number with the user before turning on tracking.
       </div>
       <div className="flex gap-2 justify-end">
         <button className="px-5 py-2 rounded-full text-[14px] font-semibold"
-          style={{ background: "#fff", border: "1.5px solid #c0596a", color: "#c0596a" }}
+          style={{ background: "#fff", border: "1.5px solid #8284bf", color: "#8284bf" }}
           onClick={onBack} disabled={loading}>Back</button>
         <button className="px-5 py-2 rounded-full text-[14px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ background: "#c0596a" }} onClick={handleSubmit} disabled={loading}
-          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#a13e4e")}
-          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#c0596a")}>
+          style={{ background: "#8284bf" }} onClick={handleSubmit} disabled={loading}
+          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#6d5fb0")}
+          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#8284bf")}> 
           {loading ? "Saving…" : isUpdate ? "Save Changes" : "Save Receipt & Enable Tracking"}
         </button>
       </div>
@@ -580,16 +580,16 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
           </div>
 
           {/* Launch module */}
-          <div className="rounded-2xl mb-5 relative overflow-hidden w-full" style={{ background: "#28151c" }}>
+          <div className="rounded-2xl mb-5 relative overflow-hidden w-full" style={{ background: "#251f32" }}>
             <div className="absolute top-0 left-0 right-0 h-[2px]"
-              style={{ background: "linear-gradient(to right, #c0596a, #28151c, transparent)", opacity: 0.8 }} />
+              style={{ background: "linear-gradient(to right, #8284bf, #4e518c, transparent)", opacity: 0.8 }} />
             <div className="p-5 sm:p-8 md:p-[32px_34px_28px]">
               <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
-                <div className="w-[46px] h-[46px] rounded-[11px] flex items-center justify-center shrink-0" style={{ background: "#c0596a" }}>
+                <div className="w-[46px] h-[46px] rounded-[11px] flex items-center justify-center shrink-0" style={{ background: "#8284bf" }}>
                   <Globe className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#c0596a" }}>
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#8284bf" }}>
                     Post-Filing Checkpoint · Receipt Registration
                   </div>
                   <div className="text-[clamp(19px,2.8vw,23px)] leading-tight" style={{ color: "#fff" }}>
@@ -597,20 +597,20 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="h-px mb-5" style={{ background: "#c0596a33" }} />
+              <div className="h-px mb-5" style={{ background: "#8284bf33" }} />
               {tool.phases?.map((p: any, i: number) => (
                 <div key={i} className="flex gap-2 items-start rounded-[10px] px-4 py-3 mb-2"
-                  style={{ background: "rgba(192,89,106,0.18)", border: "1px solid #c0596a55" }}>
+                  style={{ background: "rgba(130,132,191,0.18)", border: "1px solid #8284bf55" }}>
                   <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap"
-                    style={{ background: "#c0596a", color: "#fff" }}>{p.badge}</span>
+                    style={{ background: "#8284bf", color: "#fff" }}>{p.badge}</span>
                   <span className="text-[13px] leading-snug" style={{ color: "rgba(255,255,255,0.75)" }}>{p.copy}</span>
                 </div>
               ))}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 mb-2">
                 {tool.launch_cues?.map((cue: string, i: number) => (
                   <div key={i} className="flex gap-3 items-center rounded-xl px-5 py-4"
-                    style={{ background: "#3a2328", border: "1.5px solid #c0596a55", minHeight: "60px" }}>
-                    <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ background: "#c0596a" }} />
+                    style={{ background: "#4e518c", border: "1.5px solid #8284bf55", minHeight: "60px" }}>
+                    <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ background: "#8284bf" }} />
                     <span className="text-[14px] font-normal leading-snug" style={{ color: "rgba(255,255,255,0.8)" }}>{cue}</span>
                   </div>
                 ))}
@@ -691,14 +691,14 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                     : "Open a short walkthrough that shows where to look and what information to bring back."}
                 </div>
                 <div className="flex items-center gap-[5px] font-semibold text-[12px] mt-[13px]"
-                  style={{ color: isBasic ? "#c0596a" : "#2f6fd4" }}>
+                  style={{ color: isBasic ? "#8284bf" : "#2f6fd4" }}>
                   {isBasic ? <><Crown size={11} />Upgrade to unlock</> : <>Open guide <ArrowRight /></>}
                 </div>
               </button>
               {isBasic && (
                 <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
-                  style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)" }}>
-                  <Lock size={11} style={{ color: "#c0596a" }} />
+                  style={{ background: "#f0f1fb", border: "1px solid rgba(130,132,191,0.3)" }}>
+                  <Lock size={11} style={{ color: "#8284bf" }} />
                 </div>
               )}
             </div>
@@ -752,8 +752,8 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                           key={tab}
                           className="px-5 py-2 text-[15px] font-semibold transition-colors duration-150 flex items-center gap-1.5"
                           style={{
-                            borderBottom: activeTab === tab ? "2px solid #c0596a" : "2px solid transparent",
-                            color: tabLocked ? "#a0aec0" : activeTab === tab ? "#c0596a" : "#6b8097",
+                            borderBottom: activeTab === tab ? "2px solid #8284bf" : "2px solid transparent",
+                            color: tabLocked ? "#a0aec0" : activeTab === tab ? "#8284bf" : "#6b8097",
                             background: "transparent",
                             cursor: tabLocked ? "pointer" : "pointer",
                           }}
@@ -766,7 +766,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                           {tab === "manual" ? "Enter Receipt Number" : "Upload Receipt Notice"}
                           {tabLocked && (
                             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                              style={{ background: "#fbeaec", color: "#c0596a" }}>
+                              style={{ background: "#f0f1fb", color: "#8284bf" }}>
                               Premium
                             </span>
                           )}
@@ -804,7 +804,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
           {/* ── Confirmation + timeline ── */}
           {savedRecord && uiState === "idle" && (
             <>
-              <div className="rounded-2xl p-4 sm:p-6 mb-2" style={{ background: "#efe0e6", border: "1.5px solid #c0596a" }}>
+              <div className="rounded-2xl p-4 sm:p-6 mb-2" style={{ background: "#f0f1fb", border: "1.5px solid #8284bf" }}>
                 <div className="text-[24px] mb-1 font-semibold" style={{ color: "#28151c" }}>
                   Receipt notice registered
                 </div>

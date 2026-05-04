@@ -75,7 +75,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
         </div>
 
         {/* Status Card (Navy) */}
-        <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[160ms]">
+        <div className="relative  bg-[#1a0a18] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[160ms]">
           {/* Top Accent Stripe */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
 
@@ -84,7 +84,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
           </div>
 
           <h2 className="text-[20px]  text-white/92 leading-tight mb-[16px] flex items-center gap-[8px]">
-            <span className="w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse-custom shrink-0" />
+            <span className="w-[7px] h-[7px] rounded-full bg-[#c56ca3] animate-pulse-custom shrink-0" />
             {data.statusCard.heading}
           </h2>
 

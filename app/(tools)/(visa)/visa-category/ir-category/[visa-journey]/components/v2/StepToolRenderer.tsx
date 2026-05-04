@@ -131,7 +131,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
         </span>
       </div>
 
-      <div className="relative bg-gradient-to-br from-[#0c1b33] to-[#1a3054] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
+      <div className="relative bg-[#1a0a18] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
           NVC — Documentary Qualification Received
@@ -294,7 +294,7 @@ export const AppointmentReceivedTool: React.FC<{
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
-      <div className="relative bg-linear-to-br from-[#0a1a2e] to-[#163258] rounded-[16px] p-[26px_28px] mb-[18px] overflow-hidden shadow-xl">
+      <div className="relative bg-[#1a0a18] rounded-[16px] p-[26px_28px] mb-[18px] overflow-hidden shadow-xl">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-amber-400 to-transparent opacity-80" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[7px]">
           {data.heroBanner.eyebrow}

@@ -38,6 +38,7 @@ import {
   useMotionValue,
   useTransform,
   animate,
+  useSpring,
 } from "framer-motion";
 import Image from "next/image";
 import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep";
@@ -2303,187 +2304,434 @@ export function IndividualToolsScene() {
   );
 }
 
+// Interactive Clock Widget Component
+function InteractiveClockWidget() {
+  const clockRef = useRef<HTMLDivElement>(null);
+  const [angle, setAngle] = useState(60);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const springAngle = useSpring(60, { stiffness: 30, damping: 15, mass: 1 });
+
+  useEffect(() => {
+    springAngle.set(angle);
+  }, [angle, springAngle]);
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!clockRef.current) return;
+    const rect = clockRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const rad = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+    let deg = (rad * 180) / Math.PI + 90;
+    if (deg < 0) deg += 360;
+
+    const fineSnap = 6;
+    deg = Math.round(deg / fineSnap) * fineSnap;
+
+    setAngle(deg);
+  };
+
+  const totalMinutes = Math.floor((angle / 360) * 12 * 60);
+  let h = Math.floor(totalMinutes / 60) || 12;
+  let m = totalMinutes % 60;
+  m = Math.round(m / 5) * 5;
+  if (m === 60) {
+    m = 0;
+    h = h === 12 ? 1 : h + 1;
+  }
+  const timeStr = `${h}:${m.toString().padStart(2, '0')}`;
+
+  const CLOCK_RADIUS = 130;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="relative flex flex-col items-center justify-center gap-8 w-full"
+    >
+      {/* Ambient Glass Glow behind clock (stronger for contrast) */}
+      <motion.div
+        animate={{ scale: [1, 1.04, 1], opacity: [0.45, 0.75, 0.45] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#0B666A]/30 blur-[48px] rounded-full pointer-events-none"
+      />
+
+      <motion.div
+        animate={{
+          y: isHovered ? -5 : 0,
+          boxShadow: isHovered
+            ? "0 36px 74px rgba(8,54,58,0.18), inset 0 2px 6px rgba(255,255,255,0.9), inset 0 -2px 6px rgba(0,0,0,0.06)"
+            : "0 20px 46px rgba(11,102,106,0.12), inset 0 2px 4px rgba(255,255,255,0.7), inset 0 -2px 4px rgba(0,0,0,0.03)"
+        }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        ref={clockRef}
+        onPointerMove={handlePointerMove}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="relative flex items-center justify-center touch-none cursor-pointer bg-white/95 backdrop-blur-sm ring-1 ring-[#0B666A]/8 rounded-full group z-10"
+        style={{ width: CLOCK_RADIUS * 2, height: CLOCK_RADIUS * 2 }}
+      >
+        {/* Shimmer sweep effect on hover */}
+        <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-[-100%] w-[50%] h-[200%] bg-gradient-to-r from-transparent via-white/50 to-transparent -rotate-45 group-hover:left-[200%] transition-all duration-1000 ease-in-out" />
+        </div>
+
+        {/* Inner depth ring */}
+        <div className="absolute inset-4 rounded-full border-[1.5px] border-white/40 shadow-[inset_0_4px_16px_rgba(0,0,0,0.04)] pointer-events-none" />
+        <div className="absolute inset-[18px] rounded-full border border-[#0B666A]/5 pointer-events-none" />
+
+        {/* Crisp Dial Markers */}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={i}
+            className={`absolute rounded-full ${
+              i % 3 === 0 ? 'w-[2.5px] h-5 bg-gradient-to-b from-[#08363a] to-[#04292b] shadow-[0_2px_6px_rgba(8,54,58,0.12)]' : 'w-[1.5px] h-3 bg-[#0B666A]/60'
+            }`}
+            style={{ transform: `rotate(${i * 30}deg) translateY(-${CLOCK_RADIUS * 0.72}px)` }}
+          />
+        ))}
+
+        {/* Hands Container */}
+        <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
+          <div
+            className="absolute w-[2px] rounded-full bg-[#08363a]/10 origin-bottom"
+            style={{ height: CLOCK_RADIUS * 0.6, bottom: '50%', transform: `rotate(180deg)` }}
+          />
+
+          <motion.div
+            className="absolute origin-bottom filter drop-shadow-[0_6px_12px_rgba(8,54,58,0.36)]"
+            style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: springAngle }}
+          >
+            <div className="w-[3px] h-full rounded-full bg-gradient-to-t from-[#08363a] to-[#0b8f92]" />
+            <div className="absolute -top-1 -left-[4px] w-2.5 h-2.5 rounded-full bg-white border-2 border-[#08363a] shadow-sm" />
+          </motion.div>
+
+          {/* Center Pin Stack */}
+          <div className="absolute w-4 h-4 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.1)] z-10 flex items-center justify-center border border-gray-100">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#0B666A]" />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Floating Time Display */}
+      <motion.div
+        animate={{ y: isHovered ? -2 : 0 }}
+        className="bg-white/95 backdrop-blur-sm border border-[#e9f3f3] px-6 py-3.5 rounded-2xl shadow-[0_12px_36px_rgba(11,102,106,0.10),inset_0_1px_0_rgba(255,255,255,1)] z-10 relative overflow-hidden group"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+        <span className="text-[28px] font-semibold text-[#072a2b] tracking-tight font-['Inter',sans-serif]">
+          {timeStr} <span className="text-sm font-medium text-[#0B666A]/60 uppercase ml-1.5 tracking-widest">EST</span>
+        </span>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function ConsultationBanner({
   onConsultationClick,
 }: {
   onConsultationClick: () => void;
 }) {
   const reduceMotion = useReducedMotion();
-  const helpItems = [
-    "Talk through your case",
-    "Get clarity on your next steps",
-    "Understand what to prepare next",
+  const helpWith = [
+    "Talk through your exact case",
+    "Clarity on the roadmap & timelines",
+    "Understand document preparation",
+    "Get expert, tailored guidance"
+  ];
+  const leaveWith = [
+    "A clear, defined next step",
+    "Better case understanding",
+    "Confidence on preparation",
+    "Actionable, strategic direction"
+  ];
+  const cardSections = [
+    {
+      label: "What we discuss",
+      title: "Case clarity",
+      description: "Practical guidance on exactly what will move your case forward.",
+      accent: "bg-[#0A2342]/10",
+      number: "01",
+      items: helpWith,
+      baseDelay: 0.6,
+    },
+    {
+      label: "What you leave with",
+      title: "A real next move",
+      description: "A clearer decision and a tight plan for the next steps.",
+      accent: "bg-[#0A2342]/8",
+      number: "02",
+      items: leaveWith,
+      baseDelay: 0.75,
+    },
   ];
 
   return (
     <section
       aria-labelledby="consultation-heading"
-      className="relative overflow-hidden px-6 py-20 sm:px-8 lg:py-[104px]"
-      style={{
-        background:
-          "radial-gradient(circle at 20% 18%, rgba(220,230,236,0.55), transparent 32%), radial-gradient(circle at 72% 25%, rgba(243,217,204,0.42), transparent 28%), radial-gradient(circle at 78% 80%, rgba(220,235,226,0.30), transparent 24%), linear-gradient(135deg, #eef1f2 0%, #f4eeeb 52%, #edf3ef 100%)",
-      }}
+      className="relative -mt-24 overflow-hidden px-6 pt-8 pb-16 sm:px-8 sm:pt-10 lg:-mt-28 lg:pt-12 lg:pb-24 bg-[#F4F7F6]"
     >
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto grid max-w-[1240px] items-center gap-12 lg:grid-cols-[0.45fr_0.55fr] lg:gap-12 xl:gap-14"
-      >
-        <div className="flex flex-col">
-          <p className="mb-5 inline-flex h-[30px] w-fit items-center rounded-full bg-[#dcf3ec]/95 px-3.5 text-[11px] font-bold uppercase tracking-[0.03em] text-[#24564c] shadow-[0_0_24px_rgba(209,255,239,0.72)]">
-            ONE-ON-ONE GUIDANCE
-          </p>
-          <h2
-            id="consultation-heading"
-            className="max-w-[460px] text-[clamp(42px,4.4vw,66px)] font-black leading-[0.96] tracking-[-0.05em] text-[#12233a]"
-          >
-            You don't have to do it alone.
-          </h2>
-          <p className="mt-5 max-w-[430px] text-[17px] leading-[1.58] text-[#2f3f4c] sm:text-lg">
-            If the roadmap feels like too much or a tool isn't enough,
-            book a consultation for one-on-one help with your case.
-          </p>
+      {/* Elevated Dynamic Jewel-Tone Background — unified with landing palette */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Large soft vignette to ground the whole section */}
+        <motion.div
+          animate={{ opacity: [0.7, 0.95, 0.7], scale: [1, 1.02, 1] }}
+          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-[-10%] rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(11,102,106,0.06) 0%, rgba(10,35,66,0.04) 35%, transparent 60%)',
+            mixBlendMode: 'overlay',
+          }}
+        />
 
-          <div className="mt-9 flex max-w-[430px] items-center gap-3">
-            <p className="shrink-0 text-xs font-extrabold uppercase tracking-[0.03em] text-[#2f3d4d]">
-              WHAT THIS CAN HELP WITH
-            </p>
-            <div className="h-px flex-1 bg-[rgba(28,39,52,0.24)]" />
+        {/* Recolored floating orbs aligned to site palette */}
+        <motion.div
+          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(6%, 9%) scale(1.08)', 'translate(0%, 0%) scale(1)'] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[12%] -left-[6%] w-[48vw] h-[48vw] rounded-full blur-[120px]"
+          style={{ background: '#0B666A', opacity: 0.085, mixBlendMode: 'screen' }}
+        />
+
+        <motion.div
+          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(-6%, -4%) scale(1.12)', 'translate(0%, 0%) scale(1)'] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+          className="absolute top-[18%] -right-[6%] w-[42vw] h-[42vw] rounded-full blur-[140px]"
+          style={{ background: '#0A2342', opacity: 0.07, mixBlendMode: 'screen' }}
+        />
+
+        <motion.div
+          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(8%, -8%) scale(1.06)', 'translate(0%, 0%) scale(1)'] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+          className="absolute -bottom-[18%] left-[18%] w-[62vw] h-[62vw] rounded-full blur-[160px]"
+          style={{ background: '#097969', opacity: 0.055, mixBlendMode: 'screen' }}
+        />
+
+        {/* Diagonal soft sheen to create a subtle 'wow' and tie tones together */}
+        <motion.div
+          animate={{ opacity: [0.0, 0.06, 0.0], rotate: [-4, 0, -4] }}
+          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(11,102,106,0.03) 45%, rgba(10,35,66,0.04) 100%)',
+            mixBlendMode: 'overlay',
+          }}
+        />
+
+        {/* Very subtle noise texture for depth */}
+        <div
+          className="absolute inset-0"
+          style={{
+            opacity: 0.028,
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
+            mixBlendMode: 'soft-light',
+          }}
+        />
+      </div>
+
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="relative mx-auto max-w-[1140px] z-10 grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-14 lg:gap-24 items-center"
+      >
+        {/* LEFT SIDE: Hero + Cards */}
+        <div className="flex flex-col gap-8">
+
+          {/* Hero Section */}
+          <div className="flex flex-col items-start">
+            {/* Badge with animated dot */}
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 mb-8 shadow-[0_4px_12px_rgba(11,102,106,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]"
+            >
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="w-1.5 h-1.5 rounded-full bg-[#0B666A]" 
+              />
+              <span className="text-[10px] uppercase tracking-[0.25em] text-[#0B666A] font-bold">One-On-One Guidance</span>
+            </motion.div>
+
+            {/* Animated Title with line-by-line reveal */}
+            <h2 
+              id="consultation-heading"
+              className="max-w-[520px] text-[clamp(42px,4.6vw,68px)] font-black leading-[0.96] tracking-[-0.05em] text-[#12233a] mb-8"
+              style={{ fontFamily: '"Cormorant Garamond", serif' }}
+            >
+              <div className="overflow-hidden pb-2">
+                <motion.div 
+                  initial={{ y: "100%" }} 
+                  whileInView={{ y: 0 }} 
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  You don't have
+                </motion.div>
+              </div>
+              <div className="overflow-hidden pb-2">
+                <motion.div 
+                  initial={{ y: "100%" }} 
+                  whileInView={{ y: 0 }} 
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  to do it{" "}
+                  <span className="relative inline-block text-[#0B666A]">
+                    alone.
+                    <svg className="absolute w-[110%] h-5 -bottom-2 -left-[5%] text-[#0B666A]/80 pointer-events-none drop-shadow-sm" viewBox="0 0 100 20" preserveAspectRatio="none">
+                      <motion.path 
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        whileInView={{ pathLength: 1, opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1.5, delay: 0.8, ease: "easeInOut" }}
+                        d="M2,15 Q30,22 50,15 T98,10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" 
+                      />
+                    </svg>
+                  </span>
+                </motion.div>
+              </div>
+            </h2>
+
+            {/* Paragraph animation */}
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-[17px] text-[#4A5D5E] leading-relaxed max-w-[460px] font-medium"
+            >
+              If the roadmap feels like too much or a tool isn't enough, book a consultation for tailored clarity on your immigration case.
+            </motion.p>
           </div>
 
-          <div className="mt-3 flex max-w-[430px] flex-col gap-2.5">
-            {helpItems.map((item) => (
+          {/* Two-card illustrated grid */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            {cardSections.map((card) => (
               <div
-                key={item}
-                className="grid min-h-[50px] grid-cols-[22px_1fr] items-center gap-3 rounded-[12px] border border-[rgba(45,59,72,0.08)] bg-white/45 px-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+                key={card.title}
+                className="relative overflow-hidden rounded-2xl border border-[#E6ECEB] bg-white p-5 sm:p-6 shadow-[0_18px_36px_rgba(15,23,42,0.12)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.18)] transition-shadow duration-300"
               >
-                <span className="flex size-[22px] items-center justify-center rounded-full bg-[#bff3d7] text-[#1d7352]">
-                  <Check className="size-3" strokeWidth={3} />
-                </span>
-                <span className="text-[15px] font-medium leading-snug text-[#1f2f3b]">
-                  {item}
-                </span>
+                <div className={`absolute left-0 top-6 bottom-6 w-1.5 rounded-r-md pointer-events-none ${card.accent}`} />
+                <div className="relative flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-[#4F5F5F] font-bold">{card.label}</p>
+                    <h3 className="mt-2 text-[20px] font-extrabold tracking-[-0.03em] text-[#0F1F2A]">{card.title}</h3>
+                    <p className="mt-2 max-w-[260px] text-[13px] leading-relaxed text-[#47585A]">{card.description}</p>
+                  </div>
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#E0EBE8] bg-white text-[11px] font-black text-[#0F1F2A] shadow-[0_6px_14px_rgba(15,23,42,0.06)]">
+                    {card.number}
+                  </div>
+                </div>
+                <div className="relative mt-4 space-y-2.5">
+                  {card.items.map((item, i) => (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.45, delay: card.baseDelay + (i * 0.06) }}
+                      key={item}
+                      className="flex items-center gap-3 rounded-xl border border-[#F0F6F5] bg-white px-3 py-3 hover:translate-y-0.5 transition-transform duration-200"
+                    >
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#E6EFEE] bg-white text-[11px] font-bold text-[#0F1F2A]">{(i + 1).toString().padStart(2, '0')}</span>
+                      <span className="text-[14px] font-medium leading-snug text-[#11202A]">{item}</span>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             ))}
-          </div>
+          </motion.div>
 
-          <button
-            type="button"
-            onClick={onConsultationClick}
-            className="mt-8 inline-flex h-[54px] w-fit items-center gap-2 rounded-[13px] bg-[linear-gradient(180deg,#0f8f8f_0%,#0b777f_100%)] px-6 text-base font-bold text-white shadow-[0_8px_18px_rgba(11,119,127,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(11,119,127,0.24)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
-          >
-            Book a Consultation
-            <ArrowRight className="size-4" />
-          </button>
-          <p className="mt-3 text-sm text-[#40505e]">
-            Designed for IR-1 and family immigration questions.
-          </p>
         </div>
 
-        <ConsultationPreviewVisual />
+        {/* RIGHT SIDE: Clock & CTA */}
+        <motion.div
+          initial={{ opacity: 0, x: 12 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col items-center justify-center w-full relative lg:pt-3"
+        >
+          {/* Subtle connecting line */}
+          <div className="absolute top-[40%] bottom-[20%] w-[1px] bg-gradient-to-b from-transparent via-[#0B666A]/20 to-transparent -z-10" />
+
+          {/* Availability Header */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, delay: 0.6 }}
+            className="flex flex-col items-center mb-10 gap-4"
+          >
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/60 backdrop-blur-md border border-[#0B666A]/20 shadow-[0_2px_12px_rgba(11,102,106,0.1),inset_0_1px_0_rgba(255,255,255,0.8)]">
+              <div className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0B666A] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0B666A]"></span>
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#2C3E3F] font-bold">Availability</span>
+            </div>
+            <p className="text-[13px] text-[#4A5D5E] font-medium text-center max-w-[240px] leading-relaxed">
+               Scheduled around your convenience. Choose what works best for you.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              {[
+                "Tue - 2:30 PM",
+                "Wed - 11:00 AM",
+                "Thu - 4:00 PM",
+              ].map((slot) => (
+                <span
+                  key={slot}
+                  className="rounded-full border border-[#d6ece8] bg-white/80 px-3 py-1 text-[11px] font-semibold text-[#224244] shadow-[0_4px_10px_rgba(11,102,106,0.06)]"
+                >
+                  {slot}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Clock Widget */}
+          <InteractiveClockWidget />
+
+          {/* CTA Button with animated arrow */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onConsultationClick}
+            className="relative overflow-hidden mt-14 w-full max-w-[280px] bg-gradient-to-r from-[#0B666A] to-[#0A4144] text-white py-4.5 px-6 rounded-xl text-[15px] font-semibold transition-all shadow-[0_14px_28px_rgba(11,102,106,0.30)] hover:shadow-[0_24px_46px_rgba(11,102,106,0.40)] flex items-center justify-center gap-2 group border border-white/10"
+          >
+            {/* Button Shine overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+            
+            <span className="relative z-10 flex items-center gap-2">
+              Book a Consultation
+              <motion.svg 
+                animate={{ x: [0, 4, 0] }} 
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </motion.svg>
+            </span>
+          </motion.button>
+        </motion.div>
 
       </motion.div>
     </section>
   );
 }
 
-export function ConsultationPreviewVisual() {
-  const topics = [
-    { label: "Case questions", icon: FolderOpen },
-    { label: "Next-step guidance", icon: Signpost },
-    { label: "Document preparation", icon: Layers },
-    { label: "Interview / process clarity", icon: Mic },
-  ];
-  const slots = ["Tue · 2:30 PM", "Wed · 11:00 AM", "Thu · 4:00 PM"];
-  const outcomes = [
-    { label: "A clearer next step", icon: Compass },
-    { label: "Better understanding of your case", icon: Lightbulb },
-    { label: "Confidence about what to prepare", icon: ThumbsUp },
-  ];
-
-  return (
-    <div className="flex items-center justify-center lg:items-center lg:justify-start lg:grid lg:gap-4 md:grid-cols-[minmax(0,1fr)_254px] md:gap-5 lg:grid-cols-[minmax(0,460px)_254px] mt-6 lg:mt-8">
-      <div className="rounded-[20px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-6 shadow-[0_16px_30px_rgba(37,41,46,0.08)] sm:p-[26px]">
-        <span className="mb-5 inline-flex h-[30px] items-center rounded-full bg-[#cfeee3] px-3.5 text-[11px] font-bold uppercase tracking-[0.03em] text-[#24564c]">
-          One-on-one guidance
-        </span>
-        <h3 className="mb-7 text-[30px] font-black leading-none tracking-[-0.035em] text-[#12233a] sm:text-[32px]">
-          IR-1 Consultation
-        </h3>
-        <div className="flex flex-col gap-3">
-          {topics.map(({ label, icon: Icon }) => (
-            <div
-              key={label}
-              className="grid min-h-[64px] grid-cols-[42px_1fr_24px] items-center gap-3 rounded-[14px] border border-[rgba(34,44,55,0.06)] bg-white/50 px-4"
-            >
-              <span className="flex size-[42px] items-center justify-center text-[#154f50]">
-                <Icon className="size-8" strokeWidth={1.8} />
-              </span>
-              <span className="text-lg font-medium leading-tight text-[#111c29]">
-                {label}
-              </span>
-              <span className="flex size-6 items-center justify-center rounded-full bg-[#4f9a71] text-white">
-                <Check className="size-3.5" strokeWidth={3} />
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-4">
-        <div className="rounded-[18px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-5 shadow-[0_16px_30px_rgba(37,41,46,0.08)]">
-          <div className="mb-4 flex items-center gap-2.5">
-            <Calendar
-              className="size-[22px] text-[#154f50]"
-              strokeWidth={1.8}
-            />
-            <h4 className="m-0 text-[17px] font-black uppercase tracking-[-0.01em] text-[#101b27]">
-              Availability
-            </h4>
-          </div>
-          <p className="mb-3 text-[13px] text-[#6b7785]">
-            Scheduled around your convenience. Choose what works best for you.
-          </p>
-          <div className="flex flex-col gap-3">
-            {slots.map((slot) => (
-              <div
-                key={slot}
-                className="flex h-[44px] items-center rounded-[999px] border border-[rgba(34,44,55,0.04)] bg-[#ebe8e1]/70 px-4 text-[15px] font-medium text-[#111827]"
-              >
-                {slot}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-[18px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-5 shadow-[0_16px_30px_rgba(37,41,46,0.08)]">
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <h4 className="m-0 text-[18px] font-black leading-tight tracking-[-0.02em] text-[#111827]">
-              What you&apos;ll leave with
-            </h4>
-            <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ width: 10, height: 10, background: "#d97706", borderRadius: 2 }} />
-            </div>
-          </div>
-          <div className="flex flex-col gap-4">
-            {outcomes.map(({ label, icon: Icon }) => (
-              <div
-                key={label}
-                className="grid grid-cols-[30px_1fr] items-start gap-3"
-              >
-                <span className="flex size-[30px] items-center justify-center text-[#154f50]">
-                  <Icon className="size-7" strokeWidth={1.8} />
-                </span>
-                <span className="text-[15px] font-medium leading-snug text-[#111827]">
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

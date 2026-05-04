@@ -62,8 +62,8 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
   return (
     <div className="flex flex-col mt-4">
       {/* Launcher Card (Large) */}
-      <div className="relative bg-[#0e1e38] rounded-[16px] border border-white/7 overflow-hidden mb-[24px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-primary/70 to-transparent opacity-70" />
+      <div className="relative bg-[#1a0a18] border border-[#520a50]/30 rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
         <div className="p-[30px_32px_26px]">
           <div className="flex items-start gap-[16px] mb-[20px]">
             <div className="w-[44px] h-[44px] rounded-[10px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
@@ -85,7 +85,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
                 key={i}
                 className="bg-white/5 border border-white/10 rounded-[10px] p-[10px_12px] flex items-start gap-[8px]"
               >
-                <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                <div className="w-[5px] h-[5px] rounded-full bg-[rgb(156, 103, 125)] shrink-0 mt-[5px]" />
                 <div className="text-[13px] text-white/55 leading-[1.4]">
                   {feat}
                 </div>
@@ -98,7 +98,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
               setSubmissionGuideIdx(0);
               setIsSubmissionGuideOpen(true);
             }}
-            className="w-full p-[15px_24px] bg-[#b48ad6] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#561864] hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(47,111,212,0.35)] flex items-center justify-center gap-[9px]"
+            className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#520a50] pointer-events-none text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all bg-[#520a50] text-white shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[#3a073a] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)]"
           >
             <span>{tool.launch_module.buttonText}</span>
             <ChevronRight size={15} />

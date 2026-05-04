@@ -161,7 +161,7 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
       {/* Launch Module with tracking buttons */}
       {tool.launch_module && (
         <div className="rounded-2xl border mb-2 relative overflow-hidden launch-module step-modal-spacing" style={{
-          backgroundColor: isChapter1 ? "#2f345d" : isChapter2 ? "#220422" : "#051738",
+          backgroundColor: isChapter1 ? "#251f32" : isChapter2 ? "#1a0a18" : "#051738",
           borderColor: launchAccentColor
         }}>
           <div className="absolute top-0 left-0 right-0 h-[2px] opacity-80" style={{
@@ -182,7 +182,7 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
                 </div>
               </div>
               {/* CHANGE 4: self-start shrink-0 prevents badge from stretching/squishing */}
-              <span className={`status-badge ml-auto self-start shrink-0 accent-rose`}>{tool.launch_module.status?.badge}</span>
+              <span className={`status-badge ml-auto self-start shrink-0 text-[#b668b8]`}>{tool.launch_module.status?.badge}</span>
             </div>
             <div className="launch-divider h-px mb-5" style={{ backgroundColor: `${launchAccentColor}33` }} />
             {/* Metrics */}

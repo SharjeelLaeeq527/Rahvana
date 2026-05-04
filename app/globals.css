@@ -1,3 +1,23 @@
+:root {
+  --icon-basic: url('/icons/Basic.png');
+  --icon-premium: url('/icons/Premium.png');
+  --icon-executive: url('/icons/Executive.png');
+}
+
+.plan-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.plan-icon--basic     { background-image: var(--icon-basic); }
+.plan-icon--premium   { background-image: var(--icon-premium); }
+.plan-icon--executive { background-image: var(--icon-executive); }
+
 /* Universal background for all guides */
 .guide-bg {
   background-image: url('/assets/images/guides-bg.png');

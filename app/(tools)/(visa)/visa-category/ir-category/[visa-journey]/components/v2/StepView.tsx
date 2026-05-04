@@ -2018,7 +2018,7 @@ const renderDocActionModal = () => {
         </div>
 
         {/* PRIMARY LAUNCH MODULE */}
-        <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
+      <div className="relative bg-[#1a0a18] border border-[#520a50]/30 rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-[22px]">
@@ -2046,7 +2046,7 @@ const renderDocActionModal = () => {
                   key={idx}
                   className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
                 >
-                  <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
+                  <div className="w-[5px] h-[5px] rounded-full bg-[rgb(156, 103, 125)] shrink-0 mt-[5px]" />
                   <div className="text-[13px] text-white/55 leading-tight">
                     {cue}
                   </div>
@@ -2062,7 +2062,7 @@ const renderDocActionModal = () => {
               }}
               className="w-full py-4 px-7 text-white rounded-[12px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
               style={{
-                backgroundColor: isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738",
+                backgroundColor: "#520a50",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = isChapter1 ? "#6a6a9f" : isChapter2 ? "#3a073a" : "#031020";
@@ -2634,7 +2634,7 @@ const renderDocActionModal = () => {
           {tool.type === "interview_scheduling" && (
             <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
               {/* Queue status card */}
-              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+              <div className="relative bg-[#1a0a18] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
                   Post-DQ Queue Status
@@ -2643,7 +2643,7 @@ const renderDocActionModal = () => {
                   className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
                   style={{ fontFamily: "'DM Serif Display', serif" }}
                 >
-                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#973680] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   In queue — awaiting interview letter
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
@@ -3753,15 +3753,15 @@ const renderDocActionModal = () => {
             tool.type !== "adm_processing" &&
             tool.type !== "courier_registration" && (
               <div
-                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "bg-[#28151c] border border-[#c0596a]" : "bg-[#0e1e38] border border-white/7"}`}
-                style={!isChapter1 ? { backgroundColor: launchBg } : {}}
+                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "bg-[#251f32] border border-[#8284bf]" : isChapter2 ? "bg-[#1a0a18] border border-[#520a50]" : "bg-[#0e1e38] border border-white/7"}`}
+                style={!isChapter1 && !isChapter2 ? { backgroundColor: launchBg } : {}}
               >
                 {/* Accent Stripe */}
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
                   style={{
                     background: isChapter1
-                      ? "linear-gradient(90deg, #8284bf 0%, #28151c 100%)"
+                      ? "linear-gradient(90deg, #8284bf 0%, #251f32 100%)"
                       : stripeGradient,
                   }}
                 />
@@ -3780,7 +3780,7 @@ const renderDocActionModal = () => {
                     </div>
                     <div className="flex-1">
                       <div
-                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[#c0596a]" : "text-white/35"}`}
+                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[#8284bf]" : "text-white/35"}`}
                       >
                         {tool.launch_module.eyebrow}
                       </div>
@@ -3859,14 +3859,14 @@ const renderDocActionModal = () => {
                       (feat: string, i: number) => (
                         <div
                           key={i}
-                          className={`${isChapter1 ? "bg-[#3a2a38] border border-[#8284bf]/30" : isChapter2 ? "bg-[#2a1528] border border-[#520a50]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          className={`${isChapter1 ? "bg-[rgb(59, 30, 85)] border border-[#8284bf]/30" : isChapter2 ? "bg-[#2a1528] border border-[#520a50]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
                         >
                           <div
                             className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
                               isChapter1
                                 ? "bg-[#8284bf]"
                                 : isChapter2
-                                  ? "bg-[#520a50]"
+                                  ? "bg-[rgb(156, 103, 125)]"
                                   : tool.launch_module.stripe_variant === "gold"
                                     ? "bg-[rgba(212,168,47,0.7)]"
                                     : tool.launch_module.stripe_variant ===
