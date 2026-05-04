@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Check, Crown, Zap, ShoppingCart } from "lucide-react";
+import { X, Check, Zap, ShoppingCart } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import {
   getEntitlement,
@@ -52,57 +52,121 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
   ],
 };
 
+// Complementary pastel palettes matched to each icon's actual color:
+// Free      → dark teal outline icon   → pale seafoam header, deep teal text
+// Basic     → muted slate-teal icon    → soft teal-mint header, deep teal text
+// Premium   → silver/chrome icon       → soft periwinkle-grey header, slate text
+// Executive → warm gold icon           → soft amber-cream header, deep amber text
 const TIER_STYLE: Record<PlanTier, {
   header: string;
   button: string;
-  pill: string;
+  buttonHover: string;
+  pillActiveBg: string;
+  pillActiveText: string;
+  pillActiveRing: string;
   check: string;
-  ring: string;
-  bg: string;
-  text: string;
+  featureBg: string;
+  featureRing: string;
+  featureText: string;
+  priceText: string;
+  iconClass: string;
+  badgeBg: string;
+  badgeBorder: string;
+  badgeText: string;
+  headerLabel: string;
+  headerTitle: string;
+  headerPrice: string;
+  headerSub: string;
 }> = {
   free: {
-    header: "from-neutral-500 to-neutral-700",
-    button: "bg-neutral-700 hover:bg-neutral-600",
-    pill:   "bg-neutral-100 text-neutral-700",
-    check:  "text-neutral-500",
-    ring:   "ring-neutral-300",
-    bg:     "bg-neutral-50",
-    text:   "text-neutral-700",
+    header: "from-[#d0ece8] to-[#a8d8d0]",
+    button: "from-[#6aada4] to-[#3d8e86]",
+    buttonHover: "hover:from-[#5a9d94] hover:to-[#2d7e76]",
+    pillActiveBg: "#cce8e4",
+    pillActiveText: "#1e5e58",
+    pillActiveRing: "#8eccc6",
+    check: "text-[#3d8e86]",
+    featureBg: "bg-[#eaf6f4]",
+    featureRing: "ring-[#aad8d2]",
+    featureText: "text-[#1e5e58]",
+    priceText: "text-[#1e5e58]",
+    iconClass: "plan-icon--free",
+    badgeBg: "bg-[#eaf6f4]",
+    badgeBorder: "border-[#aad8d2]",
+    badgeText: "text-[#1e5e58]",
+    headerLabel: "text-[#2d706a]/55",
+    headerTitle: "text-[#0f3a36]",
+    headerPrice: "text-[#0f3a36]",
+    headerSub: "text-[#2d706a]/45",
   },
   basic: {
-    header: "from-sky-700 to-sky-900",
-    button: "bg-sky-700 hover:bg-sky-600",
-    pill:   "bg-sky-50 text-sky-700 ring-sky-200",
-    check:  "text-sky-600",
-    ring:   "ring-sky-200",
-    bg:     "bg-sky-50",
-    text:   "text-sky-700",
+    header: "from-[#b8dcd8] to-[#8ac4bc]",
+    button: "from-[#4aada4] to-[#1e8880]",
+    buttonHover: "hover:from-[#3a9d94] hover:to-[#0e7870]",
+    pillActiveBg: "#b8e4de",
+    pillActiveText: "#0f4040",
+    pillActiveRing: "#78c8c0",
+    check: "text-[#1e8880]",
+    featureBg: "bg-[#e4f4f2]",
+    featureRing: "ring-[#98d0ca]",
+    featureText: "text-[#0f4040]",
+    priceText: "text-[#0f4040]",
+    iconClass: "plan-icon--basic",
+    badgeBg: "bg-[#e4f4f2]",
+    badgeBorder: "border-[#98d0ca]",
+    badgeText: "text-[#0f4040]",
+    headerLabel: "text-[#186058]/55",
+    headerTitle: "text-[#072c2a]",
+    headerPrice: "text-[#072c2a]",
+    headerSub: "text-[#186058]/45",
   },
   premium: {
-    header: "from-violet-700 to-violet-900",
-    button: "bg-violet-700 hover:bg-violet-600",
-    pill:   "bg-violet-50 text-violet-700 ring-violet-200",
-    check:  "text-violet-600",
-    ring:   "ring-violet-200",
-    bg:     "bg-violet-50",
-    text:   "text-violet-700",
+    header: "from-[#d8d8e8] to-[#b8b8d0]",
+    button: "from-[#8888a8] to-[#585878]",
+    buttonHover: "hover:from-[#787898] hover:to-[#484868]",
+    pillActiveBg: "#dcdcf0",
+    pillActiveText: "#282848]",
+    pillActiveRing: "#a8a8cc",
+    check: "text-[#585878]",
+    featureBg: "bg-[#eeeeF8]",
+    featureRing: "ring-[#c0c0dc]",
+    featureText: "text-[#282848]",
+    priceText: "text-[#282848]",
+    iconClass: "plan-icon--premium",
+    badgeBg: "bg-[#eeeeF8]",
+    badgeBorder: "border-[#c0c0dc]",
+    badgeText: "text-[#282848]",
+    headerLabel: "text-[#484868]/55",
+    headerTitle: "text-[#181830]",
+    headerPrice: "text-[#181830]",
+    headerSub: "text-[#484868]/45",
   },
   executive: {
-    header: "from-amber-600 to-amber-800",
-    button: "bg-amber-600 hover:bg-amber-500",
-    pill:   "bg-amber-50 text-amber-700 ring-amber-200",
-    check:  "text-amber-600",
-    ring:   "ring-amber-200",
-    bg:     "bg-amber-50",
-    text:   "text-amber-700",
+    header: "from-[#f0dea0] to-[#d8b860]",
+    button: "from-[#b89030] to-[#8a6810]",
+    buttonHover: "hover:from-[#a88020] hover:to-[#7a5808]",
+    pillActiveBg: "#f0e0a0",
+    pillActiveText: "#5a3808]",
+    pillActiveRing: "#d0b060",
+    check: "text-[#8a6810]",
+    featureBg: "bg-[#fdf4d8]",
+    featureRing: "ring-[#e4cc88]",
+    featureText: "text-[#5a3808]",
+    priceText: "text-[#5a3808]",
+    iconClass: "plan-icon--executive",
+    badgeBg: "bg-[#fdf4d8]",
+    badgeBorder: "border-[#e4cc88]",
+    badgeText: "text-[#5a3808]",
+    headerLabel: "text-[#7a5818]/55",
+    headerTitle: "text-[#3a2800]",
+    headerPrice: "text-[#3a2800]",
+    headerSub: "text-[#7a5818]/45",
   },
 };
 
-/** Hides the scrollbar visually while keeping scroll functionality */
 const scrollbarHideStyle: React.CSSProperties = {
-  scrollbarWidth: "none",       /* Firefox */
-  msOverflowStyle: "none",      /* IE / Edge legacy */
+  scrollbarWidth: "none",
+  msOverflowStyle: "none",
 };
 
 export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps) {
@@ -129,94 +193,143 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
   const canBuyAddon = e.state === "locked_buy" && !!e.addon;
   const showInclusionSection = fullUpgradeTiers.length > 0;
 
-  // ─── Shared card wrapper ──────────────────────────────────────────────────
-  // • On mobile  : anchored to bottom, full-width, max 92dvh, rounded top only
-  // • On sm+     : centred, max-w-[440px], fully rounded, max 88dvh
-  // FIX: removed sm:pt-8 (was causing a gap above the header on desktop)
-  // FIX: overflow-hidden is what clips the header corners — no inner rounding needed on header
   const cardCls = [
     "relative bg-white shadow-2xl flex flex-col overflow-hidden",
     "animate-in fade-in zoom-in-95 duration-200",
-    // Mobile: slide-up sheet
     "w-full rounded-t-3xl",
-    // sm+: floating card — fully rounded, no extra top padding
     "sm:rounded-3xl sm:w-[440px] sm:max-w-[calc(100vw-2rem)]",
-    // Height: fills available space but never exceeds viewport
     "max-h-[92dvh] sm:max-h-[88dvh]",
-    // Always above navbars/headers/footers
     "z-[10000] pointer-events-auto",
   ].join(" ");
+
+  // Transparent PNG — rendered directly, no white box wrapper needed.
+  const TierIcon = ({ tier, size = 56 }: { tier: PlanTier; size?: number }) => (
+    <span
+      className={`plan-icon ${TIER_STYLE[tier].iconClass} shrink-0 block`}
+      style={{ width: size, height: size }}
+    />
+  );
+
+  // ─── Upgrade Button ───────────────────────────────────────────────────────
+  const UpgradeButton = ({
+    tier,
+    price,
+    onClick,
+    fullWidth = true,
+  }: {
+    tier: PlanTier;
+    price?: { monthly: number; annual: number } | null;
+    onClick: () => void;
+    fullWidth?: boolean;
+  }) => {
+    const s = TIER_STYLE[tier];
+    return (
+      <button
+        onClick={onClick}
+        className={`
+          ${fullWidth ? "w-full" : ""}
+          relative overflow-hidden
+          flex items-center gap-3
+          px-5 py-3.5 rounded-2xl
+          bg-gradient-to-r ${s.button} ${s.buttonHover}
+          text-white font-bold text-[13.5px]
+          shadow-md hover:shadow-lg
+          active:scale-[0.98]
+          transition-all duration-200
+          group
+        `}
+      >
+        {/* Shimmer sweep */}
+        <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+
+        {/* Icon directly on button — transparent PNG, no wrapper */}
+        <TierIcon tier={tier} size={32} />
+
+        <span className="flex flex-col items-start leading-tight flex-1">
+          <span>Upgrade to {TIER_NAMES[tier]}</span>
+          {price && (
+            <span className="text-[11px] font-normal text-white/70">
+              ${price.monthly}/mo · ${price.annual} total
+            </span>
+          )}
+        </span>
+
+        <Zap size={15} strokeWidth={2.5} className="opacity-60 shrink-0" />
+      </button>
+    );
+  };
 
   // ─── Add-on purchase layout ───────────────────────────────────────────────
   if (canBuyAddon && e.addon) {
     const addon = e.addon;
     const planStyle = TIER_STYLE[selectedTier];
     const planPrice = TIER_PRICES[selectedTier];
+    const addonStyle = TIER_STYLE["executive"];
 
     const modal = (
       <div
         className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4"
         style={{ zIndex: 2147483647 }}
       >
-        {/* Backdrop */}
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
           onClick={onClose}
         />
 
-        {/* FIX: removed pointer-events-auto sm:pt-8 — sm:pt-8 was the gap culprit */}
         <div className={cardCls}>
           {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center transition-colors"
+            className="absolute top-3.5 right-3.5 z-10 w-7 h-7 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-colors"
           >
-            <X size={14} strokeWidth={2.5} className="text-white" />
+            <X size={14} strokeWidth={2.5} className="text-[#3a2800]" />
           </button>
 
-          {/* Gold header — never scrolls
-              FIX: removed rounded-t-3xl sm:rounded-3xl — card's overflow-hidden handles clipping */}
-          <div className="shrink-0 bg-gradient-to-br from-yellow-600 to-amber-700 px-5 pt-6 pb-4 text-white">
-            <div className="w-8 h-8 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5">
-              <Crown size={15} strokeWidth={2.5} />
+          {/* Warm amber-cream header */}
+          <div className={`shrink-0 bg-gradient-to-br ${addonStyle.header} px-5 pt-6 pb-5`}>
+            <div className="flex items-center gap-4 mb-3">
+              {/* Icon directly on gradient — transparent, no box */}
+              <TierIcon tier="executive" size={68} />
+              <div>
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${addonStyle.headerLabel} mb-0.5`}>
+                  Premium Feature
+                </p>
+                <h2 className={`text-[18px] font-extrabold tracking-tight leading-tight ${addonStyle.headerTitle}`}>
+                  {addon.name}
+                </h2>
+              </div>
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-0.5">
-              Premium Feature
-            </p>
-            <h2 className="text-[19px] font-extrabold tracking-tight leading-tight">
-              {addon.name}
-            </h2>
-            <p className="text-[12px] text-white/70 mt-1">
+            <p className={`text-[12px] ${addonStyle.headerSub}`}>
               Buy once, or get it included with a plan upgrade
             </p>
           </div>
 
-          {/* Scrollable body — scrollbar hidden */}
+          {/* Scrollable body */}
           <div
             className="overflow-y-auto overscroll-contain flex-1 px-4 py-4 flex flex-col gap-3"
             style={scrollbarHideStyle}
           >
             {/* Buy individually */}
-            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-2">
+            <div className={`rounded-2xl ${addonStyle.featureBg} border ${addonStyle.badgeBorder} p-4`}>
+              <p className={`text-[10px] font-bold uppercase tracking-widest ${addonStyle.badgeText} mb-2`}>
                 Buy Once
               </p>
               <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-[28px] font-black text-amber-700 leading-none">
+                <span className={`text-[28px] font-black ${addonStyle.priceText} leading-none`}>
                   ${addon.price}
                 </span>
                 {addon.unit && (
-                  <span className="text-[12px] text-amber-600 font-medium">
+                  <span className={`text-[12px] ${addonStyle.badgeText} opacity-60 font-medium`}>
                     · {addon.unit}
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-amber-700/70 mb-3">
+              <p className={`text-[11px] ${addonStyle.badgeText} opacity-50 mb-3`}>
                 One-time purchase · No subscription required
               </p>
               <button
                 onClick={() => { onConfirm?.("addon", addon.id); onClose(); }}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className={`w-full py-2.5 rounded-xl bg-gradient-to-r ${addonStyle.button} ${addonStyle.buttonHover} text-white text-[13px] font-bold transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]`}
               >
                 <ShoppingCart size={14} strokeWidth={2.5} />
                 Buy {addon.name} · ${addon.price}
@@ -234,32 +347,40 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
 
             {/* Included in plan */}
             {showInclusionSection && (
-              <div className={`rounded-2xl ${planStyle.bg} ring-1 ${planStyle.ring} p-4`}>
+              <div className={`rounded-2xl ${planStyle.featureBg} ring-1 ${planStyle.featureRing} p-4`}>
                 {fullUpgradeTiers.length > 1 && (
                   <div className="flex gap-0.5 bg-black/5 rounded-xl p-0.5 mb-3">
                     {fullUpgradeTiers.map((t) => (
                       <button
                         key={t}
                         onClick={() => setSelectedTier(t)}
-                        className={`flex-1 py-1 rounded-lg text-[10.5px] font-bold transition-all ${
+                        style={selectedTier === t ? {
+                          backgroundColor: TIER_STYLE[t].pillActiveBg,
+                          color: TIER_STYLE[t].pillActiveText,
+                          outline: `1px solid ${TIER_STYLE[t].pillActiveRing}`,
+                        } : {}}
+                        className={`flex-1 py-1.5 rounded-lg text-[10.5px] font-bold transition-all flex items-center justify-center gap-1.5 ${
                           selectedTier === t
-                            ? "bg-white shadow-sm text-neutral-800"
+                            ? "shadow-sm"
                             : "text-neutral-500 hover:text-neutral-700"
-                        }`}>
+                        }`}
+                      >
+                        {/* Icon flush — zero padding around it */}
+                        <TierIcon tier={t} size={16} />
                         {TIER_NAMES[t]}
                       </button>
                     ))}
                   </div>
                 )}
 
-                <p className={`text-[10px] font-bold uppercase tracking-widest ${planStyle.text} mb-1`}>
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${planStyle.featureText} mb-1`}>
                   {TIER_NAMES[selectedTier]} Plan
                 </p>
 
                 {planPrice && (
                   <div className="mb-3">
                     <div className="flex items-baseline gap-1">
-                      <span className={`text-[26px] font-black ${planStyle.text} leading-none`}>
+                      <span className={`text-[26px] font-black ${planStyle.priceText} leading-none`}>
                         ${planPrice.monthly}
                       </span>
                       <span className="text-[12px] text-neutral-500 font-medium">/mo</span>
@@ -282,19 +403,14 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                   )}
                 </ul>
 
-                <button
+                <UpgradeButton
+                  tier={selectedTier}
+                  price={planPrice}
                   onClick={() => { onConfirm?.("upgrade", selectedTier); onClose(); }}
-                  className={`w-full py-2.5 rounded-xl text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}>
-                  <Zap size={14} strokeWidth={2.5} />
-                  Upgrade to {TIER_NAMES[selectedTier]}
-                  {planPrice && (
-                    <span className="font-normal text-white/80">· ${planPrice.monthly}/mo</span>
-                  )}
-                </button>
+                />
               </div>
             )}
 
-            {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
             <p
               className="text-center text-[11px] text-neutral-400"
               style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
@@ -306,7 +422,6 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
       </div>
     );
 
-    // FIX: addon branch was building modal but never returning it — fell through to upgrade layout
     if (typeof document !== "undefined") {
       return createPortal(modal, document.body);
     }
@@ -325,45 +440,45 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
         onClick={onClose}
       />
 
-      {/* FIX: removed sm:pt-8 — was pushing card down and creating a gap above the header */}
       <div className={cardCls}>
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-3.5 right-3.5 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center transition-colors"
+          className="absolute top-3.5 right-3.5 z-10 w-7 h-7 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center transition-colors"
         >
-          <X size={14} strokeWidth={2.5} className="text-white" />
+          <X size={14} strokeWidth={2.5} className={style.headerTitle} />
         </button>
 
-        {/* Gradient header — never scrolls
-            FIX: removed rounded-t-3xl sm:rounded-3xl — card's overflow-hidden clips correctly,
-            inner rounding was causing a visible step/gap between header and card edge */}
+        {/* Pastel gradient header — transparent PNG sits directly on it */}
         <div
-          className={`shrink-0 bg-gradient-to-br ${style.header} px-5 pt-6 pb-4 text-white transition-colors duration-300`}
+          className={`shrink-0 bg-gradient-to-br ${style.header} px-5 pt-6 pb-5 transition-colors duration-300`}
         >
-          <div className="w-8 h-8 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5">
-            <Crown size={15} strokeWidth={2.5} />
-          </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-0.5">
-            {currentTier === "free" ? "Choose a plan" : "Upgrade your plan"}
-          </p>
-          <h2 className="text-[19px] font-extrabold tracking-tight leading-tight">
-            {TIER_NAMES[selectedTier]}
-          </h2>
-          {price && (
-            <div className="flex items-baseline gap-1.5 mt-1 flex-wrap">
-              <span className="text-[28px] font-black leading-none">${price.monthly}</span>
-              <span className="text-[12px] text-white/70 font-medium">/mo</span>
-              <span className="text-[11px] text-white/50 font-medium">· ${price.annual} total</span>
+          <div className="flex items-center gap-4 mb-1">
+            {/* No white box — icon renders on pastel bg naturally */}
+            <TierIcon tier={selectedTier} size={76} />
+            <div>
+              <p className={`text-[10px] font-bold uppercase tracking-widest ${style.headerLabel} mb-0.5`}>
+                {currentTier === "free" ? "Choose a plan" : "Upgrade your plan"}
+              </p>
+              <h2 className={`text-[20px] font-extrabold tracking-tight leading-tight ${style.headerTitle}`}>
+                {TIER_NAMES[selectedTier]}
+              </h2>
+              {price && (
+                <div className="flex items-baseline gap-1 mt-0.5 flex-wrap">
+                  <span className={`text-[22px] font-black leading-none ${style.headerPrice}`}>${price.monthly}</span>
+                  <span className={`text-[11px] font-medium ${style.headerSub}`}>/mo</span>
+                  <span className={`text-[11px] font-medium ${style.headerSub}`}>· ${price.annual} total</span>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Scrollable body — scrollbar hidden */}
+        {/* Scrollable body */}
         <div
           className="overflow-y-auto overscroll-contain flex-1 px-4 py-4 flex flex-col gap-3"
           style={scrollbarHideStyle}
@@ -375,12 +490,19 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                 <button
                   key={t}
                   onClick={() => setSelectedTier(t)}
-                  className={`flex-1 py-1.5 rounded-xl text-[11.5px] font-bold transition-all ring-1 ring-transparent ${
+                  style={selectedTier === t ? {
+                    backgroundColor: TIER_STYLE[t].pillActiveBg,
+                    color: TIER_STYLE[t].pillActiveText,
+                    outline: `1px solid ${TIER_STYLE[t].pillActiveRing}`,
+                  } : {}}
+                  className={`flex-1 py-2 rounded-xl text-[11.5px] font-bold transition-all flex items-center justify-center gap-1.5 ${
                     selectedTier === t
-                      ? `${TIER_STYLE[t].pill} ring-1 shadow-sm`
+                      ? "shadow-sm"
                       : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
+                  {/* Icon flush in tab — zero extra padding/wrapper */}
+                  <TierIcon tier={t} size={18} />
                   {TIER_NAMES[t]}
                 </button>
               ))}
@@ -401,15 +523,12 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
           </ul>
 
           {/* Upgrade CTA */}
-          <button
+          <UpgradeButton
+            tier={selectedTier}
+            price={price}
             onClick={() => { onConfirm?.("upgrade", selectedTier); onClose(); }}
-            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90 ${style.button}`}
-          >
-            <Crown size={14} strokeWidth={2.5} />
-            Upgrade to {TIER_NAMES[selectedTier]}
-          </button>
+          />
 
-          {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
           <p
             className="text-center text-[11px] text-neutral-400"
             style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
@@ -421,7 +540,6 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
     </div>
   );
 
-  // Render into document.body via portal to avoid stacking-context issues
   if (typeof document !== "undefined") {
     return createPortal(modal, document.body);
   }

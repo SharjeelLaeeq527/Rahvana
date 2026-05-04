@@ -1,6 +1,6 @@
 // components/RegisterReceiptStep.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Globe, Crown, Lock } from "lucide-react";
+import { Globe, Lock } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { GuideTutorialOverlay } from "./GuideTutorialOverlays";
 import {
@@ -55,7 +55,7 @@ const UpgradeNudge: React.FC<UpgradeNudgeProps> = ({ title, description, onUpgra
         className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
         style={{ background: "#8284bf" }}
       >
-        <Crown className="w-4 h-4 text-white" />
+        <span className="plan-icon plan-icon--premium scale-110" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-[14px] font-bold mb-1" style={{ color: "#8284bf" }}>{title}</div>
@@ -652,7 +652,12 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                   {hasExistingReceipt ? <><EditIcon />&nbsp;Update details</> : <>Register notice <ArrowRight /></>}
                 </div>
               </button>
-              {plan.tier === "basic" && <Crown size={20} className="absolute top-2 right-2 text-yellow-500" />}
+              {plan.tier === "basic" && (
+                <span
+                  className="absolute top-2 right-2 plan-icon plan-icon--premium scale-110"
+                  aria-hidden="true"
+                />
+              )}
             </div>
 
             {/* Card 2 — Guide (locked for Basic) */}
@@ -692,7 +697,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 </div>
                 <div className="flex items-center gap-[5px] font-semibold text-[12px] mt-[13px]"
                   style={{ color: isBasic ? "#8284bf" : "#2f6fd4" }}>
-                  {isBasic ? <><Crown size={11} />Upgrade to unlock</> : <>Open guide <ArrowRight /></>}
+                  {isBasic ? <><span className="plan-icon plan-icon--premium scale-110" aria-hidden="true" />Upgrade to unlock</> : <>Open guide <ArrowRight /></>}
                 </div>
               </button>
               {isBasic && (

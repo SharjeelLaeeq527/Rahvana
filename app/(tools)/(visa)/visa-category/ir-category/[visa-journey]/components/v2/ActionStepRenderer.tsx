@@ -680,7 +680,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           letter-spacing: -0.02em;
           margin-bottom: 4px;
         }
-        .asr-title--ch1 { color: #7c4b26; }
+        .asr-title--ch1 { color: #8284bf; }
         .asr-title--ch2 { color: #27192e; }
         .asr-title--default { color: #0c1b33; }
  
@@ -691,7 +691,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           max-width: 560px;
           margin-bottom: 16px;
         }
-        .asr-desc--ch1 { color: #7c4b26; }
+        .asr-desc--ch1 { color: #8284bf; }
         .asr-desc--ch2 { color: #b48ad6; }
         .asr-desc--default { color: #3a4f63; }
  
@@ -718,12 +718,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           color: #2f6fd4;
         }
         .asr-chip--ch1 {
-          background: #8284bf;
-          border-color: #c6c8ea;
-          color: #fff;
+          background: #f3f0fb;
+          border-color: #c9bef2;
+          color: #4a2d8a;
         }
         .asr-chip--ch2 {
-          background: transparent;
+          background: #f4e6f3;
           border-color: #d5abd2;
           color: #520a50;
         }
@@ -767,7 +767,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         }
         .asr-badge--rose {
           background: #fff;
-          color: #7c4b26;
+          color: #8284bf;
         }
  
         /* ── Action Tips Grid ── */
@@ -1328,15 +1328,24 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           {step.step_description}
         </p>
 
-        {/* Chips - Full background colors */}
+        {/* Chips - Pastel colors */}
         {actionData.chips && actionData.chips.length > 0 && (
-          <div
-            className={`flex flex-wrap gap-2 mb-6 ${isChapter1 ? "accent-rose" : isChapter2 ? "accent-purple" : ""}`}
-          >
+          <div className="flex flex-wrap gap-2 mb-6">
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
-                className={`text-[11px] font-bold uppercase px-3 py-1 rounded-full border ${isChapter1 ? "accent-rose-bg border-rose-200 text-[#ffff]" : isChapter2 ? "accent-purple-bg border-[#d5abd2] text-[#520a50]" : "bg-[#e8ecf3] border-[#b7c2d4] text-[#051738]"}`}
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  padding: "6px 14px",
+                  borderRadius: "999px",
+                  border: "1px solid",
+                  whiteSpace: "nowrap",
+                  backgroundColor: isChapter1 ? "#f3f0fb" : isChapter2 ? "#f4e6f3" : "#f0f1fb",
+                  borderColor: isChapter1 ? "#c9bef2" : isChapter2 ? "#d5abd2" : "#d0e4f7",
+                  color: isChapter1 ? "#4a2d8a" : isChapter2 ? "#520a50" : "#2d4a6e",
+                }}
               >
                 {chip.label}
               </span>
@@ -1347,14 +1356,31 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         {/* Hero Section */}
         <section
           style={{
-            background: isChapter1 ? "linear-gradient(180deg, #8284bf 0%, #4e518c 100%)" : isChapter2 ? "linear-gradient(180deg, #520a50 0%, #2f062e 100%)" : "linear-gradient(180deg, #051738 0%, #020a1a 100%)",
+            background: isChapter1 ? "#251f32" : isChapter2 ? "#1a0a18" : "#051738",
             color: "#fff",
             borderRadius: "24px",
             padding: isMobile ? "16px" : "24px",
             boxShadow: "0 18px 48px rgba(12, 27, 51, 0.12)",
             marginBottom: "16px",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
+          {/* Accent gradient line */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "2px",
+              background: isChapter1
+                ? "linear-gradient(90deg, #8284bf 0%, rgba(130,132,191,0.3) 100%)"
+                : isChapter2
+                ? "linear-gradient(90deg, #520a50 0%, rgba(82,10,80,0.3) 100%)"
+                : "linear-gradient(90deg, #051738 0%, rgba(5,23,56,0.3) 100%)",
+            }}
+          />
           {/* Heading */}
           <h2
             style={{
@@ -1362,7 +1388,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
-              color: step.step_key === "step_1_11" ? "#8284bf" : undefined,
+              color: isChapter1 ? "#b8a8d9" : isChapter2 ? "#d99dcf" : "#7ba3d9",
+              textShadow: "0 2px 8px rgba(0,0,0,0.3)",
             }}
           >
             {actionData.hero_heading}
@@ -1394,14 +1421,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 background:
                   step.step_key === "step_1_11"
                     ? "#fff"
-                    : "rgba(255, 255, 255, 0.08)",
+                    : "rgba(255, 255, 255, 0.1)",
                 fontSize: "11px",
                 fontWeight: 800,
                 letterSpacing: ".08em",
                 textTransform: "uppercase",
                 marginTop: "10px",
                 marginBottom: "12px",
-                color: step.step_key === "step_1_11" ? "#7c4b26" : "#fff",
+                color: isChapter1 ? "#8284bf" : isChapter2 ? "#d99dcf" : "#7ba3d9",
+                backdropFilter: "blur(4px)",
+                border: `1px solid ${isChapter1 ? "rgba(130,132,191,0.4)" : isChapter2 ? "rgba(217,157,207,0.4)" : "rgba(123,163,217,0.4)"}`,
               }}
             >
               {actionData.badge}

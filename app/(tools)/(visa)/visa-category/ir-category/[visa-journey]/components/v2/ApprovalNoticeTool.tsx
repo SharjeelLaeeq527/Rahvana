@@ -1,7 +1,7 @@
 "use client";
  
 import React, { useRef, useState } from "react";
-import { X, Info, Check, RefreshCw, Upload, Lock, Crown } from "lucide-react";
+import { X, Info, Check, RefreshCw, Upload, Lock } from "lucide-react";
 import { APPROVAL_NOTICE_DATA as data } from "./ApprovalNoticeData";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { toast } from "sonner";
@@ -141,7 +141,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
  const UploadLockedNote = () => (
     <div className="mt-2 flex items-start gap-2 rounded-xl p-3"
       style={{ background: "#fbeaec", border: "1px solid rgba(130,132,191,0.3)" }}>
-      <Crown size={14} className="shrink-0 mt-0.5" style={{ color: "#8284bf" }} />
+      <span className="plan-icon plan-icon--premium scale-110 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="text-[12px] leading-[1.6]" style={{ color: "#5a3040" }}>
         Uploading your approval notice automatically saves it to the document vault and extracts key information — approval date, receipt number, and more. This feature is available on <strong>Premium and above</strong>.{" "}
         <button onClick={() => setUpgradeModalFeature("approval_notice_upload")}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, Crown, ArrowRight } from "lucide-react";
+import { Lock, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useRouter } from "next/navigation";
@@ -30,10 +30,34 @@ export function PageGate({ feature, children, title, description }: PageGateProp
   const hint = plan.lockHint(feature) || "Requires a higher plan";
   const targetTier = plan.entitlement(feature)?.upgradeTarget;
 
-  const IconEl = targetTier === "executive" ? Crown : Lock;
-  const iconColor = targetTier === "executive" ? "text-amber-500" : "text-primary";
-  const bgColor = targetTier === "executive" ? "bg-amber-500/10 border-amber-500/20" : "bg-primary/10 border-primary/20";
-
+  const tierIconClass =
+    targetTier === "executive"
+      ? "plan-icon--executive"
+      : targetTier === "premium"
+        ? "plan-icon--premium"
+        : targetTier === "basic"
+          ? "plan-icon--basic"
+          : null;
+    const tierColors =
+    targetTier === "executive"
+    ? {
+        icon: "text-[#9a6f00]",
+        bg: "bg-[#fdf6e3] border-[#e8c96a]",       // warm gold
+      }
+    : targetTier === "premium"
+      ? {
+          icon: "text-[#5a5a6e]",
+          bg: "bg-[#f0f0f0] border-[#c0c0cc]",     // cool grey/silver
+        }
+      : targetTier === "basic"
+        ? {
+            icon: "text-[#2d7a7a]",
+            bg: "bg-[#e8f4f4] border-[#a8d4d4]",   // teal
+          }
+        : {
+            icon: "text-[#6b8097]",
+            bg: "bg-[#f4f7fb] border-[#d0e4f7]",
+          };
   return (
     <div className="min-h-screen bg-[#fafcff] flex items-center justify-center p-6 relative overflow-hidden">
       {showUpgradeModal && (
@@ -46,10 +70,19 @@ export function PageGate({ feature, children, title, description }: PageGateProp
 
       <div className="w-full max-w-md bg-white border border-[#d0e4f7] rounded-[24px] shadow-[0_20px_40px_rgba(12,27,51,0.05)] p-8 text-center relative z-10 animate-in zoom-in-95 duration-500">
         <div className="flex justify-center mb-6">
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border ${bgColor}`}>
-            <IconEl size={32} strokeWidth={2} className={iconColor} />
-          </div>
-        </div>
+  <div
+    className={`w-16 h-16 rounded-2xl flex items-center justify-center border ${tierColors.bg}`}
+  >
+    {tierIconClass ? (
+      <span
+        className={`plan-icon ${tierIconClass}`}
+        style={{ width: 44, height: 44 }}
+      />
+    ) : (
+      <Lock size={32} strokeWidth={2} className={tierColors.icon} />
+    )}
+  </div>
+</div>
 
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest border mb-4 shadow-sm bg-slate-50 text-slate-500 border-slate-200">
           <Lock size={12} strokeWidth={2.5} />

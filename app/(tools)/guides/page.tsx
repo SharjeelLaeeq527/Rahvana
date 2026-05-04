@@ -6,25 +6,12 @@ import {
   Search,
   FileText,
   Shield,
-  DollarSign,
   Heart,
-  Users,
-  Briefcase,
-  FileCheck,
-  BookOpen,
-  ArrowRight,
-  GraduationCap,
-  Scale,
   Globe,
   Syringe,
-  Activity,
-  Map,
-  // Truck,
-  // Truck,
-  // Plane,
   ChevronDown,
   LayoutGrid,
-  Crown,
+  ArrowRight,
 } from "lucide-react";
 
 import {
@@ -38,15 +25,7 @@ import { usePlan } from "@/app/context/PlanContext";
 
 // --- Data & Types ---
 
-type GuideCategory =
-  | "Pakistan Document"
-  // | "Embassy Logistics"
-  // | "Arrival & Travel"
-  // | "Financial & Sponsorship"
-  | "Medical & Exam";
-// | "Relationship Evidence"
-// | "Education & Process"
-// | "Visa Strategy";
+type GuideCategory = "Pakistan Document" | "Medical & Exam";
 
 interface Guide {
   id: string;
@@ -58,12 +37,10 @@ interface Guide {
   icon: React.ElementType;
   disabled?: boolean;
   comingSoon?: boolean;
-  /** Entitlement feature key to gate this guide. */
   entitlementFeature?: string;
 }
 
 const GUIDES: Guide[] = [
-  // --- Pakistan Docs ---
   {
     id: "passport",
     title: "Passport",
@@ -130,8 +107,6 @@ const GUIDES: Guide[] = [
     icon: Heart,
     entitlementFeature: "civil_doc_guides",
   },
-
-  // --- Medical & Exam ---
   {
     id: "vaccinations",
     title: "Polio Vaccination",
@@ -148,14 +123,72 @@ const GUIDES: Guide[] = [
 const CATEGORIES: ("All" | GuideCategory)[] = [
   "All",
   "Pakistan Document",
-  // "Embassy Logistics",
-  // "Arrival & Travel",
-  // "Financial & Sponsorship",
   "Medical & Exam",
-  // "Relationship Evidence",
-  // "Education & Process",
-  // "Visa Strategy",
 ];
+
+// --- Tier-aware card styles ------------------------------------------------
+// Card border, shadow, and gradient border all follow the tier
+const TIER_CARD_STYLE: Record<string, {
+  cardBorder: string;
+  cardShadow: string;
+  cardHoverShadow: string;
+  gradientBorder: string;
+  badgeBg: string;
+  badgeBorder: string;
+}> = {
+  basic: {
+    cardBorder: "border-[#a8d4d4]",
+    cardShadow: "shadow-[0_18px_38px_-24px_rgba(13,148,136,0.6),0_0_0_1px_rgba(168,212,212,0.3)_inset]",
+    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(13,148,136,0.75),0_0_26px_rgba(13,148,136,0.15)]",
+    gradientBorder: "from-teal-300 to-teal-200",
+    badgeBg: "bg-teal-50",
+    badgeBorder: "border-teal-200",
+  },
+  premium: {
+    cardBorder: "border-[#94a3b8]",
+    cardShadow: "shadow-[0_18px_38px_-24px_rgba(71,85,105,0.6),0_0_0_1px_rgba(148,163,184,0.3)_inset]",
+    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(71,85,105,0.75),0_0_26px_rgba(71,85,105,0.15)]",
+    gradientBorder: "from-slate-400 to-slate-300",
+    badgeBg: "bg-slate-100",
+    badgeBorder: "border-slate-300",
+  },
+  executive: {
+    cardBorder: "border-[#e8c96a]",
+    cardShadow: "shadow-[0_18px_38px_-24px_rgba(202,138,4,0.7),0_0_0_1px_rgba(232,201,106,0.3)_inset]",
+    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(202,138,4,0.85),0_0_26px_rgba(202,138,4,0.2)]",
+    gradientBorder: "from-amber-300 to-amber-200",
+    badgeBg: "bg-amber-50",
+    badgeBorder: "border-amber-200",
+  },
+};
+
+// Inline gradient border styles per tier
+const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
+  basic: {
+    padding: "2.5px",
+    background: "linear-gradient(135deg, #0f766e 0%, #5eead4 34%, #0d9488 50%, #99f6e4 66%, #0f766e 100%)",
+    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    maskComposite: "exclude",
+    opacity: 0.9,
+  },
+  premium: {
+    padding: "2.5px",
+    background: "linear-gradient(135deg, #334155 0%, #94a3b8 25%, #e2e8f0 50%, #94a3b8 75%, #334155 100%)",
+    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    maskComposite: "exclude",
+    opacity: 0.9,
+  },
+  executive: {
+    padding: "2.5px",
+    background: "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%)",
+    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    maskComposite: "exclude",
+    opacity: 0.96,
+  },
+};
 
 // --- Components ---
 
@@ -165,10 +198,8 @@ export default function GuidesPage({
   isEmbedded?: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    "All" | GuideCategory
-  >("All");
-  const [visibleCount, setVisibleCount] = useState(7); // Default to all
+  const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
+  const [visibleCount, setVisibleCount] = useState(7);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -179,21 +210,16 @@ export default function GuidesPage({
       if (!containerRef.current || !measureRef.current) return;
 
       const containerWidth = containerRef.current.clientWidth;
-      const measureItems = Array.from(
-        measureRef.current.children,
-      ) as HTMLDivElement[];
+      const measureItems = Array.from(measureRef.current.children) as HTMLDivElement[];
 
-      // Extract the More button width (last item) and Category widths
       const moreButtonEl = measureItems[measureItems.length - 1];
       const categoryEls = measureItems.slice(0, measureItems.length - 1);
-
       const moreButtonWidth = moreButtonEl.offsetWidth;
-      const gap = 12; // gap-3 is 12px (0.75rem)
+      const gap = 12;
 
       let totalWidth = 0;
       let visible = 0;
 
-      // First pass: Check if ALL fit
       for (let i = 0; i < categoryEls.length; i++) {
         const itemWidth = categoryEls[i].offsetWidth;
         const isLast = i === categoryEls.length - 1;
@@ -206,17 +232,11 @@ export default function GuidesPage({
         return;
       }
 
-      // Second pass: Calculate how many fit WITH "More" button
       totalWidth = 0;
-
       for (let i = 0; i < categoryEls.length; i++) {
         const itemWidth = categoryEls[i].offsetWidth;
-        // Check if adding this item + gap + MoreButton exceeds container
-        // Current accumulated + this item + (gap if not first) + gap + MoreButton
         const gapWidth = i > 0 ? gap : 0;
-        const projectedWidth =
-          totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
-
+        const projectedWidth = totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
         if (projectedWidth <= containerWidth) {
           visible++;
           totalWidth += gapWidth + itemWidth;
@@ -229,13 +249,8 @@ export default function GuidesPage({
     };
 
     calculateVisible();
-
-    // Add resize listener
     const observer = new ResizeObserver(calculateVisible);
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
 
@@ -258,7 +273,6 @@ export default function GuidesPage({
         isEmbedded ? "" : "pt-16"
       }`}
     >
-      {/* Upgrade Modal */}
       {upgradeModalFeature && (
         <UpgradeModal
           feature={upgradeModalFeature}
@@ -310,32 +324,22 @@ export default function GuidesPage({
         </div>
 
         {/* Categories */}
-        <div
-          ref={containerRef}
-          className="relative w-full mb-8 flex justify-center"
-        >
-          {/* Hidden container for measuring */}
+        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           <div
             ref={measureRef}
             aria-hidden="true"
             className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
           >
-            {/* Render all categories to measure them */}
             {CATEGORIES.map((cat) => (
-              <div
-                key={cat}
-                className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border"
-              >
+              <div key={cat} className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border">
                 {cat}
               </div>
             ))}
-            {/* Force render the More button to measure it */}
             <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
               More <ChevronDown className="w-4 h-4 ml-1" />
             </div>
           </div>
 
-          {/* Visible Container */}
           <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
             {visibleCategories.map((cat) => (
               <button
@@ -370,9 +374,7 @@ export default function GuidesPage({
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
                       className={`cursor-pointer ${
-                        selectedCategory === cat
-                          ? "bg-primary/10 text-primary font-semibold"
-                          : ""
+                        selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
                       }`}
                     >
                       {cat}
@@ -408,28 +410,23 @@ export default function GuidesPage({
 
 // --- Guide Card Component ---
 
-const CATEGORY_STYLES: Record<
-  GuideCategory,
-  {
-    iconBox: string;
-    innerBox: string;
-    link: string;
-    borderGradient: string;
-  }
-> = {
+const CATEGORY_STYLES: Record<GuideCategory, {
+  iconBox: string;
+  innerBox: string;
+  link: string;
+  borderGradient: string;
+}> = {
   "Pakistan Document": {
     iconBox: "bg-green-600 text-white border-transparent dark:bg-green-500",
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
-    borderGradient:
-      "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
+    borderGradient: "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
   },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
     link: "text-teal-600 dark:text-teal-400",
-    borderGradient:
-      "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
+    borderGradient: "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
   },
 };
 
@@ -446,11 +443,20 @@ function GuideCard({
   const Icon = guide.icon;
   const styles = CATEGORY_STYLES[guide.category];
 
-  // Entitlement check
   const featureLocked =
     !!guide.entitlementFeature &&
     !plan.isLoading &&
     plan.isLocked(guide.entitlementFeature);
+
+  const upgradeTarget: string =
+    (guide.entitlementFeature
+      ? plan.entitlement(guide.entitlementFeature).upgradeTarget
+      : null) ?? "premium";
+
+  // All tier-specific card styles derived from upgradeTarget
+  const tierStyle = TIER_CARD_STYLE[upgradeTarget] ?? TIER_CARD_STYLE.premium;
+  const tierGradientBorderStyle = TIER_GRADIENT_BORDER_STYLE[upgradeTarget] ?? TIER_GRADIENT_BORDER_STYLE.premium;
+  const tierIconClass = `plan-icon--${upgradeTarget}`;
 
   const isNavigable = !guide.disabled;
 
@@ -470,7 +476,7 @@ function GuideCard({
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${featureLocked
-        ? "border-2 border-[#8a5a08] dark:border-[#b88716] cursor-pointer shadow-[0_18px_38px_-24px_rgba(138,90,8,0.9),0_0_0_1px_rgba(255,215,112,0.28)_inset] hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgba(138,90,8,0.95),0_0_26px_rgba(212,161,44,0.22)]"
+        ? `border-2 ${tierStyle.cardBorder} cursor-pointer ${tierStyle.cardShadow} hover:-translate-y-1 ${tierStyle.cardHoverShadow}`
         : isNavigable
           ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
           : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
@@ -478,20 +484,11 @@ function GuideCard({
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Gold gradient border — always visible for locked/premium cards */}
+      {/* Tier-matched gradient border for locked cards */}
       {featureLocked && (
         <div
           className="absolute inset-0 rounded-[30px] pointer-events-none"
-          style={{
-            padding: "2.5px",
-            background:
-              "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%), repeating-linear-gradient(45deg, rgba(255,255,255,0.36) 0 1px, transparent 1px 5px)",
-            backgroundBlendMode: "overlay",
-            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-            opacity: 0.96,
-          }}
+          style={tierGradientBorderStyle}
         />
       )}
 
@@ -501,29 +498,33 @@ function GuideCard({
         group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
         ${styles.iconBox}`}
       >
-        <div
-          className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
-        />
+        <div className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`} />
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      {/* Crown badge — top-right corner */}
+      {/* Tier badge — top-right corner, white box so PNG pops */}
       {featureLocked && (
         <div className="absolute top-3.5 right-4 z-10">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#8a5a08] bg-[radial-gradient(circle_at_30%_20%,#fff2b8_0%,#d9a62e_36%,#8a5a08_78%,#4d2e00_100%)] text-[#4d2e00] shadow-[0_7px_18px_rgba(138,90,8,0.42),inset_0_1px_0_rgba(255,255,255,0.65)]">
-            <Crown size={20} strokeWidth={3} fill="currentColor" />
+          <span
+            className={`inline-flex h-12 w-12 items-center justify-center rounded-full border bg-white shadow-md ${tierStyle.badgeBorder}`}
+          >
+            <span
+              className={`plan-icon ${tierIconClass}`}
+              style={{ width: 32, height: 32 }}
+              aria-hidden="true"
+            />
           </span>
         </div>
       )}
 
-      {/* Border gradient on hover (category color) */}
+      {/* Border gradient on hover (category color, non-locked only) */}
       {!featureLocked && (
         <div
           className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
         />
       )}
 
-      {/* Radial Glow Effect */}
+      {/* Radial Glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { Search, ArrowRight, ChevronDown, Crown } from "lucide-react";
+import { Search, ArrowRight, ChevronDown } from "lucide-react";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import {
   DropdownMenu,

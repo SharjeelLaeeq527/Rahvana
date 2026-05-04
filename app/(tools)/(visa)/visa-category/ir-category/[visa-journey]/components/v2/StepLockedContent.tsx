@@ -1,29 +1,69 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, Crown, Zap, ArrowRight } from "lucide-react";
+import { Lock, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
-// ── Theme per lock-icon type ────────────────────────────────────────────────
-const ICON_THEME = {
-  lock:   { bg: "bg-[#f4f7fb]",   border: "border-[#c8d9ee]",  icon: "text-[#2f6fd4]", badge: "bg-[#e8f1fb] text-[#2f6fd4]"  },
-  zap:    { bg: "bg-[#fef8e8]",   border: "border-[#f0d98a]",  icon: "text-[#b38600]", badge: "bg-[#fffbec] text-[#b38600]"  },
-  crown:  { bg: "bg-[#fdf6ec]",   border: "border-[#f0c878]",  icon: "text-[#a06000]", badge: "bg-[#fef3d8] text-[#a06000]"  },
-} as const;
+type TierKey = "basic" | "premium" | "executive";
 
-// Feature → icon mapping (consistent with StepEntitlementBanner)
-const FEATURE_ICON: Record<string, keyof typeof ICON_THEME> = {
-  step_guides:       "lock",
-  tracker_reminders: "zap",
-  document_vault:    "lock",
-  smart_form_filler: "zap",
-  sponsorship_calc:  "zap",
-  photo_booth:       "lock",
-  medical_booking:   "lock",
-  polio_certificate: "crown",
-  action_221g:       "crown",
+// Colors aligned with UpgradeModal & StepEntitlementBanner:
+// basic     → slate-teal icon   → teal-mint tones
+// premium   → silver/chrome icon → periwinkle-grey / silver tones
+// executive → gold icon          → amber-cream tones
+const TIER_THEME: Record<TierKey, {
+  bg: string;
+  border: string;
+  circleBg: string;
+  circleBorder: string;
+  iconColor: string;
+  ctaBtn: string;
+  ctaBtnHover: string;
+  ctaText: string;
+  ctaTextHover: string;
+  titleColor: string;
+  overlayBorder: string;
+}> = {
+  basic: {
+    bg:             "bg-[#e4f4f2]",
+    border:         "border-[#98d0ca]",
+    circleBg:       "bg-[#b8e4de]",
+    circleBorder:   "border-[#78c8c0]",
+    iconColor:      "text-[#1e8880]",
+    ctaBtn:         "bg-[#4aada4]",
+    ctaBtnHover:    "hover:bg-[#3a9d94]",
+    ctaText:        "text-[#1e8880]",
+    ctaTextHover:   "hover:text-[#0e6860]",
+    titleColor:     "text-[#072c2a]",
+    overlayBorder:  "border-[#98d0ca]",
+  },
+  premium: {
+    bg:             "bg-[#eeeeF8]",
+    border:         "border-[#c0c0dc]",
+    circleBg:       "bg-[#dcdcf0]",
+    circleBorder:   "border-[#a8a8cc]",
+    iconColor:      "text-[#585878]",
+    ctaBtn:         "bg-[#8888a8]",
+    ctaBtnHover:    "hover:bg-[#787898]",
+    ctaText:        "text-[#585878]",
+    ctaTextHover:   "hover:text-[#383858]",
+    titleColor:     "text-[#181830]",
+    overlayBorder:  "border-[#c0c0dc]",
+  },
+  executive: {
+    bg:             "bg-[#fdf4d8]",
+    border:         "border-[#e4cc88]",
+    circleBg:       "bg-[#f0e0a0]",
+    circleBorder:   "border-[#d0b060]",
+    iconColor:      "text-[#8a6810]",
+    ctaBtn:         "bg-[#b89030]",
+    ctaBtnHover:    "hover:bg-[#a88020]",
+    ctaText:        "text-[#8a6810]",
+    ctaTextHover:   "hover:text-[#6a4800]",
+    titleColor:     "text-[#3a2800]",
+    overlayBorder:  "border-[#e4cc88]",
+  },
 };
 
 interface StepLockedContentProps {
@@ -50,15 +90,6 @@ interface StepLockedContentProps {
   className?: string;
 }
 
-/**
- * Journey-specific wrapper that gates content based on the step's
- * primary feature in stepFeatureMap.ts.
- *
- * Usage:
- *   <StepLockedContent stepKey="step_1_6">
- *     <button onClick={() => setIsTutorialOpen(true)}>Read Guide</button>
- *   </StepLockedContent>
- */
 export function StepLockedContent({
   stepKey,
   children,
@@ -78,13 +109,9 @@ export function StepLockedContent({
 
   const hint = lockMessage || plan.lockHint(featureKey);
   const cta = plan.upgradeCTA(featureKey);
-  const iconType = FEATURE_ICON[featureKey] ?? "lock";
-  const theme = ICON_THEME[iconType];
-
-  const IconEl =
-    iconType === "crown" ? Crown :
-    iconType === "zap"   ? Zap   :
-    Lock;
+  const targetTier = plan.entitlement(featureKey)?.upgradeTarget as TierKey | null;
+  const tierIconClass = targetTier ? `plan-icon--${targetTier}` : null;
+  const theme = targetTier ? TIER_THEME[targetTier] : TIER_THEME.premium;
 
   // ── Hidden mode ───────────────────────────────────────────────────────────
   if (mode === "hide") return null;
@@ -97,22 +124,50 @@ export function StepLockedContent({
           <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />
         )}
         <div
-          className={`rounded-[14px] border-[1.5px] border-dashed ${theme.border} ${theme.bg} px-5 py-4 flex items-center gap-4 ${className ?? ""}`}
+          className={`
+            rounded-2xl border-[1.5px] border-dashed
+            ${theme.border} ${theme.bg}
+            px-5 py-4 flex items-center gap-4
+            ${className ?? ""}
+          `}
         >
-          <div className={`w-9 h-9 rounded-full ${theme.bg} flex items-center justify-center shrink-0 border ${theme.border}`}>
-            <IconEl size={16} className={theme.icon} strokeWidth={2.2} />
+          {/* Circular icon */}
+          <div
+            className={`
+              w-10 h-10 rounded-full flex items-center justify-center shrink-0 border
+              ${theme.circleBg} ${theme.circleBorder}
+            `}
+          >
+            {tierIconClass ? (
+              <span
+                className={`plan-icon ${tierIconClass}`}
+                style={{ width: 22, height: 22 }}
+                aria-hidden="true"
+              />
+            ) : (
+              <Lock size={16} className={theme.iconColor} strokeWidth={2.2} />
+            )}
           </div>
+
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-[#0c1b33] mb-0.5 truncate">
+            <p className={`text-[13px] font-semibold mb-0.5 truncate ${theme.titleColor}`}>
               {hint || "Upgrade to unlock"}
             </p>
             {cta && (
               <button
                 onClick={() => setShowUpgrade(true)}
-                className="text-[12px] font-bold text-[#2f6fd4] hover:text-[#1a4fa0] transition-colors inline-flex items-center gap-1 group mt-0.5"
+                className={`
+                  text-[12px] font-bold transition-colors
+                  inline-flex items-center gap-1 group mt-0.5
+                  ${theme.ctaText} ${theme.ctaTextHover}
+                `}
               >
                 {cta}
-                <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
+                <ArrowRight
+                  size={11}
+                  strokeWidth={2.5}
+                  className="group-hover:translate-x-0.5 transition-transform"
+                />
               </button>
             )}
           </div>
@@ -121,7 +176,7 @@ export function StepLockedContent({
     );
   }
 
-  // ── Overlay mode (default) — blurred children with lock overlay ────────────
+  // ── Overlay mode (default) — blurred children with lock overlay ───────────
   return (
     <>
       {showUpgrade && (
@@ -129,23 +184,51 @@ export function StepLockedContent({
       )}
       <div className={`relative ${className ?? ""}`}>
         {/* Blurred / dimmed children */}
-        <div className="pointer-events-none select-none opacity-25 blur-[2px]">
+        <div className="pointer-events-none select-none opacity-55">
           {children}
         </div>
 
-        {/* Lock overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[14px]">
-          <div className="bg-white/95 backdrop-blur-sm border border-[#d0e4f7] rounded-2xl px-6 py-4 flex flex-col items-center gap-2 shadow-[0_8px_30px_rgba(12,27,51,0.08)] max-w-[260px] text-center">
-            <div className={`w-10 h-10 rounded-full ${theme.bg} border ${theme.border} flex items-center justify-center`}>
-              <IconEl size={18} className={theme.icon} strokeWidth={2.2} />
+        {/* Lock overlay card */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl">
+          <div
+            className={`
+              bg-white/95 backdrop-blur-sm rounded-2xl
+              border ${theme.overlayBorder}
+              px-6 py-4 flex flex-col items-center gap-2.5
+              shadow-[0_8px_30px_rgba(12,27,51,0.08)]
+              max-w-[260px] text-center
+            `}
+          >
+            {/* Circular icon */}
+            <div
+              className={`
+                w-11 h-11 rounded-full flex items-center justify-center border
+                ${theme.circleBg} ${theme.circleBorder}
+              `}
+            >
+              {tierIconClass ? (
+                <span
+                  className={`plan-icon ${tierIconClass}`}
+                  style={{ width: 24, height: 24 }}
+                  aria-hidden="true"
+                />
+              ) : (
+                <Lock size={18} className={theme.iconColor} strokeWidth={2.2} />
+              )}
             </div>
-            <p className="text-[12.5px] font-semibold text-[#0c1b33] leading-snug">
+
+            <p className={`text-[12.5px] font-semibold leading-snug ${theme.titleColor}`}>
               {hint || "Upgrade to unlock"}
             </p>
+
             {cta && (
               <button
                 onClick={() => setShowUpgrade(true)}
-                className="text-[12px] font-bold text-white bg-[#2f6fd4] hover:bg-[#1a4fa0] transition-colors rounded-full px-4 py-1.5 mt-0.5"
+                className={`
+                  text-[12px] font-bold text-white rounded-full
+                  px-4 py-1.5 mt-0.5 transition-colors
+                  ${theme.ctaBtn} ${theme.ctaBtnHover}
+                `}
               >
                 {cta}
               </button>

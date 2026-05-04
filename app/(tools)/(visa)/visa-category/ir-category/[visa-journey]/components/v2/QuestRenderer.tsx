@@ -247,7 +247,7 @@ export function QuestRenderer({
           </h1>
           <p
             className={`text-sm sm:text-base leading-relaxed ${
-              isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : "text-[#020a1a]"
+              isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : "text-[#020a1a]"
             }`}
           >
             {suite.subtitle}
@@ -258,12 +258,12 @@ export function QuestRenderer({
         <div className="mb-6 sm:mb-8">
           <div
             className={`w-full h-[5px] rounded-full overflow-hidden ${
-              isChapter1 ? "bg-[#e6d6c3]" : isChapter2 ? "bg-[#f4e6f3]" : isChapter3 ? "bg-[#e8ecf3]" : "bg-primary/30"
+              isChapter1 ? "bg-[#f3f0fb]" : isChapter2 ? "bg-[#f4e6f3]" : isChapter3 ? "bg-[#e8ecf3]" : "bg-primary/30"
             }`}
           >
             <div
               className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                isChapter1 ? "bg-[#a97c50]" : isChapter2 ? "bg-[#520a50]" : isChapter3 ? "bg-[#051738]" : "bg-primary"
+                isChapter1 ? "bg-[#8284bf]" : isChapter2 ? "bg-[#520a50]" : isChapter3 ? "bg-[#051738]" : "bg-primary"
               }`}
               style={{ width: `${progressPct}%` }}
             />
@@ -330,7 +330,7 @@ export function QuestRenderer({
                   </h3>
                   <p
                     className={`text-xs sm:text-[13px] leading-relaxed mt-0.5 break-words ${
-                      isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
+                      isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
                     }`}
                   >
                     {q.subtitle}
@@ -357,7 +357,7 @@ export function QuestRenderer({
         {/* Disclaimer */}
         <div
           className={`mt-10 sm:mt-12 px-4 py-3.5 rounded-[9px] text-[11px] sm:text-[12px] leading-relaxed text-center ${
-            isChapter1 ? "accent-rose bg-[#f7ede5]" : isChapter2 ? "bg-[#f4e6f3] text-[#520a50]" : "bg-[#e8ecf3] text-[#051738]"
+            isChapter1 ? "text-[#8284bf] bg-[#f3f0fb]" : isChapter2 ? "bg-[#f4e6f3] text-[#520a50]" : "bg-[#e8ecf3] text-[#051738]"
           }`}
         >
           Rahvana provides structured guidance only. This is not legal advice.
@@ -397,7 +397,7 @@ export function QuestRenderer({
           </h2>
           <p
             className={`mb-8 sm:mb-10 leading-relaxed max-w-[400px] mx-auto text-[14px] sm:text-[16px] ${
-              isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
+              isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
             }`}
           >
             {result?.body || "Please wait while we calculate your status."}
@@ -433,7 +433,7 @@ export function QuestRenderer({
         : true);
 
     const accentColor = isChapter1
-      ? { bar: "bg-[#8284bf]", barBg: "bg-[#e6d6c3]", border: "border-[#8284bf]/40", closeBg: "bg-[#e6d6c3] hover:bg-[#f7ede5]", closeStroke: "stroke-[#8284bf]", label: "accent-brown", btn: "bg-[#a97c50] text-white shadow-[#a97c50]/20 hover:bg-[#7c5737]" }
+      ? { bar: "bg-[#8284bf]", barBg: "bg-[#f3f0fb]", border: "border-[#8284bf]/40", closeBg: "bg-[#f3f0fb] hover:bg-[#e6d6f5]", closeStroke: "stroke-[#8284bf]", label: "accent-brown", btn: "bg-[#8284bf] text-white shadow-[#8284bf]/20 hover:bg-[#6b6fa8]" }
       : isChapter2
       ? { bar: "bg-[#520a50]", barBg: "bg-[#f4e6f3]", border: "border-[#520a50]", closeBg: "bg-[#f4e6f3] hover:bg-[#520a50]/10", closeStroke: "stroke-[#520a50]", label: "text-[#520a50]", btn: "bg-[#520a50] text-white shadow-[#520a50]/20 hover:bg-[#2f062e]" }
       : { bar: "bg-[#051738]", barBg: "bg-[#e8ecf3]", border: "border-[#051738]", closeBg: "bg-[#e8ecf3] hover:bg-[#051738]/10", closeStroke: "stroke-[#051738]", label: "text-[#051738]", btn: "bg-[#051738] text-white shadow-[#051738]/20 hover:bg-[#020a1a]" };
@@ -491,7 +491,7 @@ export function QuestRenderer({
             {screen.helper && (
               <p
                 className={`text-sm sm:text-[14px] mb-5 sm:mb-7 leading-relaxed ${
-                  isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
+                  isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
                 }`}
               >
                 {screen.helper}
@@ -531,7 +531,7 @@ export function QuestRenderer({
                     )}
                     <ul className="space-y-2">
                       {screen.hint.items.map((it: string, i: number) => (
-                        <li key={i} className={`flex gap-2 text-[13px] sm:text-[13.5px] leading-relaxed ${isChapter1 ? "accent-rose" : "text-[#3a4f63]"}`}>
+                        <li key={i} className={`flex gap-2 text-[13px] sm:text-[13.5px] leading-relaxed ${isChapter1 ? "text-[#8284bf]" : "text-[#3a4f63]"}`}>
                           <span className={`${isChapter1 ? "accent-brown" : "text-primary"} mt-1`}>•</span>
                           <span>{it}</span>
                         </li>
@@ -597,7 +597,7 @@ export function QuestRenderer({
                         {opt.label}
                       </div>
                       {opt.sub && (
-                        <div className={`text-xs sm:text-[13px] mt-0.5 leading-relaxed break-words ${isChapter1 ? "accent-rose" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#6b8097]"}`}>
+                        <div className={`text-xs sm:text-[13px] mt-0.5 leading-relaxed break-words ${isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#6b8097]"}`}>
                           {opt.sub}
                         </div>
                       )}

@@ -5,10 +5,6 @@ import {
   ChevronRight,
   AlertTriangle,
   Lock,
-  Crown,
-  Zap,
-  Star,
-  Sparkles,
 } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -57,6 +53,12 @@ export function ChapterView({
 
   const isChapter1 = chapterIdx === 0;
   const isFreeTier = plan.tier === "free";
+  const upgradeIconClass =
+    plan.tier === "free"
+      ? "plan-icon--basic"
+      : plan.tier === "basic"
+        ? "plan-icon--premium"
+        : "plan-icon--executive";
 
   // Chapter backgrounds
   // const chapter1Bg = "/assets/images/chapter1-bg.png";
@@ -282,132 +284,142 @@ export function ChapterView({
           </div>
         )}
 
-        {/* Plan Card */}
-        <div
-          className="
-relative overflow-hidden
-rounded-2xl
-border-2 border-teal-600
-bg-gradient-to-br from-slate-100 via-white to-slate-50
-shadow-sm
-p-6
-mb-4
-"
-        >
-          <div
-            className="
-    absolute inset-0
-    bg-[radial-gradient(circle_at_top_right,rgba(15,118,110,0.10),transparent_55%)]
-    pointer-events-none
-  "
-          />
+      {/* Plan Card */}
+<div
+  className={`
+    relative overflow-hidden
+    rounded-2xl border-2
+    bg-gradient-to-br from-slate-100 via-white to-slate-50
+    shadow-sm p-6 mb-4
+    ${plan.tier === "free"
+      ? "border-slate-300"
+      : plan.tier === "basic"
+        ? "border-[#a8d4d4]"
+        : plan.tier === "premium"
+          ? "border-[#c0c0cc]"
+          : "border-[#e8c96a]"
+    }
+  `}
+>
+  <div
+    className={`
+      absolute inset-0 pointer-events-none
+      ${plan.tier === "free"
+        ? "bg-[radial-gradient(circle_at_top_right,rgba(100,116,139,0.08),transparent_55%)]"
+        : plan.tier === "basic"
+          ? "bg-[radial-gradient(circle_at_top_right,rgba(45,122,122,0.10),transparent_55%)]"
+          : plan.tier === "premium"
+            ? "bg-[radial-gradient(circle_at_top_right,rgba(90,90,110,0.10),transparent_55%)]"
+            : "bg-[radial-gradient(circle_at_top_right,rgba(154,111,0,0.10),transparent_55%)]"
+      }
+    `}
+  />
 
-          <div className="relative flex items-start justify-between gap-5">
-            {/* LEFT SIDE */}
-            <div className="flex-1 min-w-0">
-              {/* Badge Row */}
-              <div
-                className="
-        inline-flex items-center gap-2
-        px-3.5 py-2
-        rounded-full
-        bg-white
-        border border-slate-200
-        shadow-sm
-        mb-3
-      "
-              >
-                {plan.tier === "free" ? (
-                  <>
-                    <Lock
-                      size={14}
-                      className="text-slate-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                      Free Plan
-                    </span>
-                  </>
-                ) : plan.tier === "basic" ? (
-                  <>
-                    <Star
-                      size={14}
-                      className="text-blue-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">
-                      Basic Plan
-                    </span>
-                  </>
-                ) : plan.tier === "premium" ? (
-                  <>
-                    <Sparkles
-                      size={14}
-                      className="text-violet-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-violet-700 uppercase tracking-wider">
-                      Premium Plan
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Crown
-                      size={14}
-                      className="text-amber-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">
-                      Executive Plan
-                    </span>
-                  </>
-                )}
-              </div>
+  <div className="relative flex items-start justify-between gap-5">
+    {/* LEFT SIDE */}
+    <div className="flex-1 min-w-0">
 
-              {/* Title */}
-              <h3 className="text-[15px] font-bold text-slate-900 mb-1">
-                {plan.tier === "executive"
-                  ? "Your Current Plan"
-                  : "Upgrade Plan"}
-              </h3>
+      {/* Badge Row */}
+      <div
+        className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full border shadow-sm mb-3
+          ${plan.tier === "free"
+            ? "bg-white border-slate-200"
+            : plan.tier === "basic"
+              ? "bg-[#e8f4f4] border-[#a8d4d4]"
+              : plan.tier === "premium"
+                ? "bg-[#f3f0fb] border-[#c9bef2]"
+                : "bg-[#fdf6e3] border-[#e8c96a]"
+          }
+        `}
+      >
+        {plan.tier === "free" ? (
+          <>
+            <span className="plan-icon plan-icon--free" />
+            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">
+              Free Plan
+            </span>
+          </>
+        ) : plan.tier === "basic" ? (
+          <>
+            <span className="plan-icon plan-icon--basic" />
+            <span className="text-[11px] font-bold text-[#2d7a7a] uppercase tracking-wider">
+              Basic Plan
+            </span>
+          </>
+        ) : plan.tier === "premium" ? (
+          <>
+            <span className="plan-icon plan-icon--premium" />
+            <span className="text-[11px] font-bold text-[#5a5a6e] uppercase tracking-wider">
+              Premium Plan
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="plan-icon plan-icon--executive" />
+            <span className="text-[11px] font-bold text-[#9a6f00] uppercase tracking-wider">
+              Executive Plan
+            </span>
+          </>
+        )}
+      </div>
 
-              {/* Description */}
-              <p className="text-[13.5px] text-slate-600 leading-relaxed line-clamp-2">
-                {plan.tier === "free"
-                  ? "Your Free plan includes the first step of Chapter 1. Upgrade to access all the steps."
-                  : plan.tier === "basic"
-                    ? "Your Basic plan includes full roadmap access. Upgrade to Premium for step guides and vault."
-                    : plan.tier === "premium"
-                      ? "Your Premium plan unlocks guides, document vault, tracking, and all productivity tools."
-                      : "Your Executive plan includes everything plus 221g planner, mock interviews, and support."}
-              </p>
-            </div>
+      {/* Title */}
+      <h3 className="text-[15px] font-bold text-slate-900 mb-1">
+        {plan.tier === "executive" ? "Your Current Plan" : "Upgrade Plan"}
+      </h3>
 
-            {/* RIGHT SIDE */}
-            {plan.tier !== "executive" && (
-              <div className="pt-[2px]">
-                <button
-                  onClick={() => setUpgradeModalFeature("checklist_engine")}
-                  className="
-            inline-flex items-center gap-2
-            px-4 py-2.5
-            rounded-xl
-            bg-gradient-to-r from-teal-600 to-emerald-600
-            hover:from-teal-700 hover:to-emerald-700
-            active:scale-[0.98]
-            text-white text-[12.5px] font-semibold
-            transition-all duration-200
+      {/* Description */}
+      <p className="text-[13.5px] text-slate-600 leading-relaxed line-clamp-2">
+        {plan.tier === "free"
+          ? "Your Free plan includes the first step of Chapter 1. Upgrade to access all the steps."
+          : plan.tier === "basic"
+            ? "Your Basic plan includes full roadmap access. Upgrade to Premium for step guides and vault."
+            : plan.tier === "premium"
+              ? "Your Premium plan unlocks guides, document vault, tracking, and all productivity tools."
+              : "Your Executive plan includes everything plus 221g planner, mock interviews, and support."}
+      </p>
+    </div>
+
+    {/* RIGHT SIDE */}
+    {plan.tier !== "executive" && (
+      <div className="pt-[2px] shrink-0">
+        <button
+          onClick={() => setUpgradeModalFeature("checklist_engine")}
+          className={`
+            relative overflow-hidden
+            inline-flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-2xl
+            font-bold whitespace-nowrap
             shadow-md hover:shadow-lg
-            whitespace-nowrap
-          "
-                >
-                  <Zap size={16} strokeWidth={2.5} />
-                  Upgrade
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+            active:scale-[0.96]
+            transition-all duration-200
+            group
+            ${plan.tier === "free"
+              ? "bg-[#a8d9d5] text-[#0a5a54]"
+              : plan.tier === "basic"
+                ? "bg-[#c0b8e8] text-[#4a2d8a]"
+                : "bg-[#e8d4b0] text-[#7a5a20]"
+            }
+          `}
+        >
+          <span
+            className={`plan-icon ${
+              plan.tier === "free"
+                ? "plan-icon--basic"
+                : plan.tier === "basic"
+                  ? "plan-icon--premium"
+                  : plan.tier === "premium"
+                    ? "plan-icon--executive"
+                    : "plan-icon--executive"
+            }`}
+            style={{ width: 32, height: 32, filter: plan.tier === "premium" ? "saturate(1.06) hue-rotate(-6deg)" : "none" }}
+            aria-hidden="true"
+          />
+          <span className="text-[13px] font-bold leading-none">Upgrade</span>
+        </button>
+      </div>
+    )}
+  </div>
+</div>
 
         <div className="flex flex-col gap-1.5">
           {activeSteps.map((step, idx) => {
@@ -448,14 +460,15 @@ mb-4
             let iconBorder = borderColor;
             let iconText = textColor;
 
-            // If step is locked, override colors to grayed out
+            // If step is locked, keep content legible while indicating locked state
             if (isStepLocked) {
               borderColor = "border-[#d0d7e0]";
               bgColor = "bg-[#f7f8fa]";
-              textColor = "text-[#8b94a5]";
+              textColor = "text-[#8b94a5]"; // darker title for legibility
               iconBg = "bg-[#e5eaef]";
               iconBorder = "border-[#c5cfd9]";
-              iconText = "text-[#8b94a5]";
+                         iconText = "text-[#8b94a5]";
+
             } else if (isCompleted) {
               borderColor = isChapter3
                 ? "border-[#051738]"

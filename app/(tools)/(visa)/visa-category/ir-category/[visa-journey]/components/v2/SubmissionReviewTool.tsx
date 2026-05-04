@@ -9,7 +9,6 @@ import {
   Save,
   X,
   Lock,
-  Crown,
 } from "lucide-react";
 
 interface SubmissionReviewToolProps {
@@ -197,11 +196,11 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
             : "border-[#d0e4f7]"
         }`}
       >
-        {/* Crown lock badge */}
+        {/* Tier lock badge */}
         {isStatusLocked && (
-          <div className="absolute top-[12px] right-[12px] flex items-center gap-[3px] bg-[#fef3d8] border border-[#f0c878] rounded-full px-[7px] py-[2px]">
-            <Crown size={9} strokeWidth={2.4} className="text-[#a06000]" />
-          </div>
+          <div className={`plan-icon-badge plan-icon-badge--premium plan-icon-badge--md`}>
+  <span className={`plan-icon plan-icon--premium`} />
+</div>
         )}
 
         <div className="flex items-center gap-[12px] mb-[20px]">

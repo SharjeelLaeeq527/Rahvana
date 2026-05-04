@@ -1509,6 +1509,14 @@ const renderDocActionModal = () => {
 
   const canReadGuide = plan.canUse(guideFeature);
   const canUpload = plan.canUse("document_vault");
+  const guideTierIconClass = (() => {
+    const target = plan.entitlement(guideFeature).upgradeTarget;
+    return target ? `plan-icon--${target}` : "plan-icon--premium";
+  })();
+  const uploadTierIconClass = (() => {
+    const target = plan.entitlement("document_vault").upgradeTarget;
+    return target ? `plan-icon--${target}` : "plan-icon--premium";
+  })();
 
   return (
     <>
@@ -1582,10 +1590,10 @@ const renderDocActionModal = () => {
                         : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
                     }`}
                 >
-                  {/* Crown badge — only when locked */}
+                  {/* Tier badge — only when locked */}
                   {!canReadGuide && (
                     <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                      <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
+                      <span className={`plan-icon ${guideTierIconClass} scale-110`} aria-hidden="true" />
                       <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
                         Upgrade
                       </span>
@@ -1677,10 +1685,10 @@ const renderDocActionModal = () => {
                         : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
                     }`}
                 >
-                  {/* Crown badge — only when locked */}
+                  {/* Tier badge — only when locked */}
                   {!canUpload && (
                     <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                      <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
+                      <span className={`plan-icon ${uploadTierIconClass} scale-110`} aria-hidden="true" />
                       <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
                         Upgrade
                       </span>
@@ -2567,7 +2575,7 @@ const renderDocActionModal = () => {
           {/* ALERT NOTE (Step 3 SPECIFIC) */}
           {tool.alert_note && (
             <div className="flex items-center gap-[10px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] padding-12 px-[16px] py-[12px] mb-[28px]">
-              <Zap className="h-4 w-4 text-amber-500" />
+              <Info className="h-4 w-4 text-amber-500" />
               <div className="text-[13px] text-[#8a6200] leading-normal">
                 {tool.alert_note}
               </div>
@@ -4586,6 +4594,10 @@ const renderDocActionModal = () => {
     {tool.guide_card && (() => {
       const guideFeatureKey = "step_guides";
       const isGuideLocked = !plan.canUse(guideFeatureKey);
+      const guideCardTierIconClass = (() => {
+        const target = plan.entitlement(guideFeatureKey).upgradeTarget;
+        return target ? `plan-icon--${target}` : "plan-icon--premium";
+      })();
 
       return (
         <button
@@ -4611,7 +4623,7 @@ const renderDocActionModal = () => {
                 }`
           }`}
         >
-          {/* Crown lock badge — shown only when locked */}
+          {/* Tier lock badge — shown only when locked */}
           
           {tool.wallet_card ? (
             /* Vertical Design (Original - Shared) */
@@ -4652,7 +4664,7 @@ const renderDocActionModal = () => {
               >
                 {isGuideLocked ? (
   <>
-    <Crown size={11} strokeWidth={2.4} />
+    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
     <span>View guide</span>
     <ArrowRight size={11} strokeWidth={2} />
   </>
@@ -4704,7 +4716,7 @@ const renderDocActionModal = () => {
   }`}
 >
   {isGuideLocked ? (
-    <Crown size={13} strokeWidth={2.4} />
+    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
   ) : (
     <ArrowRight size={14} strokeWidth={2.5} />
   )}
@@ -4743,7 +4755,7 @@ const renderDocActionModal = () => {
         }
       `}
     >
-      {/* Crown lock badge */}
+      {/* Tier lock badge */}
      
       <div className="flex items-center gap-[10px] mb-[12px]">
         <div

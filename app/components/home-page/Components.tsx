@@ -2160,7 +2160,7 @@ export function IndividualToolsScene() {
       </div>
 
       {/* ── bottom carousel strip with centre-pop ── */}
-      <ToolCarousel />
+      <ToolCarousel activeIdx={activeIdx} />
     </div>
   );
 }
