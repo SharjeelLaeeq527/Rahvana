@@ -1594,260 +1594,181 @@ export function TwoWaysMobile({
 
 export function GuidedRoadmapScene() {
   const reduceMotion = useReducedMotion();
-  const [activeChapter, setActiveChapter] = useState(0);
+
+  // Chapter data for the horizontal nav + right step list
+  const chapterNav = [
+    { n: 1, label: "USCIS Petition",  color: "#8284BF", ring: "#B9BBE2", bg: "#F0F1FB", text: "#4E518C", pct: 33, active: true  },
+    { n: 2, label: "NVC / CEAC",      color: "#8B4388", ring: "#8B4388", bg: "#F4E6F3", text: "#520A50", pct: 0,  active: false },
+    { n: 3, label: "Med + Interview", color: "#31415F", ring: "#31415F", bg: "#E8ECF3", text: "#051738", pct: 0,  active: false },
+  ] as const;
+
+  const steps = [
+    { id: 1, name: "Determine Eligibility",     done: true,  current: false },
+    { id: 2, name: "Gather Required Documents", done: true,  current: false },
+    { id: 3, name: "Review Filing Methods",     done: false, current: true  },
+    { id: 4, name: "Fill Form I-130",           done: false, current: false },
+    { id: 5, name: "Fill Form I-130A",          done: false, current: false },
+    { id: 6, name: "Submit to USCIS",           done: false, current: false },
+  ];
 
   return (
-    <div
-      style={{
-        width: 600,
-        height: 500,
-        borderRadius: 32,
-        background: "#f8fafc",
-        border: "1px solid #dde8e6",
-        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position: "absolute",
-        left: 40,
-        top: 30,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {/* ── Nav bar (Dashboard style) ── */}
-      <div
-        style={{
-          height: 50,
-          background: "white",
-          borderBottom: "1px solid #e2e8f0",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 18px",
-          gap: 12,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 26, height: 26, borderRadius: 8, background: "#0d7377", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <LayoutDashboard size={13} color="white" strokeWidth={3} />
+    <div style={{ width: 600, height: 500, borderRadius: 32, background: "#f4f7fb", border: "1px solid #dde8e6", boxShadow: "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)", position: "absolute", left: 40, top: 30, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+
+      {/* ── Top bar (52px) ── */}
+      <div style={{ height: 52, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 18px", gap: 8, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 10, background: "linear-gradient(135deg, #0d7377, #0a5e62)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(13,115,119,0.28)" }}>
+            <Compass size={15} color="white" strokeWidth={2.5} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: 10.5, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.05em", color: "#1e293b", lineHeight: 1 }}>
-              Case Dashboard
-            </span>
-            <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b", marginTop: 1 }}>
-              IR-1 · Islamabad Embassy
-            </span>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.06em", color: "#1e293b", lineHeight: 1 }}>IR-1 Journey</div>
+            <div style={{ fontSize: 9, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Islamabad Embassy · Online Filing</div>
           </div>
         </div>
-
-        <div style={{ ml: "auto", display: "flex", alignItems: "center", gap: 14, marginLeft: "auto" }}>
-          <div style={{ position: "relative", cursor: "pointer" }}>
-            <Bell size={17} className="text-[#64748b] hover:text-[#0d7377] transition-colors" />
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ position: "relative" }}>
+            <Bell size={17} color="#64748b" strokeWidth={2} />
             <div style={{ position: "absolute", top: -1, right: -1, width: 6, height: 6, borderRadius: "50%", background: "#ef4444", border: "1.5px solid white" }} />
           </div>
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e2e8f0", cursor: "pointer" }}>
-            <User size={15} className="text-[#64748b]" />
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e2e8f0" }}>
+            <User size={14} color="#64748b" strokeWidth={2} />
           </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* ── Main content (Hero + 3-Col Grid + Alerts) ── */}
-        <div
-          style={{
-            flex: 1,
-            padding: "14px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-            overflowY: "auto",
-            scrollbarWidth: "none",
-          }}
-        >
-          {/* Hero Card (Next Action) */}
-          <div
-            style={{
-              background: "linear-gradient(135deg, #0c1b33 0%, #162a4a 100%)",
-              borderRadius: 18,
-              padding: "16px",
-              color: "white",
-              position: "relative",
-              overflow: "hidden",
-              border: "1px solid rgba(255,255,255,0.1)",
-              boxShadow: "0 10px 24px rgba(12,27,51,0.15)",
-            }}
-          >
-            <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", background: "rgba(13,115,119,0.3)", padding: "3px 7px", borderRadius: 6, color: "#5ce1e6", letterSpacing: "0.05em", width: "fit-content", marginBottom: 8 }}>
-              Current Priority
+      {/* ── Horizontal chapter timeline (42px) ── */}
+      <div style={{ height: 42, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", gap: 0, flexShrink: 0 }}>
+        {chapterNav.map((ch, idx) => (
+          <div key={ch.n} style={{ display: "flex", alignItems: "center", flex: idx < 2 ? "none" : 1 }}>
+            {/* Node + label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
+              <div style={{ width: 24, height: 24, borderRadius: "50%", background: ch.active ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)` : "#f1f5f9", border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none", flexShrink: 0 }}>
+                {ch.active ? <span style={{ fontSize: 10, fontWeight: 900, color: "white" }}>{ch.n}</span> : <Lock size={9} color="#94a3b8" strokeWidth={2.5} />}
+              </div>
+              <div>
+                <div style={{ fontSize: 9.5, fontWeight: 800, color: ch.active ? "#1e293b" : "#94a3b8", lineHeight: 1, whiteSpace: "nowrap" }}>{ch.label}</div>
+                <div style={{ fontSize: 7.5, fontWeight: 700, color: ch.active ? ch.text : "#cbd5e1", marginTop: 1 }}>{ch.active ? `${ch.pct}% done` : "Locked"}</div>
+              </div>
             </div>
-            
-            <h3 style={{ fontSize: 16, fontWeight: 900, marginBottom: 5, lineHeight: 1.1, letterSpacing: "-0.01em" }}>
-              Review Filing Methods
-            </h3>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.4, maxWidth: "95%", marginBottom: 14 }}>
-              Determine whether to file Form I-130 online ($625) or via paper mail ($675).
-            </p>
-            
-            <button
-              style={{
-                background: "#0d7377",
-                color: "white",
-                border: "none",
-                borderRadius: 10,
-                padding: "7px 16px",
-                fontSize: 11.5,
-                fontWeight: 800,
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                cursor: "pointer",
-              }}
-            >
-              Continue Journey
-              <ArrowRight size={13} strokeWidth={3} />
-            </button>
+            {/* Connector line between chapters */}
+            {idx < 2 && <div style={{ flex: 1, height: 2, background: idx === 0 ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)` : "#e2e8f0", margin: "0 10px", minWidth: 24 }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Main area — two columns (362px total) ── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+        {/* Left: Journey card (192px) */}
+        <div style={{ width: 192, background: "white", borderRight: "1px solid #edf2f0", padding: "14px 15px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+
+          {/* Chapter header */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#8284BF" }} className={reduceMotion ? "" : "animate-pulse"} />
+              <span style={{ fontSize: 8, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4E518C" }}>Chapter 1 · In Progress</span>
+            </div>
+            <div style={{ fontSize: 12.5, fontWeight: 900, color: "#1e293b", lineHeight: 1.25, marginBottom: 7 }}>USCIS Petition Filing</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ flex: 1, height: 5, borderRadius: 99, background: "#e8edf2", overflow: "hidden" }}>
+                <div style={{ width: "33%", height: "100%", background: "linear-gradient(90deg, #8284BF, #4E518C)", borderRadius: 99 }} />
+              </div>
+              <span style={{ fontSize: 8.5, fontWeight: 800, color: "#4E518C", whiteSpace: "nowrap" }}>2/6</span>
+            </div>
           </div>
 
-          {/* Chapters 3-Column Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-            {chapters.map((ch, i) => (
-              <div
-                key={ch.number}
-                onClick={() => setActiveChapter(i)}
-                style={{
-                  background: "white",
-                  borderRadius: 14,
-                  padding: "8px 10px",
-                  border: activeChapter === i ? "2px solid #0d7377" : "1px solid #e2e8f0",
-                  cursor: "pointer",
-                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 5,
-                  boxShadow: activeChapter === i ? "0 6px 16px rgba(13,115,119,0.1)" : "0 2px 4px rgba(0,0,0,0.02)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 8.5, fontWeight: 900, color: "#94a3b8", textTransform: "uppercase" }}>
-                    Ch. {ch.number}
-                  </span>
-                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: ch.pct === 100 ? "#10b981" : "#0d7377" }} />
-                </div>
-                <div style={{ fontSize: 10, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, height: 24, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {ch.name.replace(/^Chapter\s\d+:\s/, "")}
-                </div>
-                <div style={{ marginTop: "auto" }}>
-                  <div style={{ width: "100%", height: 3, borderRadius: 99, background: "#f1f5f9", overflow: "hidden" }}>
-                    <div style={{ width: `${ch.pct}%`, height: "100%", background: activeChapter === i ? "#0d7377" : "#cbd5e1", borderRadius: 99 }} />
+          <div style={{ height: 1, background: "#f0f4f3", marginBottom: 10 }} />
+
+          {/* Current step card */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8", marginBottom: 5 }}>Active Step</div>
+            <div style={{ background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)", borderRadius: 10, padding: "9px 10px", border: "1px solid #B9BBE2" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#4E518C", lineHeight: 1.3, marginBottom: 3 }}>Review Filing Methods</div>
+              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>Step 3 of 6 · Online or paper mail?</div>
+            </div>
+          </div>
+
+          {/* Alert */}
+          <div style={{ borderRadius: 9, padding: "7px 9px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: 10 }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#f59e0b", marginTop: 3.5, flexShrink: 0 }} />
+              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>Fresh NADRA records required for ISL embassy.</span>
+            </div>
+          </div>
+
+          {/* CTA — marginTop: auto, never cropped */}
+          <button type="button" style={{ width: "100%", background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)", border: "none", borderRadius: 11, padding: "11px 14px", color: "white", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, cursor: "pointer", boxShadow: "0 4px 14px rgba(13,115,119,0.28)", marginTop: "auto", flexShrink: 0 }}>
+            Continue Step
+            <ArrowRight size={13} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Right: Step list (flex: 1) */}
+        <div style={{ flex: 1, padding: "14px 14px", overflowY: "auto", scrollbarWidth: "none" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+            <Signpost size={11} color="#0d7377" strokeWidth={2.5} />
+            <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#64748b" }}>Chapter 1 Steps</span>
+            <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800, color: "#4E518C", background: "#F0F1FB", border: "1px solid #B9BBE2", padding: "2px 7px", borderRadius: 5 }}>2 / 6 done</span>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {steps.map((step, idx) => (
+              <div key={step.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: step.current ? "8px 10px" : "5px 10px", borderRadius: 10, background: step.current ? "linear-gradient(to right, #F0F1FB, #f9f9fe)" : "transparent", border: step.current ? "1.5px solid #B9BBE2" : "1px solid transparent", boxShadow: step.current ? "0 2px 7px rgba(130,132,191,0.12)" : "none" }}>
+                {step.done ? (
+                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Check size={10} color="white" strokeWidth={3} />
                   </div>
-                </div>
+                ) : step.current ? (
+                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#8284BF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 3px rgba(130,132,191,0.22)" }}>
+                    <ChevronRight size={10} color="white" strokeWidth={3} />
+                  </div>
+                ) : (
+                  <div style={{ width: 19, height: 19, borderRadius: "50%", border: "1.5px solid #dde8e6", background: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: "#cbd5e1" }}>{idx + 1}</span>
+                  </div>
+                )}
+                <span style={{ fontSize: 11.5, fontWeight: step.current ? 800 : step.done ? 600 : 500, color: step.current ? "#4E518C" : step.done ? "#059669" : "#94a3b8" }}>
+                  {step.name}
+                </span>
+                {step.current && <span style={{ marginLeft: "auto", fontSize: 8, fontWeight: 900, color: "#4E518C", background: "rgba(130,132,191,0.15)", padding: "2px 7px", borderRadius: 5, textTransform: "uppercase", flexShrink: 0 }}>Active</span>}
               </div>
             ))}
           </div>
 
-          {/* Smart Alerts / Case Insights */}
-          <div style={{ background: "#f8fafc", borderRadius: 16, padding: "10px 12px", border: "1px dashed #cbd5e1" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-              <Signpost size={12} className="text-[#0d7377]" />
-              <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", color: "#475569", letterSpacing: "0.05em" }}>
-                Case Insights
-              </span>
-            </div>
-            <div style={{ display: "flex", gap: 8, background: "white", padding: "8px 10px", borderRadius: 10, border: "1px solid #e2e8f0" }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b", marginTop: 4, flexShrink: 0 }} />
-              <div style={{ fontSize: 10, color: "#475569", lineHeight: 1.4 }}>
-                <strong style={{ color: "#1e293b" }}>Document Alert:</strong> Fresh NADRA records are required for Islamabad embassy cases.
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Access Footer */}
-          <div style={{ marginTop: "auto", display: "flex", gap: 6, paddingTop: 6 }}>
-            {["Fee Guide", "Checklist", "FAQs"].map(txt => (
-              <div key={txt} style={{ flex: 1, padding: "6px", background: "white", borderRadius: 10, border: "1px solid #e2e8f0", fontSize: 9, fontWeight: 800, color: "#64748b", textAlign: "center", cursor: "pointer" }}>
-                {txt}
+          {/* Locked chapters – compact */}
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
+            {[
+              { n: 2, label: "NVC / CEAC Processing", steps: "8 steps" },
+              { n: 3, label: "Medical + Interview",    steps: "6 steps" },
+            ].map(ch => (
+              <div key={ch.n} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 9, background: "white", border: "1px dashed #e2e8f0" }}>
+                <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#f1f5f9", border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>Ch. {ch.n} · {ch.label}</span>
+                <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 700, color: "#cbd5e1", flexShrink: 0 }}>{ch.steps}</span>
               </div>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* ── Sidebar (Tracking & Stats) ── */}
-        <div
-          style={{
-            width: 190,
-            background: "white",
-            borderLeft: "1px solid #e2e8f0",
-            padding: "14px 12px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-            flexShrink: 0,
-          }}
-        >
-          {/* Live Status */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-              <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} className="animate-pulse" />
-              <span style={{ fontSize: 9.5, fontWeight: 900, textTransform: "uppercase", color: "#1e293b", letterSpacing: "0.08em" }}>
-                Live Status
-              </span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {caseFields.slice(0, 3).map(([label, value]) => (
-                <div key={label} style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: 8.5, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>{label}</span>
-                  <span style={{ fontSize: 10.5, fontWeight: 800, color: "#1e293b" }}>{value}</span>
-                </div>
-              ))}
+      {/* ── Bottom stats bar (44px) ── */}
+      <div style={{ height: 44, background: "white", borderTop: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", flexShrink: 0 }}>
+        {([
+          { label: "Steps Done",    value: "2 / 18"    },
+          { label: "Chapter",       value: "1 of 3"    },
+          { label: "Est. Timeline", value: "~8 months" },
+          { label: "Overall",       value: "17%"       },
+        ] as const).map((stat, i) => (
+          <div key={stat.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+            {i > 0 && <div style={{ width: 1, height: 18, background: "#e8edf2", marginRight: "auto", flexShrink: 0 }} />}
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <div style={{ fontSize: 7.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8" }}>{stat.label}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 900, color: "#1e293b", marginTop: 1 }}>{stat.value}</div>
             </div>
           </div>
-
-          <div style={{ height: 1, background: "#f1f5f9" }} />
-
-          {/* Milestone Quick-Look */}
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <span style={{ fontSize: 9.5, fontWeight: 900, textTransform: "uppercase", color: "#1e293b", letterSpacing: "0.08em" }}>
-                Milestones
-              </span>
-              <span style={{ fontSize: 9.5, fontWeight: 900, color: "#0d7377", background: "#f0fdfa", padding: "1px 5px", borderRadius: 5 }}>3/10</span>
-            </div>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {milestones.slice(0, 3).map(([label, done]) => (
-                <div key={label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <div
-                    style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: 4,
-                      background: done ? "#0d7377" : "#f1f5f9",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: done ? "none" : "1.5px solid #e2e8f0",
-                    }}
-                  >
-                    {done && <Check size={9} color="white" strokeWidth={4} />}
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: done ? "#0d7377" : "#64748b" }}>
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Footer Card */}
-          <div style={{ marginTop: "auto", padding: "10px", borderRadius: 14, background: "#0c1b33", color: "white", textAlign: "center" }}>
-            <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 3 }}>
-              Next Verification
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 900, color: "#5ce1e6" }}>
-              TBD
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
