@@ -3418,6 +3418,7 @@ const renderDocActionModal = () => {
                         <input
                           type="date"
                           value={apDetails.lastCheck}
+                          max={new Date().toISOString().split("T")[0]}
                           onChange={(e) =>
                             setApDetails({
                               ...apDetails,

@@ -922,16 +922,20 @@ export function DashboardView({
                   const diffTime = new Date().getTime() - dqDateObj.getTime();
                   const rawDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                   const daysSinceDq = Math.max(0, rawDays);
+                  // DQ dates must be in the past — if >60 days in future it's a data entry error
+                  const isDqDateInvalid = rawDays < -60;
                   const dqLabel =
-                    rawDays < -1
-                      ? `in ${Math.abs(rawDays)} days`
-                      : rawDays === -1
-                        ? "tomorrow"
-                        : rawDays === 0
-                          ? "today"
-                          : rawDays === 1
-                            ? "1 day ago"
-                            : `${rawDays} days ago`;
+                    isDqDateInvalid
+                      ? "Check date"
+                      : rawDays < -1
+                        ? `in ${Math.abs(rawDays)} days`
+                        : rawDays === -1
+                          ? "tomorrow"
+                          : rawDays === 0
+                            ? "today"
+                            : rawDays === 1
+                              ? "1 day ago"
+                              : `${rawDays} days ago`;
 
                   if (!currentSchedulingMonthYear) {
                     return (
@@ -958,10 +962,15 @@ export function DashboardView({
                                 year: "numeric",
                               })}
                             </span>
-                            <span className="text-[10px] text-[#34d399] font-black uppercase">
-                              {dqLabel.toUpperCase()}
+                            <span className={`text-[10px] font-black uppercase ${isDqDateInvalid ? "text-amber-400" : "text-[#34d399]"}`}>
+                              {isDqDateInvalid ? "⚠ Date seems incorrect" : dqLabel.toUpperCase()}
                             </span>
                           </div>
+                          {isDqDateInvalid && (
+                            <p className="text-[11px] text-amber-400 mt-2">
+                              DQ dates are in the past. Please go to <b>Chapter 2 → Step 10</b> and correct your DQ date.
+                            </p>
+                          )}
                         </div>
                       </div>
                     );

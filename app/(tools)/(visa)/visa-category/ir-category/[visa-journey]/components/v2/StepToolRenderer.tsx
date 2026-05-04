@@ -150,6 +150,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
             <input
               type="date"
               value={dqDate}
+              max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setDqDate(e.target.value)}
               className="p-2.5 border rounded-lg"
             />
