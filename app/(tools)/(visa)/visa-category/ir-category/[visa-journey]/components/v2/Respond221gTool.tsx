@@ -167,6 +167,7 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
         setActiveUploadType={setActiveUploadType}
         updateMetadata={actions.updateMetadata}
         uploadedItemIds={state.metadata?.respond221gUploaded as Record<string, boolean> | undefined}
+        hideDisclaimer
       />
     </div>
   );

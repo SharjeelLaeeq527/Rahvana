@@ -167,6 +167,12 @@ export function SiteHeader({
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [readIds, setReadIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem("rahvana_notif_read");
+      return saved ? new Set(JSON.parse(saved)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Real notification data
@@ -298,6 +304,22 @@ export function SiteHeader({
     return () => window.removeEventListener("refresh-reminders", fetchNotifications);
   }, [resolvedUser, fetchNotifications]);
 
+  const markAllRead = (ids: string[]) => {
+    setReadIds((prev) => {
+      const next = new Set([...prev, ...ids]);
+      try { localStorage.setItem("rahvana_notif_read", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
+
+  const markOneRead = (id: string) => {
+    setReadIds((prev) => {
+      const next = new Set([...prev, id]);
+      try { localStorage.setItem("rahvana_notif_read", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
+
   const handleBellClick = () => {
     setNotificationsOpen((prev) => !prev);
   };
@@ -313,7 +335,7 @@ export function SiteHeader({
     }
   };
 
-  const unreadCount = notifList.filter((n) => !n.is_dismissed).length;
+  const unreadCount = notifList.filter((n: any) => !readIds.has(n.id)).length;
   const isDev = process.env.NODE_ENV === "development";
   const [seeding, setSeeding] = useState(false);
 
@@ -985,20 +1007,30 @@ export function SiteHeader({
                               {notifList.slice(0, 6).map((n: any) => {
                                 const isExpanded = expandedNotifs.has(n.id);
                                 const bodyLong = n.body && n.body.length > 80;
+                                const isRead = readIds.has(n.id);
                                 return (
                                   <div
                                     key={n.id}
-                                    className={`px-4 py-3 flex gap-3 items-start transition-colors ${n.priority === "critical" || n.priority === "high" ? "bg-orange-50/50 hover:bg-orange-50" : "hover:bg-muted/30"}`}
+                                    className={`px-4 py-3 flex gap-3 items-start transition-colors ${
+                                      !isRead
+                                        ? n.priority === "critical" || n.priority === "high"
+                                          ? "bg-orange-50 hover:bg-orange-100/60"
+                                          : "bg-[#f0f7ff] hover:bg-[#e8f2fb]"
+                                        : "bg-white hover:bg-muted/30"
+                                    }`}
                                   >
-                                    <div
-                                      className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-[#0d7377]"}`}
-                                    />
+                                    {/* Unread dot — only when unread */}
+                                    <div className="mt-1.5 shrink-0 w-1.5 h-1.5">
+                                      {!isRead && (
+                                        <div className={`w-1.5 h-1.5 rounded-full ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-[#0d7377]"}`} />
+                                      )}
+                                    </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-[12px] font-bold text-foreground">
+                                      <p className={`text-[12px] text-foreground ${isRead ? "font-medium opacity-70" : "font-bold"}`}>
                                         {n.title}
                                       </p>
                                       <p
-                                        className={`text-[11px] text-muted-foreground mt-0.5 leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}
+                                        className={`text-[11px] mt-0.5 leading-relaxed ${isRead ? "text-muted-foreground/60" : "text-muted-foreground"} ${isExpanded ? "" : "line-clamp-2"}`}
                                       >
                                         {n.body}
                                       </p>
@@ -1010,6 +1042,15 @@ export function SiteHeader({
                                           {isExpanded
                                             ? "Show less ↑"
                                             : "Read more ↓"}
+                                        </button>
+                                      )}
+                                      {!isRead && (
+                                        <button
+                                          onClick={() => markOneRead(n.id)}
+                                          className="text-[10px] font-semibold text-[#0d7377] hover:underline flex items-center gap-1 mt-1"
+                                        >
+                                          <span className="w-3 h-3 rounded-full border border-[#0d7377] flex items-center justify-center text-[7px]">✓</span>
+                                          Mark as read
                                         </button>
                                       )}
                                       {n.action_label && n.action_url && (
@@ -1040,10 +1081,10 @@ export function SiteHeader({
                             <button
                               className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
                               onClick={() =>
-                                notifList.forEach((n) => dismissNotif(n.id))
+                                notifList.forEach((n: any) => dismissNotif(n.id))
                               }
                             >
-                              Dismiss all
+                              Delete all
                             </button>
                           )}
                           <button

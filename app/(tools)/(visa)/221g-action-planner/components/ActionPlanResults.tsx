@@ -40,6 +40,7 @@ interface ActionPlanResultsProps {
   setActiveUploadType?: (type: "doc" | "hh" | "financial" | null) => void;
   updateMetadata?: (data: Record<string, any>) => void;
   uploadedItemIds?: Record<string, boolean>;
+  hideDisclaimer?: boolean;
 }
 
 /* ─── Doc item type ─────────────────────────────────────────── */
@@ -240,6 +241,7 @@ export default function ActionPlanResults({
   setActiveUploadType,
   updateMetadata,
   uploadedItemIds,
+  hideDisclaimer,
 }: ActionPlanResultsProps) {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
@@ -718,13 +720,15 @@ export default function ActionPlanResults({
       )}
 
       {/* ── Disclaimer ── */}
-      <div className="flex items-start gap-2.5 mt-5 p-3.5 rounded-xl bg-amber-50/60 border border-amber-100">
-        <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-amber-700/80 leading-relaxed">
-          Based on your inputs. Always follow your embassy&apos;s 221(g) letter
-          exactly. This is not legal advice.
-        </p>
-      </div>
+      {!hideDisclaimer && (
+        <div className="flex items-start gap-2.5 mt-5 p-3.5 rounded-xl bg-amber-50/60 border border-amber-100">
+          <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-amber-700/80 leading-relaxed">
+            Based on your inputs. Always follow your embassy&apos;s 221(g) letter
+            exactly. This is not legal advice.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
