@@ -291,12 +291,12 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Notice Date</label>
           <input className="rounded-lg px-4 py-3 text-[15px] outline-none" style={{ border: "1.5px solid #d0e4f7", color: "#1c2b3a" }}
-            type="date" value={fields.noticeDate} onChange={set("noticeDate")} onFocus={focusBorder} onBlur={blurBorder} />
+            type="date" value={fields.noticeDate} max={new Date().toISOString().split("T")[0]} onChange={set("noticeDate")} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Priority Date</label>
           <input className="rounded-lg px-4 py-3 text-[15px] outline-none" style={{ border: "1.5px solid #d0e4f7", color: "#1c2b3a" }}
-            type="date" value={fields.priorityDate} onChange={set("priorityDate")} onFocus={focusBorder} onBlur={blurBorder} />
+            type="date" value={fields.priorityDate} max={new Date().toISOString().split("T")[0]} onChange={set("priorityDate")} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
         <div className="md:col-span-2 flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>
@@ -441,12 +441,12 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({ onBack,
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Notice Date</label>
           <input className="rounded-lg px-4 py-3 text-[15px] outline-none" style={{ border: "1.5px solid #d0e4f7", color: "#1c2b3a" }}
-            type="date" value={fields.noticeDate} onChange={set("noticeDate")} onFocus={focusBorder} onBlur={blurBorder} />
+            type="date" value={fields.noticeDate} max={new Date().toISOString().split("T")[0]} onChange={set("noticeDate")} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b8097" }}>Priority Date</label>
           <input className="rounded-lg px-4 py-3 text-[15px] outline-none" style={{ border: "1.5px solid #d0e4f7", color: "#1c2b3a" }}
-            type="date" value={fields.priorityDate} onChange={set("priorityDate")} onFocus={focusBorder} onBlur={blurBorder} />
+            type="date" value={fields.priorityDate} max={new Date().toISOString().split("T")[0]} onChange={set("priorityDate")} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
       </div>
       <div className="rounded-lg p-3 text-[13px] mb-5" style={{ background: "#f0f1fb", border: "1px solid rgba(130,132,191,0.3)", color: "#28151c" }}>

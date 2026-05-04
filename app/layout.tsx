@@ -9,7 +9,7 @@ import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
-import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle";
+// import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
 
 export const metadata: Metadata = {
@@ -89,7 +89,7 @@ export default function RootLayout({
               <Footer />
               {/* </ThemeProvider> */}
             </LanguageProvider>
-              <PlanTierDevToggle />
+              {/* <PlanTierDevToggle /> DEV ONLY — uncomment for local testing */}
             </PlanProvider>
           </AuthProvider>
         </ToastProvider>

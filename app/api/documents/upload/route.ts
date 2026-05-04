@@ -25,8 +25,7 @@ import { encryptFile } from '@/lib/document-vault/file-encryption';
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
 // Python backend URL for PDF compression
-const COMPRESSION_API_URL =
-  process.env.COMPRESSION_API_URL ?? "http://localhost:8000/api/v1";
+const COMPRESSION_API_URL = process.env.COMPRESSION_API_URL ?? 'http://localhost:8000/api/v1';
 
 /**
  * Get Supabase client with SERVICE ROLE key (bypasses RLS)
@@ -310,6 +309,7 @@ export async function POST(request: NextRequest) {
       version,
       expirationDate,
       isExpired: false,
+      isRead: false,
       status: 'UPLOADED',
       notes,
     };

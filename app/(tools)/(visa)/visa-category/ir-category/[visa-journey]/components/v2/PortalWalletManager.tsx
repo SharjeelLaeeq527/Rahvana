@@ -268,6 +268,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
                 <input
                   type="date"
                   value={localData.date}
+                  max={new Date().toISOString().split("T")[0]}
                   onChange={(e) =>
                     setLocalData({ ...localData, date: e.target.value })
                   }
@@ -347,6 +348,7 @@ export const ApUpdateModal: React.FC<{
               <input
                 type="date"
                 value={date}
+                max={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setDate(e.target.value)}
                 className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
               />

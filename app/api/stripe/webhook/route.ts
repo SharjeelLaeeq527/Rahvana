@@ -170,6 +170,16 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         .eq('id', userId);
 
       console.log(`✅ User ${userId} subscribed to ${productId}`);
+
+      // Handle Upgrade cleanup: cancel old subscription to prevent double-billing
+      if (session.metadata.is_upgrade === 'true' && session.metadata.old_subscription_id) {
+        try {
+          await stripe.subscriptions.cancel(session.metadata.old_subscription_id);
+          console.log(`✅ Cancelled old subscription ${session.metadata.old_subscription_id} after upgrade.`);
+        } catch (cancelErr) {
+          console.error('Error cancelling old subscription after upgrade:', cancelErr);
+        }
+      }
     } catch (error) {
       console.error('Error updating user subscription:', error);
     }

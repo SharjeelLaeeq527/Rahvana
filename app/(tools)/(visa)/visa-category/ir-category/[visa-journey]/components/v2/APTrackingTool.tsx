@@ -150,22 +150,25 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
     );
   }
 
-  const startDate = apDetails.interviewDate ? new Date(apDetails.interviewDate) : null;
-  // AP date must be in the past (interview already happened).
-  // If user accidentally entered a future date, show 0 with a hint instead of negative.
+  const ceacStatusRaw = apDetails.ceacStatus as string || "Administrative Processing";
+  // Transitional statuses (Ready/In Transit/Pending) → use lastCheck date
+  // because interviewDate = when interview happened (not when status changed)
+  const isTransitionalStatus = ["Ready", "In Transit", "Pending", "Not Available"].includes(ceacStatusRaw);
+  const dateField = isTransitionalStatus ? apDetails.lastCheck : apDetails.interviewDate;
+  const startDate = dateField ? new Date(dateField) : null;
   const isDateInFuture = startDate ? startDate.getTime() > Date.now() : false;
   const daysInAP = (startDate && !isDateInFuture)
     ? Math.max(0, Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  const statusUI = CEAC_STATUS_UI[apDetails.ceacStatus] || CEAC_STATUS_UI["Administrative Processing"];
+  const statusUI = CEAC_STATUS_UI[ceacStatusRaw] || CEAC_STATUS_UI["Administrative Processing"];
   const StatusIcon = statusUI.icon;
 
-  const ceacStatus = apDetails.ceacStatus as string || "Administrative Processing"
+  const ceacStatus = ceacStatusRaw;
   const isIssued      = ceacStatus === "Issued" || ceacStatus === "Approved"
   const isRefused     = ceacStatus === "Refused"
   const isAP          = ceacStatus === "Administrative Processing"
-  const isTransitional = ceacStatus === "In Transit" || ceacStatus === "Ready" || ceacStatus === "Pending" || ceacStatus === "Not Available"
+  const isTransitional = isTransitionalStatus
 
   // Intelligence message — changes per status and days elapsed
   const intelligenceMessage =
@@ -182,7 +185,7 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
     : ceacStatus === "In Transit"
       ? "Your case has left NVC and is being transferred to the U.S. Embassy or consulate. This status is usually brief — hours to a few days. Watch for the status to change to 'Ready' or your post-interview outcome. No action needed."
     : ceacStatus === "Ready"
-      ? "'Ready' means the embassy or consulate has your file and your case is being processed. If this is post-interview, the final outcome (Issued, AP, or Refused) will appear within days. Check CEAC every few days."
+      ? "'Ready' means your case is Documentarily Qualified (DQ) and has been sent to the U.S. Embassy or consulate. The embassy has your file and is scheduling or processing your interview. This is a pre-interview status. Check CEAC regularly — once your interview is complete, the status will change to Issued, Administrative Processing, or Refused within a few days."
     : ceacStatus === "Pending"
       ? "'Pending' means your case has not yet been processed by NVC or the consulate. This is normal in early stages. Check back in 2–3 days. If it persists beyond 2 weeks, verify your case number is correct."
     : ceacStatus === "Not Available"

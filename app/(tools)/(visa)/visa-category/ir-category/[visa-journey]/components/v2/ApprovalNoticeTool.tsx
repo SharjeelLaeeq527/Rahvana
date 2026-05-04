@@ -429,6 +429,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                   Approval date
                 </label>
                 <input id="approvalDate" type="date" value={approvalDetails.approvalDate}
+                  max={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setApprovalDetails({ ...approvalDetails, approvalDate: e.target.value })}
                   className="p-[11px_13px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all" />
               </div>
@@ -459,6 +460,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                   Priority date (optional)
                 </label>
                 <input id="priorityDate" type="date" value={approvalDetails.priorityDate}
+                  max={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setApprovalDetails({ ...approvalDetails, priorityDate: e.target.value })}
                   className="p-[11px_13px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all" />
               </div>
