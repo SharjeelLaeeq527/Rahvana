@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 
 const sections = [
+<<<<<<< HEAD
   { id: "overview", title: "1. Overview" },
   { id: "information", title: "2. Information We Collect" },
   { id: "use", title: "3. How We Use Information" },
@@ -19,6 +20,16 @@ const sections = [
   { id: "children", title: "13. Children" },
   { id: "changes", title: "14. Changes" },
   { id: "contact", title: "15. Contact" },
+=======
+  { id: "information", title: "1. Information We Collect" },
+  { id: "how-we-use", title: "2. How We Use It" },
+  { id: "sharing", title: "3. Sharing" },
+  { id: "your-rights", title: "4. Your Rights" },
+  { id: "retention", title: "5. Data Retention & Breach" },
+  { id: "ownership", title: "6. Ownership & Updates" },
+  { id: "security", title: "7. Security" },
+  { id: "contact", title: "8. Contact" },
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
 ];
 
 export default function PrivacyPolicy() {
@@ -51,9 +62,18 @@ export default function PrivacyPolicy() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
+<<<<<<< HEAD
       <div className="bg-white border-b border-gray-100">
         <div className="site-main-px site-main-py">
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-5">
+=======
+      
+      {/* HEADER */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+          
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-5 flex-wrap">
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
             <Link href="/" className="hover:text-teal-600">
               Home
             </Link>
@@ -61,11 +81,16 @@ export default function PrivacyPolicy() {
             <span className="text-gray-600">Privacy Policy</span>
           </div>
 
+<<<<<<< HEAD
           <div className="max-w-3xl">
+=======
+          <div className="max-w-2xl">
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
             <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-full px-4 py-1.5 text-teal-700 text-xs font-medium mb-5">
               Legal Document
             </div>
 
+<<<<<<< HEAD
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Privacy Policy
             </h1>
@@ -80,17 +105,39 @@ export default function PrivacyPolicy() {
                 Effective Date:{" "}
                 <span className="text-gray-700 font-medium">
                   April 22, 2026
+=======
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Privacy Policy
+            </h1>
+
+            <p className="text-gray-500 text-base sm:text-lg">
+              How we collect, use, and protect your information.
+            </p>
+
+            <div className="flex flex-col sm:flex-row sm:gap-6 mt-5 text-sm text-gray-400 gap-2">
+              <span>
+                Effective Date:{" "}
+                <span className="text-gray-700 font-medium">
+                  March 17, 2026
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
                 </span>
               </span>
               <span>
                 Website:{" "}
+<<<<<<< HEAD
                 <span className="text-gray-700 font-medium">rahvana.com</span>
+=======
+                <span className="text-gray-700 font-medium">
+                  rahvana.com
+                </span>
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
               </span>
             </div>
           </div>
         </div>
       </div>
 
+<<<<<<< HEAD
       <div className="site-main-px site-main-py">
         <div className="flex gap-10 mx-auto">
           <aside className="hidden lg:block w-72 shrink-0">
@@ -99,14 +146,35 @@ export default function PrivacyPolicy() {
                 Contents
               </p>
 
+=======
+      {/* BODY */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+        
+        <div className="flex flex-col lg:flex-row gap-10">
+          
+          {/* SIDEBAR */}
+          <aside className="w-full lg:w-64 lg:sticky lg:top-8 h-fit">
+            <p className="text-xs font-semibold text-gray-400 uppercase mb-4">
+              Contents
+            </p>
+
+            <div className="flex lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0">
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
               {sections.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => scrollTo(s.id)}
+<<<<<<< HEAD
                   className={`block w-full text-left px-3 py-2 rounded text-sm ${
                     activeSection === s.id
                       ? "bg-teal-50 text-teal-700"
                       : "text-gray-400 hover:text-gray-700"
+=======
+                  className={`whitespace-nowrap lg:whitespace-normal text-left px-3 py-2 rounded-md text-sm transition ${
+                    activeSection === s.id
+                      ? "bg-teal-50 text-teal-700"
+                      : "text-gray-500 hover:text-gray-800"
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
                   }`}
                 >
                   {s.title}
@@ -115,6 +183,7 @@ export default function PrivacyPolicy() {
             </div>
           </aside>
 
+<<<<<<< HEAD
           <main className="flex-1 max-w-4xl">
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-10">
               <p className="text-sm text-amber-800 leading-relaxed">
@@ -441,6 +510,92 @@ export default function PrivacyPolicy() {
                 Cookie Policy
               </Link>
             </div>
+=======
+          {/* CONTENT */}
+          <main className="flex-1 max-w-3xl">
+
+            <Section id="information" title="1. Information We Collect">
+              <p>
+                We collect your name, email, and payment information processed securely via Stripe. We do not store full card details.
+              </p>
+
+              <p>
+                We may also collect immigration-related data such as visa details, case information, and receipt numbers (USCIS, NVC, or similar identifiers), which are treated as Personally Identifiable Information (PII).
+              </p>
+
+              <p>
+                We collect usage data such as pages visited and feature interactions to improve our services.
+              </p>
+            </Section>
+
+            <Section id="how-we-use" title="2. How We Use It">
+              <p>
+                We use data to provide and improve Rahvana, including account management, payments, and service functionality.
+              </p>
+
+              <p>
+                Immigration-related data is used for case tracking, document organization, and user assistance features.
+              </p>
+
+              <p>
+                We do not sell user data.
+              </p>
+            </Section>
+
+            <Section id="sharing" title="3. Sharing">
+              <p>
+                We only share data with trusted service providers (e.g., Stripe) or when legally required.
+              </p>
+            </Section>
+
+            <Section id="your-rights" title="4. Your Rights">
+              <p>
+                You may request access, correction, or deletion of your data by contacting support@rahvana.com.
+              </p>
+            </Section>
+
+            <Section id="retention" title="5. Data Retention & Breach">
+              <p>
+                We retain data while your account is active and up to 2 years after inactivity unless legally required otherwise.
+              </p>
+
+              <p>
+                In case of a security breach, we will notify affected users within 72 hours where required by law.
+              </p>
+            </Section>
+
+            <Section id="ownership" title="6. Ownership & Updates">
+              <p>
+                Rahvana is owned and operated by Arachnie Inc, Delaware, USA.
+              </p>
+
+              <p>
+                We may update this policy and will notify users of significant changes.
+              </p>
+            </Section>
+
+            <Section id="security" title="7. Security">
+              <p>
+                We use SSL encryption and industry-standard safeguards to protect your data.
+              </p>
+
+              <p>
+                No system is 100% secure, but we take strong measures to protect user information.
+              </p>
+            </Section>
+
+            <Section id="contact" title="8. Contact">
+              <p>Email: support@rahvana.com</p>
+              <p>Website: rahvana.com</p>
+            </Section>
+
+            <div className="mt-10">
+              <Link href="/terms" className="text-teal-600">
+                Terms of Service
+              </Link>
+            </div>
+
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
           </main>
         </div>
       </div>
@@ -448,6 +603,7 @@ export default function PrivacyPolicy() {
   );
 }
 
+<<<<<<< HEAD
 function Section({
   id,
   title,
@@ -464,3 +620,17 @@ function Section({
     </section>
   );
 }
+=======
+function Section({ id, title, children }: any) {
+  return (
+    <section id={id} className="mb-10 scroll-mt-24">
+      <h2 className="text-lg sm:text-xl font-semibold mb-3">
+        {title}
+      </h2>
+      <div className="space-y-3 text-sm sm:text-base text-gray-700 leading-relaxed">
+        {children}
+      </div>
+    </section>
+  );
+}
+>>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
