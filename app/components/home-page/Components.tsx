@@ -2170,6 +2170,13 @@ function InteractiveClockWidget() {
   const clockRef = useRef<HTMLDivElement>(null);
   const [angle, setAngle] = useState(60);
   const [isHovered, setIsHovered] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<number>(2); // Thu - 4:00 PM selected by default
+
+  const timeSlots = [
+    { day: "Tue", time: "2:30 PM" },
+    { day: "Wed", time: "11:00 AM" },
+    { day: "Thu", time: "4:00 PM" },
+  ];
 
   const springAngle = useSpring(60, { stiffness: 30, damping: 15, mass: 1 });
 
@@ -2212,43 +2219,49 @@ function InteractiveClockWidget() {
       transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="relative flex flex-col items-center justify-center gap-8 w-full"
     >
-      {/* Ambient Glass Glow behind clock (stronger for contrast) */}
+      {/* Soft split glow behind clock - pale blue left, warm cream right */}
       <motion.div
-        animate={{ scale: [1, 1.04, 1], opacity: [0.45, 0.75, 0.45] }}
+        animate={{ scale: [1, 1.04, 1], opacity: [0.72, 0.98, 0.72] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#0B666A]/30 blur-[48px] rounded-full pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] blur-[58px] rounded-full pointer-events-none"
+        style={{
+          background: "linear-gradient(90deg, rgba(216, 236, 251, 0.98) 0%, rgba(216, 236, 251, 0.98) 48%, rgba(252, 243, 210, 0.98) 52%, rgba(252, 243, 210, 0.98) 100%)"
+        }}
       />
 
       <motion.div
         animate={{
-          y: isHovered ? -5 : 0,
+          y: isHovered ? -6 : 0,
           boxShadow: isHovered
-            ? "0 36px 74px rgba(8,54,58,0.18), inset 0 2px 6px rgba(255,255,255,0.9), inset 0 -2px 6px rgba(0,0,0,0.06)"
-            : "0 20px 46px rgba(11,102,106,0.12), inset 0 2px 4px rgba(255,255,255,0.7), inset 0 -2px 4px rgba(0,0,0,0.03)"
+            ? "0 48px 96px rgba(8,54,58,0.22), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -3px 8px rgba(0,0,0,0.08)"
+            : "0 24px 56px rgba(11,102,106,0.16), inset 0 1px 3px rgba(255,255,255,0.8), inset 0 -2px 6px rgba(0,0,0,0.04)"
         }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         ref={clockRef}
         onPointerMove={handlePointerMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative flex items-center justify-center touch-none cursor-pointer bg-white/95 backdrop-blur-sm ring-1 ring-[#0B666A]/8 rounded-full group z-10"
+        className="relative flex items-center justify-center touch-none cursor-pointer bg-gradient-to-b from-white via-[#f8fbfc] to-white/98 backdrop-blur-sm ring-1 ring-[#0B666A]/10 rounded-full group z-20"
         style={{ width: CLOCK_RADIUS * 2, height: CLOCK_RADIUS * 2 }}
       >
         {/* Shimmer sweep effect on hover */}
         <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-[-100%] w-[50%] h-[200%] bg-gradient-to-r from-transparent via-white/50 to-transparent -rotate-45 group-hover:left-[200%] transition-all duration-1000 ease-in-out" />
+          <div className="absolute top-0 left-[-100%] w-[50%] h-[200%] bg-gradient-to-r from-transparent via-white/60 to-transparent -rotate-45 group-hover:left-[200%] transition-all duration-1000 ease-in-out" />
         </div>
 
+        {/* Outer polished ring */}
+        <div className="absolute inset-0 rounded-full border border-white/80 shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),inset_0_-1px_2px_rgba(0,0,0,0.02)] pointer-events-none" />
+        
         {/* Inner depth ring */}
-        <div className="absolute inset-4 rounded-full border-[1.5px] border-white/40 shadow-[inset_0_4px_16px_rgba(0,0,0,0.04)] pointer-events-none" />
-        <div className="absolute inset-[18px] rounded-full border border-[#0B666A]/5 pointer-events-none" />
+        <div className="absolute inset-3 rounded-full border-[1.5px] border-white/50 shadow-[inset_0_6px_20px_rgba(0,0,0,0.05)] pointer-events-none" />
+        <div className="absolute inset-[14px] rounded-full border-[0.5px] border-[#0B666A]/8 pointer-events-none" />
 
-        {/* Crisp Dial Markers */}
+        {/* Premium Dial Markers */}
         {[...Array(12)].map((_, i) => (
           <div
             key={i}
             className={`absolute rounded-full ${
-              i % 3 === 0 ? 'w-[2.5px] h-5 bg-gradient-to-b from-[#08363a] to-[#04292b] shadow-[0_2px_6px_rgba(8,54,58,0.12)]' : 'w-[1.5px] h-3 bg-[#0B666A]/60'
+              i % 3 === 0 ? 'w-[2.8px] h-5 bg-gradient-to-b from-[#041f23] to-[#082d31] shadow-[0_2px_8px_rgba(8,54,58,0.16),inset_0_1px_1px_rgba(255,255,255,0.4)]' : 'w-[1.6px] h-3.5 bg-[#0B666A]/70 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
             }`}
             style={{ transform: `rotate(${i * 30}deg) translateY(-${CLOCK_RADIUS * 0.72}px)` }}
           />
@@ -2257,33 +2270,33 @@ function InteractiveClockWidget() {
         {/* Hands Container */}
         <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
           <div
-            className="absolute w-[2px] rounded-full bg-[#08363a]/10 origin-bottom"
+            className="absolute w-[1.5px] rounded-full bg-[#0B666A]/15 origin-bottom shadow-[inset_0_1px_2px_rgba(11,102,106,0.1)]"
             style={{ height: CLOCK_RADIUS * 0.6, bottom: '50%', transform: `rotate(180deg)` }}
           />
 
           <motion.div
-            className="absolute origin-bottom filter drop-shadow-[0_6px_12px_rgba(8,54,58,0.36)]"
+            className="absolute origin-bottom filter drop-shadow-[0_8px_16px_rgba(8,54,58,0.40)]"
             style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: springAngle }}
           >
-            <div className="w-[3px] h-full rounded-full bg-gradient-to-t from-[#08363a] to-[#0b8f92]" />
-            <div className="absolute -top-1 -left-[4px] w-2.5 h-2.5 rounded-full bg-white border-2 border-[#08363a] shadow-sm" />
+            <div className="w-[3.2px] h-full rounded-full bg-gradient-to-t from-[#041f23] via-[#0b7a7f] to-[#0d9398] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
+            <div className="absolute -top-1.5 -left-[5px] w-3 h-3 rounded-full bg-white border-2 border-[#041f23] shadow-[0_3px_8px_rgba(8,54,58,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)]" />
           </motion.div>
 
-          {/* Center Pin Stack */}
-          <div className="absolute w-4 h-4 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.1)] z-10 flex items-center justify-center border border-gray-100">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#0B666A]" />
+          {/* Premium Center Pin Stack */}
+          <div className="absolute w-5 h-5 rounded-full bg-gradient-to-b from-white to-[#f0f8f9] shadow-[0_4px_12px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,1)] z-20 flex items-center justify-center border-2 border-white">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-b from-[#0B666A] to-[#041f23] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
           </div>
         </div>
       </motion.div>
 
-      {/* Floating Time Display */}
+      {/* Enhanced Floating Time Display */}
       <motion.div
-        animate={{ y: isHovered ? -2 : 0 }}
-        className="bg-white/95 backdrop-blur-sm border border-[#e9f3f3] px-6 py-3.5 rounded-2xl shadow-[0_12px_36px_rgba(11,102,106,0.10),inset_0_1px_0_rgba(255,255,255,1)] z-10 relative overflow-hidden group"
+        animate={{ y: isHovered ? -3 : 0, scale: isHovered ? 1.02 : 1 }}
+        className="bg-gradient-to-b from-white via-white to-[#f8fbfc] backdrop-blur-md border border-white/80 px-6 py-4 rounded-[20px] shadow-[0_16px_48px_rgba(11,102,106,0.14),inset_0_1px_2px_rgba(255,255,255,1)] z-20 relative overflow-hidden group"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
-        <span className="text-[28px] font-semibold text-[#072a2b] tracking-tight font-['Inter',sans-serif]">
-          {timeStr} <span className="text-sm font-medium text-[#0B666A]/60 uppercase ml-1.5 tracking-widest">EST</span>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+        <span className="text-[32px] font-bold text-[#041f23] tracking-tight font-['Inter',sans-serif] select-none">
+          {timeStr} <span className="text-xs font-semibold text-[#0B666A]/75 uppercase ml-2 tracking-widest">EST</span>
         </span>
       </motion.div>
     </motion.div>
@@ -2396,7 +2409,7 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto max-w-[1140px] z-10 grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-14 lg:gap-24 items-center"
+        className="relative mx-auto max-w-[1140px] z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"
       >
         {/* LEFT SIDE: Hero + Cards */}
         <div className="flex flex-col gap-8">
@@ -2545,20 +2558,6 @@ export function ConsultationBanner({
             <p className="text-[13px] text-[#4A5D5E] font-medium text-center max-w-[240px] leading-relaxed">
                Scheduled around your convenience. Choose what works best for you.
             </p>
-            <div className="flex flex-wrap justify-center gap-2 pt-1">
-              {[
-                "Tue - 2:30 PM",
-                "Wed - 11:00 AM",
-                "Thu - 4:00 PM",
-              ].map((slot) => (
-                <span
-                  key={slot}
-                  className="rounded-full border border-[#d6ece8] bg-white/80 px-3 py-1 text-[11px] font-semibold text-[#224244] shadow-[0_4px_10px_rgba(11,102,106,0.06)]"
-                >
-                  {slot}
-                </span>
-              ))}
-            </div>
           </motion.div>
 
           {/* Clock Widget */}

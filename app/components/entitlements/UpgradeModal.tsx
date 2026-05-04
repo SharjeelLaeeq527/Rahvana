@@ -147,7 +147,7 @@ const TIER_STYLE: Record<PlanTier, {
     button: "from-[#b89030] to-[#8a6810]",
     buttonHover: "hover:from-[#a88020] hover:to-[#7a5808]",
     pillActiveBg: "#f0e0a0",
-    pillActiveText: "#5a3808]",
+    pillActiveText: "#5a3808",
     pillActiveRing: "#d0b060",
     check: "text-[#8a6810]",
     featureBg: "bg-[#fdf4d8]",
