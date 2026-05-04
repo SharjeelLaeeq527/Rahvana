@@ -56,7 +56,6 @@ export default function TermsOfService() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-<<<<<<< HEAD
       <div className="bg-white border-b border-gray-100">
         <div className="site-main-px site-main-py">
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-5">
@@ -94,46 +93,13 @@ export default function TermsOfService() {
                 <span className="text-gray-700 font-medium">rahvana.com</span>
               </span>
             </div>
-=======
-
-      {/* HERO */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="px-4 sm:px-6 lg:px-12 py-10">
-          <div className="max-w-6xl mx-auto">
-
-            <div className="flex items-center gap-2 text-sm text-gray-400 mb-5">
-              <Link href="/" className="hover:text-teal-600">
-                Home
-              </Link>
-              <span>/</span>
-              <span className="text-gray-600">Terms</span>
-            </div>
-
-            <h1 className="text-4xl font-bold mb-4">
-              Terms of Service
-            </h1>
-
-            <p className="text-gray-500 text-lg">
-              By using Rahvana, you agree to these terms.
-            </p>
-
->>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
           </div>
         </div>
       </div>
 
-<<<<<<< HEAD
       <div className="site-main-px site-main-py">
         <div className="flex gap-10">
           <aside className="hidden lg:block w-72 shrink-0">
-=======
-      {/* BODY */}
-      <div className="px-4 sm:px-6 lg:px-12 py-10">
-        <div className="max-w-6xl mx-auto flex gap-10">
-
-          {/* SIDEBAR */}
-          <aside className="hidden lg:block w-64">
->>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
             <div className="sticky top-8">
               <p className="text-xs font-semibold text-gray-400 uppercase mb-4">
                 Contents
@@ -143,11 +109,7 @@ export default function TermsOfService() {
                 <button
                   key={s.id}
                   onClick={() => scrollTo(s.id)}
-<<<<<<< HEAD
                   className={`block w-full text-left px-3 py-2 rounded text-sm ${
-=======
-                  className={`block w-full text-left px-3 py-2 rounded-lg text-sm ${
->>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
                     activeSection === s.id
                       ? "bg-teal-50 text-teal-700"
                       : "text-gray-400 hover:text-gray-700"
@@ -159,7 +121,6 @@ export default function TermsOfService() {
             </div>
           </aside>
 
-<<<<<<< HEAD
           <main className="flex-1 max-w-4xl">
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-10">
               <p className="text-sm text-amber-800 leading-relaxed">
@@ -541,57 +502,6 @@ export default function TermsOfService() {
                 Cookie Policy
               </Link>
             </div>
-=======
-          {/* CONTENT */}
-          <main className="flex-1 max-w-3xl w-full">
-
-            <Section id="acceptance" title="1. Acceptance">
-              <p>
-                By using Rahvana, you agree to these Terms of Service.
-              </p>
-            </Section>
-
-            <Section id="service" title="2. Our Service">
-              <p>
-                Rahvana is owned and operated by Arachnie Inc, Delaware, USA.
-              </p>
-
-              <p>
-                We provide immigration tools including tracking, scheduling,
-                and guidance (not legal advice).
-              </p>
-            </Section>
-
-            <Section id="payments" title="3. Payments & Account">
-              <p>
-                Some features are free. Premium features may require payment via Stripe.
-              </p>
-            </Section>
-
-            <Section id="rules" title="4. Your Responsibilities">
-              <p>
-                Use the platform only for lawful purposes and do not misuse or reverse-engineer it.
-              </p>
-            </Section>
-
-            <Section id="liability" title="5. Liability">
-              <p>
-                We are not responsible for immigration outcomes or decisions.
-              </p>
-            </Section>
-
-            <Section id="updates" title="6. Updates">
-              <p>
-                We may update these terms and notify users when needed.
-              </p>
-            </Section>
-
-            <Section id="contact" title="7. Contact">
-              <p>Email: support@rahvana.com</p>
-              <p>Website: rahvana.com</p>
-            </Section>
-
->>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
           </main>
         </div>
       </div>
@@ -599,7 +509,6 @@ export default function TermsOfService() {
   );
 }
 
-<<<<<<< HEAD
 function Section({
   id,
   title,
@@ -616,15 +525,3 @@ function Section({
     </section>
   );
 }
-=======
-function Section({ id, title, children }: any) {
-  return (
-    <section id={id} className="mb-12 scroll-mt-24">
-      <h2 className="text-xl font-semibold mb-4">{title}</h2>
-      <div className="space-y-3 text-gray-700 leading-relaxed">
-        {children}
-      </div>
-    </section>
-  );
-}
->>>>>>> 1af75414649d257aa5052df7c4aa0b0087456def
