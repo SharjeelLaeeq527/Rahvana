@@ -66,6 +66,7 @@ interface DocumentVaultStore {
   refreshDocumentStatuses: () => void;
   reloadDocuments: () => Promise<void>;
   addDynamicSlot: (category: string) => void;
+  addNamedDynamicSlot: (category: string, name: string) => string;
   renameDynamicSlot: (
     categoryId: string,
     slotId: string,
@@ -468,6 +469,30 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       };
 
       get().setConfig(updatedConfig);
+    },
+
+    addNamedDynamicSlot: (category: string, name: string) => {
+      const { config } = get();
+      if (!config) return "";
+
+      const dynamicDocs = config.dynamicDocuments || {};
+      const slots = dynamicDocs[category] || [];
+      
+      const newId = `dynamic-${category}-${Date.now()}`;
+      const updatedSlots = [...slots, { id: newId, name }];
+
+      const updatedDynamicDocs = {
+        ...dynamicDocs,
+        [category]: updatedSlots,
+      };
+
+      const updatedConfig = {
+        ...config,
+        dynamicDocuments: updatedDynamicDocs,
+      };
+
+      get().setConfig(updatedConfig);
+      return newId;
     },
 
     renameDynamicSlot: (category: string, slotId: string, newName: string) => {

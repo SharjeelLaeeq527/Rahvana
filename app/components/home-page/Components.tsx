@@ -29,6 +29,7 @@ import {
   FileSearch,
   Bell,
   User,
+  BookOpen,
 } from "lucide-react";
 import { getFormConfig } from "@/lib/formConfig";
 import {
@@ -507,7 +508,7 @@ export function HeroDashboardPanel({
     : "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative.";
 
   return (
-    <div className="grid h-full gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+    <div className="flex h-full flex-col gap-4">
       <div className="space-y-4">
         <section className="relative overflow-hidden rounded-[22px] border-2 border-[#31415F] bg-[#051738] p-5 text-white shadow-[0_24px_70px_rgba(5,23,56,0.30),0_8px_28px_rgba(13,115,119,0.16)] outline outline-1 outline-white/20">
           <div className="absolute -right-[50px] -top-[50px] size-[180px] rounded-full bg-[#8284BF24]" />
@@ -528,7 +529,7 @@ export function HeroDashboardPanel({
           </div>
         </section>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="flex flex-col gap-3 2xl:grid 2xl:grid-cols-3">
           {chapters.map((chapter, index) => (
             <motion.div
               key={chapter.name}
@@ -650,7 +651,7 @@ export function HeroChapterOnePanel({
   return (
     <div className="mx-auto h-full max-w-[680px] overflow-hidden pt-2">
       <motion.div
-        className="ir1-card-primary mb-4 rounded-3xl border-[#B9BBE2] p-[32px_32px]"
+        className="ir1-card-primary mb-4 rounded-3xl border-[#B9BBE2] py-[32px] px-[24px]"
         animate={{ y: stepTargeted ? -32 : 0 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       >
@@ -723,7 +724,7 @@ export function HeroI130StepPanel({
 }) {
   const tool = {
     launch_module: {
-      eyebrow: "Autoform Filler Ãƒâ€šÃ‚Â· USCIS Form I-130",
+      eyebrow: "Autoform Filler · USCIS Form I-130",
       heading: "Guided completion, start to finish",
       features: [
         "Question-by-question guided flow",
@@ -732,7 +733,7 @@ export function HeroI130StepPanel({
         "Pakistan-context defaults where relevant",
       ],
       button_label: "Launch I-130 Autoform Filler",
-      note: "Opens in a new browser tab ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â you can return to the roadmap anytime",
+      note: "Opens in a new browser tab — you can return to the roadmap anytime",
     },
   };
 
@@ -749,8 +750,8 @@ export function HeroI130StepPanel({
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
             Use Rahvana&apos;s guided Autoform Filler to complete the I-130
-            Petition for Alien Relative ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â with structured
-            step-by-step support, clear prompts, and a built-in review flow.
+            Petition for Alien Relative — with structured step-by-step support,
+            clear prompts, and a built-in review flow.
           </p>
 
           <div className="mb-[22px] flex flex-wrap gap-[8px]">
@@ -841,15 +842,11 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
     () =>
       config?.formFields
         .filter(
-          (field) =>
-            field.section === "Part 2. Information About You (Petitioner)",
+          (field) => field.section === "Information About You (Petitioner)",
         )
-        .filter((field) =>
-          ["family_name", "given_name", "middle_name"].includes(field.key),
-        )
-        .filter((field) => !field.condition || field.condition(formData))
-        .slice(0, 4) ?? [],
-    [config, formData],
+        .filter((field) => field.key === "full_name_group")
+        .slice(0, 1) ?? [],
+    [config],
   );
 
   useEffect(() => {
@@ -875,54 +872,85 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
         setFillStage(3);
         setFormData((prev) => ({ ...prev, middle_name: "Noor" }));
       }, 3100),
+      window.setTimeout(() => setFillStage(4), 4000),
     ];
     return () => timers.forEach(window.clearTimeout);
   }, [playPhase]);
 
   return (
-    <div className="h-full w-full overflow-hidden bg-white">
-      <div className="bg-linear-to-r from-primary to-primary p-4 text-white shadow-lg md:p-6">
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold md:text-3xl">Form I-130</h1>
-            <p className="mt-1 text-sm text-white/90 md:text-base">
-              Petition for Alien Relative
-            </p>
+    <div className="h-full w-full overflow-hidden bg-[#f7fbfb]">
+      <div
+        className="backdrop-blur-xl border-b z-30"
+        style={{
+          backgroundColor: "rgba(255,255,255,0.85)",
+          borderColor: "rgba(13, 115, 119, 0.08)",
+        }}
+      >
+        <div className="px-4 md:px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div
+              className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+              }}
+            >
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base md:text-lg font-bold text-gray-900 truncate">
+                Form I-130
+              </h1>
+              <p className="text-xs md:text-sm text-gray-500 truncate">
+                Petition for Alien Relative
+              </p>
+            </div>
           </div>
         </div>
       </div>
       <motion.div
-        className="flex gap-6 p-5"
+        className="flex gap-6 px-4 md:px-8 py-6 justify-center"
         animate={{
-          y: fillStage >= 2 ? -28 : 0,
+          y: fillStage >= 4 ? -80 : fillStage >= 2 ? -28 : 0,
           scale: fillStage >= 1 ? 1.015 : 1,
+          opacity: fillStage >= 4 ? 0 : 1,
         }}
-        transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+        transition={{
+          duration: fillStage >= 4 ? 0.3 : 0.85,
+          ease: [0.22, 1, 0.36, 1],
+        }}
       >
-        {/* <div className="hidden w-64 shrink-0 lg:block">
-          <div className="rounded-xl bg-white p-6 shadow-lg">
-            <h3 className="mb-4 font-semibold text-gray-900">Progress</h3>
-            <ProgressBar
-              current={fillStage >= 3 ? 3 : fillStage >= 2 ? 2 : 1}
-              total={18}
-              progress={fillStage >= 3 ? 17 : fillStage >= 2 ? 11 : 6}
-            />
-          </div>
-        </div> */}
-        <div className="min-w-0 flex-1">
-          <div className="rounded-xl bg-white p-4 shadow-lg md:p-8">
-            <FormStep
-              stepNumber={1}
-              sectionTitle="Part 2. Information About You (Petitioner)"
-              fields={fields}
-              formData={formData}
-              onInputChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  [event.target.name]: event.target.value,
-                }))
+        <div className="w-full max-w-2xl px-4 md:px-0">
+          <FormStep
+            stepNumber={1}
+            sectionTitle="Information About You (Petitioner)"
+            fields={fields}
+            formData={formData}
+            onInputChange={(event) =>
+              setFormData((prev) => ({
+                ...prev,
+                [event.target.name]: event.target.value,
+              }))
+            }
+            progressiveSubQuestionIndices={{
+              full_name_group: fillStage >= 3 ? 2 : fillStage >= 2 ? 1 : 0,
+            }}
+          />
+
+          <div className="mt-8 flex justify-end pt-6 border-t border-gray-100">
+            <motion.button
+              className="px-6 py-2.5 rounded-xl text-white font-medium shadow-[0_4px_14px_rgba(13,115,119,0.25)] flex items-center gap-2"
+              style={{
+                background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+              }}
+              animate={
+                fillStage >= 4
+                  ? { scale: 0.94, opacity: 0.9 }
+                  : { scale: 1, opacity: 1 }
               }
-            />
+              transition={{ duration: 0.1 }}
+            >
+              Next
+            </motion.button>
           </div>
         </div>
       </motion.div>
@@ -1786,24 +1814,24 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
     const run = () => {
       const wrap = wrapRef.current;
       if (wrap) {
-        const wRect   = wrap.getBoundingClientRect();
+        const wRect = wrap.getBoundingClientRect();
         const centerX = wRect.left + wRect.width / 2;
         const hotZone = wRect.width * 0.14; // pop region
 
         wrap.querySelectorAll<HTMLElement>(".tc-icon-box").forEach((el) => {
-          const r    = el.getBoundingClientRect();
+          const r = el.getBoundingClientRect();
           const elCX = r.left + r.width / 2;
           const dist = Math.abs(elCX - centerX);
-          const t    = Math.max(0, 1 - dist / hotZone); // 0…1
+          const t = Math.max(0, 1 - dist / hotZone); // 0…1
 
           const scale  = 1 + t * 0.22;
           const lift   = -t * 5;
           const border = el.dataset.border ?? "rgba(0,0,0,0.1)";
           const shadow = `0 ${4 + t * 12}px ${12 + t * 18}px -4px ${border}`;
 
-          el.style.transform  = `translateY(${lift}px) scale(${scale})`;
-          el.style.boxShadow  = shadow;
-          el.style.zIndex     = t > 0.5 ? "10" : "1";
+          el.style.transform = `translateY(${lift}px) scale(${scale})`;
+          el.style.boxShadow = shadow;
+          el.style.zIndex = t > 0.5 ? "10" : "1";
         });
       }
       rafRef.current = requestAnimationFrame(run);
@@ -1821,14 +1849,15 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
     <div
       ref={wrapRef}
       style={{
-        position  : "absolute",
-        bottom    : 0, left: 0,
-        width     : "100%",
-        height    : 138,
-        overflow  : "hidden",
-        borderTop : "1px solid #e8edf2",
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        width: "100%",
+        height: 138,
+        overflow: "hidden",
+        borderTop: "1px solid #e8edf2",
         background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
-        display   : "flex",
+        display: "flex",
         alignItems: "center",
         WebkitMaskImage:
           "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
@@ -1876,20 +1905,36 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
                   cursor:"default",
                 }}
               >
-                <div aria-hidden style={{
-                  position:"absolute", inset:0,
-                  background:
-                    "radial-gradient(circle at 28% 28%,rgba(255,255,255,0.55),transparent 65%)",
-                }}/>
-                <Icon size={24} color={tool.fg} strokeWidth={2} style={{position:"relative"}}/>
+                <div
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "radial-gradient(circle at 28% 28%,rgba(255,255,255,0.55),transparent 65%)",
+                  }}
+                />
+                <Icon
+                  size={24}
+                  color={tool.fg}
+                  strokeWidth={2}
+                  style={{ position: "relative" }}
+                />
               </div>
 
-              <span style={{
-                fontSize:9.5, fontWeight:800, textTransform:"uppercase",
-                letterSpacing:"0.07em", color:"#5a6a72",
-                textAlign:"center", lineHeight:1.3, maxWidth:90,
-                pointerEvents:"none",
-              }}>
+              <span
+                style={{
+                  fontSize: 9.5,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.07em",
+                  color: "#5a6a72",
+                  textAlign: "center",
+                  lineHeight: 1.3,
+                  maxWidth: 90,
+                  pointerEvents: "none",
+                }}
+              >
                 {tool.label}
               </span>
             </div>
@@ -1924,16 +1969,17 @@ export function IndividualToolsScene() {
   return (
     <div
       style={{
-        width        : 600,
-        height       : 500,
-        borderRadius : 32,
-        background   : "white",
-        border       : "1px solid #dde8e6",
-        boxShadow    : "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position     : "absolute",
-        left         : 40,
-        top          : 30,
-        overflow     : "hidden",
+        width: 600,
+        height: 500,
+        borderRadius: 32,
+        background: "white",
+        border: "1px solid #dde8e6",
+        boxShadow:
+          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        position: "absolute",
+        left: 40,
+        top: 30,
+        overflow: "hidden",
       }}
     >
       {/* ── Info panel — fades on tool change ── */}
@@ -2116,7 +2162,7 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto grid max-w-[1240px] items-start gap-12 lg:grid-cols-[0.42fr_0.58fr] lg:gap-12 xl:gap-14"
+        className="relative mx-auto grid max-w-[1240px] items-center gap-12 lg:grid-cols-[0.45fr_0.55fr] lg:gap-12 xl:gap-14"
       >
         <div className="flex flex-col">
           <p className="mb-5 inline-flex h-[30px] w-fit items-center rounded-full bg-[#dcf3ec]/95 px-3.5 text-[11px] font-bold uppercase tracking-[0.03em] text-[#24564c] shadow-[0_0_24px_rgba(209,255,239,0.72)]">
@@ -2126,11 +2172,11 @@ export function ConsultationBanner({
             id="consultation-heading"
             className="max-w-[460px] text-[clamp(42px,4.4vw,66px)] font-black leading-[0.96] tracking-[-0.05em] text-[#12233a]"
           >
-            You donÃ¢â‚¬â„¢t have to do it alone.
+            You don't have to do it alone.
           </h2>
           <p className="mt-5 max-w-[430px] text-[17px] leading-[1.58] text-[#2f3f4c] sm:text-lg">
-            If the roadmap feels like too much or a tool isnÃ¢â‚¬â„¢t enough,
-            book a consultation for one-on-one help with your case.
+            If the roadmap feels like too much or a tool isn't enough, book a
+            consultation for one-on-one help with your case.
           </p>
 
           <div className="mt-9 flex max-w-[430px] items-center gap-3">
@@ -2170,7 +2216,6 @@ export function ConsultationBanner({
         </div>
 
         <ConsultationPreviewVisual />
-
       </motion.div>
     </section>
   );
@@ -2183,7 +2228,7 @@ export function ConsultationPreviewVisual() {
     { label: "Document preparation", icon: Layers },
     { label: "Interview / process clarity", icon: Mic },
   ];
-  const slots = ["Tue Ã‚Â· 2:30 PM", "Wed Ã‚Â· 11:00 AM", "Thu Ã‚Â· 4:00 PM"];
+  const slots = ["Tue · 2:30 PM", "Wed · 11:00 AM", "Thu · 4:00 PM"];
   const outcomes = [
     { label: "A clearer next step", icon: Compass },
     { label: "Better understanding of your case", icon: Lightbulb },
@@ -2191,7 +2236,7 @@ export function ConsultationPreviewVisual() {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_254px] md:gap-5 lg:grid-cols-[minmax(0,460px)_254px]">
+    <div className="flex items-center justify-center lg:items-center lg:justify-start lg:grid lg:gap-4 md:grid-cols-[minmax(0,1fr)_254px] md:gap-5 lg:grid-cols-[minmax(0,460px)_254px] mt-6 lg:mt-8">
       <div className="rounded-[20px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-6 shadow-[0_16px_30px_rgba(37,41,46,0.08)] sm:p-[26px]">
         <span className="mb-5 inline-flex h-[30px] items-center rounded-full bg-[#cfeee3] px-3.5 text-[11px] font-bold uppercase tracking-[0.03em] text-[#24564c]">
           One-on-one guidance
@@ -2230,6 +2275,9 @@ export function ConsultationPreviewVisual() {
               Availability
             </h4>
           </div>
+          <p className="mb-3 text-[13px] text-[#6b7785]">
+            Scheduled around your convenience. Choose what works best for you.
+          </p>
           <div className="flex flex-col gap-3">
             {slots.map((slot) => (
               <div
@@ -2247,8 +2295,25 @@ export function ConsultationPreviewVisual() {
             <h4 className="m-0 text-[18px] font-black leading-tight tracking-[-0.02em] text-[#111827]">
               What you&apos;ll leave with
             </h4>
-            <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ width: 10, height: 10, background: "#d97706", borderRadius: 2 }} />
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                background: "#fef3c7",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  background: "#d97706",
+                  borderRadius: 2,
+                }}
+              />
             </div>
           </div>
           <div className="flex flex-col gap-4">

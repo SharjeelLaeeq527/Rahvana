@@ -85,8 +85,9 @@ export default function RoadmapLayoutV2({
     })();
 
   const handleToggleComplete = () => {
+    if (state.currentStep == null || state.currentStep === -1) return;
     const chapter = data.chapters?.[state.currentStage];
-    const step = chapter?.steps[state.currentStep || 0];
+    const step = chapter?.steps[state.currentStep ?? 0];
     const sKey = step?.step_key;
     if (sKey) actions.toggleComplete(sKey);
   };
@@ -99,16 +100,16 @@ export default function RoadmapLayoutV2({
     )
       return null;
     const chapter = data.chapters?.[state.currentStage];
-    const step = chapter?.steps[state.currentStep];
+    const step = chapter?.steps[state.currentStep ?? 0];
     const activeSteps = chapter
-      ? getActiveStepsForStage(data, state.currentStage, state.metadata, state.filingType)
+      ? getActiveStepsForStage(data, state.currentStage ?? 0, state.metadata, state.filingType)
       : [];
     return step
       ? activeSteps.findIndex(
           (s: any) =>
             (s.step_key || s.id) === (step.step_key || (step as any).id),
         ) + 1
-      : state.currentStep + 1;
+      : (state.currentStep ?? 0) + 1;
   })();
 
   return (

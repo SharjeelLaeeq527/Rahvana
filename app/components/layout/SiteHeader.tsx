@@ -301,7 +301,8 @@ export function SiteHeader({
   useEffect(() => {
     if (!resolvedUser) return;
     window.addEventListener("refresh-reminders", fetchNotifications);
-    return () => window.removeEventListener("refresh-reminders", fetchNotifications);
+    return () =>
+      window.removeEventListener("refresh-reminders", fetchNotifications);
   }, [resolvedUser, fetchNotifications]);
 
   const markAllRead = (ids: string[]) => {
@@ -451,22 +452,17 @@ export function SiteHeader({
   const isHomeHeroP2State = pathname === "/" && !scrolled && heroTransitioned;
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-300 ${
+      className={`fixed z-[100] transition-all duration-300 rounded-lg left-2 right-2 md:left-4 md:right-4 xl:left-6 xl:right-6 top-1 ${
         isHomeHeroState || isHomeHeroP2State
-          ? "bg-transparent border-none shadow-none py-4"
-          : "bg-background shadow-lg py-2"
+          ? "bg-white/30 backdrop-blur-md border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)] py-1"
+          : "bg-background/80 backdrop-blur-md border border-border shadow-md py-2"
       }`}
-      style={
-        isHomeHeroState || isHomeHeroP2State
-          ? { background: "rgba(0,0,0,0)", boxShadow: "none", border: "none" }
-          : {}
-      }
     >
       {/* ------------------------------------------------------------------ */}
       {/* Desktop navigation */}
       {/* ------------------------------------------------------------------ */}
       <div
-        className={`w-full flex items-center justify-between px-8 ${isHomeHeroState ? "text-white" : ""}`}
+        className={`w-full flex items-center justify-between px-4 md:px-3 ${isHomeHeroState ? "text-white" : ""}`}
       >
         {/* Left side */}
         <div className="flex items-center gap-4">
@@ -526,7 +522,7 @@ export function SiteHeader({
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
-            <div className="relative pt-2 pb-0">
+            <div className="relative">
               <Link
                 href="/visa-category/ir-category/ir1-journey"
                 onClick={(e) => handleNav("ir1-journey", e)}
@@ -589,7 +585,7 @@ export function SiteHeader({
               ref={(el) => {
                 navRefs.current["resources"] = el;
               }}
-              className="relative pt-2 pb-0"
+              className="relative"
               onMouseEnter={() => handleMenuEnter("resources")}
               onMouseLeave={handleMenuLeave}
             >
@@ -706,7 +702,7 @@ export function SiteHeader({
               )}
             </div>
             */}
-            <div className="relative pt-2 pb-0">
+            <div className="relative">
               <Link
                 href="/about"
                 onClick={(e) => handleNav("about", e)}
@@ -726,7 +722,7 @@ export function SiteHeader({
               </Link>
             </div>
 
-            <div className="relative pt-2 pb-0">
+            <div className="relative">
               <Link
                 href="/pricing"
                 onClick={(e) => handleNav("pricing", e)}
@@ -745,7 +741,7 @@ export function SiteHeader({
                 Pricing
               </Link>
             </div>
-            <div className="relative pt-2 pb-0">
+            <div className="relative">
               <Link
                 href="/#faq"
                 onClick={(e) => handleNav("faq", e)}
@@ -764,7 +760,7 @@ export function SiteHeader({
                 FAQ
               </Link>
             </div>
-            <div className="relative pt-2 pb-0">
+            <div className="relative">
               <Link
                 href="/#contact"
                 onClick={(e) => handleNav("contact", e)}
@@ -902,23 +898,24 @@ export function SiteHeader({
                     size="icon"
                     aria-label="Notifications"
                     onClick={handleBellClick}
-                    className={`relative rounded-md transition-colors shadow-none border-0 ${
+                    className={`flex items-center justify-center transition-colors shadow-none border-0 ${
                       isHomeHeroState
-                        ? "text-white"
+                        ? "text-white hover:bg-white/10"
                         : isHomeHeroP2State
-                          ? "text-white"
-                          : "text-rahvana-primary"
+                          ? "text-white hover:bg-white/10"
+                          : "text-[#0d7377] hover:bg-[#0d7377]/10"
                     }`}
                     style={{
                       padding: 0,
-                      minWidth: 40,
-                      minHeight: 40,
+                      width: 34,
+                      height: 34,
                       background: "none",
                       boxShadow: "none",
                       border: "none",
+                      borderRadius: "50%",
                     }}
                   >
-                    <div className="relative inline-flex">
+                    <div className="relative flex items-center justify-center">
                       <Bell
                         className="h-5 w-5"
                         aria-hidden="true"
@@ -1089,7 +1086,7 @@ export function SiteHeader({
                     clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
-                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 mb-2 ${
+                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 ${
                   isHomeHeroState
                     ? "text-white"
                     : isHomeHeroP2State
@@ -1107,13 +1104,11 @@ export function SiteHeader({
                 }}
               >
                 <span
-                  style={
-                    isHomeHeroP2State
-                      ? { color: "#fff" }
-                      : isHomeHeroState
-                        ? { color: "#fff" }
-                        : { color: "var(--rahvana-primary, #0d7377)" }
-                  }
+                  className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
+                    isHomeHeroState || isHomeHeroP2State
+                      ? "bg-white/20 border-white/40 text-white"
+                      : "bg-[#0d7377]/10 border-[#0d7377]/30 text-[#0d7377]"
+                  }`}
                 >
                   {(
                     profile?.full_name ||

@@ -363,51 +363,116 @@ export function useWizard(options: UseWizardOptions = {}) {
 
       const isCompleted = state.completedSteps.has(stepKey);
 
-      // ENFORCE SEQUENTIAL COMPLETION (ONLY when marking as completed)
+      // ENFORCE DEPENDENCY-BASED COMPLETION (ONLY when marking as completed)
       if (!isCompleted) {
         const chapters = activeRoadmap.chapters || activeRoadmap.stages || [];
         const filingMethod = state.metadata?.filingMethod || state.filingType || 'online';
-        
-        const allActiveSteps: any[] = [];
-        chapters.forEach((chapter: any) => {
-          const activeSteps = (chapter.steps || []).filter((s: any) => {
-            const visibleWhen = s.visible_when;
-            if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-              let isVisible = true;
-              for (const [key, value] of Object.entries<any>(visibleWhen)) {
-                if (key === 'filingMethod') {
-                  if (value !== filingMethod) isVisible = false;
+        const isStepActiveForCurrentFlow = (s: any): boolean => {
+          const visibleWhen = s.visible_when;
+          if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+            let isVisible = true;
+            for (const [key, value] of Object.entries<any>(visibleWhen)) {
+              if (key === 'filingMethod') {
+                if (value !== filingMethod) isVisible = false;
+              } else if (key === 'filingMethodConfirmed') {
+                const isConfirmed = Boolean(state.metadata?.filingMethodConfirmed);
+                if (Boolean(value) !== isConfirmed) isVisible = false;
+              } else {
+                const stateValue = state.metadata?.[key];
+                if (Array.isArray(value)) {
+                  if (!(value as any[]).includes(stateValue)) isVisible = false;
                 } else {
-                  const stateValue = state.metadata?.[key];
-                  if (Array.isArray(value)) {
-                    if (!(value as any[]).includes(stateValue)) isVisible = false;
-                  } else {
-                    if (stateValue !== value) isVisible = false;
-                  }
+                  if (stateValue !== value) isVisible = false;
                 }
               }
-              return isVisible;
             }
-            const branch = s.branch;
-            if (!branch || branch === 'both') return true;
-            return branch === filingMethod;
+            if (!isVisible) return false;
+          }
+          const branch = s.branch;
+          if (!branch || branch === 'both') return true;
+          return branch === filingMethod;
+        };
+
+        const activeStepKeys = new Set<string>();
+        chapters.forEach((chapter: any) => {
+          (chapter.steps || []).forEach((s: any) => {
+            if (isStepActiveForCurrentFlow(s)) {
+              activeStepKeys.add(s.step_key || s.id);
+            }
           });
-          allActiveSteps.push(...activeSteps);
         });
+        
+        // Find the target step to get its explicit dependencies
+        let targetStep: any = null;
+        for (const chapter of chapters) {
+          const found = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === stepKey);
+          if (found) {
+            targetStep = found;
+            break;
+          }
+        }
 
-        const targetIdx = allActiveSteps.findIndex(s => (s.step_key || s.id) === stepKey);
+        // Check explicit dependencies from the step definition
+        if (targetStep && targetStep.dependencies && targetStep.dependencies.length > 0) {
+          // Chapter 1 style: explicit dep keys listed on the step
+          const incompleteDep = targetStep.dependencies.find(
+            (depKey: string) =>
+              activeStepKeys.has(depKey) && !state.completedSteps.has(depKey),
+          );
 
-        if (targetIdx > 0) {
-           const previousSteps = allActiveSteps.slice(0, targetIdx);
-           const firstIncomplete = previousSteps.find(s => !state.completedSteps.has(s.step_key || s.id));
-           
-           if (firstIncomplete) {
-             toast.error(`Previous step pending: "${firstIncomplete.step_name}"`, {
-               description: "Steps must be completed in order. Please finish the preceding tasks first.",
-               duration: 4000
-             });
-             return; // HARD BLOCK
-           }
+          if (incompleteDep) {
+            let depStepName = incompleteDep;
+            for (const chapter of chapters) {
+              const depStep = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === incompleteDep);
+              if (depStep) {
+                depStepName = depStep.step_name;
+                break;
+              }
+            }
+            toast.error(`Required step pending: "${depStepName}"`, {
+              description: "Please complete the required preceding step first.",
+              duration: 4000,
+            });
+            return;
+          }
+        } else {
+          // Chapter 2 & 3 style: no explicit deps — enforce sequential order within chapter.
+          // Find which chapter this step belongs to, then get its active steps in order.
+          let targetChapterSteps: any[] = [];
+          for (const chapter of chapters) {
+            const found = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === stepKey);
+            if (found) {
+              targetChapterSteps = chapter.steps || [];
+              break;
+            }
+          }
+
+          // Keep only active (visible) steps in their original display order
+          const activeChapterStepKeys = targetChapterSteps
+            .filter((s: any) => activeStepKeys.has(s.step_key || s.id))
+            .map((s: any) => s.step_key || s.id);
+
+          const myIndex = activeChapterStepKeys.indexOf(stepKey);
+
+          if (myIndex > 0) {
+            const prevStepKey = activeChapterStepKeys[myIndex - 1];
+
+            if (!state.completedSteps.has(prevStepKey)) {
+              let prevStepName = prevStepKey;
+              for (const chapter of chapters) {
+                const prevStep = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === prevStepKey);
+                if (prevStep) {
+                  prevStepName = prevStep.step_name;
+                  break;
+                }
+              }
+              toast.error(`Complete "${prevStepName}" first`, {
+                description: "Steps must be completed in order.",
+                duration: 4000,
+              });
+              return;
+            }
+          }
         }
       }
 

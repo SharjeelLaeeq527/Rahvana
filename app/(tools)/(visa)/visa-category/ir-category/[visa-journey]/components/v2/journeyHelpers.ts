@@ -2,15 +2,13 @@ import { RoadmapData, RoadmapStep, RoadmapChapter } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 /**
- * Get the display number for a step, considering display_number_override.
+ * Get the display number for a step.
  */
 export function getDisplayStepNumber(step: RoadmapStep): number {
   const stepAny = step as any;
-  // If display_number_override exists, use it (for paper path steps showing as 4-6 instead of 11-13)
   if (stepAny.display_number_override !== undefined) {
     return stepAny.display_number_override;
   }
-  // Otherwise use the step_number
   return stepAny.step_number || 1;
 }
 
@@ -52,9 +50,10 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, metadat
   });
 
   // Sort by display_order, then step_number as fallback
+  // Sort by display_number_override (if present), then display_order, then step_number
   filtered.sort((a: any, b: any) => {
-    const aOrder = a.display_order ?? a.step_number ?? 0;
-    const bOrder = b.display_order ?? b.step_number ?? 0;
+    const aOrder = a.display_number_override ?? a.display_order ?? a.step_number ?? 0;
+    const bOrder = b.display_number_override ?? b.display_order ?? b.step_number ?? 0;
     return aOrder - bOrder;
   });
   return filtered;

@@ -965,6 +965,78 @@ const TRANSLATION_DOCS: DocumentDefinition[] = [
   },
 ];
 
+const SPECIFIC_TRANSLATION_DOCS: DocumentDefinition[] = [
+  {
+    id: "nikah-nama-translation",
+    key: "NIKAH_NAMA_TRANSLATION",
+    name: "Translated Nikah Nama",
+    description: "Certified English translation of the Nikah Nama",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "nikah-nama",
+    requiredWhen: {
+      visaCategories: ["IR-1", "CR-1"],
+    },
+  },
+  {
+    id: "nadra-mrc-translation",
+    key: "NADRA_MRC_TRANSLATION",
+    name: "Translated NADRA MRC",
+    description: "Certified English translation of the NADRA Marriage Certificate",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "nadra-mrc",
+    requiredWhen: {
+      visaCategories: ["IR-1", "CR-1"],
+    },
+  },
+  {
+    id: "birth-cert-translation",
+    key: "BIRTH_CERT_TRANSLATION",
+    name: "Translated Birth Certificate",
+    description: "Certified English translation of the beneficiary's birth certificate",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "birth-cert-beneficiary",
+    requiredWhen: {
+      visaCategories: FAMILY_VISAS,
+    },
+  },
+  {
+    id: "divorce-decree-translation",
+    key: "DIVORCE_DECREE_TRANSLATION",
+    name: "Translated Divorce Decree",
+    description: "Certified English translation of the prior marriage termination documents",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "divorce-decree-beneficiary",
+    requiredWhen: {
+      scenarioFlags: { prior_marriage_beneficiary: true },
+    },
+  },
+  // },
+];
+
 // ============================================================================
 // MISC / CASE EVIDENCE
 // ============================================================================
@@ -2531,6 +2603,7 @@ export const ALL_DOCUMENTS: DocumentDefinition[] = [
   ...MEDICAL_DOCS,
   ...PHOTO_DOCS,
   ...TRANSLATION_DOCS,
+  ...SPECIFIC_TRANSLATION_DOCS,
   ...MISC_DOCS,
   // New comprehensive categories
   ...EDUCATION_DOCS,

@@ -264,7 +264,8 @@ export function FormStep({
       0,
       progressiveIndex + 1,
     );
-    const shouldRenderParent = field.options && field.options.length > 0;
+    const shouldRenderParent = field.type !== "hidden";
+    // const shouldRenderParent = field.options && field.options.length > 0;
 
     return (
       <div className="space-y-4">
