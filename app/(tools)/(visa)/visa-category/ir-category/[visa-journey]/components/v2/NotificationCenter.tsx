@@ -75,7 +75,6 @@ export default function NotificationCenter({
   const [reminders, setReminders]   = useState<JourneyReminder[]>([]);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
-  const [seeding, setSeeding]       = useState(false);
   const [readIds, setReadIds]       = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem("rahvana_notif_read");
@@ -84,7 +83,6 @@ export default function NotificationCenter({
   });
 
   const [resolvedJourneyId, setResolvedJourneyId] = useState<string | null>(journeyId === "ir-1" ? null : (journeyId || null));
-  const isDev = process.env.NODE_ENV === 'development';
 
   // ── Fetch from real API ──────────────────────────────────
   const fetchReminders = useCallback(async () => {
@@ -149,41 +147,6 @@ export default function NotificationCenter({
     }).catch(() => {});
   };
 
-  // ── Snooze 3 days ────────────────────────────────────────
-  const snooze = async (reminderId: string) => {
-    if (!resolvedJourneyId) return;
-    setReminders((prev) => prev.filter((r) => r.id !== reminderId));
-    await fetch(`/api/v1/journeys/${resolvedJourneyId}/reminders/${reminderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "snooze", snooze_days: 3 }),
-    }).catch(() => {});
-  };
-
-  // ── Dev: seed sample notifications ──────────────────────
-  const seedDemo = async () => {
-    if (!resolvedJourneyId) return;
-    setSeeding(true);
-    await fetch('/api/dev/seed-notifications', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ journeyId: resolvedJourneyId }),
-    }).catch(() => {});
-    await fetchReminders();
-    setSeeding(false);
-  };
-
-  const clearDemo = async () => {
-    if (!resolvedJourneyId) return;
-    setSeeding(true);
-    await fetch('/api/dev/seed-notifications', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ journeyId: resolvedJourneyId }),
-    }).catch(() => {});
-    await fetchReminders();
-    setSeeding(false);
-  };
 
   const markOneRead = (id: string) => {
     setReadIds((prev) => {
@@ -215,13 +178,6 @@ export default function NotificationCenter({
               {unread.length}
             </span>
           )}
-          <button
-            onClick={fetchReminders}
-            disabled={loading}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[#6b8097] hover:bg-[#f4f7fb] transition-colors"
-          >
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
-          </button>
           {onClose && (
             <button
               onClick={onClose}
@@ -370,25 +326,6 @@ export default function NotificationCenter({
         </div>
       )}
 
-      {/* Dev-only: Demo seeding controls */}
-      {isDev && resolvedJourneyId && (
-        <div className="p-3 border-t border-orange-200 bg-orange-50 flex gap-2">
-          <button
-            onClick={seedDemo}
-            disabled={seeding}
-            className="flex-1 py-2 rounded-lg bg-orange-500 text-white text-[11px] font-black hover:bg-orange-600 disabled:opacity-50 transition-colors"
-          >
-            {seeding ? "Loading..." : "Load Demo Notifications"}
-          </button>
-          <button
-            onClick={clearDemo}
-            disabled={seeding}
-            className="px-3 py-2 rounded-lg bg-white border border-orange-200 text-[11px] font-bold text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition-colors"
-          >
-            Clear
-          </button>
-        </div>
-      )}
     </div>
   );
 }

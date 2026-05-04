@@ -336,32 +336,6 @@ export function SiteHeader({
   };
 
   const unreadCount = notifList.filter((n: any) => !readIds.has(n.id)).length;
-  const isDev = process.env.NODE_ENV === "development";
-  const [seeding, setSeeding] = useState(false);
-
-  const seedDemoNotifs = async () => {
-    if (!notifJourneyId) return;
-    setSeeding(true);
-    await fetch("/api/dev/seed-notifications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ journeyId: notifJourneyId }),
-    }).catch(() => {});
-    await fetchNotifications();
-    setSeeding(false);
-  };
-
-  const clearDemoNotifs = async () => {
-    if (!notifJourneyId) return;
-    setSeeding(true);
-    await fetch("/api/dev/seed-notifications", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ journeyId: notifJourneyId }),
-    }).catch(() => {});
-    await fetchNotifications();
-    setSeeding(false);
-  };
 
   // const { language, setLanguage } = useLanguage();
 
@@ -1087,42 +1061,7 @@ export function SiteHeader({
                               Delete all
                             </button>
                           )}
-                          <button
-                            className="text-xs text-[#0d7377] hover:underline font-medium transition-colors ml-auto"
-                            onClick={fetchNotifications}
-                          >
-                            Refresh
-                          </button>
                         </div>
-
-                        {/* Dev-only demo seeding */}
-                        {isDev && notifJourneyId && (
-                          <div className="px-3 py-2 border-t border-orange-200 bg-orange-50 flex gap-2">
-                            <button
-                              onClick={seedDemoNotifs}
-                              disabled={seeding}
-                              className="flex-1 py-1.5 rounded-lg bg-orange-500 text-white text-[10px] font-black hover:bg-orange-600 disabled:opacity-50 transition-colors"
-                            >
-                              {seeding
-                                ? "Loading..."
-                                : "Load Demo Notifications"}
-                            </button>
-                            <button
-                              onClick={clearDemoNotifs}
-                              disabled={seeding}
-                              className="px-2 py-1.5 rounded-lg bg-white border border-orange-200 text-[10px] font-bold text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition-colors"
-                            >
-                              Clear
-                            </button>
-                          </div>
-                        )}
-                        {isDev && !notifJourneyId && (
-                          <div className="px-3 py-2 border-t border-orange-200 bg-orange-50 text-center">
-                            <p className="text-[10px] text-orange-600 font-medium">
-                              Complete a step first to enable demo seeding
-                            </p>
-                          </div>
-                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
