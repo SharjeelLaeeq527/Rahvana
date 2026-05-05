@@ -132,11 +132,13 @@ export function StepRow({
   chapter,
   index,
   active = false,
+  isClicking = false,
 }: {
   step: readonly [string, string, string, string];
   chapter: (typeof chapters)[number];
   index: number;
   active?: boolean;
+  isClicking?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const [, name, description, status] = step;
@@ -163,14 +165,22 @@ export function StepRow({
           : undefined
       }
       animate={
-        reduceMotion || !isCurrent
+        reduceMotion
           ? undefined
-          : {
-              x: [0, 3, 0],
-              borderColor: [chapter.color, chapter.color, chapter.color],
-            }
+          : isClicking
+            ? { scale: 0.97, x: 0 }
+            : isCurrent
+              ? {
+                  x: [0, 3, 0],
+                  borderColor: [chapter.color, chapter.color, chapter.color],
+                }
+              : { x: 0 }
       }
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      transition={
+        isClicking
+          ? { duration: 0.15 }
+          : { duration: 4, repeat: Infinity, ease: "easeInOut" }
+      }
     >
       {isCurrent && !isDone && !isLocked && (
         <span
@@ -277,9 +287,9 @@ export function RealDashboardScene({
     1: { opacity: 1, x: 82, y: 334, scale: 1 },
     2: { opacity: 1, x: 82, y: 334, scale: 1 },
     3: { opacity: 1, x: 82, y: 334, scale: 1 },
-    4: { opacity: 1, x: 310, y: 502, scale: 1 },
-    5: { opacity: 1, x: 310, y: 502, scale: 1 },
-    6: { opacity: 1, x: 348, y: 506, scale: 1 },
+    4: { opacity: 1, x: 310, y: 320, scale: 1 },
+    5: { opacity: 1, x: 310, y: 320, scale: 1 },
+    6: { opacity: 1, x: 348, y: 380, scale: 1 },
     7: { opacity: 1, x: 490, y: 424, scale: 1 },
     8: { opacity: 1, x: 490, y: 424, scale: 1 },
     9: { opacity: 1, x: 502, y: 318, scale: 1 },
@@ -383,6 +393,7 @@ export function RealDashboardScene({
                 >
                   <HeroChapterOnePanel
                     stepTargeted={phase === 4 || phase === 5}
+                    isClicking={phase === 5}
                   />
                 </motion.div>
               )}
@@ -401,6 +412,7 @@ export function RealDashboardScene({
                 >
                   <HeroI130StepPanel
                     launchTargeted={phase === 7 || phase === 8}
+                    isClicking={phase === 8}
                   />
                 </motion.div>
               )}
@@ -645,15 +657,43 @@ export function HeroDashboardPanel({
 
 export function HeroChapterOnePanel({
   stepTargeted = false,
+  isClicking = false,
 }: {
   stepTargeted?: boolean;
+  isClicking?: boolean;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (!stepTargeted) return;
+
+    const container = scrollContainerRef.current;
+    const stepEl = stepRefs.current[3]; // Step 4 (index 3)
+
+    if (container && stepEl) {
+      const stepTop = stepEl.offsetTop;
+      const containerTop = container.offsetTop;
+
+      // Align Step 4 with the cursor's fixed coordinate (320px)
+      // We want: stepTop - containerTop - container.scrollTop = 320
+      const targetScrollTop = stepTop - containerTop - 280; // 280 to account for step height centering
+
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
+    }
+  }, [stepTargeted]);
+
   return (
-    <div className="mx-auto h-full max-w-[680px] overflow-hidden pt-2">
+    <div
+      ref={scrollContainerRef}
+      className="pointer-events-none mx-auto h-full max-w-[680px] overflow-y-auto pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
       <motion.div
         className="ir1-card-primary mb-4 rounded-3xl border-[#B9BBE2] py-[32px] px-[24px]"
-        animate={{ y: stepTargeted ? -32 : 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        initial={false}
       >
         <div className="mb-3 flex items-center gap-2">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-[#B9BBE2] bg-[#F0F1FB] px-[13px] py-[4px] text-[11px] font-bold uppercase tracking-[0.07em] text-[#4E518C]">
@@ -678,17 +718,16 @@ export function HeroChapterOnePanel({
         </div>
       </motion.div>
 
-      <motion.div
-        className="flex flex-col gap-1.5"
-        animate={{ y: stepTargeted ? -32 : 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <motion.div className="flex flex-col gap-1.5 px-2 pb-20" initial={false}>
         {chapters[0].steps.slice(0, 5).map((chapterStep, index) => {
           const status =
             index < 3 ? "done" : index === 3 ? "current" : "locked";
           return (
             <motion.div
               key={chapterStep[0]}
+              ref={(el) => {
+                stepRefs.current[index] = el;
+              }}
               animate={
                 index === 3 && stepTargeted
                   ? { scale: 1.015, x: 3 }
@@ -708,6 +747,7 @@ export function HeroChapterOnePanel({
                 chapter={chapters[0]}
                 index={index}
                 active={index === 3}
+                isClicking={index === 3 && isClicking}
               />
             </motion.div>
           );
@@ -719,9 +759,29 @@ export function HeroChapterOnePanel({
 
 export function HeroI130StepPanel({
   launchTargeted = false,
+  isClicking = false,
 }: {
   launchTargeted?: boolean;
+  isClicking?: boolean;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!launchTargeted) return;
+    const container = scrollContainerRef.current;
+    const button = buttonRef.current;
+    if (container && button) {
+      // Offset 406 aligns button center with cursor y: 424 (header 52, inner shift -68)
+      // Slightly adjusted from 412 to scroll more as per user feedback
+      const targetScrollTop = button.offsetTop - container.offsetTop - 406;
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
+    }
+  }, [launchTargeted]);
+
   const tool = {
     launch_module: {
       eyebrow: "Autoform Filler · USCIS Form I-130",
@@ -738,7 +798,10 @@ export function HeroI130StepPanel({
   };
 
   return (
-    <div className="h-full overflow-hidden bg-white">
+    <div
+      ref={scrollContainerRef}
+      className="pointer-events-none h-full overflow-y-auto bg-white [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
       <motion.div
         className="w-full animate-in fade-in slide-in-from-bottom-6 duration-1000"
         animate={{ y: launchTargeted ? -68 : 0 }}
@@ -804,17 +867,23 @@ export function HeroI130StepPanel({
               </div>
               <div className="flex flex-col gap-[11px]">
                 <motion.button
+                  ref={buttonRef}
                   className="group inline-flex w-full cursor-pointer items-center justify-center gap-[10px] rounded-[12px] bg-[#c0596a] p-[16px_28px] font-sans text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)] transition-all duration-200 hover:bg-[#a13e4e]"
                   animate={
-                    launchTargeted
+                    isClicking
                       ? {
-                          scale: 1.018,
-                          boxShadow: "0 8px 32px rgba(192,89,106,0.35)",
+                          scale: 0.965,
+                          boxShadow: "0 2px 8px rgba(192,89,106,0.15)",
                         }
-                      : {
-                          scale: 1,
-                          boxShadow: "0 4px 20px rgba(192,89,106,0.25)",
-                        }
+                      : launchTargeted
+                        ? {
+                            scale: 1.018,
+                            boxShadow: "0 8px 32px rgba(192,89,106,0.35)",
+                          }
+                        : {
+                            scale: 1,
+                            boxShadow: "0 4px 20px rgba(192,89,106,0.25)",
+                          }
                   }
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 >
@@ -1073,8 +1142,19 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   }, []);
 
   return (
-    <div ref={wrapRef} className="w-full" style={{ height: Math.round(560 * scale) }}>
-      <div style={{ width: 680, height: 560, transformOrigin: "top left", transform: `scale(${scale})` }}>
+    <div
+      ref={wrapRef}
+      className="w-full"
+      style={{ height: Math.round(560 * scale) }}
+    >
+      <div
+        style={{
+          width: 680,
+          height: 560,
+          transformOrigin: "top left",
+          transform: `scale(${scale})`,
+        }}
+      >
         <TwoWaysVisual index={index} />
       </div>
     </div>
@@ -1479,7 +1559,11 @@ export function TwoWaysSupportText({
       </h3>
       <p
         className="mt-2 mb-0 text-[#4a5c62]"
-        style={{ fontSize: "clamp(13px,1.1vw,15px)", lineHeight: 1.62, maxWidth: 520 }}
+        style={{
+          fontSize: "clamp(13px,1.1vw,15px)",
+          lineHeight: 1.62,
+          maxWidth: 520,
+        }}
       >
         {path.supportText}
       </p>
@@ -1639,86 +1723,424 @@ export function TwoWaysMobile({
 
 export function GuidedRoadmapScene() {
   const reduceMotion = useReducedMotion();
-
-  // Chapter data for the horizontal nav + right step list
-  const chapterNav = [
-    { n: 1, label: "USCIS Petition",  color: "#8284BF", ring: "#B9BBE2", bg: "#F0F1FB", text: "#4E518C", pct: 33, active: true  },
-    { n: 2, label: "NVC / CEAC",      color: "#8B4388", ring: "#8B4388", bg: "#F4E6F3", text: "#520A50", pct: 0,  active: false },
-    { n: 3, label: "Med + Interview", color: "#31415F", ring: "#31415F", bg: "#E8ECF3", text: "#051738", pct: 0,  active: false },
-  ] as const;
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [isClicking, setIsClicking] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [cursorPos, setCursorPos] = useState({ x: 300, y: 150 });
 
   const steps = [
-    { id: 1, name: "Determine Eligibility",     done: true,  current: false },
-    { id: 2, name: "Gather Required Documents", done: true,  current: false },
-    { id: 3, name: "Review Filing Methods",     done: false, current: true  },
-    { id: 4, name: "Fill Form I-130",           done: false, current: false },
-    { id: 5, name: "Fill Form I-130A",          done: false, current: false },
-    { id: 6, name: "Submit to USCIS",           done: false, current: false },
+    { id: 1, name: "Determine Eligibility", done: true, current: false },
+    { id: 2, name: "Gather Required Documents", done: true, current: false },
+    { id: 3, name: "Review Filing Methods", done: false, current: true },
+    { id: 4, name: "Fill Form I-130", done: false, current: false },
+    { id: 5, name: "Fill Form I-130A", done: false, current: false },
+    { id: 6, name: "Submit to USCIS", done: false, current: false },
+    { id: 7, name: "Wait for Receipt", done: false, current: false },
+    { id: 8, name: "Prepare for Biometrics", done: false, current: false },
   ];
 
-  return (
-    <div style={{ width: 600, height: 500, borderRadius: 32, background: "#f4f7fb", border: "1px solid #dde8e6", boxShadow: "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)", position: "absolute", left: 40, top: 30, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+  const lockedChapters = [
+    { number: 2, name: "NVC / CEAC Processing", color: "#520A50" },
+    { number: 3, name: "Medical + Interview", color: "#051738" },
+    { number: 4, name: "Visa Issuance", color: "#0d7377" },
+  ];
 
+  const chapterNav = [
+    {
+      n: 1,
+      label: "USCIS Petition",
+      color: "#8284BF",
+      ring: "#B9BBE2",
+      bg: "#F0F1FB",
+      text: "#4E518C",
+      pct: 33,
+      active: true,
+    },
+    {
+      n: 2,
+      label: "NVC / CEAC",
+      color: "#8B4388",
+      ring: "#8B4388",
+      bg: "#F4E6F3",
+      text: "#520A50",
+      pct: 0,
+      active: false,
+    },
+    {
+      n: 3,
+      label: "Med + Interview",
+      color: "#31415F",
+      ring: "#31415F",
+      bg: "#E8ECF3",
+      text: "#051738",
+      pct: 0,
+      active: false,
+    },
+  ] as const;
+
+  // Demo sequence
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    const sequence = [
+      { idx: 0, delay: 0 },
+      { idx: 1, delay: 1800 },
+      { idx: 2, delay: 3600 },
+      { idx: 3, delay: 5400, click: true }, // Targeted "third last" of original 6
+      { idx: 4, delay: 8500 },
+      { idx: 5, delay: 10500 },
+      { idx: 6, delay: 12500 },
+      { idx: 7, delay: 14500 },
+    ];
+
+    let timers: NodeJS.Timeout[] = [];
+    const run = () => {
+      timers.forEach(clearTimeout);
+      timers = sequence.map(({ idx, delay, click }) =>
+        setTimeout(() => {
+          setActiveIdx(idx);
+          if (click) {
+            setTimeout(() => setIsClicking(true), 800);
+            setTimeout(() => setIsClicking(false), 1200);
+          }
+        }, delay),
+      );
+    };
+
+    run();
+    const interval = setInterval(run, 18000);
+    return () => {
+      timers.forEach(clearTimeout);
+      clearInterval(interval);
+    };
+  }, [reduceMotion]);
+
+  // Handle scrolling and cursor positioning
+  useEffect(() => {
+    const stepEl = stepRefs.current[activeIdx];
+    const container = scrollContainerRef.current;
+    if (!stepEl || !container) return;
+
+    // Internal coordinates (offsetTop) are resilient to CSS transforms like scaling
+    const stepTop = stepEl.offsetTop;
+    const stepHeight = stepEl.offsetHeight;
+    const containerHeight = container.offsetHeight;
+    const containerTop = container.offsetTop;
+
+    // Calculate target scroll so step is centered in the container
+    const targetScrollTop =
+      stepTop - containerTop - containerHeight / 2 + stepHeight / 2;
+
+    container.scrollTo({
+      top: targetScrollTop,
+      behavior: "smooth",
+    });
+
+    // Update cursor position relative to the scene root (the absolute div)
+    setCursorPos({
+      x: stepEl.offsetLeft + stepEl.offsetWidth * 0.7,
+      y: stepEl.offsetTop + stepEl.offsetHeight * 0.5,
+    });
+  }, [activeIdx]);
+
+  return (
+    <div
+      style={{
+        width: 600,
+        height: 500,
+        borderRadius: 32,
+        background: "#f4f7fb",
+        border: "1px solid #dde8e6",
+        boxShadow:
+          "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)",
+        position: "absolute",
+        left: 40,
+        top: 30,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* ── Top bar (52px) ── */}
-      <div style={{ height: 52, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 18px", gap: 8, flexShrink: 0 }}>
+      <div
+        style={{
+          height: 52,
+          background: "white",
+          borderBottom: "1px solid #edf2f0",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 18px",
+          gap: 8,
+          flexShrink: 0,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 10, background: "linear-gradient(135deg, #0d7377, #0a5e62)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(13,115,119,0.28)" }}>
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 10,
+              background: "linear-gradient(135deg, #0d7377, #0a5e62)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(13,115,119,0.28)",
+            }}
+          >
             <Compass size={15} color="white" strokeWidth={2.5} />
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.06em", color: "#1e293b", lineHeight: 1 }}>IR-1 Journey</div>
-            <div style={{ fontSize: 9, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Islamabad Embassy · Online Filing</div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: "#1e293b",
+                lineHeight: 1,
+              }}
+            >
+              IR-1 Journey
+            </div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#64748b",
+                fontWeight: 600,
+                marginTop: 2,
+              }}
+            >
+              Islamabad Embassy · Online Filing
+            </div>
           </div>
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+        <div
+          style={{
+            marginLeft: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
           <div style={{ position: "relative" }}>
             <Bell size={17} color="#64748b" strokeWidth={2} />
-            <div style={{ position: "absolute", top: -1, right: -1, width: 6, height: 6, borderRadius: "50%", background: "#ef4444", border: "1.5px solid white" }} />
+            <div
+              style={{
+                position: "absolute",
+                top: -1,
+                right: -1,
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#ef4444",
+                border: "1.5px solid white",
+              }}
+            />
           </div>
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e2e8f0" }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              background: "#f1f5f9",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1px solid #e2e8f0",
+            }}
+          >
             <User size={14} color="#64748b" strokeWidth={2} />
           </div>
         </div>
       </div>
 
       {/* ── Horizontal chapter timeline (42px) ── */}
-      <div style={{ height: 42, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", gap: 0, flexShrink: 0 }}>
+      <div
+        style={{
+          height: 42,
+          background: "white",
+          borderBottom: "1px solid #edf2f0",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          gap: 0,
+          flexShrink: 0,
+        }}
+      >
         {chapterNav.map((ch, idx) => (
-          <div key={ch.n} style={{ display: "flex", alignItems: "center", flex: idx < 2 ? "none" : 1 }}>
+          <div
+            key={ch.n}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flex: idx < 2 ? "none" : 1,
+            }}
+          >
             {/* Node + label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
-              <div style={{ width: 24, height: 24, borderRadius: "50%", background: ch.active ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)` : "#f1f5f9", border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none", flexShrink: 0 }}>
-                {ch.active ? <span style={{ fontSize: 10, fontWeight: 900, color: "white" }}>{ch.n}</span> : <Lock size={9} color="#94a3b8" strokeWidth={2.5} />}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  background: ch.active
+                    ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)`
+                    : "#f1f5f9",
+                  border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none",
+                  flexShrink: 0,
+                }}
+              >
+                {ch.active ? (
+                  <span
+                    style={{ fontSize: 10, fontWeight: 900, color: "white" }}
+                  >
+                    {ch.n}
+                  </span>
+                ) : (
+                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
+                )}
               </div>
               <div>
-                <div style={{ fontSize: 9.5, fontWeight: 800, color: ch.active ? "#1e293b" : "#94a3b8", lineHeight: 1, whiteSpace: "nowrap" }}>{ch.label}</div>
-                <div style={{ fontSize: 7.5, fontWeight: 700, color: ch.active ? ch.text : "#cbd5e1", marginTop: 1 }}>{ch.active ? `${ch.pct}% done` : "Locked"}</div>
+                <div
+                  style={{
+                    fontSize: 9.5,
+                    fontWeight: 800,
+                    color: ch.active ? "#1e293b" : "#94a3b8",
+                    lineHeight: 1,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {ch.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: 7.5,
+                    fontWeight: 700,
+                    color: ch.active ? ch.text : "#cbd5e1",
+                    marginTop: 1,
+                  }}
+                >
+                  {ch.active ? `${ch.pct}% done` : "Locked"}
+                </div>
               </div>
             </div>
             {/* Connector line between chapters */}
-            {idx < 2 && <div style={{ flex: 1, height: 2, background: idx === 0 ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)` : "#e2e8f0", margin: "0 10px", minWidth: 24 }} />}
+            {idx < 2 && (
+              <div
+                style={{
+                  flex: 1,
+                  height: 2,
+                  background:
+                    idx === 0
+                      ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)`
+                      : "#e2e8f0",
+                  margin: "0 10px",
+                  minWidth: 24,
+                }}
+              />
+            )}
           </div>
         ))}
       </div>
 
       {/* ── Main area — two columns (362px total) ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
         {/* Left: Journey card (192px) */}
-        <div style={{ width: 192, background: "white", borderRight: "1px solid #edf2f0", padding: "14px 15px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-
+        <div
+          style={{
+            width: 192,
+            background: "white",
+            borderRight: "1px solid #edf2f0",
+            padding: "14px 15px",
+            display: "flex",
+            flexDirection: "column",
+            flexShrink: 0,
+          }}
+        >
           {/* Chapter header */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#8284BF" }} className={reduceMotion ? "" : "animate-pulse"} />
-              <span style={{ fontSize: 8, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4E518C" }}>Chapter 1 · In Progress</span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                marginBottom: 5,
+              }}
+            >
+              <div
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: "#8284BF",
+                }}
+                className={reduceMotion ? "" : "animate-pulse"}
+              />
+              <span
+                style={{
+                  fontSize: 8,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "#4E518C",
+                }}
+              >
+                Chapter 1 · In Progress
+              </span>
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 900, color: "#1e293b", lineHeight: 1.25, marginBottom: 7 }}>USCIS Petition Filing</div>
+            <div
+              style={{
+                fontSize: 12.5,
+                fontWeight: 900,
+                color: "#1e293b",
+                lineHeight: 1.25,
+                marginBottom: 7,
+              }}
+            >
+              USCIS Petition Filing
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ flex: 1, height: 5, borderRadius: 99, background: "#e8edf2", overflow: "hidden" }}>
-                <div style={{ width: "33%", height: "100%", background: "linear-gradient(90deg, #8284BF, #4E518C)", borderRadius: 99 }} />
+              <div
+                style={{
+                  flex: 1,
+                  height: 5,
+                  borderRadius: 99,
+                  background: "#e8edf2",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${Math.round(((activeIdx + 1) / steps.length) * 100)}%`,
+                    height: "100%",
+                    background: "linear-gradient(90deg, #8284BF, #4E518C)",
+                    borderRadius: 99,
+                    transition: "width 0.4s ease",
+                  }}
+                />
               </div>
-              <span style={{ fontSize: 8.5, fontWeight: 800, color: "#4E518C", whiteSpace: "nowrap" }}>2/6</span>
+              <span
+                style={{
+                  fontSize: 8.5,
+                  fontWeight: 800,
+                  color: "#4E518C",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {activeIdx + 1} / {steps.length}
+              </span>
             </div>
           </div>
 
@@ -1726,72 +2148,316 @@ export function GuidedRoadmapScene() {
 
           {/* Current step card */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8", marginBottom: 5 }}>Active Step</div>
-            <div style={{ background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)", borderRadius: 10, padding: "9px 10px", border: "1px solid #B9BBE2" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#4E518C", lineHeight: 1.3, marginBottom: 3 }}>Review Filing Methods</div>
-              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>Step 3 of 6 · Online or paper mail?</div>
+            <div
+              style={{
+                fontSize: 8,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#94a3b8",
+                marginBottom: 5,
+              }}
+            >
+              Active Step
+            </div>
+            <div
+              style={{
+                background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)",
+                borderRadius: 10,
+                padding: "9px 10px",
+                border: "1px solid #B9BBE2",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  color: "#4E518C",
+                  lineHeight: 1.3,
+                  marginBottom: 3,
+                }}
+              >
+                {steps[activeIdx].name}
+              </div>
+              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>
+                Step {activeIdx + 1} of {steps.length} ·{" "}
+                {steps[activeIdx].done ? "Done" : "In progress"}
+              </div>
             </div>
           </div>
 
           {/* Alert */}
-          <div style={{ borderRadius: 9, padding: "7px 9px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: 10 }}>
+          <div
+            style={{
+              borderRadius: 9,
+              padding: "7px 9px",
+              background: "#fffbeb",
+              border: "1px solid #fde68a",
+              marginBottom: 10,
+            }}
+          >
             <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#f59e0b", marginTop: 3.5, flexShrink: 0 }} />
-              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>Fresh NADRA records required for ISL embassy.</span>
+              <div
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: "#f59e0b",
+                  marginTop: 3.5,
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>
+                Fresh NADRA records required for ISL embassy.
+              </span>
             </div>
           </div>
 
           {/* CTA — marginTop: auto, never cropped */}
-          <button type="button" style={{ width: "100%", background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)", border: "none", borderRadius: 11, padding: "11px 14px", color: "white", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, cursor: "pointer", boxShadow: "0 4px 14px rgba(13,115,119,0.28)", marginTop: "auto", flexShrink: 0 }}>
+          <button
+            type="button"
+            style={{
+              width: "100%",
+              background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)",
+              border: "none",
+              borderRadius: 11,
+              padding: "11px 14px",
+              color: "white",
+              fontSize: 12,
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(13,115,119,0.28)",
+              marginTop: "auto",
+              flexShrink: 0,
+            }}
+          >
             Continue Step
             <ArrowRight size={13} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Right: Step list (flex: 1) */}
-        <div style={{ flex: 1, padding: "14px 14px", overflowY: "auto", scrollbarWidth: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+        {/* Step list area */}
+        <div
+          ref={scrollContainerRef}
+          style={{
+            flex: 1,
+            padding: "14px 14px",
+            overflowY: "auto",
+            scrollbarWidth: "none",
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 10,
+            }}
+          >
             <Signpost size={11} color="#0d7377" strokeWidth={2.5} />
-            <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#64748b" }}>Chapter 1 Steps</span>
-            <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800, color: "#4E518C", background: "#F0F1FB", border: "1px solid #B9BBE2", padding: "2px 7px", borderRadius: 5 }}>2 / 6 done</span>
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#64748b",
+              }}
+            >
+              Chapter 1 Steps
+            </span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: 8.5,
+                fontWeight: 800,
+                color: "#4E518C",
+                background: "#F0F1FB",
+                border: "1px solid #B9BBE2",
+                padding: "2px 7px",
+                borderRadius: 5,
+              }}
+            >
+              {steps.filter((s) => s.done).length} / {steps.length} done
+            </span>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {steps.map((step, idx) => (
-              <div key={step.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: step.current ? "8px 10px" : "5px 10px", borderRadius: 10, background: step.current ? "linear-gradient(to right, #F0F1FB, #f9f9fe)" : "transparent", border: step.current ? "1.5px solid #B9BBE2" : "1px solid transparent", boxShadow: step.current ? "0 2px 7px rgba(130,132,191,0.12)" : "none" }}>
-                {step.done ? (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Check size={10} color="white" strokeWidth={3} />
-                  </div>
-                ) : step.current ? (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#8284BF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 3px rgba(130,132,191,0.22)" }}>
-                    <ChevronRight size={10} color="white" strokeWidth={3} />
-                  </div>
-                ) : (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", border: "1.5px solid #dde8e6", background: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: "#cbd5e1" }}>{idx + 1}</span>
-                  </div>
-                )}
-                <span style={{ fontSize: 11.5, fontWeight: step.current ? 800 : step.done ? 600 : 500, color: step.current ? "#4E518C" : step.done ? "#059669" : "#94a3b8" }}>
-                  {step.name}
-                </span>
-                {step.current && <span style={{ marginLeft: "auto", fontSize: 8, fontWeight: 900, color: "#4E518C", background: "rgba(130,132,191,0.15)", padding: "2px 7px", borderRadius: 5, textTransform: "uppercase", flexShrink: 0 }}>Active</span>}
-              </div>
-            ))}
+            {steps.map((step, idx) => {
+              const isStepCurrent = idx === activeIdx;
+              return (
+                <div
+                  key={step.id}
+                  ref={(el) => {
+                    stepRefs.current[idx] = el;
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 9,
+                    padding: isStepCurrent ? "8px 10px" : "5px 10px",
+                    borderRadius: 10,
+                    background: isStepCurrent
+                      ? "linear-gradient(to right, #F0F1FB, #f9f9fe)"
+                      : "transparent",
+                    border: isStepCurrent
+                      ? "1.5px solid #B9BBE2"
+                      : "1px solid transparent",
+                    boxShadow: isStepCurrent
+                      ? "0 2px 7px rgba(130,132,191,0.12)"
+                      : "none",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {step.done ? (
+                    <div
+                      style={{
+                        width: 19,
+                        height: 19,
+                        borderRadius: "50%",
+                        background: "#10b981",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Check size={10} color="white" strokeWidth={3} />
+                    </div>
+                  ) : isStepCurrent ? (
+                    <div
+                      style={{
+                        width: 19,
+                        height: 19,
+                        borderRadius: "50%",
+                        background: "#8284BF",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        boxShadow: "0 0 0 3px rgba(130,132,191,0.22)",
+                      }}
+                    >
+                      <ChevronRight size={10} color="white" strokeWidth={3} />
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        width: 19,
+                        height: 19,
+                        borderRadius: "50%",
+                        border: "1.5px solid #dde8e6",
+                        background: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 8,
+                          fontWeight: 700,
+                          color: "#cbd5e1",
+                        }}
+                      >
+                        {idx + 1}
+                      </span>
+                    </div>
+                  )}
+                  <span
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: isStepCurrent ? 800 : step.done ? 600 : 500,
+                      color: isStepCurrent
+                        ? "#4E518C"
+                        : step.done
+                          ? "#059669"
+                          : "#94a3b8",
+                    }}
+                  >
+                    {step.name}
+                  </span>
+                  {isStepCurrent && (
+                    <span
+                      style={{
+                        marginLeft: "auto",
+                        fontSize: 8,
+                        fontWeight: 900,
+                        color: "#4E518C",
+                        background: "rgba(130,132,191,0.15)",
+                        padding: "2px 7px",
+                        borderRadius: 5,
+                        textTransform: "uppercase",
+                        flexShrink: 0,
+                      }}
+                    >
+                      Active
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* Locked chapters – compact */}
-          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
-            {[
-              { n: 2, label: "NVC / CEAC Processing", steps: "8 steps" },
-              { n: 3, label: "Medical + Interview",    steps: "6 steps" },
-            ].map(ch => (
-              <div key={ch.n} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 9, background: "white", border: "1px dashed #e2e8f0" }}>
-                <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#f1f5f9", border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div
+            style={{
+              marginTop: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+            }}
+          >
+            {lockedChapters.map((ch) => (
+              <div
+                key={ch.number}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 9,
+                  padding: "7px 10px",
+                  borderRadius: 9,
+                  background: "white",
+                  border: "1px dashed #e2e8f0",
+                }}
+              >
+                <div
+                  style={{
+                    width: 19,
+                    height: 19,
+                    borderRadius: "50%",
+                    background: "#f1f5f9",
+                    border: "1.5px solid #e2e8f0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
                   <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>Ch. {ch.n} · {ch.label}</span>
-                <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 700, color: "#cbd5e1", flexShrink: 0 }}>{ch.steps}</span>
+                <span
+                  style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}
+                >
+                  Ch. {ch.number} · {ch.name}
+                </span>
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 8.5,
+                    fontWeight: 700,
+                    color: "#cbd5e1",
+                    flexShrink: 0,
+                  }}
+                >
+                  Locked
+                </span>
               </div>
             ))}
           </div>
@@ -1799,22 +2465,114 @@ export function GuidedRoadmapScene() {
       </div>
 
       {/* ── Bottom stats bar (44px) ── */}
-      <div style={{ height: 44, background: "white", borderTop: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", flexShrink: 0 }}>
-        {([
-          { label: "Steps Done",    value: "2 / 18"    },
-          { label: "Chapter",       value: "1 of 3"    },
-          { label: "Est. Timeline", value: "~8 months" },
-          { label: "Overall",       value: "17%"       },
-        ] as const).map((stat, i) => (
-          <div key={stat.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-            {i > 0 && <div style={{ width: 1, height: 18, background: "#e8edf2", marginRight: "auto", flexShrink: 0 }} />}
+      <div
+        style={{
+          height: 44,
+          background: "white",
+          borderTop: "1px solid #edf2f0",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          flexShrink: 0,
+        }}
+      >
+        {(
+          [
+            {
+              label: "Steps Done",
+              value: `${steps.filter((s) => s.done).length} / 18`,
+            },
+            { label: "Chapter", value: "1 of 3" },
+            { label: "Est. Timeline", value: "~8 months" },
+            { label: "Overall", value: "17%" },
+          ] as const
+        ).map((stat, i) => (
+          <div
+            key={stat.label}
+            style={{ display: "flex", alignItems: "center", flex: 1 }}
+          >
+            {i > 0 && (
+              <div
+                style={{
+                  width: 1,
+                  height: 18,
+                  background: "#e8edf2",
+                  marginRight: "auto",
+                  flexShrink: 0,
+                }}
+              />
+            )}
             <div style={{ flex: 1, textAlign: "center" }}>
-              <div style={{ fontSize: 7.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8" }}>{stat.label}</div>
-              <div style={{ fontSize: 11.5, fontWeight: 900, color: "#1e293b", marginTop: 1 }}>{stat.value}</div>
+              <div
+                style={{
+                  fontSize: 7.5,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "#94a3b8",
+                }}
+              >
+                {stat.label}
+              </div>
+              <div
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: 900,
+                  color: "#1e293b",
+                  marginTop: 1,
+                }}
+              >
+                {stat.value}
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Simulated Cursor */}
+      <motion.div
+        className="pointer-events-none absolute left-0 top-0 z-[100]"
+        animate={{
+          x: cursorPos.x,
+          y: cursorPos.y,
+          scale: isClicking ? 0.85 : 1,
+          opacity: 1,
+        }}
+        transition={{
+          x: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+          y: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+          scale: { duration: 0.2 },
+        }}
+      >
+        <svg
+          className="size-8 overflow-visible"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.3))",
+          }}
+        >
+          <path
+            d="M4.7 3.4V20.7L9.6 15.9L13.2 22L16.1 20.3L12.6 14.4H19.4L4.7 3.4Z"
+            fill="white"
+            stroke="#07131f"
+            strokeWidth="1.25"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <AnimatePresence>
+          {isClicking && (
+            <motion.span
+              className="absolute left-[-6px] top-[-6px] size-6 rounded-full border-2 border-[#0d7377]/60 bg-[#0d7377]/10"
+              initial={{ opacity: 0.8, scale: 0.5 }}
+              animate={{ opacity: 0, scale: 1.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }
@@ -1982,9 +2740,9 @@ const toolContent: Record<string, any> = {
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
-const ITEM_W   = 108;
-const GAP      = 20;
-const STRIDE   = ITEM_W + GAP;
+const ITEM_W = 108;
+const GAP = 20;
+const STRIDE = ITEM_W + GAP;
 const DURATION = 28;
 
 
@@ -2131,7 +2889,7 @@ export function IndividualToolsScene() {
     return () => window.clearTimeout(t);
   }, [activeIdx, isPaused]);
 
-  const tool    = featuredTools[activeIdx];
+  const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
@@ -2155,76 +2913,136 @@ export function IndividualToolsScene() {
       {/* ── Info panel — fades on tool change ── */}
       <div
         style={{
-          position   : "relative",
-          width      : "100%",
-          height     : 362,
-          opacity    : visible ? 1 : 0,
-          transform  : visible ? "translateY(0)" : "translateY(6px)",
-          transition : "opacity 0.28s ease, transform 0.28s ease",
+          position: "relative",
+          width: "100%",
+          height: 362,
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 0.28s ease, transform 0.28s ease",
         }}
       >
         {/* Hero card — left column */}
         <div
           style={{
-            position      : "absolute",
-            left          : 22, top : 24,
-            width         : 288, height: 310,
-            borderRadius  : 24,
-            background    : "white",
-            border        : `2px solid ${tool.fg}`,
-            boxShadow     : `0 16px 48px ${tool.border}55`,
-            padding       : "16px",
-            display       : "flex",
-            flexDirection : "column",
+            position: "absolute",
+            left: 22,
+            top: 24,
+            width: 288,
+            height: 310,
+            borderRadius: 24,
+            background: "white",
+            border: `2px solid ${tool.fg}`,
+            boxShadow: `0 16px 48px ${tool.border}55`,
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {/* Eyebrow badge */}
           <span
             style={{
-              display       : "inline-flex",
-              borderRadius  : 999,
-              border        : `1px solid ${tool.border}`,
-              background    : tool.bg,
-              padding       : "3px 10px",
-              fontSize      : 9.5, fontWeight: 800,
-              textTransform : "uppercase",
-              letterSpacing : "0.1em",
-              color         : tool.fg,
-              alignSelf     : "flex-start",
+              display: "inline-flex",
+              borderRadius: 999,
+              border: `1px solid ${tool.border}`,
+              background: tool.bg,
+              padding: "3px 10px",
+              fontSize: 9.5,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: tool.fg,
+              alignSelf: "flex-start",
             }}
           >
             {content.eyebrow}
           </span>
 
-          <h3 style={{ fontSize:19, fontWeight:800, lineHeight:1.15, color:"#162126", margin:"10px 0 0" }}>
+          <h3
+            style={{
+              fontSize: 19,
+              fontWeight: 800,
+              lineHeight: 1.15,
+              color: "#162126",
+              margin: "10px 0 0",
+            }}
+          >
             {content.title}
           </h3>
-          <p style={{ fontSize:12.5, lineHeight:1.6, color:"#4a5c62", margin:"6px 0 0" }}>
+          <p
+            style={{
+              fontSize: 12.5,
+              lineHeight: 1.6,
+              color: "#4a5c62",
+              margin: "6px 0 0",
+            }}
+          >
             {content.desc}
           </p>
 
-          <div style={{ marginTop:"auto", display:"flex", flexDirection:"column", gap:7 }}>
+          <div
+            style={{
+              marginTop: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 7,
+            }}
+          >
             {content.stats.map(([label, value]: [string, string]) => (
               <div
                 key={label}
                 style={{
-                  display:"flex", alignItems:"center", justifyContent:"space-between",
-                  borderRadius:10, border:"1px solid #e2e8f0",
-                  background:"#f7fafc", padding:"6px 12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderRadius: 10,
+                  border: "1px solid #e2e8f0",
+                  background: "#f7fafc",
+                  padding: "6px 12px",
                 }}
               >
-                <span style={{ fontSize:11.5, color:"#4a5c62", fontWeight:600 }}>{label}</span>
-                <span style={{ fontSize:12.5, fontWeight:800, color:"#162126" }}>{value}</span>
+                <span
+                  style={{ fontSize: 11.5, color: "#4a5c62", fontWeight: 600 }}
+                >
+                  {label}
+                </span>
+                <span
+                  style={{ fontSize: 12.5, fontWeight: 800, color: "#162126" }}
+                >
+                  {value}
+                </span>
               </div>
             ))}
 
             {/* Status badge */}
-            <div style={{ borderRadius:10, border:`1px solid ${tool.border}`, background:tool.bg, padding:"7px 12px" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:6, color:tool.fg }}>
-                <Check style={{ width:11, height:11 }} strokeWidth={3} />
-                <span style={{ fontSize:11.5, fontWeight:800 }}>{content.badge}</span>
+            <div
+              style={{
+                borderRadius: 10,
+                border: `1px solid ${tool.border}`,
+                background: tool.bg,
+                padding: "7px 12px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: tool.fg,
+                }}
+              >
+                <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
+                <span style={{ fontSize: 11.5, fontWeight: 800 }}>
+                  {content.badge}
+                </span>
               </div>
-              <p style={{ fontSize:10.5, lineHeight:1.5, color:"#4a5c62", margin:"3px 0 0" }}>
+              <p
+                style={{
+                  fontSize: 10.5,
+                  lineHeight: 1.5,
+                  color: "#4a5c62",
+                  margin: "3px 0 0",
+                }}
+              >
                 {content.badgeDesc}
               </p>
             </div>
@@ -2276,25 +3094,68 @@ export function IndividualToolsScene() {
             boxShadow    : "0 4px 16px rgba(15,23,42,0.06)",
           }}
         >
-          <div style={{ fontSize:9, fontWeight:800, textTransform:"uppercase", letterSpacing:"0.1em", color:"#6b8097" }}>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "#6b8097",
+            }}
+          >
             {content.recoTitle}
           </div>
 
-          <div style={{ marginTop:10, borderRadius:12, background:"#051738", padding:"11px 14px" }}>
-            <div style={{ fontSize:19, fontWeight:800, color:"white", lineHeight:1.1 }}>{content.recoMain}</div>
-            <p style={{ fontSize:10.5, lineHeight:1.55, color:"rgba(255,255,255,0.72)", margin:"5px 0 0" }}>
+          <div
+            style={{
+              marginTop: 10,
+              borderRadius: 12,
+              background: "#051738",
+              padding: "11px 14px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 19,
+                fontWeight: 800,
+                color: "white",
+                lineHeight: 1.1,
+              }}
+            >
+              {content.recoMain}
+            </div>
+            <p
+              style={{
+                fontSize: 10.5,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.72)",
+                margin: "5px 0 0",
+              }}
+            >
               {content.recoDesc}
             </p>
           </div>
 
-          <div style={{ marginTop:10, display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+          <div
+            style={{
+              marginTop: 10,
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 6,
+            }}
+          >
             {content.recoTags.map((tag: string) => (
               <div
                 key={tag}
                 style={{
-                  borderRadius:8, border:"1px solid #e2e8f0",
-                  background:"#f7fafc", padding:"5px 8px",
-                  fontSize:10, fontWeight:700, color:"#2C3A3E", textAlign:"center",
+                  borderRadius: 8,
+                  border: "1px solid #e2e8f0",
+                  background: "#f7fafc",
+                  padding: "5px 8px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#2C3A3E",
+                  textAlign: "center",
                 }}
               >
                 {tag}
