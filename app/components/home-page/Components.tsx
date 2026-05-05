@@ -277,9 +277,9 @@ export function RealDashboardScene({
     1: { opacity: 1, x: 82, y: 334, scale: 1 },
     2: { opacity: 1, x: 82, y: 334, scale: 1 },
     3: { opacity: 1, x: 82, y: 334, scale: 1 },
-    4: { opacity: 1, x: 310, y: 502, scale: 1 },
-    5: { opacity: 1, x: 310, y: 502, scale: 1 },
-    6: { opacity: 1, x: 348, y: 506, scale: 1 },
+    4: { opacity: 1, x: 310, y: 320, scale: 1 },
+    5: { opacity: 1, x: 310, y: 320, scale: 1 },
+    6: { opacity: 1, x: 348, y: 380, scale: 1 },
     7: { opacity: 1, x: 490, y: 424, scale: 1 },
     8: { opacity: 1, x: 490, y: 424, scale: 1 },
     9: { opacity: 1, x: 502, y: 318, scale: 1 },
@@ -648,12 +648,38 @@ export function HeroChapterOnePanel({
 }: {
   stepTargeted?: boolean;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (!stepTargeted) return;
+
+    const container = scrollContainerRef.current;
+    const stepEl = stepRefs.current[3]; // Step 4 (index 3)
+
+    if (container && stepEl) {
+      const stepTop = stepEl.offsetTop;
+      const containerTop = container.offsetTop;
+
+      // Align Step 4 with the cursor's fixed coordinate (320px)
+      // We want: stepTop - containerTop - container.scrollTop = 320
+      const targetScrollTop = stepTop - containerTop - 280; // 280 to account for step height centering
+
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
+    }
+  }, [stepTargeted]);
+
   return (
-    <div className="mx-auto h-full max-w-[680px] overflow-hidden pt-2">
+    <div
+      ref={scrollContainerRef}
+      className="pointer-events-none mx-auto h-full max-w-[680px] overflow-y-auto pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
       <motion.div
         className="ir1-card-primary mb-4 rounded-3xl border-[#B9BBE2] py-[32px] px-[24px]"
-        animate={{ y: stepTargeted ? -32 : 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        initial={false}
       >
         <div className="mb-3 flex items-center gap-2">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-[#B9BBE2] bg-[#F0F1FB] px-[13px] py-[4px] text-[11px] font-bold uppercase tracking-[0.07em] text-[#4E518C]">
@@ -679,9 +705,8 @@ export function HeroChapterOnePanel({
       </motion.div>
 
       <motion.div
-        className="flex flex-col gap-1.5"
-        animate={{ y: stepTargeted ? -32 : 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col gap-1.5 px-2 pb-20"
+        initial={false}
       >
         {chapters[0].steps.slice(0, 5).map((chapterStep, index) => {
           const status =
@@ -689,6 +714,9 @@ export function HeroChapterOnePanel({
           return (
             <motion.div
               key={chapterStep[0]}
+              ref={(el) => {
+                stepRefs.current[index] = el;
+              }}
               animate={
                 index === 3 && stepTargeted
                   ? { scale: 1.015, x: 3 }
@@ -722,6 +750,19 @@ export function HeroI130StepPanel({
 }: {
   launchTargeted?: boolean;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!launchTargeted) return;
+    const container = scrollContainerRef.current;
+    const button = buttonRef.current;
+    if (container && button) {
+      const targetScrollTop = button.offsetTop - container.offsetTop - 150;
+      container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: "smooth" });
+    }
+  }, [launchTargeted]);
+
   const tool = {
     launch_module: {
       eyebrow: "Autoform Filler · USCIS Form I-130",
@@ -738,7 +779,10 @@ export function HeroI130StepPanel({
   };
 
   return (
-    <div className="h-full overflow-hidden bg-white">
+    <div
+      ref={scrollContainerRef}
+      className="pointer-events-none h-full overflow-y-auto bg-white [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
       <motion.div
         className="w-full animate-in fade-in slide-in-from-bottom-6 duration-1000"
         animate={{ y: launchTargeted ? -68 : 0 }}
@@ -804,6 +848,7 @@ export function HeroI130StepPanel({
               </div>
               <div className="flex flex-col gap-[11px]">
                 <motion.button
+                  ref={buttonRef}
                   className="group inline-flex w-full cursor-pointer items-center justify-center gap-[10px] rounded-[12px] bg-[#c0596a] p-[16px_28px] font-sans text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)] transition-all duration-200 hover:bg-[#a13e4e]"
                   animate={
                     launchTargeted
@@ -1447,22 +1492,98 @@ export function TwoWaysMobile({
 
 export function GuidedRoadmapScene() {
   const reduceMotion = useReducedMotion();
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [isClicking, setIsClicking] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [cursorPos, setCursorPos] = useState({ x: 300, y: 150 });
 
-  // Chapter data for the horizontal nav + right step list
+  const steps = [
+    { id: 1, name: "Determine Eligibility", done: true, current: false },
+    { id: 2, name: "Gather Required Documents", done: true, current: false },
+    { id: 3, name: "Review Filing Methods", done: false, current: true },
+    { id: 4, name: "Fill Form I-130", done: false, current: false },
+    { id: 5, name: "Fill Form I-130A", done: false, current: false },
+    { id: 6, name: "Submit to USCIS", done: false, current: false },
+    { id: 7, name: "Wait for Receipt", done: false, current: false },
+    { id: 8, name: "Prepare for Biometrics", done: false, current: false },
+  ];
+
+  const lockedChapters = [
+    { number: 2, name: "NVC / CEAC Processing", color: "#520A50" },
+    { number: 3, name: "Medical + Interview", color: "#051738" },
+    { number: 4, name: "Visa Issuance", color: "#0d7377" },
+  ];
+
   const chapterNav = [
     { n: 1, label: "USCIS Petition",  color: "#8284BF", ring: "#B9BBE2", bg: "#F0F1FB", text: "#4E518C", pct: 33, active: true  },
     { n: 2, label: "NVC / CEAC",      color: "#8B4388", ring: "#8B4388", bg: "#F4E6F3", text: "#520A50", pct: 0,  active: false },
     { n: 3, label: "Med + Interview", color: "#31415F", ring: "#31415F", bg: "#E8ECF3", text: "#051738", pct: 0,  active: false },
   ] as const;
 
-  const steps = [
-    { id: 1, name: "Determine Eligibility",     done: true,  current: false },
-    { id: 2, name: "Gather Required Documents", done: true,  current: false },
-    { id: 3, name: "Review Filing Methods",     done: false, current: true  },
-    { id: 4, name: "Fill Form I-130",           done: false, current: false },
-    { id: 5, name: "Fill Form I-130A",          done: false, current: false },
-    { id: 6, name: "Submit to USCIS",           done: false, current: false },
-  ];
+  // Demo sequence
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    const sequence = [
+      { idx: 0, delay: 0 },
+      { idx: 1, delay: 1800 },
+      { idx: 2, delay: 3600 },
+      { idx: 3, delay: 5400, click: true }, // Targeted "third last" of original 6
+      { idx: 4, delay: 8500 },
+      { idx: 5, delay: 10500 },
+      { idx: 6, delay: 12500 },
+      { idx: 7, delay: 14500 },
+    ];
+
+    let timers: NodeJS.Timeout[] = [];
+    const run = () => {
+      timers.forEach(clearTimeout);
+      timers = sequence.map(({ idx, delay, click }) =>
+        setTimeout(() => {
+          setActiveIdx(idx);
+          if (click) {
+            setTimeout(() => setIsClicking(true), 800);
+            setTimeout(() => setIsClicking(false), 1200);
+          }
+        }, delay),
+      );
+    };
+
+    run();
+    const interval = setInterval(run, 18000);
+    return () => {
+      timers.forEach(clearTimeout);
+      clearInterval(interval);
+    };
+  }, [reduceMotion]);
+
+  // Handle scrolling and cursor positioning
+  useEffect(() => {
+    const stepEl = stepRefs.current[activeIdx];
+    const container = scrollContainerRef.current;
+    if (!stepEl || !container) return;
+
+    // Internal coordinates (offsetTop) are resilient to CSS transforms like scaling
+    const stepTop = stepEl.offsetTop;
+    const stepHeight = stepEl.offsetHeight;
+    const containerHeight = container.offsetHeight;
+    const containerTop = container.offsetTop;
+
+    // Calculate target scroll so step is centered in the container
+    const targetScrollTop = stepTop - containerTop - containerHeight / 2 + stepHeight / 2;
+
+    container.scrollTo({
+      top: targetScrollTop,
+      behavior: "smooth",
+    });
+
+    // Update cursor position relative to the scene root (the absolute div)
+    setCursorPos({
+      x: stepEl.offsetLeft + stepEl.offsetWidth * 0.7,
+      y: stepEl.offsetTop + stepEl.offsetHeight * 0.5,
+    });
+  }, [activeIdx]);
 
   return (
     <div style={{ width: 600, height: 500, borderRadius: 32, background: "#f4f7fb", border: "1px solid #dde8e6", boxShadow: "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)", position: "absolute", left: 40, top: 30, overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -1524,9 +1645,9 @@ export function GuidedRoadmapScene() {
             <div style={{ fontSize: 12.5, fontWeight: 900, color: "#1e293b", lineHeight: 1.25, marginBottom: 7 }}>USCIS Petition Filing</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <div style={{ flex: 1, height: 5, borderRadius: 99, background: "#e8edf2", overflow: "hidden" }}>
-                <div style={{ width: "33%", height: "100%", background: "linear-gradient(90deg, #8284BF, #4E518C)", borderRadius: 99 }} />
+                <div style={{ width: `${Math.round(((activeIdx + 1) / steps.length) * 100)}%`, height: "100%", background: "linear-gradient(90deg, #8284BF, #4E518C)", borderRadius: 99, transition: "width 0.4s ease" }} />
               </div>
-              <span style={{ fontSize: 8.5, fontWeight: 800, color: "#4E518C", whiteSpace: "nowrap" }}>2/6</span>
+              <span style={{ fontSize: 8.5, fontWeight: 800, color: "#4E518C", whiteSpace: "nowrap" }}>{activeIdx + 1} / {steps.length}</span>
             </div>
           </div>
 
@@ -1536,8 +1657,8 @@ export function GuidedRoadmapScene() {
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8", marginBottom: 5 }}>Active Step</div>
             <div style={{ background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)", borderRadius: 10, padding: "9px 10px", border: "1px solid #B9BBE2" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#4E518C", lineHeight: 1.3, marginBottom: 3 }}>Review Filing Methods</div>
-              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>Step 3 of 6 · Online or paper mail?</div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#4E518C", lineHeight: 1.3, marginBottom: 3 }}>{steps[activeIdx].name}</div>
+              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>Step {activeIdx + 1} of {steps.length} · {steps[activeIdx].done ? "Done" : "In progress"}</div>
             </div>
           </div>
 
@@ -1556,50 +1677,73 @@ export function GuidedRoadmapScene() {
           </button>
         </div>
 
-        {/* Right: Step list (flex: 1) */}
-        <div style={{ flex: 1, padding: "14px 14px", overflowY: "auto", scrollbarWidth: "none" }}>
+        {/* Step list area */}
+        <div
+          ref={scrollContainerRef}
+          style={{
+            flex: 1,
+            padding: "14px 14px",
+            overflowY: "auto",
+            scrollbarWidth: "none",
+            pointerEvents: "none",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
             <Signpost size={11} color="#0d7377" strokeWidth={2.5} />
             <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#64748b" }}>Chapter 1 Steps</span>
-            <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800, color: "#4E518C", background: "#F0F1FB", border: "1px solid #B9BBE2", padding: "2px 7px", borderRadius: 5 }}>2 / 6 done</span>
+            <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800, color: "#4E518C", background: "#F0F1FB", border: "1px solid #B9BBE2", padding: "2px 7px", borderRadius: 5 }}>{steps.filter(s => s.done).length} / {steps.length} done</span>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {steps.map((step, idx) => (
-              <div key={step.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: step.current ? "8px 10px" : "5px 10px", borderRadius: 10, background: step.current ? "linear-gradient(to right, #F0F1FB, #f9f9fe)" : "transparent", border: step.current ? "1.5px solid #B9BBE2" : "1px solid transparent", boxShadow: step.current ? "0 2px 7px rgba(130,132,191,0.12)" : "none" }}>
-                {step.done ? (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Check size={10} color="white" strokeWidth={3} />
-                  </div>
-                ) : step.current ? (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#8284BF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 3px rgba(130,132,191,0.22)" }}>
-                    <ChevronRight size={10} color="white" strokeWidth={3} />
-                  </div>
-                ) : (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", border: "1.5px solid #dde8e6", background: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: "#cbd5e1" }}>{idx + 1}</span>
-                  </div>
-                )}
-                <span style={{ fontSize: 11.5, fontWeight: step.current ? 800 : step.done ? 600 : 500, color: step.current ? "#4E518C" : step.done ? "#059669" : "#94a3b8" }}>
-                  {step.name}
-                </span>
-                {step.current && <span style={{ marginLeft: "auto", fontSize: 8, fontWeight: 900, color: "#4E518C", background: "rgba(130,132,191,0.15)", padding: "2px 7px", borderRadius: 5, textTransform: "uppercase", flexShrink: 0 }}>Active</span>}
-              </div>
-            ))}
+            {steps.map((step, idx) => {
+              const isStepCurrent = idx === activeIdx;
+              return (
+                <div
+                  key={step.id}
+                  ref={(el) => { stepRefs.current[idx] = el; }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 9,
+                    padding: isStepCurrent ? "8px 10px" : "5px 10px",
+                    borderRadius: 10,
+                    background: isStepCurrent ? "linear-gradient(to right, #F0F1FB, #f9f9fe)" : "transparent",
+                    border: isStepCurrent ? "1.5px solid #B9BBE2" : "1px solid transparent",
+                    boxShadow: isStepCurrent ? "0 2px 7px rgba(130,132,191,0.12)" : "none",
+                    transition: "all 0.3s ease"
+                  }}
+                >
+                  {step.done ? (
+                    <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Check size={10} color="white" strokeWidth={3} />
+                    </div>
+                  ) : isStepCurrent ? (
+                    <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#8284BF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 3px rgba(130,132,191,0.22)" }}>
+                      <ChevronRight size={10} color="white" strokeWidth={3} />
+                    </div>
+                  ) : (
+                    <div style={{ width: 19, height: 19, borderRadius: "50%", border: "1.5px solid #dde8e6", background: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "#cbd5e1" }}>{idx + 1}</span>
+                    </div>
+                  )}
+                  <span style={{ fontSize: 11.5, fontWeight: isStepCurrent ? 800 : step.done ? 600 : 500, color: isStepCurrent ? "#4E518C" : step.done ? "#059669" : "#94a3b8" }}>
+                    {step.name}
+                  </span>
+                  {isStepCurrent && <span style={{ marginLeft: "auto", fontSize: 8, fontWeight: 900, color: "#4E518C", background: "rgba(130,132,191,0.15)", padding: "2px 7px", borderRadius: 5, textTransform: "uppercase", flexShrink: 0 }}>Active</span>}
+                </div>
+              );
+            })}
           </div>
 
           {/* Locked chapters – compact */}
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
-            {[
-              { n: 2, label: "NVC / CEAC Processing", steps: "8 steps" },
-              { n: 3, label: "Medical + Interview",    steps: "6 steps" },
-            ].map(ch => (
-              <div key={ch.n} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 9, background: "white", border: "1px dashed #e2e8f0" }}>
+            {lockedChapters.map(ch => (
+              <div key={ch.number} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 9, background: "white", border: "1px dashed #e2e8f0" }}>
                 <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#f1f5f9", border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>Ch. {ch.n} · {ch.label}</span>
-                <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 700, color: "#cbd5e1", flexShrink: 0 }}>{ch.steps}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>Ch. {ch.number} · {ch.name}</span>
+                <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 700, color: "#cbd5e1", flexShrink: 0 }}>Locked</span>
               </div>
             ))}
           </div>
@@ -1609,7 +1753,7 @@ export function GuidedRoadmapScene() {
       {/* ── Bottom stats bar (44px) ── */}
       <div style={{ height: 44, background: "white", borderTop: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", flexShrink: 0 }}>
         {([
-          { label: "Steps Done",    value: "2 / 18"    },
+          { label: "Steps Done",    value: `${steps.filter(s => s.done).length} / 18` },
           { label: "Chapter",       value: "1 of 3"    },
           { label: "Est. Timeline", value: "~8 months" },
           { label: "Overall",       value: "17%"       },
@@ -1623,6 +1767,51 @@ export function GuidedRoadmapScene() {
           </div>
         ))}
       </div>
+
+      {/* Simulated Cursor */}
+      <motion.div
+        className="pointer-events-none absolute left-0 top-0 z-[100]"
+        animate={{
+          x: cursorPos.x,
+          y: cursorPos.y,
+          scale: isClicking ? 0.85 : 1,
+          opacity: 1,
+        }}
+        transition={{
+          x: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+          y: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+          scale: { duration: 0.2 },
+        }}
+      >
+        <svg
+          className="size-8 overflow-visible"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.3))",
+          }}
+        >
+          <path
+            d="M4.7 3.4V20.7L9.6 15.9L13.2 22L16.1 20.3L12.6 14.4H19.4L4.7 3.4Z"
+            fill="white"
+            stroke="#07131f"
+            strokeWidth="1.25"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <AnimatePresence>
+          {isClicking && (
+            <motion.span
+              className="absolute left-[-6px] top-[-6px] size-6 rounded-full border-2 border-[#0d7377]/60 bg-[#0d7377]/10"
+              initial={{ opacity: 0.8, scale: 0.5 }}
+              animate={{ opacity: 0, scale: 1.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }
