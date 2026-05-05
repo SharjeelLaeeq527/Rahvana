@@ -3159,7 +3159,7 @@ export function IndividualToolsScene() {
                   textAlign: "center",
                 }}
               >
-                {item}
+                {tag}
               </div>
             ))}
           </div>
@@ -3181,6 +3181,8 @@ function InteractiveClockWidget() {
   const clockRef = useRef<HTMLDivElement>(null);
   const [angle, setAngle] = useState(60);
   const [isHovered, setIsHovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showHint, setShowHint] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<number>(2); // Thu - 4:00 PM selected by default
 
   const timeSlots = [
@@ -3190,12 +3192,19 @@ function InteractiveClockWidget() {
   ];
 
   const springAngle = useSpring(60, { stiffness: 30, damping: 15, mass: 1 });
+  const hourHandRotate = useTransform(springAngle, (v) => v * 0.5);
 
   useEffect(() => {
     springAngle.set(angle);
   }, [angle, springAngle]);
 
+  useEffect(() => {
+    const t = window.setTimeout(() => setShowHint(false), 3600);
+    return () => window.clearTimeout(t);
+  }, []);
+
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
     if (!clockRef.current) return;
     const rect = clockRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -3209,6 +3218,28 @@ function InteractiveClockWidget() {
     deg = Math.round(deg / fineSnap) * fineSnap;
 
     setAngle(deg);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    setShowHint(false);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const rad = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+    let deg = (rad * 180) / Math.PI + 90;
+    if (deg < 0) deg += 360;
+    const fineSnap = 6;
+    deg = Math.round(deg / fineSnap) * fineSnap;
+    setAngle(deg);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(false);
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
   };
 
   const totalMinutes = Math.floor((angle / 360) * 12 * 60);
@@ -3242,17 +3273,23 @@ function InteractiveClockWidget() {
 
       <motion.div
         animate={{
-          y: isHovered ? -6 : 0,
-          boxShadow: isHovered
+          y: isHovered || isDragging ? -6 : 0,
+          boxShadow: isHovered || isDragging
             ? "0 48px 96px rgba(8,54,58,0.22), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -3px 8px rgba(0,0,0,0.08)"
             : "0 24px 56px rgba(11,102,106,0.16), inset 0 1px 3px rgba(255,255,255,0.8), inset 0 -2px 6px rgba(0,0,0,0.04)"
         }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         ref={clockRef}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         onPointerMove={handlePointerMove}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className="relative flex items-center justify-center touch-none cursor-pointer bg-gradient-to-b from-white via-[#f8fbfc] to-white/98 backdrop-blur-sm ring-1 ring-[#0B666A]/10 rounded-full group z-20"
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setIsDragging(false);
+        }}
+        className={`relative flex items-center justify-center touch-none bg-gradient-to-b from-white via-[#f8fbfc] to-white/98 backdrop-blur-sm ring-1 ring-[#0B666A]/10 rounded-full group z-20 ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
         style={{ width: CLOCK_RADIUS * 2, height: CLOCK_RADIUS * 2 }}
       >
         {/* Shimmer sweep effect on hover */}
@@ -3278,6 +3315,20 @@ function InteractiveClockWidget() {
           />
         ))}
 
+        <AnimatePresence>
+          {showHint && !isDragging && (
+            <motion.div
+              initial={{ opacity: 0, y: 6, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.96 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute top-6 left-1/2 -translate-x-1/2 rounded-full border border-[#0B666A]/20 bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#0B666A] shadow-[0_8px_20px_rgba(11,102,106,0.14)]"
+            >
+              Drag to set
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Hands Container */}
         <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
           <div
@@ -3289,8 +3340,15 @@ function InteractiveClockWidget() {
             className="absolute origin-bottom filter drop-shadow-[0_8px_16px_rgba(8,54,58,0.40)]"
             style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: springAngle }}
           >
-            <div className="w-[3.2px] h-full rounded-full bg-gradient-to-t from-[#041f23] via-[#0b7a7f] to-[#0d9398] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
-            <div className="absolute -top-1.5 -left-[5px] w-3 h-3 rounded-full bg-white border-2 border-[#041f23] shadow-[0_3px_8px_rgba(8,54,58,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)]" />
+            <div className="w-[3px] h-full rounded-full bg-gradient-to-t from-[#06292d] via-[#0b7a7f] to-[#0ea5a8] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
+            <div className="absolute -top-1 -left-[1.5px] w-[6px] h-[6px] rounded-full bg-[#f8fdff] border border-[#0a3c40] shadow-[0_2px_6px_rgba(8,54,58,0.24)]" />
+          </motion.div>
+
+          <motion.div
+            className="absolute origin-bottom"
+            style={{ height: CLOCK_RADIUS * 0.36, bottom: '50%', rotate: hourHandRotate }}
+          >
+            <div className="w-[4.4px] h-full rounded-full bg-gradient-to-t from-[#03181b] via-[#0a4e53] to-[#0b7a7f] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.26)]" />
           </motion.div>
 
           {/* Premium Center Pin Stack */}
@@ -3356,7 +3414,7 @@ export function ConsultationBanner({
   return (
     <section
       aria-labelledby="consultation-heading"
-      className="relative -mt-24 overflow-hidden px-6 pt-8 pb-16 sm:px-8 sm:pt-10 lg:-mt-28 lg:pt-12 lg:pb-24 bg-[#F4F7F6]"
+      className="relative overflow-hidden px-14 sm:px-8 md:px-12 2xl:px-30 py-8 md:py-12 bg-[#F4F7F6]"
     >
       {/* Elevated Dynamic Jewel-Tone Background — unified with landing palette */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -3444,10 +3502,16 @@ export function ConsultationBanner({
             </motion.div>
 
             {/* Animated Title with line-by-line reveal */}
-            <h2 
+            <h2
               id="consultation-heading"
-              className="max-w-[520px] text-[clamp(42px,4.6vw,68px)] font-black leading-[0.96] tracking-[-0.05em] text-[#12233a] mb-8"
-              style={{ fontFamily: '"Cormorant Garamond", serif' }}
+              className="max-w-[520px] mb-8"
+              style={{
+                fontSize: "clamp(30px,6.5vw,40px)",
+                lineHeight: 1.05,
+                fontWeight: 800,
+                color: "#162126",
+                margin: "0 0 14px 0",
+              }}
             >
               <div className="overflow-hidden pb-2">
                 <motion.div 

@@ -122,25 +122,25 @@ const TIER_STYLE: Record<PlanTier, {
     headerSub: "text-[#186058]/45",
   },
   premium: {
-    header: "from-[#d8d8e8] to-[#b8b8d0]",
-    button: "from-[#8888a8] to-[#585878]",
-    buttonHover: "hover:from-[#787898] hover:to-[#484868]",
-    pillActiveBg: "#dcdcf0",
-    pillActiveText: "#282848]",
-    pillActiveRing: "#a8a8cc",
-    check: "text-[#585878]",
-    featureBg: "bg-[#eeeeF8]",
-    featureRing: "ring-[#c0c0dc]",
-    featureText: "text-[#282848]",
-    priceText: "text-[#282848]",
+    header: "from-[#e5e8ff] to-[#aeb9ff]",
+    button: "from-[#8a97ff] to-[#5d6fe8]",
+    buttonHover: "hover:from-[#7a88f7] hover:to-[#4f62d8]",
+    pillActiveBg: "#e6e9ff",
+    pillActiveText: "#24327f",
+    pillActiveRing: "#b8c0ff",
+    check: "text-[#5d6fe8]",
+    featureBg: "bg-[#f2f4ff]",
+    featureRing: "ring-[#d8ddff]",
+    featureText: "text-[#24327f]",
+    priceText: "text-[#24327f]",
     iconClass: "plan-icon--premium",
-    badgeBg: "bg-[#eeeeF8]",
-    badgeBorder: "border-[#c0c0dc]",
-    badgeText: "text-[#282848]",
-    headerLabel: "text-[#484868]/55",
-    headerTitle: "text-[#181830]",
-    headerPrice: "text-[#181830]",
-    headerSub: "text-[#484868]/45",
+    badgeBg: "bg-[#f2f4ff]",
+    badgeBorder: "border-[#d8ddff]",
+    badgeText: "text-[#24327f]",
+    headerLabel: "text-[#4152a4]/55",
+    headerTitle: "text-[#1a2a66]",
+    headerPrice: "text-[#1a2a66]",
+    headerSub: "text-[#4152a4]/45",
   },
   executive: {
     header: "from-[#f0dea0] to-[#d8b860]",
@@ -465,7 +465,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                 <button
                   disabled={isAddonProcessing || isUpgradeProcessing}
                   onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
-                  className={`w-full py-2.5 rounded-xl text-white text-[13px] disabled:opacity-60 font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}>
+                  className={`w-full py-2.5 rounded-xl bg-gradient-to-r ${planStyle.button} ${planStyle.buttonHover} text-white text-[13px] disabled:opacity-60 font-bold transition-colors flex items-center justify-center gap-2 shadow-sm`}>
                   {isUpgradeProcessing ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} strokeWidth={2.5} />}
                   {isUpgradeProcessing ? "Redirecting to payment..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
                   {!isUpgradeProcessing && planPrice && (
@@ -591,7 +591,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
           <button
             disabled={isUpgradeProcessing}
             onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
-            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90 ${style.button}`}
+            className={`w-full py-3 rounded-2xl bg-gradient-to-r ${style.button} ${style.buttonHover} text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90`}
           >
             {isUpgradeProcessing ? <Loader2 size={14} className="animate-spin" /> : <Crown size={14} strokeWidth={2.5} />}
             {isUpgradeProcessing ? "Redirecting to payment..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
