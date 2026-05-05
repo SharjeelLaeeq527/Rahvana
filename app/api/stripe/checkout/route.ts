@@ -4,18 +4,32 @@ import { paymentService } from '@/lib/services/paymentService';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { VISA_CATEGORIES } from '@/app/(main)/pricing/data/pricing';
+import * as fs from 'fs';
+import * as path from 'path';
+
+function logDebug(msg: string, obj?: any) {
+  try {
+    const logPath = path.join(process.cwd(), 'api-debug.log');
+    const time = new Date().toISOString();
+    const objStr = obj ? JSON.stringify(obj, null, 2) : '';
+    fs.appendFileSync(logPath, `[${time}] ${msg} ${objStr}\n`);
+  } catch (e) {}
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: NextRequest) {
+  logDebug('--- NEW CHECKOUT REQUEST ---');
   try {
     const body = await request.json();
+    logDebug('Request body:', body);
     const { productTier, userId, consultationId, addons, visaCategory, isUpgrade, currentTier } = body;
 
     // Validate required fields
     if (!userId) {
+      logDebug('Returning 400 User ID is required');
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
@@ -182,7 +196,39 @@ export async function POST(request: NextRequest) {
         sessionParams.metadata!.addons = JSON.stringify(addons);
       }
     }
+    // ================================================
+    // STANDALONE ADD-ONS — One-time Payment
+    // ================================================
+    else if (addons && Array.isArray(addons) && addons.length > 0) {
+      sessionParams.mode = 'payment';
+      
+      for (const addonId of addons) {
+        const addonIdLower = addonId.toLowerCase();
+        const addon = (PRODUCTS.ADDONS as any)?.[addonIdLower];
+        
+        if (addon) {
+          sessionParams.line_items!.push({
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Add-on: ${addon.name}`,
+                description: 'One-time purchase',
+              },
+              unit_amount: Math.round(addon.price * 100),
+            },
+            quantity: 1,
+          });
+        }
+      }
 
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        stripe_customer_id: stripeCustomerId!,
+        product_type: 'standalone_addon',
+        addons: JSON.stringify(addons),
+        visa_category: effectiveVisaCategory,
+      };
+    }
     // ================================================
     // CONSULTATION — One-time Payment
     // ================================================
@@ -225,7 +271,7 @@ export async function POST(request: NextRequest) {
       };
     } else {
       return NextResponse.json(
-        { error: 'Either productTier or consultationId is required' },
+        { error: 'Either productTier, addons, or consultationId is required' },
         { status: 400 }
       );
     }
@@ -235,35 +281,61 @@ export async function POST(request: NextRequest) {
       sessionParams.mode = 'payment';
     }
 
+    logDebug('Calling Stripe with sessionParams:', sessionParams);
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionParams);
+      logDebug('Stripe session created successfully:', { id: session.id, url: session.url });
+    } catch (stripeErr: any) {
+      logDebug('Stripe SDK error:', { msg: stripeErr.message, type: stripeErr.type });
+      throw stripeErr;
+    }
 
+    logDebug('Creating payment record in Supabase...');
     // Save payment record in Supabase
+    
+    // FIX: Map standalone_addon to journey_plan for the DB insert to satisfy the check constraint, 
+    // but keep it as standalone_addon in the Stripe metadata so the webhook works perfectly.
+    const dbProductType = sessionParams.metadata?.product_type === 'standalone_addon' 
+      ? 'journey_plan' 
+      : (sessionParams.metadata?.product_type as any) || 'journey_plan';
+      
+    const dbProductId = sessionParams.metadata?.product_type === 'standalone_addon'
+      ? (addons?.[0] || 'addon')
+      : String(sessionParams.metadata?.product_id || '');
+
     await paymentService.createPayment({
       user_id: userId,
       stripe_checkout_session_id: session.id,
-      // FIX: subscription sessions may not have amount_total immediately
       amount: (session.amount_total ?? 0) / 100,
       currency: session.currency || 'usd',
       status: 'pending',
-      product_type: (sessionParams.metadata?.product_type as any) || 'journey_plan',
-      product_id: String(sessionParams.metadata?.product_id || ''),
+      product_type: dbProductType,
+      product_id: dbProductId,
       metadata: {
-        product_name: sessionParams.metadata?.product_name || 'Consultation',
+        product_name: sessionParams.metadata?.product_name || 'Add-on Purchase',
         customer_email: userEmail,
         stripe_customer_id: stripeCustomerId!,
+        original_product_type: sessionParams.metadata?.product_type, // keep reference
       },
     });
+    logDebug('Payment record created successfully');
 
+    logDebug('Returning 200 with session details');
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,
     });
 
   } catch (error: unknown) {
-    console.error('Error creating checkout session:', error);
+    logDebug('Caught global error in checkout API:', error instanceof Error ? error.message : String(error));
+    if (error instanceof Error && error.stack) {
+      logDebug('Error stack:', error.stack);
+    }
     const errorMessage =
       error instanceof Error ? error.message : 'Failed to create checkout session';
+    logDebug('Returning 500 with errorMessage:', errorMessage);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

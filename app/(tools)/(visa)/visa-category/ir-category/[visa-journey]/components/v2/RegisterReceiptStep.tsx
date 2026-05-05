@@ -859,10 +859,6 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
         <UpgradeModal
           feature={upgradeModalFeature}
           onClose={() => setUpgradeModalFeature(null)}
-          onConfirm={(action, target) => {
-            // Delegate to your existing upgrade/purchase flow
-            console.log("upgrade", action, target);
-          }}
         />
       )}
     </div>

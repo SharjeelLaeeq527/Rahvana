@@ -125,7 +125,10 @@ import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool"
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
+import {
+  computeDocumentList,
+  deriveDocAnswersFromEligibility,
+} from "@/lib/questionnaire/engine";
 import type {
   QuestionnaireResult,
   ConditionalDocument,
@@ -175,6 +178,10 @@ import { useStepEntitlement } from "./useStepEntitlement";
 import { StepLockedContent } from "./StepLockedContent";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import {
+  getStepLockStatus,
+  getModalFeatureForTier,
+} from "@/lib/entitlements/hardLockRules";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -302,7 +309,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       note: "Your next task should match the actual update USCIS gives you.",
     },
   ];
-const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | null>(null);
+  const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<
+    string | null
+  >(null);
   // Add Evidence Note modal state
   const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] =
     useState(false);
@@ -397,7 +406,11 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
       status: "not-started",
       required: doc.required,
     }));
-  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
+  }, [
+    isDocQuestionnaireCompleted,
+    state.metadata?.docQuestionnaireAnswers,
+    derivedDocAnswers,
+  ]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -479,7 +492,6 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
   const financialDocsStatus =
     (state.metadata.financialDocsStatus as Record<string, string>) || {};
 
- 
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
   const [tutorialPath, setTutorialPath] = useState<
@@ -626,7 +638,9 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
   // CEAC tracking — refused sub-type prompt
   const [refusedPromptOpen, setRefusedPromptOpen] = useState(false);
   const [ceacApiLoading, setCeacApiLoading] = useState(false);
-const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
+    null,
+  );
   // Step 1.17 Approval Notice States
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [isApprovalGuideOpen, setIsApprovalGuideOpen] = useState(false);
@@ -705,13 +719,6 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     }
     setRefusedPromptOpen(false);
   };
-
-  {upgradeModalFeature && (
-  <UpgradeModal
-    feature={upgradeModalFeature}
-    onClose={() => setUpgradeModalFeature(null)}
-  />
-)}
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
   const [gatheringStatus, setGatheringStatus] = useState<
@@ -883,18 +890,32 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   const courierToolData = useMemo(() => {
     if (!chapters) return null;
     for (const ch of chapters) {
-      const step = ch.steps?.find((s: any) => s.tool_data?.type === "courier_registration");
+      const step = ch.steps?.find(
+        (s: any) => s.tool_data?.type === "courier_registration",
+      );
       if (step?.tool_data) return step.tool_data;
     }
     return null;
   }, [chapters]);
 
-  const filingMethod = state.metadata?.filingMethod || state.filingType || "online";
+  const filingMethod =
+    state.metadata?.filingMethod || state.filingType || "online";
 
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
-    return getActiveStepsForStage(data, state.currentStage ?? 0, state.metadata, state.filingType);
-  }, [data, currentChapter, state.currentStage, state.metadata, state.filingType]);
+    return getActiveStepsForStage(
+      data,
+      state.currentStage ?? 0,
+      state.metadata,
+      state.filingType,
+    );
+  }, [
+    data,
+    currentChapter,
+    state.currentStage,
+    state.metadata,
+    state.filingType,
+  ]);
 
   // (removed duplicate declarations, see above)
   const isCompleted = state.completedSteps.has(sId);
@@ -935,36 +956,41 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   // Sync with metadata on mount
   React.useEffect(() => {
     if (state.metadata?.uscis_receipt_number) {
-      setRcptManual(prev => ({
+      setRcptManual((prev) => ({
         ...prev,
         receipt: state.metadata.uscis_receipt_number,
         noticeDate: state.metadata.uscis_notice_date || "",
         priorityDate: state.metadata.uscis_priority_date || "",
       }));
-      
+
       if (state.metadata.uscis_tracking_enabled) {
         setRcptUiState("tracked");
       }
     }
-  }, [state.metadata?.uscis_receipt_number, state.metadata?.uscis_tracking_enabled]);
+  }, [
+    state.metadata?.uscis_receipt_number,
+    state.metadata?.uscis_tracking_enabled,
+  ]);
 
   const handleSaveReceipt = () => {
     const isValid = /^[A-Z]{3}[0-9]{10}$/.test(rcptManual.receipt);
     if (!isValid) {
-      setRcptError("Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).");
+      setRcptError(
+        "Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).",
+      );
       setRcptSuccess(false);
       return;
     }
     setRcptError("");
     setRcptSuccess(true);
-    
+
     actions.updateMetadata({
       uscis_receipt_number: rcptManual.receipt,
       uscis_notice_date: rcptManual.noticeDate,
       uscis_priority_date: rcptManual.priorityDate,
-      uscis_tracking_enabled: true
+      uscis_tracking_enabled: true,
     });
-    
+
     setRcptUiState("tracked");
   };
 
@@ -996,17 +1022,17 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     );
   }
 
-    const allActiveSteps = useMemo(
+  const allActiveSteps = useMemo(
     () => getAllActiveSteps(data, state.metadata, state.filingType),
     [data, state.metadata, state.filingType],
   );
 
-   const globalIdx = allActiveSteps.findIndex(
+  const globalIdx = allActiveSteps.findIndex(
     (s) => (s.step_key || (s as any).id) === sId,
   );
   const localIdx = activeStepsInChapter.findIndex(
     (s: any) => (s.step_key || s.id) === sId,
-  ); 
+  );
   const chapterProg = useMemo(
     () => getStageProgress(data, state.currentStage, state),
     [data, state.currentStage, state],
@@ -1020,6 +1046,37 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
   // Use the percentage from journeyHelpers to match ChapterView
   const progressPct = chapterProg.pct;
+
+  const nextStepInfo = useMemo(() => {
+    if (!nextStep) return null;
+    const nsId = nextStep.step_key || (nextStep as any).id;
+    const activeChapters = data.chapters || (data as any).stages;
+    for (let cIdx = 0; cIdx < activeChapters.length; cIdx++) {
+      const activeSteps = getActiveStepsForStage(
+        data,
+        cIdx,
+        state.metadata,
+        state.filingType,
+      );
+      const lIdx = activeSteps.findIndex(
+        (s: any) => (s.step_key || s.id) === nsId,
+      );
+      if (lIdx !== -1) return { chapterIdx: cIdx, localIdx: lIdx };
+    }
+    return null;
+  }, [nextStep, data, state.metadata, state.filingType]);
+
+  const nextStepLock = useMemo(() => {
+    if (!nextStep || !nextStepInfo)
+      return { isLocked: false, requiredPlan: null };
+    const nsId = nextStep.step_key || (nextStep as any).id;
+    return getStepLockStatus(
+      nsId,
+      plan.tier,
+      nextStepInfo.chapterIdx,
+      nextStepInfo.localIdx,
+    );
+  }, [nextStep, nextStepInfo, plan.tier]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
@@ -1488,27 +1545,27 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       }
     }
   };
-const renderDocActionModal = () => {
-  if (!docActionModal.doc) return null;
-  const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
+  const renderDocActionModal = () => {
+    if (!docActionModal.doc) return null;
+    const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
 
-  const isTranslation =
-    doc.id === "doc_translations" ||
-    doc.guideKey === "doc_translations" ||
-    doc.selectedGuideId === "doc_translations";
-  const isPassportPhoto =
-    doc.id === "doc_passport_photos" ||
-    doc.guideKey === "doc_passport_photos" ||
-    doc.selectedGuideId === "doc_passport_photos";
+    const isTranslation =
+      doc.id === "doc_translations" ||
+      doc.guideKey === "doc_translations" ||
+      doc.selectedGuideId === "doc_translations";
+    const isPassportPhoto =
+      doc.id === "doc_passport_photos" ||
+      doc.guideKey === "doc_passport_photos" ||
+      doc.selectedGuideId === "doc_passport_photos";
 
-  const guideFeature = isTranslation
-    ? "document_translation"
-    : isPassportPhoto
-      ? "photo_booth"
-      : "step_guides";
+    const guideFeature = isTranslation
+      ? "document_translation"
+      : isPassportPhoto
+        ? "photo_booth"
+        : "step_guides";
 
-  const canReadGuide = plan.canUse(guideFeature);
-  const canUpload = plan.canUse("document_vault");
+    const canReadGuide = plan.canUse(guideFeature);
+    const canUpload = plan.canUse("document_vault");
   const guideTierIconClass = (() => {
     const target = plan.entitlement(guideFeature).upgradeTarget;
     return target ? `plan-icon--${target}` : "plan-icon--premium";
@@ -1518,72 +1575,83 @@ const renderDocActionModal = () => {
     return target ? `plan-icon--${target}` : "plan-icon--premium";
   })();
 
-  return (
-    <>
-      {docActionUpgradeFeature && (
-        <UpgradeModal
-          feature={docActionUpgradeFeature}
-          onClose={() => setDocActionUpgradeFeature(null)}
-        />
-      )}
+    return (
+      <>
+        {docActionUpgradeFeature && (
+          <UpgradeModal
+            feature={docActionUpgradeFeature}
+            onClose={() => setDocActionUpgradeFeature(null)}
+          />
+        )}
 
-      <Dialog
-        open={docActionModal.isOpen}
-        onOpenChange={(open) =>
-          setDocActionModal({ ...docActionModal, isOpen: open })
-        }
-      >
-        <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
-          <div className="relative overflow-hidden bg-white">
-            {/* Background Decorations */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
+        <Dialog
+          open={docActionModal.isOpen}
+          onOpenChange={(open) =>
+            setDocActionModal({ ...docActionModal, isOpen: open })
+          }
+        >
+          <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
+            <div className="relative overflow-hidden bg-white">
+              {/* Background Decorations */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
 
-            <div className="relative p-8">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  {(() => {
-                    switch (doc.icon) {
-                      case "ShieldCheck": return <ShieldCheck size={24} />;
-                      case "User": return <User size={24} />;
-                      case "FileText": return <FileText size={24} />;
-                      case "FileCheck": return <FileCheck size={24} />;
-                      case "MessageSquare": return <MessageSquare size={24} />;
-                      case "Scale": return <Scale size={24} />;
-                      case "Globe": return <Globe size={24} />;
-                      case "ClipboardList": return <ClipboardList size={24} />;
-                      case "Lock": return <Lock size={24} />;
-                      case "Camera": return <Camera size={24} />;
-                      default: return <FileText size={24} />;
-                    }
-                  })()}
+              <div className="relative p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                    {(() => {
+                      switch (doc.icon) {
+                        case "ShieldCheck":
+                          return <ShieldCheck size={24} />;
+                        case "User":
+                          return <User size={24} />;
+                        case "FileText":
+                          return <FileText size={24} />;
+                        case "FileCheck":
+                          return <FileCheck size={24} />;
+                        case "MessageSquare":
+                          return <MessageSquare size={24} />;
+                        case "Scale":
+                          return <Scale size={24} />;
+                        case "Globe":
+                          return <Globe size={24} />;
+                        case "ClipboardList":
+                          return <ClipboardList size={24} />;
+                        case "Lock":
+                          return <Lock size={24} />;
+                        case "Camera":
+                          return <Camera size={24} />;
+                        default:
+                          return <FileText size={24} />;
+                      }
+                    })()}
+                  </div>
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-[#0f1f38]">
+                      {title || doc.name || doc.title}
+                    </DialogTitle>
+                    <p className="text-sm text-[#6b8097]">
+                      {subtitle ||
+                        doc.subtitle ||
+                        doc.sub ||
+                        "Choose an action to proceed with this document"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <DialogTitle className="text-xl font-bold text-[#0f1f38]">
-                    {title || doc.name || doc.title}
-                  </DialogTitle>
-                  <p className="text-sm text-[#6b8097]">
-                    {subtitle ||
-                      doc.subtitle ||
-                      doc.sub ||
-                      "Choose an action to proceed with this document"}
-                  </p>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* ── Read Guide / Launch Tool Card ── */}
-                <button
-                  onClick={() => {
-                    if (!canReadGuide) {
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* ── Read Guide / Launch Tool Card ── */}
+                  <button
+                    onClick={() => {
+                      if (!canReadGuide) {
+                        setDocActionModal({ ...docActionModal, isOpen: false });
+                        setDocActionUpgradeFeature(guideFeature);
+                        return;
+                      }
                       setDocActionModal({ ...docActionModal, isOpen: false });
-                      setDocActionUpgradeFeature(guideFeature);
-                      return;
-                    }
-                    setDocActionModal({ ...docActionModal, isOpen: false });
-                    if (onReadGuide) onReadGuide();
-                  }}
-                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                      if (onReadGuide) onReadGuide();
+                    }}
+                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
                     ${
                       canReadGuide
                         ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
@@ -1600,85 +1668,87 @@ const renderDocActionModal = () => {
                     </div>
                   )}
 
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
                       ${
                         canReadGuide
                           ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
                           : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
                       }`}
-                  >
-                    {isTranslation ? (
-                      <Sparkles size={20} />
-                    ) : isPassportPhoto ? (
-                      <Camera size={20} />
-                    ) : (
-                      <BookOpen size={20} />
-                    )}
-                  </div>
+                    >
+                      {isTranslation ? (
+                        <Sparkles size={20} />
+                      ) : isPassportPhoto ? (
+                        <Camera size={20} />
+                      ) : (
+                        <BookOpen size={20} />
+                      )}
+                    </div>
 
-                  <h4 className="font-bold text-[#0f1f38] mb-1">
-                    {isTranslation || isPassportPhoto
-                      ? "Launch the Tool"
-                      : "Read the Guide"}
-                  </h4>
-                  <p className="text-xs text-[#6b8097] leading-relaxed">
-                    {isTranslation
-                      ? "Use our automated tool to prepare certified translations for your documents."
-                      : isPassportPhoto
-                        ? "Generate and validate your passport photos to meet U.S. specifications."
-                        : "View requirements, pitfalls, and step-by-step instructions."}
-                  </p>
-
-                  {/* Photo booth credits badge — only when unlocked and limited */}
-                  {isPassportPhoto && canReadGuide && (() => {
-                    const ent = plan.entitlement("photo_booth");
-                    if (ent.state === "limited") {
-                      return (
-                        <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
-                          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                          <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
-                            {ent.limit} Credits Included
-                          </span>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
-
-                  {/* Locked hint text */}
-                  {!canReadGuide && (
-                    <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
-                      <Lock size={9} strokeWidth={2.5} />
-                      Not included in your current plan
+                    <h4 className="font-bold text-[#0f1f38] mb-1">
+                      {isTranslation || isPassportPhoto
+                        ? "Launch the Tool"
+                        : "Read the Guide"}
+                    </h4>
+                    <p className="text-xs text-[#6b8097] leading-relaxed">
+                      {isTranslation
+                        ? "Use our automated tool to prepare certified translations for your documents."
+                        : isPassportPhoto
+                          ? "Generate and validate your passport photos to meet U.S. specifications."
+                          : "View requirements, pitfalls, and step-by-step instructions."}
                     </p>
-                  )}
-                </button>
 
-                {/* ── Upload Document Card ── */}
-                <button
-                  onClick={() => {
-                    if (!canUpload) {
-                      setDocActionModal({ ...docActionModal, isOpen: false });
-                      // Context-specific toast for certain steps
-                      if (sId === "step_1_15") {
-                        toast.info(
-                          "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
-                          { duration: 6000 },
-                        );
-                      } else if (sId === "step_1_17") {
-                        toast.info(
-                          "Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.",
-                          { duration: 6000 },
-                        );
+                    {/* Photo booth credits badge — only when unlocked and limited */}
+                    {isPassportPhoto &&
+                      canReadGuide &&
+                      (() => {
+                        const ent = plan.entitlement("photo_booth");
+                        if (ent.state === "limited") {
+                          return (
+                            <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                                {ent.limit} Credits Included
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                    {/* Locked hint text */}
+                    {!canReadGuide && (
+                      <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
+                        <Lock size={9} strokeWidth={2.5} />
+                        Not included in your current plan
+                      </p>
+                    )}
+                  </button>
+
+                  {/* ── Upload Document Card ── */}
+                  <button
+                    onClick={() => {
+                      if (!canUpload) {
+                        setDocActionModal({ ...docActionModal, isOpen: false });
+                        // Context-specific toast for certain steps
+                        if (sId === "step_1_15") {
+                          toast.info(
+                            "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
+                            { duration: 6000 },
+                          );
+                        } else if (sId === "step_1_17") {
+                          toast.info(
+                            "Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.",
+                            { duration: 6000 },
+                          );
+                        }
+                        setDocActionUpgradeFeature("document_vault");
+                        return;
                       }
-                      setDocActionUpgradeFeature("document_vault");
-                      return;
-                    }
-                    setDocActionModal({ ...docActionModal, isOpen: false });
-                    if (onUpload) onUpload();
-                  }}
-                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                      setDocActionModal({ ...docActionModal, isOpen: false });
+                      if (onUpload) onUpload();
+                    }}
+                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
                     ${
                       canUpload
                         ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
@@ -1695,51 +1765,51 @@ const renderDocActionModal = () => {
                     </div>
                   )}
 
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
                       ${
                         canUpload
                           ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
                           : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
                       }`}
-                  >
-                    <Upload size={20} />
-                  </div>
+                    >
+                      <Upload size={20} />
+                    </div>
 
-                  <h4 className="font-bold text-[#0f1f38] mb-1">
-                    Upload Document
-                  </h4>
-                  <p className="text-xs text-[#6b8097] leading-relaxed">
-                    Attach and submit your document for processing.
-                  </p>
-
-                  {/* Locked hint text */}
-                  {!canUpload && (
-                    <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
-                      <Lock size={9} strokeWidth={2.5} />
-                      Not included in your current plan
+                    <h4 className="font-bold text-[#0f1f38] mb-1">
+                      Upload Document
+                    </h4>
+                    <p className="text-xs text-[#6b8097] leading-relaxed">
+                      Attach and submit your document for processing.
                     </p>
-                  )}
-                </button>
-              </div>
 
-              <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
-                <button
-                  onClick={() =>
-                    setDocActionModal({ ...docActionModal, isOpen: false })
-                  }
-                  className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
-                >
-                  Close
-                </button>
+                    {/* Locked hint text */}
+                    {!canUpload && (
+                      <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
+                        <Lock size={9} strokeWidth={2.5} />
+                        Not included in your current plan
+                      </p>
+                    )}
+                  </button>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
+                  <button
+                    onClick={() =>
+                      setDocActionModal({ ...docActionModal, isOpen: false })
+                    }
+                    className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  };
 
   const getHhDocItems = (count: number, rels: Record<number, string>) => {
     const items: any[] = [];
@@ -2062,7 +2132,7 @@ const renderDocActionModal = () => {
               ))}
             </div>
             <button
-                onClick={() => {
+              onClick={() => {
                 if (!stepEntitlement.guard()) return;
                 setUseCeacGuideData(true);
                 setTutorialIdx(0);
@@ -2354,7 +2424,7 @@ const renderDocActionModal = () => {
       <div
         key={item.id}
         onClick={() => {
-        if (!stepEntitlement.guard()) return;
+          if (!stepEntitlement.guard()) return;
           if (hhDocsStatus[item.id] === "not-started") {
             const next = { ...hhDocsStatus, [item.id]: "in-progress" };
             setHhDocsStatus(next);
@@ -2513,7 +2583,7 @@ const renderDocActionModal = () => {
 
           {/* Entitlement Banner — shown when step features are locked for current plan */}
           <StepEntitlementBanner stepKey={sId} />
-          
+
           {/* UpgradeModal — triggered by stepEntitlement.guard() when user clicks locked content */}
           {stepEntitlement.upgradeModalFeature && (
             <UpgradeModal
@@ -2636,7 +2706,6 @@ const renderDocActionModal = () => {
               guard={stepEntitlement.guard}
             />
           )}
-
 
           {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
           {tool.type === "interview_scheduling" && (
@@ -3058,32 +3127,32 @@ const renderDocActionModal = () => {
 
           {tool.type === "medical_exam" && (
             <StepLockedContent stepKey={sId} mode="overlay">
-            <MedicalExamTool
-              state={state}
-              actions={actions}
-              medState={{
-                medSaved,
-                setMedSaved,
-                medDate,
-                setMedDate,
-                medTime,
-                setMedTime,
-                medClinic,
-                setMedClinic,
-                isMedWizardOpen,
-                setIsMedWizardOpen,
-                medWizardStep,
-                setMedWizardStep,
-                medWizardMode,
-                setMedWizardMode,
-              }}
-              guard={stepEntitlement.guard}
-            />
+              <MedicalExamTool
+                state={state}
+                actions={actions}
+                medState={{
+                  medSaved,
+                  setMedSaved,
+                  medDate,
+                  setMedDate,
+                  medTime,
+                  setMedTime,
+                  medClinic,
+                  setMedClinic,
+                  isMedWizardOpen,
+                  setIsMedWizardOpen,
+                  medWizardStep,
+                  setMedWizardStep,
+                  medWizardMode,
+                  setMedWizardMode,
+                }}
+                guard={stepEntitlement.guard}
+              />
             </StepLockedContent>
           )}
 
           {tool.type === "polio_certificate" && (
-                        <StepLockedContent stepKey={sId} mode="overlay">
+            <StepLockedContent stepKey={sId} mode="overlay">
               <PolioCertificateTool
                 state={state}
                 actions={actions}
@@ -3101,7 +3170,6 @@ const renderDocActionModal = () => {
               />
             </StepLockedContent>
           )}
-
 
           {tool.type === "police_clearance" && (
             <PoliceClearanceTool
@@ -3125,13 +3193,13 @@ const renderDocActionModal = () => {
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               uploadedDocuments={uploadedDocuments}
-               guard={stepEntitlement.guard}
+              guard={stepEntitlement.guard}
             />
           )}
 
           {/* FINANCIAL CHECKLIST (Step 2.6 SPECIFIC) */}
           {tool.type === "financial_checklist" && (
-           <StepLockedContent stepKey={sId} mode="overlay">
+            // <StepLockedContent stepKey={sId} mode="overlay">
               <FinancialChecklistTool
                 selectedScenario={selectedScenario}
                 setSelectedScenario={setSelectedScenario}
@@ -3148,7 +3216,7 @@ const renderDocActionModal = () => {
                 setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
                 guard={stepEntitlement.guard}
               />
-            </StepLockedContent>
+            // </StepLockedContent>
           )}
 
           {/* Step 2.7 Household Member Builder Rendering */}
@@ -3170,43 +3238,42 @@ const renderDocActionModal = () => {
           {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
           {tool.type === "household_member" && renderHouseholdBuilder()}
 
-  {tool.type === "submission_review" && (
-  <div className="relative">
-    
-      <SubmissionReviewTool
-    tool={tool}
-    submissionChecklistStatus={submissionChecklistStatus}
-    setSubmissionChecklistStatus={setSubmissionChecklistStatus}
-    setSubmissionGuideIdx={setSubmissionGuideIdx}
-    setIsSubmissionGuideOpen={(open) => {
-      if (!plan.canUse("step_guides")) {
-        setUpgradeModalFeature("step_guides");
-        return;
-      }
-      setIsSubmissionGuideOpen(open);
-    }}
-    submissionSaved={submissionSaved}
-    submissionDate={submissionDate}
-    isStatusLocked={!plan.canUse("tracker_reminders")}
-    onLockedClick={() => setUpgradeModalFeature("tracker_reminders")}
-    onSave={(data) => {
-      if (!plan.canUse("tracker_reminders")) {
-        setUpgradeModalFeature("tracker_reminders");
-        return;
-      }
-      setSubmissionSaved(data.saved);
-      setSubmissionDate(data.date);
-      actions.updateMetadata({
-        submissionSaved: data.saved,
-        submissionDate: data.date,
-      });
-    }}
-    guard={stepEntitlement.guard}
-
-  />
-
-  </div>
-)}
+          {tool.type === "submission_review" && (
+            <div className="relative">
+              <SubmissionReviewTool
+                tool={tool}
+                submissionChecklistStatus={submissionChecklistStatus}
+                setSubmissionChecklistStatus={setSubmissionChecklistStatus}
+                setSubmissionGuideIdx={setSubmissionGuideIdx}
+                setIsSubmissionGuideOpen={(open) => {
+                  if (!plan.canUse("step_guides")) {
+                    setUpgradeModalFeature("step_guides");
+                    return;
+                  }
+                  setIsSubmissionGuideOpen(open);
+                }}
+                submissionSaved={submissionSaved}
+                submissionDate={submissionDate}
+                isStatusLocked={!plan.canUse("tracker_reminders")}
+                onLockedClick={() =>
+                  setUpgradeModalFeature("tracker_reminders")
+                }
+                onSave={(data) => {
+                  if (!plan.canUse("tracker_reminders")) {
+                    setUpgradeModalFeature("tracker_reminders");
+                    return;
+                  }
+                  setSubmissionSaved(data.saved);
+                  setSubmissionDate(data.date);
+                  actions.updateMetadata({
+                    submissionSaved: data.saved,
+                    submissionDate: data.date,
+                  });
+                }}
+                guard={stepEntitlement.guard}
+              />
+            </div>
+          )}
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && (
@@ -3239,7 +3306,6 @@ const renderDocActionModal = () => {
               setMedicalGuideIdx={setMedicalGuideIdx}
               setIsMedicalGuideOpen={setIsMedicalGuideOpen}
               guard={stepEntitlement.guard}
-
             />
           )}
 
@@ -3277,7 +3343,7 @@ const renderDocActionModal = () => {
               guard={stepEntitlement.guard}
             />
           )}
-          
+
           {/* INTERVIEW OUTCOME CONTENT (Step 3.9 SPECIFIC) */}
           {tool.type === "interview_outcome" && (
             <InterviewOutcomeTool
@@ -3287,7 +3353,7 @@ const renderDocActionModal = () => {
               guard={stepEntitlement.guard}
             />
           )}
-           {/* VISA ISSUANCE CONTENT (Step 3.10 SPECIFIC) */}
+          {/* VISA ISSUANCE CONTENT (Step 3.10 SPECIFIC) */}
           {tool.type === "visa_issuance" && (
             <TrackVisaIssuanceTool
               tool={tool}
@@ -3493,7 +3559,8 @@ const renderDocActionModal = () => {
                         actions.updateMetadata({
                           apDetails: apDetails,
                           apSaved: "true",
-                          ...(apDetails.ceacStatus === "Issued" && !state.metadata?.ceacIssuedAt
+                          ...(apDetails.ceacStatus === "Issued" &&
+                          !state.metadata?.ceacIssuedAt
                             ? { ceacIssuedAt: new Date().toISOString() }
                             : {}),
                         });
@@ -4103,7 +4170,7 @@ const renderDocActionModal = () => {
                                   setIsCivilDocGuideOpen(true);
                                 }
                               },
-                               onUpload: () => {
+                              onUpload: () => {
                                 const defId = mapDocumentNameToId(item.title);
                                 setActiveUploadId(item.id);
                                 setActiveUploadType("doc");
@@ -4415,7 +4482,7 @@ const renderDocActionModal = () => {
                 {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) ? (
                   /* Saved Card */
                   <button
-                     onClick={() => {
+                    onClick={() => {
                       if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
@@ -4452,7 +4519,7 @@ const renderDocActionModal = () => {
                   /* Unsaved Card */
                   <button
                     onClick={() => {
-                       if (!stepEntitlement.guard()) return;
+                      if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4728,29 +4795,31 @@ const renderDocActionModal = () => {
       );
     })()}
 
-    {tool.wallet_card && (() => {
-  const walletFeatureKey = "tracker_reminders";
-  const isWalletLocked = !plan.canUse(walletFeatureKey);
+              {tool.wallet_card &&
+                (() => {
+                  const walletFeatureKey = "tracker_reminders";
+                  const isWalletLocked = !plan.canUse(walletFeatureKey);
 
-  return (
-    <button
-      onClick={() => {
-        if (isWalletLocked) {
-          setUpgradeModalFeature(walletFeatureKey);
-          return;
-        }
-        if (tool.wallet_card?.type === "nvc_fee") {
-          setIsNvcFeeModalOpen(true);
-        } else if (tool.wallet_card?.type === "ceac_creds") {
-          setIsCeacModalOpen(true);
-        }
-      }}
-      className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col relative
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isWalletLocked) {
+                          setUpgradeModalFeature(walletFeatureKey);
+                          return;
+                        }
+                        if (tool.wallet_card?.type === "nvc_fee") {
+                          setIsNvcFeeModalOpen(true);
+                        } else if (tool.wallet_card?.type === "ceac_creds") {
+                          setIsCeacModalOpen(true);
+                        }
+                      }}
+                      className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col relative
         ${
           isWalletLocked
             ? "border-[#d0e4f7] hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
             : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+                (tool.wallet_card?.type === "nvc_fee" &&
+                  state.metadata.nvcFeeStatus)
               ? "border-[#a8d9be] bg-[#e8f5ef]"
               : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
         }
@@ -4779,60 +4848,74 @@ const renderDocActionModal = () => {
         </div>
       </div>
 
-      <h3
-        className={`text-[14px] font-semibold mb-1 ${
-          isWalletLocked
-            ? "text-[#6b8097]"
-            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-              ? "text-[#15744f]"
-              : "text-[#0c1b33]"
-        }`}
-      >
-        {!isWalletLocked &&
-        ((tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-          (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus))
-          ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
-          : tool.wallet_card?.title}
-      </h3>
+                      <h3
+                        className={`text-[14px] font-semibold mb-1 ${
+                          isWalletLocked
+                            ? "text-[#6b8097]"
+                            : (tool.wallet_card?.type === "ceac_creds" &&
+                                  ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" &&
+                                  state.metadata.nvcFeeStatus)
+                              ? "text-[#15744f]"
+                              : "text-[#0c1b33]"
+                        }`}
+                      >
+                        {!isWalletLocked &&
+                        ((tool.wallet_card?.type === "ceac_creds" &&
+                          ceacCredentials) ||
+                          (tool.wallet_card?.type === "nvc_fee" &&
+                            state.metadata.nvcFeeStatus))
+                          ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
+                          : tool.wallet_card?.title}
+                      </h3>
 
-      <p className={`text-[12px] leading-normal ${isWalletLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}>
-        {tool.wallet_card?.subtitle}
-      </p>
+                      <p
+                        className={`text-[12px] leading-normal ${isWalletLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}
+                      >
+                        {tool.wallet_card?.subtitle}
+                      </p>
 
-      <div
-        className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-          isWalletLocked
-            ? "text-[#a06000]"
-            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-              ? "text-[#15744f]"
-              : "text-primary"
-        }`}
-      >
-        {isWalletLocked ? (
-          <>
-            <Lock size={11} strokeWidth={2.2} />
-            <span>Unlock feature</span>
-            <ArrowRight size={11} strokeWidth={2} />
-          </>
-        ) : (
-          <span>
-            {(tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-            (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-              ? "View saved details"
-              : tool.wallet_card?.type === "ceac_creds"
-                ? "Open credential vault"
-                : "Update payment record"}
-            <ArrowRight size={11} strokeWidth={2} className="inline ml-1" />
-          </span>
-        )}
-      </div>
-    </button>
-  );
-})()}
-  </div>
-)}
+                      <div
+                        className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+                          isWalletLocked
+                            ? "text-[#a06000]"
+                            : (tool.wallet_card?.type === "ceac_creds" &&
+                                  ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" &&
+                                  state.metadata.nvcFeeStatus)
+                              ? "text-[#15744f]"
+                              : "text-primary"
+                        }`}
+                      >
+                        {isWalletLocked ? (
+                          <>
+                            <Lock size={11} strokeWidth={2.2} />
+                            <span>Unlock feature</span>
+                            <ArrowRight size={11} strokeWidth={2} />
+                          </>
+                        ) : (
+                          <span>
+                            {(tool.wallet_card?.type === "ceac_creds" &&
+                              ceacCredentials) ||
+                            (tool.wallet_card?.type === "nvc_fee" &&
+                              state.metadata.nvcFeeStatus)
+                              ? "View saved details"
+                              : tool.wallet_card?.type === "ceac_creds"
+                                ? "Open credential vault"
+                                : "Update payment record"}
+                            <ArrowRight
+                              size={11}
+                              strokeWidth={2}
+                              className="inline ml-1"
+                            />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })()}
+            </div>
+          )}
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
@@ -4886,7 +4969,7 @@ const renderDocActionModal = () => {
               ))}
             </div>
           )}
-{/* Disclaimer */}
+          {/* Disclaimer */}
           <p
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
@@ -4898,40 +4981,40 @@ const renderDocActionModal = () => {
     );
   };
 
-   if (customRenderer) {
+  if (customRenderer) {
     return (
       <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
         <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
           {customRenderer}
         </div>
-              <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-        {/* Prev */}
-        <button
-          onClick={() =>
-            prevStep &&
-            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-          }
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-        >
-          <ArrowLeft size={13} strokeWidth={2.5} />
-          Prev
-        </button>
+        <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+          {/* Prev */}
+          <button
+            onClick={() =>
+              prevStep &&
+              handleNavigate((prevStep as any).step_key || (prevStep as any).id)
+            }
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+          >
+            <ArrowLeft size={13} strokeWidth={2.5} />
+            Prev
+          </button>
 
-        {/* Progress */}
-        <div className="flex-1 flex items-center gap-2">
-          <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
-              style={{ width: `${progressPct}%` }}
-            />
+          {/* Progress */}
+          <div className="flex-1 flex items-center gap-2">
+            <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+              {localIdx + 1} / {activeStepsInChapter.length}
+            </span>
           </div>
-          <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-            {localIdx + 1} / {activeStepsInChapter.length}
-          </span>
-        </div>
 
-        {/* Next */}
-        <button
+          {/* Next */}
+          <button
             onClick={() =>
               nextStep &&
               handleNavigate((nextStep as any).step_key || (nextStep as any).id)
@@ -4952,7 +5035,7 @@ const renderDocActionModal = () => {
 
   return (
     <div
-    // className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
+      // className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
       className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans`}
       // style={
       //   isChapter3
@@ -5240,7 +5323,7 @@ const renderDocActionModal = () => {
         >
           {currentStep.step_type === "quest" ? (
             <div
-            //              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
+              //              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
               className={`w-full min-h-[600px] flex flex-col items-center`}
             >
               <QuestRenderer
@@ -5257,29 +5340,29 @@ const renderDocActionModal = () => {
             renderToolStep()
           ) : currentStep.step_type === "action" ? (
             <div
-              // style={
-              //   isChapter3
-              //     ? {
-              //         backgroundImage:
-              //           "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
-              //         backgroundSize: "cover",
-              //         backgroundPosition: "center",
-              //         backgroundRepeat: "no-repeat",
-              //         backgroundAttachment: "fixed",
-              //         minHeight: "100vh",
-              //       }
-              //     : isChapter2
-              //       ? {
-              //           backgroundImage:
-              //             "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
-              //           backgroundSize: "cover",
-              //           backgroundPosition: "center",
-              //           backgroundRepeat: "no-repeat",
-              //           backgroundAttachment: "fixed",
-              //           minHeight: "100vh",
-              //         }
-              //       : {}
-              // }
+            // style={
+            //   isChapter3
+            //     ? {
+            //         backgroundImage:
+            //           "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
+            //         backgroundSize: "cover",
+            //         backgroundPosition: "center",
+            //         backgroundRepeat: "no-repeat",
+            //         backgroundAttachment: "fixed",
+            //         minHeight: "100vh",
+            //       }
+            //     : isChapter2
+            //       ? {
+            //           backgroundImage:
+            //             "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
+            //           backgroundSize: "cover",
+            //           backgroundPosition: "center",
+            //           backgroundRepeat: "no-repeat",
+            //           backgroundAttachment: "fixed",
+            //           minHeight: "100vh",
+            //         }
+            //       : {}
+            // }
             >
               <ActionStepRenderer
                 step={currentStep}
@@ -5296,7 +5379,7 @@ const renderDocActionModal = () => {
                 isChapter1={isChapter1}
                 isChapter2={isChapter2}
                 isChapter3={isChapter3}
-                 guard={stepEntitlement.guard}
+                guard={stepEntitlement.guard}
               />
             </div>
           ) : currentStep.step_type === "docs" ? (
@@ -5317,8 +5400,7 @@ const renderDocActionModal = () => {
                   }}
                 />
               )}
-            <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-
+              <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                 {/* Questionnaire CTA */}
                 {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
                 <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
@@ -5333,7 +5415,8 @@ const renderDocActionModal = () => {
                       Personalize Your Document Checklist
                     </h3>
                     <p className="text-xs sm:text-[13px] text-[#6b8097] leading-relaxed mb-2 sm:mb-3">
-                      Answer a few questions about your situation so we can add or remove documents that apply to you specifically.
+                      Answer a few questions about your situation so we can add
+                      or remove documents that apply to you specifically.
                     </p>
                     <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-primary">
                       <span>Start Personalization</span>
@@ -5348,7 +5431,8 @@ const renderDocActionModal = () => {
                   const effectiveDocItems =
                     sId === "step_1_2" && questionnaireDocItems
                       ? questionnaireDocItems
-                      : (currentStep as any).document_items || currentStep.document_items;
+                      : (currentStep as any).document_items ||
+                        currentStep.document_items;
                   return (
                     <>
                       <div className="w-full max-w-[740px] px-0">
@@ -5357,7 +5441,11 @@ const renderDocActionModal = () => {
                             const docItems = effectiveDocItems;
                             if (!docItems) return [];
                             const uniqueGroups = Array.from(
-                              new Set(docItems.map((d: any) => d.group || "Required Now")),
+                              new Set(
+                                docItems.map(
+                                  (d: any) => d.group || "Required Now",
+                                ),
+                              ),
                             );
                             const defaultOrder = [
                               "Required Now",
@@ -5369,7 +5457,8 @@ const renderDocActionModal = () => {
                             return (uniqueGroups as string[]).sort((a, b) => {
                               const idxA = defaultOrder.indexOf(a);
                               const idxB = defaultOrder.indexOf(b);
-                              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                              if (idxA !== -1 && idxB !== -1)
+                                return idxA - idxB;
                               if (idxA !== -1) return -1;
                               if (idxB !== -1) return 1;
                               return a.localeCompare(b);
@@ -5377,10 +5466,12 @@ const renderDocActionModal = () => {
                           })().map((groupName) => {
                             const docItems = effectiveDocItems;
                             const groupItems = docItems?.filter(
-                              (d: any) => (d.group || "Required Now") === groupName,
+                              (d: any) =>
+                                (d.group || "Required Now") === groupName,
                             );
 
-                            if (!groupItems || groupItems.length === 0) return null;
+                            if (!groupItems || groupItems.length === 0)
+                              return null;
 
                             return (
                               <div
@@ -5397,14 +5488,21 @@ const renderDocActionModal = () => {
 
                                 <div className="flex flex-col gap-2 sm:gap-2.5">
                                   {groupItems.map((doc: any, idx: number) => {
-                                    const docReviewStatus = state.metadata?.docReviewStatus?.[doc.id];
+                                    const docReviewStatus =
+                                      state.metadata?.docReviewStatus?.[doc.id];
                                     const isReviewed =
-                                      docReviewStatus === "reviewed" || state.documentChecklist[doc.name];
-                                    const hasAttachment = state.docUploads[doc.name] || state.notes[doc.name];
+                                      docReviewStatus === "reviewed" ||
+                                      state.documentChecklist[doc.name];
+                                    const hasAttachment =
+                                      state.docUploads[doc.name] ||
+                                      state.notes[doc.name];
                                     const isInProgress =
-                                      (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
-                                    const isPetitioner = doc.tag === "petitioner";
-                                    const isBeneficiary = doc.tag === "beneficiary";
+                                      (hasAttachment && !isReviewed) ||
+                                      docReviewStatus === "in-progress";
+                                    const isPetitioner =
+                                      doc.tag === "petitioner";
+                                    const isBeneficiary =
+                                      doc.tag === "beneficiary";
 
                                     return (
                                       <div
@@ -5416,20 +5514,42 @@ const renderDocActionModal = () => {
                                             title: doc.name,
                                             subtitle: doc.subtitle,
                                             onReadGuide: () => {
-                                              if (doc.guideUrl && doc.guideUrl !== "/guides") {
-                                                window.open(doc.guideUrl, "_blank");
-                                                if (actions.updateDocumentStatus && doc.id) {
-                                                  actions.updateDocumentStatus(doc.id, "reviewed");
+                                              if (
+                                                doc.guideUrl &&
+                                                doc.guideUrl !== "/guides"
+                                              ) {
+                                                window.open(
+                                                  doc.guideUrl,
+                                                  "_blank",
+                                                );
+                                                if (
+                                                  actions.updateDocumentStatus &&
+                                                  doc.id
+                                                ) {
+                                                  actions.updateDocumentStatus(
+                                                    doc.id,
+                                                    "reviewed",
+                                                  );
                                                 }
                                               } else {
-                                                setSelectedGuideId(doc.id || null);
-                                                if (actions.updateDocumentStatus && doc.id) {
-                                                  actions.updateDocumentStatus(doc.id, "in-progress");
+                                                setSelectedGuideId(
+                                                  doc.id || null,
+                                                );
+                                                if (
+                                                  actions.updateDocumentStatus &&
+                                                  doc.id
+                                                ) {
+                                                  actions.updateDocumentStatus(
+                                                    doc.id,
+                                                    "in-progress",
+                                                  );
                                                 }
                                               }
                                             },
                                             onUpload: () => {
-                                              const defId = mapDocumentNameToId(doc.name);
+                                              const defId = mapDocumentNameToId(
+                                                doc.name,
+                                              );
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
 
@@ -5496,40 +5616,87 @@ const renderDocActionModal = () => {
                                           hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] 
                                           hover:-translate-y-px active:translate-y-0 
                                           active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)]
-                                          ${isReviewed
-                                            ? "bg-[#eaf7ff] border-[#b8daff]"
-                                            : isInProgress
-                                              ? "bg-[#fff9e6] border-[#fde68a]/50"
-                                              : "bg-white border-[#d0e4f7]"
+                                          ${
+                                            isReviewed
+                                              ? "bg-[#eaf7ff] border-[#b8daff]"
+                                              : isInProgress
+                                                ? "bg-[#fff9e6] border-[#fde68a]/50"
+                                                : "bg-white border-[#d0e4f7]"
                                           }`}
                                       >
                                         {/* Icon */}
                                         <div
                                           className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 border
-                                            ${isReviewed
-                                              ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
-                                              : isInProgress
-                                                ? "bg-white border-[#fde68a] text-[#d97706]"
-                                                : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
+                                            ${
+                                              isReviewed
+                                                ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
+                                                : isInProgress
+                                                  ? "bg-white border-[#fde68a] text-[#d97706]"
+                                                  : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
                                             }`}
                                         >
                                           {isReviewed ? (
-                                            <CheckCircle2 size={16} strokeWidth={2.5} className="sm:w-[18px] sm:h-[18px]" />
+                                            <CheckCircle2
+                                              size={16}
+                                              strokeWidth={2.5}
+                                              className="sm:w-[18px] sm:h-[18px]"
+                                            />
                                           ) : (
                                             (() => {
                                               const iconSize = 16;
                                               switch (doc.icon) {
-                                                case "ShieldCheck": return <ShieldCheck size={iconSize} />;
-                                                case "User": return <User size={iconSize} />;
-                                                case "FileText": return <FileText size={iconSize} />;
-                                                case "FileCheck": return <FileCheck size={iconSize} />;
-                                                case "MessageSquare": return <MessageSquare size={iconSize} />;
-                                                case "Scale": return <Scale size={iconSize} />;
-                                                case "Globe": return <Globe size={iconSize} />;
-                                                case "ClipboardList": return <ClipboardList size={iconSize} />;
-                                                case "Lock": return <Lock size={iconSize} />;
-                                                case "Camera": return <Camera size={iconSize} />;
-                                                default: return <FileText size={iconSize} />;
+                                                case "ShieldCheck":
+                                                  return (
+                                                    <ShieldCheck
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "User":
+                                                  return (
+                                                    <User size={iconSize} />
+                                                  );
+                                                case "FileText":
+                                                  return (
+                                                    <FileText size={iconSize} />
+                                                  );
+                                                case "FileCheck":
+                                                  return (
+                                                    <FileCheck
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "MessageSquare":
+                                                  return (
+                                                    <MessageSquare
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "Scale":
+                                                  return (
+                                                    <Scale size={iconSize} />
+                                                  );
+                                                case "Globe":
+                                                  return (
+                                                    <Globe size={iconSize} />
+                                                  );
+                                                case "ClipboardList":
+                                                  return (
+                                                    <ClipboardList
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "Lock":
+                                                  return (
+                                                    <Lock size={iconSize} />
+                                                  );
+                                                case "Camera":
+                                                  return (
+                                                    <Camera size={iconSize} />
+                                                  );
+                                                default:
+                                                  return (
+                                                    <FileText size={iconSize} />
+                                                  );
                                               }
                                             })()
                                           )}
@@ -5547,14 +5714,18 @@ const renderDocActionModal = () => {
                                             {doc.tag && (
                                               <span
                                                 className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em]
-                                                  ${isPetitioner
-                                                    ? "bg-[#e8f1fb] text-primary/80"
-                                                    : isBeneficiary
-                                                      ? "bg-[#eaf7f2] text-[#1a7a5e]"
-                                                      : "bg-[#f3f0fb] text-[#4a2d80]"
+                                                  ${
+                                                    isPetitioner
+                                                      ? "bg-[#e8f1fb] text-primary/80"
+                                                      : isBeneficiary
+                                                        ? "bg-[#eaf7f2] text-[#1a7a5e]"
+                                                        : "bg-[#f3f0fb] text-[#4a2d80]"
                                                   }`}
                                               >
-                                                {doc.tag.charAt(0).toUpperCase() + doc.tag.slice(1)}
+                                                {doc.tag
+                                                  .charAt(0)
+                                                  .toUpperCase() +
+                                                  doc.tag.slice(1)}
                                               </span>
                                             )}
                                             {isBeneficiary && (
@@ -5569,38 +5740,48 @@ const renderDocActionModal = () => {
                                         <div className="shrink-0 flex items-center gap-1.5 self-start sm:self-center mt-0.5 sm:mt-0">
                                           {/* Status Badge */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(doc.name);
-                                            const isUploadedInVault = uploadedDocuments.some(
-                                              (ud) => ud.documentDefId === defId,
+                                            const defId = mapDocumentNameToId(
+                                              doc.name,
                                             );
-                                            const uploadedDoc = uploadedDocuments.find(
-                                              (ud) => ud.documentDefId === defId,
-                                            );
+                                            const isUploadedInVault =
+                                              uploadedDocuments.some(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
+                                            const uploadedDoc =
+                                              uploadedDocuments.find(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(uploadedDoc.id)
+                                              ? isDeletingIds.includes(
+                                                  uploadedDoc.id,
+                                                )
                                               : false;
 
                                             if (isDeleting) return null;
 
-                                            const displayStatus = isUploadedInVault
-                                              ? "Uploaded"
-                                              : isReloadingDocs
-                                                ? "Checking..."
-                                                : isReviewed
-                                                  ? "Reviewed"
-                                                  : isInProgress
-                                                    ? "In progress"
-                                                    : "Not started";
+                                            const displayStatus =
+                                              isUploadedInVault
+                                                ? "Uploaded"
+                                                : isReloadingDocs
+                                                  ? "Checking..."
+                                                  : isReviewed
+                                                    ? "Reviewed"
+                                                    : isInProgress
+                                                      ? "In progress"
+                                                      : "Not started";
 
-                                            const statusClasses = isUploadedInVault
-                                              ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                              : isReloadingDocs
-                                                ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                                : isReviewed
-                                                  ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                                  : isInProgress
-                                                    ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                                    : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
+                                            const statusClasses =
+                                              isUploadedInVault
+                                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                                : isReloadingDocs
+                                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                                  : isReviewed
+                                                    ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                                    : isInProgress
+                                                      ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                                             return (
                                               <div
@@ -5613,19 +5794,30 @@ const renderDocActionModal = () => {
 
                                           {/* Upload State / Dropdown */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(doc.name);
-                                            const uploadedDoc = uploadedDocuments.find(
-                                              (ud) => ud.documentDefId === defId,
+                                            const defId = mapDocumentNameToId(
+                                              doc.name,
                                             );
+                                            const uploadedDoc =
+                                              uploadedDocuments.find(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(uploadedDoc.id)
+                                              ? isDeletingIds.includes(
+                                                  uploadedDoc.id,
+                                                )
                                               : false;
 
-                                            if (isReloadingDocs && !uploadedDoc) {
+                                            if (
+                                              isReloadingDocs &&
+                                              !uploadedDoc
+                                            ) {
                                               return (
                                                 <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground font-medium animate-pulse">
                                                   <div className="h-2.5 w-2.5 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                                  <span className="hidden sm:inline">Checking...</span>
+                                                  <span className="hidden sm:inline">
+                                                    Checking...
+                                                  </span>
                                                 </div>
                                               );
                                             }
@@ -5634,7 +5826,9 @@ const renderDocActionModal = () => {
                                               return (
                                                 <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-red-500 font-medium animate-pulse">
                                                   <div className="h-2.5 w-2.5 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
-                                                  <span className="hidden sm:inline">Deleting...</span>
+                                                  <span className="hidden sm:inline">
+                                                    Deleting...
+                                                  </span>
                                                 </div>
                                               );
                                             }
@@ -5644,10 +5838,15 @@ const renderDocActionModal = () => {
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <button
-                                                      onClick={(e) => e.stopPropagation()}
+                                                      onClick={(e) =>
+                                                        e.stopPropagation()
+                                                      }
                                                       className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
                                                     >
-                                                      <MoreVertical size={15} className="sm:w-[18px] sm:h-[18px]" />
+                                                      <MoreVertical
+                                                        size={15}
+                                                        className="sm:w-[18px] sm:h-[18px]"
+                                                      />
                                                     </button>
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent
@@ -5658,21 +5857,33 @@ const renderDocActionModal = () => {
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        window.open(`/api/documents/${uploadedDoc.id}/download`, "_blank");
+                                                        window.open(
+                                                          `/api/documents/${uploadedDoc.id}/download`,
+                                                          "_blank",
+                                                        );
                                                       }}
                                                       className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5"
                                                     >
-                                                      <Eye size={14} className="text-primary sm:w-4 sm:h-4" />
+                                                      <Eye
+                                                        size={14}
+                                                        className="text-primary sm:w-4 sm:h-4"
+                                                      />
                                                       Preview
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setDocumentToDelete({ id: uploadedDoc.id, name: doc.name });
+                                                        setDocumentToDelete({
+                                                          id: uploadedDoc.id,
+                                                          name: doc.name,
+                                                        });
                                                       }}
                                                       className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                                     >
-                                                      <Trash2 size={14} className="sm:w-4 sm:h-4" />
+                                                      <Trash2
+                                                        size={14}
+                                                        className="sm:w-4 sm:h-4"
+                                                      />
                                                       Delete
                                                     </DropdownMenuItem>
                                                   </DropdownMenuContent>
@@ -5696,9 +5907,10 @@ const renderDocActionModal = () => {
                       {/* Footer Disclaimer */}
                       <div className="mt-10 sm:mt-12 mx-3 sm:mx-0 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center max-w-[740px] w-full mb-5 sm:mb-6">
                         <span className="block text-[10px] sm:text-[12px] leading-relaxed">
-                          Rahvana provides structured guidance only. This is not legal advice.{" "}
-                          <br className="hidden sm:block" />
-                          Consult a licensed immigration attorney for case-specific decisions.
+                          Rahvana provides structured guidance only. This is not
+                          legal advice. <br className="hidden sm:block" />
+                          Consult a licensed immigration attorney for
+                          case-specific decisions.
                         </span>
                       </div>
                     </>
@@ -5709,15 +5921,17 @@ const renderDocActionModal = () => {
           ) : currentStep.step_type === "filing" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               <div className="flex flex-col w-full max-w-[660px] pb-[80px] px-[24px]">
-               <h1 className="
+                <h1
+                  className="
                 mt-8 sm:mt-10 md:mt-0
                 text-[clamp(26px,4vw,34px)]
                 font-black
                 text-[#0f1f38]
                 leading-[1.2]
-                ">
-                {currentStep.step_name}
-              </h1>
+                "
+                >
+                  {currentStep.step_name}
+                </h1>
                 <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
                   {currentStep.filing_data?.subtitle ||
                     currentStep.step_description}
@@ -5986,46 +6200,54 @@ const renderDocActionModal = () => {
         </div>
       </div>
 
-           {/* Redesigned Bottom Navigation Footer */}
-     <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-  {/* Prev */}
-  <button
-    onClick={() =>
-      prevStep &&
-      handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-    }
-    className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-  >
-    <ArrowLeft size={13} strokeWidth={2.5} />
-    Prev
-  </button>
-
-  {/* Progress */}
-  <div className="flex-1 flex items-center gap-2">
-    <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
-      <div
-        className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
-        style={{ width: `${progressPct}%` }}
-      />
-    </div>
-    <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-      {localIdx + 1} / {activeStepsInChapter.length}
-    </span>
-  </div>
-
-  {/* Next */}
-   <button
+      {/* Redesigned Bottom Navigation Footer */}
+      <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        {/* Prev */}
+        <button
           onClick={() =>
-            nextStep &&
-            handleNavigate((nextStep as any).step_key || (nextStep as any).id)
+            prevStep &&
+            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
           }
-          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
         >
+          <ArrowLeft size={13} strokeWidth={2.5} />
+          Prev
+        </button>
+
+        {/* Progress */}
+        <div className="flex-1 flex items-center gap-2">
+          <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+            {localIdx + 1} / {activeStepsInChapter.length}
+          </span>
+        </div>
+
+        {/* Next */}
+        <button
+          onClick={() => {
+            if (nextStepLock.isLocked) {
+              setUpgradeModalFeature(
+                getModalFeatureForTier(nextStepLock.requiredPlan!),
+              );
+              return;
+            }
+            nextStep &&
+              handleNavigate(
+                (nextStep as any).step_key || (nextStep as any).id,
+              );
+          }}
+          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""} ${nextStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
+        >
+          {nextStepLock.isLocked && <Lock size={12} className="mr-1" />}
           Next
           <ArrowRight size={12} strokeWidth={2.5} />
         </button>
-</footer>
-
+      </footer>
 
       {/* Sponsorship Calculator Tool Overlay */}
       <SponsorshipCalculatorTool
@@ -6112,6 +6334,13 @@ const renderDocActionModal = () => {
         }}
       />
 
+      {upgradeModalFeature && (
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
+      )}
+
       {renderDocActionModal()}
 
       <ConfirmationModal
@@ -6193,7 +6422,7 @@ const renderDocActionModal = () => {
         />
       )}
 
-{selectedGuideId && InlineGuideData[selectedGuideId] && (
+      {selectedGuideId && InlineGuideData[selectedGuideId] && (
         <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out bg-white">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
@@ -6570,7 +6799,7 @@ const renderDocActionModal = () => {
 
               {/* Tutorial Body */}
               <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
-                <div className="w-full max-w-[580px] flex flex-col"> 
+                <div className="w-full max-w-[580px] flex flex-col">
                   <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
                       ? currentTutStep.label
