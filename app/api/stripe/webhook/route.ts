@@ -135,8 +135,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     });
   }
 
-  // Journey Plan — activate subscription
-  if (productType === 'journey_plan' && productId) {
+  // Journey Plan or Standalone Add-on
+  if ((productType === 'journey_plan' || productType === 'standalone_addon')) {
     // Parse add-ons from metadata
     let selectedAddons: string[] = [];
     if (session.metadata.addons) {
@@ -147,50 +147,79 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       }
     }
 
-    // Update user subscription in Supabase
-    try {
-      await paymentService.updateUserSubscription(
-        userId,
-        productId as 'basic' | 'premium' | 'executive',
-        session.customer as string || session.metadata.stripe_customer_id
-      );
+    // Journey Plan — activate subscription
+    if (productType === 'journey_plan' && productId) {
+      try {
+        await paymentService.updateUserSubscription(
+          userId,
+          productId as 'basic' | 'premium' | 'executive',
+          session.customer as string || session.metadata.stripe_customer_id
+        );
 
-      // Save active plan details in user_profiles
-      await supabase
-        .from('user_profiles')
-        .update({
-          metadata: {
-            active_plan: productId,
-            plan_visa_category: session.metadata.visa_category,
-            plan_purchase_date: new Date().toISOString(),
-            purchased_addons: selectedAddons,
-            stripe_subscription_id: session.subscription, // save for cancellation
+        // Save active plan details in user_profiles
+        await supabase
+          .from('user_profiles')
+          .update({
+            metadata: {
+              active_plan: productId,
+              plan_visa_category: session.metadata.visa_category,
+              plan_purchase_date: new Date().toISOString(),
+              purchased_addons: selectedAddons,
+              stripe_subscription_id: session.subscription, // save for cancellation
+            }
+          })
+          .eq('id', userId);
+
+        console.log(`✅ User ${userId} subscribed to ${productId}`);
+
+        // Handle Upgrade cleanup
+        if (session.metadata.is_upgrade === 'true' && session.metadata.old_subscription_id) {
+          try {
+            await stripe.subscriptions.cancel(session.metadata.old_subscription_id);
+            console.log(`✅ Cancelled old subscription ${session.metadata.old_subscription_id} after upgrade.`);
+          } catch (cancelErr) {
+            console.error('Error cancelling old subscription after upgrade:', cancelErr);
           }
-        })
-        .eq('id', userId);
-
-      console.log(`✅ User ${userId} subscribed to ${productId}`);
-
-      // Handle Upgrade cleanup: cancel old subscription to prevent double-billing
-      if (session.metadata.is_upgrade === 'true' && session.metadata.old_subscription_id) {
-        try {
-          await stripe.subscriptions.cancel(session.metadata.old_subscription_id);
-          console.log(`✅ Cancelled old subscription ${session.metadata.old_subscription_id} after upgrade.`);
-        } catch (cancelErr) {
-          console.error('Error cancelling old subscription after upgrade:', cancelErr);
         }
+      } catch (error) {
+        console.error('Error updating user subscription:', error);
       }
-    } catch (error) {
-      console.error('Error updating user subscription:', error);
-    }
 
-    // Send confirmation email
-    await sendJourneyConfirmationEmail(
-      session.customer_details?.email || '',
-      productId,
-      session.metadata.visa_category || 'IR-1 / CR-1',
-      session.metadata.addons ? JSON.parse(session.metadata.addons) : []
-    );
+      await sendJourneyConfirmationEmail(
+        session.customer_details?.email || '',
+        productId,
+        session.metadata.visa_category || 'IR-1 / CR-1',
+        selectedAddons
+      );
+    } 
+    // Standalone Add-on fulfillment
+    else if (productType === 'standalone_addon' && selectedAddons.length > 0) {
+      try {
+        // Fetch current profile to get existing addons
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('metadata')
+          .eq('id', userId)
+          .single();
+
+        const existingAddons = profile?.metadata?.purchased_addons || [];
+        const mergedAddons = [...new Set([...existingAddons, ...selectedAddons])];
+
+        await supabase
+          .from('user_profiles')
+          .update({
+            metadata: {
+              ...(profile?.metadata || {}),
+              purchased_addons: mergedAddons,
+            }
+          })
+          .eq('id', userId);
+        
+        console.log(`✅ User ${userId} purchased standalone addons: ${selectedAddons.join(', ')}`);
+      } catch (error) {
+        console.error('Error updating standalone addons:', error);
+      }
+    }
   }
 
   // Consultation — mark as paid

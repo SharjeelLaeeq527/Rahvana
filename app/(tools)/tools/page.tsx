@@ -305,11 +305,6 @@ export default function ToolsPage({
         <UpgradeModal
           feature={upgradeModalFeature}
           onClose={() => setUpgradeModalFeature(null)}
-          onConfirm={(action: "upgrade" | "addon", target?: string) => {
-            // Redirect to pricing page with the selected plan pre-selected
-            const plan = typeof target === "string" ? target : "premium";
-            window.location.href = `/pricing?plan=${plan}`;
-          }}
         />
       )}
 

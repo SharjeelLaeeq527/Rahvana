@@ -416,7 +416,7 @@ function HomePageContent() {
     }
   };
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background font-sans text-foreground overflow-x-clip">
       <main className="min-h-[calc(100vh-200px)]">
         {activeSection === "home" && (
           <div className="flex flex-col">
@@ -740,7 +740,8 @@ function HomePageContent() {
                             openFAQ === i
                               ? "bg-rahvana-primary border-rahvana-primary text-white rotate-45"
                               : "border-border text-muted-foreground group-hover:border-rahvana-primary group-hover:text-rahvana-primary"
-                          }`}
+    
+                            }`}
                         >
                           <Icons.Plus className="w-4 h-4" />
                         </div>

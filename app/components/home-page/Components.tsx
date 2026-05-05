@@ -2,6 +2,7 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ExternalLink,
   FileCheck2,
@@ -26,7 +27,6 @@ import {
   Files,
   PenTool,
   Wand2,
-  FileSearch,
   Bell,
   User,
   BookOpen,
@@ -43,7 +43,7 @@ import {
 import Image from "next/image";
 import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep";
 // import { ProgressBar } from "@/app/components/forms/auto-visaform-filling/ProgressBar";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   chapters,
@@ -1082,189 +1082,381 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 }
 
 export function TwoWaysSection() {
+  const sectionRef   = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
-  const [isPaused, setIsPaused] = useState(false);
   const reduceMotion = useReducedMotion();
 
+  // ── Scroll-driven: switch after ~150 px of scrolling into the section ───────
   useEffect(() => {
-    if (reduceMotion || isPaused) return;
-    const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current === 0 ? 1 : 0));
-    }, 6000);
-    return () => window.clearInterval(timer);
-  }, [isPaused, reduceMotion, activeIndex]);
+    const section = sectionRef.current;
+    if (!section) return;
+    const onScroll = () => {
+      if (window.innerWidth < 1024) return;
+      const scrolled = window.scrollY - section.offsetTop;
+      if (scrolled < 0) return;
+      // Switch after 150 px — roughly one mouse-wheel click / one trackpad gesture
+      setActiveIndex((scrolled >= 150 ? 1 : 0) as TwoWaysIndex);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const selectPath = (index: TwoWaysIndex) => {
-    setActiveIndex(index);
-    setIsPaused(true);
+  const selectPath = (idx: TwoWaysIndex) => {
+    if (sectionRef.current && window.innerWidth >= 1024) {
+      const s = sectionRef.current;
+      // Scroll to position that triggers the correct panel
+      const target = idx === 0 ? s.offsetTop : s.offsetTop + 200;
+      window.scrollTo({ top: target, behavior: "smooth" });
+    } else {
+      setActiveIndex(idx);
+    }
   };
 
   return (
-    <section
-      id="path"
-      aria-label="Two ways to use Rahvana"
-      className="relative overflow-x-hidden"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocus={() => setIsPaused(true)}
-      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsPaused(false); }}
-      style={{
-        background: "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-        borderTop: "1px solid #e1ebe8",
-        borderBottom: "1px solid #e1ebe8",
-      }}
-    >
-      {/* Decorative radial highlights */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-72"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
-            "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
-        }}
-      />
-
-      <div
-        className="relative mx-auto px-5 sm:px-8 lg:px-10 py-14 sm:py-16 lg:py-20 xl:py-24"
-        style={{ maxWidth: 1360 }}
+    <>
+      {/* ── Desktop (lg+): scroll-driven sticky ─────────────────────────── */}
+      <section
+        ref={sectionRef}
+        id="path"
+        aria-label="Two ways to use Rahvana"
+        className="relative hidden lg:block"
+        style={{ height: "calc(100vh + 600px)" }}
       >
-        {/* Responsive grid — stacked on mobile/tablet, side-by-side on lg+ */}
-        <div className="grid grid-cols-1 items-center gap-y-10 lg:grid-cols-[minmax(0,400px)_1fr] lg:gap-x-10 xl:grid-cols-[minmax(0,440px)_1fr] xl:gap-x-20">
+        <div
+          style={{
+            position : "sticky",
+            top      : 0,
+            height   : "100vh",
+            display  : "flex",
+            alignItems : "center",
+            overflow : "hidden",
+            background:
+              "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+            borderTop    : "1px solid #e1ebe8",
+            borderBottom : "1px solid #e1ebe8",
+          }}
+        >
+          {/* Decorative radial highlights */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-72"
+            aria-hidden="true"
+            style={{
+              background:
+                "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
+                "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
+            }}
+          />
 
-          {/* Left column: text + selectors + CTAs */}
-          <div>
-            <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
-              TWO WAYS TO MOVE FORWARD
-            </p>
+          {/* Scroll-progress pill indicators — right edge */}
+          <div
+            style={{
+              position        : "absolute",
+              right           : 28,
+              top             : "50%",
+              transform       : "translateY(-50%)",
+              display         : "flex",
+              flexDirection   : "column",
+              gap             : 8,
+              zIndex          : 10,
+            }}
+          >
+            {([0, 1] as TwoWaysIndex[]).map((i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => selectPath(i)}
+                aria-label={`Show ${twoWaysPaths[i].title}`}
+                style={{
+                  width      : 7,
+                  height     : activeIndex === i ? 22 : 7,
+                  borderRadius : 4,
+                  background : activeIndex === i ? "#0d7377" : "#c8d5d3",
+                  border     : "none",
+                  cursor     : "pointer",
+                  padding    : 0,
+                  transition : "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+                }}
+              />
+            ))}
+          </div>
 
-            <h2
-              className="mt-4 mb-0 font-extrabold text-[#162126]"
-              style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
-            >
-              Choose how you want to use Rahvana.
-            </h2>
+          {/* Main grid */}
+          <div
+            className="relative mx-auto w-full px-10 xl:px-12"
+            style={{
+              maxWidth            : 1360,
+              display             : "grid",
+              gridTemplateColumns : "minmax(0,420px) 1fr",
+              gap                 : "clamp(48px,6vw,100px)",
+              alignItems          : "center",
+            }}
+          >
+            {/* Left: text + selectors + CTAs */}
+            <div>
+              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
+                TWO WAYS TO MOVE FORWARD
+              </p>
 
-            <p
-              className="mt-4 mb-0 text-[#4a5c62]"
-              style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
-            >
-              Follow the guided IR-1 roadmap, use focused tools and resources
-              independently, and choose the support style that fits what you need
-              right now.
-            </p>
+              <h2
+                className="mt-4 mb-0 font-extrabold text-[#162126]"
+                style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
+              >
+                Choose how you want to use Rahvana.
+              </h2>
 
-            {/* Active label — fixed height prevents layout shift */}
-            <div style={{ minHeight: 80, marginTop: 22, overflow: "hidden" }}>
+              <p
+                className="mt-4 mb-0 text-[#4a5c62]"
+                style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
+              >
+                Follow the guided IR-1 roadmap, use focused tools and resources
+                independently, and choose the support style that fits what you
+                need right now.
+              </p>
+
+              {/* Active-panel label */}
+              <div style={{ minHeight: 80, marginTop: 22, overflow: "hidden" }}>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
+                      {twoWaysPaths[activeIndex].eyebrow}
+                    </p>
+                    <h3
+                      className="mb-0 mt-1.5 font-extrabold text-[#162126]"
+                      style={{ fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.2, maxWidth: 420 }}
+                    >
+                      {twoWaysPaths[activeIndex].shortTitle}
+                    </h3>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Selector buttons */}
+              <div className="mt-5 flex flex-col gap-1.5">
+                {twoWaysPaths.map((path, i) => {
+                  const isActive = activeIndex === i;
+                  return (
+                    <button
+                      key={path.title}
+                      type="button"
+                      onClick={() => selectPath(i as TwoWaysIndex)}
+                      aria-current={isActive ? "true" : undefined}
+                      className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
+                      style={{
+                        border     : isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
+                        background : isActive ? "#f4fbfa" : "transparent",
+                        boxShadow  : isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
+                        WebkitTapHighlightColor: "transparent",
+                        cursor     : "pointer",
+                      }}
+                    >
+                      <span
+                        className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black"
+                        style={{
+                          width      : 24,
+                          height     : 24,
+                          background : isActive ? "#0d7377" : "transparent",
+                          color      : isActive ? "white" : "#9aaeac",
+                          border     : isActive ? "none" : "1.5px solid #c8d5d3",
+                          transition : "background 0.22s, color 0.22s, border-color 0.22s",
+                        }}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="text-[15px] font-black leading-tight"
+                          style={{ color: isActive ? "#0d7377" : "#162126", transition: "color 0.22s" }}
+                        >
+                          {path.title}
+                        </div>
+                        <div
+                          className="mt-0.5 text-[12px] leading-snug"
+                          style={{ color: isActive ? "#4a5c62" : "#9aaeac", transition: "color 0.22s" }}
+                        >
+                          {path.teaser}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* CTAs */}
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <Link
+                  href={journeyHref}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13.5px] font-bold text-white no-underline"
+                  style={{ boxShadow: "0 10px 24px rgba(13,115,119,0.22)" }}
+                >
+                  Start the Roadmap
+                  <ArrowRight className="size-3.5" />
+                </Link>
+                <Link
+                  href={toolsHref}
+                  className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] no-underline"
+                >
+                  Browse Resources
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: animated visual */}
+            {reduceMotion ? (
+              <div className="flex min-w-0 flex-col gap-5">
+                <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                <ResponsiveVisual index={activeIndex} />
+              </div>
+            ) : (
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={activeIndex}
-                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex min-w-0 flex-col gap-5"
+                  initial={{ opacity: 0, y: 18, scale: 0.988 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.992 }}
+                  transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
-                    {twoWaysPaths[activeIndex].eyebrow}
-                  </p>
-                  <h3
-                    className="mb-0 mt-1.5 font-extrabold text-[#162126]"
-                    style={{ fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.2, maxWidth: 420 }}
-                  >
-                    {twoWaysPaths[activeIndex].shortTitle}
-                  </h3>
+                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                  <ResponsiveVisual index={activeIndex} />
                 </motion.div>
               </AnimatePresence>
-            </div>
+            )}
+          </div>
+        </div>
+      </section>
 
-            {/* Path selector buttons */}
-            <div className="mt-5 flex flex-col gap-1.5">
-              {twoWaysPaths.map((path, i) => {
-                const isActive = activeIndex === i;
-                return (
+      {/* ── Mobile / tablet (below lg): stacked, click to switch ─────────── */}
+      <section
+        aria-label="Two ways to use Rahvana"
+        className="block lg:hidden"
+        style={{
+          background   : "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+          borderTop    : "1px solid #e1ebe8",
+          borderBottom : "1px solid #e1ebe8",
+        }}
+      >
+        <div
+          className="relative mx-auto px-5 sm:px-8 py-14 sm:py-16"
+          style={{ maxWidth: 1360 }}
+        >
+          <div className="grid grid-cols-1 gap-y-10">
+            {/* Text + selectors */}
+            <div>
+              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
+                TWO WAYS TO MOVE FORWARD
+              </p>
+              <h2
+                className="mt-4 mb-0 font-extrabold text-[#162126]"
+                style={{ fontSize: "clamp(30px,6.5vw,40px)", lineHeight: 1.05 }}
+              >
+                Choose how you want to use Rahvana.
+              </h2>
+              <p style={{ fontSize: 16, lineHeight: 1.65, color: "#4a5c62", margin: "14px 0 28px 0" }}>
+                Use the full IR-1 roadmap, or jump into focused tools and
+                resources when you need targeted help.
+              </p>
+
+              <div className="space-y-3">
+                {twoWaysPaths.map((path, i) => (
                   <button
                     key={path.title}
                     type="button"
-                    onClick={() => selectPath(i as TwoWaysIndex)}
-                    aria-current={isActive ? "true" : undefined}
-                    className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
-                    style={{
-                      border: isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
-                      background: isActive ? "#f4fbfa" : "transparent",
-                      boxShadow: isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
-                      WebkitTapHighlightColor: "transparent",
-                      cursor: "pointer",
-                    }}
+                    onClick={() => setActiveIndex(i as TwoWaysIndex)}
+                    aria-current={activeIndex === i ? "true" : undefined}
+                    className={`flex w-full items-start gap-3 rounded-[18px] border p-4 text-left transition ${
+                      activeIndex === i
+                        ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_12px_28px_rgba(13,115,119,0.12)]"
+                        : "border-[#d7e6e2] bg-white/80"
+                    }`}
                   >
                     <span
-                      className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black transition-[background,color,border-color]"
-                      style={{
-                        width: 24, height: 24,
-                        background: isActive ? "#0d7377" : "transparent",
-                        color: isActive ? "white" : "#9aaeac",
-                        border: isActive ? "none" : "1.5px solid #c8d5d3",
-                      }}
+                      className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
+                        activeIndex === i
+                          ? "bg-[#0d7377] text-white"
+                          : "border border-[#c8d5d3] text-[#7f9290]"
+                      }`}
                     >
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, "00")}
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="text-[15px] font-black leading-tight transition-colors"
-                        style={{ color: isActive ? "#0d7377" : "#162126" }}
+                    <div>
+                      <h3
+                        className={`text-lg font-black leading-tight ${
+                          activeIndex === i ? "text-[#0d7377]" : "text-[#162126]"
+                        }`}
                       >
                         {path.title}
-                      </div>
-                      <div
-                        className="mt-0.5 text-[12px] leading-snug transition-colors"
-                        style={{ color: isActive ? "#4a5c62" : "#9aaeac" }}
-                      >
+                      </h3>
+                      <p className="mt-1 text-sm leading-6 text-[#4a5c62]">
                         {path.teaser}
-                      </div>
+                      </p>
                     </div>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
 
-            {/* CTAs */}
-            <div className="mt-5 flex flex-wrap gap-2.5">
+            {/* Visual preview card */}
+            <div className="overflow-hidden rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
+              <div className="p-5 sm:p-6">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              <div className="relative h-[300px] overflow-hidden border-t border-[#d7e6e2] bg-white sm:h-[380px]">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    className="absolute left-1/2 top-1/2 origin-center"
+                    style={{ width: 680, height: 560 }}
+                    initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }}
+                    animate={{ opacity: 1, y: 0, scale: 0.5 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.49 }}
+                    transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <div style={{ transform: "translate(-50%, -50%)" }}>
+                      <TwoWaysVisual index={activeIndex} />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
               <Link
                 href={journeyHref}
-                className="inline-flex h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13.5px] font-bold text-white no-underline"
-                style={{ boxShadow: "0 10px 24px rgba(13,115,119,0.22)" }}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white"
               >
                 Start the Roadmap
-                <ArrowRight className="size-3.5" />
+                <ArrowRight className="size-4" />
               </Link>
               <Link
                 href={toolsHref}
-                className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] no-underline"
+                className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126]"
               >
                 Browse Resources
               </Link>
             </div>
           </div>
-
-          {/* Right column: support text + responsive visual */}
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={activeIndex}
-              className="flex min-w-0 flex-col gap-5"
-              initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.988 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -12, scale: 0.992 }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-              <ResponsiveVisual index={activeIndex} />
-            </motion.div>
-          </AnimatePresence>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
-
 export function TwoWaysScene() {
   return <TwoWaysSection />;
 }
@@ -1629,151 +1821,162 @@ export function GuidedRoadmapScene() {
 
 // ── tools ──
 const featuredTools = [
-  { id: "strength",    icon: Brain,         label: "Case Strength",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe" },
-  { id: "action",      icon: LifeBuoy,      label: "Action Plan",    bg: "#ecfdf5", fg: "#059669", border: "#d1fae5" },
-  { id: "path",        icon: Compass,       label: "Path Finder",    bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5" },
-  { id: "interview",   icon: MessageSquare, label: "Interview Prep", bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe" },
-  { id: "sponsorship", icon: Calculator,    label: "Sponsorship",    bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6" },
-  { id: "dq",          icon: Clock,         label: "DQ Watch",       bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff" },
-  { id: "bulletin",    icon: Calendar,      label: "Bulletin",       bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1" },
-  { id: "photo",       icon: Camera,        label: "Photo Booth",    bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3" },
-  { id: "pdf",         icon: Files,         label: "PDF Toolkit",    bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd" },
-  { id: "filler",      icon: Wand2,         label: "Form Filler",    bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa" },
-  { id: "status",      icon: FileSearch,    label: "Case Status",    bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" },
+  { id: "strength",    icon: Brain,         label: "Case Strength Analyzer",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe", iconSrc: "/icons/case-strength-analyser.svg" },
+  { id: "action",      icon: LifeBuoy,      label: "221(g) Action Planner",   bg: "#ecfdf5", fg: "#059669", border: "#d1fae5", iconSrc: "/icons/221g-action-plan.svg"        },
+  { id: "path",        icon: Compass,       label: "Visa Path Finder",        bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5", iconSrc: "/icons/visa-path-finder.svg"         },
+  { id: "interview",   icon: MessageSquare, label: "Interview Prep",          bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe", iconSrc: "/icons/interview-prep.svg"           },
+  { id: "sponsorship", icon: Calculator,    label: "Sponsorship Calculator",  bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6", iconSrc: "/icons/sponsorship-calculator.svg"   },
+  { id: "dq",          icon: Clock,         label: "DQ Status Check",         bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff", iconSrc: "/icons/dq-case-tracker.svg"          },
+  { id: "bulletin",    icon: Calendar,      label: "Visa Bulletin Monitor",   bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1", iconSrc: "/icons/visa-bulletin-monitor.svg"    },
+  { id: "photo",       icon: Camera,        label: "Photo Booth",             bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3", iconSrc: "/icons/photo-booth.svg"              },
+  { id: "pdf",         icon: Files,         label: "PDF Tool Kit",            bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd", iconSrc: "/icons/pdf-toolbox.svg"              },
+  { id: "snap",        icon: PenTool,       label: "Snap & Sign",             bg: "#eef2ff", fg: "#4f46e5", border: "#c7d2fe", iconSrc: "/icons/snap-and-sign.svg"            },
+  { id: "filler",      icon: Wand2,         label: "Smart Form Filler",       bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa", iconSrc: "/icons/smart-form-filler.svg"        },
 ];
 
 const toolContent: Record<string, any> = {
   strength: {
-    eyebrow: "Analysis Tool",
-    title: "Case Strength Meter",
-    desc: "Analyze your family links, domicile, and evidence quality.",
-    stats: [["Approval Probability", "High"], ["Evidence Score", "88/100"]],
-    badge: "Strong family ties detected",
-    badgeDesc: "Your case shows consistent communication and financial interdependence.",
-    recoTitle: "Evidence Recommendation",
+    eyebrow: "Case Review",
+    title: "Case Strength Analyzer",
+    tagline: "See what's strong, what's missing, what to fix",
+    desc: "Quickly review your IR-1 case evidence — relationship proof, financial ties, and domicile documents — and see exactly where you stand before submission.",
+    stats: [["Evidence Reviewed", "Instantly"], ["Gaps Highlighted", "Yes"]],
+    badge: "Before you submit",
+    badgeDesc: "Catch weak spots in your evidence before the officer does — not after.",
+    recoTitle: "Most Common Gap",
     recoMain: "Joint Bank Statements",
-    recoDesc: "Adding 3-6 months of joint statements can further solidify your domicile evidence.",
-    recoTags: ["Joint Taxes", "Lease/Deed"]
+    recoDesc: "Missing joint financial evidence is the most common reason IR-1 cases face extra scrutiny. Add 6+ months to strengthen your case.",
+    recoTags: ["Domicile Proof", "Communication Logs"],
   },
   action: {
-    eyebrow: "Strategy Guide",
-    title: "Step-by-Step Action Plan",
-    desc: "Customized checklist based on your current IR-1 stage.",
-    stats: [["Next Deadline", "In 12 Days"], ["Tasks Pending", "4"]],
-    badge: "NVC Stage approaching",
-    badgeDesc: "You are currently in the transition phase from USCIS to NVC.",
-    recoTitle: "Next Priority Task",
-    recoMain: "Order Police Certificates",
-    recoDesc: "Pakistan police certificates can take 2 weeks. Start this process now.",
-    recoTags: ["NADRA FRC", "Passport Scan"]
+    eyebrow: "Post-Interview",
+    title: "221(g) Action Planner",
+    tagline: "Know exactly what to do after a 221(g) refusal",
+    desc: "Got a 221(g) slip? This tool tells you what documents are needed, how to prepare them, and where to submit — step by step.",
+    stats: [["Case Still Active?", "Yes"], ["Typical Response", "10–30 days"]],
+    badge: "Not a denial",
+    badgeDesc: "A 221(g) is a request for more information, not a refusal. Acting correctly and quickly keeps your case moving.",
+    recoTitle: "Most Common Type",
+    recoMain: "Administrative Processing",
+    recoDesc: "Background check holds can last 60–240+ days. Track your CEAC status weekly and keep a record of every embassy interaction.",
+    recoTags: ["CEAC Tracking", "Embassy Contact"],
   },
   path: {
-    eyebrow: "Navigation",
-    title: "Journey Navigator",
-    desc: "Visualizing your remaining milestones and estimated dates.",
-    stats: [["Est. Interview", "Oct 2026"], ["Journey Progress", "32%"]],
-    badge: "Path optimized for ISL",
-    badgeDesc: "Timeline adjusted based on Islamabad embassy processing trends.",
-    recoTitle: "Timeline Insights",
-    recoMain: "Documentary Qualified",
-    recoDesc: "Estimated time to reach DQ status is currently 4.5 months for IR-1.",
-    recoTags: ["NVC Queue", "Interview Wait"]
+    eyebrow: "Getting Started",
+    title: "Visa Path Finder",
+    tagline: "Not sure which visa applies to you? Start here",
+    desc: "Answer a few simple questions about your relationship and citizenship status. Get a clear visa category recommendation with your next step.",
+    stats: [["Questions", "5–7"], ["Time", "Under 3 mins"]],
+    badge: "No legal knowledge needed",
+    badgeDesc: "Built for people who are just starting out and don't know which visa category fits their situation.",
+    recoTitle: "Most Common Path",
+    recoMain: "IR-1 Spouse Visa",
+    recoDesc: "Married to a U.S. citizen? IR-1 is the most common path for Pakistani spouses — no waiting list, no priority dates.",
+    recoTags: ["IR-1 / CR-1", "K-1 Fiancé", "IR-5 Parent"],
   },
   interview: {
     eyebrow: "Preparation",
-    title: "Interview Simulator",
-    desc: "Practice common Islamabad Embassy interview questions.",
-    stats: [["Questions Ready", "45+"], ["Focus Area", "Relationship"]],
-    badge: "High focus on domicile",
-    badgeDesc: "Officers are currently scrutinizing US domicile for Pakistan cases.",
-    recoTitle: "Sample Question",
-    recoMain: "How do you stay in touch?",
-    recoDesc: "Prepare to show chat logs, call history, and money transfer receipts.",
-    recoTags: ["Common Traps", "Body Language"]
+    title: "Interview Prep",
+    tagline: "Practice real questions before your embassy interview",
+    desc: "Go through common Islamabad Embassy interview questions, see what officers focus on, and practice answers that reflect your actual situation.",
+    stats: [["Questions", "50+"], ["Tailored For", "Islamabad"]],
+    badge: "ISL-focused content",
+    badgeDesc: "Questions and guidance based on Islamabad embassy patterns — relationship credibility, domicile, and financial ties.",
+    recoTitle: "What Officers Focus On",
+    recoMain: "Genuine Relationship",
+    recoDesc: "ISL officers look closely at joint finances, communication history, and your plans after the visa is granted.",
+    recoTags: ["Joint Finances", "Communication Proof", "Future Plans"],
   },
   sponsorship: {
-    eyebrow: "Focused Task",
-    title: "Affidavit Support Calculator",
-    desc: "Determine sponsorship setup and likely form path.",
-    stats: [["Sponsor income", "$48,000"], ["Required income", "$25,550"]],
-    badge: "Income appears sufficient",
-    badgeDesc: "Recommends the likely form path and supporting evidence to prepare.",
-    recoTitle: "Likely form recommendation",
-    recoMain: "Form I-864EZ",
-    recoDesc: "Suggested when the petitioner is the sole sponsor and income qualifies.",
-    recoTags: ["Tax transcript", "Pay stubs"]
+    eyebrow: "Financial Check",
+    title: "Sponsorship Calculator",
+    tagline: "Check if your income meets the I-864 requirement",
+    desc: "Enter the petitioner's income and household size to see if the poverty guideline threshold is met — and which sponsorship form applies.",
+    stats: [["Guideline", "2025 Updated"], ["Form Selected", "Automatically"]],
+    badge: "I-864 or I-864EZ?",
+    badgeDesc: "The tool selects the right Affidavit of Support form for your situation — no guessing about which one to file.",
+    recoTitle: "If Income Falls Short",
+    recoMain: "Use a Joint Sponsor",
+    recoDesc: "Any eligible person in the U.S. can co-sponsor by filing a separate I-864. They don't need to be a relative.",
+    recoTags: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
   },
   dq: {
-    eyebrow: "Monitoring",
-    title: "DQ Watchdog",
-    desc: "Tracking NVC processing times and common RFE traps.",
-    stats: [["Avg. NVC Review", "18 Days"], ["Common Error", "Signatures"]],
-    badge: "Active RFE monitoring",
-    badgeDesc: "We track the latest rejection trends to help you avoid delays.",
-    recoTitle: "Critical Checklist",
-    recoMain: "Signature Verification",
-    recoDesc: "Ensure all PDF forms have hand-written signatures before scanning.",
-    recoTags: ["File Sizes", "Scan Clarity"]
+    eyebrow: "Scheduling",
+    title: "DQ Status Check",
+    tagline: "Check which DQ months are being called right now",
+    desc: "See which Documentarily Qualified months are currently being scheduled at Islamabad and estimate when your interview window will open.",
+    stats: [["Updated", "Weekly"], ["Embassy", "ISL + Others"]],
+    badge: "Islamabad scheduling",
+    badgeDesc: "Embassies schedule in DQ date order — knowing the current scheduling month tells you roughly how long your wait is.",
+    recoTitle: "How the Queue Works",
+    recoMain: "DQ Month Matters",
+    recoDesc: "The closer your DQ month is to the current scheduling month, the sooner you will receive your interview invitation.",
+    recoTags: ["DQ Date", "Scheduling Month", "Wait Estimate"],
   },
   bulletin: {
-    eyebrow: "Priority Watch",
-    title: "Visa Bulletin Tracker",
-    desc: "Priority date monitoring and movement predictions.",
-    stats: [["Next Release", "5 Days"], ["Current Movement", "2 Months"]],
-    badge: "IR-1 is current",
-    badgeDesc: "Immediate relatives do not have a wait list for priority dates.",
-    recoTitle: "NVC Fee Payment",
-    recoMain: "Pay ASAP upon invoice",
-    recoDesc: "Paying fees immediately prevents NVC system lag and secures your place.",
-    recoTags: ["AOS Fee", "IV Fee"]
+    eyebrow: "Priority Date",
+    title: "Visa Bulletin Monitor",
+    tagline: "Track your priority date against the Visa Bulletin",
+    desc: "Check if your priority date is current in the latest monthly Visa Bulletin. Useful for F2A, F3, and F4 family preference categories.",
+    stats: [["Released", "Monthly"], ["Categories", "F1 · F2A · F3 · F4"]],
+    badge: "IR-1 has no wait",
+    badgeDesc: "Immediate relatives like IR-1 are always current. This tool is for family preference categories with a waiting list.",
+    recoTitle: "Most Common Category",
+    recoMain: "F2A — Spouse of LPR",
+    recoDesc: "If your petitioner has a green card (not citizenship), F2A applies. Monitor monthly to know when your date becomes current.",
+    recoTags: ["F2A", "F3", "F4"],
   },
   photo: {
-    eyebrow: "Compliance",
-    title: "Photo Booth Validator",
-    desc: "Verify your US visa photo against strict requirements.",
-    stats: [["Success Rate", "99%"], ["Common Fail", "Shadows"]],
-    badge: "ISL Studio database",
-    badgeDesc: "Matches requirements used by major studios in Islamabad/Lahore.",
-    recoTitle: "Photo Requirement",
-    recoMain: "2x2 Inches White Background",
-    recoDesc: "No glasses allowed. Neutral expression with both ears visible.",
-    recoTags: ["Head Size", "Lighting"]
+    eyebrow: "Photo Requirement",
+    title: "Photo Booth",
+    tagline: "Make a compliant visa photo without going to a studio",
+    desc: "Upload any clear photo and get a properly formatted 2×2 inch U.S. visa photo — correct head size, white background, embassy-ready.",
+    stats: [["Output Size", "2×2 Inch"], ["Background", "White"]],
+    badge: "No studio visit needed",
+    badgeDesc: "Meets USCIS and embassy photo requirements. Avoid rejected photos at the counter or in your application.",
+    recoTitle: "Common Fail Reasons",
+    recoMain: "Head Size Too Small",
+    recoDesc: "Head must fill 70–80% of the frame. Glasses, visible hat, and heavy shadows are grounds for rejection.",
+    recoTags: ["No Glasses", "Neutral Face", "Both Ears Visible"],
   },
   pdf: {
-    eyebrow: "Optimization",
-    title: "PDF Toolkit",
-    desc: "Organizing documents for NVC upload (max 2MB limit).",
-    stats: [["Max File Size", "2.0 MB"], ["Format Required", "PDF/JPG"]],
-    badge: "NVC-Ready scans",
-    badgeDesc: "Optimized resolution for CEAC system compatibility and readability.",
+    eyebrow: "Document Tools",
+    title: "PDF Tool Kit",
+    tagline: "Merge, compress, and format docs for NVC upload",
+    desc: "Organize your immigration documents, compress them under NVC's 2MB limit, and convert files to the required PDF format — all in one place.",
+    stats: [["NVC Limit", "2.0 MB"], ["Accepted Formats", "PDF, JPG"]],
+    badge: "NVC upload-ready",
+    badgeDesc: "CEAC rejects oversized files and wrong formats. This handles resizing and conversion automatically.",
     recoTitle: "Scanning Tip",
-    recoMain: "300 DPI Resolution",
-    recoDesc: "Balance clarity with file size. Use grayscale for non-photo documents.",
-    recoTags: ["Merge PDFs", "Compress File"]
+    recoMain: "Grayscale at 300 DPI",
+    recoDesc: "Scan non-photo documents in grayscale at 300 DPI. Keeps file sizes manageable without losing readability.",
+    recoTags: ["Merge PDFs", "Compress", "Convert to PDF"],
+  },
+  snap: {
+    eyebrow: "Signatures",
+    title: "Snap & Sign",
+    tagline: "Create a clean digital signature for your forms",
+    desc: "Draw, type, or upload your signature — then download it as a PNG ready to place on any immigration form. Works on mobile and desktop.",
+    stats: [["Output", "PNG / JPG"], ["Works On", "I-130, DS-260, I-864"]],
+    badge: "No scanner needed",
+    badgeDesc: "Compatible with all major immigration forms that require a wet signature from the petitioner.",
+    recoTitle: "Where It's Required",
+    recoMain: "Form I-864 — Affidavit",
+    recoDesc: "A missing signature on the Affidavit of Support is one of the most common reasons NVC sends a Request for Evidence.",
+    recoTags: ["I-130", "I-864", "DS-260"],
   },
   filler: {
-    eyebrow: "Automation",
-    title: "Smart Form Assistant",
-    desc: "Guided logic for complex sections of DS-260 and I-130.",
-    stats: [["Forms Covered", "I-130, DS-260"], ["Help Prompts", "120+"]],
-    badge: "Contextual Pakistani data",
-    badgeDesc: "Pre-filled address patterns and relationship terminology for Pakistan.",
-    recoTitle: "Section Highlight",
-    recoMain: "Social Media History",
-    recoDesc: "NVC now requires 5 years of social media handles. Have them ready.",
-    recoTags: ["Previous Travel", "Work History"]
-  },
-  status: {
-    eyebrow: "Tracking",
-    title: "Case Status Pro",
-    desc: "Automated status checking with historical trend analysis.",
-    stats: [["Last Check", "30m ago"], ["Current Status", "At NVC"]],
-    badge: "24/7 Automated monitor",
-    badgeDesc: "Get instant notifications if your USCIS or CEAC status changes.",
-    recoTitle: "Status Insight",
-    recoMain: "Case Creation",
-    recoDesc: "Usually takes 2-6 weeks for NVC to create case after USCIS approval.",
-    recoTags: ["Welcome Letter", "NVC ID"]
+    eyebrow: "Form Completion",
+    title: "Smart Form Filler",
+    tagline: "Fill I-130, DS-260, and I-864 without the confusion",
+    desc: "Enter your details once and get a completed, ready-to-submit PDF. Every field is guided — no blank boxes, no common mistakes.",
+    stats: [["Forms Covered", "I-130, DS-260"], ["Time", "Minutes not hours"]],
+    badge: "Pakistan-specific defaults",
+    badgeDesc: "Pre-set for Pakistani applicants — CNIC format, union council addresses, and local terminology all handled.",
+    recoTitle: "Easy to Miss",
+    recoMain: "Social Media (5 Years)",
+    recoDesc: "DS-260 requires all social media handles used in the last 5 years. Leaving this blank causes processing delays.",
+    recoTags: ["DS-260", "I-130A", "Review First"],
   },
 };
 
@@ -1785,53 +1988,47 @@ const STRIDE   = ITEM_W + GAP;
 const DURATION = 28;
 
 
-// ── carousel with JS scroll & rAF centre-pop ──────────────────────────────────
+// ── carousel: CSS auto-scroll, pauses on hover ────────────────────────────────
 
-function ToolCarousel({ activeIdx }: { activeIdx: number }) {
-  const wrapRef  = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const rafRef   = useRef<number>(0);
+function ToolCarousel({
+  activeIdx,
+  onSelect,
+  onHoverChange,
+}: {
+  activeIdx: number;
+  onSelect: (idx: number) => void;
+  onHoverChange: (h: boolean) => void;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const rafRef  = useRef<number>(0);
+  const [paused, setPaused] = useState(false);
   const loopWidth = featuredTools.length * STRIDE;
-  
-  // Calculate continuous scroll position
-  const [scrollPos, setScrollPos] = useState(0);
-  const prevIdx = useRef(activeIdx);
-  const internalOffset = useRef(0);
 
+  // Inject CSS keyframe once
   useEffect(() => {
-    // If activeIdx advanced by 1, move scroll by 1 STRIDE
-    if (activeIdx !== prevIdx.current) {
-      let diff = activeIdx - prevIdx.current;
-      if (diff < 0) diff += featuredTools.length; // wrap around
-      internalOffset.current += diff * STRIDE;
-      setScrollPos(internalOffset.current);
-      prevIdx.current = activeIdx;
+    const id = "tc-ks";
+    if (!document.getElementById(id)) {
+      const s = document.createElement("style");
+      s.id = id;
+      s.textContent = `@keyframes tcScroll{from{transform:translateX(0)}to{transform:translateX(-${loopWidth}px)}}`;
+      document.head.appendChild(s);
     }
-  }, [activeIdx]);
+  }, [loopWidth]);
 
-  // rAF: measure every icon's distance from carousel centre → set inline styles
+  // rAF: scale/lift icon nearest to centre
   useEffect(() => {
     const run = () => {
       const wrap = wrapRef.current;
       if (wrap) {
-        const wRect = wrap.getBoundingClientRect();
-        const centerX = wRect.left + wRect.width / 2;
-        const hotZone = wRect.width * 0.14; // pop region
-
+        const { left, width } = wrap.getBoundingClientRect();
+        const centerX = left + width / 2;
+        const hotZone = width * 0.13;
         wrap.querySelectorAll<HTMLElement>(".tc-icon-box").forEach((el) => {
-          const r = el.getBoundingClientRect();
-          const elCX = r.left + r.width / 2;
-          const dist = Math.abs(elCX - centerX);
-          const t = Math.max(0, 1 - dist / hotZone); // 0…1
-
-          const scale  = 1 + t * 0.22;
-          const lift   = -t * 5;
-          const border = el.dataset.border ?? "rgba(0,0,0,0.1)";
-          const shadow = `0 ${4 + t * 12}px ${12 + t * 18}px -4px ${border}`;
-
-          el.style.transform = `translateY(${lift}px) scale(${scale})`;
-          el.style.boxShadow = shadow;
-          el.style.zIndex = t > 0.5 ? "10" : "1";
+          const r    = el.getBoundingClientRect();
+          const dist = Math.abs(r.left + r.width / 2 - centerX);
+          const t    = Math.max(0, 1 - dist / hotZone);
+          el.style.transform = `translateY(${-t * 5}px) scale(${1 + t * 0.2})`;
+          el.style.zIndex    = t > 0.5 ? "10" : "1";
         });
       }
       rafRef.current = requestAnimationFrame(run);
@@ -1840,101 +2037,63 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  // Use plenty of clones so it can scroll infinitely
-  const items = [...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools];
-  // Center offset so the first item is in the middle initially
-  const initialOffset = 300 - (ITEM_W / 2) - GAP; 
+  // 3 copies is enough for seamless loop
+  const items = [...featuredTools, ...featuredTools, ...featuredTools];
 
   return (
     <div
-      ref={wrapRef}
       style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        width: "100%",
-        height: 138,
-        overflow: "hidden",
-        borderTop: "1px solid #e8edf2",
-        background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
-        display: "flex",
-        alignItems: "center",
-        WebkitMaskImage:
-          "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
-        maskImage:
-          "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
+        position:"absolute", bottom:0, left:0, width:"100%", height:138,
+        overflow:"hidden", borderTop:"1px solid #e8edf2",
+        background:"linear-gradient(to bottom,#ffffff,#f8fafc)",
+        WebkitMaskImage:"linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        maskImage:"linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
       }}
     >
-      <div aria-hidden style={{
-        position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
-        background:
-          "radial-gradient(ellipse 28% 100% at 50% 50%,rgba(13,115,119,0.05),transparent 70%)",
-      }}/>
-
-      <div 
-        ref={trackRef}
+      {/* Auto-scrolling track */}
+      <div
+        ref={wrapRef}
+        onMouseEnter={() => { setPaused(true);  onHoverChange(true);  }}
+        onMouseLeave={() => { setPaused(false); onHoverChange(false); }}
         style={{
-          display: "flex",
-          gap: GAP,
-          paddingLeft: GAP,
-          transform: `translateX(${initialOffset - scrollPos}px)`,
-          transition: "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)", // smooth slide between items
-          willChange: "transform",
+          display:"flex", alignItems:"center", gap:GAP,
+          paddingLeft: GAP, height:"100%",
+          animation:`tcScroll ${DURATION}s linear infinite`,
+          animationPlayState: paused ? "paused" : "running",
+          willChange:"transform",
         }}
       >
         {items.map((tool, idx) => {
-          const Icon = tool.icon;
+          const Icon    = tool.icon;
+          const toolIdx = idx % featuredTools.length;
+          const isActive = toolIdx === activeIdx;
           return (
-            <div key={idx} style={{
-              display:"flex", flexDirection:"column", alignItems:"center",
-              gap:9, width:ITEM_W, flexShrink:0, position:"relative",
-            }}>
+            <div
+              key={idx}
+              onClick={() => onSelect(toolIdx)}
+              style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:9, width:ITEM_W, flexShrink:0, cursor:"pointer" }}
+            >
               <div
                 className="tc-icon-box"
-                data-border={tool.border}
                 style={{
-                  width:54, height:54,
+                  width:54, height:54, borderRadius:16,
+                  background:tool.fg,
                   display:"flex", alignItems:"center", justifyContent:"center",
-                  borderRadius:16,
-                  background:tool.bg,
-                  border:`1.5px solid ${tool.border}`,
-                  boxShadow:`0 6px 16px -4px ${tool.border}`,
-                  position:"relative", overflow:"hidden",
-                  transition:"transform 0.1s ease-out, box-shadow 0.1s ease",
-                  transformOrigin:"50% 100%", 
-                  cursor:"default",
+                  outline: isActive ? `2px solid ${tool.fg}` : "none",
+                  outlineOffset: isActive ? "3px" : "0",
+                  transition:"outline 0.2s",
+                  transformOrigin:"50% 100%",
                 }}
               >
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "radial-gradient(circle at 28% 28%,rgba(255,255,255,0.55),transparent 65%)",
-                  }}
-                />
-                <Icon
-                  size={24}
-                  color={tool.fg}
-                  strokeWidth={2}
-                  style={{ position: "relative" }}
-                />
+                <Icon size={24} color="white" strokeWidth={2} />
               </div>
-
-              <span
-                style={{
-                  fontSize: 9.5,
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.07em",
-                  color: "#5a6a72",
-                  textAlign: "center",
-                  lineHeight: 1.3,
-                  maxWidth: 90,
-                  pointerEvents: "none",
-                }}
-              >
+              <span style={{
+                fontSize:9.5, fontWeight: isActive ? 900 : 700,
+                textTransform:"uppercase", letterSpacing:"0.07em",
+                color: isActive ? tool.fg : "#5a6a72",
+                textAlign:"center", lineHeight:1.3, maxWidth:90,
+                pointerEvents:"none", transition:"color 0.2s",
+              }}>
                 {tool.label}
               </span>
             </div>
@@ -1950,24 +2109,35 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [visible, setVisible]     = useState(true);
+  const [isPaused, setIsPaused]   = useState(false);
 
-  // Auto-advance: pause 2.5s at current, then crossfade to next
+  // Navigate to a specific tool with crossfade
+  const goTo = useCallback((idx: number) => {
+    const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
+    setVisible(false);
+    window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 200);
+  }, []);
+
+  // Auto-advance every 5s — pauses when carousel is hovered
   useEffect(() => {
-    const pause = window.setTimeout(() => {
+    if (isPaused) return;
+    const t = window.setTimeout(() => {
       setVisible(false);
       window.setTimeout(() => {
         setActiveIdx((i) => (i + 1) % featuredTools.length);
         setVisible(true);
-      }, 300); // fade-out duration
-    }, 2700);
-    return () => window.clearTimeout(pause);
-  }, [activeIdx]);
+      }, 280);
+    }, 5000);
+    return () => window.clearTimeout(t);
+  }, [activeIdx, isPaused]);
 
   const tool    = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
     <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
       style={{
         width: 600,
         height: 500,
@@ -2061,31 +2231,35 @@ export function IndividualToolsScene() {
           </div>
         </div>
 
-        {/* Right column ── eyebrow */}
-        <div style={{ position:"absolute", left:328, top:26, fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.12em", color:"#a0b0b8" }}>
-          Related guides
-        </div>
-
-        {/* Guide card */}
+        {/* Right column ── illustration card */}
         <div
           style={{
             position     : "absolute",
-            left         : 324, top: 46,
-            width        : 252, height: 80,
-            borderRadius : 16,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "11px 14px",
-            boxShadow    : "0 4px 14px rgba(15,23,42,0.06)",
-            display      : "flex", alignItems:"center", gap:12,
+            left         : 324, top: 24,
+            width        : 254, height: 110,
+            borderRadius : 18,
+            background   : tool.bg,
+            border       : `1.5px solid ${tool.border}`,
+            padding      : "14px 16px",
+            display      : "flex", alignItems:"center", gap:14,
+            overflow     : "hidden",
           }}
         >
-          <div style={{ width:42, height:42, borderRadius:12, background:tool.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            <Lightbulb size={20} color={tool.fg} />
+          {/* Tool illustration icon */}
+          <div style={{ width:64, height:64, borderRadius:16, background:"white", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 4px 12px ${tool.border}88` }}>
+            <Image
+              src={tool.iconSrc}
+              alt={tool.label}
+              width={44}
+              height={44}
+              style={{ objectFit:"contain" }}
+              unoptimized
+            />
           </div>
-          <div>
-            <div style={{ fontSize:12, fontWeight:800, color:"#162126", lineHeight:1.2 }}>How to use {tool.label}</div>
-            <div style={{ fontSize:10.5, lineHeight:1.4, color:"#6b8097", marginTop:4 }}>Step-by-step guide & FAQs</div>
+          <div style={{ minWidth:0 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:4 }}>{content.eyebrow}</div>
+            <div style={{ fontSize:14, fontWeight:900, color:"#162126", lineHeight:1.25 }}>{tool.label}</div>
+            <div style={{ fontSize:10.5, lineHeight:1.5, color:"#4a5c62", marginTop:4 }}>{content.tagline}</div>
           </div>
         </div>
 
@@ -2093,7 +2267,7 @@ export function IndividualToolsScene() {
         <div
           style={{
             position     : "absolute",
-            left         : 320, top: 142,
+            left         : 320, top: 148,
             width        : 258,
             borderRadius : 20,
             background   : "white",
@@ -2131,7 +2305,11 @@ export function IndividualToolsScene() {
       </div>
 
       {/* ── Bottom carousel strip ── */}
-      <ToolCarousel activeIdx={activeIdx} />
+      <ToolCarousel
+        activeIdx={activeIdx}
+        onSelect={(idx) => { goTo(idx); setIsPaused(true); }}
+        onHoverChange={setIsPaused}
+      />
     </div>
   );
 }
