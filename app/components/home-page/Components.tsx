@@ -252,10 +252,10 @@ export function RealDashboardScene({
       [19800, 7],
       [22400, 8],
       [24100, 9],
-      [27800, 10],
-      [32100, 11],
-      [36900, 12],
-      [42400, 0],
+      [30100, 10],
+      [42100, 11],
+      [54100, 12],
+      [62100, 0],
     ] as const;
 
     let timers: number[] = [];
@@ -267,7 +267,7 @@ export function RealDashboardScene({
     };
 
     run();
-    const interval = window.setInterval(run, 44200);
+    const interval = window.setInterval(run, 64000);
 
     return () => {
       timers.forEach(window.clearTimeout);
@@ -927,21 +927,21 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
       window.setTimeout(() => {
         setFillStage(1);
         setFormData({ family_name: "K" });
-      }, 450),
-      window.setTimeout(() => setFormData({ family_name: "Khan" }), 1050),
+      }, 1000),
+      window.setTimeout(() => setFormData({ family_name: "Khan" }), 2500),
       window.setTimeout(() => {
         setFillStage(2);
         setFormData((prev) => ({ ...prev, given_name: "A" }));
-      }, 1650),
+      }, 4500),
       window.setTimeout(
         () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
-        2300,
+        6500,
       ),
       window.setTimeout(() => {
         setFillStage(3);
         setFormData((prev) => ({ ...prev, middle_name: "Noor" }));
-      }, 3100),
-      window.setTimeout(() => setFillStage(4), 4000),
+      }, 8500),
+      window.setTimeout(() => setFillStage(4), 11000),
     ];
     return () => timers.forEach(window.clearTimeout);
   }, [playPhase]);
@@ -1059,7 +1059,7 @@ export function HeroPdfPreviewPanel() {
                 }
           }
           transition={{
-            duration: 6.2,
+            duration: 11.5,
             times: [0, 0.22, 0.46, 0.68, 0.84, 1],
             ease: "easeInOut",
           }}
