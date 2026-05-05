@@ -175,6 +175,7 @@ import { useStepEntitlement } from "./useStepEntitlement";
 import { StepLockedContent } from "./StepLockedContent";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -706,12 +707,6 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     setRefusedPromptOpen(false);
   };
 
-  {upgradeModalFeature && (
-  <UpgradeModal
-    feature={upgradeModalFeature}
-    onClose={() => setUpgradeModalFeature(null)}
-  />
-)}
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
   const [gatheringStatus, setGatheringStatus] = useState<
@@ -1017,6 +1012,37 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
   // Use the percentage from journeyHelpers to match ChapterView
   const progressPct = chapterProg.pct;
+
+  const nextStepInfo = useMemo(() => {
+    if (!nextStep) return null;
+    const nsId = nextStep.step_key || (nextStep as any).id;
+    const activeChapters = data.chapters || (data as any).stages;
+    for (let cIdx = 0; cIdx < activeChapters.length; cIdx++) {
+      const activeSteps = getActiveStepsForStage(
+        data,
+        cIdx,
+        state.metadata,
+        state.filingType,
+      );
+      const lIdx = activeSteps.findIndex(
+        (s: any) => (s.step_key || s.id) === nsId,
+      );
+      if (lIdx !== -1) return { chapterIdx: cIdx, localIdx: lIdx };
+    }
+    return null;
+  }, [nextStep, data, state.metadata, state.filingType]);
+
+  const nextStepLock = useMemo(() => {
+    if (!nextStep || !nextStepInfo)
+      return { isLocked: false, requiredPlan: null };
+    const nsId = nextStep.step_key || (nextStep as any).id;
+    return getStepLockStatus(
+      nsId,
+      plan.tier,
+      nextStepInfo.chapterIdx,
+      nextStepInfo.localIdx,
+    );
+  }, [nextStep, nextStepInfo, plan.tier]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
@@ -5989,12 +6015,17 @@ const renderDocActionModal = () => {
 
   {/* Next */}
    <button
-          onClick={() =>
+          onClick={() => {
+            if (nextStepLock.isLocked) {
+              setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
+              return;
+            }
             nextStep &&
             handleNavigate((nextStep as any).step_key || (nextStep as any).id)
-          }
-          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          }}
+          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""} ${nextStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
         >
+          {nextStepLock.isLocked && <Lock size={12} className="mr-1" />}
           Next
           <ArrowRight size={12} strokeWidth={2.5} />
         </button>
@@ -6085,6 +6116,13 @@ const renderDocActionModal = () => {
           setShowDeleteConfirmation(true);
         }}
       />
+
+      {upgradeModalFeature && (
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
+      )}
 
       {renderDocActionModal()}
 

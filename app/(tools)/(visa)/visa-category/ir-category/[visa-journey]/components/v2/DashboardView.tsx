@@ -25,6 +25,7 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { getActiveStepsForStage } from "./journeyHelpers";
+import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -105,6 +106,17 @@ export function DashboardView({
     () => getNextBestAction(data, state),
     [data, state],
   );
+
+  const nextStepLock = useMemo(() => {
+    if (!nextActionData) return { isLocked: false, requiredPlan: null };
+    const stepId = nextActionData.step.step_key || nextActionData.step.id;
+    return getStepLockStatus(
+      stepId,
+      plan.tier,
+      nextActionData.chapterIdx,
+      nextActionData.stepIdxInChapter,
+    );
+  }, [nextActionData, plan.tier]);
 
   const lockStatus = useMemo(
     () => getJourneyLockStatus(state.metadata || {}),
@@ -533,6 +545,12 @@ export function DashboardView({
                       return;
                     }
                     if (nextActionData) {
+                      // Check if the next action step is locked for the user's tier
+                      if (nextStepLock.isLocked) {
+                        setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
+                        return;
+                      }
+
                       if (onSelectStep) {
                         onSelectStep(
                           nextActionData.chapterIdx,
