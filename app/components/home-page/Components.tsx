@@ -132,11 +132,13 @@ export function StepRow({
   chapter,
   index,
   active = false,
+  isClicking = false,
 }: {
   step: readonly [string, string, string, string];
   chapter: (typeof chapters)[number];
   index: number;
   active?: boolean;
+  isClicking?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const [, name, description, status] = step;
@@ -163,14 +165,22 @@ export function StepRow({
           : undefined
       }
       animate={
-        reduceMotion || !isCurrent
+        reduceMotion
           ? undefined
-          : {
-              x: [0, 3, 0],
-              borderColor: [chapter.color, chapter.color, chapter.color],
-            }
+          : isClicking
+            ? { scale: 0.97, x: 0 }
+            : isCurrent
+              ? {
+                  x: [0, 3, 0],
+                  borderColor: [chapter.color, chapter.color, chapter.color],
+                }
+              : { x: 0 }
       }
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      transition={
+        isClicking
+          ? { duration: 0.15 }
+          : { duration: 4, repeat: Infinity, ease: "easeInOut" }
+      }
     >
       {isCurrent && !isDone && !isLocked && (
         <span
@@ -383,6 +393,7 @@ export function RealDashboardScene({
                 >
                   <HeroChapterOnePanel
                     stepTargeted={phase === 4 || phase === 5}
+                    isClicking={phase === 5}
                   />
                 </motion.div>
               )}
@@ -401,6 +412,7 @@ export function RealDashboardScene({
                 >
                   <HeroI130StepPanel
                     launchTargeted={phase === 7 || phase === 8}
+                    isClicking={phase === 8}
                   />
                 </motion.div>
               )}
@@ -645,8 +657,10 @@ export function HeroDashboardPanel({
 
 export function HeroChapterOnePanel({
   stepTargeted = false,
+  isClicking = false,
 }: {
   stepTargeted?: boolean;
+  isClicking?: boolean;
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -704,10 +718,7 @@ export function HeroChapterOnePanel({
         </div>
       </motion.div>
 
-      <motion.div
-        className="flex flex-col gap-1.5 px-2 pb-20"
-        initial={false}
-      >
+      <motion.div className="flex flex-col gap-1.5 px-2 pb-20" initial={false}>
         {chapters[0].steps.slice(0, 5).map((chapterStep, index) => {
           const status =
             index < 3 ? "done" : index === 3 ? "current" : "locked";
@@ -736,6 +747,7 @@ export function HeroChapterOnePanel({
                 chapter={chapters[0]}
                 index={index}
                 active={index === 3}
+                isClicking={index === 3 && isClicking}
               />
             </motion.div>
           );
@@ -747,8 +759,10 @@ export function HeroChapterOnePanel({
 
 export function HeroI130StepPanel({
   launchTargeted = false,
+  isClicking = false,
 }: {
   launchTargeted?: boolean;
+  isClicking?: boolean;
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -758,8 +772,13 @@ export function HeroI130StepPanel({
     const container = scrollContainerRef.current;
     const button = buttonRef.current;
     if (container && button) {
-      const targetScrollTop = button.offsetTop - container.offsetTop - 150;
-      container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: "smooth" });
+      // Offset 406 aligns button center with cursor y: 424 (header 52, inner shift -68)
+      // Slightly adjusted from 412 to scroll more as per user feedback
+      const targetScrollTop = button.offsetTop - container.offsetTop - 406;
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
     }
   }, [launchTargeted]);
 
@@ -851,15 +870,20 @@ export function HeroI130StepPanel({
                   ref={buttonRef}
                   className="group inline-flex w-full cursor-pointer items-center justify-center gap-[10px] rounded-[12px] bg-[#c0596a] p-[16px_28px] font-sans text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)] transition-all duration-200 hover:bg-[#a13e4e]"
                   animate={
-                    launchTargeted
+                    isClicking
                       ? {
-                          scale: 1.018,
-                          boxShadow: "0 8px 32px rgba(192,89,106,0.35)",
+                          scale: 0.965,
+                          boxShadow: "0 2px 8px rgba(192,89,106,0.15)",
                         }
-                      : {
-                          scale: 1,
-                          boxShadow: "0 4px 20px rgba(192,89,106,0.25)",
-                        }
+                      : launchTargeted
+                        ? {
+                            scale: 1.018,
+                            boxShadow: "0 8px 32px rgba(192,89,106,0.35)",
+                          }
+                        : {
+                            scale: 1,
+                            boxShadow: "0 4px 20px rgba(192,89,106,0.25)",
+                          }
                   }
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 >
@@ -1118,8 +1142,19 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   }, []);
 
   return (
-    <div ref={wrapRef} className="w-full" style={{ height: Math.round(560 * scale) }}>
-      <div style={{ width: 680, height: 560, transformOrigin: "top left", transform: `scale(${scale})` }}>
+    <div
+      ref={wrapRef}
+      className="w-full"
+      style={{ height: Math.round(560 * scale) }}
+    >
+      <div
+        style={{
+          width: 680,
+          height: 560,
+          transformOrigin: "top left",
+          transform: `scale(${scale})`,
+        }}
+      >
         <TwoWaysVisual index={index} />
       </div>
     </div>
@@ -1152,9 +1187,12 @@ export function TwoWaysSection() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
-      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsPaused(false); }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setIsPaused(false);
+      }}
       style={{
-        background: "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+        background:
+          "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
         borderTop: "1px solid #e1ebe8",
         borderBottom: "1px solid #e1ebe8",
       }}
@@ -1176,7 +1214,6 @@ export function TwoWaysSection() {
       >
         {/* Responsive grid — stacked on mobile/tablet, side-by-side on lg+ */}
         <div className="grid grid-cols-1 items-center gap-y-10 lg:grid-cols-[minmax(0,400px)_1fr] lg:gap-x-10 xl:grid-cols-[minmax(0,440px)_1fr] xl:gap-x-20">
-
           {/* Left column: text + selectors + CTAs */}
           <div>
             <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
@@ -1185,18 +1222,26 @@ export function TwoWaysSection() {
 
             <h2
               className="mt-4 mb-0 font-extrabold text-[#162126]"
-              style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
+              style={{
+                fontSize: "clamp(30px,4.2vw,60px)",
+                lineHeight: 1.0,
+                maxWidth: 440,
+              }}
             >
               Choose how you want to use Rahvana.
             </h2>
 
             <p
               className="mt-4 mb-0 text-[#4a5c62]"
-              style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
+              style={{
+                fontSize: "clamp(14px,1.15vw,17px)",
+                lineHeight: 1.68,
+                maxWidth: 420,
+              }}
             >
               Follow the guided IR-1 roadmap, use focused tools and resources
-              independently, and choose the support style that fits what you need
-              right now.
+              independently, and choose the support style that fits what you
+              need right now.
             </p>
 
             {/* Active label — fixed height prevents layout shift */}
@@ -1214,7 +1259,11 @@ export function TwoWaysSection() {
                   </p>
                   <h3
                     className="mb-0 mt-1.5 font-extrabold text-[#162126]"
-                    style={{ fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.2, maxWidth: 420 }}
+                    style={{
+                      fontSize: "clamp(17px,1.5vw,21px)",
+                      lineHeight: 1.2,
+                      maxWidth: 420,
+                    }}
                   >
                     {twoWaysPaths[activeIndex].shortTitle}
                   </h3>
@@ -1234,9 +1283,13 @@ export function TwoWaysSection() {
                     aria-current={isActive ? "true" : undefined}
                     className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
                     style={{
-                      border: isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
+                      border: isActive
+                        ? "1.5px solid #0d7377"
+                        : "1px solid #e2ebe8",
                       background: isActive ? "#f4fbfa" : "transparent",
-                      boxShadow: isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
+                      boxShadow: isActive
+                        ? "0 5px 18px rgba(13,115,119,0.10)"
+                        : "none",
                       WebkitTapHighlightColor: "transparent",
                       cursor: "pointer",
                     }}
@@ -1244,7 +1297,8 @@ export function TwoWaysSection() {
                     <span
                       className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black transition-[background,color,border-color]"
                       style={{
-                        width: 24, height: 24,
+                        width: 24,
+                        height: 24,
                         background: isActive ? "#0d7377" : "transparent",
                         color: isActive ? "white" : "#9aaeac",
                         border: isActive ? "none" : "1.5px solid #c8d5d3",
@@ -1295,9 +1349,13 @@ export function TwoWaysSection() {
             <motion.div
               key={activeIndex}
               className="flex min-w-0 flex-col gap-5"
-              initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.988 }}
+              initial={
+                reduceMotion ? false : { opacity: 0, y: 18, scale: 0.988 }
+              }
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -12, scale: 0.992 }}
+              exit={
+                reduceMotion ? undefined : { opacity: 0, y: -12, scale: 0.992 }
+              }
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
             >
               <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
@@ -1332,7 +1390,11 @@ export function TwoWaysSupportText({
       </h3>
       <p
         className="mt-2 mb-0 text-[#4a5c62]"
-        style={{ fontSize: "clamp(13px,1.1vw,15px)", lineHeight: 1.62, maxWidth: 520 }}
+        style={{
+          fontSize: "clamp(13px,1.1vw,15px)",
+          lineHeight: 1.62,
+          maxWidth: 520,
+        }}
       >
         {path.supportText}
       </p>
@@ -1516,9 +1578,36 @@ export function GuidedRoadmapScene() {
   ];
 
   const chapterNav = [
-    { n: 1, label: "USCIS Petition",  color: "#8284BF", ring: "#B9BBE2", bg: "#F0F1FB", text: "#4E518C", pct: 33, active: true  },
-    { n: 2, label: "NVC / CEAC",      color: "#8B4388", ring: "#8B4388", bg: "#F4E6F3", text: "#520A50", pct: 0,  active: false },
-    { n: 3, label: "Med + Interview", color: "#31415F", ring: "#31415F", bg: "#E8ECF3", text: "#051738", pct: 0,  active: false },
+    {
+      n: 1,
+      label: "USCIS Petition",
+      color: "#8284BF",
+      ring: "#B9BBE2",
+      bg: "#F0F1FB",
+      text: "#4E518C",
+      pct: 33,
+      active: true,
+    },
+    {
+      n: 2,
+      label: "NVC / CEAC",
+      color: "#8B4388",
+      ring: "#8B4388",
+      bg: "#F4E6F3",
+      text: "#520A50",
+      pct: 0,
+      active: false,
+    },
+    {
+      n: 3,
+      label: "Med + Interview",
+      color: "#31415F",
+      ring: "#31415F",
+      bg: "#E8ECF3",
+      text: "#051738",
+      pct: 0,
+      active: false,
+    },
   ] as const;
 
   // Demo sequence
@@ -1571,7 +1660,8 @@ export function GuidedRoadmapScene() {
     const containerTop = container.offsetTop;
 
     // Calculate target scroll so step is centered in the container
-    const targetScrollTop = stepTop - containerTop - containerHeight / 2 + stepHeight / 2;
+    const targetScrollTop =
+      stepTop - containerTop - containerHeight / 2 + stepHeight / 2;
 
     container.scrollTo({
       top: targetScrollTop,
@@ -1586,68 +1676,302 @@ export function GuidedRoadmapScene() {
   }, [activeIdx]);
 
   return (
-    <div style={{ width: 600, height: 500, borderRadius: 32, background: "#f4f7fb", border: "1px solid #dde8e6", boxShadow: "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)", position: "absolute", left: 40, top: 30, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-
+    <div
+      style={{
+        width: 600,
+        height: 500,
+        borderRadius: 32,
+        background: "#f4f7fb",
+        border: "1px solid #dde8e6",
+        boxShadow:
+          "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)",
+        position: "absolute",
+        left: 40,
+        top: 30,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* ── Top bar (52px) ── */}
-      <div style={{ height: 52, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 18px", gap: 8, flexShrink: 0 }}>
+      <div
+        style={{
+          height: 52,
+          background: "white",
+          borderBottom: "1px solid #edf2f0",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 18px",
+          gap: 8,
+          flexShrink: 0,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 10, background: "linear-gradient(135deg, #0d7377, #0a5e62)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(13,115,119,0.28)" }}>
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 10,
+              background: "linear-gradient(135deg, #0d7377, #0a5e62)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(13,115,119,0.28)",
+            }}
+          >
             <Compass size={15} color="white" strokeWidth={2.5} />
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.06em", color: "#1e293b", lineHeight: 1 }}>IR-1 Journey</div>
-            <div style={{ fontSize: 9, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Islamabad Embassy · Online Filing</div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: "#1e293b",
+                lineHeight: 1,
+              }}
+            >
+              IR-1 Journey
+            </div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#64748b",
+                fontWeight: 600,
+                marginTop: 2,
+              }}
+            >
+              Islamabad Embassy · Online Filing
+            </div>
           </div>
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+        <div
+          style={{
+            marginLeft: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
           <div style={{ position: "relative" }}>
             <Bell size={17} color="#64748b" strokeWidth={2} />
-            <div style={{ position: "absolute", top: -1, right: -1, width: 6, height: 6, borderRadius: "50%", background: "#ef4444", border: "1.5px solid white" }} />
+            <div
+              style={{
+                position: "absolute",
+                top: -1,
+                right: -1,
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#ef4444",
+                border: "1.5px solid white",
+              }}
+            />
           </div>
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e2e8f0" }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              background: "#f1f5f9",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1px solid #e2e8f0",
+            }}
+          >
             <User size={14} color="#64748b" strokeWidth={2} />
           </div>
         </div>
       </div>
 
       {/* ── Horizontal chapter timeline (42px) ── */}
-      <div style={{ height: 42, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", gap: 0, flexShrink: 0 }}>
+      <div
+        style={{
+          height: 42,
+          background: "white",
+          borderBottom: "1px solid #edf2f0",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          gap: 0,
+          flexShrink: 0,
+        }}
+      >
         {chapterNav.map((ch, idx) => (
-          <div key={ch.n} style={{ display: "flex", alignItems: "center", flex: idx < 2 ? "none" : 1 }}>
+          <div
+            key={ch.n}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flex: idx < 2 ? "none" : 1,
+            }}
+          >
             {/* Node + label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
-              <div style={{ width: 24, height: 24, borderRadius: "50%", background: ch.active ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)` : "#f1f5f9", border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none", flexShrink: 0 }}>
-                {ch.active ? <span style={{ fontSize: 10, fontWeight: 900, color: "white" }}>{ch.n}</span> : <Lock size={9} color="#94a3b8" strokeWidth={2.5} />}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  background: ch.active
+                    ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)`
+                    : "#f1f5f9",
+                  border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none",
+                  flexShrink: 0,
+                }}
+              >
+                {ch.active ? (
+                  <span
+                    style={{ fontSize: 10, fontWeight: 900, color: "white" }}
+                  >
+                    {ch.n}
+                  </span>
+                ) : (
+                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
+                )}
               </div>
               <div>
-                <div style={{ fontSize: 9.5, fontWeight: 800, color: ch.active ? "#1e293b" : "#94a3b8", lineHeight: 1, whiteSpace: "nowrap" }}>{ch.label}</div>
-                <div style={{ fontSize: 7.5, fontWeight: 700, color: ch.active ? ch.text : "#cbd5e1", marginTop: 1 }}>{ch.active ? `${ch.pct}% done` : "Locked"}</div>
+                <div
+                  style={{
+                    fontSize: 9.5,
+                    fontWeight: 800,
+                    color: ch.active ? "#1e293b" : "#94a3b8",
+                    lineHeight: 1,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {ch.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: 7.5,
+                    fontWeight: 700,
+                    color: ch.active ? ch.text : "#cbd5e1",
+                    marginTop: 1,
+                  }}
+                >
+                  {ch.active ? `${ch.pct}% done` : "Locked"}
+                </div>
               </div>
             </div>
             {/* Connector line between chapters */}
-            {idx < 2 && <div style={{ flex: 1, height: 2, background: idx === 0 ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)` : "#e2e8f0", margin: "0 10px", minWidth: 24 }} />}
+            {idx < 2 && (
+              <div
+                style={{
+                  flex: 1,
+                  height: 2,
+                  background:
+                    idx === 0
+                      ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)`
+                      : "#e2e8f0",
+                  margin: "0 10px",
+                  minWidth: 24,
+                }}
+              />
+            )}
           </div>
         ))}
       </div>
 
       {/* ── Main area — two columns (362px total) ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
         {/* Left: Journey card (192px) */}
-        <div style={{ width: 192, background: "white", borderRight: "1px solid #edf2f0", padding: "14px 15px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-
+        <div
+          style={{
+            width: 192,
+            background: "white",
+            borderRight: "1px solid #edf2f0",
+            padding: "14px 15px",
+            display: "flex",
+            flexDirection: "column",
+            flexShrink: 0,
+          }}
+        >
           {/* Chapter header */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#8284BF" }} className={reduceMotion ? "" : "animate-pulse"} />
-              <span style={{ fontSize: 8, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4E518C" }}>Chapter 1 · In Progress</span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                marginBottom: 5,
+              }}
+            >
+              <div
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: "#8284BF",
+                }}
+                className={reduceMotion ? "" : "animate-pulse"}
+              />
+              <span
+                style={{
+                  fontSize: 8,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "#4E518C",
+                }}
+              >
+                Chapter 1 · In Progress
+              </span>
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 900, color: "#1e293b", lineHeight: 1.25, marginBottom: 7 }}>USCIS Petition Filing</div>
+            <div
+              style={{
+                fontSize: 12.5,
+                fontWeight: 900,
+                color: "#1e293b",
+                lineHeight: 1.25,
+                marginBottom: 7,
+              }}
+            >
+              USCIS Petition Filing
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ flex: 1, height: 5, borderRadius: 99, background: "#e8edf2", overflow: "hidden" }}>
-                <div style={{ width: `${Math.round(((activeIdx + 1) / steps.length) * 100)}%`, height: "100%", background: "linear-gradient(90deg, #8284BF, #4E518C)", borderRadius: 99, transition: "width 0.4s ease" }} />
+              <div
+                style={{
+                  flex: 1,
+                  height: 5,
+                  borderRadius: 99,
+                  background: "#e8edf2",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${Math.round(((activeIdx + 1) / steps.length) * 100)}%`,
+                    height: "100%",
+                    background: "linear-gradient(90deg, #8284BF, #4E518C)",
+                    borderRadius: 99,
+                    transition: "width 0.4s ease",
+                  }}
+                />
               </div>
-              <span style={{ fontSize: 8.5, fontWeight: 800, color: "#4E518C", whiteSpace: "nowrap" }}>{activeIdx + 1} / {steps.length}</span>
+              <span
+                style={{
+                  fontSize: 8.5,
+                  fontWeight: 800,
+                  color: "#4E518C",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {activeIdx + 1} / {steps.length}
+              </span>
             </div>
           </div>
 
@@ -1655,23 +1979,93 @@ export function GuidedRoadmapScene() {
 
           {/* Current step card */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8", marginBottom: 5 }}>Active Step</div>
-            <div style={{ background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)", borderRadius: 10, padding: "9px 10px", border: "1px solid #B9BBE2" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#4E518C", lineHeight: 1.3, marginBottom: 3 }}>{steps[activeIdx].name}</div>
-              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>Step {activeIdx + 1} of {steps.length} · {steps[activeIdx].done ? "Done" : "In progress"}</div>
+            <div
+              style={{
+                fontSize: 8,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#94a3b8",
+                marginBottom: 5,
+              }}
+            >
+              Active Step
+            </div>
+            <div
+              style={{
+                background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)",
+                borderRadius: 10,
+                padding: "9px 10px",
+                border: "1px solid #B9BBE2",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  color: "#4E518C",
+                  lineHeight: 1.3,
+                  marginBottom: 3,
+                }}
+              >
+                {steps[activeIdx].name}
+              </div>
+              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>
+                Step {activeIdx + 1} of {steps.length} ·{" "}
+                {steps[activeIdx].done ? "Done" : "In progress"}
+              </div>
             </div>
           </div>
 
           {/* Alert */}
-          <div style={{ borderRadius: 9, padding: "7px 9px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: 10 }}>
+          <div
+            style={{
+              borderRadius: 9,
+              padding: "7px 9px",
+              background: "#fffbeb",
+              border: "1px solid #fde68a",
+              marginBottom: 10,
+            }}
+          >
             <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#f59e0b", marginTop: 3.5, flexShrink: 0 }} />
-              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>Fresh NADRA records required for ISL embassy.</span>
+              <div
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: "50%",
+                  background: "#f59e0b",
+                  marginTop: 3.5,
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>
+                Fresh NADRA records required for ISL embassy.
+              </span>
             </div>
           </div>
 
           {/* CTA — marginTop: auto, never cropped */}
-          <button type="button" style={{ width: "100%", background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)", border: "none", borderRadius: 11, padding: "11px 14px", color: "white", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, cursor: "pointer", boxShadow: "0 4px 14px rgba(13,115,119,0.28)", marginTop: "auto", flexShrink: 0 }}>
+          <button
+            type="button"
+            style={{
+              width: "100%",
+              background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)",
+              border: "none",
+              borderRadius: 11,
+              padding: "11px 14px",
+              color: "white",
+              fontSize: 12,
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(13,115,119,0.28)",
+              marginTop: "auto",
+              flexShrink: 0,
+            }}
+          >
             Continue Step
             <ArrowRight size={13} strokeWidth={2.5} />
           </button>
@@ -1688,10 +2082,40 @@ export function GuidedRoadmapScene() {
             pointerEvents: "none",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 10,
+            }}
+          >
             <Signpost size={11} color="#0d7377" strokeWidth={2.5} />
-            <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#64748b" }}>Chapter 1 Steps</span>
-            <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800, color: "#4E518C", background: "#F0F1FB", border: "1px solid #B9BBE2", padding: "2px 7px", borderRadius: 5 }}>{steps.filter(s => s.done).length} / {steps.length} done</span>
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#64748b",
+              }}
+            >
+              Chapter 1 Steps
+            </span>
+            <span
+              style={{
+                marginLeft: "auto",
+                fontSize: 8.5,
+                fontWeight: 800,
+                color: "#4E518C",
+                background: "#F0F1FB",
+                border: "1px solid #B9BBE2",
+                padding: "2px 7px",
+                borderRadius: 5,
+              }}
+            >
+              {steps.filter((s) => s.done).length} / {steps.length} done
+            </span>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1700,50 +2124,171 @@ export function GuidedRoadmapScene() {
               return (
                 <div
                   key={step.id}
-                  ref={(el) => { stepRefs.current[idx] = el; }}
+                  ref={(el) => {
+                    stepRefs.current[idx] = el;
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 9,
                     padding: isStepCurrent ? "8px 10px" : "5px 10px",
                     borderRadius: 10,
-                    background: isStepCurrent ? "linear-gradient(to right, #F0F1FB, #f9f9fe)" : "transparent",
-                    border: isStepCurrent ? "1.5px solid #B9BBE2" : "1px solid transparent",
-                    boxShadow: isStepCurrent ? "0 2px 7px rgba(130,132,191,0.12)" : "none",
-                    transition: "all 0.3s ease"
+                    background: isStepCurrent
+                      ? "linear-gradient(to right, #F0F1FB, #f9f9fe)"
+                      : "transparent",
+                    border: isStepCurrent
+                      ? "1.5px solid #B9BBE2"
+                      : "1px solid transparent",
+                    boxShadow: isStepCurrent
+                      ? "0 2px 7px rgba(130,132,191,0.12)"
+                      : "none",
+                    transition: "all 0.3s ease",
                   }}
                 >
                   {step.done ? (
-                    <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <div
+                      style={{
+                        width: 19,
+                        height: 19,
+                        borderRadius: "50%",
+                        background: "#10b981",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
                       <Check size={10} color="white" strokeWidth={3} />
                     </div>
                   ) : isStepCurrent ? (
-                    <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#8284BF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 3px rgba(130,132,191,0.22)" }}>
+                    <div
+                      style={{
+                        width: 19,
+                        height: 19,
+                        borderRadius: "50%",
+                        background: "#8284BF",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        boxShadow: "0 0 0 3px rgba(130,132,191,0.22)",
+                      }}
+                    >
                       <ChevronRight size={10} color="white" strokeWidth={3} />
                     </div>
                   ) : (
-                    <div style={{ width: 19, height: 19, borderRadius: "50%", border: "1.5px solid #dde8e6", background: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontSize: 8, fontWeight: 700, color: "#cbd5e1" }}>{idx + 1}</span>
+                    <div
+                      style={{
+                        width: 19,
+                        height: 19,
+                        borderRadius: "50%",
+                        border: "1.5px solid #dde8e6",
+                        background: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 8,
+                          fontWeight: 700,
+                          color: "#cbd5e1",
+                        }}
+                      >
+                        {idx + 1}
+                      </span>
                     </div>
                   )}
-                  <span style={{ fontSize: 11.5, fontWeight: isStepCurrent ? 800 : step.done ? 600 : 500, color: isStepCurrent ? "#4E518C" : step.done ? "#059669" : "#94a3b8" }}>
+                  <span
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: isStepCurrent ? 800 : step.done ? 600 : 500,
+                      color: isStepCurrent
+                        ? "#4E518C"
+                        : step.done
+                          ? "#059669"
+                          : "#94a3b8",
+                    }}
+                  >
                     {step.name}
                   </span>
-                  {isStepCurrent && <span style={{ marginLeft: "auto", fontSize: 8, fontWeight: 900, color: "#4E518C", background: "rgba(130,132,191,0.15)", padding: "2px 7px", borderRadius: 5, textTransform: "uppercase", flexShrink: 0 }}>Active</span>}
+                  {isStepCurrent && (
+                    <span
+                      style={{
+                        marginLeft: "auto",
+                        fontSize: 8,
+                        fontWeight: 900,
+                        color: "#4E518C",
+                        background: "rgba(130,132,191,0.15)",
+                        padding: "2px 7px",
+                        borderRadius: 5,
+                        textTransform: "uppercase",
+                        flexShrink: 0,
+                      }}
+                    >
+                      Active
+                    </span>
+                  )}
                 </div>
               );
             })}
           </div>
 
           {/* Locked chapters – compact */}
-          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
-            {lockedChapters.map(ch => (
-              <div key={ch.number} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 9, background: "white", border: "1px dashed #e2e8f0" }}>
-                <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#f1f5f9", border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div
+            style={{
+              marginTop: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 5,
+            }}
+          >
+            {lockedChapters.map((ch) => (
+              <div
+                key={ch.number}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 9,
+                  padding: "7px 10px",
+                  borderRadius: 9,
+                  background: "white",
+                  border: "1px dashed #e2e8f0",
+                }}
+              >
+                <div
+                  style={{
+                    width: 19,
+                    height: 19,
+                    borderRadius: "50%",
+                    background: "#f1f5f9",
+                    border: "1.5px solid #e2e8f0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
                   <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>Ch. {ch.number} · {ch.name}</span>
-                <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 700, color: "#cbd5e1", flexShrink: 0 }}>Locked</span>
+                <span
+                  style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}
+                >
+                  Ch. {ch.number} · {ch.name}
+                </span>
+                <span
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 8.5,
+                    fontWeight: 700,
+                    color: "#cbd5e1",
+                    flexShrink: 0,
+                  }}
+                >
+                  Locked
+                </span>
               </div>
             ))}
           </div>
@@ -1751,18 +2296,65 @@ export function GuidedRoadmapScene() {
       </div>
 
       {/* ── Bottom stats bar (44px) ── */}
-      <div style={{ height: 44, background: "white", borderTop: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", flexShrink: 0 }}>
-        {([
-          { label: "Steps Done",    value: `${steps.filter(s => s.done).length} / 18` },
-          { label: "Chapter",       value: "1 of 3"    },
-          { label: "Est. Timeline", value: "~8 months" },
-          { label: "Overall",       value: "17%"       },
-        ] as const).map((stat, i) => (
-          <div key={stat.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-            {i > 0 && <div style={{ width: 1, height: 18, background: "#e8edf2", marginRight: "auto", flexShrink: 0 }} />}
+      <div
+        style={{
+          height: 44,
+          background: "white",
+          borderTop: "1px solid #edf2f0",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          flexShrink: 0,
+        }}
+      >
+        {(
+          [
+            {
+              label: "Steps Done",
+              value: `${steps.filter((s) => s.done).length} / 18`,
+            },
+            { label: "Chapter", value: "1 of 3" },
+            { label: "Est. Timeline", value: "~8 months" },
+            { label: "Overall", value: "17%" },
+          ] as const
+        ).map((stat, i) => (
+          <div
+            key={stat.label}
+            style={{ display: "flex", alignItems: "center", flex: 1 }}
+          >
+            {i > 0 && (
+              <div
+                style={{
+                  width: 1,
+                  height: 18,
+                  background: "#e8edf2",
+                  marginRight: "auto",
+                  flexShrink: 0,
+                }}
+              />
+            )}
             <div style={{ flex: 1, textAlign: "center" }}>
-              <div style={{ fontSize: 7.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8" }}>{stat.label}</div>
-              <div style={{ fontSize: 11.5, fontWeight: 900, color: "#1e293b", marginTop: 1 }}>{stat.value}</div>
+              <div
+                style={{
+                  fontSize: 7.5,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "#94a3b8",
+                }}
+              >
+                {stat.label}
+              </div>
+              <div
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: 900,
+                  color: "#1e293b",
+                  marginTop: 1,
+                }}
+              >
+                {stat.value}
+              </div>
             </div>
           </div>
         ))}
@@ -1818,17 +2410,94 @@ export function GuidedRoadmapScene() {
 
 // ── tools ──
 const featuredTools = [
-  { id: "strength",    icon: Brain,         label: "Case Strength",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe" },
-  { id: "action",      icon: LifeBuoy,      label: "Action Plan",    bg: "#ecfdf5", fg: "#059669", border: "#d1fae5" },
-  { id: "path",        icon: Compass,       label: "Path Finder",    bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5" },
-  { id: "interview",   icon: MessageSquare, label: "Interview Prep", bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe" },
-  { id: "sponsorship", icon: Calculator,    label: "Sponsorship",    bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6" },
-  { id: "dq",          icon: Clock,         label: "DQ Watch",       bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff" },
-  { id: "bulletin",    icon: Calendar,      label: "Bulletin",       bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1" },
-  { id: "photo",       icon: Camera,        label: "Photo Booth",    bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3" },
-  { id: "pdf",         icon: Files,         label: "PDF Toolkit",    bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd" },
-  { id: "filler",      icon: Wand2,         label: "Form Filler",    bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa" },
-  { id: "status",      icon: FileSearch,    label: "Case Status",    bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" },
+  {
+    id: "strength",
+    icon: Brain,
+    label: "Case Strength",
+    bg: "#f5f3ff",
+    fg: "#7c3aed",
+    border: "#ddd6fe",
+  },
+  {
+    id: "action",
+    icon: LifeBuoy,
+    label: "Action Plan",
+    bg: "#ecfdf5",
+    fg: "#059669",
+    border: "#d1fae5",
+  },
+  {
+    id: "path",
+    icon: Compass,
+    label: "Path Finder",
+    bg: "#fff7ed",
+    fg: "#ea580c",
+    border: "#ffedd5",
+  },
+  {
+    id: "interview",
+    icon: MessageSquare,
+    label: "Interview Prep",
+    bg: "#eff6ff",
+    fg: "#2563eb",
+    border: "#dbeafe",
+  },
+  {
+    id: "sponsorship",
+    icon: Calculator,
+    label: "Sponsorship",
+    bg: "#fff1f2",
+    fg: "#e11d48",
+    border: "#ffe4e6",
+  },
+  {
+    id: "dq",
+    icon: Clock,
+    label: "DQ Watch",
+    bg: "#fdf4ff",
+    fg: "#c026d3",
+    border: "#fae8ff",
+  },
+  {
+    id: "bulletin",
+    icon: Calendar,
+    label: "Bulletin",
+    bg: "#f0fdfa",
+    fg: "#0d9488",
+    border: "#ccfbf1",
+  },
+  {
+    id: "photo",
+    icon: Camera,
+    label: "Photo Booth",
+    bg: "#fefce8",
+    fg: "#ca8a04",
+    border: "#fef9c3",
+  },
+  {
+    id: "pdf",
+    icon: Files,
+    label: "PDF Toolkit",
+    bg: "#f0f9ff",
+    fg: "#0369a1",
+    border: "#bae6fd",
+  },
+  {
+    id: "filler",
+    icon: Wand2,
+    label: "Form Filler",
+    bg: "#fff7ed",
+    fg: "#c2410c",
+    border: "#fed7aa",
+  },
+  {
+    id: "status",
+    icon: FileSearch,
+    label: "Case Status",
+    bg: "#f0fdf4",
+    fg: "#16a34a",
+    border: "#bbf7d0",
+  },
 ];
 
 const toolContent: Record<string, any> = {
@@ -1836,152 +2505,203 @@ const toolContent: Record<string, any> = {
     eyebrow: "Analysis Tool",
     title: "Case Strength Meter",
     desc: "Analyze your family links, domicile, and evidence quality.",
-    stats: [["Approval Probability", "High"], ["Evidence Score", "88/100"]],
+    stats: [
+      ["Approval Probability", "High"],
+      ["Evidence Score", "88/100"],
+    ],
     badge: "Strong family ties detected",
-    badgeDesc: "Your case shows consistent communication and financial interdependence.",
+    badgeDesc:
+      "Your case shows consistent communication and financial interdependence.",
     recoTitle: "Evidence Recommendation",
     recoMain: "Joint Bank Statements",
-    recoDesc: "Adding 3-6 months of joint statements can further solidify your domicile evidence.",
-    recoTags: ["Joint Taxes", "Lease/Deed"]
+    recoDesc:
+      "Adding 3-6 months of joint statements can further solidify your domicile evidence.",
+    recoTags: ["Joint Taxes", "Lease/Deed"],
   },
   action: {
     eyebrow: "Strategy Guide",
     title: "Step-by-Step Action Plan",
     desc: "Customized checklist based on your current IR-1 stage.",
-    stats: [["Next Deadline", "In 12 Days"], ["Tasks Pending", "4"]],
+    stats: [
+      ["Next Deadline", "In 12 Days"],
+      ["Tasks Pending", "4"],
+    ],
     badge: "NVC Stage approaching",
     badgeDesc: "You are currently in the transition phase from USCIS to NVC.",
     recoTitle: "Next Priority Task",
     recoMain: "Order Police Certificates",
-    recoDesc: "Pakistan police certificates can take 2 weeks. Start this process now.",
-    recoTags: ["NADRA FRC", "Passport Scan"]
+    recoDesc:
+      "Pakistan police certificates can take 2 weeks. Start this process now.",
+    recoTags: ["NADRA FRC", "Passport Scan"],
   },
   path: {
     eyebrow: "Navigation",
     title: "Journey Navigator",
     desc: "Visualizing your remaining milestones and estimated dates.",
-    stats: [["Est. Interview", "Oct 2026"], ["Journey Progress", "32%"]],
+    stats: [
+      ["Est. Interview", "Oct 2026"],
+      ["Journey Progress", "32%"],
+    ],
     badge: "Path optimized for ISL",
-    badgeDesc: "Timeline adjusted based on Islamabad embassy processing trends.",
+    badgeDesc:
+      "Timeline adjusted based on Islamabad embassy processing trends.",
     recoTitle: "Timeline Insights",
     recoMain: "Documentary Qualified",
-    recoDesc: "Estimated time to reach DQ status is currently 4.5 months for IR-1.",
-    recoTags: ["NVC Queue", "Interview Wait"]
+    recoDesc:
+      "Estimated time to reach DQ status is currently 4.5 months for IR-1.",
+    recoTags: ["NVC Queue", "Interview Wait"],
   },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Simulator",
     desc: "Practice common Islamabad Embassy interview questions.",
-    stats: [["Questions Ready", "45+"], ["Focus Area", "Relationship"]],
+    stats: [
+      ["Questions Ready", "45+"],
+      ["Focus Area", "Relationship"],
+    ],
     badge: "High focus on domicile",
-    badgeDesc: "Officers are currently scrutinizing US domicile for Pakistan cases.",
+    badgeDesc:
+      "Officers are currently scrutinizing US domicile for Pakistan cases.",
     recoTitle: "Sample Question",
     recoMain: "How do you stay in touch?",
-    recoDesc: "Prepare to show chat logs, call history, and money transfer receipts.",
-    recoTags: ["Common Traps", "Body Language"]
+    recoDesc:
+      "Prepare to show chat logs, call history, and money transfer receipts.",
+    recoTags: ["Common Traps", "Body Language"],
   },
   sponsorship: {
     eyebrow: "Focused Task",
     title: "Affidavit Support Calculator",
     desc: "Determine sponsorship setup and likely form path.",
-    stats: [["Sponsor income", "$48,000"], ["Required income", "$25,550"]],
+    stats: [
+      ["Sponsor income", "$48,000"],
+      ["Required income", "$25,550"],
+    ],
     badge: "Income appears sufficient",
-    badgeDesc: "Recommends the likely form path and supporting evidence to prepare.",
+    badgeDesc:
+      "Recommends the likely form path and supporting evidence to prepare.",
     recoTitle: "Likely form recommendation",
     recoMain: "Form I-864EZ",
-    recoDesc: "Suggested when the petitioner is the sole sponsor and income qualifies.",
-    recoTags: ["Tax transcript", "Pay stubs"]
+    recoDesc:
+      "Suggested when the petitioner is the sole sponsor and income qualifies.",
+    recoTags: ["Tax transcript", "Pay stubs"],
   },
   dq: {
     eyebrow: "Monitoring",
     title: "DQ Watchdog",
     desc: "Tracking NVC processing times and common RFE traps.",
-    stats: [["Avg. NVC Review", "18 Days"], ["Common Error", "Signatures"]],
+    stats: [
+      ["Avg. NVC Review", "18 Days"],
+      ["Common Error", "Signatures"],
+    ],
     badge: "Active RFE monitoring",
     badgeDesc: "We track the latest rejection trends to help you avoid delays.",
     recoTitle: "Critical Checklist",
     recoMain: "Signature Verification",
-    recoDesc: "Ensure all PDF forms have hand-written signatures before scanning.",
-    recoTags: ["File Sizes", "Scan Clarity"]
+    recoDesc:
+      "Ensure all PDF forms have hand-written signatures before scanning.",
+    recoTags: ["File Sizes", "Scan Clarity"],
   },
   bulletin: {
     eyebrow: "Priority Watch",
     title: "Visa Bulletin Tracker",
     desc: "Priority date monitoring and movement predictions.",
-    stats: [["Next Release", "5 Days"], ["Current Movement", "2 Months"]],
+    stats: [
+      ["Next Release", "5 Days"],
+      ["Current Movement", "2 Months"],
+    ],
     badge: "IR-1 is current",
-    badgeDesc: "Immediate relatives do not have a wait list for priority dates.",
+    badgeDesc:
+      "Immediate relatives do not have a wait list for priority dates.",
     recoTitle: "NVC Fee Payment",
     recoMain: "Pay ASAP upon invoice",
-    recoDesc: "Paying fees immediately prevents NVC system lag and secures your place.",
-    recoTags: ["AOS Fee", "IV Fee"]
+    recoDesc:
+      "Paying fees immediately prevents NVC system lag and secures your place.",
+    recoTags: ["AOS Fee", "IV Fee"],
   },
   photo: {
     eyebrow: "Compliance",
     title: "Photo Booth Validator",
     desc: "Verify your US visa photo against strict requirements.",
-    stats: [["Success Rate", "99%"], ["Common Fail", "Shadows"]],
+    stats: [
+      ["Success Rate", "99%"],
+      ["Common Fail", "Shadows"],
+    ],
     badge: "ISL Studio database",
-    badgeDesc: "Matches requirements used by major studios in Islamabad/Lahore.",
+    badgeDesc:
+      "Matches requirements used by major studios in Islamabad/Lahore.",
     recoTitle: "Photo Requirement",
     recoMain: "2x2 Inches White Background",
     recoDesc: "No glasses allowed. Neutral expression with both ears visible.",
-    recoTags: ["Head Size", "Lighting"]
+    recoTags: ["Head Size", "Lighting"],
   },
   pdf: {
     eyebrow: "Optimization",
     title: "PDF Toolkit",
     desc: "Organizing documents for NVC upload (max 2MB limit).",
-    stats: [["Max File Size", "2.0 MB"], ["Format Required", "PDF/JPG"]],
+    stats: [
+      ["Max File Size", "2.0 MB"],
+      ["Format Required", "PDF/JPG"],
+    ],
     badge: "NVC-Ready scans",
-    badgeDesc: "Optimized resolution for CEAC system compatibility and readability.",
+    badgeDesc:
+      "Optimized resolution for CEAC system compatibility and readability.",
     recoTitle: "Scanning Tip",
     recoMain: "300 DPI Resolution",
-    recoDesc: "Balance clarity with file size. Use grayscale for non-photo documents.",
-    recoTags: ["Merge PDFs", "Compress File"]
+    recoDesc:
+      "Balance clarity with file size. Use grayscale for non-photo documents.",
+    recoTags: ["Merge PDFs", "Compress File"],
   },
   filler: {
     eyebrow: "Automation",
     title: "Smart Form Assistant",
     desc: "Guided logic for complex sections of DS-260 and I-130.",
-    stats: [["Forms Covered", "I-130, DS-260"], ["Help Prompts", "120+"]],
+    stats: [
+      ["Forms Covered", "I-130, DS-260"],
+      ["Help Prompts", "120+"],
+    ],
     badge: "Contextual Pakistani data",
-    badgeDesc: "Pre-filled address patterns and relationship terminology for Pakistan.",
+    badgeDesc:
+      "Pre-filled address patterns and relationship terminology for Pakistan.",
     recoTitle: "Section Highlight",
     recoMain: "Social Media History",
-    recoDesc: "NVC now requires 5 years of social media handles. Have them ready.",
-    recoTags: ["Previous Travel", "Work History"]
+    recoDesc:
+      "NVC now requires 5 years of social media handles. Have them ready.",
+    recoTags: ["Previous Travel", "Work History"],
   },
   status: {
     eyebrow: "Tracking",
     title: "Case Status Pro",
     desc: "Automated status checking with historical trend analysis.",
-    stats: [["Last Check", "30m ago"], ["Current Status", "At NVC"]],
+    stats: [
+      ["Last Check", "30m ago"],
+      ["Current Status", "At NVC"],
+    ],
     badge: "24/7 Automated monitor",
-    badgeDesc: "Get instant notifications if your USCIS or CEAC status changes.",
+    badgeDesc:
+      "Get instant notifications if your USCIS or CEAC status changes.",
     recoTitle: "Status Insight",
     recoMain: "Case Creation",
-    recoDesc: "Usually takes 2-6 weeks for NVC to create case after USCIS approval.",
-    recoTags: ["Welcome Letter", "NVC ID"]
+    recoDesc:
+      "Usually takes 2-6 weeks for NVC to create case after USCIS approval.",
+    recoTags: ["Welcome Letter", "NVC ID"],
   },
 };
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
-const ITEM_W   = 108;
-const GAP      = 20;
-const STRIDE   = ITEM_W + GAP;
+const ITEM_W = 108;
+const GAP = 20;
+const STRIDE = ITEM_W + GAP;
 const DURATION = 28;
-
 
 // ── carousel with JS scroll & rAF centre-pop ──────────────────────────────────
 
 function ToolCarousel({ activeIdx }: { activeIdx: number }) {
-  const wrapRef  = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const rafRef   = useRef<number>(0);
+  const rafRef = useRef<number>(0);
   const loopWidth = featuredTools.length * STRIDE;
-  
+
   // Calculate continuous scroll position
   const [scrollPos, setScrollPos] = useState(0);
   const prevIdx = useRef(activeIdx);
@@ -2013,8 +2733,8 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
           const dist = Math.abs(elCX - centerX);
           const t = Math.max(0, 1 - dist / hotZone); // 0…1
 
-          const scale  = 1 + t * 0.22;
-          const lift   = -t * 5;
+          const scale = 1 + t * 0.22;
+          const lift = -t * 5;
           const border = el.dataset.border ?? "rgba(0,0,0,0.1)";
           const shadow = `0 ${4 + t * 12}px ${12 + t * 18}px -4px ${border}`;
 
@@ -2030,9 +2750,15 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
   }, []);
 
   // Use plenty of clones so it can scroll infinitely
-  const items = [...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools];
+  const items = [
+    ...featuredTools,
+    ...featuredTools,
+    ...featuredTools,
+    ...featuredTools,
+    ...featuredTools,
+  ];
   // Center offset so the first item is in the middle initially
-  const initialOffset = 300 - (ITEM_W / 2) - GAP; 
+  const initialOffset = 300 - ITEM_W / 2 - GAP;
 
   return (
     <div
@@ -2054,13 +2780,19 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
           "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
       }}
     >
-      <div aria-hidden style={{
-        position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
-        background:
-          "radial-gradient(ellipse 28% 100% at 50% 50%,rgba(13,115,119,0.05),transparent 70%)",
-      }}/>
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 2,
+          background:
+            "radial-gradient(ellipse 28% 100% at 50% 50%,rgba(13,115,119,0.05),transparent 70%)",
+        }}
+      />
 
-      <div 
+      <div
         ref={trackRef}
         style={{
           display: "flex",
@@ -2074,24 +2806,36 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
         {items.map((tool, idx) => {
           const Icon = tool.icon;
           return (
-            <div key={idx} style={{
-              display:"flex", flexDirection:"column", alignItems:"center",
-              gap:9, width:ITEM_W, flexShrink:0, position:"relative",
-            }}>
+            <div
+              key={idx}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 9,
+                width: ITEM_W,
+                flexShrink: 0,
+                position: "relative",
+              }}
+            >
               <div
                 className="tc-icon-box"
                 data-border={tool.border}
                 style={{
-                  width:54, height:54,
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  borderRadius:16,
-                  background:tool.bg,
-                  border:`1.5px solid ${tool.border}`,
-                  boxShadow:`0 6px 16px -4px ${tool.border}`,
-                  position:"relative", overflow:"hidden",
-                  transition:"transform 0.1s ease-out, box-shadow 0.1s ease",
-                  transformOrigin:"50% 100%", 
-                  cursor:"default",
+                  width: 54,
+                  height: 54,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 16,
+                  background: tool.bg,
+                  border: `1.5px solid ${tool.border}`,
+                  boxShadow: `0 6px 16px -4px ${tool.border}`,
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "transform 0.1s ease-out, box-shadow 0.1s ease",
+                  transformOrigin: "50% 100%",
+                  cursor: "default",
                 }}
               >
                 <div
@@ -2138,7 +2882,7 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
 
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
-  const [visible, setVisible]     = useState(true);
+  const [visible, setVisible] = useState(true);
 
   // Auto-advance: pause 2.5s at current, then crossfade to next
   useEffect(() => {
@@ -2152,7 +2896,7 @@ export function IndividualToolsScene() {
     return () => window.clearTimeout(pause);
   }, [activeIdx]);
 
-  const tool    = featuredTools[activeIdx];
+  const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
@@ -2174,76 +2918,136 @@ export function IndividualToolsScene() {
       {/* ── Info panel — fades on tool change ── */}
       <div
         style={{
-          position   : "relative",
-          width      : "100%",
-          height     : 362,
-          opacity    : visible ? 1 : 0,
-          transform  : visible ? "translateY(0)" : "translateY(6px)",
-          transition : "opacity 0.28s ease, transform 0.28s ease",
+          position: "relative",
+          width: "100%",
+          height: 362,
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 0.28s ease, transform 0.28s ease",
         }}
       >
         {/* Hero card — left column */}
         <div
           style={{
-            position      : "absolute",
-            left          : 22, top : 24,
-            width         : 288, height: 310,
-            borderRadius  : 24,
-            background    : "white",
-            border        : `2px solid ${tool.fg}`,
-            boxShadow     : `0 16px 48px ${tool.border}55`,
-            padding       : "16px",
-            display       : "flex",
-            flexDirection : "column",
+            position: "absolute",
+            left: 22,
+            top: 24,
+            width: 288,
+            height: 310,
+            borderRadius: 24,
+            background: "white",
+            border: `2px solid ${tool.fg}`,
+            boxShadow: `0 16px 48px ${tool.border}55`,
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {/* Eyebrow badge */}
           <span
             style={{
-              display       : "inline-flex",
-              borderRadius  : 999,
-              border        : `1px solid ${tool.border}`,
-              background    : tool.bg,
-              padding       : "3px 10px",
-              fontSize      : 9.5, fontWeight: 800,
-              textTransform : "uppercase",
-              letterSpacing : "0.1em",
-              color         : tool.fg,
-              alignSelf     : "flex-start",
+              display: "inline-flex",
+              borderRadius: 999,
+              border: `1px solid ${tool.border}`,
+              background: tool.bg,
+              padding: "3px 10px",
+              fontSize: 9.5,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: tool.fg,
+              alignSelf: "flex-start",
             }}
           >
             {content.eyebrow}
           </span>
 
-          <h3 style={{ fontSize:19, fontWeight:800, lineHeight:1.15, color:"#162126", margin:"10px 0 0" }}>
+          <h3
+            style={{
+              fontSize: 19,
+              fontWeight: 800,
+              lineHeight: 1.15,
+              color: "#162126",
+              margin: "10px 0 0",
+            }}
+          >
             {content.title}
           </h3>
-          <p style={{ fontSize:12.5, lineHeight:1.6, color:"#4a5c62", margin:"6px 0 0" }}>
+          <p
+            style={{
+              fontSize: 12.5,
+              lineHeight: 1.6,
+              color: "#4a5c62",
+              margin: "6px 0 0",
+            }}
+          >
             {content.desc}
           </p>
 
-          <div style={{ marginTop:"auto", display:"flex", flexDirection:"column", gap:7 }}>
+          <div
+            style={{
+              marginTop: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 7,
+            }}
+          >
             {content.stats.map(([label, value]: [string, string]) => (
               <div
                 key={label}
                 style={{
-                  display:"flex", alignItems:"center", justifyContent:"space-between",
-                  borderRadius:10, border:"1px solid #e2e8f0",
-                  background:"#f7fafc", padding:"6px 12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderRadius: 10,
+                  border: "1px solid #e2e8f0",
+                  background: "#f7fafc",
+                  padding: "6px 12px",
                 }}
               >
-                <span style={{ fontSize:11.5, color:"#4a5c62", fontWeight:600 }}>{label}</span>
-                <span style={{ fontSize:12.5, fontWeight:800, color:"#162126" }}>{value}</span>
+                <span
+                  style={{ fontSize: 11.5, color: "#4a5c62", fontWeight: 600 }}
+                >
+                  {label}
+                </span>
+                <span
+                  style={{ fontSize: 12.5, fontWeight: 800, color: "#162126" }}
+                >
+                  {value}
+                </span>
               </div>
             ))}
 
             {/* Status badge */}
-            <div style={{ borderRadius:10, border:`1px solid ${tool.border}`, background:tool.bg, padding:"7px 12px" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:6, color:tool.fg }}>
-                <Check style={{ width:11, height:11 }} strokeWidth={3} />
-                <span style={{ fontSize:11.5, fontWeight:800 }}>{content.badge}</span>
+            <div
+              style={{
+                borderRadius: 10,
+                border: `1px solid ${tool.border}`,
+                background: tool.bg,
+                padding: "7px 12px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: tool.fg,
+                }}
+              >
+                <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
+                <span style={{ fontSize: 11.5, fontWeight: 800 }}>
+                  {content.badge}
+                </span>
               </div>
-              <p style={{ fontSize:10.5, lineHeight:1.5, color:"#4a5c62", margin:"3px 0 0" }}>
+              <p
+                style={{
+                  fontSize: 10.5,
+                  lineHeight: 1.5,
+                  color: "#4a5c62",
+                  margin: "3px 0 0",
+                }}
+              >
                 {content.badgeDesc}
               </p>
             </div>
@@ -2251,65 +3055,153 @@ export function IndividualToolsScene() {
         </div>
 
         {/* Right column ── eyebrow */}
-        <div style={{ position:"absolute", left:328, top:26, fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.12em", color:"#a0b0b8" }}>
+        <div
+          style={{
+            position: "absolute",
+            left: 328,
+            top: 26,
+            fontSize: 9.5,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.12em",
+            color: "#a0b0b8",
+          }}
+        >
           Related guides
         </div>
 
         {/* Guide card */}
         <div
           style={{
-            position     : "absolute",
-            left         : 324, top: 46,
-            width        : 252, height: 80,
-            borderRadius : 16,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "11px 14px",
-            boxShadow    : "0 4px 14px rgba(15,23,42,0.06)",
-            display      : "flex", alignItems:"center", gap:12,
+            position: "absolute",
+            left: 324,
+            top: 46,
+            width: 252,
+            height: 80,
+            borderRadius: 16,
+            background: "white",
+            border: "1px solid #dde8e6",
+            padding: "11px 14px",
+            boxShadow: "0 4px 14px rgba(15,23,42,0.06)",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
           }}
         >
-          <div style={{ width:42, height:42, borderRadius:12, background:tool.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              background: tool.bg,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
             <Lightbulb size={20} color={tool.fg} />
           </div>
           <div>
-            <div style={{ fontSize:12, fontWeight:800, color:"#162126", lineHeight:1.2 }}>How to use {tool.label}</div>
-            <div style={{ fontSize:10.5, lineHeight:1.4, color:"#6b8097", marginTop:4 }}>Step-by-step guide & FAQs</div>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: "#162126",
+                lineHeight: 1.2,
+              }}
+            >
+              How to use {tool.label}
+            </div>
+            <div
+              style={{
+                fontSize: 10.5,
+                lineHeight: 1.4,
+                color: "#6b8097",
+                marginTop: 4,
+              }}
+            >
+              Step-by-step guide & FAQs
+            </div>
           </div>
         </div>
 
         {/* Insight / recommendation card */}
         <div
           style={{
-            position     : "absolute",
-            left         : 320, top: 142,
-            width        : 258,
-            borderRadius : 20,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "14px 16px",
-            boxShadow    : "0 4px 16px rgba(15,23,42,0.06)",
+            position: "absolute",
+            left: 320,
+            top: 142,
+            width: 258,
+            borderRadius: 20,
+            background: "white",
+            border: "1px solid #dde8e6",
+            padding: "14px 16px",
+            boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
           }}
         >
-          <div style={{ fontSize:9, fontWeight:800, textTransform:"uppercase", letterSpacing:"0.1em", color:"#6b8097" }}>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "#6b8097",
+            }}
+          >
             {content.recoTitle}
           </div>
 
-          <div style={{ marginTop:10, borderRadius:12, background:"#051738", padding:"11px 14px" }}>
-            <div style={{ fontSize:19, fontWeight:800, color:"white", lineHeight:1.1 }}>{content.recoMain}</div>
-            <p style={{ fontSize:10.5, lineHeight:1.55, color:"rgba(255,255,255,0.72)", margin:"5px 0 0" }}>
+          <div
+            style={{
+              marginTop: 10,
+              borderRadius: 12,
+              background: "#051738",
+              padding: "11px 14px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 19,
+                fontWeight: 800,
+                color: "white",
+                lineHeight: 1.1,
+              }}
+            >
+              {content.recoMain}
+            </div>
+            <p
+              style={{
+                fontSize: 10.5,
+                lineHeight: 1.55,
+                color: "rgba(255,255,255,0.72)",
+                margin: "5px 0 0",
+              }}
+            >
               {content.recoDesc}
             </p>
           </div>
 
-          <div style={{ marginTop:10, display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+          <div
+            style={{
+              marginTop: 10,
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 6,
+            }}
+          >
             {content.recoTags.map((tag: string) => (
               <div
                 key={tag}
                 style={{
-                  borderRadius:8, border:"1px solid #e2e8f0",
-                  background:"#f7fafc", padding:"5px 8px",
-                  fontSize:10, fontWeight:700, color:"#2C3A3E", textAlign:"center",
+                  borderRadius: 8,
+                  border: "1px solid #e2e8f0",
+                  background: "#f7fafc",
+                  padding: "5px 8px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#2C3A3E",
+                  textAlign: "center",
                 }}
               >
                 {tag}
