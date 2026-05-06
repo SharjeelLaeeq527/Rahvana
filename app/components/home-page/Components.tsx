@@ -2691,6 +2691,8 @@ function InteractiveClockWidget() {
   const clockRef = useRef<HTMLDivElement>(null);
   const [angle, setAngle] = useState(60);
   const [isHovered, setIsHovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showHint, setShowHint] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<number>(2); // Thu - 4:00 PM selected by default
 
   const timeSlots = [
@@ -2700,12 +2702,19 @@ function InteractiveClockWidget() {
   ];
 
   const springAngle = useSpring(60, { stiffness: 30, damping: 15, mass: 1 });
+  const hourHandRotate = useTransform(springAngle, (v) => v * 0.5);
 
   useEffect(() => {
     springAngle.set(angle);
   }, [angle, springAngle]);
 
+  useEffect(() => {
+    const t = window.setTimeout(() => setShowHint(false), 3600);
+    return () => window.clearTimeout(t);
+  }, []);
+
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
     if (!clockRef.current) return;
     const rect = clockRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -2719,6 +2728,28 @@ function InteractiveClockWidget() {
     deg = Math.round(deg / fineSnap) * fineSnap;
 
     setAngle(deg);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    setShowHint(false);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const rad = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+    let deg = (rad * 180) / Math.PI + 90;
+    if (deg < 0) deg += 360;
+    const fineSnap = 6;
+    deg = Math.round(deg / fineSnap) * fineSnap;
+    setAngle(deg);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(false);
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
   };
 
   const totalMinutes = Math.floor((angle / 360) * 12 * 60);
@@ -2752,17 +2783,23 @@ function InteractiveClockWidget() {
 
       <motion.div
         animate={{
-          y: isHovered ? -6 : 0,
-          boxShadow: isHovered
+          y: isHovered || isDragging ? -6 : 0,
+          boxShadow: isHovered || isDragging
             ? "0 48px 96px rgba(8,54,58,0.22), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -3px 8px rgba(0,0,0,0.08)"
             : "0 24px 56px rgba(11,102,106,0.16), inset 0 1px 3px rgba(255,255,255,0.8), inset 0 -2px 6px rgba(0,0,0,0.04)"
         }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         ref={clockRef}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         onPointerMove={handlePointerMove}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className="relative flex items-center justify-center touch-none cursor-pointer bg-gradient-to-b from-white via-[#f8fbfc] to-white/98 backdrop-blur-sm ring-1 ring-[#0B666A]/10 rounded-full group z-20"
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setIsDragging(false);
+        }}
+        className={`relative flex items-center justify-center touch-none bg-gradient-to-b from-white via-[#f8fbfc] to-white/98 backdrop-blur-sm ring-1 ring-[#0B666A]/10 rounded-full group z-20 ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
         style={{ width: CLOCK_RADIUS * 2, height: CLOCK_RADIUS * 2 }}
       >
         {/* Shimmer sweep effect on hover */}
@@ -2788,8 +2825,167 @@ function InteractiveClockWidget() {
           />
         ))}
 
+        <AnimatePresence>
+          {showHint && !isDragging && (
+            <motion.div
+              initial={{ opacity: 0, y: 6, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.96 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute top-6 left-1/2 -translate-x-1/2 rounded-full border border-[#0B666A]/20 bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#0B666A] shadow-[0_8px_20px_rgba(11,102,106,0.14)]"
+            >
+              Drag to set
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Hands Container */}
         <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
+          <div
+            className="absolute w-[1.5px] rounded-full bg-[#0B666A]/15 origin-bottom shadow-[inset_0_1px_2px_rgba(11,102,106,0.1)]"
+            style={{ height: CLOCK_RADIUS * 0.6, bottom: '50%', transform: `rotate(180deg)` }}
+          />
+
+          <motion.div
+            className="absolute origin-bottom filter drop-shadow-[0_8px_16px_rgba(8,54,58,0.40)]"
+            style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: springAngle }}
+          >
+            <div className="w-[3px] h-full rounded-full bg-gradient-to-t from-[#06292d] via-[#0b7a7f] to-[#0ea5a8] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
+            <div className="absolute -top-1 -left-[1.5px] w-[6px] h-[6px] rounded-full bg-[#f8fdff] border border-[#0a3c40] shadow-[0_2px_6px_rgba(8,54,58,0.24)]" />
+          </motion.div>
+
+          <motion.div
+            className="absolute origin-bottom"
+            style={{ height: CLOCK_RADIUS * 0.36, bottom: '50%', rotate: hourHandRotate }}
+          >
+            <div className="w-[4.4px] h-full rounded-full bg-gradient-to-t from-[#03181b] via-[#0a4e53] to-[#0b7a7f] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.26)]" />
+          </motion.div>
+
+          {/* Premium Center Pin Stack */}
+          <div className="absolute w-5 h-5 rounded-full bg-gradient-to-b from-white to-[#f0f8f9] shadow-[0_4px_12px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,1)] z-20 flex items-center justify-center border-2 border-white">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-b from-[#0B666A] to-[#041f23] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Enhanced Floating Time Display */}
+      <motion.div
+        animate={{ y: isHovered ? -3 : 0, scale: isHovered ? 1.02 : 1 }}
+        className="bg-gradient-to-b from-white via-white to-[#f8fbfc] backdrop-blur-md border border-white/80 px-6 py-4 rounded-[20px] shadow-[0_16px_48px_rgba(11,102,106,0.14),inset_0_1px_2px_rgba(255,255,255,1)] z-20 relative overflow-hidden group"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+        <span className="text-[32px] font-bold text-[#041f23] tracking-tight font-['Inter',sans-serif] select-none">
+          {timeStr} <span className="text-xs font-semibold text-[#0B666A]/75 uppercase ml-2 tracking-widest">EST</span>
+        </span>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export function ConsultationBanner({
+  onConsultationClick,
+}: {
+  onConsultationClick: () => void;
+}) {
+  const reduceMotion = useReducedMotion();
+  const helpWith = [
+    "Talk through your exact case",
+    "Clarity on the roadmap & timelines",
+    "Understand document preparation",
+    "Get expert, tailored guidance"
+  ];
+  const leaveWith = [
+    "A clear, defined next step",
+    "Better case understanding",
+    "Confidence on preparation",
+    "Actionable, strategic direction"
+  ];
+  const cardSections = [
+    {
+      label: "What we discuss",
+      title: "Case clarity",
+      description: "Practical guidance on exactly what will move your case forward.",
+      accent: "bg-[#0A2342]/10",
+      number: "01",
+      items: helpWith,
+      baseDelay: 0.6,
+    },
+    {
+      label: "What you leave with",
+      title: "A real next move",
+      description: "A clearer decision and a tight plan for the next steps.",
+      accent: "bg-[#0A2342]/8",
+      number: "02",
+      items: leaveWith,
+      baseDelay: 0.75,
+    },
+  ];
+
+  return (
+    <section
+      aria-labelledby="consultation-heading"
+      className="relative overflow-hidden px-14 sm:px-8 md:px-12 2xl:px-30 py-8 md:py-12 bg-[#F4F7F6]"
+    >
+      {/* Elevated Dynamic Jewel-Tone Background — unified with landing palette */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Large soft vignette to ground the whole section */}
+        <motion.div
+          animate={{ opacity: [0.7, 0.95, 0.7], scale: [1, 1.02, 1] }}
+          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-[-10%] rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(11,102,106,0.06) 0%, rgba(10,35,66,0.04) 35%, transparent 60%)',
+            mixBlendMode: 'overlay',
+          }}
+        />
+
+        {/* Recolored floating orbs aligned to site palette */}
+        <motion.div
+          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(6%, 9%) scale(1.08)', 'translate(0%, 0%) scale(1)'] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[12%] -left-[6%] w-[48vw] h-[48vw] rounded-full blur-[120px]"
+          style={{ background: '#0B666A', opacity: 0.085, mixBlendMode: 'screen' }}
+        />
+
+        <motion.div
+          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(-6%, -4%) scale(1.12)', 'translate(0%, 0%) scale(1)'] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+          className="absolute top-[18%] -right-[6%] w-[42vw] h-[42vw] rounded-full blur-[140px]"
+          style={{ background: '#0A2342', opacity: 0.07, mixBlendMode: 'screen' }}
+        />
+
+        <motion.div
+          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(8%, -8%) scale(1.06)', 'translate(0%, 0%) scale(1)'] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+          className="absolute -bottom-[18%] left-[18%] w-[62vw] h-[62vw] rounded-full blur-[160px]"
+          style={{ background: '#097969', opacity: 0.055, mixBlendMode: 'screen' }}
+        />
+
+        {/* Diagonal soft sheen to create a subtle 'wow' and tie tones together */}
+        <motion.div
+          animate={{ opacity: [0.0, 0.06, 0.0], rotate: [-4, 0, -4] }}
+          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(11,102,106,0.03) 45%, rgba(10,35,66,0.04) 100%)',
+            mixBlendMode: 'overlay',
+          }}
+        />
+
+        {/* Very subtle noise texture for depth */}
+        <div
+          className="absolute inset-0"
+          style={{
+            opacity: 0.028,
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
+            mixBlendMode: 'soft-light',
+          }}
+        />
+      </div>
+
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative mx-auto max-w-[1140px] z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"
@@ -2816,10 +3012,16 @@ function InteractiveClockWidget() {
             </motion.div>
 
             {/* Animated Title with line-by-line reveal */}
-            <h2 
+            <h2
               id="consultation-heading"
-              className="max-w-[520px] text-[clamp(42px,4.6vw,68px)] font-black leading-[0.96] tracking-[-0.05em] text-[#12233a] mb-8"
-              style={{ fontFamily: '"Cormorant Garamond", serif' }}
+              className="max-w-[520px] mb-8"
+              style={{
+                fontSize: "clamp(30px,6.5vw,40px)",
+                lineHeight: 1.05,
+                fontWeight: 800,
+                color: "#162126",
+                margin: "0 0 14px 0",
+              }}
             >
               <div className="overflow-hidden pb-2">
                 <motion.div 
