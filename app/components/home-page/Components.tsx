@@ -222,8 +222,8 @@ export function StepRow({
 }
 
 function getHeroSceneIndex(phase: number) {
-  if (phase >= 12) return 6;
-  if (phase >= 11) return 5;
+  if (phase >= 21) return 6;
+  if (phase >= 20) return 5;
   if (phase >= 9) return 4;
   if (phase >= 6) return 3;
   if (phase >= 4) return 2;
@@ -253,10 +253,19 @@ export function RealDashboardScene({
       [19800, 7],
       [22400, 8],
       [24100, 9],
-      [27800, 10],
-      [32100, 11],
-      [36900, 12],
-      [42400, 0],
+      [27000, 10],
+      [28500, 11],
+      [30500, 12],
+      [31500, 13],
+      [33000, 14],
+      [34500, 15],
+      [36500, 16],
+      [37500, 17],
+      [39000, 18],
+      [40500, 19],
+      [42500, 20],
+      [54500, 21],
+      [62500, 0],
     ] as const;
 
     let timers: number[] = [];
@@ -268,7 +277,7 @@ export function RealDashboardScene({
     };
 
     run();
-    const interval = window.setInterval(run, 44200);
+    const interval = window.setInterval(run, 64500);
 
     return () => {
       timers.forEach(window.clearTimeout);
@@ -282,29 +291,39 @@ export function RealDashboardScene({
 
   const cursorStates: Record<
     number,
-    { opacity: number; x: number; y: number; scale: number }
+    { opacity: number; left: string; top: string; scale: number }
   > = {
-    0: { opacity: 1, x: 760, y: 56, scale: 0.96 },
-    1: { opacity: 1, x: 82, y: 334, scale: 1 },
-    2: { opacity: 1, x: 82, y: 334, scale: 1 },
-    3: { opacity: 1, x: 82, y: 334, scale: 1 },
-    4: { opacity: 1, x: 310, y: 320, scale: 1 },
-    5: { opacity: 1, x: 310, y: 320, scale: 1 },
-    6: { opacity: 1, x: 348, y: 380, scale: 1 },
-    7: { opacity: 1, x: 490, y: 424, scale: 1 },
-    8: { opacity: 1, x: 490, y: 424, scale: 1 },
-    9: { opacity: 1, x: 502, y: 318, scale: 1 },
-    10: { opacity: 1, x: 502, y: 318, scale: 1 },
-    11: { opacity: 1, x: 536, y: 286, scale: 0.96 },
-    12: { opacity: 1, x: 650, y: 116, scale: 0.96 },
+    0: { opacity: 1, left: "112%", top: "10%", scale: 0.96 }, // Initial / Dashboard Idle
+    1: { opacity: 1, left: "12%", top: "67%", scale: 1 }, // Hover Chapter 1 in Dashboard Sidebar
+    2: { opacity: 1, left: "12%", top: "67%", scale: 1 }, // Click Chapter 1
+    3: { opacity: 1, left: "12%", top: "60%", scale: 1 }, // Exit Dashboard View
+    4: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Hover Step 4 (I-130) Card in Chapter View
+    5: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Click Step 4 Card
+    6: { opacity: 1, left: "15%", top: "88%", scale: 1 }, // Move to Launch button in Step View
+    7: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Hover Launch I-130 Autoform Button
+    8: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Click Launch Button
+    9: { opacity: 1, left: "45.5%", top: "27%", scale: 1 }, // Autoform Panel Intro
+    10: { opacity: 1, left: "12%", top: "55%", scale: 1 }, // Move to Family Name Field
+    11: { opacity: 1, left: "45.5%", top: "55%", scale: 1 }, // Typing "Khan"
+    12: { opacity: 1, left: "88%", top: "78%", scale: 1 }, // Move to Next Button (reveals Given Name)
+    13: { opacity: 1, left: "88%", top: "78%", scale: 0.95 }, // Click Next Button
+    14: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Move to Given Name Field
+    15: { opacity: 1, left: "45.5%", top: "75.4%", scale: 1 }, // Typing "Amina"
+    16: { opacity: 1, left: "88%", top: "90%", scale: 1 }, // Move to Next Button (reveals Middle Name)
+    17: { opacity: 1, left: "88%", top: "90%", scale: 0.95 }, // Click Next Button
+    18: { opacity: 1, left: "12%", top: "90%", scale: 1 }, // Move to Middle Name Field
+    19: { opacity: 1, left: "45.5%", top: "90%", scale: 1 }, // Typing "Noor"
+    20: { opacity: 1, left: "12%", top: "51.1%", scale: 1 }, // PDF Preview Scrolling View
+    21: { opacity: 1, left: "12%", top: "20.7%", scale: 0.96 }, // Dashboard Complete View (Success State)
   };
 
   const currentCursor = cursorStates[phase] ?? cursorStates[0];
-  const isClicking = phase === 2 || phase === 5 || phase === 8 || phase === 10;
+  const isClicking =
+    phase === 2 || phase === 5 || phase === 8 || phase === 13 || phase === 17;
   const view =
-    phase >= 12
+    phase >= 21
       ? "dashboard-complete"
-      : phase >= 11
+      : phase >= 20
         ? "pdf"
         : phase >= 9
           ? "autoform"
@@ -426,7 +445,10 @@ export function RealDashboardScene({
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <HeroAutoformPanel playPhase={phase} />
+                  <HeroAutoformPanel
+                    playPhase={phase}
+                    isClicking={isClicking}
+                  />
                 </motion.div>
               )}
               {view === "pdf" && (
@@ -461,8 +483,8 @@ export function RealDashboardScene({
             initial={false}
             animate={currentCursor}
             transition={{
-              x: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
-              y: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
+              left: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
+              top: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
               opacity: { duration: 0.35, ease: "easeOut" },
               scale: {
                 duration: isClicking ? 0.22 : 0.5,
@@ -773,9 +795,10 @@ export function HeroI130StepPanel({
     const container = scrollContainerRef.current;
     const button = buttonRef.current;
     if (container && button) {
-      // Offset 406 aligns button center with cursor y: 424 (header 52, inner shift -68)
-      // Slightly adjusted from 412 to scroll more as per user feedback
-      const targetScrollTop = button.offsetTop - container.offsetTop - 406;
+      // Responsive offset: 406 for desktop, reduced for mobile to scroll more
+      const isMobile = window.innerWidth < 768;
+      const offset = isMobile ? 210 : 406;
+      const targetScrollTop = button.offsetTop - container.offsetTop - offset;
       container.scrollTo({
         top: Math.max(0, targetScrollTop),
         behavior: "smooth",
@@ -904,7 +927,13 @@ export function HeroI130StepPanel({
   );
 }
 
-export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
+export function HeroAutoformPanel({
+  playPhase,
+  isClicking,
+}: {
+  playPhase: number;
+  isClicking: boolean;
+}) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [fillStage, setFillStage] = useState(0);
   const config = useMemo(() => getFormConfig("i130"), []);
@@ -920,31 +949,50 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
   );
 
   useEffect(() => {
-    setFormData({});
-    setFillStage(0);
-    if (playPhase < 10) return;
+    if (playPhase < 9) {
+      setFormData({});
+      setFillStage(0);
+      return;
+    }
 
-    const timers = [
-      window.setTimeout(() => {
-        setFillStage(1);
-        setFormData({ family_name: "K" });
-      }, 450),
-      window.setTimeout(() => setFormData({ family_name: "Khan" }), 1050),
-      window.setTimeout(() => {
-        setFillStage(2);
-        setFormData((prev) => ({ ...prev, given_name: "A" }));
-      }, 1650),
-      window.setTimeout(
-        () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
-        2300,
-      ),
-      window.setTimeout(() => {
-        setFillStage(3);
-        setFormData((prev) => ({ ...prev, middle_name: "Noor" }));
-      }, 3100),
-      window.setTimeout(() => setFillStage(4), 4000),
-    ];
-    return () => timers.forEach(window.clearTimeout);
+    if (playPhase === 11) {
+      setFillStage(1);
+      const timers = [
+        window.setTimeout(() => setFormData({ family_name: "K" }), 200),
+        window.setTimeout(() => setFormData({ family_name: "Khan" }), 600),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase === 13) {
+      setFillStage(2);
+    } else if (playPhase === 15) {
+      const timers = [
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, given_name: "A" })),
+          200,
+        ),
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
+          600,
+        ),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase === 17) {
+      setFillStage(3);
+    } else if (playPhase === 19) {
+      const timers = [
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, middle_name: "N" })),
+          200,
+        ),
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, middle_name: "Noor" })),
+          600,
+        ),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase >= 20) {
+      setFillStage(4);
+    }
   }, [playPhase]);
 
   return (
@@ -1015,7 +1063,9 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
               animate={
                 fillStage >= 4
                   ? { scale: 0.94, opacity: 0.9 }
-                  : { scale: 1, opacity: 1 }
+                  : isClicking
+                    ? { scale: 0.96 }
+                    : { scale: 1, opacity: 1 }
               }
               transition={{ duration: 0.1 }}
             >
@@ -1060,7 +1110,7 @@ export function HeroPdfPreviewPanel() {
                 }
           }
           transition={{
-            duration: 6.2,
+            duration: 11.5,
             times: [0, 0.22, 0.46, 0.68, 0.84, 1],
             ease: "easeInOut",
           }}
@@ -1163,7 +1213,7 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 }
 
 export function TwoWaysSection() {
-  const sectionRef   = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
   const reduceMotion = useReducedMotion();
 
@@ -1201,20 +1251,21 @@ export function TwoWaysSection() {
         ref={sectionRef}
         id="path"
         aria-label="Two ways to use Rahvana"
-        className="relative hidden lg:block"
+        className="relative hidden lg:block mt-40 md:mt-56"
         style={{ height: "calc(100vh + 600px)" }}
       >
         <div
           style={{
-            position : "sticky",
-            top      : 0,
-            height   : "100vh",
-            display  : "flex",
-            alignItems : "center",
-            overflow : "hidden",
-              background: "#F4F7F6",
-              borderTop    : "2px solid #d9e2e1",
-              borderBottom : "2px solid #d9e2e1",
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            display: "flex",
+            alignItems: "center",
+            overflow: "hidden",
+            background:
+              "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+            borderTop: "1px solid #e1ebe8",
+            borderBottom: "1px solid #e1ebe8",
           }}
         >
           {/* Decorative radial highlights */}
@@ -1231,14 +1282,14 @@ export function TwoWaysSection() {
           {/* Scroll-progress pill indicators — right edge */}
           <div
             style={{
-              position        : "absolute",
-              right           : 28,
-              top             : "50%",
-              transform       : "translateY(-50%)",
-              display         : "flex",
-              flexDirection   : "column",
-              gap             : 8,
-              zIndex          : 10,
+              position: "absolute",
+              right: 28,
+              top: "50%",
+              transform: "translateY(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              zIndex: 10,
             }}
           >
             {([0, 1] as TwoWaysIndex[]).map((i) => (
@@ -1248,14 +1299,14 @@ export function TwoWaysSection() {
                 onClick={() => selectPath(i)}
                 aria-label={`Show ${twoWaysPaths[i].title}`}
                 style={{
-                  width      : 7,
-                  height     : activeIndex === i ? 22 : 7,
-                  borderRadius : 4,
-                  background : activeIndex === i ? "#0d7377" : "#c8d5d3",
-                  border     : "none",
-                  cursor     : "pointer",
-                  padding    : 0,
-                  transition : "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+                  width: 7,
+                  height: activeIndex === i ? 22 : 7,
+                  borderRadius: 4,
+                  background: activeIndex === i ? "#0d7377" : "#c8d5d3",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
                 }}
               />
             ))}
@@ -1265,11 +1316,11 @@ export function TwoWaysSection() {
           <div
             className="relative mx-auto w-full px-10 xl:px-12"
             style={{
-              maxWidth            : 1360,
-              display             : "grid",
-              gridTemplateColumns : "minmax(0,420px) 1fr",
-              gap                 : "clamp(48px,6vw,100px)",
-              alignItems          : "center",
+              maxWidth: 1360,
+              display: "grid",
+              gridTemplateColumns: "minmax(0,420px) 1fr",
+              gap: "clamp(48px,6vw,100px)",
+              alignItems: "start",
             }}
           >
             {/* Left: text + selectors + CTAs */}
@@ -1280,14 +1331,22 @@ export function TwoWaysSection() {
 
               <h2
                 className="mt-4 mb-0 font-extrabold text-[#162126]"
-                style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
+                style={{
+                  fontSize: "clamp(30px,4.2vw,60px)",
+                  lineHeight: 1.0,
+                  maxWidth: 440,
+                }}
               >
-                Choose how you want to use Rahvana.
+                Choose how you want to use Rahvana
               </h2>
 
               <p
                 className="mt-4 mb-0 text-[#4a5c62]"
-                style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
+                style={{
+                  fontSize: "clamp(14px,1.15vw,17px)",
+                  lineHeight: 1.68,
+                  maxWidth: 420,
+                }}
               >
                 Follow the guided IR-1 roadmap, use focused tools and resources
                 independently, and choose the support style that fits what you
@@ -1309,7 +1368,11 @@ export function TwoWaysSection() {
                     </p>
                     <h3
                       className="mb-0 mt-1.5 font-extrabold text-[#162126]"
-                      style={{ fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.2, maxWidth: 420 }}
+                      style={{
+                        fontSize: "clamp(17px,1.5vw,21px)",
+                        lineHeight: 1.2,
+                        maxWidth: 420,
+                      }}
                     >
                       {twoWaysPaths[activeIndex].shortTitle}
                     </h3>
@@ -1329,22 +1392,27 @@ export function TwoWaysSection() {
                       aria-current={isActive ? "true" : undefined}
                       className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
                       style={{
-                        border     : isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
-                        background : isActive ? "#f4fbfa" : "transparent",
-                        boxShadow  : isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
+                        border: isActive
+                          ? "1.5px solid #0d7377"
+                          : "1px solid #e2ebe8",
+                        background: isActive ? "#f4fbfa" : "transparent",
+                        boxShadow: isActive
+                          ? "0 5px 18px rgba(13,115,119,0.10)"
+                          : "none",
                         WebkitTapHighlightColor: "transparent",
-                        cursor     : "pointer",
+                        cursor: "pointer",
                       }}
                     >
                       <span
                         className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black"
                         style={{
-                          width      : 24,
-                          height     : 24,
-                          background : isActive ? "#0d7377" : "transparent",
-                          color      : isActive ? "white" : "#9aaeac",
-                          border     : isActive ? "none" : "1.5px solid #c8d5d3",
-                          transition : "background 0.22s, color 0.22s, border-color 0.22s",
+                          width: 24,
+                          height: 24,
+                          background: isActive ? "#0d7377" : "transparent",
+                          color: isActive ? "white" : "#9aaeac",
+                          border: isActive ? "none" : "1.5px solid #c8d5d3",
+                          transition:
+                            "background 0.22s, color 0.22s, border-color 0.22s",
                         }}
                       >
                         {String(i + 1).padStart(2, "0")}
@@ -1352,13 +1420,19 @@ export function TwoWaysSection() {
                       <div className="min-w-0 flex-1">
                         <div
                           className="text-[15px] font-black leading-tight"
-                          style={{ color: isActive ? "#0d7377" : "#162126", transition: "color 0.22s" }}
+                          style={{
+                            color: isActive ? "#0d7377" : "#162126",
+                            transition: "color 0.22s",
+                          }}
                         >
                           {path.title}
                         </div>
                         <div
                           className="mt-0.5 text-[12px] leading-snug"
-                          style={{ color: isActive ? "#4a5c62" : "#9aaeac", transition: "color 0.22s" }}
+                          style={{
+                            color: isActive ? "#4a5c62" : "#9aaeac",
+                            transition: "color 0.22s",
+                          }}
                         >
                           {path.teaser}
                         </div>
@@ -1415,11 +1489,12 @@ export function TwoWaysSection() {
       {/* ── Mobile / tablet (below lg): stacked, click to switch ─────────── */}
       <section
         aria-label="Two ways to use Rahvana"
-        className="block lg:hidden"
+        className="block lg:hidden mt-32 sm:mt-40"
         style={{
-          background   : "#F4F7F6",
-          borderTop    : "2px solid #d9e2e1",
-          borderBottom : "2px solid #d9e2e1",
+          background:
+            "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+          borderTop: "1px solid #e1ebe8",
+          borderBottom: "1px solid #e1ebe8",
         }}
       >
         <div
@@ -1438,7 +1513,14 @@ export function TwoWaysSection() {
               >
                 Choose how you want to use Rahvana.
               </h2>
-              <p style={{ fontSize: 16, lineHeight: 1.65, color: "#4a5c62", margin: "14px 0 28px 0" }}>
+              <p
+                style={{
+                  fontSize: 16,
+                  lineHeight: 1.65,
+                  color: "#4a5c62",
+                  margin: "14px 0 28px 0",
+                }}
+              >
                 Use the full IR-1 roadmap, or jump into focused tools and
                 resources when you need targeted help.
               </p>
@@ -1468,7 +1550,9 @@ export function TwoWaysSection() {
                     <div>
                       <h3
                         className={`text-lg font-black leading-tight ${
-                          activeIndex === i ? "text-[#0d7377]" : "text-[#162126]"
+                          activeIndex === i
+                            ? "text-[#0d7377]"
+                            : "text-[#162126]"
                         }`}
                       >
                         {path.title}
@@ -1503,9 +1587,15 @@ export function TwoWaysSection() {
                     key={activeIndex}
                     className="absolute left-1/2 top-1/2 origin-center"
                     style={{ width: 680, height: 560 }}
-                    initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }}
+                    initial={
+                      reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }
+                    }
                     animate={{ opacity: 1, y: 0, scale: 0.5 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.49 }}
+                    exit={
+                      reduceMotion
+                        ? undefined
+                        : { opacity: 0, y: -8, scale: 0.49 }
+                    }
                     transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <div style={{ transform: "translate(-50%, -50%)" }}>
@@ -1722,1019 +1812,632 @@ export function TwoWaysMobile({
 }
 
 export function GuidedRoadmapScene() {
+  const [steps, setSteps] = useState([
+    { id: 1, title: "Determine Eligibility", status: "done" },
+    { id: 2, title: "Gather Required Documents", status: "done" },
+    { id: 3, title: "Review Filing Methods", status: "todo" },
+    { id: 4, title: "Fill Form I-130", status: "todo" },
+    { id: 5, title: "Fill Form I-130A", status: "active" },
+    { id: 6, title: "Submit to USCIS", status: "todo" },
+    { id: 7, title: "Wait for Receipt", status: "todo" },
+    { id: 8, title: "Prepare for Biometrics", status: "todo" },
+  ]);
+  const [isBellOpen, setIsBellOpen] = useState(false);
   const reduceMotion = useReducedMotion();
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [isClicking, setIsClicking] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [cursorPos, setCursorPos] = useState({ x: 300, y: 150 });
 
-  const steps = [
-    { id: 1, name: "Determine Eligibility", done: true, current: false },
-    { id: 2, name: "Gather Required Documents", done: true, current: false },
-    { id: 3, name: "Review Filing Methods", done: false, current: true },
-    { id: 4, name: "Fill Form I-130", done: false, current: false },
-    { id: 5, name: "Fill Form I-130A", done: false, current: false },
-    { id: 6, name: "Submit to USCIS", done: false, current: false },
-    { id: 7, name: "Wait for Receipt", done: false, current: false },
-    { id: 8, name: "Prepare for Biometrics", done: false, current: false },
-  ];
+  const toggleStep = (id: number) => {
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (s.id === id) {
+          return {
+            ...s,
+            status:
+              s.status === "done" ? (id === 5 ? "active" : "todo") : "done",
+          };
+        }
+        return s;
+      }),
+    );
+  };
 
-  const lockedChapters = [
-    { number: 2, name: "NVC / CEAC Processing", color: "#520A50" },
-    { number: 3, name: "Medical + Interview", color: "#051738" },
-    { number: 4, name: "Visa Issuance", color: "#0d7377" },
-  ];
-
-  const chapterNav = [
-    {
-      n: 1,
-      label: "USCIS Petition",
-      color: "#8284BF",
-      ring: "#B9BBE2",
-      bg: "#F0F1FB",
-      text: "#4E518C",
-      pct: 33,
-      active: true,
-    },
-    {
-      n: 2,
-      label: "NVC / CEAC",
-      color: "#8B4388",
-      ring: "#8B4388",
-      bg: "#F4E6F3",
-      text: "#520A50",
-      pct: 0,
-      active: false,
-    },
-    {
-      n: 3,
-      label: "Med + Interview",
-      color: "#31415F",
-      ring: "#31415F",
-      bg: "#E8ECF3",
-      text: "#051738",
-      pct: 0,
-      active: false,
-    },
-  ] as const;
-
-  // Demo sequence
-  useEffect(() => {
-    if (reduceMotion) return;
-
-    const sequence = [
-      { idx: 0, delay: 0 },
-      { idx: 1, delay: 1800 },
-      { idx: 2, delay: 3600 },
-      { idx: 3, delay: 5400, click: true }, // Targeted "third last" of original 6
-      { idx: 4, delay: 8500 },
-      { idx: 5, delay: 10500 },
-      { idx: 6, delay: 12500 },
-      { idx: 7, delay: 14500 },
-    ];
-
-    let timers: NodeJS.Timeout[] = [];
-    const run = () => {
-      timers.forEach(clearTimeout);
-      timers = sequence.map(({ idx, delay, click }) =>
-        setTimeout(() => {
-          setActiveIdx(idx);
-          if (click) {
-            setTimeout(() => setIsClicking(true), 800);
-            setTimeout(() => setIsClicking(false), 1200);
-          }
-        }, delay),
-      );
-    };
-
-    run();
-    const interval = setInterval(run, 18000);
-    return () => {
-      timers.forEach(clearTimeout);
-      clearInterval(interval);
-    };
-  }, [reduceMotion]);
-
-  // Handle scrolling and cursor positioning
-  useEffect(() => {
-    const stepEl = stepRefs.current[activeIdx];
-    const container = scrollContainerRef.current;
-    if (!stepEl || !container) return;
-
-    // Internal coordinates (offsetTop) are resilient to CSS transforms like scaling
-    const stepTop = stepEl.offsetTop;
-    const stepHeight = stepEl.offsetHeight;
-    const containerHeight = container.offsetHeight;
-    const containerTop = container.offsetTop;
-
-    // Calculate target scroll so step is centered in the container
-    const targetScrollTop =
-      stepTop - containerTop - containerHeight / 2 + stepHeight / 2;
-
-    container.scrollTo({
-      top: targetScrollTop,
-      behavior: "smooth",
-    });
-
-    // Update cursor position relative to the scene root (the absolute div)
-    setCursorPos({
-      x: stepEl.offsetLeft + stepEl.offsetWidth * 0.7,
-      y: stepEl.offsetTop + stepEl.offsetHeight * 0.5,
-    });
-  }, [activeIdx]);
+  const completedCount = steps.filter((s) => s.status === "done").length;
+  const progressPct = Math.round((completedCount / steps.length) * 100);
+  const isAllDone = completedCount === steps.length;
 
   return (
     <div
+      className="relative flex flex-col overflow-visible rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
       style={{
-        width: 600,
-        height: 500,
-        borderRadius: 32,
-        background: "#f4f7fb",
-        border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)",
+        width: 680,
+        height: 560,
         position: "absolute",
-        left: 40,
-        top: 30,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
       }}
     >
-      {/* ── Top bar (52px) ── */}
-      <div
-        style={{
-          height: 52,
-          background: "white",
-          borderBottom: "1px solid #edf2f0",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 18px",
-          gap: 8,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 10,
-              background: "linear-gradient(135deg, #0d7377, #0a5e62)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 2px 8px rgba(13,115,119,0.28)",
-            }}
-          >
-            <Compass size={15} color="white" strokeWidth={2.5} />
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[#e1ebe8] bg-white px-6 py-4 rounded-t-[32px]">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-[#0d7377] text-white">
+            <Compass className="size-6" />
           </div>
           <div>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 900,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "#1e293b",
-                lineHeight: 1,
-              }}
-            >
+            <div className="text-[15px] font-black uppercase tracking-wide text-[#162126]">
               IR-1 Journey
             </div>
-            <div
-              style={{
-                fontSize: 9,
-                color: "#64748b",
-                fontWeight: 600,
-                marginTop: 2,
-              }}
-            >
+            <div className="text-xs text-[#6b8097]">
               Islamabad Embassy · Online Filing
+              {!isAllDone && (
+                <span className="ml-2 inline-flex items-center gap-1 font-bold text-[#0d7377]">
+                  · Click steps to try demo
+                </span>
+              )}
             </div>
           </div>
         </div>
-        <div
-          style={{
-            marginLeft: "auto",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
-          <div style={{ position: "relative" }}>
-            <Bell size={17} color="#64748b" strokeWidth={2} />
-            <div
-              style={{
-                position: "absolute",
-                top: -1,
-                right: -1,
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "#ef4444",
-                border: "1.5px solid white",
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: "#f1f5f9",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "1px solid #e2e8f0",
-            }}
-          >
-            <User size={14} color="#64748b" strokeWidth={2} />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Horizontal chapter timeline (42px) ── */}
-      <div
-        style={{
-          height: 42,
-          background: "white",
-          borderBottom: "1px solid #edf2f0",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          gap: 0,
-          flexShrink: 0,
-        }}
-      >
-        {chapterNav.map((ch, idx) => (
-          <div
-            key={ch.n}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              flex: idx < 2 ? "none" : 1,
-            }}
-          >
-            {/* Node + label */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "50%",
-                  background: ch.active
-                    ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)`
-                    : "#f1f5f9",
-                  border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {ch.active ? (
-                  <span
-                    style={{ fontSize: 10, fontWeight: 900, color: "white" }}
-                  >
-                    {ch.n}
-                  </span>
-                ) : (
-                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
-                )}
-              </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: 9.5,
-                    fontWeight: 800,
-                    color: ch.active ? "#1e293b" : "#94a3b8",
-                    lineHeight: 1,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {ch.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 7.5,
-                    fontWeight: 700,
-                    color: ch.active ? ch.text : "#cbd5e1",
-                    marginTop: 1,
-                  }}
-                >
-                  {ch.active ? `${ch.pct}% done` : "Locked"}
-                </div>
-              </div>
-            </div>
-            {/* Connector line between chapters */}
-            {idx < 2 && (
-              <div
-                style={{
-                  flex: 1,
-                  height: 2,
-                  background:
-                    idx === 0
-                      ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)`
-                      : "#e2e8f0",
-                  margin: "0 10px",
-                  minWidth: 24,
-                }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* ── Main area — two columns (362px total) ── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {/* Left: Journey card (192px) */}
-        <div
-          style={{
-            width: 192,
-            background: "white",
-            borderRight: "1px solid #edf2f0",
-            padding: "14px 15px",
-            display: "flex",
-            flexDirection: "column",
-            flexShrink: 0,
-          }}
-        >
-          {/* Chapter header */}
-          <div style={{ marginBottom: 10 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                marginBottom: 5,
-              }}
-            >
-              <div
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  background: "#8284BF",
-                }}
-                className={reduceMotion ? "" : "animate-pulse"}
-              />
-              <span
-                style={{
-                  fontSize: 8,
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  color: "#4E518C",
-                }}
-              >
-                Chapter 1 · In Progress
-              </span>
-            </div>
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 900,
-                color: "#1e293b",
-                lineHeight: 1.25,
-                marginBottom: 7,
-              }}
-            >
-              USCIS Petition Filing
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div
-                style={{
-                  flex: 1,
-                  height: 5,
-                  borderRadius: 99,
-                  background: "#e8edf2",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${Math.round(((activeIdx + 1) / steps.length) * 100)}%`,
-                    height: "100%",
-                    background: "linear-gradient(90deg, #8284BF, #4E518C)",
-                    borderRadius: 99,
-                    transition: "width 0.4s ease",
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontSize: 8.5,
-                  fontWeight: 800,
-                  color: "#4E518C",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {activeIdx + 1} / {steps.length}
-              </span>
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: "#f0f4f3", marginBottom: 10 }} />
-
-          {/* Current step card */}
-          <div style={{ marginBottom: 10 }}>
-            <div
-              style={{
-                fontSize: 8,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "#94a3b8",
-                marginBottom: 5,
-              }}
-            >
-              Active Step
-            </div>
-            <div
-              style={{
-                background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)",
-                borderRadius: 10,
-                padding: "9px 10px",
-                border: "1px solid #B9BBE2",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "#4E518C",
-                  lineHeight: 1.3,
-                  marginBottom: 3,
-                }}
-              >
-                {steps[activeIdx].name}
-              </div>
-              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>
-                Step {activeIdx + 1} of {steps.length} ·{" "}
-                {steps[activeIdx].done ? "Done" : "In progress"}
-              </div>
-            </div>
-          </div>
-
-          {/* Alert */}
-          <div
-            style={{
-              borderRadius: 9,
-              padding: "7px 9px",
-              background: "#fffbeb",
-              border: "1px solid #fde68a",
-              marginBottom: 10,
-            }}
-          >
-            <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-              <div
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  background: "#f59e0b",
-                  marginTop: 3.5,
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>
-                Fresh NADRA records required for ISL embassy.
-              </span>
-            </div>
-          </div>
-
-          {/* CTA — marginTop: auto, never cropped */}
+        <div className="flex items-center gap-3">
           <button
-            type="button"
-            style={{
-              width: "100%",
-              background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)",
-              border: "none",
-              borderRadius: 11,
-              padding: "11px 14px",
-              color: "white",
-              fontSize: 12,
-              fontWeight: 800,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 7,
-              cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(13,115,119,0.28)",
-              marginTop: "auto",
-              flexShrink: 0,
-            }}
+            onClick={() => setIsBellOpen(!isBellOpen)}
+            className="relative flex size-10 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors focus:outline-none"
           >
-            Continue Step
-            <ArrowRight size={13} strokeWidth={2.5} />
+            <Bell className="size-5" />
+            <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#e34242] ring-2 ring-white" />
+            <AnimatePresence>
+              {isBellOpen && (
+                <motion.div
+                  initial={
+                    reduceMotion ? false : { opacity: 0, y: 5, scale: 0.95 }
+                  }
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={
+                    reduceMotion ? undefined : { opacity: 0, y: 5, scale: 0.95 }
+                  }
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-12 z-[100] w-64 rounded-xl border border-[#dde8e6] bg-white p-4 shadow-xl text-left"
+                >
+                  <div className="text-xs font-bold text-[#162126]">
+                    Notifications
+                  </div>
+                  <div className="mt-2 rounded-lg bg-[#f0f3f7] p-2 text-xs text-[#4a5c62]">
+                    <span className="font-bold text-[#0d7377]">
+                      NADRA Review:
+                    </span>{" "}
+                    Your documents have been processed and are ready.
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
+          <div className="flex size-10 items-center justify-center rounded-full border border-[#dde8e6] bg-[#f0f3f7] text-[#6b8097]">
+            <User className="size-5" />
+          </div>
         </div>
+      </div>
 
-        {/* Step list area */}
-        <div
-          ref={scrollContainerRef}
-          style={{
-            flex: 1,
-            padding: "14px 14px",
-            overflowY: "auto",
-            scrollbarWidth: "none",
-            pointerEvents: "none",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginBottom: 10,
-            }}
-          >
-            <Signpost size={11} color="#0d7377" strokeWidth={2.5} />
-            <span
-              style={{
-                fontSize: 9,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
-                color: "#64748b",
-              }}
-            >
-              Chapter 1 Steps
-            </span>
-            <span
-              style={{
-                marginLeft: "auto",
-                fontSize: 8.5,
-                fontWeight: 800,
-                color: "#4E518C",
-                background: "#F0F1FB",
-                border: "1px solid #B9BBE2",
-                padding: "2px 7px",
-                borderRadius: 5,
-              }}
-            >
-              {steps.filter((s) => s.done).length} / {steps.length} done
+      {/* Horizontal Stepper */}
+      <div className="flex items-center gap-4 border-b border-[#e1ebe8] bg-white px-6 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-full bg-[#8284bf] text-sm font-bold text-white shadow-sm">
+            1
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#162126]">
+              USCIS Petition
+            </div>
+            <div className="text-[10px] text-[#6b8097]">
+              {Math.round(33 + completedCount * 1.5)}% done
+            </div>
+          </div>
+        </div>
+        <div className="h-px w-8 bg-[#dde8e6]" />
+        <div className="flex items-center gap-3 opacity-50">
+          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
+            <Lock className="size-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#6b8097]">NVC / CEAC</div>
+            <div className="text-[10px] text-[#6b8097]">Locked</div>
+          </div>
+        </div>
+        <div className="h-px w-8 bg-[#dde8e6]" />
+        <div className="flex items-center gap-3 opacity-50">
+          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
+            <Lock className="size-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#6b8097]">
+              Med + Interview
+            </div>
+            <div className="text-[10px] text-[#6b8097]">Locked</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left Sidebar */}
+        <div className="w-[240px] flex-shrink-0 border-r border-[#e1ebe8] bg-white p-5 flex flex-col relative z-10">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4E518C]">
+            <div className="size-1.5 rounded-full bg-[#4E518C]" />
+            CHAPTER 1 · IN PROGRESS
+          </div>
+          <h2 className="mt-2 text-[22px] font-black leading-tight text-[#162126]">
+            USCIS Petition Filing
+          </h2>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="h-1.5 flex-1 rounded-full bg-[#eef1f7] overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-[#8284bf]"
+                initial={false}
+                animate={{ width: `${62.5 + completedCount * 3.5}%` }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              />
+            </div>
+            <span className="text-[11px] font-bold text-[#162126] w-8 text-right">
+              {completedCount} / 8
             </span>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {steps.map((step, idx) => {
-              const isStepCurrent = idx === activeIdx;
+          <div className="mt-8 text-[10px] font-bold uppercase tracking-widest text-[#6b8097]">
+            Active Step
+          </div>
+          <div className="mt-2 rounded-xl border border-[#c8d1dc] bg-[#f8f9fb] p-3 shadow-sm">
+            <div className="font-bold text-[#162126]">Fill Form I-130A</div>
+            <div className="mt-1 text-[11px] text-[#6b8097]">
+              Step 5 of 8 · In progress
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fef3c7]/40 p-3">
+            <div className="flex gap-2">
+              <div className="mt-1 size-1.5 shrink-0 rounded-full bg-[#d97706]" />
+              <div className="text-xs text-[#92400e] leading-snug">
+                Fresh NADRA records required for ISL embassy.
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-auto pt-6">
+            <button
+              onClick={() => toggleStep(5)}
+              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] px-4 py-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#0a5c5f] hover:shadow-lg focus:outline-none"
+            >
+              <span>
+                {steps[4].status === "done"
+                  ? "Mark Incomplete"
+                  : "Continue Step"}
+              </span>
+              <ArrowRight className="size-4" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* Right Content */}
+        <div className="flex-1 bg-[#f9fafb] p-5 overflow-y-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#0d7377"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377]">
+              CHAPTER 1 STEPS
+            </div>
+            <div className="ml-auto rounded border border-[#d0e4f7] bg-white px-2 py-0.5 text-[9px] font-bold text-[#6b8097]">
+              {completedCount} / 8 DONE
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            {steps.map((step) => {
+              const isDone = step.status === "done";
+              const isActive = step.status === "active";
+
               return (
-                <div
+                <motion.div
                   key={step.id}
-                  ref={(el) => {
-                    stepRefs.current[idx] = el;
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 9,
-                    padding: isStepCurrent ? "8px 10px" : "5px 10px",
-                    borderRadius: 10,
-                    background: isStepCurrent
-                      ? "linear-gradient(to right, #F0F1FB, #f9f9fe)"
-                      : "transparent",
-                    border: isStepCurrent
-                      ? "1.5px solid #B9BBE2"
-                      : "1px solid transparent",
-                    boxShadow: isStepCurrent
-                      ? "0 2px 7px rgba(130,132,191,0.12)"
-                      : "none",
-                    transition: "all 0.3s ease",
-                  }}
+                  layout
+                  className={`relative flex items-center justify-between rounded-xl border p-3 transition-all ${
+                    isActive
+                      ? "border-[#8284bf] bg-[#f0f1fb] shadow-sm"
+                      : isDone
+                        ? "border-[#e1ebe8] bg-white"
+                        : "border-transparent hover:border-[#dde8e6] hover:bg-white"
+                  } group cursor-pointer`}
+                  onClick={() => toggleStep(step.id)}
                 >
-                  {step.done ? (
+                  <div className="flex items-center gap-3">
                     <div
-                      style={{
-                        width: 19,
-                        height: 19,
-                        borderRadius: "50%",
-                        background: "#10b981",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
+                      className={`flex size-7 items-center justify-center rounded-full transition-all ${
+                        isDone
+                          ? "bg-[#0d7377] text-white shadow-sm"
+                          : isActive
+                            ? "bg-[#8284bf] text-white"
+                            : "border border-[#dde8e6] bg-white text-[10px] font-bold text-[#6b8097]"
+                      }`}
                     >
-                      <Check size={10} color="white" strokeWidth={3} />
+                      {isDone ? (
+                        <Check className="size-4" strokeWidth={3} />
+                      ) : isActive ? (
+                        <ChevronRight className="size-4" strokeWidth={3} />
+                      ) : (
+                        step.id
+                      )}
                     </div>
-                  ) : isStepCurrent ? (
-                    <div
-                      style={{
-                        width: 19,
-                        height: 19,
-                        borderRadius: "50%",
-                        background: "#8284BF",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        boxShadow: "0 0 0 3px rgba(130,132,191,0.22)",
-                      }}
-                    >
-                      <ChevronRight size={10} color="white" strokeWidth={3} />
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        width: 19,
-                        height: 19,
-                        borderRadius: "50%",
-                        border: "1.5px solid #dde8e6",
-                        background: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 8,
-                          fontWeight: 700,
-                          color: "#cbd5e1",
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
-                    </div>
-                  )}
-                  <span
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: isStepCurrent ? 800 : step.done ? 600 : 500,
-                      color: isStepCurrent
-                        ? "#4E518C"
-                        : step.done
-                          ? "#059669"
-                          : "#94a3b8",
-                    }}
-                  >
-                    {step.name}
-                  </span>
-                  {isStepCurrent && (
+
                     <span
-                      style={{
-                        marginLeft: "auto",
-                        fontSize: 8,
-                        fontWeight: 900,
-                        color: "#4E518C",
-                        background: "rgba(130,132,191,0.15)",
-                        padding: "2px 7px",
-                        borderRadius: 5,
-                        textTransform: "uppercase",
-                        flexShrink: 0,
-                      }}
+                      className={`text-[13px] font-bold transition-colors ${
+                        isDone
+                          ? "text-[#0d7377]"
+                          : isActive
+                            ? "text-[#4E518C]"
+                            : "text-[#6b8097]"
+                      }`}
                     >
-                      Active
+                      {step.title}
                     </span>
-                  )}
-                </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {isActive && !isDone && (
+                      <span className="rounded-md bg-[#e0e2f5] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-[#4E518C]">
+                        Active
+                      </span>
+                    )}
+                    {!isDone && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStep(step.id);
+                        }}
+                        className={`rounded-md px-2.5 py-1.5 text-[10px] font-black transition-all ${
+                          isActive
+                            ? "bg-[#0d7377] text-white shadow-md hover:bg-[#0a5c5f]"
+                            : "opacity-0 group-hover:opacity-100 text-[#0d7377] hover:underline underline-offset-2"
+                        }`}
+                      >
+                        {isActive ? "Mark Completed" : "Complete"}
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
               );
             })}
-          </div>
 
-          {/* Locked chapters – compact */}
-          <div
-            style={{
-              marginTop: 12,
-              display: "flex",
-              flexDirection: "column",
-              gap: 5,
-            }}
-          >
-            {lockedChapters.map((ch) => (
-              <div
-                key={ch.number}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 9,
-                  padding: "7px 10px",
-                  borderRadius: 9,
-                  background: "white",
-                  border: "1px dashed #e2e8f0",
-                }}
-              >
-                <div
-                  style={{
-                    width: 19,
-                    height: 19,
-                    borderRadius: "50%",
-                    background: "#f1f5f9",
-                    border: "1.5px solid #e2e8f0",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
-                </div>
-                <span
-                  style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}
-                >
-                  Ch. {ch.number} · {ch.name}
-                </span>
-                <span
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 8.5,
-                    fontWeight: 700,
-                    color: "#cbd5e1",
-                    flexShrink: 0,
-                  }}
-                >
-                  Locked
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-dashed border-[#dde8e6] bg-white p-3.5 opacity-60">
+              <div className="flex items-center gap-2">
+                <Lock className="size-4 text-[#6b8097]" />
+                <span className="text-[13px] font-bold text-[#6b8097]">
+                  Ch. 2 · NVC / CEAC Processing
                 </span>
               </div>
-            ))}
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+                Locked
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Bottom stats bar (44px) ── */}
-      <div
-        style={{
-          height: 44,
-          background: "white",
-          borderTop: "1px solid #edf2f0",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          flexShrink: 0,
-        }}
-      >
-        {(
-          [
-            {
-              label: "Steps Done",
-              value: `${steps.filter((s) => s.done).length} / 18`,
-            },
-            { label: "Chapter", value: "1 of 3" },
-            { label: "Est. Timeline", value: "~8 months" },
-            { label: "Overall", value: "17%" },
-          ] as const
-        ).map((stat, i) => (
-          <div
-            key={stat.label}
-            style={{ display: "flex", alignItems: "center", flex: 1 }}
-          >
-            {i > 0 && (
-              <div
-                style={{
-                  width: 1,
-                  height: 18,
-                  background: "#e8edf2",
-                  marginRight: "auto",
-                  flexShrink: 0,
-                }}
-              />
-            )}
-            <div style={{ flex: 1, textAlign: "center" }}>
-              <div
-                style={{
-                  fontSize: 7.5,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: "#94a3b8",
-                }}
-              >
-                {stat.label}
-              </div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  fontWeight: 900,
-                  color: "#1e293b",
-                  marginTop: 1,
-                }}
-              >
-                {stat.value}
-              </div>
-            </div>
+      {/* Bottom Bar */}
+      <div className="grid grid-cols-4 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-3.5 text-center rounded-b-[32px] relative z-20">
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Steps Done
           </div>
-        ))}
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            {completedCount} / 18
+          </div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Chapter
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            1 of 3
+          </div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Est. Timeline
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            ~8 months
+          </div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Overall
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            {Math.round(17 + completedCount * 1.2)}%
+          </div>
+        </div>
       </div>
-
-      {/* Simulated Cursor */}
-      <motion.div
-        className="pointer-events-none absolute left-0 top-0 z-[100]"
-        animate={{
-          x: cursorPos.x,
-          y: cursorPos.y,
-          scale: isClicking ? 0.85 : 1,
-          opacity: 1,
-        }}
-        transition={{
-          x: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-          y: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-          scale: { duration: 0.2 },
-        }}
-      >
-        <svg
-          className="size-8 overflow-visible"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{
-            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.3))",
-          }}
-        >
-          <path
-            d="M4.7 3.4V20.7L9.6 15.9L13.2 22L16.1 20.3L12.6 14.4H19.4L4.7 3.4Z"
-            fill="white"
-            stroke="#07131f"
-            strokeWidth="1.25"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <AnimatePresence>
-          {isClicking && (
-            <motion.span
-              className="absolute left-[-6px] top-[-6px] size-6 rounded-full border-2 border-[#0d7377]/60 bg-[#0d7377]/10"
-              initial={{ opacity: 0.8, scale: 0.5 }}
-              animate={{ opacity: 0, scale: 1.5 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            />
-          )}
-        </AnimatePresence>
-      </motion.div>
     </div>
   );
 }
 
 // ── tools ──
 const featuredTools = [
-  { id: "strength",    icon: Brain,         label: "Case Strength Analyzer",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe", iconSrc: "/icons/case-strength-analyser.svg" },
-  { id: "action",      icon: LifeBuoy,      label: "221(g) Action Planner",   bg: "#ecfdf5", fg: "#059669", border: "#d1fae5", iconSrc: "/icons/221g-action-plan.svg"        },
-  { id: "path",        icon: Compass,       label: "Visa Path Finder",        bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5", iconSrc: "/icons/visa-path-finder.svg"         },
-  { id: "interview",   icon: MessageSquare, label: "Interview Prep",          bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe", iconSrc: "/icons/interview-prep.svg"           },
-  { id: "sponsorship", icon: Calculator,    label: "Sponsorship Calculator",  bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6", iconSrc: "/icons/sponsorship-calculator.svg"   },
-  { id: "dq",          icon: Clock,         label: "DQ Status Check",         bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff", iconSrc: "/icons/dq-case-tracker.svg"          },
-  { id: "bulletin",    icon: Calendar,      label: "Visa Bulletin Monitor",   bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1", iconSrc: "/icons/visa-bulletin-monitor.svg"    },
-  { id: "photo",       icon: Camera,        label: "Photo Booth",             bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3", iconSrc: "/icons/photo-booth.svg"              },
-  { id: "pdf",         icon: Files,         label: "PDF Tool Kit",            bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd", iconSrc: "/icons/pdf-toolbox.svg"              },
-  { id: "snap",        icon: PenTool,       label: "Snap & Sign",             bg: "#eef2ff", fg: "#4f46e5", border: "#c7d2fe", iconSrc: "/icons/snap-and-sign.svg"            },
-  { id: "filler",      icon: Wand2,         label: "Smart Form Filler",       bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa", iconSrc: "/icons/smart-form-filler.svg"        },
+  { id: "strength",    icon: Brain,         iconSize: 20, label: "Case Strength Analyzer",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe", iconSrc: "/icons/case-strength-analyser.svg" },
+  { id: "action",      icon: LifeBuoy,      iconSize: 20, label: "221(g) Action Planner",   bg: "#ecfdf5", fg: "#059669", border: "#d1fae5", iconSrc: "/icons/221g-action-plan.svg"        },
+  { id: "path",        icon: Compass,       iconSize: 18, label: "Visa Path Finder",        bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5", iconSrc: "/icons/visa-path-finder.svg"         },
+  { id: "interview",   icon: MessageSquare, iconSize: 18, label: "Interview Prep",          bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe", iconSrc: "/icons/interview-prep.svg"           },
+  { id: "sponsorship", icon: Calculator,    iconSize: 20, label: "Sponsorship Calculator",  bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6", iconSrc: "/icons/sponsorship-calculator.svg"   },
+  { id: "dq",          icon: Clock,         iconSize: 20, label: "DQ Status Check",         bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff", iconSrc: "/icons/dq-case-tracker.svg"          },
+  { id: "bulletin",    icon: Calendar,      iconSize: 19, label: "Visa Bulletin Monitor",   bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1", iconSrc: "/icons/visa-bulletin-monitor.svg"    },
+  { id: "photo",       icon: Camera,        iconSize: 18, label: "Photo Booth",             bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3", iconSrc: "/icons/photo-booth.svg"              },
+  { id: "pdf",         icon: Files,         iconSize: 19, label: "PDF Tool Kit",            bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd", iconSrc: "/icons/pdf-toolbox.svg"              },
+  { id: "snap",        icon: PenTool,       iconSize: 18, label: "Snap & Sign",             bg: "#eef2ff", fg: "#4f46e5", border: "#c7d2fe", iconSrc: "/icons/snap-and-sign.svg"            },
+  { id: "filler",      icon: Wand2,         iconSize: 20, label: "Smart Form Filler",       bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa", iconSrc: "/icons/smart-form-filler.svg"        },
 ];
 
 const toolContent: Record<string, any> = {
   strength: {
     eyebrow: "Case Review",
     title: "Case Strength Analyzer",
-    tagline: "See what's strong, what's missing, what to fix",
-    desc: "Quickly review your IR-1 case evidence — relationship proof, financial ties, and domicile documents — and see exactly where you stand before submission.",
-    stats: [["Evidence Reviewed", "Instantly"], ["Gaps Highlighted", "Yes"]],
-    badge: "Before you submit",
-    badgeDesc: "Catch weak spots in your evidence before the officer does — not after.",
-    recoTitle: "Most Common Gap",
-    recoMain: "Joint Bank Statements",
-    recoDesc: "Missing joint financial evidence is the most common reason IR-1 cases face extra scrutiny. Add 6+ months to strengthen your case.",
-    recoTags: ["Domicile Proof", "Communication Logs"],
+    desc: "Review your IR-1 evidence and get a clear picture of what's strong, what's missing, and what to fix before you submit.",
+    steps: [
+      {
+        n: 1,
+        label: "Upload & Input",
+        desc: "Share your relationship details, documents, and case info.",
+      },
+      {
+        n: 2,
+        label: "Analyze & Find Gaps",
+        desc: "Checks your evidence and flags weak areas against approval patterns.",
+      },
+      {
+        n: 3,
+        label: "Review & Fix",
+        desc: "Get a list of exactly what to strengthen before submission.",
+      },
+    ],
+    tips: ["Joint Bank Statements", "Domicile Proof", "Communication Logs"],
   },
   action: {
     eyebrow: "Post-Interview",
     title: "221(g) Action Planner",
-    tagline: "Know exactly what to do after a 221(g) refusal",
-    desc: "Got a 221(g) slip? This tool tells you what documents are needed, how to prepare them, and where to submit — step by step.",
-    stats: [["Case Still Active?", "Yes"], ["Typical Response", "10–30 days"]],
-    badge: "Not a denial",
-    badgeDesc: "A 221(g) is a request for more information, not a refusal. Acting correctly and quickly keeps your case moving.",
-    recoTitle: "Most Common Type",
-    recoMain: "Administrative Processing",
-    recoDesc: "Background check holds can last 60–240+ days. Track your CEAC status weekly and keep a record of every embassy interaction.",
-    recoTags: ["CEAC Tracking", "Embassy Contact"],
+    desc: "Got a 221(g) slip after your interview? This tool tells you what documents are needed and what to do next — step by step.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Your Slip",
+        desc: "Input the details from your 221(g) or AP notice.",
+      },
+      {
+        n: 2,
+        label: "Get Your Checklist",
+        desc: "See exactly which documents are required and how to format them.",
+      },
+      {
+        n: 3,
+        label: "Submit & Track",
+        desc: "Know where to send your response and what to expect next.",
+      },
+    ],
+    tips: ["CEAC Tracking", "Embassy Contact", "AP Timeline"],
   },
   path: {
     eyebrow: "Getting Started",
     title: "Visa Path Finder",
-    tagline: "Not sure which visa applies to you? Start here",
-    desc: "Answer a few simple questions about your relationship and citizenship status. Get a clear visa category recommendation with your next step.",
-    stats: [["Questions", "5–7"], ["Time", "Under 3 mins"]],
-    badge: "No legal knowledge needed",
-    badgeDesc: "Built for people who are just starting out and don't know which visa category fits their situation.",
-    recoTitle: "Most Common Path",
-    recoMain: "IR-1 Spouse Visa",
-    recoDesc: "Married to a U.S. citizen? IR-1 is the most common path for Pakistani spouses — no waiting list, no priority dates.",
-    recoTags: ["IR-1 / CR-1", "K-1 Fiancé", "IR-5 Parent"],
+    desc: "Starting your IR-1 journey and not sure where to begin? Answer a few quick questions and get a clear recommendation with your first action.",
+    steps: [
+      {
+        n: 1,
+        label: "Answer 5 Questions",
+        desc: "Tell us about your relationship, citizenship, and current situation.",
+      },
+      {
+        n: 2,
+        label: "Confirm Your Path",
+        desc: "We confirm IR-1 is the right category and explain what that means.",
+      },
+      {
+        n: 3,
+        label: "See Your Next Step",
+        desc: "Get one clear action to take right now — petition, sponsor, or prepare.",
+      },
+    ],
+    tips: ["IR-1 Eligibility", "Petitioner vs Beneficiary", "Where to Start"],
   },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Prep",
-    tagline: "Practice real questions before your embassy interview",
-    desc: "Go through common Islamabad Embassy interview questions, see what officers focus on, and practice answers that reflect your actual situation.",
-    stats: [["Questions", "50+"], ["Tailored For", "Islamabad"]],
-    badge: "ISL-focused content",
-    badgeDesc: "Questions and guidance based on Islamabad embassy patterns — relationship credibility, domicile, and financial ties.",
-    recoTitle: "What Officers Focus On",
-    recoMain: "Genuine Relationship",
-    recoDesc: "ISL officers look closely at joint finances, communication history, and your plans after the visa is granted.",
-    recoTags: ["Joint Finances", "Communication Proof", "Future Plans"],
+    desc: "Practice real Islamabad Embassy questions, learn what officers focus on, and walk in prepared — not guessing.",
+    steps: [
+      {
+        n: 1,
+        label: "Pick Your Focus",
+        desc: "Choose areas to practice — relationship, finances, or domicile.",
+      },
+      {
+        n: 2,
+        label: "Practice Questions",
+        desc: "Go through real ISL questions with model answers.",
+      },
+      {
+        n: 3,
+        label: "Build Confidence",
+        desc: "Know officer patterns and be ready for tough questions.",
+      },
+    ],
+    tips: ["Joint Finances", "Communication Proof", "Future Plans"],
   },
   sponsorship: {
     eyebrow: "Financial Check",
     title: "Sponsorship Calculator",
-    tagline: "Check if your income meets the I-864 requirement",
-    desc: "Enter the petitioner's income and household size to see if the poverty guideline threshold is met — and which sponsorship form applies.",
-    stats: [["Guideline", "2025 Updated"], ["Form Selected", "Automatically"]],
-    badge: "I-864 or I-864EZ?",
-    badgeDesc: "The tool selects the right Affidavit of Support form for your situation — no guessing about which one to file.",
-    recoTitle: "If Income Falls Short",
-    recoMain: "Use a Joint Sponsor",
-    recoDesc: "Any eligible person in the U.S. can co-sponsor by filing a separate I-864. They don't need to be a relative.",
-    recoTags: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
+    desc: "Check if the petitioner's income meets the I-864 poverty guideline threshold — and find out which form applies to your case.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Income",
+        desc: "Input the petitioner's income, household size, and assets.",
+      },
+      {
+        n: 2,
+        label: "Check Threshold",
+        desc: "Compared against the 2025 poverty guideline for your household.",
+      },
+      {
+        n: 3,
+        label: "Get Your Form",
+        desc: "See if I-864 or I-864EZ applies and if a joint sponsor is needed.",
+      },
+    ],
+    tips: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
   },
   dq: {
     eyebrow: "Scheduling",
     title: "DQ Status Check",
-    tagline: "Check which DQ months are being called right now",
-    desc: "See which Documentarily Qualified months are currently being scheduled at Islamabad and estimate when your interview window will open.",
-    stats: [["Updated", "Weekly"], ["Embassy", "ISL + Others"]],
-    badge: "Islamabad scheduling",
-    badgeDesc: "Embassies schedule in DQ date order — knowing the current scheduling month tells you roughly how long your wait is.",
-    recoTitle: "How the Queue Works",
-    recoMain: "DQ Month Matters",
-    recoDesc: "The closer your DQ month is to the current scheduling month, the sooner you will receive your interview invitation.",
-    recoTags: ["DQ Date", "Scheduling Month", "Wait Estimate"],
+    desc: "See which Documentarily Qualified months are being scheduled at Islamabad right now, and estimate when your interview window will open.",
+    steps: [
+      {
+        n: 1,
+        label: "Select Embassy",
+        desc: "Choose your embassy — Islamabad or another consulate.",
+      },
+      {
+        n: 2,
+        label: "See Current Month",
+        desc: "Check which DQ months are being called right now.",
+      },
+      {
+        n: 3,
+        label: "Estimate Your Wait",
+        desc: "Compare your DQ month to see your approximate interview window.",
+      },
+    ],
+    tips: ["DQ Date", "Scheduling Month", "Wait Estimate"],
   },
   bulletin: {
     eyebrow: "Priority Date",
     title: "Visa Bulletin Monitor",
-    tagline: "Track your priority date against the Visa Bulletin",
-    desc: "Check if your priority date is current in the latest monthly Visa Bulletin. Useful for F2A, F3, and F4 family preference categories.",
-    stats: [["Released", "Monthly"], ["Categories", "F1 · F2A · F3 · F4"]],
-    badge: "IR-1 has no wait",
-    badgeDesc: "Immediate relatives like IR-1 are always current. This tool is for family preference categories with a waiting list.",
-    recoTitle: "Most Common Category",
-    recoMain: "F2A — Spouse of LPR",
-    recoDesc: "If your petitioner has a green card (not citizenship), F2A applies. Monitor monthly to know when your date becomes current.",
-    recoTags: ["F2A", "F3", "F4"],
+    desc: "IR-1 is always current — but if you're on a preference category, your priority date needs to be current before you can move forward. Track it here every month.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Priority Date",
+        desc: "Enter your priority date from your I-130 approval notice.",
+      },
+      {
+        n: 2,
+        label: "Check This Month",
+        desc: "We compare it to the latest Visa Bulletin cutoff dates automatically.",
+      },
+      {
+        n: 3,
+        label: "Track Movement",
+        desc: "See how many months the bulletin moved and whether your date is current.",
+      },
+    ],
+    tips: ["IR-1 Always Current", "Priority Date", "Monthly Updates"],
   },
   photo: {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",
-    tagline: "Make a compliant visa photo without going to a studio",
-    desc: "Upload any clear photo and get a properly formatted 2×2 inch U.S. visa photo — correct head size, white background, embassy-ready.",
-    stats: [["Output Size", "2×2 Inch"], ["Background", "White"]],
-    badge: "No studio visit needed",
-    badgeDesc: "Meets USCIS and embassy photo requirements. Avoid rejected photos at the counter or in your application.",
-    recoTitle: "Common Fail Reasons",
-    recoMain: "Head Size Too Small",
-    recoDesc: "Head must fill 70–80% of the frame. Glasses, visible hat, and heavy shadows are grounds for rejection.",
-    recoTags: ["No Glasses", "Neutral Face", "Both Ears Visible"],
+    desc: "Make a compliant U.S. visa photo without a studio visit. Upload any photo and get a properly formatted 2×2 inch result.",
+    steps: [
+      {
+        n: 1,
+        label: "Upload Your Photo",
+        desc: "Take or upload any clear, front-facing photo.",
+      },
+      {
+        n: 2,
+        label: "Auto-Crop & Format",
+        desc: "Cropped to 2×2 inches, white background — embassy standard.",
+      },
+      {
+        n: 3,
+        label: "Download & Use",
+        desc: "Save your compliant photo and attach it to your application.",
+      },
+    ],
+    tips: ["No Glasses", "Neutral Expression", "Both Ears Visible"],
   },
   pdf: {
     eyebrow: "Document Tools",
     title: "PDF Tool Kit",
-    tagline: "Merge, compress, and format docs for NVC upload",
-    desc: "Organize your immigration documents, compress them under NVC's 2MB limit, and convert files to the required PDF format — all in one place.",
-    stats: [["NVC Limit", "2.0 MB"], ["Accepted Formats", "PDF, JPG"]],
-    badge: "NVC upload-ready",
-    badgeDesc: "CEAC rejects oversized files and wrong formats. This handles resizing and conversion automatically.",
-    recoTitle: "Scanning Tip",
-    recoMain: "Grayscale at 300 DPI",
-    recoDesc: "Scan non-photo documents in grayscale at 300 DPI. Keeps file sizes manageable without losing readability.",
-    recoTags: ["Merge PDFs", "Compress", "Convert to PDF"],
+    desc: "Merge, compress, and format your immigration documents to meet NVC's strict 2MB upload limit and CEAC requirements.",
+    steps: [
+      {
+        n: 1,
+        label: "Upload Your Files",
+        desc: "Add PDFs, images, or scanned documents from any device.",
+      },
+      {
+        n: 2,
+        label: "Merge or Compress",
+        desc: "Combine files or reduce size to meet NVC's 2MB limit.",
+      },
+      {
+        n: 3,
+        label: "Download Ready",
+        desc: "Get a clean, NVC-ready PDF formatted for CEAC upload.",
+      },
+    ],
+    tips: ["Merge PDFs", "Compress Files", "Convert to PDF"],
   },
   snap: {
     eyebrow: "Signatures",
     title: "Snap & Sign",
-    tagline: "Create a clean digital signature for your forms",
-    desc: "Draw, type, or upload your signature — then download it as a PNG ready to place on any immigration form. Works on mobile and desktop.",
-    stats: [["Output", "PNG / JPG"], ["Works On", "I-130, DS-260, I-864"]],
-    badge: "No scanner needed",
-    badgeDesc: "Compatible with all major immigration forms that require a wet signature from the petitioner.",
-    recoTitle: "Where It's Required",
-    recoMain: "Form I-864 — Affidavit",
-    recoDesc: "A missing signature on the Affidavit of Support is one of the most common reasons NVC sends a Request for Evidence.",
-    recoTags: ["I-130", "I-864", "DS-260"],
+    desc: "Anywhere a signature is required — forms, letters, declarations, or documents — Snap & Sign creates a clean, professional digital signature in seconds.",
+    steps: [
+      {
+        n: 1,
+        label: "Draw, Type or Upload",
+        desc: "Choose how you want to create your signature — freehand, typed style, or upload an existing one.",
+      },
+      {
+        n: 2,
+        label: "Preview & Adjust",
+        desc: "Resize, reposition, and tweak until it looks exactly right on any form.",
+      },
+      {
+        n: 3,
+        label: "Download & Use",
+        desc: "Save as a transparent PNG and drop it onto any document, form, or PDF that needs signing.",
+      },
+    ],
+    tips: [
+      "Any Immigration Form",
+      "Letters & Declarations",
+      "Works on Mobile & Desktop",
+    ],
   },
   filler: {
     eyebrow: "Form Completion",
     title: "Smart Form Filler",
-    tagline: "Fill I-130, DS-260, and I-864 without the confusion",
-    desc: "Enter your details once and get a completed, ready-to-submit PDF. Every field is guided — no blank boxes, no common mistakes.",
-    stats: [["Forms Covered", "I-130, DS-260"], ["Time", "Minutes not hours"]],
-    badge: "Pakistan-specific defaults",
-    badgeDesc: "Pre-set for Pakistani applicants — CNIC format, union council addresses, and local terminology all handled.",
-    recoTitle: "Easy to Miss",
-    recoMain: "Social Media (5 Years)",
-    recoDesc: "DS-260 requires all social media handles used in the last 5 years. Leaving this blank causes processing delays.",
-    recoTags: ["DS-260", "I-130A", "Review First"],
+    desc: "Fill I-130, DS-260, and I-864 without the confusion. Enter your details once and get a completed, submission-ready PDF.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Your Details",
+        desc: "Fill in personal and case info once in a simple guided flow.",
+      },
+      {
+        n: 2,
+        label: "Auto-Fill Form",
+        desc: "Data mapped to the correct fields on the official form.",
+      },
+      {
+        n: 3,
+        label: "Download PDF",
+        desc: "Get a completed, submission-ready PDF in minutes.",
+      },
+    ],
+    tips: ["DS-260", "I-130A", "Review Before Submit"],
   },
 };
 
@@ -2744,7 +2447,6 @@ const ITEM_W = 108;
 const GAP = 20;
 const STRIDE = ITEM_W + GAP;
 const DURATION = 28;
-
 
 // ── carousel: CSS auto-scroll, pauses on hover ────────────────────────────────
 
@@ -2757,101 +2459,82 @@ function ToolCarousel({
   onSelect: (idx: number) => void;
   onHoverChange: (h: boolean) => void;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const rafRef  = useRef<number>(0);
-  const [paused, setPaused] = useState(false);
-  const loopWidth = featuredTools.length * STRIDE;
+  const N         = featuredTools.length;
+  const COPIES    = 20;
+  const totalStep = useRef(10 * N); // start at copy 10, icon 0
+  const prevIdx   = useRef(activeIdx);
+  const [offset, setOffset]     = useState(() => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2));
+  const [animated, setAnimated] = useState(true);
 
-  // Inject CSS keyframe once
   useEffect(() => {
-    const id = "tc-ks";
-    if (!document.getElementById(id)) {
-      const s = document.createElement("style");
-      s.id = id;
-      s.textContent = `@keyframes tcScroll{from{transform:translateX(0)}to{transform:translateX(-${loopWidth}px)}}`;
-      document.head.appendChild(s);
-    }
-  }, [loopWidth]);
+    if (activeIdx === prevIdx.current) return;
+    // Advance by correct steps forward (handles wrap-around 10→0)
+    const diff = (activeIdx - prevIdx.current + N) % N;
+    totalStep.current += diff || N;
+    prevIdx.current = activeIdx;
+    setAnimated(true);
+    setOffset(300 - (GAP + totalStep.current * STRIDE + ITEM_W / 2));
+  }, [activeIdx, N]);
 
-  // rAF: scale/lift icon nearest to centre
-  useEffect(() => {
-    const run = () => {
-      const wrap = wrapRef.current;
-      if (wrap) {
-        const { left, width } = wrap.getBoundingClientRect();
-        const centerX = left + width / 2;
-        const hotZone = width * 0.13;
-        wrap.querySelectorAll<HTMLElement>(".tc-icon-box").forEach((el) => {
-          const r    = el.getBoundingClientRect();
-          const dist = Math.abs(r.left + r.width / 2 - centerX);
-          const t    = Math.max(0, 1 - dist / hotZone);
-          el.style.transform = `translateY(${-t * 5}px) scale(${1 + t * 0.2})`;
-          el.style.zIndex    = t > 0.5 ? "10" : "1";
-        });
-      }
-      rafRef.current = requestAnimationFrame(run);
-    };
-    rafRef.current = requestAnimationFrame(run);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
-
-  // 3 copies is enough for seamless loop
-  const items = [...featuredTools, ...featuredTools, ...featuredTools];
+  const items = Array.from({ length: COPIES }, () => featuredTools).flat();
 
   return (
     <div
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
       style={{
-        position:"absolute", bottom:0, left:0, width:"100%", height:138,
-        overflow:"hidden", borderTop:"1px solid #e8edf2",
-        background:"linear-gradient(to bottom,#ffffff,#f8fafc)",
-        WebkitMaskImage:"linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
-        maskImage:"linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        position: "absolute", bottom: 0, left: 0, width: "100%", height: 138,
+        overflow: "hidden", borderTop: "1px solid #e8edf2",
+        background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
+        WebkitMaskImage: "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        maskImage:       "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
       }}
     >
-      {/* Auto-scrolling track */}
       <div
-        ref={wrapRef}
-        onMouseEnter={() => { setPaused(true);  onHoverChange(true);  }}
-        onMouseLeave={() => { setPaused(false); onHoverChange(false); }}
         style={{
-          display:"flex", alignItems:"center", gap:GAP,
-          paddingLeft: GAP, height:"100%",
-          animation:`tcScroll ${DURATION}s linear infinite`,
-          animationPlayState: paused ? "paused" : "running",
-          willChange:"transform",
+          display: "flex", alignItems: "center", gap: GAP,
+          paddingLeft: GAP, height: "100%",
+          transform: `translateX(${offset}px)`,
+          transition: animated ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+          willChange: "transform",
         }}
       >
         {items.map((tool, idx) => {
-          const Icon    = tool.icon;
-          const toolIdx = idx % featuredTools.length;
+          const toolIdx  = idx % N;
           const isActive = toolIdx === activeIdx;
+          const Icon     = tool.icon;
           return (
             <div
               key={idx}
               onClick={() => onSelect(toolIdx)}
-              style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:9, width:ITEM_W, flexShrink:0, cursor:"pointer" }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, width: ITEM_W, flexShrink: 0, cursor: "pointer" }}
             >
+              {/* Icon box — pops when active */}
               <div
-                className="tc-icon-box"
                 style={{
-                  width:54, height:54, borderRadius:16,
-                  background:tool.fg,
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  outline: isActive ? `2px solid ${tool.fg}` : "none",
+                  width: 54, height: 54, minWidth: 54, minHeight: 54,
+                  borderRadius: 16, background: tool.fg,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transform: isActive ? "scale(1.13)" : "scale(1)",
+                  transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  outline: isActive ? `3px solid ${tool.fg}` : "none",
                   outlineOffset: isActive ? "3px" : "0",
-                  transition:"outline 0.2s",
-                  transformOrigin:"50% 100%",
+                  boxShadow: isActive ? `0 8px 24px ${tool.fg}55` : "none",
                 }}
               >
-                <Icon size={24} color="white" strokeWidth={2} />
+                <Icon size={tool.iconSize} color="white" strokeWidth={1.75} />
               </div>
-              <span style={{
-                fontSize:9.5, fontWeight: isActive ? 900 : 700,
-                textTransform:"uppercase", letterSpacing:"0.07em",
-                color: isActive ? tool.fg : "#5a6a72",
-                textAlign:"center", lineHeight:1.3, maxWidth:90,
-                pointerEvents:"none", transition:"color 0.2s",
-              }}>
+              {/* Fixed-height label so all icons sit at same level */}
+              <span
+                style={{
+                  fontSize: 9.5, fontWeight: isActive ? 900 : 700,
+                  textTransform: "uppercase", letterSpacing: "0.07em",
+                  color: isActive ? tool.fg : "#5a6a72",
+                  textAlign: "center", lineHeight: 1.3, width: 90,
+                  height: 26, display: "flex", alignItems: "flex-start", justifyContent: "center",
+                  pointerEvents: "none", transition: "color 0.3s",
+                }}
+              >
                 {tool.label}
               </span>
             </div>
@@ -2862,21 +2545,18 @@ function ToolCarousel({
   );
 }
 
-// ── Main scene ────────────────────────────────────────────────────────────────
-
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [visible, setVisible]     = useState(true);
   const [isPaused, setIsPaused]   = useState(false);
 
-  // Navigate to a specific tool with crossfade
   const goTo = useCallback((idx: number) => {
     const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
     setVisible(false);
     window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 200);
   }, []);
 
-  // Auto-advance every 5s — pauses when carousel is hovered
+  // Auto-advance every 5 s — shows each tool for 5 seconds
   useEffect(() => {
     if (isPaused) return;
     const t = window.setTimeout(() => {
@@ -2889,7 +2569,7 @@ export function IndividualToolsScene() {
     return () => window.clearTimeout(t);
   }, [activeIdx, isPaused]);
 
-  const tool = featuredTools[activeIdx];
+  const tool    = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
@@ -2897,275 +2577,106 @@ export function IndividualToolsScene() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       style={{
-        width: 600,
-        height: 500,
-        borderRadius: 32,
-        background: "white",
-        border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position: "absolute",
-        left: 40,
-        top: 30,
-        overflow: "hidden",
+        width: 600, height: 500, borderRadius: 32,
+        background: "white", border: "1px solid #dde8e6",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        position: "absolute", left: 40, top: 30,
+        overflow: "hidden", display: "flex", flexDirection: "column",
       }}
     >
-      {/* ── Info panel — fades on tool change ── */}
+      {/* ── Top bar — tool colour ── */}
       <div
         style={{
-          position: "relative",
-          width: "100%",
-          height: 362,
-          opacity: visible ? 1 : 0,
-          transform: visible ? "translateY(0)" : "translateY(6px)",
-          transition: "opacity 0.28s ease, transform 0.28s ease",
+          height: 54, flexShrink: 0, background: tool.fg,
+          display: "flex", alignItems: "center",
+          padding: "0 20px", gap: 10,
+          transition: "background 0.3s ease",
         }}
       >
-        {/* Hero card — left column */}
-        <div
-          style={{
-            position: "absolute",
-            left: 22,
-            top: 24,
-            width: 288,
-            height: 310,
-            borderRadius: 24,
-            background: "white",
-            border: `2px solid ${tool.fg}`,
-            boxShadow: `0 16px 48px ${tool.border}55`,
-            padding: "16px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {/* Eyebrow badge */}
-          <span
-            style={{
-              display: "inline-flex",
-              borderRadius: 999,
-              border: `1px solid ${tool.border}`,
-              background: tool.bg,
-              padding: "3px 10px",
-              fontSize: 9.5,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: tool.fg,
-              alignSelf: "flex-start",
-            }}
-          >
+        <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {(() => { const Icon = tool.icon; return <div style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon size={16} color="white" strokeWidth={1.75} /></div>; })()}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 8.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.7)", lineHeight: 1 }}>
             {content.eyebrow}
-          </span>
-
-          <h3
-            style={{
-              fontSize: 19,
-              fontWeight: 800,
-              lineHeight: 1.15,
-              color: "#162126",
-              margin: "10px 0 0",
-            }}
-          >
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: "white", lineHeight: 1.2, marginTop: 2 }}>
             {content.title}
-          </h3>
-          <p
-            style={{
-              fontSize: 12.5,
-              lineHeight: 1.6,
-              color: "#4a5c62",
-              margin: "6px 0 0",
-            }}
-          >
+          </div>
+        </div>
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          style={{
+            flexShrink: 0, background: "white", color: tool.fg,
+            border: "none", borderRadius: 20, padding: "6px 14px",
+            fontSize: 11, fontWeight: 800, cursor: "pointer",
+            textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5,
+          }}
+        >
+          Get Started
+          <ArrowRight size={11} strokeWidth={2.5} />
+        </a>
+      </div>
+
+      {/* ── Main content ── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {/* Left: description + steps */}
+        <div
+          style={{
+            flex: 1, padding: "14px 16px",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(6px)",
+            transition: "opacity 0.25s ease, transform 0.25s ease",
+          }}
+        >
+          <div style={{ fontSize: 11.5, color: "#4a5c62", lineHeight: 1.6, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f0f4f8" }}>
             {content.desc}
-          </p>
-
-          <div
-            style={{
-              marginTop: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: 7,
-            }}
-          >
-            {content.stats.map(([label, value]: [string, string]) => (
+          </div>
+          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 8 }}>
+            How it works
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+            {content.steps.map((step: any) => (
               <div
-                key={label}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  borderRadius: 10,
-                  border: "1px solid #e2e8f0",
-                  background: "#f7fafc",
-                  padding: "6px 12px",
-                }}
+                key={step.n}
+                style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f8fafc", borderRadius: 12, padding: "9px 12px", border: "1px solid #f0f4f8" }}
               >
-                <span
-                  style={{ fontSize: 11.5, color: "#4a5c62", fontWeight: 600 }}
-                >
-                  {label}
-                </span>
-                <span
-                  style={{ fontSize: 12.5, fontWeight: 800, color: "#162126" }}
-                >
-                  {value}
-                </span>
-              </div>
-            ))}
-
-            {/* Status badge */}
-            <div
-              style={{
-                borderRadius: 10,
-                border: `1px solid ${tool.border}`,
-                background: tool.bg,
-                padding: "7px 12px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  color: tool.fg,
-                }}
-              >
-                <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
-                <span style={{ fontSize: 11.5, fontWeight: 800 }}>
-                  {content.badge}
-                </span>
-              </div>
-              <p
-                style={{
-                  fontSize: 10.5,
-                  lineHeight: 1.5,
-                  color: "#4a5c62",
-                  margin: "3px 0 0",
-                }}
-              >
-                {content.badgeDesc}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right column ── illustration card */}
-        <div
-          style={{
-            position     : "absolute",
-            left         : 324, top: 24,
-            width        : 254, height: 110,
-            borderRadius : 18,
-            background   : tool.bg,
-            border       : `1.5px solid ${tool.border}`,
-            padding      : "14px 16px",
-            display      : "flex", alignItems:"center", gap:14,
-            overflow     : "hidden",
-          }}
-        >
-          {/* Tool illustration icon */}
-          <div style={{ width:64, height:64, borderRadius:16, background:"white", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 4px 12px ${tool.border}88` }}>
-            <Image
-              src={tool.iconSrc}
-              alt={tool.label}
-              width={44}
-              height={44}
-              style={{ objectFit:"contain" }}
-              unoptimized
-            />
-          </div>
-          <div style={{ minWidth:0 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:4 }}>{content.eyebrow}</div>
-            <div style={{ fontSize:14, fontWeight:900, color:"#162126", lineHeight:1.25 }}>{tool.label}</div>
-            <div style={{ fontSize:10.5, lineHeight:1.5, color:"#4a5c62", marginTop:4 }}>{content.tagline}</div>
-          </div>
-        </div>
-
-        {/* Insight / recommendation card */}
-        <div
-          style={{
-            position     : "absolute",
-            left         : 320, top: 148,
-            width        : 258,
-            borderRadius : 20,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "14px 16px",
-            boxShadow    : "0 4px 16px rgba(15,23,42,0.06)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 9,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "#6b8097",
-            }}
-          >
-            {content.recoTitle}
-          </div>
-
-          <div
-            style={{
-              marginTop: 10,
-              borderRadius: 12,
-              background: "#051738",
-              padding: "11px 14px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 19,
-                fontWeight: 800,
-                color: "white",
-                lineHeight: 1.1,
-              }}
-            >
-              {content.recoMain}
-            </div>
-            <p
-              style={{
-                fontSize: 10.5,
-                lineHeight: 1.55,
-                color: "rgba(255,255,255,0.72)",
-                margin: "5px 0 0",
-              }}
-            >
-              {content.recoDesc}
-            </p>
-          </div>
-
-          <div
-            style={{
-              marginTop: 10,
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 6,
-            }}
-          >
-            {content.recoTags.map((tag: string) => (
-              <div
-                key={tag}
-                style={{
-                  borderRadius: 8,
-                  border: "1px solid #e2e8f0",
-                  background: "#f7fafc",
-                  padding: "5px 8px",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#2C3A3E",
-                  textAlign: "center",
-                }}
-              >
-                {tag}
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: tool.fg, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 900, flexShrink: 0, transition: "background 0.3s" }}>
+                  {step.n}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, marginBottom: 2 }}>{step.label}</div>
+                  <div style={{ fontSize: 10.5, color: "#64748b", lineHeight: 1.5 }}>{step.desc}</div>
+                </div>
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Right: key items */}
+        <div
+          style={{
+            width: 148, background: "#f8fafc", borderLeft: "1px solid #f0f4f8",
+            padding: "14px 12px", display: "flex", flexDirection: "column", gap: 6,
+            opacity: visible ? 1 : 0, transition: "opacity 0.25s ease",
+          }}
+        >
+          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 4 }}>
+            Key Items
+          </div>
+          {content.tips.map((tip: string) => (
+            <div
+              key={tip}
+              style={{ background: "white", borderRadius: 9, border: `1px solid ${tool.border}`, padding: "7px 10px", fontSize: 10.5, fontWeight: 700, color: tool.fg, lineHeight: 1.3, transition: "border-color 0.3s, color 0.3s" }}
+            >
+              {tip}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── Bottom carousel strip ── */}
+      {/* ── Carousel ── */}
       <ToolCarousel
         activeIdx={activeIdx}
         onSelect={(idx) => { goTo(idx); setIsPaused(true); }}
