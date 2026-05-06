@@ -1561,16 +1561,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         ? "photo_booth"
         : "step_guides";
 
-  const canReadGuide = plan.canUse(guideFeature);
-  const canUpload = plan.canUse("document_vault");
-  const guideTierIconClass = (() => {
-    const target = plan.entitlement(guideFeature).upgradeTarget;
-    return target ? `plan-icon--${target}` : "plan-icon--premium";
-  })();
-  const uploadTierIconClass = (() => {
-    const target = plan.entitlement("document_vault").upgradeTarget;
-    return target ? `plan-icon--${target}` : "plan-icon--premium";
-  })();
+    const canReadGuide = plan.canUse(guideFeature);
+    const canUpload = plan.canUse("document_vault");
 
     return (
       <>
@@ -1581,8 +1573,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           />
         )}
 
-          {/* }
-        > */}
+        <Dialog
+          open={docActionModal.isOpen}
+          onOpenChange={(open) =>
+            setDocActionModal({ ...docActionModal, isOpen: open })
+          }
+        >
           <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
             <div className="relative overflow-hidden bg-white">
               {/* Background Decorations */}
@@ -1650,16 +1646,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                         : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
                     }`}
-                >
-                  {/* Tier badge — only when locked */}
-                  {!canReadGuide && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                      <span className={`plan-icon ${guideTierIconClass} scale-110`} aria-hidden="true" />
-                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                        Upgrade
-                      </span>
-                    </div>
-                  )}
+                  >
+                    {/* Crown badge — only when locked */}
+                    {!canReadGuide && (
+                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                        <Crown
+                          size={10}
+                          className="text-[#c49a0a]"
+                          strokeWidth={2.5}
+                        />
+                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                          Upgrade
+                        </span>
+                      </div>
+                    )}
 
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
@@ -1747,18 +1747,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                         : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
                     }`}
-                >
-                  {/* Tier badge — only when locked */}
-                  {!canUpload && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                      <span className={`plan-icon ${uploadTierIconClass} scale-110`} aria-hidden="true" />
-                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                        Upgrade
-                      </span>
+                  >
+                    {/* Crown badge — only when locked */}
+                    {!canUpload && (
+                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                        <Crown
+                          size={10}
+                          className="text-[#c49a0a]"
+                          strokeWidth={2.5}
+                        />
+                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                          Upgrade
+                        </span>
+                      </div>
+                    )}
+
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                      ${
+                        canUpload
+                          ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
+                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
+                      }`}
+                    >
+                      <Upload size={20} />
                     </div>
-                  )}
 
-
+                    <h4 className="font-bold text-[#0f1f38] mb-1">
+                      Upload Document
+                    </h4>
+                    <p className="text-xs text-[#6b8097] leading-relaxed">
+                      Attach and submit your document for processing.
                     </p>
 
                     {/* Locked hint text */}
@@ -2074,7 +2093,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </div>
 
         {/* PRIMARY LAUNCH MODULE */}
-      <div className="relative bg-[#1a0a18] border border-[#520a50]/30 rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+        <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-[22px]">
@@ -2102,7 +2121,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   key={idx}
                   className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
                 >
-                  <div className="w-[5px] h-[5px] rounded-full bg-[rgb(156, 103, 125)] shrink-0 mt-[5px]" />
+                  <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
                   <div className="text-[13px] text-white/55 leading-tight">
                     {cue}
                   </div>
@@ -2116,16 +2135,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
-              className="w-full py-4 px-7 text-white rounded-[12px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
-              style={{
-                backgroundColor: "#520a50",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isChapter1 ? "#6a6a9f" : isChapter2 ? "#3a073a" : "#031020";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738";
-              }}
+              className="w-full py-4 px-7 bg-[#b48ad6] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#561864] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
             >
               Start CEAC Guide
             </button>
@@ -2623,7 +2633,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* ALERT NOTE (Step 3 SPECIFIC) */}
           {tool.alert_note && (
             <div className="flex items-center gap-[10px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] padding-12 px-[16px] py-[12px] mb-[28px]">
-              <Info className="h-4 w-4 text-amber-500" />
+              <Zap className="h-4 w-4 text-amber-500" />
               <div className="text-[13px] text-[#8a6200] leading-normal">
                 {tool.alert_note}
               </div>
@@ -2689,7 +2699,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {tool.type === "interview_scheduling" && (
             <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
               {/* Queue status card */}
-              <div className="relative bg-[#1a0a18] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
                   Post-DQ Queue Status
@@ -2698,7 +2708,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
                   style={{ fontFamily: "'DM Serif Display', serif" }}
                 >
-                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#973680] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   In queue — awaiting interview letter
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
@@ -3811,15 +3821,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             tool.type !== "adm_processing" &&
             tool.type !== "courier_registration" && (
               <div
-                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "bg-[#251f32] border border-[#8284bf]" : isChapter2 ? "bg-[#1a0a18] border border-[#520a50]" : "bg-[#0e1e38] border border-white/7"}`}
-                style={!isChapter1 && !isChapter2 ? { backgroundColor: launchBg } : {}}
+                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "bg-[#28151c] border border-[#c0596a]" : "bg-[#0e1e38] border border-white/7"}`}
+                style={!isChapter1 ? { backgroundColor: launchBg } : {}}
               >
                 {/* Accent Stripe */}
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
                   style={{
                     background: isChapter1
-                      ? "linear-gradient(90deg, #8284bf 0%, #251f32 100%)"
+                      ? "linear-gradient(90deg, #c0596a 0%, #28151c 100%)"
                       : stripeGradient,
                   }}
                 />
@@ -3828,7 +3838,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {/* Module Header */}
                   <div className="flex items-start gap-[16px] mb-[26px]">
                     <div
-                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#8284bf] border-[#8284bf]" : isChapter2 ? "bg-[#520a50] border-[#520a50]" : "bg-white/[0.055] border-white/10"}`}
+                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
                     >
                       <IconComponent
                         size={22}
@@ -3838,7 +3848,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                     <div className="flex-1">
                       <div
-                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[#8284bf]" : "text-white/35"}`}
+                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[#c0596a]" : "text-white/35"}`}
                       >
                         {tool.launch_module.eyebrow}
                       </div>
@@ -3851,7 +3861,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
 
                   <div
-                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[#8284bf]/30" : isChapter2 ? "bg-[#520a50]/30" : "bg-white/9"}`}
+                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[#c0596a]/30" : "bg-white/9"}`}
                   />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
@@ -3917,22 +3927,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       (feat: string, i: number) => (
                         <div
                           key={i}
-                          className={`${isChapter1 ? "bg-[rgb(59, 30, 85)] border border-[#8284bf]/30" : isChapter2 ? "bg-[#2a1528] border border-[#520a50]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          className={`${isChapter1 ? "bg-[#3a232a] border border-[#c0596a]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
                         >
                           <div
                             className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
                               isChapter1
-                                ? "bg-[#8284bf]"
-                                : isChapter2
-                                  ? "bg-[rgb(156, 103, 125)]"
-                                  : tool.launch_module.stripe_variant === "gold"
-                                    ? "bg-[rgba(212,168,47,0.7)]"
-                                    : tool.launch_module.stripe_variant ===
-                                        "green"
-                                      ? "bg-[rgba(100,220,160,0.6)]"
-                                      : isBeneficiaryTheme
-                                        ? "bg-[#20a8a8bf]"
-                                        : "bg-[#6aa8f0b3]"
+                                ? "bg-[#c0596a]"
+                                : tool.launch_module.stripe_variant === "gold"
+                                  ? "bg-[rgba(212,168,47,0.7)]"
+                                  : tool.launch_module.stripe_variant ===
+                                      "green"
+                                    ? "bg-[rgba(100,220,160,0.6)]"
+                                    : isBeneficiaryTheme
+                                      ? "bg-[#20a8a8bf]"
+                                      : "bg-[#6aa8f0b3]"
                             }`}
                           />
                           <div
@@ -3987,14 +3995,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
-                                ? "bg-[#8284bf] pointer-events-none"
+                                ? "bg-[#c0596a] pointer-events-none"
                                 : isChapter2
-                                  ? "bg-[#520a50] pointer-events-none"
+                                  ? "bg-[#b48ad6] pointer-events-none"
                                   : "bg-[#3b7dd8] pointer-events-none"
                               : isChapter1
-                                ? "bg-[#8284bf] hover:bg-[#6a6a9f] text-white shadow-[0_4px_20px_rgba(130,132,191,0.25)]"
+                                ? "bg-[#c0596a] hover:bg-[#a13e4e] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)]"
                                 : isChapter2
-                                  ? "bg-[#520a50] text-white shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[#3a073a] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)] hover:translate-y-[-2px]"
+                                  ? "bg-[#b48ad6] text-white shadow-[0_4px_20px_rgba(180,138,214,0.25)] hover:bg-[#a47cc1] hover:text-white hover:shadow-[0_8px_32px_rgba(180,138,214,0.35)] hover:translate-y-[-2px]"
                                   : "bg-[#2f6fd4] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
                           }`}
                         style={
@@ -4003,7 +4011,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             : !isLaunched || !tool.launch_module.return_note
                               ? {
                                   backgroundColor: isChapter2
-                                    ? "#520a50"
+                                    ? "#b48ad6"
                                     : accentColor,
                                 }
                               : {}
@@ -4631,148 +4639,42 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* Guide / Wallet Cards Row */}
-{(tool.guide_card || tool.wallet_card) && (
-  <div
-    className={`grid grid-cols-1 ${
-      tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
-    } gap-[12px] mb-[28px]`}
-  >
-    {tool.guide_card && (() => {
-      const guideFeatureKey = "step_guides";
-      const isGuideLocked = !plan.canUse(guideFeatureKey);
-      const guideCardTierIconClass = (() => {
-        const target = plan.entitlement(guideFeatureKey).upgradeTarget;
-        return target ? `plan-icon--${target}` : "plan-icon--premium";
-      })();
+          {(tool.guide_card || tool.wallet_card) && (
+            <div
+              className={`grid grid-cols-1 ${
+                tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
+              } gap-[12px] mb-[28px]`}
+            >
+              {tool.guide_card &&
+                (() => {
+                  const guideFeatureKey = "step_guides";
+                  const isGuideLocked = !plan.canUse(guideFeatureKey);
 
-      return (
-        <button
-          onClick={() => {
-            if (isGuideLocked) {
-              setUpgradeModalFeature(guideFeatureKey);
-            } else {
-              setTutorialIdx(0);
-              setIsTutorialOpen(true);
-            }
-          }}
-          className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative ${
-            tool.wallet_card
-              ? `p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] ${
-                  isGuideLocked
-                    ? "hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
-                    : "hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
-                } hover:-translate-y-px`
-              : `p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
-                  isGuideLocked
-                    ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
-                    : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
-                }`
-          }`}
-        >
-          {/* Tier lock badge — shown only when locked */}
-          
-          {tool.wallet_card ? (
-            /* Vertical Design (Original - Shared) */
-            <>
-              <div className="flex items-center gap-[10px] mb-[12px]">
-                <div
-                  className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 transition-opacity ${
-                    isGuideLocked
-                      ? "bg-[#f3f0fb] border-[#c9bef2] opacity-50"
-                      : "bg-[#f3f0fb] border-[#c9bef2]"
-                  }`}
-                >
-                  <Monitor
-                    size={18}
-                    className="text-[#4a2d8a]"
-                    strokeWidth={1.7}
-                  />
-                </div>
-              </div>
-              <h3
-                className={`text-[14px] font-semibold mb-1 ${
-                  isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
-                }`}
-              >
-                {tool.guide_card.title}
-              </h3>
-              <p
-                className={`text-[12px] leading-normal ${
-                  isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
-                }`}
-              >
-                {tool.guide_card.subtitle}
-              </p>
-              <div
-                className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-                  isGuideLocked ? "text-[#a06000]" : "text-primary"
-                }`}
-              >
-                {isGuideLocked ? (
-  <>
-    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
-    <span>View guide</span>
-    <ArrowRight size={11} strokeWidth={2} />
-  </>
-) : (
-  <>
-    <span>View guide</span>
-    <ArrowRight size={11} strokeWidth={2} />
-  </>
-)}
-              </div>
-            </>
-          ) : (
-            /* Horizontal Design (New Reference - Solo) */
-            <>
-              <div
-                className={`w-[52px] h-[52px] rounded-[14px] border flex items-center justify-center shrink-0 transition-opacity ${
-                  isGuideLocked
-                    ? "bg-[#f3f0fb] border-[#c9bef2]/60 opacity-50"
-                    : "bg-[#f3f0fb] border-[#c9bef2]/60"
-                }`}
-              >
-                <Monitor
-                  size={22}
-                  className="text-[#4a2d8a]"
-                  strokeWidth={1.7}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3
-                  className={`text-[15px] font-bold mb-1 sm:mb-1.5 truncate ${
-                    isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
-                  }`}
-                >
-                  {tool.guide_card.title}
-                </h3>
-                <p
-                  className={`text-[13px] leading-relaxed sm:leading-normal line-clamp-2 ${
-                    isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
-                  }`}
-                >
-                  {tool.guide_card.subtitle}
-                </p>
-              </div>
-              <div
-  className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors shrink-0 ${
-    isGuideLocked
-      ? "bg-[#fef3d8] text-[#a06000] group-hover:bg-[#f0c878] group-hover:text-[#6b3a00]"
-      : "bg-[#f4f7fb] text-[#6b8097] group-hover:bg-primary group-hover:text-white"
-  }`}
->
-  {isGuideLocked ? (
-    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
-  ) : (
-    <ArrowRight size={14} strokeWidth={2.5} />
-  )}
-</div>
-            </>
-          )}
-        </button>
-      );
-    })()}
-
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isGuideLocked) {
+                          setUpgradeModalFeature(guideFeatureKey);
+                        } else {
+                          setTutorialIdx(0);
+                          setIsTutorialOpen(true);
+                        }
+                      }}
+                      className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative ${
+                        tool.wallet_card
+                          ? `p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] ${
+                              isGuideLocked
+                                ? "hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
+                                : "hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+                            } hover:-translate-y-px`
+                          : `p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
+                              isGuideLocked
+                                ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
+                                : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
+                            }`
+                      }`}
+                    >
+                      {/* Crown lock badge — shown only when locked */}
 
                       {tool.wallet_card ? (
                         /* Vertical Design (Original - Shared) */
@@ -4913,27 +4815,111 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
         }
       `}
-    >
-      {/* Tier lock badge */}
-     
-      <div className="flex items-center gap-[10px] mb-[12px]">
-        <div
-          className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
-            isWalletLocked
-              ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
-              : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-                (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-                ? "bg-[#e8f5ef] border-[#a8d9be]"
-                : tool.wallet_card?.type === "ceac_creds"
-                  ? "bg-[#e8f5ef] border-[#a8d9be]"
-                  : "bg-[#e6f6f6] border-[#9fd8d8]"
-          }`}
-        >
-          {tool.wallet_card?.type === "ceac_creds" ? (
-            <Lock size={18} className="text-[#15744f]" strokeWidth={1.7} />
-          ) : (
-            <CreditCard size={18} className={isWalletLocked ? "text-[#0f7373]" : "text-[#0f7373]"} strokeWidth={1.7} />
+                    >
+                      {/* Crown lock badge */}
 
+                      <div className="flex items-center gap-[10px] mb-[12px]">
+                        <div
+                          className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
+                            isWalletLocked
+                              ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
+                              : (tool.wallet_card?.type === "ceac_creds" &&
+                                    ceacCredentials) ||
+                                  (tool.wallet_card?.type === "nvc_fee" &&
+                                    state.metadata.nvcFeeStatus)
+                                ? "bg-[#e8f5ef] border-[#a8d9be]"
+                                : tool.wallet_card?.type === "ceac_creds"
+                                  ? "bg-[#e8f5ef] border-[#a8d9be]"
+                                  : "bg-[#e6f6f6] border-[#9fd8d8]"
+                          }`}
+                        >
+                          {tool.wallet_card?.type === "ceac_creds" ? (
+                            <Lock
+                              size={18}
+                              className="text-[#15744f]"
+                              strokeWidth={1.7}
+                            />
+                          ) : (
+                            <CreditCard
+                              size={18}
+                              className={
+                                isWalletLocked
+                                  ? "text-[#0f7373]"
+                                  : "text-[#0f7373]"
+                              }
+                              strokeWidth={1.7}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      <h3
+                        className={`text-[14px] font-semibold mb-1 ${
+                          isWalletLocked
+                            ? "text-[#6b8097]"
+                            : (tool.wallet_card?.type === "ceac_creds" &&
+                                  ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" &&
+                                  state.metadata.nvcFeeStatus)
+                              ? "text-[#15744f]"
+                              : "text-[#0c1b33]"
+                        }`}
+                      >
+                        {!isWalletLocked &&
+                        ((tool.wallet_card?.type === "ceac_creds" &&
+                          ceacCredentials) ||
+                          (tool.wallet_card?.type === "nvc_fee" &&
+                            state.metadata.nvcFeeStatus))
+                          ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
+                          : tool.wallet_card?.title}
+                      </h3>
+
+                      <p
+                        className={`text-[12px] leading-normal ${isWalletLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}
+                      >
+                        {tool.wallet_card?.subtitle}
+                      </p>
+
+                      <div
+                        className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+                          isWalletLocked
+                            ? "text-[#a06000]"
+                            : (tool.wallet_card?.type === "ceac_creds" &&
+                                  ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" &&
+                                  state.metadata.nvcFeeStatus)
+                              ? "text-[#15744f]"
+                              : "text-primary"
+                        }`}
+                      >
+                        {isWalletLocked ? (
+                          <>
+                            <Lock size={11} strokeWidth={2.2} />
+                            <span>Unlock feature</span>
+                            <ArrowRight size={11} strokeWidth={2} />
+                          </>
+                        ) : (
+                          <span>
+                            {(tool.wallet_card?.type === "ceac_creds" &&
+                              ceacCredentials) ||
+                            (tool.wallet_card?.type === "nvc_fee" &&
+                              state.metadata.nvcFeeStatus)
+                              ? "View saved details"
+                              : tool.wallet_card?.type === "ceac_creds"
+                                ? "Open credential vault"
+                                : "Update payment record"}
+                            <ArrowRight
+                              size={11}
+                              strokeWidth={2}
+                              className="inline ml-1"
+                            />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })()}
+            </div>
           )}
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
