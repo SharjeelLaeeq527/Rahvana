@@ -29,6 +29,9 @@ import {
   Wand2,
   Bell,
   User,
+  Users,
+  ShieldCheck,
+  Scale,
   BookOpen,
 } from "lucide-react";
 import { getFormConfig } from "@/lib/formConfig";
@@ -290,30 +293,30 @@ export function RealDashboardScene({
 
   const cursorStates: Record<
     number,
-    { opacity: number; x: number; y: number; scale: number }
+    { opacity: number; left: string; top: string; scale: number }
   > = {
-    0: { opacity: 1, x: 760, y: 56, scale: 0.96 }, // Initial / Dashboard Idle
-    1: { opacity: 1, x: 82, y: 320, scale: 1 }, // Hover Chapter 1 in Dashboard Sidebar
-    2: { opacity: 1, x: 82, y: 320, scale: 1 }, // Click Chapter 1
-    3: { opacity: 1, x: 82, y: 334, scale: 1 }, // Exit Dashboard View
-    4: { opacity: 1, x: 82, y: 320, scale: 1 }, // Hover Step 4 (I-130) Card in Chapter View
-    5: { opacity: 1, x: 82, y: 320, scale: 1 }, // Click Step 4 Card
-    6: { opacity: 1, x: 82, y: 380, scale: 1 }, // Move to Launch button in Step View
-    7: { opacity: 1, x: 92, y: 434, scale: 1 }, // Hover Launch I-130 Autoform Button
-    8: { opacity: 1, x: 92, y: 434, scale: 1 }, // Click Launch Button
-    9: { opacity: 1, x: 310, y: 150, scale: 1 }, // Autoform Panel Intro
-    10: { opacity: 1, x: 82, y: 255, scale: 1 }, // Move to Family Name Field
-    11: { opacity: 1, x: 310, y: 255, scale: 1 }, // Typing "Khan"
-    12: { opacity: 1, x: 560, y: 360, scale: 1 }, // Move to Next Button (reveals Given Name)
-    13: { opacity: 1, x: 560, y: 360, scale: 0.95 }, // Click Next Button
-    14: { opacity: 1, x: 82, y: 310, scale: 1 }, // Move to Given Name Field
-    15: { opacity: 1, x: 310, y: 310, scale: 1 }, // Typing "Amina"
-    16: { opacity: 1, x: 560, y: 455, scale: 1 }, // Move to Next Button (reveals Middle Name)
-    17: { opacity: 1, x: 560, y: 455, scale: 0.95 }, // Click Next Button
-    18: { opacity: 1, x: 82, y: 420, scale: 1 }, // Move to Middle Name Field
-    19: { opacity: 1, x: 310, y: 405, scale: 1 }, // Typing "Noor"
-    20: { opacity: 1, x: 82, y: 286, scale: 1 }, // PDF Preview Scrolling View
-    21: { opacity: 1, x: 82, y: 116, scale: 0.96 }, // Dashboard Complete View (Success State)
+    0: { opacity: 1, left: "112%", top: "10%", scale: 0.96 }, // Initial / Dashboard Idle
+    1: { opacity: 1, left: "12%", top: "67%", scale: 1 }, // Hover Chapter 1 in Dashboard Sidebar
+    2: { opacity: 1, left: "12%", top: "67%", scale: 1 }, // Click Chapter 1
+    3: { opacity: 1, left: "12%", top: "60%", scale: 1 }, // Exit Dashboard View
+    4: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Hover Step 4 (I-130) Card in Chapter View
+    5: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Click Step 4 Card
+    6: { opacity: 1, left: "15%", top: "88%", scale: 1 }, // Move to Launch button in Step View
+    7: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Hover Launch I-130 Autoform Button
+    8: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Click Launch Button
+    9: { opacity: 1, left: "45.5%", top: "27%", scale: 1 }, // Autoform Panel Intro
+    10: { opacity: 1, left: "12%", top: "55%", scale: 1 }, // Move to Family Name Field
+    11: { opacity: 1, left: "45.5%", top: "55%", scale: 1 }, // Typing "Khan"
+    12: { opacity: 1, left: "88%", top: "78%", scale: 1 }, // Move to Next Button (reveals Given Name)
+    13: { opacity: 1, left: "88%", top: "78%", scale: 0.95 }, // Click Next Button
+    14: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Move to Given Name Field
+    15: { opacity: 1, left: "45.5%", top: "75.4%", scale: 1 }, // Typing "Amina"
+    16: { opacity: 1, left: "88%", top: "90%", scale: 1 }, // Move to Next Button (reveals Middle Name)
+    17: { opacity: 1, left: "88%", top: "90%", scale: 0.95 }, // Click Next Button
+    18: { opacity: 1, left: "12%", top: "90%", scale: 1 }, // Move to Middle Name Field
+    19: { opacity: 1, left: "45.5%", top: "90%", scale: 1 }, // Typing "Noor"
+    20: { opacity: 1, left: "12%", top: "51.1%", scale: 1 }, // PDF Preview Scrolling View
+    21: { opacity: 1, left: "12%", top: "20.7%", scale: 0.96 }, // Dashboard Complete View (Success State)
   };
 
   const currentCursor = cursorStates[phase] ?? cursorStates[0];
@@ -482,8 +485,8 @@ export function RealDashboardScene({
             initial={false}
             animate={currentCursor}
             transition={{
-              x: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
-              y: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
+              left: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
+              top: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
               opacity: { duration: 0.35, ease: "easeOut" },
               scale: {
                 duration: isClicking ? 0.22 : 0.5,
@@ -794,9 +797,10 @@ export function HeroI130StepPanel({
     const container = scrollContainerRef.current;
     const button = buttonRef.current;
     if (container && button) {
-      // Offset 406 aligns button center with cursor y: 424 (header 52, inner shift -68)
-      // Slightly adjusted from 412 to scroll more as per user feedback
-      const targetScrollTop = button.offsetTop - container.offsetTop - 406;
+      // Responsive offset: 406 for desktop, reduced for mobile to scroll more
+      const isMobile = window.innerWidth < 768;
+      const offset = isMobile ? 210 : 406;
+      const targetScrollTop = button.offsetTop - container.offsetTop - offset;
       container.scrollTo({
         top: Math.max(0, targetScrollTop),
         behavior: "smooth",
@@ -1211,7 +1215,7 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 }
 
 export function TwoWaysSection() {
-  const sectionRef   = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
   const reduceMotion = useReducedMotion();
 
@@ -1254,16 +1258,16 @@ export function TwoWaysSection() {
       >
         <div
           style={{
-            position : "sticky",
-            top      : 0,
-            height   : "100vh",
-            display  : "flex",
-            alignItems : "center",
-            overflow : "hidden",
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            display: "flex",
+            alignItems: "center",
+            overflow: "hidden",
             background:
               "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-            borderTop    : "1px solid #e1ebe8",
-            borderBottom : "1px solid #e1ebe8",
+            borderTop: "1px solid #e1ebe8",
+            borderBottom: "1px solid #e1ebe8",
           }}
         >
           {/* Decorative radial highlights */}
@@ -1280,14 +1284,14 @@ export function TwoWaysSection() {
           {/* Scroll-progress pill indicators — right edge */}
           <div
             style={{
-              position        : "absolute",
-              right           : 28,
-              top             : "50%",
-              transform       : "translateY(-50%)",
-              display         : "flex",
-              flexDirection   : "column",
-              gap             : 8,
-              zIndex          : 10,
+              position: "absolute",
+              right: 28,
+              top: "50%",
+              transform: "translateY(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              zIndex: 10,
             }}
           >
             {([0, 1] as TwoWaysIndex[]).map((i) => (
@@ -1297,14 +1301,14 @@ export function TwoWaysSection() {
                 onClick={() => selectPath(i)}
                 aria-label={`Show ${twoWaysPaths[i].title}`}
                 style={{
-                  width      : 7,
-                  height     : activeIndex === i ? 22 : 7,
-                  borderRadius : 4,
-                  background : activeIndex === i ? "#0d7377" : "#c8d5d3",
-                  border     : "none",
-                  cursor     : "pointer",
-                  padding    : 0,
-                  transition : "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+                  width: 7,
+                  height: activeIndex === i ? 22 : 7,
+                  borderRadius: 4,
+                  background: activeIndex === i ? "#0d7377" : "#c8d5d3",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
                 }}
               />
             ))}
@@ -1314,11 +1318,11 @@ export function TwoWaysSection() {
           <div
             className="relative mx-auto w-full px-10 xl:px-12"
             style={{
-              maxWidth            : 1360,
-              display             : "grid",
-              gridTemplateColumns : "minmax(0,420px) 1fr",
-              gap                 : "clamp(48px,6vw,100px)",
-              alignItems          : "start",
+              maxWidth: 1360,
+              display: "grid",
+              gridTemplateColumns: "minmax(0,420px) 1fr",
+              gap: "clamp(48px,6vw,100px)",
+              alignItems: "start",
             }}
           >
             {/* Left: text + selectors + CTAs */}
@@ -1329,14 +1333,22 @@ export function TwoWaysSection() {
 
               <h2
                 className="mt-4 mb-0 font-extrabold text-[#162126]"
-                style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
+                style={{
+                  fontSize: "clamp(30px,4.2vw,60px)",
+                  lineHeight: 1.0,
+                  maxWidth: 440,
+                }}
               >
                 Choose how you want to use Rahvana
               </h2>
 
               <p
                 className="mt-4 mb-0 text-[#4a5c62]"
-                style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
+                style={{
+                  fontSize: "clamp(14px,1.15vw,17px)",
+                  lineHeight: 1.68,
+                  maxWidth: 420,
+                }}
               >
                 Follow the guided IR-1 roadmap, use focused tools and resources
                 independently, and choose the support style that fits what you
@@ -1358,7 +1370,11 @@ export function TwoWaysSection() {
                     </p>
                     <h3
                       className="mb-0 mt-1.5 font-extrabold text-[#162126]"
-                      style={{ fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.2, maxWidth: 420 }}
+                      style={{
+                        fontSize: "clamp(17px,1.5vw,21px)",
+                        lineHeight: 1.2,
+                        maxWidth: 420,
+                      }}
                     >
                       {twoWaysPaths[activeIndex].shortTitle}
                     </h3>
@@ -1378,22 +1394,27 @@ export function TwoWaysSection() {
                       aria-current={isActive ? "true" : undefined}
                       className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
                       style={{
-                        border     : isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
-                        background : isActive ? "#f4fbfa" : "transparent",
-                        boxShadow  : isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
+                        border: isActive
+                          ? "1.5px solid #0d7377"
+                          : "1px solid #e2ebe8",
+                        background: isActive ? "#f4fbfa" : "transparent",
+                        boxShadow: isActive
+                          ? "0 5px 18px rgba(13,115,119,0.10)"
+                          : "none",
                         WebkitTapHighlightColor: "transparent",
-                        cursor     : "pointer",
+                        cursor: "pointer",
                       }}
                     >
                       <span
                         className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black"
                         style={{
-                          width      : 24,
-                          height     : 24,
-                          background : isActive ? "#0d7377" : "transparent",
-                          color      : isActive ? "white" : "#9aaeac",
-                          border     : isActive ? "none" : "1.5px solid #c8d5d3",
-                          transition : "background 0.22s, color 0.22s, border-color 0.22s",
+                          width: 24,
+                          height: 24,
+                          background: isActive ? "#0d7377" : "transparent",
+                          color: isActive ? "white" : "#9aaeac",
+                          border: isActive ? "none" : "1.5px solid #c8d5d3",
+                          transition:
+                            "background 0.22s, color 0.22s, border-color 0.22s",
                         }}
                       >
                         {String(i + 1).padStart(2, "0")}
@@ -1401,13 +1422,19 @@ export function TwoWaysSection() {
                       <div className="min-w-0 flex-1">
                         <div
                           className="text-[15px] font-black leading-tight"
-                          style={{ color: isActive ? "#0d7377" : "#162126", transition: "color 0.22s" }}
+                          style={{
+                            color: isActive ? "#0d7377" : "#162126",
+                            transition: "color 0.22s",
+                          }}
                         >
                           {path.title}
                         </div>
                         <div
                           className="mt-0.5 text-[12px] leading-snug"
-                          style={{ color: isActive ? "#4a5c62" : "#9aaeac", transition: "color 0.22s" }}
+                          style={{
+                            color: isActive ? "#4a5c62" : "#9aaeac",
+                            transition: "color 0.22s",
+                          }}
                         >
                           {path.teaser}
                         </div>
@@ -1466,9 +1493,10 @@ export function TwoWaysSection() {
         aria-label="Two ways to use Rahvana"
         className="block lg:hidden mt-32 sm:mt-40"
         style={{
-          background   : "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-          borderTop    : "1px solid #e1ebe8",
-          borderBottom : "1px solid #e1ebe8",
+          background:
+            "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+          borderTop: "1px solid #e1ebe8",
+          borderBottom: "1px solid #e1ebe8",
         }}
       >
         <div
@@ -1487,7 +1515,14 @@ export function TwoWaysSection() {
               >
                 Choose how you want to use Rahvana.
               </h2>
-              <p style={{ fontSize: 16, lineHeight: 1.65, color: "#4a5c62", margin: "14px 0 28px 0" }}>
+              <p
+                style={{
+                  fontSize: 16,
+                  lineHeight: 1.65,
+                  color: "#4a5c62",
+                  margin: "14px 0 28px 0",
+                }}
+              >
                 Use the full IR-1 roadmap, or jump into focused tools and
                 resources when you need targeted help.
               </p>
@@ -1517,7 +1552,9 @@ export function TwoWaysSection() {
                     <div>
                       <h3
                         className={`text-lg font-black leading-tight ${
-                          activeIndex === i ? "text-[#0d7377]" : "text-[#162126]"
+                          activeIndex === i
+                            ? "text-[#0d7377]"
+                            : "text-[#162126]"
                         }`}
                       >
                         {path.title}
@@ -1552,9 +1589,15 @@ export function TwoWaysSection() {
                     key={activeIndex}
                     className="absolute left-1/2 top-1/2 origin-center"
                     style={{ width: 680, height: 560 }}
-                    initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }}
+                    initial={
+                      reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }
+                    }
                     animate={{ opacity: 1, y: 0, scale: 0.5 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.49 }}
+                    exit={
+                      reduceMotion
+                        ? undefined
+                        : { opacity: 0, y: -8, scale: 0.49 }
+                    }
                     transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <div style={{ transform: "translate(-50%, -50%)" }}>
@@ -1624,7 +1667,7 @@ export function TwoWaysSupportText({
 // internal absolute-positioned children render correctly.
 export function TwoWaysVisual({ index }: { index: TwoWaysIndex }) {
   return (
-    <div style={{ position: "relative", width: 680, height: 560 }}>
+    <div className="flex size-full items-center justify-center" style={{ position: "relative", width: 680, height: 520 }}>
       {index === 0 ? <GuidedRoadmapScene /> : <IndividualToolsScene />}
     </div>
   );
@@ -1771,36 +1814,55 @@ export function TwoWaysMobile({
 }
 
 export function GuidedRoadmapScene() {
-  const [steps, setSteps] = useState([
-    { id: 1, title: 'Determine Eligibility', status: 'done' },
-    { id: 2, title: 'Gather Required Documents', status: 'done' },
-    { id: 3, title: 'Review Filing Methods', status: 'todo' },
-    { id: 4, title: 'Fill Form I-130', status: 'todo' },
-    { id: 5, title: 'Fill Form I-130A', status: 'active' },
-    { id: 6, title: 'Submit to USCIS', status: 'todo' },
-    { id: 7, title: 'Wait for Receipt', status: 'todo' },
-    { id: 8, title: 'Prepare for Biometrics', status: 'todo' },
-  ]);
+  const [view, setView] = useState<"dashboard" | "chapter" | "step">("dashboard");
+  const [activeChapterIdx, setActiveChapterIdx] = useState(0);
+  const [activeStepIdx, setActiveStepIdx] = useState(-1);
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isBellOpen, setIsBellOpen] = useState(false);
+  const [isCaseDetailsOpen, setIsCaseDetailsOpen] = useState(false);
+  const [isMilestonesOpen, setIsMilestonesOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  const toggleStep = (id: number) => {
-    setSteps(prev => prev.map(s => {
-      if (s.id === id) {
-        return { ...s, status: s.status === 'done' ? (id === 5 ? 'active' : 'todo') : 'done' };
-      }
-      return s;
-    }));
+  const activeChapter = chapters[activeChapterIdx];
+  const activeStep =
+    activeStepIdx !== -1 ? activeChapter.steps[activeStepIdx] : null;
+
+  const nextStep =
+    chapters[0].steps.find((s) => !completedSteps.has(s[0])) ||
+    chapters[0].steps[0];
+
+  const handleSelectChapter = (idx: number) => {
+    if (idx >= 1) return; // Only Chapter 1 is open in demo
+    setActiveChapterIdx(idx);
+    setView("chapter");
   };
 
-  const completedCount = steps.filter(s => s.status === 'done').length;
-  const progressPct = Math.round((completedCount / steps.length) * 100);
-  const isAllDone = completedCount === steps.length;
+  const handleSelectStep = (idx: number) => {
+    setActiveStepIdx(idx);
+    setView("step");
+  };
 
-  
+  const toggleStep = (stepId: string) => {
+    setCompletedSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(stepId)) next.delete(stepId);
+      else next.add(stepId);
+      return next;
+    });
+  };
+
+  const getChapterProgress = (chapterIdx: number) => {
+    const chapterSteps = chapters[chapterIdx].steps;
+    const done = chapterSteps.filter((s) => completedSteps.has(s[0])).length;
+    return Math.round((done / chapterSteps.length) * 100);
+  };
+
+  const totalDone = Array.from(completedSteps).length;
+  const totalSteps = chapters.reduce((acc, c) => acc + c.steps.length, 0);
+
   return (
     <div
-      className="relative flex flex-col overflow-visible rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
+      className="relative flex flex-col overflow-hidden rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
       style={{
         width: 680,
         height: 560,
@@ -1810,270 +1872,498 @@ export function GuidedRoadmapScene() {
         transform: "translate(-50%, -50%)",
       }}
     >
-
-
-
-
-
-
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#e1ebe8] bg-white px-6 py-4 rounded-t-[32px]">
+      {/* Header / Nav */}
+      <div className="flex items-center justify-between border-b border-[#e1ebe8] bg-white px-6 py-4 rounded-t-[32px] shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-[#0d7377] text-white">
-            <Compass className="size-6" />
-          </div>
-          <div>
-            <div className="text-[15px] font-black uppercase tracking-wide text-[#162126]">
-              IR-1 Journey
+          {view !== "dashboard" ? (
+            <button
+              onClick={() =>
+                view === "step" ? setView("chapter") : setView("dashboard")
+              }
+              className="flex size-9 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors"
+            >
+              <ChevronLeft size={18} strokeWidth={2.5} />
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <LayoutDashboard size={18} className="text-[#0d7377]" />
+              <span className="text-[14px] font-black uppercase tracking-[0.1em] text-[#162126]">
+                Dashboard
+              </span>
             </div>
-            <div className="text-xs text-[#6b8097]">
-              Islamabad Embassy · Online Filing
-              {!isAllDone && (
-                <span className="ml-2 inline-flex items-center gap-1 font-bold text-[#0d7377]">
-                  · Click steps to try demo
-                </span>
-              )}
-
-            </div>
-
-          </div>
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsBellOpen(!isBellOpen)}
-            className="relative flex size-10 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors focus:outline-none"
-          >
-            <Bell className="size-5" />
-            <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#e34242] ring-2 ring-white" />
-            <AnimatePresence>
-              {isBellOpen && (
-                <motion.div
-                  initial={reduceMotion ? false : { opacity: 0, y: 5, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: 5, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute right-0 top-12 z-[100] w-64 rounded-xl border border-[#dde8e6] bg-white p-4 shadow-xl text-left"
-                >
-                  <div className="text-xs font-bold text-[#162126]">Notifications</div>
-                  <div className="mt-2 rounded-lg bg-[#f0f3f7] p-2 text-xs text-[#4a5c62]">
-                    <span className="font-bold text-[#0d7377]">NADRA Review:</span> Your documents have been processed and are ready.
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </button>
-          <div className="flex size-10 items-center justify-center rounded-full border border-[#dde8e6] bg-[#f0f3f7] text-[#6b8097]">
-            <User className="size-5" />
-          </div>
-        </div>
-      </div>
 
-      {/* Horizontal Stepper */}
-      <div className="flex items-center gap-4 border-b border-[#e1ebe8] bg-white px-6 py-3">
-        <div className="flex items-center gap-3">
-          <div className="flex size-8 items-center justify-center rounded-full bg-[#8284bf] text-sm font-bold text-white shadow-sm">
-            1
-          </div>
-          <div>
-            <div className="text-xs font-bold text-[#162126]">USCIS Petition</div>
-            <div className="text-[10px] text-[#6b8097]">
-              {Math.round(33 + (completedCount * 1.5))}% done
-            </div>
-
-          </div>
-        </div>
-        <div className="h-px w-8 bg-[#dde8e6]" />
-        <div className="flex items-center gap-3 opacity-50">
-          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
-            <Lock className="size-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-[#6b8097]">NVC / CEAC</div>
-            <div className="text-[10px] text-[#6b8097]">Locked</div>
-          </div>
-        </div>
-        <div className="h-px w-8 bg-[#dde8e6]" />
-        <div className="flex items-center gap-3 opacity-50">
-          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
-            <Lock className="size-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-[#6b8097]">Med + Interview</div>
-            <div className="text-[10px] text-[#6b8097]">Locked</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Left Sidebar */}
-        <div className="w-[240px] flex-shrink-0 border-r border-[#e1ebe8] bg-white p-5 flex flex-col relative z-10">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4E518C]">
-            <div className="size-1.5 rounded-full bg-[#4E518C]" />
-            CHAPTER 1 · IN PROGRESS
-          </div>
-          <h2 className="mt-2 text-[22px] font-black leading-tight text-[#162126]">
-            USCIS Petition Filing
-          </h2>
-          <div className="mt-4 flex items-center gap-2">
-            <div className="h-1.5 flex-1 rounded-full bg-[#eef1f7] overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-[#8284bf]"
-                initial={false}
-                animate={{ width: `${62.5 + (completedCount * 3.5)}%` }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              />
-            </div>
-            <span className="text-[11px] font-bold text-[#162126] w-8 text-right">
-              {completedCount} / 8
-            </span>
-
-          </div>
-
-          <div className="mt-8 text-[10px] font-bold uppercase tracking-widest text-[#6b8097]">
-            Active Step
-          </div>
-          <div className="mt-2 rounded-xl border border-[#c8d1dc] bg-[#f8f9fb] p-3 shadow-sm">
-            <div className="font-bold text-[#162126]">Fill Form I-130A</div>
-            <div className="mt-1 text-[11px] text-[#6b8097]">
-              Step 5 of 8 · In progress
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fef3c7]/40 p-3">
-            <div className="flex gap-2">
-              <div className="mt-1 size-1.5 shrink-0 rounded-full bg-[#d97706]" />
-              <div className="text-xs text-[#92400e] leading-snug">
-                Fresh NADRA records required for ISL embassy.
+        <div className="flex items-center gap-4">
+          {view === "dashboard" && (
+            <div className="flex items-center gap-2">
+              <div className="rounded-full bg-white px-4 py-1.5 text-[11px] font-black text-[#162126] border border-[#dde8e6] shadow-sm uppercase tracking-wider">
+                IR-1
+              </div>
+              <div className="rounded-full bg-[#f0f9f6] px-4 py-1.5 text-[11px] font-black text-[#0d7377] border border-[#d1e7e2] uppercase tracking-wider">
+                Saved
               </div>
             </div>
-          </div>
-
-          <div className="mt-auto pt-6">
-            <button
-              onClick={() => toggleStep(5)}
-              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] px-4 py-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#0a5c5f] hover:shadow-lg focus:outline-none"
-            >
-              <span>{steps[4].status === 'done' ? "Mark Incomplete" : "Continue Step"}</span>
-              <ArrowRight className="size-4" strokeWidth={2.5} />
-              
-
-            </button>
-          </div>
-
-        </div>
-
-        {/* Right Content */}
-        <div className="flex-1 bg-[#f9fafb] p-5 overflow-y-auto">
-          <div className="flex items-center gap-2 mb-4">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377]">
-              CHAPTER 1 STEPS
-            </div>
-            <div className="ml-auto rounded border border-[#d0e4f7] bg-white px-2 py-0.5 text-[9px] font-bold text-[#6b8097]">
-              {completedCount} / 8 DONE
-            </div>
-
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            {steps.map((step) => {
-              const isDone = step.status === 'done';
-              const isActive = step.status === 'active';
-              
-              return (
-                <motion.div
-                  key={step.id}
-                  layout
-                  className={`relative flex items-center justify-between rounded-xl border p-3 transition-all ${
-                    isActive 
-                      ? 'border-[#8284bf] bg-[#f0f1fb] shadow-sm' 
-                      : isDone 
-                        ? 'border-[#e1ebe8] bg-white' 
-                        : 'border-transparent hover:border-[#dde8e6] hover:bg-white'
-                  } group cursor-pointer`}
-                  onClick={() => toggleStep(step.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`flex size-7 items-center justify-center rounded-full transition-all ${
-                      isDone 
-                        ? 'bg-[#0d7377] text-white shadow-sm' 
-                        : isActive 
-                          ? 'bg-[#8284bf] text-white' 
-                          : 'border border-[#dde8e6] bg-white text-[10px] font-bold text-[#6b8097]'
-                    }`}>
-                      {isDone ? <Check className="size-4" strokeWidth={3} /> : isActive ? <ChevronRight className="size-4" strokeWidth={3} /> : step.id}
+          )}
+          
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <button
+                onClick={() => setIsBellOpen(!isBellOpen)}
+                className="relative flex size-9 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors"
+              >
+                <Bell size={18} />
+                <span className="absolute right-2 top-2 size-2 rounded-full bg-[#e34242] ring-2 ring-white" />
+              </button>
+              <AnimatePresence>
+                {isBellOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 top-12 z-[100] w-64 rounded-xl border border-[#dde8e6] bg-white p-4 shadow-xl text-left"
+                  >
+                    <div className="text-[11px] font-black uppercase tracking-wider text-[#162126] mb-1">
+                      Notifications Center
                     </div>
+                    <p className="text-[10px] text-[#6b8097] leading-relaxed mb-4">
+                      This is where your real-time case updates and automated tracking alerts will appear.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="rounded-lg bg-[#f0f9f6] p-2.5 border border-[#d1e7e2]">
+                        <div className="text-[10px] font-black text-[#0d7377] uppercase mb-1 flex items-center gap-1.5">
+                          <div className="size-1.5 rounded-full bg-[#0d7377]" />
+                          Live Case Tracking
+                        </div>
+                        <div className="text-[11px] leading-snug text-[#4a5c62]">
+                          Automated alerts for USCIS/NVC status changes and priority date movements.
+                        </div>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100 opacity-60">
+                        <div className="text-[10px] font-black text-[#6b8097] uppercase mb-1">
+                          System Intelligence
+                        </div>
+                        <div className="text-[11px] leading-snug text-[#6b8097]">
+                          Personalized reminders for upcoming deadlines and document expirations.
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="flex size-9 items-center justify-center rounded-full border border-[#dde8e6] bg-[#f0f3f7] text-[#6b8097]">
+              <User size={18} />
+            </div>
+          </div>
+        </div>
+      </div>
 
-                    <span className={`text-[13px] font-bold transition-colors ${
-                      isDone ? 'text-[#0d7377]' : isActive ? 'text-[#4E518C]' : 'text-[#6b8097]'
-                    }`}>
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <AnimatePresence mode="wait">
+          {view === "dashboard" && (
+            <motion.div
+              key="dash"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex-1 p-5 overflow-y-auto"
+            >
+              {/* Next Roadmap Step Card */}
+              <div className="mb-6 rounded-[24px] bg-[#051738] p-6 text-white shadow-lg relative overflow-hidden min-h-[170px] flex flex-col justify-center">
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
+                <div className="absolute -right-8 -bottom-8 size-48 rounded-full bg-[#0d7377]/10 blur-2xl" />
+                
+                <div className="relative z-10">
+                  <div className="text-[10px] font-black uppercase tracking-[0.1em] text-white/40 mb-1.5">
+                    Next Roadmap Step
+                  </div>
+                  <h3 className="text-2xl font-black mb-2">
+                    {nextStep[1]}
+                  </h3>
+                  <p className="text-[13px] text-white/50 max-w-sm leading-snug mb-5">
+                    {completedSteps.size === 0
+                      ? "Start your IR-1 journey today by confirming your eligibility."
+                      : "Complete the beneficiary spouse information form using Rahvana's guided Autofill."}
+                  </p>
+                  <button
+                    onClick={() => handleSelectChapter(0)}
+                    className="flex w-fit items-center gap-2 rounded-full bg-white px-6 py-2.5 text-[11px] font-black uppercase tracking-wider text-[#051738] hover:bg-white/90 transition-all shadow-md"
+                  >
+                    Continue Step <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
 
-                      {step.title}
+              {/* Chapters Grid */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                {chapters.map((chapter, idx) => {
+                  const isLocked = idx >= 1;
+                  const progress = getChapterProgress(idx);
+                  const colors = [
+                    { pillBg: "bg-[#F0F1FB]", pillText: "text-[#4E518C]", pillBorder: "border-[#B9BBE2]", bar: "bg-[#8284BF]" },
+                    { pillBg: "bg-[#F4E6F3]", pillText: "text-[#520A50]", pillBorder: "border-[#8B4388]", bar: "bg-[#520A50]" },
+                    { pillBg: "bg-[#E8ECF3]", pillText: "text-[#051738]", pillBorder: "border-[#31415F]", bar: "bg-[#051738]" },
+                  ][idx];
+
+                  return (
+                    <div
+                      key={chapter.name}
+                      onClick={() => !isLocked && handleSelectChapter(idx)}
+                      className={`group relative flex flex-col rounded-[20px] border-2 bg-white p-4 transition-all ${
+                        isLocked
+                          ? "border-[#dde8e6]/50 opacity-60 cursor-default"
+                          : "border-[#dde8e6] cursor-pointer hover:border-[#0d7377] hover:shadow-md"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-wider border ${colors.pillBg} ${colors.pillText} ${colors.pillBorder}`}>
+                          Chapter {idx + 1}
+                        </div>
+                        {isLocked && <Lock size={14} className="text-slate-300" />}
+                      </div>
+
+                      <h4 className={`text-[14px] font-black leading-snug mb-6 ${isLocked ? "text-slate-400" : "text-[#162126]"}`}>
+                        {chapter.name}
+                      </h4>
+
+                      <div className="mt-auto">
+                        <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            className={`h-full rounded-full ${colors.bar}`}
+                          />
+                        </div>
+                      </div>
+                      
+                      {isLocked && (
+                        <div className="absolute top-3.5 right-3.5">
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[7px] font-black uppercase text-slate-400 border border-slate-200">
+                            Upgrade
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Case Details & Milestones */}
+              <div className="mt-6 space-y-3 pb-6">
+                {/* Case Details */}
+                <div className="overflow-hidden rounded-[20px] border border-[#dde8e6] bg-white shadow-sm">
+                  <button
+                    onClick={() => setIsCaseDetailsOpen(!isCaseDetailsOpen)}
+                    className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
+                        <BookOpen size={16} />
+                      </div>
+                      <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
+                        Case Details
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={18}
+                      className={`text-[#6b8097] transition-transform duration-300 ${isCaseDetailsOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {isCaseDetailsOpen && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-[#dde8e6] bg-[#f9fafc] p-5">
+                          {caseFields.map(([label, value]) => (
+                            <div key={label}>
+                              <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+                                {label}
+                              </div>
+                              <div className="mt-0.5 text-[13px] font-bold text-[#162126]">
+                                {value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Milestone History */}
+                <div className="overflow-hidden rounded-[20px] border border-[#dde8e6] bg-white shadow-sm">
+                  <button
+                    onClick={() => setIsMilestonesOpen(!isMilestonesOpen)}
+                    className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
+                        <Signpost size={16} />
+                      </div>
+                      <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
+                        Milestone History
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={18}
+                      className={`text-[#6b8097] transition-transform duration-300 ${isMilestonesOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {isMilestonesOpen && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-3 border-t border-[#dde8e6] bg-[#f9fafc] p-5">
+                          {milestones.map(([title, completed], idx) => (
+                            <div key={idx} className="flex items-center gap-2.5">
+                              <div
+                                className={`flex size-4 items-center justify-center rounded-full border ${completed ? "bg-[#0d7377] border-[#0d7377] text-white" : "border-[#dde8e6] bg-white text-transparent"}`}
+                              >
+                                <Check size={10} strokeWidth={4} />
+                              </div>
+                              <span
+                                className={`text-[12px] font-bold ${completed ? "text-[#162126]" : "text-slate-400"}`}
+                              >
+                                {title}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {view === "chapter" && (
+            <motion.div
+              key="chapter"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex"
+            >
+              <div className="w-[240px] shrink-0 border-r border-[#e1ebe8] bg-white p-5 flex flex-col">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4E518C]">
+                  <div className="size-1.5 rounded-full bg-[#4E518C]" />
+                  Chapter {activeChapterIdx + 1}
+                </div>
+                <h2 className="mt-2 text-[20px] font-black leading-tight text-[#162126]">
+                  {activeChapter.name}
+                </h2>
+                <p className="mt-3 text-xs leading-relaxed text-[#6b8097]">
+                  {activeChapter.description}
+                </p>
+
+                <div className="mt-auto">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#6b8097] mb-2">
+                    Chapter Progress
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className="h-full bg-[#0d7377] transition-all"
+                        style={{ width: `${getChapterProgress(activeChapterIdx)}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-bold text-[#162126]">
+                      {getChapterProgress(activeChapterIdx)}%
                     </span>
                   </div>
+                </div>
+              </div>
 
-                  <div className="flex items-center gap-3">
-                    {isActive && !isDone && (
-                      <span className="rounded-md bg-[#e0e2f5] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-[#4E518C]">
-                        Active
-                      </span>
-                    )}
-                    {!isDone && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleStep(step.id);
-                        }}
-                        className={`rounded-md px-2.5 py-1.5 text-[10px] font-black transition-all ${
-                          isActive 
-                            ? 'bg-[#0d7377] text-white shadow-md hover:bg-[#0a5c5f]' 
-                            : 'opacity-0 group-hover:opacity-100 text-[#0d7377] hover:underline underline-offset-2'
+              <div className="flex-1 overflow-y-auto p-5 bg-[#f9fafb]">
+                <div className="flex flex-col gap-2">
+                  {activeChapter.steps.map((step, idx) => {
+                    const isDone = completedSteps.has(step[0]);
+                    const isLocked = !(activeChapterIdx === 0 && idx === 0);
+                    return (
+                      <div
+                        key={step[0]}
+                        onClick={() => !isLocked && handleSelectStep(idx)}
+                        className={`group flex items-center justify-between rounded-xl border p-3.5 transition-all ${
+                          isLocked
+                            ? "border-transparent bg-white/60 opacity-70 cursor-default"
+                            : isDone
+                              ? "border-[#0d7377] bg-white cursor-pointer"
+                              : "border-transparent bg-white shadow-sm hover:border-[#dde8e6] cursor-pointer"
                         }`}
                       >
-                        {isActive ? 'Mark Completed' : 'Complete'}
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-
-              );
-            })}
-
-
-
-            <div className="mt-3 flex items-center justify-between rounded-xl border border-dashed border-[#dde8e6] bg-white p-3.5 opacity-60">
-              <div className="flex items-center gap-2">
-                <Lock className="size-4 text-[#6b8097]" />
-                <span className="text-[13px] font-bold text-[#6b8097]">Ch. 2 · NVC / CEAC Processing</span>
+                        <div className="flex items-center gap-3">
+                          <div
+                            onClick={(e) => {
+                              if (isLocked) return;
+                              e.stopPropagation();
+                              toggleStep(step[0]);
+                            }}
+                            className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
+                              isLocked
+                                ? "border-slate-200 bg-slate-50 text-slate-300"
+                                : isDone
+                                  ? "bg-[#0d7377] border-[#0d7377] text-white"
+                                  : "border-[#dde8e6] text-slate-300 group-hover:border-[#0d7377] group-hover:text-[#0d7377]"
+                            }`}
+                          >
+                            {isLocked ? (
+                              <Lock size={12} />
+                            ) : isDone ? (
+                              <Check size={14} strokeWidth={3} />
+                            ) : (
+                              <div className="size-2 rounded-full bg-current" />
+                            )}
+                          </div>
+                          <div>
+                            <div
+                              className={`text-[13.5px] font-bold ${
+                                isLocked
+                                  ? "text-slate-400"
+                                  : isDone
+                                    ? "text-[#0d7377]"
+                                    : "text-[#162126]"
+                              }`}
+                            >
+                              {step[1]}
+                            </div>
+                            <div className="text-[11px] text-[#6b8097]">
+                              {isLocked ? "Pro Feature" : step[2]}
+                            </div>
+                          </div>
+                        </div>
+                        {!isLocked && (
+                          <ChevronRight
+                            size={16}
+                            className="text-slate-300 group-hover:translate-x-1 transition-all"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Locked</span>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          )}
+
+          {view === "step" && activeStep && (
+            <motion.div
+              key="step"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex-1 flex flex-col bg-white overflow-y-auto"
+            >
+              {activeChapterIdx === 0 && activeStepIdx === 0 ? (
+                <StepQuestDemo
+                  onComplete={() => {
+                    toggleStep(activeStep[0]);
+                    setView("chapter");
+                  }}
+                />
+              ) : activeChapterIdx === 0 && activeStepIdx === 1 ? (
+                <StepDocsDemo
+                  onComplete={() => {
+                    toggleStep(activeStep[0]);
+                    setView("chapter");
+                  }}
+                />
+              ) : (
+                <div className="flex-1 p-8 flex flex-col items-center justify-center text-center">
+                  <div className="flex size-16 items-center justify-center rounded-2xl bg-[#f0f1fb] text-[#4e518c] mb-6 shadow-sm">
+                    <FileText size={32} />
+                  </div>
+                  <h2 className="text-2xl font-black text-[#162126] mb-2">
+                    {activeStep[1]}
+                  </h2>
+                  <p className="max-w-md text-[#6b8097] leading-relaxed mb-8">
+                    In the full app, this step includes interactive guides,
+                    Pakistan-specific checklists, and automated tools to help
+                    you finish faster.
+                  </p>
+
+                  <div className="flex flex-col w-full max-w-sm gap-3">
+                    <button
+                      onClick={() => {
+                        toggleStep(activeStep[0]);
+                        setView("chapter");
+                      }}
+                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-4 text-[14px] font-black uppercase tracking-wider text-white shadow-lg hover:bg-[#0a5c5f] transition-all"
+                    >
+                      {completedSteps.has(activeStep[0])
+                        ? "Mark as Incomplete"
+                        : "Complete this step"}
+                      <Check size={18} />
+                    </button>
+                    <button
+                      onClick={() => setView("chapter")}
+                      className="w-full py-3 text-sm font-bold text-[#6b8097] hover:text-[#162126] transition-colors"
+                    >
+                      Back to Checklist
+                    </button>
+                  </div>
+
+                  <div className="mt-12 grid grid-cols-2 gap-4 w-full max-w-lg">
+                    <div className="rounded-xl border border-dashed border-[#dde8e6] p-4">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6b8097] mb-1">
+                        Free Access
+                      </div>
+                      <div className="text-sm font-bold text-[#162126]">
+                        Preview Only
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-[#d0e4f7] bg-[#f0f7ff] p-4">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377] mb-1">
+                        Pro Tool
+                      </div>
+                      <div className="text-sm font-bold text-[#0d7377]">
+                        Auto-Fill Ready
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="grid grid-cols-4 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-3.5 text-center rounded-b-[32px] relative z-20">
+      {/* Bottom Status Bar */}
+      <div className="grid grid-cols-3 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-4 text-center shrink-0">
         <div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Steps Done</div>
-          <div className="mt-0.5 text-[15px] font-black text-[#162126]">{completedCount} / 18</div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Overall Progress
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            {Math.round((totalDone / totalSteps) * 100)}%
+          </div>
         </div>
         <div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Chapter</div>
-          <div className="mt-0.5 text-[15px] font-black text-[#162126]">1 of 3</div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Steps Done
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            {totalDone} / {totalSteps}
+          </div>
         </div>
         <div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Est. Timeline</div>
-          <div className="mt-0.5 text-[15px] font-black text-[#162126]">~8 months</div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Demo Mode
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#0d7377]">
+            Free Preview
+          </div>
         </div>
-        <div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Overall</div>
-          <div className="mt-0.5 text-[15px] font-black text-[#162126]">{Math.round(17 + (completedCount * 1.2))}%</div>
-        </div>
-
       </div>
     </div>
   );
@@ -2180,7 +2470,6 @@ const ITEM_W = 108;
 const GAP = 20;
 const STRIDE = ITEM_W + GAP;
 const DURATION = 28;
-
 
 // ── carousel: CSS auto-scroll, pauses on hover ────────────────────────────────
 
@@ -2310,23 +2599,23 @@ export function IndividualToolsScene() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       style={{
-        width: 600, height: 500, borderRadius: 32,
+        width: 600, height: 460, borderRadius: 32,
         background: "white", border: "1px solid #dde8e6",
         boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position: "absolute", left: 40, top: 30,
+        position: "relative", margin: "auto",
         overflow: "hidden", display: "flex", flexDirection: "column",
       }}
     >
       {/* ── Top bar ── */}
-      <div style={{ height: 48, flexShrink: 0, background: tool.fg, display: "flex", alignItems: "center", padding: "0 18px", gap: 10, transition: "background 0.4s ease" }}>
+      <div style={{ height: 48, flexShrink: 0, background: tool.fg, display: "flex", alignItems: "center", padding: "0 18px", gap: 12, transition: "background 0.4s ease" }}>
         <div style={{ width: 28, height: 28, borderRadius: 9, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           {(() => { const Icon = tool.icon; return <Icon size={15} color="white" strokeWidth={1.75} />; })()}
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, textAlign: "center" }}>
           <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.65)" }}>{content.eyebrow}</div>
-          <div style={{ fontSize: 12.5, fontWeight: 900, color: "white" }}>{content.title}</div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: "white" }}>{content.title}</div>
         </div>
-        <a href="#" onClick={(e) => e.preventDefault()} style={{ flexShrink: 0, background: "white", color: tool.fg, borderRadius: 20, padding: "5px 13px", fontSize: 10.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+        <a href="#" onClick={(e) => e.preventDefault()} style={{ flexShrink: 0, background: "white", color: tool.fg, borderRadius: 20, padding: "5px 14px", fontSize: 10.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
           Open Tool <ArrowRight size={10} strokeWidth={2.5} />
         </a>
       </div>
@@ -2339,7 +2628,7 @@ export function IndividualToolsScene() {
           style={{
             width: 195, flexShrink: 0, position: "relative", overflow: "hidden",
             background: tool.fg, display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center", padding: "24px 16px",
+            alignItems: "center", justifyContent: "center", padding: "10px 16px 138px",
             transition: "background 0.4s ease",
           }}
         >
@@ -2370,31 +2659,31 @@ export function IndividualToolsScene() {
         {/* Right: headline + benefits */}
         <div
           style={{
-            flex: 1, padding: "22px 20px 18px",
-            display: "flex", flexDirection: "column", justifyContent: "center",
+            flex: 1, padding: "10px 32px 138px",
+            display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center",
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(8px)",
             transition: "opacity 0.28s ease, transform 0.28s ease",
           }}
         >
           {/* Headline */}
-          <h2 style={{ fontSize: 19, fontWeight: 900, color: "#0f172a", lineHeight: 1.28, marginBottom: 10, letterSpacing: "-0.01em" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", lineHeight: 1.25, marginBottom: 12, letterSpacing: "-0.01em" }}>
             {content.headline}
           </h2>
 
           {/* Subtext */}
-          <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65, marginBottom: 18 }}>
+          <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6, marginBottom: 22, maxWidth: 320 }}>
             {content.subtext}
           </p>
 
           {/* Benefits */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 9, width: "fit-content", alignItems: "flex-start" }}>
             {content.benefits.map((b: string) => (
-              <div key={b} style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                <div style={{ width: 18, height: 18, borderRadius: "50%", background: tool.bg, border: `1.5px solid ${tool.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.3s, border-color 0.3s" }}>
+              <div key={b} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 18, height: 18, borderRadius: "50%", background: tool.bg, border: `1.5px solid ${tool.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Check size={10} color={tool.fg} strokeWidth={3} />
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#334155" }}>{b}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: "#334155", textAlign: "left" }}>{b}</span>
               </div>
             ))}
           </div>
@@ -2410,6 +2699,7 @@ export function IndividualToolsScene() {
     </div>
   );
 }
+
 
 export function ConsultationBanner({
   onConsultationClick,
@@ -2608,6 +2898,318 @@ export function ConsultationPreviewVisual() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function StepQuestDemo({ onComplete }: { onComplete: () => void }) {
+  const [questDone, setQuestDone] = useState<Set<string>>(new Set());
+  const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
+
+  const quests = [
+    {
+      id: "q1",
+      title: "Petitioner is a U.S. Citizen",
+      subtitle: "Confirm the petitioner qualifies to file an IR-1 spouse petition",
+      icon: <User className="size-5" />,
+    },
+    {
+      id: "q2",
+      title: "A legally valid marriage exists",
+      subtitle: "Confirm there is a current, legally recognized civil marriage",
+      icon: <Users className="size-5" />,
+    },
+    {
+      id: "q3",
+      title: "All prior marriages were legally terminated",
+      subtitle:
+        "Confirm neither spouse was still married to anyone else when this marriage occurred",
+      icon: <Scale className="size-5" />,
+    },
+    {
+      id: "q4",
+      title: "Marriage is bona fide",
+      subtitle: "Screen for good-faith intent and evidence of a genuine relationship",
+      icon: <MessageSquare className="size-5" />,
+    },
+    {
+      id: "q5",
+      title: "Additional possible visa ineligibilities",
+      subtitle: "Early screening for common immigrant visa admissibility concerns",
+      icon: <ShieldCheck className="size-5" />,
+    },
+  ];
+
+  const toggleQuest = (id: string) => {
+    setQuestDone((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const isAllDone = questDone.size === quests.length;
+
+  if (activeQuestId) {
+    const quest = quests.find((q) => q.id === activeQuestId);
+    return (
+      <div className="flex-1 p-8 bg-white flex flex-col items-center text-center">
+        <div className="size-16 rounded-full bg-[#f0f3f7] flex items-center justify-center text-[#0d7377] mb-6">
+          {quest?.icon}
+        </div>
+        <h2 className="text-2xl font-black text-[#162126]">{quest?.title}</h2>
+        <p className="mt-2 text-[#6b8097] max-w-sm">{quest?.subtitle}</p>
+
+        <div className="mt-10 w-full max-w-sm space-y-4">
+          <div className="text-left text-sm font-bold text-[#162126] mb-2">
+            Demo Question:
+          </div>
+          <div className="rounded-2xl border border-[#0d7377] bg-[#f0f7f7] p-5 text-left transition-all hover:shadow-md cursor-pointer group">
+            <div className="flex items-center gap-3">
+              <div className="size-5 rounded-full border-2 border-[#0d7377] bg-white flex items-center justify-center group-hover:bg-[#0d7377] transition-all">
+                <div className="size-2 rounded-full bg-[#0d7377] group-hover:bg-white" />
+              </div>
+              <span className="font-bold text-[#0d7377]">
+                Yes, this requirement is met
+              </span>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[#dde8e6] bg-white p-5 text-left hover:border-[#0d7377] transition-all cursor-pointer">
+            <div className="flex items-center gap-3">
+              <div className="size-5 rounded-full border-2 border-[#dde8e6]" />
+              <span className="font-bold text-[#162126]">No, not yet</span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            toggleQuest(activeQuestId);
+            setActiveQuestId(null);
+          }}
+          className="mt-12 rounded-full bg-[#0d7377] px-8 py-3 text-sm font-black uppercase tracking-wider text-white shadow-lg hover:bg-[#0a5c5f] transition-all"
+        >
+          Confirm & Save
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 p-8 bg-[#f9fafb]">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-3xl font-black text-[#162126]">Determine Eligibility</h1>
+        {isAllDone && (
+          <div className="flex items-center gap-1.5 rounded-full bg-[#dcfce7] px-3 py-1 text-[11px] font-black uppercase text-[#166534] border border-[#bbf7d0]">
+            <Check size={14} strokeWidth={3} /> Done
+          </div>
+        )}
+      </div>
+      <p className="text-[#6b8097] max-w-xl leading-relaxed mb-6">
+        Before filing, confirm that the core eligibility conditions for an IR-1 spouse
+        petition are in place. Complete each section below.
+      </p>
+
+      <div className="h-px w-full bg-[#e1ebe8] mb-8" />
+
+      <div className="grid gap-4">
+        {quests.map((q) => {
+          const isDone = questDone.has(q.id);
+          return (
+            <div
+              key={q.id}
+              onClick={() => setActiveQuestId(q.id)}
+              className={`group flex items-center gap-5 rounded-2xl border-2 p-5 transition-all cursor-pointer bg-white ${
+                isDone
+                  ? "border-[#0d7377] shadow-sm"
+                  : "border-transparent shadow-sm hover:border-[#0d7377] hover:shadow-md"
+              }`}
+            >
+              <div
+                className={`flex size-14 shrink-0 items-center justify-center rounded-xl transition-all ${
+                  isDone ? "bg-[#0d7377] text-white" : "bg-[#f0f3f7] text-[#6b8097]"
+                }`}
+              >
+                {q.icon}
+              </div>
+              <div className="flex-1">
+                <h3
+                  className={`text-[16px] font-black ${
+                    isDone ? "text-[#0d7377]" : "text-[#162126]"
+                  }`}
+                >
+                  {q.title}
+                </h3>
+                <p className="text-[13px] text-[#6b8097] mt-0.5 line-clamp-1">
+                  {q.subtitle}
+                </p>
+              </div>
+              <div
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  isDone
+                    ? "bg-[#0d7377] text-white"
+                    : "bg-slate-100 text-slate-400 group-hover:bg-[#0d7377]/10 group-hover:text-[#0d7377]"
+                }`}
+              >
+                {isDone ? (
+                  <>
+                    <Check size={12} strokeWidth={3} /> Completed
+                  </>
+                ) : (
+                  "Not started"
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {isAllDone && (
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={onComplete}
+          className="mt-8 w-full rounded-2xl bg-[#0d7377] py-5 text-base font-black uppercase tracking-widest text-white shadow-xl hover:bg-[#0a5c5f] transition-all"
+        >
+          Finish Step 1 & Continue
+        </motion.button>
+      )}
+    </div>
+  );
+}
+
+export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
+  const [docStatus, setDocStatus] = useState<Record<string, string>>({
+    doc_citizenship: "not-started",
+    doc_passport_ben: "not-started",
+    doc_nikah_nama: "not-started",
+    doc_mrc: "not-started",
+  });
+
+  const docs = [
+    {
+      id: "doc_citizenship",
+      name: "Proof of U.S. Citizenship",
+      subtitle: "Establishes the petitioner's right to file",
+      icon: <ShieldCheck className="size-5" />,
+    },
+    {
+      id: "doc_passport_ben",
+      name: "Beneficiary Passport",
+      subtitle: "Pakistan passport of the immigrant spouse",
+      icon: <User className="size-5" />,
+    },
+    {
+      id: "doc_nikah_nama",
+      name: "Nikah Nama (Original)",
+      subtitle: "Islamic marriage contract — foundational doc",
+      icon: <FileText className="size-5" />,
+    },
+    {
+      id: "doc_mrc",
+      name: "NADRA Marriage Certificate",
+      subtitle: "Government civil registration (MRC)",
+      icon: <FileCheck2 className="size-5" />,
+    },
+  ];
+
+  const toggleDoc = (id: string) => {
+    setDocStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "reviewed" ? "not-started" : "reviewed",
+    }));
+  };
+
+  const doneCount = Object.values(docStatus).filter((s) => s === "reviewed").length;
+  const isAllDone = doneCount === docs.length;
+
+  return (
+    <div className="flex-1 p-8 bg-[#f9fafb]">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-3xl font-black text-[#162126]">Gather Documents</h1>
+        <div className="flex items-center gap-2 text-[12px] font-bold text-[#0d7377] bg-white px-3 py-1 rounded-full border border-[#dde8e6]">
+          {doneCount} / {docs.length} COLLECTED
+        </div>
+      </div>
+      <p className="text-[#6b8097] max-w-xl leading-relaxed mb-8">
+        Prepare the documents needed for your IR-1 spouse petition. In the full app,
+        you get Pakistan-specific guides for each.
+      </p>
+
+      <div className="grid gap-3">
+        {docs.map((doc) => {
+          const isDone = docStatus[doc.id] === "reviewed";
+          return (
+            <div
+              key={doc.id}
+              onClick={() => toggleDoc(doc.id)}
+              className={`group flex items-center justify-between rounded-2xl border-2 p-4 transition-all cursor-pointer bg-white ${
+                isDone
+                  ? "border-[#0d7377] shadow-sm"
+                  : "border-transparent shadow-sm hover:border-[#dde8e6]"
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={`flex size-12 shrink-0 items-center justify-center rounded-xl transition-all ${
+                    isDone ? "bg-[#0d7377] text-white" : "bg-slate-50 text-slate-400"
+                  }`}
+                >
+                  {doc.icon}
+                </div>
+                <div>
+                  <h4
+                    className={`font-black text-[15px] ${
+                      isDone ? "text-[#0d7377]" : "text-[#162126]"
+                    }`}
+                  >
+                    {doc.name}
+                  </h4>
+                  <p className="text-[12px] text-[#6b8097]">{doc.subtitle}</p>
+                </div>
+              </div>
+              <div
+                className={`flex size-8 items-center justify-center rounded-full border-2 transition-all ${
+                  isDone
+                    ? "bg-[#0d7377] border-[#0d7377] text-white"
+                    : "border-[#dde8e6] text-transparent group-hover:border-[#0d7377]"
+                }`}
+              >
+                <Check size={16} strokeWidth={4} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-10 p-5 rounded-2xl bg-[#051738] text-white flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center">
+            <Lock className="size-5 text-white/60" />
+          </div>
+          <div>
+            <div className="text-sm font-black">Pakistan-Specific Guides</div>
+            <div className="text-[11px] text-white/50">
+              Unlock Nikah Nama & NADRA instructions with Pro
+            </div>
+          </div>
+        </div>
+        <button className="rounded-lg bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-wider hover:bg-white/20 transition-all">
+          Upgrade
+        </button>
+      </div>
+
+      {isAllDone && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={onComplete}
+          className="mt-8 w-full rounded-2xl bg-[#0d7377] py-5 text-base font-black uppercase tracking-widest text-white shadow-xl hover:bg-[#0a5c5f] transition-all"
+        >
+          Confirm Documents & Continue
+        </motion.button>
+      )}
     </div>
   );
 }
