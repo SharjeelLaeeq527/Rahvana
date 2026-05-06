@@ -1251,7 +1251,7 @@ export function TwoWaysSection() {
         ref={sectionRef}
         id="path"
         aria-label="Two ways to use Rahvana"
-        className="relative hidden lg:block mt-40 md:mt-56"
+        className="relative hidden lg:block"
         style={{ height: "calc(100vh + 600px)" }}
       >
         <div
@@ -2940,7 +2940,9 @@ export function ConsultationBanner({
       aria-labelledby="consultation-heading"
       className="relative overflow-hidden"
       style={{
-        background: "#F4F7F6",
+        background: "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+        borderTop: "1px solid #e1ebe8",
+        borderBottom: "1px solid #e1ebe8",
       }}
     >
       {/* Subtle background decoration */}
