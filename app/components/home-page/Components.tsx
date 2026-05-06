@@ -1282,7 +1282,7 @@ export function TwoWaysSection() {
                 className="mt-4 mb-0 font-extrabold text-[#162126]"
                 style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
               >
-                Choose how you want to use Rahvana.
+                Choose how you want to use Rahvana
               </h2>
 
               <p
@@ -2032,17 +2032,17 @@ export function GuidedRoadmapScene() {
 
 // ── tools ──
 const featuredTools = [
-  { id: "strength",    icon: Brain,         label: "Case Strength Analyzer",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe", iconSrc: "/icons/case-strength-analyser.svg" },
-  { id: "action",      icon: LifeBuoy,      label: "221(g) Action Planner",   bg: "#ecfdf5", fg: "#059669", border: "#d1fae5", iconSrc: "/icons/221g-action-plan.svg"        },
-  { id: "path",        icon: Compass,       label: "Visa Path Finder",        bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5", iconSrc: "/icons/visa-path-finder.svg"         },
-  { id: "interview",   icon: MessageSquare, label: "Interview Prep",          bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe", iconSrc: "/icons/interview-prep.svg"           },
-  { id: "sponsorship", icon: Calculator,    label: "Sponsorship Calculator",  bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6", iconSrc: "/icons/sponsorship-calculator.svg"   },
-  { id: "dq",          icon: Clock,         label: "DQ Status Check",         bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff", iconSrc: "/icons/dq-case-tracker.svg"          },
-  { id: "bulletin",    icon: Calendar,      label: "Visa Bulletin Monitor",   bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1", iconSrc: "/icons/visa-bulletin-monitor.svg"    },
-  { id: "photo",       icon: Camera,        label: "Photo Booth",             bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3", iconSrc: "/icons/photo-booth.svg"              },
-  { id: "pdf",         icon: Files,         label: "PDF Tool Kit",            bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd", iconSrc: "/icons/pdf-toolbox.svg"              },
-  { id: "snap",        icon: PenTool,       label: "Snap & Sign",             bg: "#eef2ff", fg: "#4f46e5", border: "#c7d2fe", iconSrc: "/icons/snap-and-sign.svg"            },
-  { id: "filler",      icon: Wand2,         label: "Smart Form Filler",       bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa", iconSrc: "/icons/smart-form-filler.svg"        },
+  { id: "strength",    icon: Brain,         iconSize: 20, label: "Case Strength Analyzer",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe", iconSrc: "/icons/case-strength-analyser.svg" },
+  { id: "action",      icon: LifeBuoy,      iconSize: 20, label: "221(g) Action Planner",   bg: "#ecfdf5", fg: "#059669", border: "#d1fae5", iconSrc: "/icons/221g-action-plan.svg"        },
+  { id: "path",        icon: Compass,       iconSize: 18, label: "Visa Path Finder",        bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5", iconSrc: "/icons/visa-path-finder.svg"         },
+  { id: "interview",   icon: MessageSquare, iconSize: 18, label: "Interview Prep",          bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe", iconSrc: "/icons/interview-prep.svg"           },
+  { id: "sponsorship", icon: Calculator,    iconSize: 20, label: "Sponsorship Calculator",  bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6", iconSrc: "/icons/sponsorship-calculator.svg"   },
+  { id: "dq",          icon: Clock,         iconSize: 20, label: "DQ Status Check",         bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff", iconSrc: "/icons/dq-case-tracker.svg"          },
+  { id: "bulletin",    icon: Calendar,      iconSize: 19, label: "Visa Bulletin Monitor",   bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1", iconSrc: "/icons/visa-bulletin-monitor.svg"    },
+  { id: "photo",       icon: Camera,        iconSize: 18, label: "Photo Booth",             bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3", iconSrc: "/icons/photo-booth.svg"              },
+  { id: "pdf",         icon: Files,         iconSize: 19, label: "PDF Tool Kit",            bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd", iconSrc: "/icons/pdf-toolbox.svg"              },
+  { id: "snap",        icon: PenTool,       iconSize: 18, label: "Snap & Sign",             bg: "#eef2ff", fg: "#4f46e5", border: "#c7d2fe", iconSrc: "/icons/snap-and-sign.svg"            },
+  { id: "filler",      icon: Wand2,         iconSize: 20, label: "Smart Form Filler",       bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa", iconSrc: "/icons/smart-form-filler.svg"        },
 ];
 
 const toolContent: Record<string, any> = {
@@ -2188,101 +2188,82 @@ function ToolCarousel({
   onSelect: (idx: number) => void;
   onHoverChange: (h: boolean) => void;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const rafRef  = useRef<number>(0);
-  const [paused, setPaused] = useState(false);
-  const loopWidth = featuredTools.length * STRIDE;
+  const N         = featuredTools.length;
+  const COPIES    = 20;
+  const totalStep = useRef(10 * N); // start at copy 10, icon 0
+  const prevIdx   = useRef(activeIdx);
+  const [offset, setOffset]     = useState(() => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2));
+  const [animated, setAnimated] = useState(true);
 
-  // Inject CSS keyframe once
   useEffect(() => {
-    const id = "tc-ks";
-    if (!document.getElementById(id)) {
-      const s = document.createElement("style");
-      s.id = id;
-      s.textContent = `@keyframes tcScroll{from{transform:translateX(0)}to{transform:translateX(-${loopWidth}px)}}`;
-      document.head.appendChild(s);
-    }
-  }, [loopWidth]);
+    if (activeIdx === prevIdx.current) return;
+    // Advance by correct steps forward (handles wrap-around 10→0)
+    const diff = (activeIdx - prevIdx.current + N) % N;
+    totalStep.current += diff || N;
+    prevIdx.current = activeIdx;
+    setAnimated(true);
+    setOffset(300 - (GAP + totalStep.current * STRIDE + ITEM_W / 2));
+  }, [activeIdx, N]);
 
-  // rAF: scale/lift icon nearest to centre
-  useEffect(() => {
-    const run = () => {
-      const wrap = wrapRef.current;
-      if (wrap) {
-        const { left, width } = wrap.getBoundingClientRect();
-        const centerX = left + width / 2;
-        const hotZone = width * 0.13;
-        wrap.querySelectorAll<HTMLElement>(".tc-icon-box").forEach((el) => {
-          const r    = el.getBoundingClientRect();
-          const dist = Math.abs(r.left + r.width / 2 - centerX);
-          const t    = Math.max(0, 1 - dist / hotZone);
-          el.style.transform = `translateY(${-t * 5}px) scale(${1 + t * 0.2})`;
-          el.style.zIndex    = t > 0.5 ? "10" : "1";
-        });
-      }
-      rafRef.current = requestAnimationFrame(run);
-    };
-    rafRef.current = requestAnimationFrame(run);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
-
-  // 3 copies is enough for seamless loop
-  const items = [...featuredTools, ...featuredTools, ...featuredTools];
+  const items = Array.from({ length: COPIES }, () => featuredTools).flat();
 
   return (
     <div
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
       style={{
-        position:"absolute", bottom:0, left:0, width:"100%", height:138,
-        overflow:"hidden", borderTop:"1px solid #e8edf2",
-        background:"linear-gradient(to bottom,#ffffff,#f8fafc)",
-        WebkitMaskImage:"linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
-        maskImage:"linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        position: "absolute", bottom: 0, left: 0, width: "100%", height: 138,
+        overflow: "hidden", borderTop: "1px solid #e8edf2",
+        background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
+        WebkitMaskImage: "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        maskImage:       "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
       }}
     >
-      {/* Auto-scrolling track */}
       <div
-        ref={wrapRef}
-        onMouseEnter={() => { setPaused(true);  onHoverChange(true);  }}
-        onMouseLeave={() => { setPaused(false); onHoverChange(false); }}
         style={{
-          display:"flex", alignItems:"center", gap:GAP,
-          paddingLeft: GAP, height:"100%",
-          animation:`tcScroll ${DURATION}s linear infinite`,
-          animationPlayState: paused ? "paused" : "running",
-          willChange:"transform",
+          display: "flex", alignItems: "center", gap: GAP,
+          paddingLeft: GAP, height: "100%",
+          transform: `translateX(${offset}px)`,
+          transition: animated ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+          willChange: "transform",
         }}
       >
         {items.map((tool, idx) => {
-          const Icon    = tool.icon;
-          const toolIdx = idx % featuredTools.length;
+          const toolIdx  = idx % N;
           const isActive = toolIdx === activeIdx;
+          const Icon     = tool.icon;
           return (
             <div
               key={idx}
               onClick={() => onSelect(toolIdx)}
-              style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:9, width:ITEM_W, flexShrink:0, cursor:"pointer" }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, width: ITEM_W, flexShrink: 0, cursor: "pointer" }}
             >
+              {/* Icon box — pops when active */}
               <div
-                className="tc-icon-box"
                 style={{
-                  width:54, height:54, borderRadius:16,
-                  background:tool.fg,
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  outline: isActive ? `2px solid ${tool.fg}` : "none",
+                  width: 54, height: 54, minWidth: 54, minHeight: 54,
+                  borderRadius: 16, background: tool.fg,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transform: isActive ? "scale(1.13)" : "scale(1)",
+                  transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  outline: isActive ? `3px solid ${tool.fg}` : "none",
                   outlineOffset: isActive ? "3px" : "0",
-                  transition:"outline 0.2s",
-                  transformOrigin:"50% 100%",
+                  boxShadow: isActive ? `0 8px 24px ${tool.fg}55` : "none",
                 }}
               >
-                <Icon size={24} color="white" strokeWidth={2} />
+                <Icon size={tool.iconSize} color="white" strokeWidth={1.75} />
               </div>
-              <span style={{
-                fontSize:9.5, fontWeight: isActive ? 900 : 700,
-                textTransform:"uppercase", letterSpacing:"0.07em",
-                color: isActive ? tool.fg : "#5a6a72",
-                textAlign:"center", lineHeight:1.3, maxWidth:90,
-                pointerEvents:"none", transition:"color 0.2s",
-              }}>
+              {/* Fixed-height label so all icons sit at same level */}
+              <span
+                style={{
+                  fontSize: 9.5, fontWeight: isActive ? 900 : 700,
+                  textTransform: "uppercase", letterSpacing: "0.07em",
+                  color: isActive ? tool.fg : "#5a6a72",
+                  textAlign: "center", lineHeight: 1.3, width: 90,
+                  height: 26, display: "flex", alignItems: "flex-start", justifyContent: "center",
+                  pointerEvents: "none", transition: "color 0.3s",
+                }}
+              >
                 {tool.label}
               </span>
             </div>
@@ -2292,8 +2273,6 @@ function ToolCarousel({
     </div>
   );
 }
-
-// ── Main scene ────────────────────────────────────────────────────────────────
 
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
@@ -2306,6 +2285,7 @@ export function IndividualToolsScene() {
     window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 200);
   }, []);
 
+  // Auto-advance every 5 s — shows each tool for 5 seconds
   useEffect(() => {
     if (isPaused) return;
     const t = window.setTimeout(() => {
@@ -2333,22 +2313,17 @@ export function IndividualToolsScene() {
         overflow: "hidden", display: "flex", flexDirection: "column",
       }}
     >
-      {/* ── Top bar ── */}
+      {/* ── Top bar — tool colour ── */}
       <div
         style={{
-          height: 54, flexShrink: 0,
-          background: tool.fg,
+          height: 54, flexShrink: 0, background: tool.fg,
           display: "flex", alignItems: "center",
           padding: "0 20px", gap: 10,
+          transition: "background 0.3s ease",
         }}
       >
-        <div style={{
-          width: 30, height: 30, borderRadius: 10,
-          background: "rgba(255,255,255,0.18)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0,
-        }}>
-          {(() => { const Icon = tool.icon; return <Icon size={16} color="white" strokeWidth={2.5} />; })()}
+        <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {(() => { const Icon = tool.icon; return <div style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon size={16} color="white" strokeWidth={1.75} /></div>; })()}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 8.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.7)", lineHeight: 1 }}>
@@ -2373,10 +2348,9 @@ export function IndividualToolsScene() {
         </a>
       </div>
 
-      {/* ── Main content area ── */}
+      {/* ── Main content ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
-        {/* Left: How it works */}
+        {/* Left: description + steps */}
         <div
           style={{
             flex: 1, padding: "14px 16px",
@@ -2385,58 +2359,36 @@ export function IndividualToolsScene() {
             transition: "opacity 0.25s ease, transform 0.25s ease",
           }}
         >
-          {/* Tool description */}
           <div style={{ fontSize: 11.5, color: "#4a5c62", lineHeight: 1.6, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f0f4f8" }}>
             {content.desc}
           </div>
-
-          {/* Section label */}
           <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 8 }}>
             How it works
           </div>
-
-          {/* 3 Steps */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {content.steps.map((step: any) => (
               <div
                 key={step.n}
-                style={{
-                  display: "flex", gap: 10, alignItems: "flex-start",
-                  background: "#f8fafc", borderRadius: 12,
-                  padding: "10px 12px", border: "1px solid #f0f4f8",
-                }}
+                style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f8fafc", borderRadius: 12, padding: "9px 12px", border: "1px solid #f0f4f8" }}
               >
-                {/* Step number circle */}
-                <div style={{
-                  width: 24, height: 24, borderRadius: "50%",
-                  background: tool.fg, color: "white",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 11, fontWeight: 900, flexShrink: 0,
-                }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: tool.fg, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 900, flexShrink: 0, transition: "background 0.3s" }}>
                   {step.n}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, marginBottom: 3 }}>
-                    {step.label}
-                  </div>
-                  <div style={{ fontSize: 10.5, color: "#64748b", lineHeight: 1.5 }}>
-                    {step.desc}
-                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, marginBottom: 2 }}>{step.label}</div>
+                  <div style={{ fontSize: 10.5, color: "#64748b", lineHeight: 1.5 }}>{step.desc}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right: Tips */}
+        {/* Right: key items */}
         <div
           style={{
-            width: 148, background: "#f8fafc",
-            borderLeft: "1px solid #f0f4f8",
-            padding: "14px 12px",
-            opacity: visible ? 1 : 0,
-            transition: "opacity 0.25s ease",
-            display: "flex", flexDirection: "column", gap: 6,
+            width: 148, background: "#f8fafc", borderLeft: "1px solid #f0f4f8",
+            padding: "14px 12px", display: "flex", flexDirection: "column", gap: 6,
+            opacity: visible ? 1 : 0, transition: "opacity 0.25s ease",
           }}
         >
           <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 4 }}>
@@ -2445,13 +2397,7 @@ export function IndividualToolsScene() {
           {content.tips.map((tip: string) => (
             <div
               key={tip}
-              style={{
-                background: "white", borderRadius: 9,
-                border: `1px solid ${tool.border}`,
-                padding: "7px 10px",
-                fontSize: 10.5, fontWeight: 700, color: tool.fg,
-                lineHeight: 1.3,
-              }}
+              style={{ background: "white", borderRadius: 9, border: `1px solid ${tool.border}`, padding: "7px 10px", fontSize: 10.5, fontWeight: 700, color: tool.fg, lineHeight: 1.3, transition: "border-color 0.3s, color 0.3s" }}
             >
               {tip}
             </div>
@@ -2459,7 +2405,7 @@ export function IndividualToolsScene() {
         </div>
       </div>
 
-      {/* ── Bottom carousel ── */}
+      {/* ── Carousel ── */}
       <ToolCarousel
         activeIdx={activeIdx}
         onSelect={(idx) => { goTo(idx); setIsPaused(true); }}
