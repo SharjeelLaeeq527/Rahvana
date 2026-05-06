@@ -121,45 +121,59 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
 
   const defaultTier: PlanTier = fullUpgradeTiers[0] ?? upgradeTiers[0] ?? "basic";
   const [selectedTier, setSelectedTier] = useState<PlanTier>(defaultTier);
-  const [isProcessing, setIsProcessing] = useState(false);
+  // ── Separate loading states for each button ──
+  const [isAddonProcessing, setIsAddonProcessing] = useState(false);
+  const [isUpgradeProcessing, setIsUpgradeProcessing] = useState(false);
   const { user } = useAuth();
 
-  const handleCheckout = async (action: "upgrade" | "addon", target: string) => {
+  const handleCheckout = async (
+    action: "upgrade" | "addon",
+    target: string,
+    setProcessing: (v: boolean) => void,
+  ) => {
     if (onConfirm) {
       onConfirm(action, target as PlanTier);
       onClose();
       return;
     }
 
-    if (!user) return;
-    setIsProcessing(true);
+    if (!user) {
+      console.error("Checkout: no user logged in");
+      return;
+    }
+    setProcessing(true);
 
     try {
       const isUpgrade = action === "upgrade" && currentTier !== "free";
-      
+
       const payload = {
         userId: user.id,
         isUpgrade,
         currentTier: currentTier !== "free" ? currentTier : undefined,
-        productTier: action === "upgrade" ? target : (currentTier !== "free" ? currentTier : "basic"),
+        productTier: action === "upgrade" ? target : undefined,
         addons: action === "addon" ? [target] : undefined,
       };
+
+      console.log("[Checkout] Sending payload:", JSON.stringify(payload));
 
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       const data = await response.json();
+      console.log("[Checkout] API response:", data);
+
       if (data.url) {
         window.location.href = data.url;
       } else {
-        setIsProcessing(false);
+        console.error("[Checkout] No URL in response:", data);
+        setProcessing(false);
       }
     } catch (error) {
-      console.error("Checkout error:", error);
-      setIsProcessing(false);
+      console.error("[Checkout] Error:", error);
+      setProcessing(false);
     }
   };
 
@@ -172,20 +186,12 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
   const showInclusionSection = fullUpgradeTiers.length > 0;
 
   // ─── Shared card wrapper ──────────────────────────────────────────────────
-  // • On mobile  : anchored to bottom, full-width, max 92dvh, rounded top only
-  // • On sm+     : centred, max-w-[440px], fully rounded, max 88dvh
-  // FIX: removed sm:pt-8 (was causing a gap above the header on desktop)
-  // FIX: overflow-hidden is what clips the header corners — no inner rounding needed on header
   const cardCls = [
     "relative bg-white shadow-2xl flex flex-col overflow-hidden",
     "animate-in fade-in zoom-in-95 duration-200",
-    // Mobile: slide-up sheet
     "w-full rounded-t-3xl",
-    // sm+: floating card — fully rounded, no extra top padding
     "sm:rounded-3xl sm:w-[440px] sm:max-w-[calc(100vw-2rem)]",
-    // Height: fills available space but never exceeds viewport
     "max-h-[92dvh] sm:max-h-[88dvh]",
-    // Always above navbars/headers/footers
     "z-[10000] pointer-events-auto",
   ].join(" ");
 
@@ -206,7 +212,6 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
           onClick={onClose}
         />
 
-        {/* FIX: removed pointer-events-auto sm:pt-8 — sm:pt-8 was the gap culprit */}
         <div className={cardCls}>
           {/* Close */}
           <button
@@ -216,8 +221,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
             <X size={14} strokeWidth={2.5} className="text-white" />
           </button>
 
-          {/* Gold header — never scrolls
-              FIX: removed rounded-t-3xl sm:rounded-3xl — card's overflow-hidden handles clipping */}
+          {/* Gold header */}
           <div className="shrink-0 bg-gradient-to-br from-yellow-600 to-amber-700 px-5 pt-6 pb-4 text-white">
             <div className="w-8 h-8 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5">
               <Crown size={15} strokeWidth={2.5} />
@@ -233,12 +237,12 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
             </p>
           </div>
 
-          {/* Scrollable body — scrollbar hidden */}
+          {/* Scrollable body */}
           <div
             className="overflow-y-auto overscroll-contain flex-1 px-4 py-4 flex flex-col gap-3"
             style={scrollbarHideStyle}
           >
-            {/* Buy individually */}
+            {/* ── Buy Once ── */}
             <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-2">
                 Buy Once
@@ -257,12 +261,14 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                 One-time purchase · No subscription required
               </p>
               <button
-                disabled={isProcessing}
-                onClick={() => handleCheckout("addon", addon.id)}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-70 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                disabled={isAddonProcessing || isUpgradeProcessing}
+                onClick={() => handleCheckout("addon", addon.id, setIsAddonProcessing)}
+                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-60 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
-                {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <ShoppingCart size={14} strokeWidth={2.5} />}
-                {isProcessing ? "Processing..." : `Buy ${addon.name} · $${addon.price}`}
+                {isAddonProcessing
+                  ? <Loader2 size={14} className="animate-spin" />
+                  : <ShoppingCart size={14} strokeWidth={2.5} />}
+                {isAddonProcessing ? "Redirecting to payment..." : `Buy ${addon.name} · $${addon.price}`}
               </button>
             </div>
 
@@ -275,7 +281,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
               </div>
             )}
 
-            {/* Included in plan */}
+            {/* ── Included in plan ── */}
             {showInclusionSection && (
               <div className={`rounded-2xl ${planStyle.bg} ring-1 ${planStyle.ring} p-4`}>
                 {fullUpgradeTiers.length > 1 && (
@@ -326,36 +332,35 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                 </ul>
 
                 <button
-                  disabled={isProcessing}
-                  onClick={() => handleCheckout("upgrade", selectedTier)}
-                  className={`w-full py-2.5 rounded-xl text-white text-[13px] disabled:opacity-70 font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}>
-                  {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} strokeWidth={2.5} />}
-                  {isProcessing ? "Processing..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
-                  {!isProcessing && planPrice && (
+                  disabled={isAddonProcessing || isUpgradeProcessing}
+                  onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
+                  className={`w-full py-2.5 rounded-xl text-white text-[13px] disabled:opacity-60 font-bold transition-colors flex items-center justify-center gap-2 shadow-sm ${planStyle.button}`}>
+                  {isUpgradeProcessing ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} strokeWidth={2.5} />}
+                  {isUpgradeProcessing ? "Redirecting to payment..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
+                  {!isUpgradeProcessing && planPrice && (
                     <span className="font-normal text-white/80">· ${planPrice.monthly}/mo</span>
                   )}
                 </button>
               </div>
             )}
 
-            {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
             <p
               className="text-center text-[11px] text-neutral-400"
               style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
             >
-              Billed monthly · No cancellation after grace period
+              Secure checkout powered by Stripe
             </p>
           </div>
         </div>
       </div>
     );
 
-    // FIX: addon branch was building modal but never returning it — fell through to upgrade layout
     if (typeof document !== "undefined") {
       return createPortal(modal, document.body);
     }
     return null;
   }
+
 
   // ─── Upgrade-only layout ──────────────────────────────────────────────────
   const tabTiers = fullUpgradeTiers.length > 0 ? fullUpgradeTiers : upgradeTiers;
@@ -446,12 +451,12 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
 
           {/* Upgrade CTA */}
           <button
-            disabled={isProcessing}
-            onClick={() => handleCheckout("upgrade", selectedTier)}
-            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold disabled:opacity-70 transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90 ${style.button}`}
+            disabled={isUpgradeProcessing}
+            onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
+            className={`w-full py-3 rounded-2xl text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90 ${style.button}`}
           >
-            {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <Crown size={14} strokeWidth={2.5} />}
-            {isProcessing ? "Processing..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
+            {isUpgradeProcessing ? <Loader2 size={14} className="animate-spin" /> : <Crown size={14} strokeWidth={2.5} />}
+            {isUpgradeProcessing ? "Redirecting to payment..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
           </button>
 
           {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
