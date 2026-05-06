@@ -2098,123 +2098,79 @@ const toolContent: Record<string, any> = {
   strength: {
     eyebrow: "Case Review",
     title: "Case Strength Analyzer",
-    desc: "Review your IR-1 evidence and get a clear picture of what's strong, what's missing, and what to fix before you submit.",
-    steps: [
-      { n: 1, label: "Upload & Input",      desc: "Share your relationship details, documents, and case info." },
-      { n: 2, label: "Analyze & Find Gaps", desc: "Checks your evidence and flags weak areas against approval patterns." },
-      { n: 3, label: "Review & Fix",        desc: "Get a list of exactly what to strengthen before submission." },
-    ],
-    tips: ["Joint Bank Statements", "Domicile Proof", "Communication Logs"],
+    headline: "Know if your case is ready before the officer does.",
+    subtext: "Review your evidence, spot the gaps, and fix them before you submit — not after.",
+    benefits: ["Evidence gaps flagged instantly", "Domicile & financial check", "Fix list included"],
   },
   action: {
     eyebrow: "Post-Interview",
     title: "221(g) Action Planner",
-    desc: "Got a 221(g) slip after your interview? This tool tells you what documents are needed and what to do next — step by step.",
-    steps: [
-      { n: 1, label: "Enter Your Slip",    desc: "Input the details from your 221(g) or AP notice." },
-      { n: 2, label: "Get Your Checklist", desc: "See exactly which documents are required and how to format them." },
-      { n: 3, label: "Submit & Track",     desc: "Know where to send your response and what to expect next." },
-    ],
-    tips: ["CEAC Tracking", "Embassy Contact", "AP Timeline"],
+    headline: "Got a 221(g)? Here's exactly what to do next.",
+    subtext: "Step-by-step response guide — right documents, right format, right place.",
+    benefits: ["Not a denial — act fast", "Document checklist included", "Embassy-specific guidance"],
   },
   path: {
     eyebrow: "Getting Started",
     title: "Visa Path Finder",
-    desc: "Starting your IR-1 journey and not sure where to begin? Answer a few quick questions and get a clear recommendation with your first action.",
-    steps: [
-      { n: 1, label: "Answer 5 Questions", desc: "Tell us about your relationship, citizenship, and current situation." },
-      { n: 2, label: "Confirm Your Path",  desc: "We confirm IR-1 is the right category and explain what that means." },
-      { n: 3, label: "See Your Next Step", desc: "Get one clear action to take right now — petition, sponsor, or prepare." },
-    ],
-    tips: ["IR-1 Eligibility", "Petitioner vs Beneficiary", "Where to Start"],
+    headline: "5 questions. One clear starting point.",
+    subtext: "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
+    benefits: ["Confirm IR-1 eligibility", "Know who files what", "Instant next step"],
   },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Prep",
-    desc: "Practice real Islamabad Embassy questions, learn what officers focus on, and walk in prepared — not guessing.",
-    steps: [
-      { n: 1, label: "Pick Your Focus",    desc: "Choose areas to practice — relationship, finances, or domicile." },
-      { n: 2, label: "Practice Questions", desc: "Go through real ISL questions with model answers." },
-      { n: 3, label: "Build Confidence",   desc: "Know officer patterns and be ready for tough questions." },
-    ],
-    tips: ["Joint Finances", "Communication Proof", "Future Plans"],
+    headline: "Walk into ISL prepared, not guessing.",
+    subtext: "Real Islamabad embassy questions, real model answers, built for IR-1 spouses.",
+    benefits: ["50+ real ISL questions", "Relationship & domicile focus", "Officer pattern insights"],
   },
   sponsorship: {
     eyebrow: "Financial Check",
     title: "Sponsorship Calculator",
-    desc: "Check if the petitioner's income meets the I-864 poverty guideline threshold — and find out which form applies to your case.",
-    steps: [
-      { n: 1, label: "Enter Income",    desc: "Input the petitioner's income, household size, and assets." },
-      { n: 2, label: "Check Threshold", desc: "Compared against the 2025 poverty guideline for your household." },
-      { n: 3, label: "Get Your Form",   desc: "See if I-864 or I-864EZ applies and if a joint sponsor is needed." },
-    ],
-    tips: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
+    headline: "Does your income qualify? Find out in 60 seconds.",
+    subtext: "Check I-864 threshold, pick the right form, and see if a joint sponsor is needed.",
+    benefits: ["2025 guidelines updated", "I-864 vs I-864EZ", "Joint sponsor check"],
   },
   dq: {
     eyebrow: "Scheduling",
     title: "DQ Status Check",
-    desc: "See which Documentarily Qualified months are being scheduled at Islamabad right now, and estimate when your interview window will open.",
-    steps: [
-      { n: 1, label: "Select Embassy",     desc: "Choose your embassy — Islamabad or another consulate." },
-      { n: 2, label: "See Current Month",  desc: "Check which DQ months are being called right now." },
-      { n: 3, label: "Estimate Your Wait", desc: "Compare your DQ month to see your approximate interview window." },
-    ],
-    tips: ["DQ Date", "Scheduling Month", "Wait Estimate"],
+    headline: "See where the ISL scheduling queue stands today.",
+    subtext: "Check which DQ months are being called and estimate when your interview window opens.",
+    benefits: ["Live scheduling month", "ISL embassy data", "Estimate your wait"],
   },
   bulletin: {
     eyebrow: "Priority Date",
     title: "Visa Bulletin Monitor",
-    desc: "IR-1 is always current — but if you're on a preference category, your priority date needs to be current before you can move forward. Track it here every month.",
-    steps: [
-      { n: 1, label: "Enter Priority Date", desc: "Enter your priority date from your I-130 approval notice." },
-      { n: 2, label: "Check This Month",    desc: "We compare it to the latest Visa Bulletin cutoff dates automatically." },
-      { n: 3, label: "Track Movement",      desc: "See how many months the bulletin moved and whether your date is current." },
-    ],
-    tips: ["IR-1 Always Current", "Priority Date", "Monthly Updates"],
+    headline: "IR-1 is always current. But yours might not be.",
+    subtext: "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
+    benefits: ["Monthly bulletin updates", "Priority date tracker", "Current or waiting?"],
   },
   photo: {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",
-    desc: "Make a compliant U.S. visa photo without a studio visit. Upload any photo and get a properly formatted 2×2 inch result.",
-    steps: [
-      { n: 1, label: "Upload Your Photo",  desc: "Take or upload any clear, front-facing photo." },
-      { n: 2, label: "Auto-Crop & Format", desc: "Cropped to 2×2 inches, white background — embassy standard." },
-      { n: 3, label: "Download & Use",     desc: "Save your compliant photo and attach it to your application." },
-    ],
-    tips: ["No Glasses", "Neutral Expression", "Both Ears Visible"],
+    headline: "Compliant visa photo. Without the studio visit.",
+    subtext: "Upload any photo — get a 2×2 inch, white background, embassy-ready result.",
+    benefits: ["Auto-crop & format", "Meets USCIS standards", "Download in seconds"],
   },
   pdf: {
     eyebrow: "Document Tools",
     title: "PDF Tool Kit",
-    desc: "Merge, compress, and format your immigration documents to meet NVC's strict 2MB upload limit and CEAC requirements.",
-    steps: [
-      { n: 1, label: "Upload Your Files", desc: "Add PDFs, images, or scanned documents from any device." },
-      { n: 2, label: "Merge or Compress", desc: "Combine files or reduce size to meet NVC's 2MB limit." },
-      { n: 3, label: "Download Ready",    desc: "Get a clean, NVC-ready PDF formatted for CEAC upload." },
-    ],
-    tips: ["Merge PDFs", "Compress Files", "Convert to PDF"],
+    headline: "NVC rejects big files. We fix that.",
+    subtext: "Merge, compress, and convert your documents to meet CEAC's strict 2MB upload limit.",
+    benefits: ["Under 2MB guaranteed", "Merge multiple files", "PDF & JPG ready"],
   },
   snap: {
     eyebrow: "Signatures",
     title: "Snap & Sign",
-    desc: "Anywhere a signature is required — forms, letters, declarations, or documents — Snap & Sign creates a clean, professional digital signature in seconds.",
-    steps: [
-      { n: 1, label: "Draw, Type or Upload", desc: "Choose how you want to create your signature — freehand, typed style, or upload an existing one." },
-      { n: 2, label: "Preview & Adjust",     desc: "Resize, reposition, and tweak until it looks exactly right on any form." },
-      { n: 3, label: "Download & Use",       desc: "Save as a transparent PNG and drop it onto any document, form, or PDF that needs signing." },
-    ],
-    tips: ["Any Immigration Form", "Letters & Declarations", "Works on Mobile & Desktop"],
+    headline: "Every document needs a signature. Make yours in seconds.",
+    subtext: "Draw, type, or upload your signature — download as PNG and drop it anywhere.",
+    benefits: ["Works on any form or doc", "Transparent PNG download", "Mobile & desktop ready"],
   },
   filler: {
     eyebrow: "Form Completion",
     title: "Smart Form Filler",
-    desc: "Fill I-130, DS-260, and I-864 without the confusion. Enter your details once and get a completed, submission-ready PDF.",
-    steps: [
-      { n: 1, label: "Enter Your Details", desc: "Fill in personal and case info once in a simple guided flow." },
-      { n: 2, label: "Auto-Fill Form",     desc: "Data mapped to the correct fields on the official form." },
-      { n: 3, label: "Download PDF",       desc: "Get a completed, submission-ready PDF in minutes." },
-    ],
-    tips: ["DS-260", "I-130A", "Review Before Submit"],
+    headline: "I-130 done in minutes. Not hours.",
+    subtext: "Fill your details once and get a completed, submission-ready PDF — no blank fields.",
+    benefits: ["I-130, DS-260, I-864", "Pakistan-specific defaults", "Review before you submit"],
   },
 };
 
@@ -2331,10 +2287,9 @@ export function IndividualToolsScene() {
   const goTo = useCallback((idx: number) => {
     const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
     setVisible(false);
-    window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 200);
+    window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 220);
   }, []);
 
-  // Auto-advance every 5 s — shows each tool for 5 seconds
   useEffect(() => {
     if (isPaused) return;
     const t = window.setTimeout(() => {
@@ -2362,95 +2317,87 @@ export function IndividualToolsScene() {
         overflow: "hidden", display: "flex", flexDirection: "column",
       }}
     >
-      {/* ── Top bar — tool colour ── */}
-      <div
-        style={{
-          height: 54, flexShrink: 0, background: tool.fg,
-          display: "flex", alignItems: "center",
-          padding: "0 20px", gap: 10,
-          transition: "background 0.3s ease",
-        }}
-      >
-        <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {(() => { const Icon = tool.icon; return <div style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon size={16} color="white" strokeWidth={1.75} /></div>; })()}
+      {/* ── Top bar ── */}
+      <div style={{ height: 48, flexShrink: 0, background: tool.fg, display: "flex", alignItems: "center", padding: "0 18px", gap: 10, transition: "background 0.4s ease" }}>
+        <div style={{ width: 28, height: 28, borderRadius: 9, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {(() => { const Icon = tool.icon; return <Icon size={15} color="white" strokeWidth={1.75} />; })()}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 8.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.7)", lineHeight: 1 }}>
-            {content.eyebrow}
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 900, color: "white", lineHeight: 1.2, marginTop: 2 }}>
-            {content.title}
-          </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.65)" }}>{content.eyebrow}</div>
+          <div style={{ fontSize: 12.5, fontWeight: 900, color: "white" }}>{content.title}</div>
         </div>
-        <a
-          href="#"
-          onClick={(e) => e.preventDefault()}
-          style={{
-            flexShrink: 0, background: "white", color: tool.fg,
-            border: "none", borderRadius: 20, padding: "6px 14px",
-            fontSize: 11, fontWeight: 800, cursor: "pointer",
-            textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5,
-          }}
-        >
-          Get Started
-          <ArrowRight size={11} strokeWidth={2.5} />
+        <a href="#" onClick={(e) => e.preventDefault()} style={{ flexShrink: 0, background: "white", color: tool.fg, borderRadius: 20, padding: "5px 13px", fontSize: 10.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+          Open Tool <ArrowRight size={10} strokeWidth={2.5} />
         </a>
       </div>
 
-      {/* ── Main content ── */}
+      {/* ── Ad content ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {/* Left: description + steps */}
+
+        {/* Left: visual panel */}
         <div
           style={{
-            flex: 1, padding: "14px 16px",
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateY(0)" : "translateY(6px)",
-            transition: "opacity 0.25s ease, transform 0.25s ease",
+            width: 195, flexShrink: 0, position: "relative", overflow: "hidden",
+            background: tool.fg, display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center", padding: "24px 16px",
+            transition: "background 0.4s ease",
           }}
         >
-          <div style={{ fontSize: 11.5, color: "#4a5c62", lineHeight: 1.6, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f0f4f8" }}>
-            {content.desc}
+          {/* Decorative circles */}
+          <div style={{ position: "absolute", top: -40, right: -40, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ position: "absolute", bottom: -25, left: -25, width: 90,  height: 90,  borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
+          <div style={{ position: "absolute", top: "40%",  left: "60%", width: 50,  height: 50,  borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+
+          {/* Large icon */}
+          <div
+            style={{
+              width: 80, height: 80, borderRadius: 24,
+              background: "rgba(255,255,255,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              marginBottom: 14,
+              boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+            }}
+          >
+            {(() => { const Icon = tool.icon; return <Icon size={36} color="white" strokeWidth={1.5} />; })()}
           </div>
-          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 8 }}>
-            How it works
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            {content.steps.map((step: any) => (
-              <div
-                key={step.n}
-                style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f8fafc", borderRadius: 12, padding: "9px 12px", border: "1px solid #f0f4f8" }}
-              >
-                <div style={{ width: 22, height: 22, borderRadius: "50%", background: tool.fg, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 900, flexShrink: 0, transition: "background 0.3s" }}>
-                  {step.n}
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, marginBottom: 2 }}>{step.label}</div>
-                  <div style={{ fontSize: 10.5, color: "#64748b", lineHeight: 1.5 }}>{step.desc}</div>
-                </div>
-              </div>
-            ))}
+
+          {/* Tool label */}
+          <div style={{ fontSize: 10, fontWeight: 900, color: "rgba(255,255,255,0.95)", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1.4, position: "relative" }}>
+            {tool.label}
           </div>
         </div>
 
-        {/* Right: key items */}
+        {/* Right: headline + benefits */}
         <div
           style={{
-            width: 148, background: "#f8fafc", borderLeft: "1px solid #f0f4f8",
-            padding: "14px 12px", display: "flex", flexDirection: "column", gap: 6,
-            opacity: visible ? 1 : 0, transition: "opacity 0.25s ease",
+            flex: 1, padding: "22px 20px 18px",
+            display: "flex", flexDirection: "column", justifyContent: "center",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(8px)",
+            transition: "opacity 0.28s ease, transform 0.28s ease",
           }}
         >
-          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 4 }}>
-            Key Items
+          {/* Headline */}
+          <h2 style={{ fontSize: 19, fontWeight: 900, color: "#0f172a", lineHeight: 1.28, marginBottom: 10, letterSpacing: "-0.01em" }}>
+            {content.headline}
+          </h2>
+
+          {/* Subtext */}
+          <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65, marginBottom: 18 }}>
+            {content.subtext}
+          </p>
+
+          {/* Benefits */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {content.benefits.map((b: string) => (
+              <div key={b} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                <div style={{ width: 18, height: 18, borderRadius: "50%", background: tool.bg, border: `1.5px solid ${tool.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.3s, border-color 0.3s" }}>
+                  <Check size={10} color={tool.fg} strokeWidth={3} />
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#334155" }}>{b}</span>
+              </div>
+            ))}
           </div>
-          {content.tips.map((tip: string) => (
-            <div
-              key={tip}
-              style={{ background: "white", borderRadius: 9, border: `1px solid ${tool.border}`, padding: "7px 10px", fontSize: 10.5, fontWeight: 700, color: tool.fg, lineHeight: 1.3, transition: "border-color 0.3s, color 0.3s" }}
-            >
-              {tip}
-            </div>
-          ))}
         </div>
       </div>
 
