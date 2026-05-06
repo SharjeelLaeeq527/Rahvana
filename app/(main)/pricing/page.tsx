@@ -147,7 +147,7 @@ const RESOURCE_CATS = [
 const PLAN_RECS: Record<string, string[]> = {
   basic: ["smart", "case-strength", "sponsor", "rapid", "civil-guid"],
   premium: ["mock", "doc-review", "consultation", "221g"],
-  executive: ["mock", "consultation", "translate", "case-manager"],
+  executive: ["case-manager", "consultation", "translate"],
 };
 
 /* ===========================================================================
@@ -494,7 +494,7 @@ function PricingContent() {
 
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
-  const [resourceCat, setResourceCat] = useState("all");
+  const [resourceCat, setResourceCat] = useState("popular");
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
 
   // Derived
@@ -539,7 +539,8 @@ function PricingContent() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            productTier: planOverride || (mode === "plans" ? selectedPlan : undefined),
+            productTier:
+              planOverride || (mode === "plans" ? selectedPlan : undefined),
             addons: addonsOverride || Array.from(selectedAddons),
             visaCategory: visa,
             billing,
@@ -1069,7 +1070,8 @@ function PricingContent() {
                                     {addon.title}
                                   </div>
                                   <div className="text-right shrink-0">
-                                    <span className="font-bold text-[18px] leading-none">
+                                    {/* <span className="font-bold text-[18px] leading-none"> */}
+                                    <span className="resource-fcard-price">
                                       ${addon.price}
                                     </span>
                                     <div className="text-[10px] text-muted-foreground">
@@ -1295,50 +1297,65 @@ function PricingContent() {
                     return (
                       <article
                         key={addon.id}
-                        className={`bg-card border rounded-[20px] p-5 flex flex-col gap-3 transition-all ${isAdded ? "border-primary shadow-md" : "border-border hover:shadow-sm"}`}
+                        className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
                       >
-                        <div className="flex justify-between items-start">
-                          <div
-                            className={`w-11 h-11 rounded-[14px] ${cfg?.iconBg ?? "bg-primary"} flex items-center justify-center`}
-                          >
-                            <Icon className="w-5 h-5 text-white stroke-2" />
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-[28px] tracking-tight leading-none">
-                              ${addon.price}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground mt-0.5">
-                              {addon.unit}
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-[15px] m-0 leading-snug">
-                            {addon.title}
-                          </h3>
-                          <p className="text-muted-foreground text-[13px] mt-1.5 leading-[1.55] m-0">
-                            {addon.copy}
-                          </p>
-                        </div>
-                        {(addon as { note?: string }).note && (
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-muted/50 border border-border text-[11.5px] text-muted-foreground self-start">
-                            <IcoInfo className="w-3 h-3 shrink-0" />
-                            {(addon as { note?: string }).note}
-                          </div>
-                        )}
-                        <button
-                          disabled={isAnyCheckoutLoading}
-                          className={`mt-auto w-full py-[10px] rounded-full text-[13.5px] font-semibold transition-all border ${
-                            isAnyCheckoutLoading
-                              ? "opacity-50 cursor-not-allowed bg-muted/60 text-muted-foreground border-border"
-                              : isAdded
-                                ? "bg-muted/60 text-muted-foreground border-border cursor-pointer"
-                                : "bg-[#0d7a5c] text-white border-transparent hover:bg-[#0a6048] cursor-pointer"
+                        <div
+                          className={`resource-fcard-frame ${
+                            cfg?.iconBg.includes("emerald") ||
+                            cfg?.iconBg.includes("cyan")
+                              ? "bg-[#EEF6F0] text-[#3A6E4A]"
+                              : cfg?.iconBg.includes("indigo") ||
+                                  cfg?.iconBg.includes("blue")
+                                ? "bg-[#EAF1FB] text-[#1A5FA3]"
+                                : cfg?.iconBg.includes("amber") ||
+                                    cfg?.iconBg.includes("yellow")
+                                  ? "bg-[#FBF2E3] text-[#9B6220]"
+                                  : cfg?.iconBg.includes("violet") ||
+                                      cfg?.iconBg.includes("purple")
+                                    ? "bg-[#F3EFFE] text-[#5C3DAA]"
+                                    : "bg-[#FEF0F0] text-[#903030]"
                           }`}
-                          onClick={() => toggleAddon(addon.id)}
                         >
-                          {isAdded ? "✓ Added to order" : "+ Add to order"}
-                        </button>
+                          {/* Film holes top */}
+                          <div className="resource-fhole-row top">
+                            {[1, 2, 3, 4].map((i) => (
+                              <div key={i} className="resource-fhole" />
+                            ))}
+                          </div>
+
+                          <Icon className="w-7 h-7 opacity-70" />
+
+                          {/* Film holes bottom */}
+                          <div className="resource-fhole-row bot">
+                            {[1, 2, 3, 4].map((i) => (
+                              <div key={i} className="resource-fhole" />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="resource-fcard-body">
+                          <h3 className="resource-fcard-name">{addon.title}</h3>
+                          <p className="resource-fcard-desc">{addon.copy}</p>
+
+                          <div className="resource-fcard-foot">
+                            <div>
+                              <div className="resource-fcard-price">
+                                ${addon.price}
+                              </div>
+                              <div className="resource-fcard-unit">
+                                {addon.unit}
+                              </div>
+                            </div>
+
+                            <button
+                              disabled={isAnyCheckoutLoading}
+                              className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                              onClick={() => toggleAddon(addon.id)}
+                            >
+                              {isAdded ? "✓ Added to order" : "+ Add to order"}
+                            </button>
+                          </div>
+                        </div>
                       </article>
                     );
                   })}
