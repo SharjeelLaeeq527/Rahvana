@@ -10,7 +10,22 @@ import React, {
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import {
+  Brain,
+  LifeBuoy,
+  MessageSquare,
+  Zap,
+  Camera,
+  Wand2,
+  Calculator,
+  FileSearch,
+  Users,
+  FileUp,
+  UserCheck,
+  Globe,
+  ArrowLeft,
+  ArrowRight,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   VISA_CATEGORIES,
@@ -18,31 +33,222 @@ import {
   COMPARISON_GROUPS,
   ADDONS,
   FAQS,
-  COUNTRIES,
 } from "./data/pricing";
+import type { PlanData } from "./data/pricing";
 
-// ─── Icon helpers ─────────────────────────────────────────────────────────────
+/* ===========================================================================
+   TIER VISUAL CONFIG
+   =========================================================================== */
+const TIER = {
+  basic: {
+    cardBg: "bg-gradient-to-br from-[#e8f5f1] to-[#cce9df]",
+    border: "border-[#92ccbc]",
+    selBorder: "border-[#0d7a5c]",
+    textAccent: "text-[#0d7a5c]",
+    badgeBg: "bg-[#aed9ca]",
+    badgeText: "text-[#065e42]",
+    checkCol: "text-[#0d7a5c]",
+    btn: "bg-[#0d7a5c] hover:bg-[#0a6048] text-white",
+    btnOut:
+      "border border-[#92ccbc] text-[#0d7a5c] hover:bg-[#aed9ca]/50 bg-transparent",
+    ring: "ring-2 ring-[#0d7a5c]/20",
+    glow: "[box-shadow:0_16px_52px_rgba(13,122,92,0.15)]",
+  },
+  premium: {
+    cardBg: "bg-gradient-to-br from-[#ede8f8] to-[#d9d0f2]",
+    border: "border-[#b5a5e3]",
+    selBorder: "border-[#5c2db8]",
+    textAccent: "text-[#5c2db8]",
+    badgeBg: "bg-[#c4b6ed]",
+    badgeText: "text-[#471e9c]",
+    checkCol: "text-[#5c2db8]",
+    btn: "bg-[#5c2db8] hover:bg-[#4b22a3] text-white",
+    btnOut:
+      "border border-[#b5a5e3] text-[#5c2db8] hover:bg-[#c4b6ed]/50 bg-transparent",
+    ring: "ring-2 ring-[#5c2db8]/20",
+    glow: "[box-shadow:0_16px_52px_rgba(92,45,184,0.15)]",
+  },
+  executive: {
+    cardBg: "bg-gradient-to-br from-[#fdf4e2] to-[#f1dea8]",
+    border: "border-[#d9ba6e]",
+    selBorder: "border-[#b45309]",
+    textAccent: "text-[#b45309]",
+    badgeBg: "bg-[#e8c96c]",
+    badgeText: "text-[#8a3f07]",
+    checkCol: "text-[#b45309]",
+    btn: "bg-[#b45309] hover:bg-[#9c4808] text-white",
+    btnOut:
+      "border border-[#d9ba6e] text-[#b45309] hover:bg-[#e8c96c]/50 bg-transparent",
+    ring: "ring-2 ring-[#b45309]/20",
+    glow: "[box-shadow:0_16px_52px_rgba(180,83,9,0.15)]",
+  },
+};
+type TierKey = keyof typeof TIER;
 
-function IconCheck({ className, style }: { className?: string; style?: React.CSSProperties }) {
+/* ===========================================================================
+   ADDON CONFIG — icons + colors matching resources page system
+   =========================================================================== */
+const ADDON_CONFIG: Record<
+  string,
+  {
+    icon: React.ComponentType<{ className?: string }>;
+    iconBg: string;
+  }
+> = {
+  "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  mock: { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
+  rapid: { icon: Zap, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  photo: { icon: Camera, iconBg: "bg-rose-600 dark:bg-rose-500" },
+  smart: { icon: Wand2, iconBg: "bg-cyan-600 dark:bg-cyan-500" },
+  sponsor: { icon: Calculator, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
+  "doc-review": { icon: FileSearch, iconBg: "bg-amber-600 dark:bg-amber-500" },
+  consultation: { icon: Users, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
+  translate: { icon: FileUp, iconBg: "bg-amber-600 dark:bg-amber-500" },
+  "case-manager": {
+    icon: UserCheck,
+    iconBg: "bg-indigo-600 dark:bg-indigo-500",
+  },
+  "civil-guid": { icon: Globe, iconBg: "bg-green-600 dark:bg-green-500" },
+};
+
+/* ===========================================================================
+   RESOURCE CATEGORIES + PLAN RECOMMENDATIONS
+   =========================================================================== */
+const RESOURCE_CATS = [
+  { id: "all", label: "All", ids: [] },
+  {
+    id: "popular",
+    label: "Most Popular",
+    ids: ["case-strength", "smart", "consultation", "mock"],
+  },
+  {
+    id: "forms",
+    label: "Forms & Case",
+    ids: ["smart", "sponsor", "case-strength", "221g"],
+  },
+  {
+    id: "interview",
+    label: "Interview & Embassy",
+    ids: ["mock", "rapid", "photo"],
+  },
+  {
+    id: "docs",
+    label: "Document Help",
+    ids: ["doc-review", "translate", "civil-guid"],
+  },
+  {
+    id: "support",
+    label: "Premium Support",
+    ids: ["consultation", "case-manager"],
+  },
+];
+
+const PLAN_RECS: Record<string, string[]> = {
+  basic: ["smart", "case-strength", "sponsor", "rapid", "civil-guid"],
+  premium: ["mock", "doc-review", "consultation", "221g"],
+  executive: ["mock", "consultation", "translate", "case-manager"],
+};
+
+/* ===========================================================================
+   SVG HELPERS
+   =========================================================================== */
+function IconCheck({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.2"
-      className={className} style={style} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      className={className}
+      style={style}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M4 10l4 4 8-8" />
     </svg>
   );
 }
 
-function IconX({ className, style }: { className?: string; style?: React.CSSProperties }) {
+function IconX({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
-      className={className} style={style} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className={className}
+      style={style}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M15 5L5 15M5 5l10 10" />
     </svg>
   );
 }
+function IcoChevron({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className={className}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m5 7 5 6 5-6" />
+    </svg>
+  );
+}
+function IcoTableCompare({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className={className}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="4" width="6" height="12" rx="1" />
+      <rect x="12" y="4" width="6" height="12" rx="1" />
+    </svg>
+  );
+}
+function IcoInfo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className={className}
+      strokeLinecap="round"
+    >
+      <circle cx="8" cy="8" r="6.5" />
+      <line x1="8" y1="7" x2="8" y2="10.5" />
+      <circle cx="8" cy="5.5" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
-// ─── Comparison cell renderer ─────────────────────────────────────────────────
-
+/* ===========================================================================
+   COMPARISON CELL
+   =========================================================================== */
 function ComparisonCell({ value }: { value: string }) {
   const v = value.trim();
   if (v === "Included" || v === "Unlimited") {
@@ -52,7 +258,11 @@ function ComparisonCell({ value }: { value: string }) {
     return <IconX className="w-5 h-5 mx-auto text-red-500" />;
   }
   if (v === "—") {
-    return <span className="block text-center text-muted-foreground/40 font-bold text-xl leading-none">—</span>;
+    return (
+      <span className="block text-center text-muted-foreground/40 font-bold text-xl leading-none">
+        —
+      </span>
+    );
   }
   if (/included/i.test(v) && v !== "Included") {
     return (
@@ -75,55 +285,269 @@ function ComparisonCell({ value }: { value: string }) {
   );
 }
 
-// ─── Tier color map ───────────────────────────────────────────────────────────
+/* ===========================================================================
+   COMPARE MODAL
+   =========================================================================== */
+function CompareModal({
+  isOpen,
+  onClose,
+  activePlans,
+  planDisplayPrice,
+  onSelectPlan,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  activePlans: PlanData[];
+  planDisplayPrice: (p: PlanData) => number;
+  onSelectPlan: (id: string) => void;
+}) {
+  const [differencesOnly, setDifferencesOnly] = useState(false);
+  const paidPlans = activePlans.filter((p) => p.id !== "free");
 
-const TIER_COLORS: Record<string, string> = {
-  free: "text-neutral-500",
-  basic: "text-sky-700",
-  premium: "text-violet-700",
-  executive: "text-amber-700",
-};
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
-// ─── Main content ─────────────────────────────────────────────────────────────
+  if (!isOpen) return null;
 
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[1000] overflow-y-auto animate-in fade-in duration-150"
+      onClick={onClose}
+    >
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 md:p-10">
+        <div
+          className="w-full max-w-[960px] max-h-[calc(100vh-40px)] md:max-h-[calc(100vh-80px)] bg-card border border-border rounded-[28px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cmp-title"
+        >
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-border flex justify-between items-start gap-4 shrink-0 bg-gradient-to-b from-muted/30 to-transparent">
+            <div>
+              <h2
+                id="cmp-title"
+                className="text-[20px] font-bold m-0 leading-tight text-foreground"
+              >
+                Compare Rahvana plans
+              </h2>
+              <p className="text-muted-foreground text-[13px] mt-1 m-0">
+                See exactly what&apos;s included in Basic, Premium, and
+                Executive.
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-[7px] rounded-full border border-border bg-card hover:bg-muted/60 transition-colors cursor-pointer shrink-0"
+              aria-label="Close"
+            >
+              <IconX className="w-[15px] h-[15px]" />
+            </button>
+          </div>
+
+          {/* Plan headers + toggle */}
+          <div className="px-6 py-4 border-b border-border bg-card/50 shrink-0">
+            <div className="grid grid-cols-[minmax(0,180px)_repeat(3,minmax(0,1fr))] gap-3 items-center">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={differencesOnly}
+                  onClick={() => setDifferencesOnly(!differencesOnly)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${differencesOnly ? "bg-primary" : "bg-muted"}`}
+                >
+                  <span className="sr-only">Differences only</span>
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${differencesOnly ? "translate-x-4" : "translate-x-0"}`}
+                  />
+                </button>
+                <span className="text-[12px] font-medium text-muted-foreground leading-tight">
+                  Differences
+                  <br />
+                  only
+                </span>
+              </div>
+              {paidPlans.map((plan) => {
+                const tc = TIER[plan.id as TierKey];
+                return (
+                  <div
+                    key={plan.id}
+                    className={`rounded-[16px] px-3 py-2.5 text-center border ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
+                  >
+                    <div
+                      className={`text-[10px] font-extrabold tracking-widest uppercase mb-0.5 ${tc.textAccent}`}
+                    >
+                      {plan.name}
+                    </div>
+                    <div className="text-[15px] font-bold leading-tight">
+                      ${planDisplayPrice(plan)}
+                      <span className="text-[11px] font-normal text-muted-foreground ml-0.5">
+                        /mo
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Table — always expanded, alternating rows */}
+          <div className="overflow-y-auto overflow-x-auto flex-1 scrollbar-premium bg-card">
+            <div className="min-w-[540px]">
+              {COMPARISON_GROUPS.map((group, gi) => {
+                const rows = differencesOnly
+                  ? group.rows.filter((r) => new Set(r.slice(1)).size > 1)
+                  : group.rows;
+                if (!rows.length) return null;
+                return (
+                  <div
+                    key={gi}
+                    className="border-b border-border/50 last:border-0"
+                  >
+                    <div className="px-6 py-2.5 bg-muted/30">
+                      <span className="text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
+                        {group.label}
+                      </span>
+                    </div>
+                    {rows.map((row, ri) => (
+                      <div
+                        key={ri}
+                        className={`grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(0,1fr))] gap-3 px-6 py-[11px] border-t border-border/20 items-center ${
+                          ri % 2 === 0 ? "bg-card" : "bg-muted/[0.04]"
+                        }`}
+                      >
+                        <span className="text-[13px] font-medium text-foreground">
+                          {row[0]}
+                        </span>
+                        {row.slice(1).map((val, vi) => (
+                          <div key={vi} className="flex justify-center">
+                            <ComparisonCell value={val} />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CTA footer */}
+          <div className="px-6 py-5 border-t border-border shrink-0 rounded-b-[28px] bg-gradient-to-t from-muted/15 to-transparent">
+            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-muted-foreground text-center mb-3">
+              Select a plan to get started
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              {paidPlans.map((plan) => {
+                const tc = TIER[plan.id as TierKey];
+                return (
+                  <button
+                    key={plan.id}
+                    className={`py-[11px] px-4 rounded-full text-[13.5px] font-bold tracking-tight transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px ${tc.btn}`}
+                    onClick={() => {
+                      onSelectPlan(plan.id);
+                      onClose();
+                    }}
+                  >
+                    {plan.cta} →
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===========================================================================
+   MAIN PRICING CONTENT
+   =========================================================================== */
 function PricingContent() {
   const searchParams = useSearchParams();
 
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
+  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] =
+    useState(false);
+  const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
 
-  const [origin, setOrigin] = useState("Pakistan");
-  const [destination, setDestination] = useState("United States");
+  const isAnyCheckoutLoading =
+    isProcessingAutoCheckout || isManualCheckoutLoading;
+
+  const [mode, setMode] = useState<"plans" | "resources">("plans");
+  const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">(
+    "browse",
+  );
+
   const [visa, setVisa] = useState("IR-1 / CR-1");
+  const billing = "monthly";
+
   const [selectedPlan, setSelectedPlan] = useState("premium");
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
-  const billing = "monthly";
-  const [differencesOnly, setDifferencesOnly] = useState(false);
-  const [pickerTarget, setPickerTarget] = useState<"origin" | "destination">("origin");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeStep, setActiveStep] = useState<"plans" | "addons">("plans");
-  const [openFaqIndex, setOpenFaqIndex] = useState<number>(0);
 
+  const [comparePlansOpen, setComparePlansOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
+  const [resourceCat, setResourceCat] = useState("all");
+  const [allAddonsOpen, setAllAddonsOpen] = useState(false);
+
+  // Derived
+  const activeVisaCategory = useMemo(
+    () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
+    [visa],
+  );
+  const activePlans = activeVisaCategory.plans;
+  const paidPlans = activePlans.filter((p) => p.id !== "free");
+  const currentPlanData =
+    activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
+  const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
+  const planDisplayPrice = (plan: PlanData) => plan.monthlyPrice;
+  const summaryBase =
+    mode === "plans" && currentPlanData.id !== "free"
+      ? currentPlanData.annualPrice
+      : 0;
+  const summaryAddonsTotal = activeAddons.reduce((s, a) => s + a.price, 0);
+  const summaryTotal = summaryBase + summaryAddonsTotal;
+
+  const reviewAddons = useMemo(
+    () => ADDONS.filter((a) => (PLAN_RECS[selectedPlan] || []).includes(a.id)),
+    [selectedPlan],
+  );
+
+  const resourcesForCat = useMemo(() => {
+    if (resourceCat === "all") {
+      return [...ADDONS].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    const cat = RESOURCE_CATS.find((c) => c.id === resourceCat);
+    if (!cat) return ADDONS;
+    return ADDONS.filter((a) => cat.ids.includes(a.id));
+  }, [resourceCat]);
+
+  // Handlers
   const handleCheckout = useCallback(
     async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
       if (isProcessingAutoCheckout) return;
       setIsProcessingAutoCheckout(true);
       try {
-        const response = await fetch("/api/stripe/checkout", {
+        const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            productTier: planOverride || selectedPlan,
+            productTier: planOverride || (mode === "plans" ? selectedPlan : undefined),
             addons: addonsOverride || Array.from(selectedAddons),
             visaCategory: visa,
             billing,
             userId: uid,
           }),
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Checkout failed");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Checkout failed");
         if (data.url) window.location.href = data.url;
       } catch (err) {
         console.error("Checkout error:", err);
@@ -133,571 +557,890 @@ function PricingContent() {
     [selectedPlan, selectedAddons, visa, billing, isProcessingAutoCheckout],
   );
 
+  const toggleAddon = (id: string) =>
+    setSelectedAddons((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
   useEffect(() => {
     const plan = searchParams.get("plan");
     const addons = searchParams.get("addons");
     const visaCat = searchParams.get("visa");
     const autoCheckout = searchParams.get("auto_checkout") === "true";
-
     if (plan) setSelectedPlan(plan);
     if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
     if (visaCat) setVisa(visaCat);
-
     if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
       window.history.replaceState({}, "", window.location.pathname);
-      handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
+      handleCheckout(
+        userId,
+        plan || undefined,
+        addons ? addons.split(",") : undefined,
+      );
     }
-  }, [searchParams, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
+  }, [
+    searchParams,
+    userId,
+    isLoadingUser,
+    handleCheckout,
+    isProcessingAutoCheckout,
+  ]);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }: any) => {
-      setUserId(data.user?.id || null);
-      setIsLoadingUser(false);
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createClient()
+      .auth.getUser()
+      .then(({ data }: any) => {
+        setUserId(data.user?.id || null);
+        setIsLoadingUser(false);
+      });
   }, []);
 
-  useEffect(() => {
-    document.body.style.overflow = isModalOpen ? "hidden" : "auto";
-  }, [isModalOpen]);
+  // Layout tokens
+  const W = "px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto";
+  const eyebrow =
+    "text-[11px] tracking-[0.15em] uppercase font-bold text-primary mb-2";
+  const secBtn =
+    "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
 
-  const toggleAddon = (id: string) => {
-    const next = new Set(selectedAddons);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedAddons(next);
-  };
-
-  const activeVisaCategory = useMemo(
-    () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
-    [visa],
+  // Visa pill — static display (only IR-1/CR-1 journey available)
+  const visaPill = (
+    <div className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full bg-muted/70 border border-border/60 text-[12px]">
+      <span className="font-medium text-foreground/80">Pakistan → US</span>
+      <span className="text-border/80 mx-0.5">|</span>
+      <span className="text-muted-foreground">{visa}</span>
+    </div>
   );
 
-  const activePlans = activeVisaCategory.plans;
-  const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
-  const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
-
-  const planDisplayPrice = (plan: (typeof activePlans)[0]) => plan.monthlyPrice;
-
-  const summaryBase = currentPlanData.annualPrice;
-  const summaryTotal = summaryBase + activeAddons.reduce((s, a) => s + a.price, 0);
-
-  const groupedCountries = useMemo(() => {
-    const lower = searchQuery.toLowerCase();
-    const filtered = COUNTRIES.filter((c) => c.toLowerCase().includes(lower));
-    const groups: Record<string, string[]> = {};
-    filtered.forEach((c) => {
-      const l = c[0].toUpperCase();
-      if (!groups[l]) groups[l] = [];
-      groups[l].push(c);
-    });
-    return groups;
-  }, [searchQuery]);
-
-  const containerClass = "mx-auto site-main-px py-[34px]";
-  const eyebrowClass = "text-[12px] tracking-[0.14em] uppercase font-bold text-primary mb-3";
-  const h2Class = "text-[24px] md:text-[30px] font-bold leading-tight tracking-tight m-0";
-  const solidBtn = "px-[18px] py-[12px] bg-primary text-white rounded-full hover:bg-primary-dark transition-colors border border-transparent cursor-pointer font-medium text-center inline-block";
-  const outlineBtn = "px-[18px] py-[12px] bg-card border border-border text-foreground rounded-full hover:bg-muted/40 transition-colors cursor-pointer font-medium text-center inline-block";
-  const miniBtn = "px-[14px] py-[10px] bg-card border border-border text-foreground rounded-full hover:bg-muted/40 transition-colors cursor-pointer text-sm font-medium shrink-0";
+  // Checkout button (shared)
+  const checkoutBtn = (
+    <div className="flex flex-col gap-1.5">
+      {isLoadingUser ? (
+        <button
+          disabled
+          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary/50 text-white/70 cursor-not-allowed text-center"
+        >
+          Loading…
+        </button>
+      ) : userId ? (
+        <CheckoutButton
+          productTier={
+            mode === "plans" && selectedPlan !== "free"
+              ? selectedPlan
+              : undefined
+          }
+          addons={Array.from(selectedAddons)}
+          visaCategory={visa}
+          userId={userId}
+          onLoadingChange={setIsManualCheckoutLoading}
+          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
+        >
+          Continue to Secure Checkout →
+        </CheckoutButton>
+      ) : (
+        <Link
+          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${Array.from(selectedAddons).join(",")}&visa=${encodeURIComponent(visa)}`)}`}
+          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center block"
+        >
+          Sign in to Checkout →
+        </Link>
+      )}
+      <p className="text-center text-[11px] text-muted-foreground">
+        Secure checkout via Stripe
+      </p>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 pb-[48px]">
+    <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 pb-20">
+      {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
+      <div className={`${W} pt-[88px] pb-0`}>
+        <nav
+          className="flex items-end gap-1 border-b-2 border-border/40"
+          aria-label="Pricing mode"
+        >
+          {(
+            [
+              {
+                id: "plans" as const,
+                label: "Journey Plans",
+                sub: "Full roadmap guidance",
+              },
+              {
+                id: "resources" as const,
+                label: "Individual Resources",
+                sub: "Buy à la carte",
+              },
+            ] as const
+          ).map(({ id, label, sub }) => (
+            <button
+              key={id}
+              onClick={() => {
+                setMode(id);
+                setPurchaseStep("browse");
+              }}
+              className={`relative px-6 pb-3 pt-2 text-left cursor-pointer transition-all rounded-t-[10px] group ${
+                mode === id ? "bg-primary/[0.07]" : "hover:bg-muted/40"
+              }`}
+            >
+              <span
+                className={`block text-[15px] font-bold tracking-tight transition-colors ${
+                  mode === id
+                    ? "text-primary"
+                    : "text-muted-foreground/60 group-hover:text-foreground"
+                }`}
+              >
+                {label}
+              </span>
+              <span
+                className={`block text-[11px] mt-0.5 font-medium transition-colors ${
+                  mode === id ? "text-primary/60" : "text-muted-foreground/35"
+                }`}
+              >
+                {sub}
+              </span>
+              {mode === id && (
+                <span className="absolute bottom-[-2px] left-0 right-0 h-[3px] bg-primary rounded-t-full" />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
 
-      {/* ── Journey Context ────────────────────────────────────────────── */}
-      {activeStep === "plans" && (
-        <section className="pt-10">
-          <div className={containerClass}>
-            <div className={eyebrowClass}>Simple, transparent pricing</div>
-            <h1 className="text-[clamp(36px,5.5vw,64px)] leading-[1.03] tracking-tight mb-[18px] font-bold">
-              Choose the support level<br className="hidden md:block" /> that fits your journey
-            </h1>
-            <div className="mt-2 text-[13px] text-muted-foreground max-w-[600px]">
-              Government filing fees, medical examination fees, embassy fees, and any other applicable charges are paid separately and are not included in any plan.
+      {/* ═══════════════════════════════════════════════════════════════════════
+          JOURNEY PLANS — BROWSE
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {mode === "plans" && purchaseStep === "browse" && (
+        <div className="animate-in fade-in duration-300">
+          {/* Hero */}
+          <section className={`${W} pt-7 pb-6`}>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div>
+                <div className={eyebrow}>Journey Plans</div>
+                <h1 className="text-[clamp(26px,3.8vw,46px)] font-bold leading-[1.06] tracking-tight m-0 whitespace-nowrap">
+                  Choose your Rahvana journey plan
+                </h1>
+                <p className="mt-2 text-muted-foreground text-[14.5px]">
+                  Pick the level of guidance, tools, and support that fits your
+                  case.
+                </p>
+              </div>
+              {/* Visa pill — top right */}
+              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">
+                {visaPill}
+              </div>
             </div>
 
-            {/* Journey context picker removed per user request */}
-            {/* 
-            <div className="mt-[30px] bg-card border border-border rounded-[24px] shadow-lg overflow-hidden">
-              <div className="p-[16px_22px] border-b border-border bg-gradient-to-b from-card to-muted">
-                <div className="text-[12px] font-bold tracking-[0.08em] uppercase text-muted-foreground">Journey Context</div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3">
-                <div className="p-[22px] border-b md:border-b-0 md:border-r border-border">
-                  <div className="text-[12px] text-muted-foreground mb-2.5">Origin Country</div>
-                  <button
-                    className="w-full p-[14px_16px] border border-border rounded-[14px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-primary/40 transition-colors group"
-                    onClick={() => { setPickerTarget("origin"); setSearchQuery(origin); setIsModalOpen(true); }}
+            <div className="mt-5 flex items-center gap-3 flex-wrap">
+              <button
+                className={secBtn}
+                onClick={() => setComparePlansOpen(true)}
+              >
+                <IcoTableCompare className="w-4 h-4 opacity-60" />
+                Compare plans
+              </button>
+              <span className="text-[12px] text-muted-foreground/50 hidden md:inline">
+                ·
+              </span>
+              <span className="text-[12px] text-muted-foreground hidden md:inline">
+                Government fees are not included in any plan
+              </span>
+            </div>
+          </section>
+
+          {/* Plan cards — full width, no sidebar */}
+          <div className={`${W}`}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {paidPlans.map((plan) => {
+                const tc = TIER[plan.id as TierKey];
+                const isSelected = selectedPlan === plan.id;
+                return (
+                  <article
+                    key={plan.id}
+                    className={`${tc.cardBg} border rounded-[24px] p-6 flex flex-col relative transition-all duration-200 cursor-pointer ${
+                      isSelected
+                        ? `${tc.selBorder} ${tc.ring} ${tc.glow}`
+                        : `${tc.border} hover:shadow-lg hover:-translate-y-0.5`
+                    }`}
+                    onClick={() => setSelectedPlan(plan.id)}
                   >
-                    <span className="font-[650] text-[15px] group-hover:text-primary transition-colors">{origin}</span>
-                    <svg className="w-[16px] h-[16px] opacity-50 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m5 7 5 6 5-6" /></svg>
-                  </button>
-                </div>
-                <div className="p-[22px] border-b md:border-b-0 md:border-r border-border">
-                  <div className="text-[12px] text-muted-foreground mb-2.5">Destination Country</div>
-                  <button
-                    className="w-full p-[14px_16px] border border-border rounded-[14px] bg-card flex justify-between items-center text-left gap-2.5 cursor-pointer hover:border-primary/40 transition-colors group"
-                    onClick={() => { setPickerTarget("destination"); setSearchQuery(destination); setIsModalOpen(true); }}
-                  >
-                    <span className="font-[650] text-[15px] group-hover:text-primary transition-colors">{destination}</span>
-                    <svg className="w-[16px] h-[16px] opacity-50 shrink-0" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m5 7 5 6 5-6" /></svg>
-                  </button>
-                </div>
-                <div className="p-[22px]">
-                  <div className="text-[12px] text-muted-foreground mb-2.5">Visa Category</div>
-                  <div className="relative">
-                    <select
-                      className="w-full p-[14px_16px] border border-border rounded-[14px] bg-card appearance-none font-[650] text-[15px] outline-none hover:border-primary/40 transition-colors cursor-pointer"
-                      value={visa}
-                      onChange={(e) => setVisa(e.target.value)}
+                    {plan.recommended && (
+                      <div
+                        className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
+                      >
+                        Most Popular
+                      </div>
+                    )}
+                    {isSelected && !plan.recommended && (
+                      <div
+                        className={`absolute top-4 right-4 w-6 h-6 rounded-full ${tc.btn} flex items-center justify-center`}
+                      >
+                        <IconCheck className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+
+                    <div
+                      className={`text-[11px] font-extrabold tracking-widest uppercase mb-3 ${tc.textAccent}`}
                     >
-                      {VISA_CATEGORIES.map((cat) => (
-                        <option key={cat.id} value={cat.id}>{cat.label}</option>
-                      ))}
-                    </select>
-                    <svg className="w-[16px] h-[16px] opacity-50 absolute right-[16px] top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m5 7 5 6 5-6" /></svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-            */}
-
-            <div className="flex gap-3 flex-wrap mt-[22px]">
-              <button className={solidBtn} onClick={() => document.getElementById("plans")?.scrollIntoView({ behavior: "smooth" })}>Compare Plans</button>
-              <button className={outlineBtn} onClick={() => document.getElementById("comparison")?.scrollIntoView({ behavior: "smooth" })}>See Full Comparison</button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <main>
-        {activeStep === "plans" && (
-          <div className="animate-in fade-in duration-300">
-
-            {/* ── Plan cards ─────────────────────────────────────────────── */}
-            <section id="plans">
-              <div className={containerClass}>
-                <div className="flex flex-col md:flex-row justify-between md:items-end mb-[22px] gap-5">
-                  <div>
-                    <div className={eyebrowClass}>Step 1 — Pick your plan</div>
-                    <h2 className={h2Class}>Select your plan</h2>
-                    <p className="mt-1.5 text-muted-foreground text-[14px]">Add-ons are optional and come on the next step.</p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    <div className="inline-flex items-center gap-[10px] px-3 py-2 rounded-full bg-muted border border-border text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
-                      {origin} → {destination} · {visa}
+                      {plan.name}
                     </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {activePlans.map((plan) => {
-                    const isSelected = selectedPlan === plan.id;
-                    const displayPrice = planDisplayPrice(plan);
-                    return (
-                      <article
-                        key={plan.id}
-                        className={`bg-card border rounded-[24px] p-[22px] flex flex-col relative transition-all ${
-                          isSelected ? "border-primary shadow-xl z-10" : "border-border shadow-sm hover:border-border"
-                        } ${plan.recommended && !isSelected ? "ring-2 ring-primary" : ""}`}
-                      >
-                        {plan.recommended && (
-                          <div className="absolute top-3.5 right-3.5 bg-primary/10 text-primary border border-primary/20 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.08em] uppercase">
-                            Popular
-                          </div>
-                        )}
-                        <div className={`text-[12px] font-extrabold tracking-widest uppercase mb-2.5 ${TIER_COLORS[plan.id] || "text-muted-foreground"}`}>
-                          {plan.name}
-                        </div>
-                        <div className="mb-[16px]">
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-[42px] leading-none font-bold tracking-tight">
-                              {plan.id === "free" ? "$0" : `$${displayPrice}`}
-                            </span>
-                            {plan.id !== "free" && (
-                              <span className="text-[13px] text-muted-foreground font-medium">
-                                /mo
-                              </span>
-                            )}
-                          </div>
-                          {plan.id !== "free" && plan.annualPrice > 0 && (
-                            <div className="mt-1 text-[12px] text-muted-foreground">${plan.annualPrice} total</div>
-                          )}
-                        </div>
-                        <div className="text-muted-foreground text-[13.5px] leading-[1.55] mb-[18px] min-h-[60px]">{plan.tagline}</div>
-                        <ul className="list-none p-0 m-[0_0_20px] grid gap-2 flex-1">
-                          {plan.bullets.map((item, idx) => (
-                            <li key={idx} className="flex gap-2.5 items-start text-[13px] leading-[1.45]">
-                              <IconCheck className="w-4 h-4 flex-[0_0_16px] text-primary mt-[2px]" />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="mt-auto w-full">
-                          {plan.id === "free" ? (
-                            <Link href={userId ? "/" : "/signup"} className="w-full">
-                              <button className={`${outlineBtn} w-full`} type="button">{plan.cta}</button>
-                            </Link>
-                          ) : (
-                            <button
-                              className={`w-full px-[18px] py-[12px] rounded-full transition-colors border font-medium border-solid ${
-                                isSelected
-                                  ? "bg-primary text-white border-transparent hover:bg-primary-dark"
-                                  : "bg-card border-border text-foreground hover:bg-muted/30"
-                              }`}
-                              type="button"
-                              onClick={() => setSelectedPlan(plan.id)}
-                            >
-                              {isSelected ? "✓ Selected" : plan.cta}
-                            </button>
-                          )}
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-
-                {/* CTA to step 2 */}
-                <div className="mt-10 flex justify-center w-full">
-                  <button
-                    className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white text-[15px] font-bold rounded-full shadow-lg hover:shadow-xl hover:bg-primary-dark hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-                    onClick={() => { setActiveStep("addons"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                  >
-                    Proceed to Step 2: Add-ons
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-
-                {/* Helper cards */}
-                <div className="mt-[36px]">
-                  <h2 className="text-[22px] font-bold m-0">Which plan is right for you?</h2>
-                  <p className="mt-1.5 text-muted-foreground text-[14px] mb-[18px]">Use this to decide faster.</p>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {HELPER_DATA.map((card, idx) => (
-                      <button
-                        key={idx}
-                        className={`bg-card border rounded-[20px] p-[18px] cursor-pointer text-left transition-colors ${selectedPlan === card.plan ? "border-primary bg-muted/30" : "border-border hover:border-border"}`}
-                        onClick={() => setSelectedPlan(card.plan)}
-                      >
-                        <strong className="block text-[15px] mb-2 text-foreground">{card.title}</strong>
-                        <p className="m-[0_0_10px] text-muted-foreground text-[14px] leading-[1.55]">{card.copy}</p>
-                        <span className={`text-[12px] font-bold ${TIER_COLORS[card.plan] || "text-primary"}`}>
-                          → Use {activePlans.find((p) => p.id === card.plan)?.name}
+                    <div className="mb-3">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[40px] font-bold tracking-tight leading-none">
+                          ${planDisplayPrice(plan)}
                         </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ── Comparison table ──────────────────────────────────────── */}
-            <section id="comparison">
-              <div className={containerClass}>
-                <div className="flex flex-col md:flex-row justify-between md:items-end mb-[18px] gap-5">
-                  <div>
-                    <div className={eyebrowClass}>Full comparison</div>
-                    <h2 className={h2Class}>What's in each plan</h2>
-                  </div>
-                  <div className="flex items-center gap-3 bg-muted/30 border border-border rounded-full px-4 py-2">
-                    <span className="text-sm font-medium text-muted-foreground">Show differences only</span>
-                    <button
-                      type="button" role="switch" aria-checked={differencesOnly}
-                      onClick={() => setDifferencesOnly(!differencesOnly)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ${differencesOnly ? "bg-primary" : "bg-border"}`}
-                    >
-                      <span className="sr-only">Show Differences Only</span>
-                      <span aria-hidden="true" className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${differencesOnly ? "translate-x-5" : "translate-x-0"}`} />
-                    </button>
-                  </div>
-                </div>
-                <div className="bg-card border border-border rounded-[24px] overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse min-w-[760px]">
-                      <thead>
-                        <tr className="bg-muted/30">
-                          <th className="p-[14px_18px] border-b border-border text-[11px] tracking-widest uppercase text-muted-foreground w-[42%]">Feature</th>
-                          {activePlans.filter((p) => p.id !== "free").map((p) => (
-                            <th key={p.id} className="p-[14px_16px] border-b border-border text-center">
-                              <div className={`text-[11px] tracking-widest uppercase font-extrabold mb-0.5 ${TIER_COLORS[p.id] || ""}`}>{p.name}</div>
-                              {p.id !== "free" && (
-                                <div className="text-[11px] text-muted-foreground font-medium">
-                                  ${planDisplayPrice(p)}/mo
-                                </div>
-                              )}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {COMPARISON_GROUPS.map((group, gi) => {
-                          const rows = differencesOnly
-                            ? group.rows.filter((r) => new Set(r.slice(1)).size > 1)
-                            : group.rows;
-                          if (!rows.length) return null;
-                          return (
-                            <React.Fragment key={gi}>
-                              <tr>
-                                <td colSpan={4} className="p-[11px_18px] bg-muted/60 text-primary text-[10.5px] font-extrabold tracking-widest uppercase border-b border-border">
-                                  {group.label}
-                                </td>
-                              </tr>
-                              {rows.map((row, ri) => (
-                                <tr key={ri} className="hover:bg-muted/20 transition-colors">
-                                  {row.map((val, vi) => (
-                                    <td key={vi} className={`p-[13px_18px] border-b border-border align-middle text-[13.5px] ${vi !== 0 ? "text-center" : "text-foreground font-medium"}`}>
-                                      {vi === 0 ? val : <ComparisonCell value={val} />}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </React.Fragment>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ── FAQs ──────────────────────────────────────────────────── */}
-            <section>
-              <div className={containerClass}>
-                <div className="mb-[18px]">
-                  <h2 className={h2Class}>Common questions</h2>
-                  <p className="mt-1.5 text-muted-foreground text-[14px]">Everything you need to know before purchasing.</p>
-                </div>
-                <div className="bg-card border border-border rounded-[24px] overflow-hidden">
-                  {FAQS.map(([q, a], idx) => (
-                    <div key={idx} className={`border-t border-border first:border-0 ${openFaqIndex === idx ? "bg-muted/20" : ""}`}>
-                      <button
-                        className="w-full bg-transparent border-0 p-[18px_22px] flex justify-between items-center gap-4 text-left cursor-pointer font-[650] hover:bg-muted/30 transition-colors"
-                        onClick={() => setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)}
-                      >
-                        <span className="text-[15px]">{q}</span>
-                        <span className="text-xl text-muted-foreground font-normal leading-none flex-shrink-0">{openFaqIndex === idx ? "−" : "+"}</span>
-                      </button>
-                      {openFaqIndex === idx && (
-                        <div className="p-[0_22px_18px] text-muted-foreground leading-[1.65] text-[14px]">{a}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* ── CTA banner ────────────────────────────────────────────── */}
-            <section>
-              <div className={containerClass}>
-                <div className="bg-primary rounded-[28px] p-[34px] text-white flex flex-col lg:flex-row justify-between gap-5 lg:items-center">
-                  <div>
-                    <h2 className="m-[0_0_8px] text-[26px] lg:text-[34px] leading-[1.08] font-bold tracking-tight">Start with the level that fits you.</h2>
-                    <p className="m-0 text-white/80 leading-[1.6]">Pick a plan, then add only the extras that apply to your case.</p>
-                  </div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <button className="px-[18px] py-[12px] bg-white border border-transparent text-primary rounded-full hover:bg-primary-pale transition-colors cursor-pointer font-semibold"
-                      onClick={() => document.getElementById("plans")?.scrollIntoView({ behavior: "smooth" })}>
-                      Review Plans
-                    </button>
-                    <Link href="/#contact" className="inline-flex">
-                      <button className="px-[18px] py-[12px] bg-transparent border border-white/35 text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer font-semibold">
-                        Talk to Support
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        )}
-
-        {/* ── Step 2: Add-ons ───────────────────────────────────────────── */}
-        {activeStep === "addons" && (
-          <div className="animate-in fade-in duration-300">
-            <section id="addonsStep">
-              <div className={containerClass}>
-                <div className="flex flex-col md:flex-row justify-between md:items-end mb-[18px] gap-5">
-                  <div>
-                    <div className={eyebrowClass}>Step 2 — Optional add-ons</div>
-                    <h2 className={h2Class}>Enhance your plan</h2>
-                    <p className="mt-1.5 text-muted-foreground text-[14px]">Add only what you need. All add-ons are charged once unless noted.</p>
-                  </div>
-                  <button className={outlineBtn} onClick={() => setActiveStep("plans")}>← Back to Plans</button>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-[22px] items-start">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {ADDONS.map((addon) => {
-                      const isSelected = selectedAddons.has(addon.id);
-                      return (
-                        <article
-                          key={addon.id}
-                          className={`bg-card border rounded-[22px] p-[18px] flex flex-col gap-2 transition-all ${isSelected ? "border-primary shadow-lg" : "border-border"}`}
-                        >
-                          <div className="flex justify-between items-start gap-3">
-                            <div className="text-[15px] font-[750] text-foreground mt-0.5 leading-snug flex-1">{addon.title}</div>
-                            <div className="text-right shrink-0">
-                              <div className="font-bold text-[26px] tracking-tight leading-none mb-0.5">${addon.price}</div>
-                              <div className="text-[11px] text-muted-foreground">{addon.unit}</div>
-                            </div>
-                          </div>
-                          <p className="text-muted-foreground text-[13px] leading-[1.55] flex-1">{addon.copy}</p>
-                          <div className="text-[11px] text-muted-foreground px-3 py-2 bg-muted/30 rounded-lg border border-border flex items-center gap-1.5">
-                            <span className="font-bold uppercase tracking-wider text-[9px] opacity-70 shrink-0">Note:</span>
-                            <span>{(addon as any).note || "Valid for one journey"}</span>
-                          </div>
-                          <button
-                            className={`w-full px-[16px] py-[10px] rounded-full transition-colors border font-medium text-[13px] ${isSelected ? "bg-primary text-white border-transparent hover:bg-primary-dark" : "bg-card border-border text-foreground hover:bg-muted/40"}`}
-                            onClick={() => toggleAddon(addon.id)}
-                          >
-                            {isSelected ? "✓ Added" : "Add to Order"}
-                          </button>
-                        </article>
-                      );
-                    })}
-                  </div>
-
-                  {/* Order summary */}
-                  <aside className="lg:sticky top-[92px] bg-card border border-border rounded-[24px] p-[22px] shadow-lg">
-                    <h3 className="m-[0_0_16px] text-[12px] uppercase tracking-widest text-muted-foreground font-bold">Order Summary</h3>
-                    <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13.5px]">
-                      <span className="text-muted-foreground">Journey</span>
-                      <strong>{origin} → {destination}</strong>
-                    </div>
-                    <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13.5px]">
-                      <span className="text-muted-foreground">Visa</span>
-                      <strong>{visa}</strong>
-                    </div>
-                    <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13.5px]">
-                      <span className="text-muted-foreground">Plan</span>
-                      <div className="text-right">
-                        <strong className={TIER_COLORS[currentPlanData.id] || ""}>{currentPlanData.name}</strong>
-                        {currentPlanData.id !== "free" && (
-                          <div className="text-[11px] mt-1 text-muted-foreground">
-                            ${currentPlanData.monthlyPrice}/mo · ${currentPlanData.annualPrice} total
-                          </div>
-                        )}
+                        <span className="text-[13px] text-muted-foreground">
+                          /mo
+                        </span>
+                      </div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5">
+                        ${plan.annualPrice} total
                       </div>
                     </div>
-                    {activeAddons.map((a) => (
-                      <div key={a.id} className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13.5px]">
-                        <span>{a.title}</span>
-                        <strong>${a.price}</strong>
-                      </div>
-                    ))}
-                    <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
-                      <strong className="text-[13px] mb-[2px] text-muted-foreground">Total due</strong>
-                      <span className="font-bold text-[32px] tracking-tight text-primary leading-none">${summaryTotal.toFixed(0)}</span>
-                    </div>
-                    <p className="text-[11.5px] text-muted-foreground leading-relaxed mt-3 mb-[18px] p-3 bg-muted/40 rounded-xl border border-dashed border-border">
-                      {`Billed monthly at $${currentPlanData.monthlyPrice}/mo. Total journey commitment: $${currentPlanData.annualPrice}.`}
-                      {" "}Add-ons are one-time charges. No cancellation after grace period. Government fees are separate.
+                    <p className="text-muted-foreground text-[13px] leading-[1.5] mb-4">
+                      {plan.tagline}
                     </p>
-                    <div className="flex flex-col gap-2.5">
-                      {isLoadingUser ? (
-                        <button disabled className={`${solidBtn} w-full opacity-50 cursor-not-allowed`}>Loading…</button>
-                      ) : userId ? (
-                        <CheckoutButton
-                          productTier={selectedPlan}
-                          addons={Array.from(selectedAddons)}
-                          visaCategory={visa}
-                          userId={userId}
-                          className={`${solidBtn} w-full text-center block rounded-full py-3 px-4 font-medium`}
-                        >
-                          Continue to Secure Checkout →
-                        </CheckoutButton>
-                      ) : (
-                        <Link
-                          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${Array.from(selectedAddons).join(",")}&visa=${encodeURIComponent(visa)}&billing=monthly`)}`}
-                          className={`${solidBtn} w-full text-center block rounded-full py-3 px-4 font-medium`}
-                        >
-                          Sign in to Checkout →
-                        </Link>
-                      )}
-                      <p className="text-center text-[11px] text-muted-foreground">Secure checkout via Stripe · Billed monthly</p>
-                    </div>
-                  </aside>
-                </div>
-              </div>
-            </section>
-          </div>
-        )}
-      </main>
 
-      {/* ── Country picker modal ──────────────────────────────────────────── */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-[#142225]/30 flex items-center justify-center p-3 md:p-6 z-50">
-          <div className="w-full max-w-[900px] h-[min(86vh,760px)] md:h-[min(78vh,720px)] bg-card rounded-[28px] border border-border shadow-2xl flex overflow-hidden flex-col animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true">
-            <div className="p-[18px_22px] border-b border-border flex justify-between items-center gap-3 bg-muted/30">
-              <div className="text-[18px] font-bold">{pickerTarget === "origin" ? "Select Origin Country" : "Select Destination Country"}</div>
-              <button className={miniBtn} onClick={() => setIsModalOpen(false)}><IconX className="w-4 h-4" /></button>
+                    {/* Key features — single line each */}
+                    <ul className="list-none p-0 m-0 space-y-2 flex-1">
+                      {plan.bullets.slice(0, 5).map((item, idx) => (
+                        <li
+                          key={idx}
+                          className="flex gap-2 items-center text-[13px]"
+                        >
+                          <IconCheck
+                            className={`w-4 h-4 flex-shrink-0 ${tc.checkCol}`}
+                          />
+                          <span className="truncate">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* "See what else is included" → opens compare modal */}
+                    {plan.bullets.length > 5 && (
+                      <button
+                        className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0 text-left`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setComparePlansOpen(true);
+                        }}
+                      >
+                        Click here to see what else is included
+                        <IcoChevron className="w-3.5 h-3.5 -rotate-90" />
+                      </button>
+                    )}
+
+                    <button
+                      className={`mt-4 w-full py-[10px] px-4 rounded-full text-[13.5px] font-semibold transition-all duration-150 cursor-pointer ${
+                        isSelected ? tc.btn : `${tc.btnOut} border`
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPlan(plan.id);
+                        setPurchaseStep("review");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    >
+                      {isSelected ? "Continue to Checkout →" : plan.cta}
+                    </button>
+                  </article>
+                );
+              })}
             </div>
-            <div className="p-[14px_22px] border-b border-border bg-card sticky top-0 z-10">
-              <input
-                type="text" placeholder="Search country…"
-                className="w-full p-[12px_16px] rounded-[14px] border border-border bg-muted/40 outline-none focus:border-primary"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div className="flex flex-1 overflow-hidden">
-              <div className="overflow-y-auto p-[10px_22px] flex-1 bg-card">
-                {Object.keys(groupedCountries).length > 0 ? (
-                  Object.keys(groupedCountries).sort().map((letter) => (
-                    <section key={letter} id={`group-${letter}`} className="py-2">
-                      <div className="sticky -top-px bg-card/95 pb-1.5 pt-2 text-[11px] font-extrabold tracking-[0.12em] uppercase text-muted-foreground z-10">{letter}</div>
-                      {groupedCountries[letter].map((country) => {
-                        const isActive = (pickerTarget === "origin" ? origin : destination) === country;
-                        return (
-                          <button
-                            key={country}
-                            className={`w-full border border-transparent bg-transparent rounded-[14px] p-[12px_14px] text-left flex justify-between items-center cursor-pointer transition-colors ${isActive ? "bg-primary/8 border-primary/20" : "hover:bg-muted/50"}`}
-                            onClick={() => {
-                              if (pickerTarget === "origin") setOrigin(country);
-                              else setDestination(country);
-                              setIsModalOpen(false);
-                            }}
-                          >
-                            <span className={`text-[14px] ${isActive ? "font-bold text-primary" : "text-foreground"}`}>{country}</span>
-                          </button>
-                        );
-                      })}
-                    </section>
-                  ))
-                ) : (
-                  <div className="py-6 text-center text-muted-foreground">No countries found.</div>
-                )}
+
+            {/* Free plan strip */}
+            <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/30 border border-border rounded-[18px] px-5 py-4">
+              <div>
+                <p className="font-semibold text-[14px] m-0">
+                  Not ready to commit? Start with a free preview.
+                </p>
+                <p className="text-muted-foreground text-[13px] m-0 mt-0.5">
+                  Preview the roadmap structure, access public tools — no
+                  payment required.
+                </p>
               </div>
-              <div className="flex border-l border-border bg-muted/30 flex-col items-center justify-start gap-1 p-[20px_4px] w-[40px] md:w-[52px] shrink-0 overflow-y-auto">
-                {Object.keys(groupedCountries).sort().map((letter) => (
-                  <button
-                    key={letter}
-                    className="bg-transparent border-0 p-[2px_4px] text-[11px] text-muted-foreground cursor-pointer rounded-[6px] hover:bg-muted hover:text-foreground transition-colors"
-                    onClick={() => document.getElementById(`group-${letter}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              <Link href={userId ? "/" : "/signup"} className="shrink-0">
+                <button className={secBtn}>Get Started Free</button>
+              </Link>
+            </div>
+
+            {/* Help me choose — full width */}
+            <div className="mt-10">
+              <h3 className="text-[17px] font-bold m-0 mb-1">Help me choose</h3>
+              <p className="text-[13.5px] text-muted-foreground mb-4">
+                Pick the description that matches you.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {HELPER_DATA.map((card, idx) => {
+                  const tc = TIER[card.plan as TierKey];
+                  const isActive = selectedPlan === card.plan;
+                  return (
+                    <button
+                      key={idx}
+                      className={`border rounded-[18px] p-5 text-left cursor-pointer transition-all ${
+                        isActive
+                          ? `${tc.cardBg} ${tc.selBorder} ${tc.ring}`
+                          : "bg-card border-border hover:bg-muted/20"
+                      }`}
+                      onClick={() => setSelectedPlan(card.plan)}
+                    >
+                      <strong className="block text-[14.5px] mb-2">
+                        {card.title}
+                      </strong>
+                      <p className="m-0 text-muted-foreground text-[13px] leading-[1.55] mb-3">
+                        {card.copy}
+                      </p>
+                      <span
+                        className={`text-[12px] font-bold ${tc.textAccent}`}
+                      >
+                        → Use{" "}
+                        {activePlans.find((p) => p.id === card.plan)?.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* FAQs — full width */}
+            <div className="mt-10">
+              <h2 className="text-[22px] font-bold m-0 mb-1">
+                Common questions
+              </h2>
+              <p className="text-muted-foreground text-[13.5px] mb-4">
+                Everything you need to know before purchasing.
+              </p>
+              <div className="bg-card border border-border rounded-[20px] overflow-hidden">
+                {FAQS.map(([q, a], idx) => (
+                  <div
+                    key={idx}
+                    className={`border-t border-border first:border-0 ${openFaqIndex === idx ? "bg-muted/20" : ""}`}
                   >
-                    {letter}
-                  </button>
+                    <button
+                      className="w-full bg-transparent border-0 p-[16px_22px] flex justify-between items-center gap-4 text-left cursor-pointer hover:bg-muted/25 transition-colors"
+                      onClick={() =>
+                        setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)
+                      }
+                    >
+                      <span className="font-semibold text-[14px]">{q}</span>
+                      <span className="text-xl text-muted-foreground font-normal leading-none shrink-0">
+                        {openFaqIndex === idx ? "−" : "+"}
+                      </span>
+                    </button>
+                    {openFaqIndex === idx && (
+                      <div className="px-[22px] pb-4 text-muted-foreground leading-[1.65] text-[13.5px]">
+                        {a}
+                      </div>
+                    )}
+                  </div>
                 ))}
+              </div>
+            </div>
+
+            {/* CTA Banner — full width */}
+            <div className="mt-8 bg-primary rounded-[22px] p-7 text-white flex flex-col md:flex-row justify-between gap-4 md:items-center">
+              <div>
+                <h2 className="m-[0_0_6px] text-[22px] font-bold tracking-tight">
+                  Start with the level that fits you.
+                </h2>
+                <p className="m-0 text-white/80 text-[14px]">
+                  Pick a plan, then add only the extras that apply to your case.
+                </p>
+              </div>
+              <div className="flex gap-3 flex-wrap shrink-0">
+                <button
+                  className="px-5 py-[9px] bg-white text-primary rounded-full text-[13.5px] font-semibold hover:bg-white/90 transition-colors cursor-pointer"
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
+                >
+                  Review Plans
+                </button>
+                <Link href="/#contact">
+                  <button className="px-5 py-[9px] border border-white/30 text-white rounded-full text-[13.5px] font-semibold hover:bg-white/10 transition-colors cursor-pointer">
+                    Talk to Support
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          JOURNEY PLANS — ORDER REVIEW STEP
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {mode === "plans" && purchaseStep === "review" && (
+        <div className="animate-in fade-in duration-300">
+          <div className={`${W} pt-6`}>
+            {/* Back button */}
+            <button
+              className="inline-flex items-center gap-1.5 text-[13.5px] text-muted-foreground hover:text-foreground font-medium cursor-pointer bg-transparent border-0 p-0 mb-6 transition-colors"
+              onClick={() => {
+                setPurchaseStep("browse");
+                window.scrollTo({ top: 0 });
+              }}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to plans
+            </button>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+              {/* Left: add-ons */}
+              <div>
+                {/* Selected plan summary */}
+                {(() => {
+                  const tc = TIER[currentPlanData.id as TierKey];
+                  if (!tc) return null;
+                  return (
+                    <div
+                      className={`${tc.cardBg} border ${tc.selBorder} rounded-[22px] p-5 mb-8`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div
+                            className={`text-[11px] font-extrabold tracking-widest uppercase mb-1 ${tc.textAccent}`}
+                          >
+                            Selected Plan
+                          </div>
+                          <div className="text-[20px] font-bold">
+                            {currentPlanData.name}
+                          </div>
+                          <p className="text-muted-foreground text-[13px] mt-0.5 m-0">
+                            {currentPlanData.tagline}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[32px] font-bold tracking-tight leading-none">
+                            ${planDisplayPrice(currentPlanData)}
+                          </div>
+                          <div className="text-[12px] text-muted-foreground">
+                            /mo · ${currentPlanData.annualPrice} total
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        className={`mt-3 text-[12.5px] font-medium ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0`}
+                        onClick={() => setPurchaseStep("browse")}
+                      >
+                        Change plan →
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* Want to add extra help? */}
+                <div>
+                  <div className={eyebrow}>Optional add-ons</div>
+                  <h2 className="text-[21px] font-bold m-0 mb-1">
+                    Want to add extra help?
+                  </h2>
+                  <p className="text-[13.5px] text-muted-foreground mb-5">
+                    Add only what you need. Recommended for the{" "}
+                    {currentPlanData.name} plan — or browse all below.
+                  </p>
+
+                  {/* Recommended add-ons */}
+                  {reviewAddons.length > 0 && (
+                    <div className="mb-7">
+                      <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                        Recommended for {currentPlanData.name}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {reviewAddons.map((addon) => {
+                          const isAdded = selectedAddons.has(addon.id);
+                          const cfg = ADDON_CONFIG[addon.id];
+                          const Icon = cfg?.icon ?? Wand2;
+                          return (
+                            <div
+                              key={addon.id}
+                              className={`bg-card border rounded-[16px] p-4 flex gap-3 items-start transition-all ${isAdded ? "border-primary shadow-sm" : "border-border"}`}
+                            >
+                              <div
+                                className={`w-9 h-9 rounded-xl ${cfg?.iconBg ?? "bg-primary"} flex items-center justify-center shrink-0`}
+                              >
+                                <Icon className="w-4.5 h-4.5 text-white stroke-2" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start gap-2">
+                                  <div className="font-semibold text-[13.5px] leading-snug truncate">
+                                    {addon.title}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <span className="font-bold text-[18px] leading-none">
+                                      ${addon.price}
+                                    </span>
+                                    <div className="text-[10px] text-muted-foreground">
+                                      {addon.unit}
+                                    </div>
+                                  </div>
+                                </div>
+                                <p className="text-muted-foreground text-[12px] mt-0.5 leading-[1.5] m-0 line-clamp-2">
+                                  {addon.copy}
+                                </p>
+                                <button
+                                  disabled={isAnyCheckoutLoading}
+                                  className={`mt-2 px-3 py-[5px] rounded-full text-[12px] font-semibold transition-colors border ${
+                                    isAnyCheckoutLoading
+                                      ? "opacity-50 cursor-not-allowed bg-muted/60 text-muted-foreground border-border"
+                                      : isAdded
+                                        ? "bg-muted/60 text-muted-foreground border-border cursor-pointer"
+                                        : "bg-[#0d7a5c] text-white border-transparent hover:bg-[#0a6048] cursor-pointer"
+                                  }`}
+                                  onClick={() => toggleAddon(addon.id)}
+                                >
+                                  {isAdded ? "✓ Added" : "+ Add"}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* All other add-ons — collapsed by default */}
+                  <div className="mt-4 border-t border-border pt-4">
+                    <button
+                      className="w-full flex justify-between items-center cursor-pointer bg-transparent border-0 p-0 group mb-0"
+                      onClick={() => setAllAddonsOpen(!allAddonsOpen)}
+                    >
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+                        All available add-ons
+                      </span>
+                      <span className="flex items-center gap-1.5 text-[12px] text-muted-foreground group-hover:text-foreground transition-colors">
+                        <span className="font-medium">
+                          {allAddonsOpen ? "Collapse" : "Show all"}
+                        </span>
+                        <IcoChevron
+                          className={`w-3.5 h-3.5 transition-transform duration-200 ${allAddonsOpen ? "rotate-180" : ""}`}
+                        />
+                      </span>
+                    </button>
+                    {allAddonsOpen && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                        {ADDONS.filter(
+                          (a) =>
+                            !(PLAN_RECS[selectedPlan] || []).includes(a.id),
+                        ).map((addon) => {
+                          const isAdded = selectedAddons.has(addon.id);
+                          const cfg = ADDON_CONFIG[addon.id];
+                          const Icon = cfg?.icon ?? Wand2;
+                          return (
+                            <div
+                              key={addon.id}
+                              className={`bg-card border rounded-[16px] p-4 flex gap-3 items-start transition-all ${isAdded ? "border-primary shadow-sm" : "border-border"}`}
+                            >
+                              <div
+                                className={`w-9 h-9 rounded-xl ${cfg?.iconBg ?? "bg-primary"} flex items-center justify-center shrink-0`}
+                              >
+                                <Icon className="w-4.5 h-4.5 text-white stroke-2" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start gap-2">
+                                  <div className="font-semibold text-[13.5px] leading-snug truncate">
+                                    {addon.title}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <span className="font-bold text-[18px] leading-none">
+                                      ${addon.price}
+                                    </span>
+                                    <div className="text-[10px] text-muted-foreground">
+                                      {addon.unit}
+                                    </div>
+                                  </div>
+                                </div>
+                                <p className="text-muted-foreground text-[12px] mt-0.5 leading-[1.5] m-0 line-clamp-2">
+                                  {addon.copy}
+                                </p>
+                                <button
+                                  disabled={isAnyCheckoutLoading}
+                                  className={`mt-2 px-3 py-[5px] rounded-full text-[12px] font-semibold transition-colors border ${
+                                    isAnyCheckoutLoading
+                                      ? "opacity-50 cursor-not-allowed bg-muted/60 text-muted-foreground border-border"
+                                      : isAdded
+                                        ? "bg-muted/60 text-muted-foreground border-border cursor-pointer"
+                                        : "bg-[#0d7a5c] text-white border-transparent hover:bg-[#0a6048] cursor-pointer"
+                                  }`}
+                                  onClick={() => toggleAddon(addon.id)}
+                                >
+                                  {isAdded ? "✓ Added" : "+ Add"}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: sticky order summary */}
+              <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold mb-4">
+                  Order Summary
+                </div>
+
+                <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
+                  <span className="text-muted-foreground">Visa</span>
+                  <strong className="text-[12.5px]">{visa}</strong>
+                </div>
+
+                {currentPlanData.id !== "free" && (
+                  <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
+                    <span className="text-muted-foreground">Plan</span>
+                    <div className="text-right">
+                      <strong
+                        className={`block ${TIER[currentPlanData.id as TierKey]?.textAccent ?? ""}`}
+                      >
+                        {currentPlanData.name}
+                      </strong>
+                      <span className="text-[11px] text-muted-foreground">
+                        ${currentPlanData.monthlyPrice}/mo · $
+                        {currentPlanData.annualPrice} total
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {activeAddons.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
+                  >
+                    <span className="text-[12.5px] truncate pr-2">
+                      {a.title}
+                    </span>
+                    <div className="text-right shrink-0">
+                      <strong>${a.price}</strong>
+                      <button
+                        disabled={isAnyCheckoutLoading}
+                        className={`ml-2 text-muted-foreground transition-colors ${isAnyCheckoutLoading ? "opacity-30 cursor-not-allowed" : "hover:text-red-500 cursor-pointer"} text-[11px]`}
+                        onClick={() => toggleAddon(a.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
+                  <span className="text-[12px] text-muted-foreground">
+                    Total commitment
+                  </span>
+                  <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
+                    ${summaryTotal}
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
+                  Billed monthly at $
+                  {currentPlanData.id !== "free"
+                    ? currentPlanData.monthlyPrice
+                    : 0}
+                  /mo. Add-ons are one-time. Government fees excluded.
+                </p>
+
+                {checkoutBtn}
+              </aside>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          INDIVIDUAL RESOURCES MODE
+          ═══════════════════════════════════════════════════════════════════════ */}
+      {mode === "resources" && (
+        <div className="animate-in fade-in duration-300">
+          <section className={`${W} pt-7 pb-5`}>
+            <div className={eyebrow}>Individual Resources</div>
+            <h1 className="text-[clamp(24px,3.5vw,42px)] font-bold leading-[1.1] tracking-tight m-0">
+              Buy individual tools and services
+            </h1>
+            <p className="mt-2 text-muted-foreground text-[14.5px] max-w-[520px]">
+              Choose only the help you need — no full journey plan required.
+            </p>
+          </section>
+
+          <div className={`${W}`}>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_284px] gap-6 items-start">
+              <div>
+                {/* Category tabs */}
+                <div className="flex gap-2 overflow-x-auto pb-1 mb-5">
+                  {RESOURCE_CATS.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setResourceCat(cat.id)}
+                      className={`px-4 py-[7px] rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 cursor-pointer transition-all ${
+                        resourceCat === cat.id
+                          ? "bg-primary text-white shadow-sm"
+                          : "bg-muted border border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Resource cards — matching resources page style */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {resourcesForCat.map((addon) => {
+                    const isAdded = selectedAddons.has(addon.id);
+                    const cfg = ADDON_CONFIG[addon.id];
+                    const Icon = cfg?.icon ?? Wand2;
+                    return (
+                      <article
+                        key={addon.id}
+                        className={`bg-card border rounded-[20px] p-5 flex flex-col gap-3 transition-all ${isAdded ? "border-primary shadow-md" : "border-border hover:shadow-sm"}`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div
+                            className={`w-11 h-11 rounded-[14px] ${cfg?.iconBg ?? "bg-primary"} flex items-center justify-center`}
+                          >
+                            <Icon className="w-5 h-5 text-white stroke-2" />
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-[28px] tracking-tight leading-none">
+                              ${addon.price}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              {addon.unit}
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-[15px] m-0 leading-snug">
+                            {addon.title}
+                          </h3>
+                          <p className="text-muted-foreground text-[13px] mt-1.5 leading-[1.55] m-0">
+                            {addon.copy}
+                          </p>
+                        </div>
+                        {(addon as { note?: string }).note && (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-muted/50 border border-border text-[11.5px] text-muted-foreground self-start">
+                            <IcoInfo className="w-3 h-3 shrink-0" />
+                            {(addon as { note?: string }).note}
+                          </div>
+                        )}
+                        <button
+                          disabled={isAnyCheckoutLoading}
+                          className={`mt-auto w-full py-[10px] rounded-full text-[13.5px] font-semibold transition-all border ${
+                            isAnyCheckoutLoading
+                              ? "opacity-50 cursor-not-allowed bg-muted/60 text-muted-foreground border-border"
+                              : isAdded
+                                ? "bg-muted/60 text-muted-foreground border-border cursor-pointer"
+                                : "bg-[#0d7a5c] text-white border-transparent hover:bg-[#0a6048] cursor-pointer"
+                          }`}
+                          onClick={() => toggleAddon(addon.id)}
+                        >
+                          {isAdded ? "✓ Added to order" : "+ Add to order"}
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 text-center">
+                  <button
+                    className="text-[13.5px] text-primary font-semibold inline-flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0"
+                    onClick={() => setMode("plans")}
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    View full journey plans
+                  </button>
+                </div>
+              </div>
+
+              {/* Order summary sidebar */}
+              <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold mb-4">
+                  Order Summary
+                </div>
+
+                {activeAddons.length === 0 ? (
+                  <div className="py-5 text-center text-muted-foreground text-[13px]">
+                    No items selected yet.
+                  </div>
+                ) : (
+                  activeAddons.map((a) => (
+                    <div
+                      key={a.id}
+                      className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
+                    >
+                      <span className="text-[12.5px] truncate pr-2">
+                        {a.title}
+                      </span>
+                      <div className="text-right shrink-0">
+                        <strong>${a.price}</strong>
+                        <button
+                          disabled={isAnyCheckoutLoading}
+                          className={`ml-2 text-muted-foreground transition-colors ${isAnyCheckoutLoading ? "opacity-30 cursor-not-allowed" : "hover:text-red-500 cursor-pointer"} text-[11px]`}
+                          onClick={() => toggleAddon(a.id)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                {activeAddons.length > 0 && (
+                  <>
+                    <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
+                      <span className="text-[12px] text-muted-foreground">
+                        Total
+                      </span>
+                      <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
+                        ${summaryAddonsTotal}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
+                      Add-ons are one-time charges. Government fees are not
+                      included.
+                    </p>
+                    {checkoutBtn}
+                  </>
+                )}
+              </aside>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Compare Modal ─────────────────────────────────────────────────────── */}
+      <CompareModal
+        isOpen={comparePlansOpen}
+        onClose={() => setComparePlansOpen(false)}
+        activePlans={activePlans}
+        planDisplayPrice={planDisplayPrice}
+        onSelectPlan={(id) => {
+          setSelectedPlan(id);
+          setMode("plans");
+          setPurchaseStep("browse");
+        }}
+      />
     </div>
   );
 }
 
+/* ===========================================================================
+   SUSPENSE WRAPPER
+   =========================================================================== */
 export default function PricingSection() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
-        <h2 className="text-xl font-bold mb-2">Loading Pricing…</h2>
-        <p className="text-muted-foreground">Preparing your personalized plan options.</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
+          <h2 className="text-xl font-bold mb-2">Loading Pricing…</h2>
+          <p className="text-muted-foreground">Preparing your plan options.</p>
+        </div>
+      }
+    >
       <PricingContent />
     </Suspense>
   );
