@@ -109,7 +109,7 @@ export function DashboardView({
 
   const nextStepLock = useMemo(() => {
     if (!nextActionData) return { isLocked: false, requiredPlan: null };
-    const stepId = nextActionData.step.step_key || nextActionData.step.id;
+    const stepId = nextActionData.step.step_key;
     return getStepLockStatus(
       stepId,
       plan.tier,
@@ -685,8 +685,7 @@ export function DashboardView({
                                     : "bg-[#ede9fe] text-[#5b21b6] border border-[#c4b5fd]"
                               }`}
                             >
-                              <Lock size={8} strokeWidth={2.5} />
-                              {lockedCount} locked
+                              Limited Access
                             </div>
                           );
                         })()}

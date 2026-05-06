@@ -1212,10 +1212,9 @@ export function TwoWaysSection() {
             display  : "flex",
             alignItems : "center",
             overflow : "hidden",
-            background:
-              "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-            borderTop    : "1px solid #e1ebe8",
-            borderBottom : "1px solid #e1ebe8",
+              background: "#F4F7F6",
+              borderTop    : "2px solid #d9e2e1",
+              borderBottom : "2px solid #d9e2e1",
           }}
         >
           {/* Decorative radial highlights */}
@@ -1418,9 +1417,9 @@ export function TwoWaysSection() {
         aria-label="Two ways to use Rahvana"
         className="block lg:hidden"
         style={{
-          background   : "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-          borderTop    : "1px solid #e1ebe8",
-          borderBottom : "1px solid #e1ebe8",
+          background   : "#F4F7F6",
+          borderTop    : "2px solid #d9e2e1",
+          borderBottom : "2px solid #d9e2e1",
         }}
       >
         <div
@@ -3192,11 +3191,31 @@ function InteractiveClockWidget() {
   ];
 
   const springAngle = useSpring(60, { stiffness: 30, damping: 15, mass: 1 });
-  const hourHandRotate = useTransform(springAngle, (v) => v * 0.5);
+  
+  // Calculate time from angle (angle represents full 12-hour rotation = 720 minutes)
+  const totalMinutes = Math.floor((angle / 360) * 12 * 60);
+  let h = Math.floor(totalMinutes / 60) || 12;
+  let m = totalMinutes % 60;
+  m = Math.round(m / 5) * 5;
+  if (m === 60) {
+    m = 0;
+    h = h === 12 ? 1 : h + 1;
+  }
+  
+  // Minute hand: Each minute = 6 degrees (360 / 60 minutes)
+  const minuteHandAngle = (m * 6);
+  
+  // Hour hand: Each hour = 30 degrees (360 / 12 hours) + each minute adds 0.5 degrees (30 / 60)
+  const hourHandAngle = ((h % 12) * 30) + (m * 0.5);
+  
+  const minuteHandRotate = useSpring(minuteHandAngle, { stiffness: 30, damping: 15, mass: 1 });
+  const hourHandRotate = useSpring(hourHandAngle, { stiffness: 30, damping: 15, mass: 1 });
 
   useEffect(() => {
     springAngle.set(angle);
-  }, [angle, springAngle]);
+    minuteHandRotate.set(minuteHandAngle);
+    hourHandRotate.set(hourHandAngle);
+  }, [angle, minuteHandAngle, hourHandAngle, springAngle, minuteHandRotate, hourHandRotate]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowHint(false), 3600);
@@ -3242,14 +3261,6 @@ function InteractiveClockWidget() {
     }
   };
 
-  const totalMinutes = Math.floor((angle / 360) * 12 * 60);
-  let h = Math.floor(totalMinutes / 60) || 12;
-  let m = totalMinutes % 60;
-  m = Math.round(m / 5) * 5;
-  if (m === 60) {
-    m = 0;
-    h = h === 12 ? 1 : h + 1;
-  }
   const timeStr = `${h}:${m.toString().padStart(2, '0')}`;
 
   const CLOCK_RADIUS = 130;
@@ -3336,14 +3347,16 @@ function InteractiveClockWidget() {
             style={{ height: CLOCK_RADIUS * 0.6, bottom: '50%', transform: `rotate(180deg)` }}
           />
 
+          {/* Minute Hand */}
           <motion.div
             className="absolute origin-bottom filter drop-shadow-[0_8px_16px_rgba(8,54,58,0.40)]"
-            style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: springAngle }}
+            style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: minuteHandRotate }}
           >
             <div className="w-[3px] h-full rounded-full bg-gradient-to-t from-[#06292d] via-[#0b7a7f] to-[#0ea5a8] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
             <div className="absolute -top-1 -left-[1.5px] w-[6px] h-[6px] rounded-full bg-[#f8fdff] border border-[#0a3c40] shadow-[0_2px_6px_rgba(8,54,58,0.24)]" />
           </motion.div>
 
+          {/* Hour Hand */}
           <motion.div
             className="absolute origin-bottom"
             style={{ height: CLOCK_RADIUS * 0.36, bottom: '50%', rotate: hourHandRotate }}
@@ -3414,61 +3427,21 @@ export function ConsultationBanner({
   return (
     <section
       aria-labelledby="consultation-heading"
-      className="relative overflow-hidden px-14 sm:px-8 md:px-12 2xl:px-30 py-8 md:py-12 bg-[#F4F7F6]"
+      className="relative overflow-hidden"
+      style={{
+        background: "#F4F7F6",
+      }}
     >
-      {/* Elevated Dynamic Jewel-Tone Background — unified with landing palette */}
+      {/* Subtle background decoration */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large soft vignette to ground the whole section */}
         <motion.div
           animate={{ opacity: [0.7, 0.95, 0.7], scale: [1, 1.02, 1] }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-[-10%] rounded-full pointer-events-none"
+          className="absolute inset-x-0 top-0 h-72 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse at center, rgba(11,102,106,0.06) 0%, rgba(10,35,66,0.04) 35%, transparent 60%)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-
-        {/* Recolored floating orbs aligned to site palette */}
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(6%, 9%) scale(1.08)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[12%] -left-[6%] w-[48vw] h-[48vw] rounded-full blur-[120px]"
-          style={{ background: '#0B666A', opacity: 0.085, mixBlendMode: 'screen' }}
-        />
-
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(-6%, -4%) scale(1.12)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-          className="absolute top-[18%] -right-[6%] w-[42vw] h-[42vw] rounded-full blur-[140px]"
-          style={{ background: '#0A2342', opacity: 0.07, mixBlendMode: 'screen' }}
-        />
-
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(8%, -8%) scale(1.06)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-          className="absolute -bottom-[18%] left-[18%] w-[62vw] h-[62vw] rounded-full blur-[160px]"
-          style={{ background: '#097969', opacity: 0.055, mixBlendMode: 'screen' }}
-        />
-
-        {/* Diagonal soft sheen to create a subtle 'wow' and tie tones together */}
-        <motion.div
-          animate={{ opacity: [0.0, 0.06, 0.0], rotate: [-4, 0, -4] }}
-          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(11,102,106,0.03) 45%, rgba(10,35,66,0.04) 100%)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-
-        {/* Very subtle noise texture for depth */}
-        <div
-          className="absolute inset-0"
-          style={{
-            opacity: 0.028,
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
-            mixBlendMode: 'soft-light',
+            background:
+              'radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%),' +
+              'radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)',
           }}
         />
       </div>
@@ -3478,10 +3451,15 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto max-w-[1140px] z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"
+        className="relative mx-auto w-full px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"
+        style={{
+          maxWidth: 1360,
+          paddingTop: "clamp(48px,7vh,96px)",
+          paddingBottom: "clamp(48px,7vh,96px)",
+        }}
       >
         {/* LEFT SIDE: Hero + Cards */}
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col">
 
           {/* Hero Section */}
           <div className="flex flex-col items-start">
@@ -3504,56 +3482,24 @@ export function ConsultationBanner({
             {/* Animated Title with line-by-line reveal */}
             <h2
               id="consultation-heading"
-              className="max-w-[520px] mb-8"
+              className="mt-4 mb-0 font-extrabold text-[#162126]"
               style={{
-                fontSize: "clamp(30px,6.5vw,40px)",
-                lineHeight: 1.05,
-                fontWeight: 800,
-                color: "#162126",
-                margin: "0 0 14px 0",
+                fontSize: "clamp(30px,4.2vw,60px)",
+                lineHeight: 1.0,
+                maxWidth: 440,
               }}
             >
-              <div className="overflow-hidden pb-2">
-                <motion.div 
-                  initial={{ y: "100%" }} 
-                  whileInView={{ y: 0 }} 
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  You don't have
-                </motion.div>
-              </div>
-              <div className="overflow-hidden pb-2">
-                <motion.div 
-                  initial={{ y: "100%" }} 
-                  whileInView={{ y: 0 }} 
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  to do it{" "}
-                  <span className="relative inline-block text-[#0B666A]">
-                    alone.
-                    <svg className="absolute w-[110%] h-5 -bottom-2 -left-[5%] text-[#0B666A]/80 pointer-events-none drop-shadow-sm" viewBox="0 0 100 20" preserveAspectRatio="none">
-                      <motion.path 
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.5, delay: 0.8, ease: "easeInOut" }}
-                        d="M2,15 Q30,22 50,15 T98,10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" 
-                      />
-                    </svg>
-                  </span>
-                </motion.div>
-              </div>
+              You don't have to do it{" "}
+              <span className="inline-block text-[#0B666A]">alone.</span>
             </h2>
 
-            {/* Paragraph animation */}
             <motion.p 
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-[17px] text-[#4A5D5E] leading-relaxed max-w-[460px] font-medium"
+              className="mt-4 mb-0 text-[#4a5c62]"
+              style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
             >
               If the roadmap feels like too much or a tool isn't enough, book a consultation for tailored clarity on your immigration case.
             </motion.p>
@@ -3565,21 +3511,24 @@ export function ConsultationBanner({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2"
           >
             {cardSections.map((card) => (
               <div
                 key={card.title}
-                className="relative overflow-hidden rounded-2xl border border-[#E6ECEB] bg-white p-5 sm:p-6 shadow-[0_18px_36px_rgba(15,23,42,0.12)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.18)] transition-shadow duration-300"
+                className="relative overflow-hidden rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,247,246,0.92)_100%)] p-5 sm:p-6 shadow-[0_16px_30px_rgba(15,23,42,0.10)] ring-1 ring-[#0B666A]/5 backdrop-blur-xl"
               >
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#0B666A]/35 to-transparent" />
                 <div className={`absolute left-0 top-6 bottom-6 w-1.5 rounded-r-md pointer-events-none ${card.accent}`} />
                 <div className="relative flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-[#4F5F5F] font-bold">{card.label}</p>
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-[#4F5F5F] font-bold">
+                      {card.label}
+                    </p>
                     <h3 className="mt-2 text-[20px] font-extrabold tracking-[-0.03em] text-[#0F1F2A]">{card.title}</h3>
                     <p className="mt-2 max-w-[260px] text-[13px] leading-relaxed text-[#47585A]">{card.description}</p>
                   </div>
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#E0EBE8] bg-white text-[11px] font-black text-[#0F1F2A] shadow-[0_6px_14px_rgba(15,23,42,0.06)]">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#DCE9E6] bg-white text-[11px] font-black text-[#0B666A] shadow-[0_6px_14px_rgba(15,23,42,0.05)]">
                     {card.number}
                   </div>
                 </div>
@@ -3591,9 +3540,9 @@ export function ConsultationBanner({
                       viewport={{ once: true }}
                       transition={{ duration: 0.45, delay: card.baseDelay + (i * 0.06) }}
                       key={item}
-                      className="flex items-center gap-3 rounded-xl border border-[#F0F6F5] bg-white px-3 py-3 hover:translate-y-0.5 transition-transform duration-200"
+                      className="flex items-center gap-3 rounded-xl border border-[#F0F6F5] bg-white/88 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-colors duration-200"
                     >
-                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#E6EFEE] bg-white text-[11px] font-bold text-[#0F1F2A]">{(i + 1).toString().padStart(2, '0')}</span>
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#D9EAE7] bg-gradient-to-b from-white to-[#EEF8F6] text-[11px] font-bold text-[#0B666A] shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">{(i + 1).toString().padStart(2, '0')}</span>
                       <span className="text-[14px] font-medium leading-snug text-[#11202A]">{item}</span>
                     </motion.div>
                   ))}
@@ -3610,7 +3559,7 @@ export function ConsultationBanner({
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center justify-center w-full relative lg:pt-3"
+          className="flex flex-col items-center justify-center w-full relative"
         >
           {/* Subtle connecting line */}
           <div className="absolute top-[40%] bottom-[20%] w-[1px] bg-gradient-to-b from-transparent via-[#0B666A]/20 to-transparent -z-10" />
@@ -3638,31 +3587,14 @@ export function ConsultationBanner({
           {/* Clock Widget */}
           <InteractiveClockWidget />
 
-          {/* CTA Button with animated arrow */}
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          {/* CTA Button */}
+          <button
             onClick={onConsultationClick}
-            className="relative overflow-hidden mt-14 w-full max-w-[280px] bg-gradient-to-r from-[#0B666A] to-[#0A4144] text-white py-4.5 px-6 rounded-xl text-[15px] font-semibold transition-all shadow-[0_14px_28px_rgba(11,102,106,0.30)] hover:shadow-[0_24px_46px_rgba(11,102,106,0.40)] flex items-center justify-center gap-2 group border border-white/10"
+            className="mt-14 inline-flex min-h-11 w-full max-w-[280px] items-center justify-center gap-2 rounded-[13px] border border-[#0d7377] bg-[#0d7377] px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(13,115,119,0.22)] backdrop-blur-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/20"
           >
-            {/* Button Shine overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
-            
-            <span className="relative z-10 flex items-center gap-2">
-              Book a Consultation
-              <motion.svg 
-                animate={{ x: [0, 4, 0] }} 
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </motion.svg>
-            </span>
-          </motion.button>
+            Book a Consultation
+            <ArrowRight className="size-4" />
+          </button>
         </motion.div>
 
       </motion.div>

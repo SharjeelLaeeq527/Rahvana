@@ -183,7 +183,10 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
     return state === "full" || state === "limited";
   });
 
-  const defaultTier: PlanTier = fullUpgradeTiers[0] ?? upgradeTiers[0] ?? "basic";
+  const defaultTier: PlanTier =
+    currentTier === "free" && fullUpgradeTiers.includes("premium")
+      ? "premium"
+      : fullUpgradeTiers[0] ?? upgradeTiers[0] ?? "basic";
   const [selectedTier, setSelectedTier] = useState<PlanTier>(defaultTier);
   // ── Separate loading states for each button ──
   const [isAddonProcessing, setIsAddonProcessing] = useState(false);
