@@ -1200,7 +1200,7 @@ export function TwoWaysSection() {
         ref={sectionRef}
         id="path"
         aria-label="Two ways to use Rahvana"
-        className="relative hidden lg:block"
+        className="relative hidden lg:block mt-40 md:mt-56"
         style={{ height: "calc(100vh + 600px)" }}
       >
         <div
@@ -1269,7 +1269,7 @@ export function TwoWaysSection() {
               display             : "grid",
               gridTemplateColumns : "minmax(0,420px) 1fr",
               gap                 : "clamp(48px,6vw,100px)",
-              alignItems          : "center",
+              alignItems          : "start",
             }}
           >
             {/* Left: text + selectors + CTAs */}
@@ -1415,7 +1415,7 @@ export function TwoWaysSection() {
       {/* ── Mobile / tablet (below lg): stacked, click to switch ─────────── */}
       <section
         aria-label="Two ways to use Rahvana"
-        className="block lg:hidden"
+        className="block lg:hidden mt-32 sm:mt-40"
         style={{
           background   : "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
           borderTop    : "1px solid #e1ebe8",
@@ -1722,857 +1722,310 @@ export function TwoWaysMobile({
 }
 
 export function GuidedRoadmapScene() {
+  const [steps, setSteps] = useState([
+    { id: 1, title: 'Determine Eligibility', status: 'done' },
+    { id: 2, title: 'Gather Required Documents', status: 'done' },
+    { id: 3, title: 'Review Filing Methods', status: 'todo' },
+    { id: 4, title: 'Fill Form I-130', status: 'todo' },
+    { id: 5, title: 'Fill Form I-130A', status: 'active' },
+    { id: 6, title: 'Submit to USCIS', status: 'todo' },
+    { id: 7, title: 'Wait for Receipt', status: 'todo' },
+    { id: 8, title: 'Prepare for Biometrics', status: 'todo' },
+  ]);
+  const [isBellOpen, setIsBellOpen] = useState(false);
   const reduceMotion = useReducedMotion();
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [isClicking, setIsClicking] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [cursorPos, setCursorPos] = useState({ x: 300, y: 150 });
 
-  const steps = [
-    { id: 1, name: "Determine Eligibility", done: true, current: false },
-    { id: 2, name: "Gather Required Documents", done: true, current: false },
-    { id: 3, name: "Review Filing Methods", done: false, current: true },
-    { id: 4, name: "Fill Form I-130", done: false, current: false },
-    { id: 5, name: "Fill Form I-130A", done: false, current: false },
-    { id: 6, name: "Submit to USCIS", done: false, current: false },
-    { id: 7, name: "Wait for Receipt", done: false, current: false },
-    { id: 8, name: "Prepare for Biometrics", done: false, current: false },
-  ];
+  const toggleStep = (id: number) => {
+    setSteps(prev => prev.map(s => {
+      if (s.id === id) {
+        return { ...s, status: s.status === 'done' ? (id === 5 ? 'active' : 'todo') : 'done' };
+      }
+      return s;
+    }));
+  };
 
-  const lockedChapters = [
-    { number: 2, name: "NVC / CEAC Processing", color: "#520A50" },
-    { number: 3, name: "Medical + Interview", color: "#051738" },
-    { number: 4, name: "Visa Issuance", color: "#0d7377" },
-  ];
+  const completedCount = steps.filter(s => s.status === 'done').length;
+  const progressPct = Math.round((completedCount / steps.length) * 100);
+  const isAllDone = completedCount === steps.length;
 
-  const chapterNav = [
-    {
-      n: 1,
-      label: "USCIS Petition",
-      color: "#8284BF",
-      ring: "#B9BBE2",
-      bg: "#F0F1FB",
-      text: "#4E518C",
-      pct: 33,
-      active: true,
-    },
-    {
-      n: 2,
-      label: "NVC / CEAC",
-      color: "#8B4388",
-      ring: "#8B4388",
-      bg: "#F4E6F3",
-      text: "#520A50",
-      pct: 0,
-      active: false,
-    },
-    {
-      n: 3,
-      label: "Med + Interview",
-      color: "#31415F",
-      ring: "#31415F",
-      bg: "#E8ECF3",
-      text: "#051738",
-      pct: 0,
-      active: false,
-    },
-  ] as const;
-
-  // Demo sequence
-  useEffect(() => {
-    if (reduceMotion) return;
-
-    const sequence = [
-      { idx: 0, delay: 0 },
-      { idx: 1, delay: 1800 },
-      { idx: 2, delay: 3600 },
-      { idx: 3, delay: 5400, click: true }, // Targeted "third last" of original 6
-      { idx: 4, delay: 8500 },
-      { idx: 5, delay: 10500 },
-      { idx: 6, delay: 12500 },
-      { idx: 7, delay: 14500 },
-    ];
-
-    let timers: NodeJS.Timeout[] = [];
-    const run = () => {
-      timers.forEach(clearTimeout);
-      timers = sequence.map(({ idx, delay, click }) =>
-        setTimeout(() => {
-          setActiveIdx(idx);
-          if (click) {
-            setTimeout(() => setIsClicking(true), 800);
-            setTimeout(() => setIsClicking(false), 1200);
-          }
-        }, delay),
-      );
-    };
-
-    run();
-    const interval = setInterval(run, 18000);
-    return () => {
-      timers.forEach(clearTimeout);
-      clearInterval(interval);
-    };
-  }, [reduceMotion]);
-
-  // Handle scrolling and cursor positioning
-  useEffect(() => {
-    const stepEl = stepRefs.current[activeIdx];
-    const container = scrollContainerRef.current;
-    if (!stepEl || !container) return;
-
-    // Internal coordinates (offsetTop) are resilient to CSS transforms like scaling
-    const stepTop = stepEl.offsetTop;
-    const stepHeight = stepEl.offsetHeight;
-    const containerHeight = container.offsetHeight;
-    const containerTop = container.offsetTop;
-
-    // Calculate target scroll so step is centered in the container
-    const targetScrollTop =
-      stepTop - containerTop - containerHeight / 2 + stepHeight / 2;
-
-    container.scrollTo({
-      top: targetScrollTop,
-      behavior: "smooth",
-    });
-
-    // Update cursor position relative to the scene root (the absolute div)
-    setCursorPos({
-      x: stepEl.offsetLeft + stepEl.offsetWidth * 0.7,
-      y: stepEl.offsetTop + stepEl.offsetHeight * 0.5,
-    });
-  }, [activeIdx]);
-
+  
   return (
     <div
+      className="relative flex flex-col overflow-visible rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
       style={{
-        width: 600,
-        height: 500,
-        borderRadius: 32,
-        background: "#f4f7fb",
-        border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)",
+        width: 680,
+        height: 560,
         position: "absolute",
-        left: 40,
-        top: 30,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
       }}
     >
-      {/* ── Top bar (52px) ── */}
-      <div
-        style={{
-          height: 52,
-          background: "white",
-          borderBottom: "1px solid #edf2f0",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 18px",
-          gap: 8,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 10,
-              background: "linear-gradient(135deg, #0d7377, #0a5e62)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 2px 8px rgba(13,115,119,0.28)",
-            }}
-          >
-            <Compass size={15} color="white" strokeWidth={2.5} />
+
+
+
+
+
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[#e1ebe8] bg-white px-6 py-4 rounded-t-[32px]">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-[#0d7377] text-white">
+            <Compass className="size-6" />
           </div>
           <div>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 900,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "#1e293b",
-                lineHeight: 1,
-              }}
-            >
+            <div className="text-[15px] font-black uppercase tracking-wide text-[#162126]">
               IR-1 Journey
             </div>
-            <div
-              style={{
-                fontSize: 9,
-                color: "#64748b",
-                fontWeight: 600,
-                marginTop: 2,
-              }}
-            >
+            <div className="text-xs text-[#6b8097]">
               Islamabad Embassy · Online Filing
+              {!isAllDone && (
+                <span className="ml-2 inline-flex items-center gap-1 font-bold text-[#0d7377]">
+                  · Click steps to try demo
+                </span>
+              )}
+
             </div>
+
           </div>
         </div>
-        <div
-          style={{
-            marginLeft: "auto",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
-          <div style={{ position: "relative" }}>
-            <Bell size={17} color="#64748b" strokeWidth={2} />
-            <div
-              style={{
-                position: "absolute",
-                top: -1,
-                right: -1,
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "#ef4444",
-                border: "1.5px solid white",
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: "#f1f5f9",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "1px solid #e2e8f0",
-            }}
-          >
-            <User size={14} color="#64748b" strokeWidth={2} />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Horizontal chapter timeline (42px) ── */}
-      <div
-        style={{
-          height: 42,
-          background: "white",
-          borderBottom: "1px solid #edf2f0",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          gap: 0,
-          flexShrink: 0,
-        }}
-      >
-        {chapterNav.map((ch, idx) => (
-          <div
-            key={ch.n}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              flex: idx < 2 ? "none" : 1,
-            }}
-          >
-            {/* Node + label */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 7,
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "50%",
-                  background: ch.active
-                    ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)`
-                    : "#f1f5f9",
-                  border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {ch.active ? (
-                  <span
-                    style={{ fontSize: 10, fontWeight: 900, color: "white" }}
-                  >
-                    {ch.n}
-                  </span>
-                ) : (
-                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
-                )}
-              </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: 9.5,
-                    fontWeight: 800,
-                    color: ch.active ? "#1e293b" : "#94a3b8",
-                    lineHeight: 1,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {ch.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 7.5,
-                    fontWeight: 700,
-                    color: ch.active ? ch.text : "#cbd5e1",
-                    marginTop: 1,
-                  }}
-                >
-                  {ch.active ? `${ch.pct}% done` : "Locked"}
-                </div>
-              </div>
-            </div>
-            {/* Connector line between chapters */}
-            {idx < 2 && (
-              <div
-                style={{
-                  flex: 1,
-                  height: 2,
-                  background:
-                    idx === 0
-                      ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)`
-                      : "#e2e8f0",
-                  margin: "0 10px",
-                  minWidth: 24,
-                }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* ── Main area — two columns (362px total) ── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {/* Left: Journey card (192px) */}
-        <div
-          style={{
-            width: 192,
-            background: "white",
-            borderRight: "1px solid #edf2f0",
-            padding: "14px 15px",
-            display: "flex",
-            flexDirection: "column",
-            flexShrink: 0,
-          }}
-        >
-          {/* Chapter header */}
-          <div style={{ marginBottom: 10 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                marginBottom: 5,
-              }}
-            >
-              <div
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  background: "#8284BF",
-                }}
-                className={reduceMotion ? "" : "animate-pulse"}
-              />
-              <span
-                style={{
-                  fontSize: 8,
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  color: "#4E518C",
-                }}
-              >
-                Chapter 1 · In Progress
-              </span>
-            </div>
-            <div
-              style={{
-                fontSize: 12.5,
-                fontWeight: 900,
-                color: "#1e293b",
-                lineHeight: 1.25,
-                marginBottom: 7,
-              }}
-            >
-              USCIS Petition Filing
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div
-                style={{
-                  flex: 1,
-                  height: 5,
-                  borderRadius: 99,
-                  background: "#e8edf2",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${Math.round(((activeIdx + 1) / steps.length) * 100)}%`,
-                    height: "100%",
-                    background: "linear-gradient(90deg, #8284BF, #4E518C)",
-                    borderRadius: 99,
-                    transition: "width 0.4s ease",
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontSize: 8.5,
-                  fontWeight: 800,
-                  color: "#4E518C",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {activeIdx + 1} / {steps.length}
-              </span>
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: "#f0f4f3", marginBottom: 10 }} />
-
-          {/* Current step card */}
-          <div style={{ marginBottom: 10 }}>
-            <div
-              style={{
-                fontSize: 8,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "#94a3b8",
-                marginBottom: 5,
-              }}
-            >
-              Active Step
-            </div>
-            <div
-              style={{
-                background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)",
-                borderRadius: 10,
-                padding: "9px 10px",
-                border: "1px solid #B9BBE2",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: "#4E518C",
-                  lineHeight: 1.3,
-                  marginBottom: 3,
-                }}
-              >
-                {steps[activeIdx].name}
-              </div>
-              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>
-                Step {activeIdx + 1} of {steps.length} ·{" "}
-                {steps[activeIdx].done ? "Done" : "In progress"}
-              </div>
-            </div>
-          </div>
-
-          {/* Alert */}
-          <div
-            style={{
-              borderRadius: 9,
-              padding: "7px 9px",
-              background: "#fffbeb",
-              border: "1px solid #fde68a",
-              marginBottom: 10,
-            }}
-          >
-            <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-              <div
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  background: "#f59e0b",
-                  marginTop: 3.5,
-                  flexShrink: 0,
-                }}
-              />
-              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>
-                Fresh NADRA records required for ISL embassy.
-              </span>
-            </div>
-          </div>
-
-          {/* CTA — marginTop: auto, never cropped */}
+        <div className="flex items-center gap-3">
           <button
-            type="button"
-            style={{
-              width: "100%",
-              background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)",
-              border: "none",
-              borderRadius: 11,
-              padding: "11px 14px",
-              color: "white",
-              fontSize: 12,
-              fontWeight: 800,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 7,
-              cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(13,115,119,0.28)",
-              marginTop: "auto",
-              flexShrink: 0,
-            }}
+            onClick={() => setIsBellOpen(!isBellOpen)}
+            className="relative flex size-10 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors focus:outline-none"
           >
-            Continue Step
-            <ArrowRight size={13} strokeWidth={2.5} />
+            <Bell className="size-5" />
+            <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#e34242] ring-2 ring-white" />
+            <AnimatePresence>
+              {isBellOpen && (
+                <motion.div
+                  initial={reduceMotion ? false : { opacity: 0, y: 5, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: 5, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-12 z-[100] w-64 rounded-xl border border-[#dde8e6] bg-white p-4 shadow-xl text-left"
+                >
+                  <div className="text-xs font-bold text-[#162126]">Notifications</div>
+                  <div className="mt-2 rounded-lg bg-[#f0f3f7] p-2 text-xs text-[#4a5c62]">
+                    <span className="font-bold text-[#0d7377]">NADRA Review:</span> Your documents have been processed and are ready.
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </button>
+          <div className="flex size-10 items-center justify-center rounded-full border border-[#dde8e6] bg-[#f0f3f7] text-[#6b8097]">
+            <User className="size-5" />
+          </div>
         </div>
+      </div>
 
-        {/* Step list area */}
-        <div
-          ref={scrollContainerRef}
-          style={{
-            flex: 1,
-            padding: "14px 14px",
-            overflowY: "auto",
-            scrollbarWidth: "none",
-            pointerEvents: "none",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginBottom: 10,
-            }}
-          >
-            <Signpost size={11} color="#0d7377" strokeWidth={2.5} />
-            <span
-              style={{
-                fontSize: 9,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: "0.12em",
-                color: "#64748b",
-              }}
-            >
-              Chapter 1 Steps
+      {/* Horizontal Stepper */}
+      <div className="flex items-center gap-4 border-b border-[#e1ebe8] bg-white px-6 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-full bg-[#8284bf] text-sm font-bold text-white shadow-sm">
+            1
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#162126]">USCIS Petition</div>
+            <div className="text-[10px] text-[#6b8097]">
+              {Math.round(33 + (completedCount * 1.5))}% done
+            </div>
+
+          </div>
+        </div>
+        <div className="h-px w-8 bg-[#dde8e6]" />
+        <div className="flex items-center gap-3 opacity-50">
+          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
+            <Lock className="size-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#6b8097]">NVC / CEAC</div>
+            <div className="text-[10px] text-[#6b8097]">Locked</div>
+          </div>
+        </div>
+        <div className="h-px w-8 bg-[#dde8e6]" />
+        <div className="flex items-center gap-3 opacity-50">
+          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
+            <Lock className="size-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#6b8097]">Med + Interview</div>
+            <div className="text-[10px] text-[#6b8097]">Locked</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left Sidebar */}
+        <div className="w-[240px] flex-shrink-0 border-r border-[#e1ebe8] bg-white p-5 flex flex-col relative z-10">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4E518C]">
+            <div className="size-1.5 rounded-full bg-[#4E518C]" />
+            CHAPTER 1 · IN PROGRESS
+          </div>
+          <h2 className="mt-2 text-[22px] font-black leading-tight text-[#162126]">
+            USCIS Petition Filing
+          </h2>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="h-1.5 flex-1 rounded-full bg-[#eef1f7] overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-[#8284bf]"
+                initial={false}
+                animate={{ width: `${62.5 + (completedCount * 3.5)}%` }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              />
+            </div>
+            <span className="text-[11px] font-bold text-[#162126] w-8 text-right">
+              {completedCount} / 8
             </span>
-            <span
-              style={{
-                marginLeft: "auto",
-                fontSize: 8.5,
-                fontWeight: 800,
-                color: "#4E518C",
-                background: "#F0F1FB",
-                border: "1px solid #B9BBE2",
-                padding: "2px 7px",
-                borderRadius: 5,
-              }}
-            >
-              {steps.filter((s) => s.done).length} / {steps.length} done
-            </span>
+
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {steps.map((step, idx) => {
-              const isStepCurrent = idx === activeIdx;
+          <div className="mt-8 text-[10px] font-bold uppercase tracking-widest text-[#6b8097]">
+            Active Step
+          </div>
+          <div className="mt-2 rounded-xl border border-[#c8d1dc] bg-[#f8f9fb] p-3 shadow-sm">
+            <div className="font-bold text-[#162126]">Fill Form I-130A</div>
+            <div className="mt-1 text-[11px] text-[#6b8097]">
+              Step 5 of 8 · In progress
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fef3c7]/40 p-3">
+            <div className="flex gap-2">
+              <div className="mt-1 size-1.5 shrink-0 rounded-full bg-[#d97706]" />
+              <div className="text-xs text-[#92400e] leading-snug">
+                Fresh NADRA records required for ISL embassy.
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-auto pt-6">
+            <button
+              onClick={() => toggleStep(5)}
+              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] px-4 py-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#0a5c5f] hover:shadow-lg focus:outline-none"
+            >
+              <span>{steps[4].status === 'done' ? "Mark Incomplete" : "Continue Step"}</span>
+              <ArrowRight className="size-4" strokeWidth={2.5} />
+              
+
+            </button>
+          </div>
+
+        </div>
+
+        {/* Right Content */}
+        <div className="flex-1 bg-[#f9fafb] p-5 overflow-y-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377]">
+              CHAPTER 1 STEPS
+            </div>
+            <div className="ml-auto rounded border border-[#d0e4f7] bg-white px-2 py-0.5 text-[9px] font-bold text-[#6b8097]">
+              {completedCount} / 8 DONE
+            </div>
+
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            {steps.map((step) => {
+              const isDone = step.status === 'done';
+              const isActive = step.status === 'active';
+              
               return (
-                <div
+                <motion.div
                   key={step.id}
-                  ref={(el) => {
-                    stepRefs.current[idx] = el;
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 9,
-                    padding: isStepCurrent ? "8px 10px" : "5px 10px",
-                    borderRadius: 10,
-                    background: isStepCurrent
-                      ? "linear-gradient(to right, #F0F1FB, #f9f9fe)"
-                      : "transparent",
-                    border: isStepCurrent
-                      ? "1.5px solid #B9BBE2"
-                      : "1px solid transparent",
-                    boxShadow: isStepCurrent
-                      ? "0 2px 7px rgba(130,132,191,0.12)"
-                      : "none",
-                    transition: "all 0.3s ease",
-                  }}
+                  layout
+                  className={`relative flex items-center justify-between rounded-xl border p-3 transition-all ${
+                    isActive 
+                      ? 'border-[#8284bf] bg-[#f0f1fb] shadow-sm' 
+                      : isDone 
+                        ? 'border-[#e1ebe8] bg-white' 
+                        : 'border-transparent hover:border-[#dde8e6] hover:bg-white'
+                  } group cursor-pointer`}
+                  onClick={() => toggleStep(step.id)}
                 >
-                  {step.done ? (
-                    <div
-                      style={{
-                        width: 19,
-                        height: 19,
-                        borderRadius: "50%",
-                        background: "#10b981",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Check size={10} color="white" strokeWidth={3} />
+                  <div className="flex items-center gap-3">
+                    <div className={`flex size-7 items-center justify-center rounded-full transition-all ${
+                      isDone 
+                        ? 'bg-[#0d7377] text-white shadow-sm' 
+                        : isActive 
+                          ? 'bg-[#8284bf] text-white' 
+                          : 'border border-[#dde8e6] bg-white text-[10px] font-bold text-[#6b8097]'
+                    }`}>
+                      {isDone ? <Check className="size-4" strokeWidth={3} /> : isActive ? <ChevronRight className="size-4" strokeWidth={3} /> : step.id}
                     </div>
-                  ) : isStepCurrent ? (
-                    <div
-                      style={{
-                        width: 19,
-                        height: 19,
-                        borderRadius: "50%",
-                        background: "#8284BF",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        boxShadow: "0 0 0 3px rgba(130,132,191,0.22)",
-                      }}
-                    >
-                      <ChevronRight size={10} color="white" strokeWidth={3} />
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        width: 19,
-                        height: 19,
-                        borderRadius: "50%",
-                        border: "1.5px solid #dde8e6",
-                        background: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 8,
-                          fontWeight: 700,
-                          color: "#cbd5e1",
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
-                    </div>
-                  )}
-                  <span
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: isStepCurrent ? 800 : step.done ? 600 : 500,
-                      color: isStepCurrent
-                        ? "#4E518C"
-                        : step.done
-                          ? "#059669"
-                          : "#94a3b8",
-                    }}
-                  >
-                    {step.name}
-                  </span>
-                  {isStepCurrent && (
-                    <span
-                      style={{
-                        marginLeft: "auto",
-                        fontSize: 8,
-                        fontWeight: 900,
-                        color: "#4E518C",
-                        background: "rgba(130,132,191,0.15)",
-                        padding: "2px 7px",
-                        borderRadius: 5,
-                        textTransform: "uppercase",
-                        flexShrink: 0,
-                      }}
-                    >
-                      Active
+
+                    <span className={`text-[13px] font-bold transition-colors ${
+                      isDone ? 'text-[#0d7377]' : isActive ? 'text-[#4E518C]' : 'text-[#6b8097]'
+                    }`}>
+
+                      {step.title}
                     </span>
-                  )}
-                </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {isActive && !isDone && (
+                      <span className="rounded-md bg-[#e0e2f5] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-[#4E518C]">
+                        Active
+                      </span>
+                    )}
+                    {!isDone && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStep(step.id);
+                        }}
+                        className={`rounded-md px-2.5 py-1.5 text-[10px] font-black transition-all ${
+                          isActive 
+                            ? 'bg-[#0d7377] text-white shadow-md hover:bg-[#0a5c5f]' 
+                            : 'opacity-0 group-hover:opacity-100 text-[#0d7377] hover:underline underline-offset-2'
+                        }`}
+                      >
+                        {isActive ? 'Mark Completed' : 'Complete'}
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+
               );
             })}
-          </div>
 
-          {/* Locked chapters – compact */}
-          <div
-            style={{
-              marginTop: 12,
-              display: "flex",
-              flexDirection: "column",
-              gap: 5,
-            }}
-          >
-            {lockedChapters.map((ch) => (
-              <div
-                key={ch.number}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 9,
-                  padding: "7px 10px",
-                  borderRadius: 9,
-                  background: "white",
-                  border: "1px dashed #e2e8f0",
-                }}
-              >
-                <div
-                  style={{
-                    width: 19,
-                    height: 19,
-                    borderRadius: "50%",
-                    background: "#f1f5f9",
-                    border: "1.5px solid #e2e8f0",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
-                </div>
-                <span
-                  style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}
-                >
-                  Ch. {ch.number} · {ch.name}
-                </span>
-                <span
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: 8.5,
-                    fontWeight: 700,
-                    color: "#cbd5e1",
-                    flexShrink: 0,
-                  }}
-                >
-                  Locked
-                </span>
+
+
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-dashed border-[#dde8e6] bg-white p-3.5 opacity-60">
+              <div className="flex items-center gap-2">
+                <Lock className="size-4 text-[#6b8097]" />
+                <span className="text-[13px] font-bold text-[#6b8097]">Ch. 2 · NVC / CEAC Processing</span>
               </div>
-            ))}
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Locked</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Bottom stats bar (44px) ── */}
-      <div
-        style={{
-          height: 44,
-          background: "white",
-          borderTop: "1px solid #edf2f0",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          flexShrink: 0,
-        }}
-      >
-        {(
-          [
-            {
-              label: "Steps Done",
-              value: `${steps.filter((s) => s.done).length} / 18`,
-            },
-            { label: "Chapter", value: "1 of 3" },
-            { label: "Est. Timeline", value: "~8 months" },
-            { label: "Overall", value: "17%" },
-          ] as const
-        ).map((stat, i) => (
-          <div
-            key={stat.label}
-            style={{ display: "flex", alignItems: "center", flex: 1 }}
-          >
-            {i > 0 && (
-              <div
-                style={{
-                  width: 1,
-                  height: 18,
-                  background: "#e8edf2",
-                  marginRight: "auto",
-                  flexShrink: 0,
-                }}
-              />
-            )}
-            <div style={{ flex: 1, textAlign: "center" }}>
-              <div
-                style={{
-                  fontSize: 7.5,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: "#94a3b8",
-                }}
-              >
-                {stat.label}
-              </div>
-              <div
-                style={{
-                  fontSize: 11.5,
-                  fontWeight: 900,
-                  color: "#1e293b",
-                  marginTop: 1,
-                }}
-              >
-                {stat.value}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Bottom Bar */}
+      <div className="grid grid-cols-4 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-3.5 text-center rounded-b-[32px] relative z-20">
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Steps Done</div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">{completedCount} / 18</div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Chapter</div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">1 of 3</div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Est. Timeline</div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">~8 months</div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">Overall</div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">{Math.round(17 + (completedCount * 1.2))}%</div>
+        </div>
 
-      {/* Simulated Cursor */}
-      <motion.div
-        className="pointer-events-none absolute left-0 top-0 z-[100]"
-        animate={{
-          x: cursorPos.x,
-          y: cursorPos.y,
-          scale: isClicking ? 0.85 : 1,
-          opacity: 1,
-        }}
-        transition={{
-          x: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-          y: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
-          scale: { duration: 0.2 },
-        }}
-      >
-        <svg
-          className="size-8 overflow-visible"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{
-            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.3))",
-          }}
-        >
-          <path
-            d="M4.7 3.4V20.7L9.6 15.9L13.2 22L16.1 20.3L12.6 14.4H19.4L4.7 3.4Z"
-            fill="white"
-            stroke="#07131f"
-            strokeWidth="1.25"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <AnimatePresence>
-          {isClicking && (
-            <motion.span
-              className="absolute left-[-6px] top-[-6px] size-6 rounded-full border-2 border-[#0d7377]/60 bg-[#0d7377]/10"
-              initial={{ opacity: 0.8, scale: 0.5 }}
-              animate={{ opacity: 0, scale: 1.5 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            />
-          )}
-        </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -2596,145 +2049,123 @@ const toolContent: Record<string, any> = {
   strength: {
     eyebrow: "Case Review",
     title: "Case Strength Analyzer",
-    tagline: "See what's strong, what's missing, what to fix",
-    desc: "Quickly review your IR-1 case evidence — relationship proof, financial ties, and domicile documents — and see exactly where you stand before submission.",
-    stats: [["Evidence Reviewed", "Instantly"], ["Gaps Highlighted", "Yes"]],
-    badge: "Before you submit",
-    badgeDesc: "Catch weak spots in your evidence before the officer does — not after.",
-    recoTitle: "Most Common Gap",
-    recoMain: "Joint Bank Statements",
-    recoDesc: "Missing joint financial evidence is the most common reason IR-1 cases face extra scrutiny. Add 6+ months to strengthen your case.",
-    recoTags: ["Domicile Proof", "Communication Logs"],
+    desc: "Review your IR-1 evidence and get a clear picture of what's strong, what's missing, and what to fix before you submit.",
+    steps: [
+      { n: 1, label: "Upload & Input",      desc: "Share your relationship details, documents, and case info." },
+      { n: 2, label: "Analyze & Find Gaps", desc: "Checks your evidence and flags weak areas against approval patterns." },
+      { n: 3, label: "Review & Fix",        desc: "Get a list of exactly what to strengthen before submission." },
+    ],
+    tips: ["Joint Bank Statements", "Domicile Proof", "Communication Logs"],
   },
   action: {
     eyebrow: "Post-Interview",
     title: "221(g) Action Planner",
-    tagline: "Know exactly what to do after a 221(g) refusal",
-    desc: "Got a 221(g) slip? This tool tells you what documents are needed, how to prepare them, and where to submit — step by step.",
-    stats: [["Case Still Active?", "Yes"], ["Typical Response", "10–30 days"]],
-    badge: "Not a denial",
-    badgeDesc: "A 221(g) is a request for more information, not a refusal. Acting correctly and quickly keeps your case moving.",
-    recoTitle: "Most Common Type",
-    recoMain: "Administrative Processing",
-    recoDesc: "Background check holds can last 60–240+ days. Track your CEAC status weekly and keep a record of every embassy interaction.",
-    recoTags: ["CEAC Tracking", "Embassy Contact"],
+    desc: "Got a 221(g) slip after your interview? This tool tells you what documents are needed and what to do next — step by step.",
+    steps: [
+      { n: 1, label: "Enter Your Slip",    desc: "Input the details from your 221(g) or AP notice." },
+      { n: 2, label: "Get Your Checklist", desc: "See exactly which documents are required and how to format them." },
+      { n: 3, label: "Submit & Track",     desc: "Know where to send your response and what to expect next." },
+    ],
+    tips: ["CEAC Tracking", "Embassy Contact", "AP Timeline"],
   },
   path: {
     eyebrow: "Getting Started",
     title: "Visa Path Finder",
-    tagline: "Not sure which visa applies to you? Start here",
-    desc: "Answer a few simple questions about your relationship and citizenship status. Get a clear visa category recommendation with your next step.",
-    stats: [["Questions", "5–7"], ["Time", "Under 3 mins"]],
-    badge: "No legal knowledge needed",
-    badgeDesc: "Built for people who are just starting out and don't know which visa category fits their situation.",
-    recoTitle: "Most Common Path",
-    recoMain: "IR-1 Spouse Visa",
-    recoDesc: "Married to a U.S. citizen? IR-1 is the most common path for Pakistani spouses — no waiting list, no priority dates.",
-    recoTags: ["IR-1 / CR-1", "K-1 Fiancé", "IR-5 Parent"],
+    desc: "Starting your IR-1 journey and not sure where to begin? Answer a few quick questions and get a clear recommendation with your first action.",
+    steps: [
+      { n: 1, label: "Answer 5 Questions", desc: "Tell us about your relationship, citizenship, and current situation." },
+      { n: 2, label: "Confirm Your Path",  desc: "We confirm IR-1 is the right category and explain what that means." },
+      { n: 3, label: "See Your Next Step", desc: "Get one clear action to take right now — petition, sponsor, or prepare." },
+    ],
+    tips: ["IR-1 Eligibility", "Petitioner vs Beneficiary", "Where to Start"],
   },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Prep",
-    tagline: "Practice real questions before your embassy interview",
-    desc: "Go through common Islamabad Embassy interview questions, see what officers focus on, and practice answers that reflect your actual situation.",
-    stats: [["Questions", "50+"], ["Tailored For", "Islamabad"]],
-    badge: "ISL-focused content",
-    badgeDesc: "Questions and guidance based on Islamabad embassy patterns — relationship credibility, domicile, and financial ties.",
-    recoTitle: "What Officers Focus On",
-    recoMain: "Genuine Relationship",
-    recoDesc: "ISL officers look closely at joint finances, communication history, and your plans after the visa is granted.",
-    recoTags: ["Joint Finances", "Communication Proof", "Future Plans"],
+    desc: "Practice real Islamabad Embassy questions, learn what officers focus on, and walk in prepared — not guessing.",
+    steps: [
+      { n: 1, label: "Pick Your Focus",    desc: "Choose areas to practice — relationship, finances, or domicile." },
+      { n: 2, label: "Practice Questions", desc: "Go through real ISL questions with model answers." },
+      { n: 3, label: "Build Confidence",   desc: "Know officer patterns and be ready for tough questions." },
+    ],
+    tips: ["Joint Finances", "Communication Proof", "Future Plans"],
   },
   sponsorship: {
     eyebrow: "Financial Check",
     title: "Sponsorship Calculator",
-    tagline: "Check if your income meets the I-864 requirement",
-    desc: "Enter the petitioner's income and household size to see if the poverty guideline threshold is met — and which sponsorship form applies.",
-    stats: [["Guideline", "2025 Updated"], ["Form Selected", "Automatically"]],
-    badge: "I-864 or I-864EZ?",
-    badgeDesc: "The tool selects the right Affidavit of Support form for your situation — no guessing about which one to file.",
-    recoTitle: "If Income Falls Short",
-    recoMain: "Use a Joint Sponsor",
-    recoDesc: "Any eligible person in the U.S. can co-sponsor by filing a separate I-864. They don't need to be a relative.",
-    recoTags: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
+    desc: "Check if the petitioner's income meets the I-864 poverty guideline threshold — and find out which form applies to your case.",
+    steps: [
+      { n: 1, label: "Enter Income",    desc: "Input the petitioner's income, household size, and assets." },
+      { n: 2, label: "Check Threshold", desc: "Compared against the 2025 poverty guideline for your household." },
+      { n: 3, label: "Get Your Form",   desc: "See if I-864 or I-864EZ applies and if a joint sponsor is needed." },
+    ],
+    tips: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
   },
   dq: {
     eyebrow: "Scheduling",
     title: "DQ Status Check",
-    tagline: "Check which DQ months are being called right now",
-    desc: "See which Documentarily Qualified months are currently being scheduled at Islamabad and estimate when your interview window will open.",
-    stats: [["Updated", "Weekly"], ["Embassy", "ISL + Others"]],
-    badge: "Islamabad scheduling",
-    badgeDesc: "Embassies schedule in DQ date order — knowing the current scheduling month tells you roughly how long your wait is.",
-    recoTitle: "How the Queue Works",
-    recoMain: "DQ Month Matters",
-    recoDesc: "The closer your DQ month is to the current scheduling month, the sooner you will receive your interview invitation.",
-    recoTags: ["DQ Date", "Scheduling Month", "Wait Estimate"],
+    desc: "See which Documentarily Qualified months are being scheduled at Islamabad right now, and estimate when your interview window will open.",
+    steps: [
+      { n: 1, label: "Select Embassy",     desc: "Choose your embassy — Islamabad or another consulate." },
+      { n: 2, label: "See Current Month",  desc: "Check which DQ months are being called right now." },
+      { n: 3, label: "Estimate Your Wait", desc: "Compare your DQ month to see your approximate interview window." },
+    ],
+    tips: ["DQ Date", "Scheduling Month", "Wait Estimate"],
   },
   bulletin: {
     eyebrow: "Priority Date",
     title: "Visa Bulletin Monitor",
-    tagline: "Track your priority date against the Visa Bulletin",
-    desc: "Check if your priority date is current in the latest monthly Visa Bulletin. Useful for F2A, F3, and F4 family preference categories.",
-    stats: [["Released", "Monthly"], ["Categories", "F1 · F2A · F3 · F4"]],
-    badge: "IR-1 has no wait",
-    badgeDesc: "Immediate relatives like IR-1 are always current. This tool is for family preference categories with a waiting list.",
-    recoTitle: "Most Common Category",
-    recoMain: "F2A — Spouse of LPR",
-    recoDesc: "If your petitioner has a green card (not citizenship), F2A applies. Monitor monthly to know when your date becomes current.",
-    recoTags: ["F2A", "F3", "F4"],
+    desc: "IR-1 is always current — but if you're on a preference category, your priority date needs to be current before you can move forward. Track it here every month.",
+    steps: [
+      { n: 1, label: "Enter Priority Date", desc: "Enter your priority date from your I-130 approval notice." },
+      { n: 2, label: "Check This Month",    desc: "We compare it to the latest Visa Bulletin cutoff dates automatically." },
+      { n: 3, label: "Track Movement",      desc: "See how many months the bulletin moved and whether your date is current." },
+    ],
+    tips: ["IR-1 Always Current", "Priority Date", "Monthly Updates"],
   },
   photo: {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",
-    tagline: "Make a compliant visa photo without going to a studio",
-    desc: "Upload any clear photo and get a properly formatted 2×2 inch U.S. visa photo — correct head size, white background, embassy-ready.",
-    stats: [["Output Size", "2×2 Inch"], ["Background", "White"]],
-    badge: "No studio visit needed",
-    badgeDesc: "Meets USCIS and embassy photo requirements. Avoid rejected photos at the counter or in your application.",
-    recoTitle: "Common Fail Reasons",
-    recoMain: "Head Size Too Small",
-    recoDesc: "Head must fill 70–80% of the frame. Glasses, visible hat, and heavy shadows are grounds for rejection.",
-    recoTags: ["No Glasses", "Neutral Face", "Both Ears Visible"],
+    desc: "Make a compliant U.S. visa photo without a studio visit. Upload any photo and get a properly formatted 2×2 inch result.",
+    steps: [
+      { n: 1, label: "Upload Your Photo",  desc: "Take or upload any clear, front-facing photo." },
+      { n: 2, label: "Auto-Crop & Format", desc: "Cropped to 2×2 inches, white background — embassy standard." },
+      { n: 3, label: "Download & Use",     desc: "Save your compliant photo and attach it to your application." },
+    ],
+    tips: ["No Glasses", "Neutral Expression", "Both Ears Visible"],
   },
   pdf: {
     eyebrow: "Document Tools",
     title: "PDF Tool Kit",
-    tagline: "Merge, compress, and format docs for NVC upload",
-    desc: "Organize your immigration documents, compress them under NVC's 2MB limit, and convert files to the required PDF format — all in one place.",
-    stats: [["NVC Limit", "2.0 MB"], ["Accepted Formats", "PDF, JPG"]],
-    badge: "NVC upload-ready",
-    badgeDesc: "CEAC rejects oversized files and wrong formats. This handles resizing and conversion automatically.",
-    recoTitle: "Scanning Tip",
-    recoMain: "Grayscale at 300 DPI",
-    recoDesc: "Scan non-photo documents in grayscale at 300 DPI. Keeps file sizes manageable without losing readability.",
-    recoTags: ["Merge PDFs", "Compress", "Convert to PDF"],
+    desc: "Merge, compress, and format your immigration documents to meet NVC's strict 2MB upload limit and CEAC requirements.",
+    steps: [
+      { n: 1, label: "Upload Your Files", desc: "Add PDFs, images, or scanned documents from any device." },
+      { n: 2, label: "Merge or Compress", desc: "Combine files or reduce size to meet NVC's 2MB limit." },
+      { n: 3, label: "Download Ready",    desc: "Get a clean, NVC-ready PDF formatted for CEAC upload." },
+    ],
+    tips: ["Merge PDFs", "Compress Files", "Convert to PDF"],
   },
   snap: {
     eyebrow: "Signatures",
     title: "Snap & Sign",
-    tagline: "Create a clean digital signature for your forms",
-    desc: "Draw, type, or upload your signature — then download it as a PNG ready to place on any immigration form. Works on mobile and desktop.",
-    stats: [["Output", "PNG / JPG"], ["Works On", "I-130, DS-260, I-864"]],
-    badge: "No scanner needed",
-    badgeDesc: "Compatible with all major immigration forms that require a wet signature from the petitioner.",
-    recoTitle: "Where It's Required",
-    recoMain: "Form I-864 — Affidavit",
-    recoDesc: "A missing signature on the Affidavit of Support is one of the most common reasons NVC sends a Request for Evidence.",
-    recoTags: ["I-130", "I-864", "DS-260"],
+    desc: "Anywhere a signature is required — forms, letters, declarations, or documents — Snap & Sign creates a clean, professional digital signature in seconds.",
+    steps: [
+      { n: 1, label: "Draw, Type or Upload", desc: "Choose how you want to create your signature — freehand, typed style, or upload an existing one." },
+      { n: 2, label: "Preview & Adjust",     desc: "Resize, reposition, and tweak until it looks exactly right on any form." },
+      { n: 3, label: "Download & Use",       desc: "Save as a transparent PNG and drop it onto any document, form, or PDF that needs signing." },
+    ],
+    tips: ["Any Immigration Form", "Letters & Declarations", "Works on Mobile & Desktop"],
   },
   filler: {
     eyebrow: "Form Completion",
     title: "Smart Form Filler",
-    tagline: "Fill I-130, DS-260, and I-864 without the confusion",
-    desc: "Enter your details once and get a completed, ready-to-submit PDF. Every field is guided — no blank boxes, no common mistakes.",
-    stats: [["Forms Covered", "I-130, DS-260"], ["Time", "Minutes not hours"]],
-    badge: "Pakistan-specific defaults",
-    badgeDesc: "Pre-set for Pakistani applicants — CNIC format, union council addresses, and local terminology all handled.",
-    recoTitle: "Easy to Miss",
-    recoMain: "Social Media (5 Years)",
-    recoDesc: "DS-260 requires all social media handles used in the last 5 years. Leaving this blank causes processing delays.",
-    recoTags: ["DS-260", "I-130A", "Review First"],
+    desc: "Fill I-130, DS-260, and I-864 without the confusion. Enter your details once and get a completed, submission-ready PDF.",
+    steps: [
+      { n: 1, label: "Enter Your Details", desc: "Fill in personal and case info once in a simple guided flow." },
+      { n: 2, label: "Auto-Fill Form",     desc: "Data mapped to the correct fields on the official form." },
+      { n: 3, label: "Download PDF",       desc: "Get a completed, submission-ready PDF in minutes." },
+    ],
+    tips: ["DS-260", "I-130A", "Review Before Submit"],
   },
 };
 
@@ -2869,14 +2300,12 @@ export function IndividualToolsScene() {
   const [visible, setVisible]     = useState(true);
   const [isPaused, setIsPaused]   = useState(false);
 
-  // Navigate to a specific tool with crossfade
   const goTo = useCallback((idx: number) => {
     const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
     setVisible(false);
     window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 200);
   }, []);
 
-  // Auto-advance every 5s — pauses when carousel is hovered
   useEffect(() => {
     if (isPaused) return;
     const t = window.setTimeout(() => {
@@ -2889,7 +2318,7 @@ export function IndividualToolsScene() {
     return () => window.clearTimeout(t);
   }, [activeIdx, isPaused]);
 
-  const tool = featuredTools[activeIdx];
+  const tool    = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
@@ -2897,275 +2326,140 @@ export function IndividualToolsScene() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       style={{
-        width: 600,
-        height: 500,
-        borderRadius: 32,
-        background: "white",
-        border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position: "absolute",
-        left: 40,
-        top: 30,
-        overflow: "hidden",
+        width: 600, height: 500, borderRadius: 32,
+        background: "white", border: "1px solid #dde8e6",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        position: "absolute", left: 40, top: 30,
+        overflow: "hidden", display: "flex", flexDirection: "column",
       }}
     >
-      {/* ── Info panel — fades on tool change ── */}
+      {/* ── Top bar ── */}
       <div
         style={{
-          position: "relative",
-          width: "100%",
-          height: 362,
-          opacity: visible ? 1 : 0,
-          transform: visible ? "translateY(0)" : "translateY(6px)",
-          transition: "opacity 0.28s ease, transform 0.28s ease",
+          height: 54, flexShrink: 0,
+          background: tool.fg,
+          display: "flex", alignItems: "center",
+          padding: "0 20px", gap: 10,
         }}
       >
-        {/* Hero card — left column */}
-        <div
-          style={{
-            position: "absolute",
-            left: 22,
-            top: 24,
-            width: 288,
-            height: 310,
-            borderRadius: 24,
-            background: "white",
-            border: `2px solid ${tool.fg}`,
-            boxShadow: `0 16px 48px ${tool.border}55`,
-            padding: "16px",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {/* Eyebrow badge */}
-          <span
-            style={{
-              display: "inline-flex",
-              borderRadius: 999,
-              border: `1px solid ${tool.border}`,
-              background: tool.bg,
-              padding: "3px 10px",
-              fontSize: 9.5,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: tool.fg,
-              alignSelf: "flex-start",
-            }}
-          >
+        <div style={{
+          width: 30, height: 30, borderRadius: 10,
+          background: "rgba(255,255,255,0.18)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+        }}>
+          {(() => { const Icon = tool.icon; return <Icon size={16} color="white" strokeWidth={2.5} />; })()}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 8.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.7)", lineHeight: 1 }}>
             {content.eyebrow}
-          </span>
-
-          <h3
-            style={{
-              fontSize: 19,
-              fontWeight: 800,
-              lineHeight: 1.15,
-              color: "#162126",
-              margin: "10px 0 0",
-            }}
-          >
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: "white", lineHeight: 1.2, marginTop: 2 }}>
             {content.title}
-          </h3>
-          <p
-            style={{
-              fontSize: 12.5,
-              lineHeight: 1.6,
-              color: "#4a5c62",
-              margin: "6px 0 0",
-            }}
-          >
+          </div>
+        </div>
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          style={{
+            flexShrink: 0, background: "white", color: tool.fg,
+            border: "none", borderRadius: 20, padding: "6px 14px",
+            fontSize: 11, fontWeight: 800, cursor: "pointer",
+            textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5,
+          }}
+        >
+          Get Started
+          <ArrowRight size={11} strokeWidth={2.5} />
+        </a>
+      </div>
+
+      {/* ── Main content area ── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+        {/* Left: How it works */}
+        <div
+          style={{
+            flex: 1, padding: "14px 16px",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(6px)",
+            transition: "opacity 0.25s ease, transform 0.25s ease",
+          }}
+        >
+          {/* Tool description */}
+          <div style={{ fontSize: 11.5, color: "#4a5c62", lineHeight: 1.6, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f0f4f8" }}>
             {content.desc}
-          </p>
+          </div>
 
-          <div
-            style={{
-              marginTop: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: 7,
-            }}
-          >
-            {content.stats.map(([label, value]: [string, string]) => (
+          {/* Section label */}
+          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 8 }}>
+            How it works
+          </div>
+
+          {/* 3 Steps */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {content.steps.map((step: any) => (
               <div
-                key={label}
+                key={step.n}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  borderRadius: 10,
-                  border: "1px solid #e2e8f0",
-                  background: "#f7fafc",
-                  padding: "6px 12px",
+                  display: "flex", gap: 10, alignItems: "flex-start",
+                  background: "#f8fafc", borderRadius: 12,
+                  padding: "10px 12px", border: "1px solid #f0f4f8",
                 }}
               >
-                <span
-                  style={{ fontSize: 11.5, color: "#4a5c62", fontWeight: 600 }}
-                >
-                  {label}
-                </span>
-                <span
-                  style={{ fontSize: 12.5, fontWeight: 800, color: "#162126" }}
-                >
-                  {value}
-                </span>
+                {/* Step number circle */}
+                <div style={{
+                  width: 24, height: 24, borderRadius: "50%",
+                  background: tool.fg, color: "white",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 900, flexShrink: 0,
+                }}>
+                  {step.n}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, marginBottom: 3 }}>
+                    {step.label}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: "#64748b", lineHeight: 1.5 }}>
+                    {step.desc}
+                  </div>
+                </div>
               </div>
             ))}
+          </div>
+        </div>
 
-            {/* Status badge */}
+        {/* Right: Tips */}
+        <div
+          style={{
+            width: 148, background: "#f8fafc",
+            borderLeft: "1px solid #f0f4f8",
+            padding: "14px 12px",
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.25s ease",
+            display: "flex", flexDirection: "column", gap: 6,
+          }}
+        >
+          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 4 }}>
+            Key Items
+          </div>
+          {content.tips.map((tip: string) => (
             <div
+              key={tip}
               style={{
-                borderRadius: 10,
+                background: "white", borderRadius: 9,
                 border: `1px solid ${tool.border}`,
-                background: tool.bg,
-                padding: "7px 12px",
+                padding: "7px 10px",
+                fontSize: 10.5, fontWeight: 700, color: tool.fg,
+                lineHeight: 1.3,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  color: tool.fg,
-                }}
-              >
-                <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
-                <span style={{ fontSize: 11.5, fontWeight: 800 }}>
-                  {content.badge}
-                </span>
-              </div>
-              <p
-                style={{
-                  fontSize: 10.5,
-                  lineHeight: 1.5,
-                  color: "#4a5c62",
-                  margin: "3px 0 0",
-                }}
-              >
-                {content.badgeDesc}
-              </p>
+              {tip}
             </div>
-          </div>
-        </div>
-
-        {/* Right column ── illustration card */}
-        <div
-          style={{
-            position     : "absolute",
-            left         : 324, top: 24,
-            width        : 254, height: 110,
-            borderRadius : 18,
-            background   : tool.bg,
-            border       : `1.5px solid ${tool.border}`,
-            padding      : "14px 16px",
-            display      : "flex", alignItems:"center", gap:14,
-            overflow     : "hidden",
-          }}
-        >
-          {/* Tool illustration icon */}
-          <div style={{ width:64, height:64, borderRadius:16, background:"white", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 4px 12px ${tool.border}88` }}>
-            <Image
-              src={tool.iconSrc}
-              alt={tool.label}
-              width={44}
-              height={44}
-              style={{ objectFit:"contain" }}
-              unoptimized
-            />
-          </div>
-          <div style={{ minWidth:0 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:4 }}>{content.eyebrow}</div>
-            <div style={{ fontSize:14, fontWeight:900, color:"#162126", lineHeight:1.25 }}>{tool.label}</div>
-            <div style={{ fontSize:10.5, lineHeight:1.5, color:"#4a5c62", marginTop:4 }}>{content.tagline}</div>
-          </div>
-        </div>
-
-        {/* Insight / recommendation card */}
-        <div
-          style={{
-            position     : "absolute",
-            left         : 320, top: 148,
-            width        : 258,
-            borderRadius : 20,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "14px 16px",
-            boxShadow    : "0 4px 16px rgba(15,23,42,0.06)",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 9,
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "#6b8097",
-            }}
-          >
-            {content.recoTitle}
-          </div>
-
-          <div
-            style={{
-              marginTop: 10,
-              borderRadius: 12,
-              background: "#051738",
-              padding: "11px 14px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 19,
-                fontWeight: 800,
-                color: "white",
-                lineHeight: 1.1,
-              }}
-            >
-              {content.recoMain}
-            </div>
-            <p
-              style={{
-                fontSize: 10.5,
-                lineHeight: 1.55,
-                color: "rgba(255,255,255,0.72)",
-                margin: "5px 0 0",
-              }}
-            >
-              {content.recoDesc}
-            </p>
-          </div>
-
-          <div
-            style={{
-              marginTop: 10,
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 6,
-            }}
-          >
-            {content.recoTags.map((tag: string) => (
-              <div
-                key={tag}
-                style={{
-                  borderRadius: 8,
-                  border: "1px solid #e2e8f0",
-                  background: "#f7fafc",
-                  padding: "5px 8px",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#2C3A3E",
-                  textAlign: "center",
-                }}
-              >
-                {tag}
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* ── Bottom carousel strip ── */}
+      {/* ── Bottom carousel ── */}
       <ToolCarousel
         activeIdx={activeIdx}
         onSelect={(idx) => { goTo(idx); setIsPaused(true); }}
