@@ -298,9 +298,9 @@ export function RealDashboardScene({
     3: { opacity: 1, left: "12%", top: "60%", scale: 1 }, // Exit Dashboard View
     4: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Hover Step 4 (I-130) Card in Chapter View
     5: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Click Step 4 Card
-    6: { opacity: 1, left: "12%", top: "88%", scale: 1 }, // Move to Launch button in Step View
-    7: { opacity: 1, left: "13.5%", top: "95%", scale: 1 }, // Hover Launch I-130 Autoform Button
-    8: { opacity: 1, left: "13.5%", top: "95%", scale: 1 }, // Click Launch Button
+    6: { opacity: 1, left: "15%", top: "88%", scale: 1 }, // Move to Launch button in Step View
+    7: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Hover Launch I-130 Autoform Button
+    8: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Click Launch Button
     9: { opacity: 1, left: "45.5%", top: "27%", scale: 1 }, // Autoform Panel Intro
     10: { opacity: 1, left: "12%", top: "55%", scale: 1 }, // Move to Family Name Field
     11: { opacity: 1, left: "45.5%", top: "55%", scale: 1 }, // Typing "Khan"
@@ -794,9 +794,10 @@ export function HeroI130StepPanel({
     const container = scrollContainerRef.current;
     const button = buttonRef.current;
     if (container && button) {
-      // Offset 406 aligns button center with cursor y: 424 (header 52, inner shift -68)
-      // Slightly adjusted from 412 to scroll more as per user feedback
-      const targetScrollTop = button.offsetTop - container.offsetTop - 406;
+      // Responsive offset: 406 for desktop, reduced for mobile to scroll more
+      const isMobile = window.innerWidth < 768;
+      const offset = isMobile ? 210 : 406;
+      const targetScrollTop = button.offsetTop - container.offsetTop - offset;
       container.scrollTo({
         top: Math.max(0, targetScrollTop),
         behavior: "smooth",
