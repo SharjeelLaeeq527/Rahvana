@@ -221,8 +221,8 @@ export function StepRow({
 }
 
 function getHeroSceneIndex(phase: number) {
-  if (phase >= 12) return 6;
-  if (phase >= 11) return 5;
+  if (phase >= 21) return 6;
+  if (phase >= 20) return 5;
   if (phase >= 9) return 4;
   if (phase >= 6) return 3;
   if (phase >= 4) return 2;
@@ -252,10 +252,19 @@ export function RealDashboardScene({
       [19800, 7],
       [22400, 8],
       [24100, 9],
-      [27800, 10],
-      [32100, 11],
-      [36900, 12],
-      [42400, 0],
+      [27000, 10],
+      [28500, 11],
+      [30500, 12],
+      [31500, 13],
+      [33000, 14],
+      [34500, 15],
+      [36500, 16],
+      [37500, 17],
+      [39000, 18],
+      [40500, 19],
+      [42500, 20],
+      [54500, 21],
+      [62500, 0],
     ] as const;
 
     let timers: number[] = [];
@@ -267,7 +276,7 @@ export function RealDashboardScene({
     };
 
     run();
-    const interval = window.setInterval(run, 44200);
+    const interval = window.setInterval(run, 64500);
 
     return () => {
       timers.forEach(window.clearTimeout);
@@ -283,27 +292,37 @@ export function RealDashboardScene({
     number,
     { opacity: number; x: number; y: number; scale: number }
   > = {
-    0: { opacity: 1, x: 760, y: 56, scale: 0.96 },
-    1: { opacity: 1, x: 82, y: 334, scale: 1 },
-    2: { opacity: 1, x: 82, y: 334, scale: 1 },
-    3: { opacity: 1, x: 82, y: 334, scale: 1 },
-    4: { opacity: 1, x: 310, y: 320, scale: 1 },
-    5: { opacity: 1, x: 310, y: 320, scale: 1 },
-    6: { opacity: 1, x: 348, y: 380, scale: 1 },
-    7: { opacity: 1, x: 490, y: 424, scale: 1 },
-    8: { opacity: 1, x: 490, y: 424, scale: 1 },
-    9: { opacity: 1, x: 502, y: 318, scale: 1 },
-    10: { opacity: 1, x: 502, y: 318, scale: 1 },
-    11: { opacity: 1, x: 536, y: 286, scale: 0.96 },
-    12: { opacity: 1, x: 650, y: 116, scale: 0.96 },
+    0: { opacity: 1, x: 760, y: 56, scale: 0.96 }, // Initial / Dashboard Idle
+    1: { opacity: 1, x: 82, y: 320, scale: 1 }, // Hover Chapter 1 in Dashboard Sidebar
+    2: { opacity: 1, x: 82, y: 320, scale: 1 }, // Click Chapter 1
+    3: { opacity: 1, x: 82, y: 334, scale: 1 }, // Exit Dashboard View
+    4: { opacity: 1, x: 82, y: 320, scale: 1 }, // Hover Step 4 (I-130) Card in Chapter View
+    5: { opacity: 1, x: 82, y: 320, scale: 1 }, // Click Step 4 Card
+    6: { opacity: 1, x: 82, y: 380, scale: 1 }, // Move to Launch button in Step View
+    7: { opacity: 1, x: 92, y: 434, scale: 1 }, // Hover Launch I-130 Autoform Button
+    8: { opacity: 1, x: 92, y: 434, scale: 1 }, // Click Launch Button
+    9: { opacity: 1, x: 310, y: 150, scale: 1 }, // Autoform Panel Intro
+    10: { opacity: 1, x: 82, y: 255, scale: 1 }, // Move to Family Name Field
+    11: { opacity: 1, x: 310, y: 255, scale: 1 }, // Typing "Khan"
+    12: { opacity: 1, x: 560, y: 360, scale: 1 }, // Move to Next Button (reveals Given Name)
+    13: { opacity: 1, x: 560, y: 360, scale: 0.95 }, // Click Next Button
+    14: { opacity: 1, x: 82, y: 310, scale: 1 }, // Move to Given Name Field
+    15: { opacity: 1, x: 310, y: 310, scale: 1 }, // Typing "Amina"
+    16: { opacity: 1, x: 560, y: 455, scale: 1 }, // Move to Next Button (reveals Middle Name)
+    17: { opacity: 1, x: 560, y: 455, scale: 0.95 }, // Click Next Button
+    18: { opacity: 1, x: 82, y: 420, scale: 1 }, // Move to Middle Name Field
+    19: { opacity: 1, x: 310, y: 405, scale: 1 }, // Typing "Noor"
+    20: { opacity: 1, x: 82, y: 286, scale: 1 }, // PDF Preview Scrolling View
+    21: { opacity: 1, x: 82, y: 116, scale: 0.96 }, // Dashboard Complete View (Success State)
   };
 
   const currentCursor = cursorStates[phase] ?? cursorStates[0];
-  const isClicking = phase === 2 || phase === 5 || phase === 8 || phase === 10;
+  const isClicking =
+    phase === 2 || phase === 5 || phase === 8 || phase === 13 || phase === 17;
   const view =
-    phase >= 12
+    phase >= 21
       ? "dashboard-complete"
-      : phase >= 11
+      : phase >= 20
         ? "pdf"
         : phase >= 9
           ? "autoform"
@@ -425,7 +444,10 @@ export function RealDashboardScene({
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <HeroAutoformPanel playPhase={phase} />
+                  <HeroAutoformPanel
+                    playPhase={phase}
+                    isClicking={isClicking}
+                  />
                 </motion.div>
               )}
               {view === "pdf" && (
@@ -903,7 +925,13 @@ export function HeroI130StepPanel({
   );
 }
 
-export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
+export function HeroAutoformPanel({
+  playPhase,
+  isClicking,
+}: {
+  playPhase: number;
+  isClicking: boolean;
+}) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [fillStage, setFillStage] = useState(0);
   const config = useMemo(() => getFormConfig("i130"), []);
@@ -919,31 +947,50 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
   );
 
   useEffect(() => {
-    setFormData({});
-    setFillStage(0);
-    if (playPhase < 10) return;
+    if (playPhase < 9) {
+      setFormData({});
+      setFillStage(0);
+      return;
+    }
 
-    const timers = [
-      window.setTimeout(() => {
-        setFillStage(1);
-        setFormData({ family_name: "K" });
-      }, 450),
-      window.setTimeout(() => setFormData({ family_name: "Khan" }), 1050),
-      window.setTimeout(() => {
-        setFillStage(2);
-        setFormData((prev) => ({ ...prev, given_name: "A" }));
-      }, 1650),
-      window.setTimeout(
-        () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
-        2300,
-      ),
-      window.setTimeout(() => {
-        setFillStage(3);
-        setFormData((prev) => ({ ...prev, middle_name: "Noor" }));
-      }, 3100),
-      window.setTimeout(() => setFillStage(4), 4000),
-    ];
-    return () => timers.forEach(window.clearTimeout);
+    if (playPhase === 11) {
+      setFillStage(1);
+      const timers = [
+        window.setTimeout(() => setFormData({ family_name: "K" }), 200),
+        window.setTimeout(() => setFormData({ family_name: "Khan" }), 600),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase === 13) {
+      setFillStage(2);
+    } else if (playPhase === 15) {
+      const timers = [
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, given_name: "A" })),
+          200,
+        ),
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
+          600,
+        ),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase === 17) {
+      setFillStage(3);
+    } else if (playPhase === 19) {
+      const timers = [
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, middle_name: "N" })),
+          200,
+        ),
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, middle_name: "Noor" })),
+          600,
+        ),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase >= 20) {
+      setFillStage(4);
+    }
   }, [playPhase]);
 
   return (
@@ -1014,7 +1061,9 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
               animate={
                 fillStage >= 4
                   ? { scale: 0.94, opacity: 0.9 }
-                  : { scale: 1, opacity: 1 }
+                  : isClicking
+                    ? { scale: 0.96 }
+                    : { scale: 1, opacity: 1 }
               }
               transition={{ duration: 0.1 }}
             >
@@ -1059,7 +1108,7 @@ export function HeroPdfPreviewPanel() {
                 }
           }
           transition={{
-            duration: 6.2,
+            duration: 11.5,
             times: [0, 0.22, 0.46, 0.68, 0.84, 1],
             ease: "easeInOut",
           }}
