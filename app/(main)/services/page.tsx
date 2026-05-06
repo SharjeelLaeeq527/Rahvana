@@ -199,10 +199,6 @@ export default function ServicesPage({
         <UpgradeModal
           feature={upgradeModalFeature}
           onClose={() => setUpgradeModalFeature(null)}
-          onConfirm={(action, target) => {
-            const plan = typeof target === "string" ? target : "premium";
-            window.location.href = `/pricing?plan=${plan}`;
-          }}
         />
       )}
 

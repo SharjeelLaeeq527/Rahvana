@@ -171,7 +171,9 @@ export function SiteHeader({
     try {
       const saved = localStorage.getItem("rahvana_notif_read");
       return saved ? new Set(JSON.parse(saved)) : new Set<string>();
-    } catch { return new Set<string>(); }
+    } catch {
+      return new Set<string>();
+    }
   });
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -308,7 +310,9 @@ export function SiteHeader({
   const markAllRead = (ids: string[]) => {
     setReadIds((prev) => {
       const next = new Set([...prev, ...ids]);
-      try { localStorage.setItem("rahvana_notif_read", JSON.stringify([...next])); } catch {}
+      try {
+        localStorage.setItem("rahvana_notif_read", JSON.stringify([...next]));
+      } catch {}
       return next;
     });
   };
@@ -316,7 +320,9 @@ export function SiteHeader({
   const markOneRead = (id: string) => {
     setReadIds((prev) => {
       const next = new Set([...prev, id]);
-      try { localStorage.setItem("rahvana_notif_read", JSON.stringify([...next])); } catch {}
+      try {
+        localStorage.setItem("rahvana_notif_read", JSON.stringify([...next]));
+      } catch {}
       return next;
     });
   };
@@ -452,17 +458,22 @@ export function SiteHeader({
   const isHomeHeroP2State = pathname === "/" && !scrolled && heroTransitioned;
   return (
     <header
-      className={`fixed z-[100] transition-all duration-300 rounded-lg left-2 right-2 md:left-4 md:right-4 xl:left-6 xl:right-6 top-1 ${
+      className={`fixed top-0 left-0 right-0 z-100 w-full transition-all duration-300 ${
         isHomeHeroState || isHomeHeroP2State
-          ? "bg-white/30 backdrop-blur-md border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)] py-1"
-          : "bg-background/80 backdrop-blur-md border border-border shadow-md py-2"
+          ? "bg-transparent border-none shadow-none py-4"
+          : "bg-background shadow-lg py-2"
       }`}
+      style={
+        isHomeHeroState || isHomeHeroP2State
+          ? { background: "rgba(0,0,0,0)", boxShadow: "none", border: "none" }
+          : {}
+      }
     >
       {/* ------------------------------------------------------------------ */}
       {/* Desktop navigation */}
       {/* ------------------------------------------------------------------ */}
       <div
-        className={`w-full flex items-center justify-between px-4 md:px-3 ${isHomeHeroState ? "text-white" : ""}`}
+        className={`w-full flex items-center justify-between px-8 ${isHomeHeroState ? "text-white" : ""}`}
       >
         {/* Left side */}
         <div className="flex items-center gap-4">
@@ -522,7 +533,7 @@ export function SiteHeader({
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
-            <div className="relative">
+            <div className="relative pt-2 pb-0">
               <Link
                 href="/visa-category/ir-category/ir1-journey"
                 onClick={(e) => handleNav("ir1-journey", e)}
@@ -585,7 +596,7 @@ export function SiteHeader({
               ref={(el) => {
                 navRefs.current["resources"] = el;
               }}
-              className="relative"
+              className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("resources")}
               onMouseLeave={handleMenuLeave}
             >
@@ -702,7 +713,7 @@ export function SiteHeader({
               )}
             </div>
             */}
-            <div className="relative">
+            <div className="relative pt-2 pb-0">
               <Link
                 href="/about"
                 onClick={(e) => handleNav("about", e)}
@@ -722,7 +733,7 @@ export function SiteHeader({
               </Link>
             </div>
 
-            <div className="relative">
+            <div className="relative pt-2 pb-0">
               <Link
                 href="/pricing"
                 onClick={(e) => handleNav("pricing", e)}
@@ -741,7 +752,7 @@ export function SiteHeader({
                 Pricing
               </Link>
             </div>
-            <div className="relative">
+            <div className="relative pt-2 pb-0">
               <Link
                 href="/#faq"
                 onClick={(e) => handleNav("faq", e)}
@@ -760,7 +771,7 @@ export function SiteHeader({
                 FAQ
               </Link>
             </div>
-            <div className="relative">
+            <div className="relative pt-2 pb-0">
               <Link
                 href="/#contact"
                 onClick={(e) => handleNav("contact", e)}
@@ -898,24 +909,24 @@ export function SiteHeader({
                     size="icon"
                     aria-label="Notifications"
                     onClick={handleBellClick}
-                    className={`flex items-center justify-center transition-colors shadow-none border-0 ${
+                    className={`relative rounded-md transition-colors shadow-none border-0 ${
                       isHomeHeroState
-                        ? "text-white hover:bg-white/10"
+                        ? "text-white"
                         : isHomeHeroP2State
-                          ? "text-white hover:bg-white/10"
-                          : "text-[#0d7377] hover:bg-[#0d7377]/10"
+                          ? "text-white"
+                          : "text-rahvana-primary"
                     }`}
                     style={{
                       padding: 0,
-                      width: 34,
-                      height: 34,
+                      width: 40,
+                      height: 40,
                       background: "none",
                       boxShadow: "none",
                       border: "none",
                       borderRadius: "50%",
                     }}
                   >
-                    <div className="relative flex items-center justify-center">
+                    <div className="relative inline-flex">
                       <Bell
                         className="h-5 w-5"
                         aria-hidden="true"
@@ -984,7 +995,8 @@ export function SiteHeader({
                                     key={n.id}
                                     className={`px-4 py-3 flex gap-3 items-start transition-colors ${
                                       !isRead
-                                        ? n.priority === "critical" || n.priority === "high"
+                                        ? n.priority === "critical" ||
+                                          n.priority === "high"
                                           ? "bg-orange-50 hover:bg-orange-100/60"
                                           : "bg-[#f0f7ff] hover:bg-[#e8f2fb]"
                                         : "bg-white hover:bg-muted/30"
@@ -993,11 +1005,15 @@ export function SiteHeader({
                                     {/* Unread dot — only when unread */}
                                     <div className="mt-1.5 shrink-0 w-1.5 h-1.5">
                                       {!isRead && (
-                                        <div className={`w-1.5 h-1.5 rounded-full ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-[#0d7377]"}`} />
+                                        <div
+                                          className={`w-1.5 h-1.5 rounded-full ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-[#0d7377]"}`}
+                                        />
                                       )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className={`text-[12px] text-foreground ${isRead ? "font-medium opacity-70" : "font-bold"}`}>
+                                      <p
+                                        className={`text-[12px] text-foreground ${isRead ? "font-medium opacity-70" : "font-bold"}`}
+                                      >
                                         {n.title}
                                       </p>
                                       <p
@@ -1020,7 +1036,9 @@ export function SiteHeader({
                                           onClick={() => markOneRead(n.id)}
                                           className="text-[10px] font-semibold text-[#0d7377] hover:underline flex items-center gap-1 mt-1"
                                         >
-                                          <span className="w-3 h-3 rounded-full border border-[#0d7377] flex items-center justify-center text-[7px]">✓</span>
+                                          <span className="w-3 h-3 rounded-full border border-[#0d7377] flex items-center justify-center text-[7px]">
+                                            ✓
+                                          </span>
                                           Mark as read
                                         </button>
                                       )}
@@ -1052,7 +1070,9 @@ export function SiteHeader({
                             <button
                               className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
                               onClick={() =>
-                                notifList.forEach((n: any) => dismissNotif(n.id))
+                                notifList.forEach((n: any) =>
+                                  dismissNotif(n.id),
+                                )
                               }
                             >
                               Delete all
@@ -1086,7 +1106,7 @@ export function SiteHeader({
                     clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
-                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 ${
+                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 mb-2 ${
                   isHomeHeroState
                     ? "text-white"
                     : isHomeHeroP2State
@@ -1104,11 +1124,18 @@ export function SiteHeader({
                 }}
               >
                 <span
-                  className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
-                    isHomeHeroState || isHomeHeroP2State
-                      ? "bg-white/20 border-white/40 text-white"
-                      : "bg-[#0d7377]/10 border-[#0d7377]/30 text-[#0d7377]"
-                  }`}
+                  style={
+                    isHomeHeroP2State
+                      ? { color: "#fff" }
+                      : isHomeHeroState
+                        ? { color: "#fff" }
+                        : { color: "var(--rahvana-primary, #0d7377)" }
+                  }
+                  // className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
+                  //   isHomeHeroState || isHomeHeroP2State
+                  //     ? "bg-white/20 border-white/40 text-white"
+                  //     : "bg-[#0d7377]/10 border-[#0d7377]/30 text-[#0d7377]"
+                  // }`}
                 >
                   {(
                     profile?.full_name ||

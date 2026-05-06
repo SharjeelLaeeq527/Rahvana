@@ -568,9 +568,6 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
         <UpgradeModal
           feature={upgradeModalFeature}
           onClose={() => setUpgradeModalFeature(null)}
-          onConfirm={(action, target) => {
-            console.log("upgrade", action, target);
-          }}
         />
       )}
     </div>

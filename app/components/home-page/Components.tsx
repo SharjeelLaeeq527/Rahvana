@@ -2,6 +2,7 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ExternalLink,
   FileCheck2,
@@ -26,7 +27,6 @@ import {
   Files,
   PenTool,
   Wand2,
-  FileSearch,
   Bell,
   User,
   BookOpen,
@@ -44,7 +44,7 @@ import {
 import Image from "next/image";
 import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep";
 // import { ProgressBar } from "@/app/components/forms/auto-visaform-filling/ProgressBar";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   chapters,
@@ -133,11 +133,13 @@ export function StepRow({
   chapter,
   index,
   active = false,
+  isClicking = false,
 }: {
   step: readonly [string, string, string, string];
   chapter: (typeof chapters)[number];
   index: number;
   active?: boolean;
+  isClicking?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
   const [, name, description, status] = step;
@@ -164,14 +166,22 @@ export function StepRow({
           : undefined
       }
       animate={
-        reduceMotion || !isCurrent
+        reduceMotion
           ? undefined
-          : {
-              x: [0, 3, 0],
-              borderColor: [chapter.color, chapter.color, chapter.color],
-            }
+          : isClicking
+            ? { scale: 0.97, x: 0 }
+            : isCurrent
+              ? {
+                  x: [0, 3, 0],
+                  borderColor: [chapter.color, chapter.color, chapter.color],
+                }
+              : { x: 0 }
       }
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      transition={
+        isClicking
+          ? { duration: 0.15 }
+          : { duration: 4, repeat: Infinity, ease: "easeInOut" }
+      }
     >
       {isCurrent && !isDone && !isLocked && (
         <span
@@ -212,8 +222,8 @@ export function StepRow({
 }
 
 function getHeroSceneIndex(phase: number) {
-  if (phase >= 12) return 6;
-  if (phase >= 11) return 5;
+  if (phase >= 21) return 6;
+  if (phase >= 20) return 5;
   if (phase >= 9) return 4;
   if (phase >= 6) return 3;
   if (phase >= 4) return 2;
@@ -243,10 +253,19 @@ export function RealDashboardScene({
       [19800, 7],
       [22400, 8],
       [24100, 9],
-      [27800, 10],
-      [32100, 11],
-      [36900, 12],
-      [42400, 0],
+      [27000, 10],
+      [28500, 11],
+      [30500, 12],
+      [31500, 13],
+      [33000, 14],
+      [34500, 15],
+      [36500, 16],
+      [37500, 17],
+      [39000, 18],
+      [40500, 19],
+      [42500, 20],
+      [54500, 21],
+      [62500, 0],
     ] as const;
 
     let timers: number[] = [];
@@ -258,7 +277,7 @@ export function RealDashboardScene({
     };
 
     run();
-    const interval = window.setInterval(run, 44200);
+    const interval = window.setInterval(run, 64500);
 
     return () => {
       timers.forEach(window.clearTimeout);
@@ -272,29 +291,39 @@ export function RealDashboardScene({
 
   const cursorStates: Record<
     number,
-    { opacity: number; x: number; y: number; scale: number }
+    { opacity: number; left: string; top: string; scale: number }
   > = {
-    0: { opacity: 1, x: 760, y: 56, scale: 0.96 },
-    1: { opacity: 1, x: 82, y: 334, scale: 1 },
-    2: { opacity: 1, x: 82, y: 334, scale: 1 },
-    3: { opacity: 1, x: 82, y: 334, scale: 1 },
-    4: { opacity: 1, x: 310, y: 502, scale: 1 },
-    5: { opacity: 1, x: 310, y: 502, scale: 1 },
-    6: { opacity: 1, x: 348, y: 506, scale: 1 },
-    7: { opacity: 1, x: 490, y: 424, scale: 1 },
-    8: { opacity: 1, x: 490, y: 424, scale: 1 },
-    9: { opacity: 1, x: 502, y: 318, scale: 1 },
-    10: { opacity: 1, x: 502, y: 318, scale: 1 },
-    11: { opacity: 1, x: 536, y: 286, scale: 0.96 },
-    12: { opacity: 1, x: 650, y: 116, scale: 0.96 },
+    0: { opacity: 1, left: "112%", top: "10%", scale: 0.96 }, // Initial / Dashboard Idle
+    1: { opacity: 1, left: "12%", top: "67%", scale: 1 }, // Hover Chapter 1 in Dashboard Sidebar
+    2: { opacity: 1, left: "12%", top: "67%", scale: 1 }, // Click Chapter 1
+    3: { opacity: 1, left: "12%", top: "60%", scale: 1 }, // Exit Dashboard View
+    4: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Hover Step 4 (I-130) Card in Chapter View
+    5: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Click Step 4 Card
+    6: { opacity: 1, left: "15%", top: "88%", scale: 1 }, // Move to Launch button in Step View
+    7: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Hover Launch I-130 Autoform Button
+    8: { opacity: 1, left: "25%", top: "95%", scale: 1 }, // Click Launch Button
+    9: { opacity: 1, left: "45.5%", top: "27%", scale: 1 }, // Autoform Panel Intro
+    10: { opacity: 1, left: "12%", top: "55%", scale: 1 }, // Move to Family Name Field
+    11: { opacity: 1, left: "45.5%", top: "55%", scale: 1 }, // Typing "Khan"
+    12: { opacity: 1, left: "88%", top: "78%", scale: 1 }, // Move to Next Button (reveals Given Name)
+    13: { opacity: 1, left: "88%", top: "78%", scale: 0.95 }, // Click Next Button
+    14: { opacity: 1, left: "12%", top: "70%", scale: 1 }, // Move to Given Name Field
+    15: { opacity: 1, left: "45.5%", top: "75.4%", scale: 1 }, // Typing "Amina"
+    16: { opacity: 1, left: "88%", top: "90%", scale: 1 }, // Move to Next Button (reveals Middle Name)
+    17: { opacity: 1, left: "88%", top: "90%", scale: 0.95 }, // Click Next Button
+    18: { opacity: 1, left: "12%", top: "90%", scale: 1 }, // Move to Middle Name Field
+    19: { opacity: 1, left: "45.5%", top: "90%", scale: 1 }, // Typing "Noor"
+    20: { opacity: 1, left: "12%", top: "51.1%", scale: 1 }, // PDF Preview Scrolling View
+    21: { opacity: 1, left: "12%", top: "20.7%", scale: 0.96 }, // Dashboard Complete View (Success State)
   };
 
   const currentCursor = cursorStates[phase] ?? cursorStates[0];
-  const isClicking = phase === 2 || phase === 5 || phase === 8 || phase === 10;
+  const isClicking =
+    phase === 2 || phase === 5 || phase === 8 || phase === 13 || phase === 17;
   const view =
-    phase >= 12
+    phase >= 21
       ? "dashboard-complete"
-      : phase >= 11
+      : phase >= 20
         ? "pdf"
         : phase >= 9
           ? "autoform"
@@ -384,6 +413,7 @@ export function RealDashboardScene({
                 >
                   <HeroChapterOnePanel
                     stepTargeted={phase === 4 || phase === 5}
+                    isClicking={phase === 5}
                   />
                 </motion.div>
               )}
@@ -402,6 +432,7 @@ export function RealDashboardScene({
                 >
                   <HeroI130StepPanel
                     launchTargeted={phase === 7 || phase === 8}
+                    isClicking={phase === 8}
                   />
                 </motion.div>
               )}
@@ -414,7 +445,10 @@ export function RealDashboardScene({
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <HeroAutoformPanel playPhase={phase} />
+                  <HeroAutoformPanel
+                    playPhase={phase}
+                    isClicking={isClicking}
+                  />
                 </motion.div>
               )}
               {view === "pdf" && (
@@ -449,8 +483,8 @@ export function RealDashboardScene({
             initial={false}
             animate={currentCursor}
             transition={{
-              x: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
-              y: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
+              left: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
+              top: { duration: 2.05, ease: [0.22, 1, 0.36, 1] },
               opacity: { duration: 0.35, ease: "easeOut" },
               scale: {
                 duration: isClicking ? 0.22 : 0.5,
@@ -646,15 +680,43 @@ export function HeroDashboardPanel({
 
 export function HeroChapterOnePanel({
   stepTargeted = false,
+  isClicking = false,
 }: {
   stepTargeted?: boolean;
+  isClicking?: boolean;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (!stepTargeted) return;
+
+    const container = scrollContainerRef.current;
+    const stepEl = stepRefs.current[3]; // Step 4 (index 3)
+
+    if (container && stepEl) {
+      const stepTop = stepEl.offsetTop;
+      const containerTop = container.offsetTop;
+
+      // Align Step 4 with the cursor's fixed coordinate (320px)
+      // We want: stepTop - containerTop - container.scrollTop = 320
+      const targetScrollTop = stepTop - containerTop - 280; // 280 to account for step height centering
+
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
+    }
+  }, [stepTargeted]);
+
   return (
-    <div className="mx-auto h-full max-w-[680px] overflow-hidden pt-2">
+    <div
+      ref={scrollContainerRef}
+      className="pointer-events-none mx-auto h-full max-w-[680px] overflow-y-auto pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
       <motion.div
         className="ir1-card-primary mb-4 rounded-3xl border-[#B9BBE2] py-[32px] px-[24px]"
-        animate={{ y: stepTargeted ? -32 : 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        initial={false}
       >
         <div className="mb-3 flex items-center gap-2">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-[#B9BBE2] bg-[#F0F1FB] px-[13px] py-[4px] text-[11px] font-bold uppercase tracking-[0.07em] text-[#4E518C]">
@@ -679,17 +741,16 @@ export function HeroChapterOnePanel({
         </div>
       </motion.div>
 
-      <motion.div
-        className="flex flex-col gap-1.5"
-        animate={{ y: stepTargeted ? -32 : 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <motion.div className="flex flex-col gap-1.5 px-2 pb-20" initial={false}>
         {chapters[0].steps.slice(0, 5).map((chapterStep, index) => {
           const status =
             index < 3 ? "done" : index === 3 ? "current" : "locked";
           return (
             <motion.div
               key={chapterStep[0]}
+              ref={(el) => {
+                stepRefs.current[index] = el;
+              }}
               animate={
                 index === 3 && stepTargeted
                   ? { scale: 1.015, x: 3 }
@@ -709,6 +770,7 @@ export function HeroChapterOnePanel({
                 chapter={chapters[0]}
                 index={index}
                 active={index === 3}
+                isClicking={index === 3 && isClicking}
               />
             </motion.div>
           );
@@ -720,9 +782,30 @@ export function HeroChapterOnePanel({
 
 export function HeroI130StepPanel({
   launchTargeted = false,
+  isClicking = false,
 }: {
   launchTargeted?: boolean;
+  isClicking?: boolean;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!launchTargeted) return;
+    const container = scrollContainerRef.current;
+    const button = buttonRef.current;
+    if (container && button) {
+      // Responsive offset: 406 for desktop, reduced for mobile to scroll more
+      const isMobile = window.innerWidth < 768;
+      const offset = isMobile ? 210 : 406;
+      const targetScrollTop = button.offsetTop - container.offsetTop - offset;
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: "smooth",
+      });
+    }
+  }, [launchTargeted]);
+
   const tool = {
     launch_module: {
       eyebrow: "Autoform Filler · USCIS Form I-130",
@@ -739,7 +822,10 @@ export function HeroI130StepPanel({
   };
 
   return (
-    <div className="h-full overflow-hidden bg-white">
+    <div
+      ref={scrollContainerRef}
+      className="pointer-events-none h-full overflow-y-auto bg-white [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+    >
       <motion.div
         className="w-full animate-in fade-in slide-in-from-bottom-6 duration-1000"
         animate={{ y: launchTargeted ? -68 : 0 }}
@@ -805,17 +891,23 @@ export function HeroI130StepPanel({
               </div>
               <div className="flex flex-col gap-[11px]">
                 <motion.button
+                  ref={buttonRef}
                   className="group inline-flex w-full cursor-pointer items-center justify-center gap-[10px] rounded-[12px] bg-[#c0596a] p-[16px_28px] font-sans text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)] transition-all duration-200 hover:bg-[#a13e4e]"
                   animate={
-                    launchTargeted
+                    isClicking
                       ? {
-                          scale: 1.018,
-                          boxShadow: "0 8px 32px rgba(192,89,106,0.35)",
+                          scale: 0.965,
+                          boxShadow: "0 2px 8px rgba(192,89,106,0.15)",
                         }
-                      : {
-                          scale: 1,
-                          boxShadow: "0 4px 20px rgba(192,89,106,0.25)",
-                        }
+                      : launchTargeted
+                        ? {
+                            scale: 1.018,
+                            boxShadow: "0 8px 32px rgba(192,89,106,0.35)",
+                          }
+                        : {
+                            scale: 1,
+                            boxShadow: "0 4px 20px rgba(192,89,106,0.25)",
+                          }
                   }
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 >
@@ -835,7 +927,13 @@ export function HeroI130StepPanel({
   );
 }
 
-export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
+export function HeroAutoformPanel({
+  playPhase,
+  isClicking,
+}: {
+  playPhase: number;
+  isClicking: boolean;
+}) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [fillStage, setFillStage] = useState(0);
   const config = useMemo(() => getFormConfig("i130"), []);
@@ -851,31 +949,50 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
   );
 
   useEffect(() => {
-    setFormData({});
-    setFillStage(0);
-    if (playPhase < 10) return;
+    if (playPhase < 9) {
+      setFormData({});
+      setFillStage(0);
+      return;
+    }
 
-    const timers = [
-      window.setTimeout(() => {
-        setFillStage(1);
-        setFormData({ family_name: "K" });
-      }, 450),
-      window.setTimeout(() => setFormData({ family_name: "Khan" }), 1050),
-      window.setTimeout(() => {
-        setFillStage(2);
-        setFormData((prev) => ({ ...prev, given_name: "A" }));
-      }, 1650),
-      window.setTimeout(
-        () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
-        2300,
-      ),
-      window.setTimeout(() => {
-        setFillStage(3);
-        setFormData((prev) => ({ ...prev, middle_name: "Noor" }));
-      }, 3100),
-      window.setTimeout(() => setFillStage(4), 4000),
-    ];
-    return () => timers.forEach(window.clearTimeout);
+    if (playPhase === 11) {
+      setFillStage(1);
+      const timers = [
+        window.setTimeout(() => setFormData({ family_name: "K" }), 200),
+        window.setTimeout(() => setFormData({ family_name: "Khan" }), 600),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase === 13) {
+      setFillStage(2);
+    } else if (playPhase === 15) {
+      const timers = [
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, given_name: "A" })),
+          200,
+        ),
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
+          600,
+        ),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase === 17) {
+      setFillStage(3);
+    } else if (playPhase === 19) {
+      const timers = [
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, middle_name: "N" })),
+          200,
+        ),
+        window.setTimeout(
+          () => setFormData((prev) => ({ ...prev, middle_name: "Noor" })),
+          600,
+        ),
+      ];
+      return () => timers.forEach(window.clearTimeout);
+    } else if (playPhase >= 20) {
+      setFillStage(4);
+    }
   }, [playPhase]);
 
   return (
@@ -946,7 +1063,9 @@ export function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
               animate={
                 fillStage >= 4
                   ? { scale: 0.94, opacity: 0.9 }
-                  : { scale: 1, opacity: 1 }
+                  : isClicking
+                    ? { scale: 0.96 }
+                    : { scale: 1, opacity: 1 }
               }
               transition={{ duration: 0.1 }}
             >
@@ -991,7 +1110,7 @@ export function HeroPdfPreviewPanel() {
                 }
           }
           transition={{
-            duration: 6.2,
+            duration: 11.5,
             times: [0, 0.22, 0.46, 0.68, 0.84, 1],
             ease: "easeInOut",
           }}
@@ -1074,8 +1193,19 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   }, []);
 
   return (
-    <div ref={wrapRef} className="w-full" style={{ height: Math.round(560 * scale) }}>
-      <div style={{ width: 680, height: 560, transformOrigin: "top left", transform: `scale(${scale})` }}>
+    <div
+      ref={wrapRef}
+      className="w-full"
+      style={{ height: Math.round(560 * scale) }}
+    >
+      <div
+        style={{
+          width: 680,
+          height: 560,
+          transformOrigin: "top left",
+          transform: `scale(${scale})`,
+        }}
+      >
         <TwoWaysVisual index={index} />
       </div>
     </div>
@@ -1083,189 +1213,420 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 }
 
 export function TwoWaysSection() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
-  const [isPaused, setIsPaused] = useState(false);
   const reduceMotion = useReducedMotion();
 
+  // ── Scroll-driven: switch after ~150 px of scrolling into the section ───────
   useEffect(() => {
-    if (reduceMotion || isPaused) return;
-    const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current === 0 ? 1 : 0));
-    }, 6000);
-    return () => window.clearInterval(timer);
-  }, [isPaused, reduceMotion, activeIndex]);
+    const section = sectionRef.current;
+    if (!section) return;
+    const onScroll = () => {
+      if (window.innerWidth < 1024) return;
+      const scrolled = window.scrollY - section.offsetTop;
+      if (scrolled < 0) return;
+      // Switch after 150 px — roughly one mouse-wheel click / one trackpad gesture
+      setActiveIndex((scrolled >= 150 ? 1 : 0) as TwoWaysIndex);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const selectPath = (index: TwoWaysIndex) => {
-    setActiveIndex(index);
-    setIsPaused(true);
+  const selectPath = (idx: TwoWaysIndex) => {
+    if (sectionRef.current && window.innerWidth >= 1024) {
+      const s = sectionRef.current;
+      // Scroll to position that triggers the correct panel
+      const target = idx === 0 ? s.offsetTop : s.offsetTop + 200;
+      window.scrollTo({ top: target, behavior: "smooth" });
+    } else {
+      setActiveIndex(idx);
+    }
   };
 
   return (
-    <section
-      id="path"
-      aria-label="Two ways to use Rahvana"
-      className="relative overflow-x-hidden"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocus={() => setIsPaused(true)}
-      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsPaused(false); }}
-      style={{
-        background: "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-        borderTop: "1px solid #e1ebe8",
-        borderBottom: "1px solid #e1ebe8",
-      }}
-    >
-      {/* Decorative radial highlights */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-72"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
-            "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
-        }}
-      />
-
-      <div
-        className="relative mx-auto px-5 sm:px-8 lg:px-10 py-14 sm:py-16 lg:py-20 xl:py-24"
-        style={{ maxWidth: 1360 }}
+    <>
+      {/* ── Desktop (lg+): scroll-driven sticky ─────────────────────────── */}
+      <section
+        ref={sectionRef}
+        id="path"
+        aria-label="Two ways to use Rahvana"
+        className="relative hidden lg:block mt-40 md:mt-56"
+        style={{ height: "calc(100vh + 600px)" }}
       >
-        {/* Responsive grid — stacked on mobile/tablet, side-by-side on lg+ */}
-        <div className="grid grid-cols-1 items-center gap-y-10 lg:grid-cols-[minmax(0,400px)_1fr] lg:gap-x-10 xl:grid-cols-[minmax(0,440px)_1fr] xl:gap-x-20">
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            display: "flex",
+            alignItems: "center",
+            overflow: "hidden",
+            background:
+              "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+            borderTop: "1px solid #e1ebe8",
+            borderBottom: "1px solid #e1ebe8",
+          }}
+        >
+          {/* Decorative radial highlights */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-72"
+            aria-hidden="true"
+            style={{
+              background:
+                "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
+                "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
+            }}
+          />
 
-          {/* Left column: text + selectors + CTAs */}
-          <div>
-            <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
-              TWO WAYS TO MOVE FORWARD
-            </p>
+          {/* Scroll-progress pill indicators — right edge */}
+          <div
+            style={{
+              position: "absolute",
+              right: 28,
+              top: "50%",
+              transform: "translateY(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              zIndex: 10,
+            }}
+          >
+            {([0, 1] as TwoWaysIndex[]).map((i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => selectPath(i)}
+                aria-label={`Show ${twoWaysPaths[i].title}`}
+                style={{
+                  width: 7,
+                  height: activeIndex === i ? 22 : 7,
+                  borderRadius: 4,
+                  background: activeIndex === i ? "#0d7377" : "#c8d5d3",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+                }}
+              />
+            ))}
+          </div>
 
-            <h2
-              className="mt-4 mb-0 font-extrabold text-[#162126]"
-              style={{ fontSize: "clamp(30px,4.2vw,60px)", lineHeight: 1.0, maxWidth: 440 }}
-            >
-              Choose how you want to use Rahvana.
-            </h2>
+          {/* Main grid */}
+          <div
+            className="relative mx-auto w-full px-10 xl:px-12"
+            style={{
+              maxWidth: 1360,
+              display: "grid",
+              gridTemplateColumns: "minmax(0,420px) 1fr",
+              gap: "clamp(48px,6vw,100px)",
+              alignItems: "start",
+            }}
+          >
+            {/* Left: text + selectors + CTAs */}
+            <div>
+              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
+                TWO WAYS TO MOVE FORWARD
+              </p>
 
-            <p
-              className="mt-4 mb-0 text-[#4a5c62]"
-              style={{ fontSize: "clamp(14px,1.15vw,17px)", lineHeight: 1.68, maxWidth: 420 }}
-            >
-              Follow the guided IR-1 roadmap, use focused tools and resources
-              independently, and choose the support style that fits what you need
-              right now.
-            </p>
+              <h2
+                className="mt-4 mb-0 font-extrabold text-[#162126]"
+                style={{
+                  fontSize: "clamp(30px,4.2vw,60px)",
+                  lineHeight: 1.0,
+                  maxWidth: 440,
+                }}
+              >
+                Choose how you want to use Rahvana
+              </h2>
 
-            {/* Active label — fixed height prevents layout shift */}
-            <div style={{ minHeight: 80, marginTop: 22, overflow: "hidden" }}>
+              <p
+                className="mt-4 mb-0 text-[#4a5c62]"
+                style={{
+                  fontSize: "clamp(14px,1.15vw,17px)",
+                  lineHeight: 1.68,
+                  maxWidth: 420,
+                }}
+              >
+                Follow the guided IR-1 roadmap, use focused tools and resources
+                independently, and choose the support style that fits what you
+                need right now.
+              </p>
+
+              {/* Active-panel label */}
+              <div style={{ minHeight: 80, marginTop: 22, overflow: "hidden" }}>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
+                      {twoWaysPaths[activeIndex].eyebrow}
+                    </p>
+                    <h3
+                      className="mb-0 mt-1.5 font-extrabold text-[#162126]"
+                      style={{
+                        fontSize: "clamp(17px,1.5vw,21px)",
+                        lineHeight: 1.2,
+                        maxWidth: 420,
+                      }}
+                    >
+                      {twoWaysPaths[activeIndex].shortTitle}
+                    </h3>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Selector buttons */}
+              <div className="mt-5 flex flex-col gap-1.5">
+                {twoWaysPaths.map((path, i) => {
+                  const isActive = activeIndex === i;
+                  return (
+                    <button
+                      key={path.title}
+                      type="button"
+                      onClick={() => selectPath(i as TwoWaysIndex)}
+                      aria-current={isActive ? "true" : undefined}
+                      className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
+                      style={{
+                        border: isActive
+                          ? "1.5px solid #0d7377"
+                          : "1px solid #e2ebe8",
+                        background: isActive ? "#f4fbfa" : "transparent",
+                        boxShadow: isActive
+                          ? "0 5px 18px rgba(13,115,119,0.10)"
+                          : "none",
+                        WebkitTapHighlightColor: "transparent",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span
+                        className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black"
+                        style={{
+                          width: 24,
+                          height: 24,
+                          background: isActive ? "#0d7377" : "transparent",
+                          color: isActive ? "white" : "#9aaeac",
+                          border: isActive ? "none" : "1.5px solid #c8d5d3",
+                          transition:
+                            "background 0.22s, color 0.22s, border-color 0.22s",
+                        }}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="text-[15px] font-black leading-tight"
+                          style={{
+                            color: isActive ? "#0d7377" : "#162126",
+                            transition: "color 0.22s",
+                          }}
+                        >
+                          {path.title}
+                        </div>
+                        <div
+                          className="mt-0.5 text-[12px] leading-snug"
+                          style={{
+                            color: isActive ? "#4a5c62" : "#9aaeac",
+                            transition: "color 0.22s",
+                          }}
+                        >
+                          {path.teaser}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* CTAs */}
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <Link
+                  href={journeyHref}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13.5px] font-bold text-white no-underline"
+                  style={{ boxShadow: "0 10px 24px rgba(13,115,119,0.22)" }}
+                >
+                  Start the Roadmap
+                  <ArrowRight className="size-3.5" />
+                </Link>
+                <Link
+                  href={toolsHref}
+                  className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] no-underline"
+                >
+                  Browse Resources
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: animated visual */}
+            {reduceMotion ? (
+              <div className="flex min-w-0 flex-col gap-5">
+                <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                <ResponsiveVisual index={activeIndex} />
+              </div>
+            ) : (
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={activeIndex}
-                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex min-w-0 flex-col gap-5"
+                  initial={{ opacity: 0, y: 18, scale: 0.988 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.992 }}
+                  transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
-                    {twoWaysPaths[activeIndex].eyebrow}
-                  </p>
-                  <h3
-                    className="mb-0 mt-1.5 font-extrabold text-[#162126]"
-                    style={{ fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.2, maxWidth: 420 }}
-                  >
-                    {twoWaysPaths[activeIndex].shortTitle}
-                  </h3>
+                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                  <ResponsiveVisual index={activeIndex} />
                 </motion.div>
               </AnimatePresence>
-            </div>
+            )}
+          </div>
+        </div>
+      </section>
 
-            {/* Path selector buttons */}
-            <div className="mt-5 flex flex-col gap-1.5">
-              {twoWaysPaths.map((path, i) => {
-                const isActive = activeIndex === i;
-                return (
+      {/* ── Mobile / tablet (below lg): stacked, click to switch ─────────── */}
+      <section
+        aria-label="Two ways to use Rahvana"
+        className="block lg:hidden mt-32 sm:mt-40"
+        style={{
+          background:
+            "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+          borderTop: "1px solid #e1ebe8",
+          borderBottom: "1px solid #e1ebe8",
+        }}
+      >
+        <div
+          className="relative mx-auto px-5 sm:px-8 py-14 sm:py-16"
+          style={{ maxWidth: 1360 }}
+        >
+          <div className="grid grid-cols-1 gap-y-10">
+            {/* Text + selectors */}
+            <div>
+              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
+                TWO WAYS TO MOVE FORWARD
+              </p>
+              <h2
+                className="mt-4 mb-0 font-extrabold text-[#162126]"
+                style={{ fontSize: "clamp(30px,6.5vw,40px)", lineHeight: 1.05 }}
+              >
+                Choose how you want to use Rahvana.
+              </h2>
+              <p
+                style={{
+                  fontSize: 16,
+                  lineHeight: 1.65,
+                  color: "#4a5c62",
+                  margin: "14px 0 28px 0",
+                }}
+              >
+                Use the full IR-1 roadmap, or jump into focused tools and
+                resources when you need targeted help.
+              </p>
+
+              <div className="space-y-3">
+                {twoWaysPaths.map((path, i) => (
                   <button
                     key={path.title}
                     type="button"
-                    onClick={() => selectPath(i as TwoWaysIndex)}
-                    aria-current={isActive ? "true" : undefined}
-                    className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
-                    style={{
-                      border: isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
-                      background: isActive ? "#f4fbfa" : "transparent",
-                      boxShadow: isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
-                      WebkitTapHighlightColor: "transparent",
-                      cursor: "pointer",
-                    }}
+                    onClick={() => setActiveIndex(i as TwoWaysIndex)}
+                    aria-current={activeIndex === i ? "true" : undefined}
+                    className={`flex w-full items-start gap-3 rounded-[18px] border p-4 text-left transition ${
+                      activeIndex === i
+                        ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_12px_28px_rgba(13,115,119,0.12)]"
+                        : "border-[#d7e6e2] bg-white/80"
+                    }`}
                   >
                     <span
-                      className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black transition-[background,color,border-color]"
-                      style={{
-                        width: 24, height: 24,
-                        background: isActive ? "#0d7377" : "transparent",
-                        color: isActive ? "white" : "#9aaeac",
-                        border: isActive ? "none" : "1.5px solid #c8d5d3",
-                      }}
+                      className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
+                        activeIndex === i
+                          ? "bg-[#0d7377] text-white"
+                          : "border border-[#c8d5d3] text-[#7f9290]"
+                      }`}
                     >
-                      {String(i + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, "00")}
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="text-[15px] font-black leading-tight transition-colors"
-                        style={{ color: isActive ? "#0d7377" : "#162126" }}
+                    <div>
+                      <h3
+                        className={`text-lg font-black leading-tight ${
+                          activeIndex === i
+                            ? "text-[#0d7377]"
+                            : "text-[#162126]"
+                        }`}
                       >
                         {path.title}
-                      </div>
-                      <div
-                        className="mt-0.5 text-[12px] leading-snug transition-colors"
-                        style={{ color: isActive ? "#4a5c62" : "#9aaeac" }}
-                      >
+                      </h3>
+                      <p className="mt-1 text-sm leading-6 text-[#4a5c62]">
                         {path.teaser}
-                      </div>
+                      </p>
                     </div>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
 
-            {/* CTAs */}
-            <div className="mt-5 flex flex-wrap gap-2.5">
+            {/* Visual preview card */}
+            <div className="overflow-hidden rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
+              <div className="p-5 sm:p-6">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              <div className="relative h-[300px] overflow-hidden border-t border-[#d7e6e2] bg-white sm:h-[380px]">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    className="absolute left-1/2 top-1/2 origin-center"
+                    style={{ width: 680, height: 560 }}
+                    initial={
+                      reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }
+                    }
+                    animate={{ opacity: 1, y: 0, scale: 0.5 }}
+                    exit={
+                      reduceMotion
+                        ? undefined
+                        : { opacity: 0, y: -8, scale: 0.49 }
+                    }
+                    transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <div style={{ transform: "translate(-50%, -50%)" }}>
+                      <TwoWaysVisual index={activeIndex} />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
               <Link
                 href={journeyHref}
-                className="inline-flex h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13.5px] font-bold text-white no-underline"
-                style={{ boxShadow: "0 10px 24px rgba(13,115,119,0.22)" }}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white"
               >
                 Start the Roadmap
-                <ArrowRight className="size-3.5" />
+                <ArrowRight className="size-4" />
               </Link>
               <Link
                 href={toolsHref}
-                className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] no-underline"
+                className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126]"
               >
                 Browse Resources
               </Link>
             </div>
           </div>
-
-          {/* Right column: support text + responsive visual */}
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={activeIndex}
-              className="flex min-w-0 flex-col gap-5"
-              initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.988 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -12, scale: 0.992 }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-              <ResponsiveVisual index={activeIndex} />
-            </motion.div>
-          </AnimatePresence>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
-
 export function TwoWaysScene() {
   return <TwoWaysSection />;
 }
@@ -1288,7 +1649,11 @@ export function TwoWaysSupportText({
       </h3>
       <p
         className="mt-2 mb-0 text-[#4a5c62]"
-        style={{ fontSize: "clamp(13px,1.1vw,15px)", lineHeight: 1.62, maxWidth: 520 }}
+        style={{
+          fontSize: "clamp(13px,1.1vw,15px)",
+          lineHeight: 1.62,
+          maxWidth: 520,
+        }}
       >
         {path.supportText}
       </p>
@@ -1447,182 +1812,355 @@ export function TwoWaysMobile({
 }
 
 export function GuidedRoadmapScene() {
+  const [steps, setSteps] = useState([
+    { id: 1, title: "Determine Eligibility", status: "done" },
+    { id: 2, title: "Gather Required Documents", status: "done" },
+    { id: 3, title: "Review Filing Methods", status: "todo" },
+    { id: 4, title: "Fill Form I-130", status: "todo" },
+    { id: 5, title: "Fill Form I-130A", status: "active" },
+    { id: 6, title: "Submit to USCIS", status: "todo" },
+    { id: 7, title: "Wait for Receipt", status: "todo" },
+    { id: 8, title: "Prepare for Biometrics", status: "todo" },
+  ]);
+  const [isBellOpen, setIsBellOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  // Chapter data for the horizontal nav + right step list
-  const chapterNav = [
-    { n: 1, label: "USCIS Petition",  color: "#8284BF", ring: "#B9BBE2", bg: "#F0F1FB", text: "#4E518C", pct: 33, active: true  },
-    { n: 2, label: "NVC / CEAC",      color: "#8B4388", ring: "#8B4388", bg: "#F4E6F3", text: "#520A50", pct: 0,  active: false },
-    { n: 3, label: "Med + Interview", color: "#31415F", ring: "#31415F", bg: "#E8ECF3", text: "#051738", pct: 0,  active: false },
-  ] as const;
+  const toggleStep = (id: number) => {
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (s.id === id) {
+          return {
+            ...s,
+            status:
+              s.status === "done" ? (id === 5 ? "active" : "todo") : "done",
+          };
+        }
+        return s;
+      }),
+    );
+  };
 
-  const steps = [
-    { id: 1, name: "Determine Eligibility",     done: true,  current: false },
-    { id: 2, name: "Gather Required Documents", done: true,  current: false },
-    { id: 3, name: "Review Filing Methods",     done: false, current: true  },
-    { id: 4, name: "Fill Form I-130",           done: false, current: false },
-    { id: 5, name: "Fill Form I-130A",          done: false, current: false },
-    { id: 6, name: "Submit to USCIS",           done: false, current: false },
-  ];
+  const completedCount = steps.filter((s) => s.status === "done").length;
+  const progressPct = Math.round((completedCount / steps.length) * 100);
+  const isAllDone = completedCount === steps.length;
 
   return (
-    <div style={{ width: 600, height: 500, borderRadius: 32, background: "#f4f7fb", border: "1px solid #dde8e6", boxShadow: "0 24px 80px rgba(15,23,42,0.13), 0 8px 24px rgba(15,23,42,0.07)", position: "absolute", left: 40, top: 30, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-
-      {/* ── Top bar (52px) ── */}
-      <div style={{ height: 52, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 18px", gap: 8, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 10, background: "linear-gradient(135deg, #0d7377, #0a5e62)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(13,115,119,0.28)" }}>
-            <Compass size={15} color="white" strokeWidth={2.5} />
+    <div
+      className="relative flex flex-col overflow-visible rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
+      style={{
+        width: 680,
+        height: 560,
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        transform: "translate(-50%, -50%)",
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[#e1ebe8] bg-white px-6 py-4 rounded-t-[32px]">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-[#0d7377] text-white">
+            <Compass className="size-6" />
           </div>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.06em", color: "#1e293b", lineHeight: 1 }}>IR-1 Journey</div>
-            <div style={{ fontSize: 9, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Islamabad Embassy · Online Filing</div>
-          </div>
-        </div>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ position: "relative" }}>
-            <Bell size={17} color="#64748b" strokeWidth={2} />
-            <div style={{ position: "absolute", top: -1, right: -1, width: 6, height: 6, borderRadius: "50%", background: "#ef4444", border: "1.5px solid white" }} />
-          </div>
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e2e8f0" }}>
-            <User size={14} color="#64748b" strokeWidth={2} />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Horizontal chapter timeline (42px) ── */}
-      <div style={{ height: 42, background: "white", borderBottom: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", gap: 0, flexShrink: 0 }}>
-        {chapterNav.map((ch, idx) => (
-          <div key={ch.n} style={{ display: "flex", alignItems: "center", flex: idx < 2 ? "none" : 1 }}>
-            {/* Node + label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
-              <div style={{ width: 24, height: 24, borderRadius: "50%", background: ch.active ? `linear-gradient(135deg, ${ch.color}, ${ch.color}bb)` : "#f1f5f9", border: `2px solid ${ch.active ? ch.ring : "#e2e8f0"}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: ch.active ? `0 0 0 3px ${ch.color}28` : "none", flexShrink: 0 }}>
-                {ch.active ? <span style={{ fontSize: 10, fontWeight: 900, color: "white" }}>{ch.n}</span> : <Lock size={9} color="#94a3b8" strokeWidth={2.5} />}
-              </div>
-              <div>
-                <div style={{ fontSize: 9.5, fontWeight: 800, color: ch.active ? "#1e293b" : "#94a3b8", lineHeight: 1, whiteSpace: "nowrap" }}>{ch.label}</div>
-                <div style={{ fontSize: 7.5, fontWeight: 700, color: ch.active ? ch.text : "#cbd5e1", marginTop: 1 }}>{ch.active ? `${ch.pct}% done` : "Locked"}</div>
-              </div>
+            <div className="text-[15px] font-black uppercase tracking-wide text-[#162126]">
+              IR-1 Journey
             </div>
-            {/* Connector line between chapters */}
-            {idx < 2 && <div style={{ flex: 1, height: 2, background: idx === 0 ? `linear-gradient(to right, ${chapterNav[0].ring}, #e2e8f0)` : "#e2e8f0", margin: "0 10px", minWidth: 24 }} />}
-          </div>
-        ))}
-      </div>
-
-      {/* ── Main area — two columns (362px total) ── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
-        {/* Left: Journey card (192px) */}
-        <div style={{ width: 192, background: "white", borderRight: "1px solid #edf2f0", padding: "14px 15px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-
-          {/* Chapter header */}
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#8284BF" }} className={reduceMotion ? "" : "animate-pulse"} />
-              <span style={{ fontSize: 8, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4E518C" }}>Chapter 1 · In Progress</span>
-            </div>
-            <div style={{ fontSize: 12.5, fontWeight: 900, color: "#1e293b", lineHeight: 1.25, marginBottom: 7 }}>USCIS Petition Filing</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{ flex: 1, height: 5, borderRadius: 99, background: "#e8edf2", overflow: "hidden" }}>
-                <div style={{ width: "33%", height: "100%", background: "linear-gradient(90deg, #8284BF, #4E518C)", borderRadius: 99 }} />
-              </div>
-              <span style={{ fontSize: 8.5, fontWeight: 800, color: "#4E518C", whiteSpace: "nowrap" }}>2/6</span>
-            </div>
-          </div>
-
-          <div style={{ height: 1, background: "#f0f4f3", marginBottom: 10 }} />
-
-          {/* Current step card */}
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8", marginBottom: 5 }}>Active Step</div>
-            <div style={{ background: "linear-gradient(135deg, #F0F1FB, #f9f9fe)", borderRadius: 10, padding: "9px 10px", border: "1px solid #B9BBE2" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#4E518C", lineHeight: 1.3, marginBottom: 3 }}>Review Filing Methods</div>
-              <div style={{ fontSize: 9, color: "#64748b", lineHeight: 1.45 }}>Step 3 of 6 · Online or paper mail?</div>
-            </div>
-          </div>
-
-          {/* Alert */}
-          <div style={{ borderRadius: 9, padding: "7px 9px", background: "#fffbeb", border: "1px solid #fde68a", marginBottom: 10 }}>
-            <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#f59e0b", marginTop: 3.5, flexShrink: 0 }} />
-              <span style={{ fontSize: 9, color: "#92400e", lineHeight: 1.45 }}>Fresh NADRA records required for ISL embassy.</span>
-            </div>
-          </div>
-
-          {/* CTA — marginTop: auto, never cropped */}
-          <button type="button" style={{ width: "100%", background: "linear-gradient(135deg, #0d7377 0%, #0a9e6e 100%)", border: "none", borderRadius: 11, padding: "11px 14px", color: "white", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, cursor: "pointer", boxShadow: "0 4px 14px rgba(13,115,119,0.28)", marginTop: "auto", flexShrink: 0 }}>
-            Continue Step
-            <ArrowRight size={13} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* Right: Step list (flex: 1) */}
-        <div style={{ flex: 1, padding: "14px 14px", overflowY: "auto", scrollbarWidth: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-            <Signpost size={11} color="#0d7377" strokeWidth={2.5} />
-            <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#64748b" }}>Chapter 1 Steps</span>
-            <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800, color: "#4E518C", background: "#F0F1FB", border: "1px solid #B9BBE2", padding: "2px 7px", borderRadius: 5 }}>2 / 6 done</span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {steps.map((step, idx) => (
-              <div key={step.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: step.current ? "8px 10px" : "5px 10px", borderRadius: 10, background: step.current ? "linear-gradient(to right, #F0F1FB, #f9f9fe)" : "transparent", border: step.current ? "1.5px solid #B9BBE2" : "1px solid transparent", boxShadow: step.current ? "0 2px 7px rgba(130,132,191,0.12)" : "none" }}>
-                {step.done ? (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Check size={10} color="white" strokeWidth={3} />
-                  </div>
-                ) : step.current ? (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#8284BF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 3px rgba(130,132,191,0.22)" }}>
-                    <ChevronRight size={10} color="white" strokeWidth={3} />
-                  </div>
-                ) : (
-                  <div style={{ width: 19, height: 19, borderRadius: "50%", border: "1.5px solid #dde8e6", background: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: "#cbd5e1" }}>{idx + 1}</span>
-                  </div>
-                )}
-                <span style={{ fontSize: 11.5, fontWeight: step.current ? 800 : step.done ? 600 : 500, color: step.current ? "#4E518C" : step.done ? "#059669" : "#94a3b8" }}>
-                  {step.name}
+            <div className="text-xs text-[#6b8097]">
+              Islamabad Embassy · Online Filing
+              {!isAllDone && (
+                <span className="ml-2 inline-flex items-center gap-1 font-bold text-[#0d7377]">
+                  · Click steps to try demo
                 </span>
-                {step.current && <span style={{ marginLeft: "auto", fontSize: 8, fontWeight: 900, color: "#4E518C", background: "rgba(130,132,191,0.15)", padding: "2px 7px", borderRadius: 5, textTransform: "uppercase", flexShrink: 0 }}>Active</span>}
-              </div>
-            ))}
+              )}
+            </div>
           </div>
-
-          {/* Locked chapters – compact */}
-          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 5 }}>
-            {[
-              { n: 2, label: "NVC / CEAC Processing", steps: "8 steps" },
-              { n: 3, label: "Medical + Interview",    steps: "6 steps" },
-            ].map(ch => (
-              <div key={ch.n} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 10px", borderRadius: 9, background: "white", border: "1px dashed #e2e8f0" }}>
-                <div style={{ width: 19, height: 19, borderRadius: "50%", background: "#f1f5f9", border: "1.5px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Lock size={9} color="#94a3b8" strokeWidth={2.5} />
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>Ch. {ch.n} · {ch.label}</span>
-                <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 700, color: "#cbd5e1", flexShrink: 0 }}>{ch.steps}</span>
-              </div>
-            ))}
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsBellOpen(!isBellOpen)}
+            className="relative flex size-10 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors focus:outline-none"
+          >
+            <Bell className="size-5" />
+            <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#e34242] ring-2 ring-white" />
+            <AnimatePresence>
+              {isBellOpen && (
+                <motion.div
+                  initial={
+                    reduceMotion ? false : { opacity: 0, y: 5, scale: 0.95 }
+                  }
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={
+                    reduceMotion ? undefined : { opacity: 0, y: 5, scale: 0.95 }
+                  }
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-12 z-[100] w-64 rounded-xl border border-[#dde8e6] bg-white p-4 shadow-xl text-left"
+                >
+                  <div className="text-xs font-bold text-[#162126]">
+                    Notifications
+                  </div>
+                  <div className="mt-2 rounded-lg bg-[#f0f3f7] p-2 text-xs text-[#4a5c62]">
+                    <span className="font-bold text-[#0d7377]">
+                      NADRA Review:
+                    </span>{" "}
+                    Your documents have been processed and are ready.
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </button>
+          <div className="flex size-10 items-center justify-center rounded-full border border-[#dde8e6] bg-[#f0f3f7] text-[#6b8097]">
+            <User className="size-5" />
           </div>
         </div>
       </div>
 
-      {/* ── Bottom stats bar (44px) ── */}
-      <div style={{ height: 44, background: "white", borderTop: "1px solid #edf2f0", display: "flex", alignItems: "center", padding: "0 20px", flexShrink: 0 }}>
-        {([
-          { label: "Steps Done",    value: "2 / 18"    },
-          { label: "Chapter",       value: "1 of 3"    },
-          { label: "Est. Timeline", value: "~8 months" },
-          { label: "Overall",       value: "17%"       },
-        ] as const).map((stat, i) => (
-          <div key={stat.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-            {i > 0 && <div style={{ width: 1, height: 18, background: "#e8edf2", marginRight: "auto", flexShrink: 0 }} />}
-            <div style={{ flex: 1, textAlign: "center" }}>
-              <div style={{ fontSize: 7.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8" }}>{stat.label}</div>
-              <div style={{ fontSize: 11.5, fontWeight: 900, color: "#1e293b", marginTop: 1 }}>{stat.value}</div>
+      {/* Horizontal Stepper */}
+      <div className="flex items-center gap-4 border-b border-[#e1ebe8] bg-white px-6 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-full bg-[#8284bf] text-sm font-bold text-white shadow-sm">
+            1
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#162126]">
+              USCIS Petition
+            </div>
+            <div className="text-[10px] text-[#6b8097]">
+              {Math.round(33 + completedCount * 1.5)}% done
             </div>
           </div>
-        ))}
+        </div>
+        <div className="h-px w-8 bg-[#dde8e6]" />
+        <div className="flex items-center gap-3 opacity-50">
+          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
+            <Lock className="size-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#6b8097]">NVC / CEAC</div>
+            <div className="text-[10px] text-[#6b8097]">Locked</div>
+          </div>
+        </div>
+        <div className="h-px w-8 bg-[#dde8e6]" />
+        <div className="flex items-center gap-3 opacity-50">
+          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
+            <Lock className="size-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#6b8097]">
+              Med + Interview
+            </div>
+            <div className="text-[10px] text-[#6b8097]">Locked</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Left Sidebar */}
+        <div className="w-[240px] flex-shrink-0 border-r border-[#e1ebe8] bg-white p-5 flex flex-col relative z-10">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4E518C]">
+            <div className="size-1.5 rounded-full bg-[#4E518C]" />
+            CHAPTER 1 · IN PROGRESS
+          </div>
+          <h2 className="mt-2 text-[22px] font-black leading-tight text-[#162126]">
+            USCIS Petition Filing
+          </h2>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="h-1.5 flex-1 rounded-full bg-[#eef1f7] overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-[#8284bf]"
+                initial={false}
+                animate={{ width: `${62.5 + completedCount * 3.5}%` }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              />
+            </div>
+            <span className="text-[11px] font-bold text-[#162126] w-8 text-right">
+              {completedCount} / 8
+            </span>
+          </div>
+
+          <div className="mt-8 text-[10px] font-bold uppercase tracking-widest text-[#6b8097]">
+            Active Step
+          </div>
+          <div className="mt-2 rounded-xl border border-[#c8d1dc] bg-[#f8f9fb] p-3 shadow-sm">
+            <div className="font-bold text-[#162126]">Fill Form I-130A</div>
+            <div className="mt-1 text-[11px] text-[#6b8097]">
+              Step 5 of 8 · In progress
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fef3c7]/40 p-3">
+            <div className="flex gap-2">
+              <div className="mt-1 size-1.5 shrink-0 rounded-full bg-[#d97706]" />
+              <div className="text-xs text-[#92400e] leading-snug">
+                Fresh NADRA records required for ISL embassy.
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-auto pt-6">
+            <button
+              onClick={() => toggleStep(5)}
+              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] px-4 py-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#0a5c5f] hover:shadow-lg focus:outline-none"
+            >
+              <span>
+                {steps[4].status === "done"
+                  ? "Mark Incomplete"
+                  : "Continue Step"}
+              </span>
+              <ArrowRight className="size-4" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* Right Content */}
+        <div className="flex-1 bg-[#f9fafb] p-5 overflow-y-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#0d7377"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377]">
+              CHAPTER 1 STEPS
+            </div>
+            <div className="ml-auto rounded border border-[#d0e4f7] bg-white px-2 py-0.5 text-[9px] font-bold text-[#6b8097]">
+              {completedCount} / 8 DONE
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            {steps.map((step) => {
+              const isDone = step.status === "done";
+              const isActive = step.status === "active";
+
+              return (
+                <motion.div
+                  key={step.id}
+                  layout
+                  className={`relative flex items-center justify-between rounded-xl border p-3 transition-all ${
+                    isActive
+                      ? "border-[#8284bf] bg-[#f0f1fb] shadow-sm"
+                      : isDone
+                        ? "border-[#e1ebe8] bg-white"
+                        : "border-transparent hover:border-[#dde8e6] hover:bg-white"
+                  } group cursor-pointer`}
+                  onClick={() => toggleStep(step.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex size-7 items-center justify-center rounded-full transition-all ${
+                        isDone
+                          ? "bg-[#0d7377] text-white shadow-sm"
+                          : isActive
+                            ? "bg-[#8284bf] text-white"
+                            : "border border-[#dde8e6] bg-white text-[10px] font-bold text-[#6b8097]"
+                      }`}
+                    >
+                      {isDone ? (
+                        <Check className="size-4" strokeWidth={3} />
+                      ) : isActive ? (
+                        <ChevronRight className="size-4" strokeWidth={3} />
+                      ) : (
+                        step.id
+                      )}
+                    </div>
+
+                    <span
+                      className={`text-[13px] font-bold transition-colors ${
+                        isDone
+                          ? "text-[#0d7377]"
+                          : isActive
+                            ? "text-[#4E518C]"
+                            : "text-[#6b8097]"
+                      }`}
+                    >
+                      {step.title}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {isActive && !isDone && (
+                      <span className="rounded-md bg-[#e0e2f5] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-[#4E518C]">
+                        Active
+                      </span>
+                    )}
+                    {!isDone && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStep(step.id);
+                        }}
+                        className={`rounded-md px-2.5 py-1.5 text-[10px] font-black transition-all ${
+                          isActive
+                            ? "bg-[#0d7377] text-white shadow-md hover:bg-[#0a5c5f]"
+                            : "opacity-0 group-hover:opacity-100 text-[#0d7377] hover:underline underline-offset-2"
+                        }`}
+                      >
+                        {isActive ? "Mark Completed" : "Complete"}
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-dashed border-[#dde8e6] bg-white p-3.5 opacity-60">
+              <div className="flex items-center gap-2">
+                <Lock className="size-4 text-[#6b8097]" />
+                <span className="text-[13px] font-bold text-[#6b8097]">
+                  Ch. 2 · NVC / CEAC Processing
+                </span>
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+                Locked
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="grid grid-cols-4 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-3.5 text-center rounded-b-[32px] relative z-20">
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Steps Done
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            {completedCount} / 18
+          </div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Chapter
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            1 of 3
+          </div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Est. Timeline
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            ~8 months
+          </div>
+        </div>
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Overall
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            {Math.round(17 + completedCount * 1.2)}%
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1630,310 +2168,371 @@ export function GuidedRoadmapScene() {
 
 // ── tools ──
 const featuredTools = [
-  { id: "strength",    icon: Brain,         label: "Case Strength",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe" },
-  { id: "action",      icon: LifeBuoy,      label: "Action Plan",    bg: "#ecfdf5", fg: "#059669", border: "#d1fae5" },
-  { id: "path",        icon: Compass,       label: "Path Finder",    bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5" },
-  { id: "interview",   icon: MessageSquare, label: "Interview Prep", bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe" },
-  { id: "sponsorship", icon: Calculator,    label: "Sponsorship",    bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6" },
-  { id: "dq",          icon: Clock,         label: "DQ Watch",       bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff" },
-  { id: "bulletin",    icon: Calendar,      label: "Bulletin",       bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1" },
-  { id: "photo",       icon: Camera,        label: "Photo Booth",    bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3" },
-  { id: "pdf",         icon: Files,         label: "PDF Toolkit",    bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd" },
-  { id: "filler",      icon: Wand2,         label: "Form Filler",    bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa" },
-  { id: "status",      icon: FileSearch,    label: "Case Status",    bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" },
+  { id: "strength",    icon: Brain,         iconSize: 20, label: "Case Strength Analyzer",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe", iconSrc: "/icons/case-strength-analyser.svg" },
+  { id: "action",      icon: LifeBuoy,      iconSize: 20, label: "221(g) Action Planner",   bg: "#ecfdf5", fg: "#059669", border: "#d1fae5", iconSrc: "/icons/221g-action-plan.svg"        },
+  { id: "path",        icon: Compass,       iconSize: 18, label: "Visa Path Finder",        bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5", iconSrc: "/icons/visa-path-finder.svg"         },
+  { id: "interview",   icon: MessageSquare, iconSize: 18, label: "Interview Prep",          bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe", iconSrc: "/icons/interview-prep.svg"           },
+  { id: "sponsorship", icon: Calculator,    iconSize: 20, label: "Sponsorship Calculator",  bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6", iconSrc: "/icons/sponsorship-calculator.svg"   },
+  { id: "dq",          icon: Clock,         iconSize: 20, label: "DQ Status Check",         bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff", iconSrc: "/icons/dq-case-tracker.svg"          },
+  { id: "bulletin",    icon: Calendar,      iconSize: 19, label: "Visa Bulletin Monitor",   bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1", iconSrc: "/icons/visa-bulletin-monitor.svg"    },
+  { id: "photo",       icon: Camera,        iconSize: 18, label: "Photo Booth",             bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3", iconSrc: "/icons/photo-booth.svg"              },
+  { id: "pdf",         icon: Files,         iconSize: 19, label: "PDF Tool Kit",            bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd", iconSrc: "/icons/pdf-toolbox.svg"              },
+  { id: "snap",        icon: PenTool,       iconSize: 18, label: "Snap & Sign",             bg: "#eef2ff", fg: "#4f46e5", border: "#c7d2fe", iconSrc: "/icons/snap-and-sign.svg"            },
+  { id: "filler",      icon: Wand2,         iconSize: 20, label: "Smart Form Filler",       bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa", iconSrc: "/icons/smart-form-filler.svg"        },
 ];
 
 const toolContent: Record<string, any> = {
   strength: {
-    eyebrow: "Analysis Tool",
-    title: "Case Strength Meter",
-    desc: "Analyze your family links, domicile, and evidence quality.",
-    stats: [["Approval Probability", "High"], ["Evidence Score", "88/100"]],
-    badge: "Strong family ties detected",
-    badgeDesc: "Your case shows consistent communication and financial interdependence.",
-    recoTitle: "Evidence Recommendation",
-    recoMain: "Joint Bank Statements",
-    recoDesc: "Adding 3-6 months of joint statements can further solidify your domicile evidence.",
-    recoTags: ["Joint Taxes", "Lease/Deed"]
+    eyebrow: "Case Review",
+    title: "Case Strength Analyzer",
+    desc: "Review your IR-1 evidence and get a clear picture of what's strong, what's missing, and what to fix before you submit.",
+    steps: [
+      {
+        n: 1,
+        label: "Upload & Input",
+        desc: "Share your relationship details, documents, and case info.",
+      },
+      {
+        n: 2,
+        label: "Analyze & Find Gaps",
+        desc: "Checks your evidence and flags weak areas against approval patterns.",
+      },
+      {
+        n: 3,
+        label: "Review & Fix",
+        desc: "Get a list of exactly what to strengthen before submission.",
+      },
+    ],
+    tips: ["Joint Bank Statements", "Domicile Proof", "Communication Logs"],
   },
   action: {
-    eyebrow: "Strategy Guide",
-    title: "Step-by-Step Action Plan",
-    desc: "Customized checklist based on your current IR-1 stage.",
-    stats: [["Next Deadline", "In 12 Days"], ["Tasks Pending", "4"]],
-    badge: "NVC Stage approaching",
-    badgeDesc: "You are currently in the transition phase from USCIS to NVC.",
-    recoTitle: "Next Priority Task",
-    recoMain: "Order Police Certificates",
-    recoDesc: "Pakistan police certificates can take 2 weeks. Start this process now.",
-    recoTags: ["NADRA FRC", "Passport Scan"]
+    eyebrow: "Post-Interview",
+    title: "221(g) Action Planner",
+    desc: "Got a 221(g) slip after your interview? This tool tells you what documents are needed and what to do next — step by step.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Your Slip",
+        desc: "Input the details from your 221(g) or AP notice.",
+      },
+      {
+        n: 2,
+        label: "Get Your Checklist",
+        desc: "See exactly which documents are required and how to format them.",
+      },
+      {
+        n: 3,
+        label: "Submit & Track",
+        desc: "Know where to send your response and what to expect next.",
+      },
+    ],
+    tips: ["CEAC Tracking", "Embassy Contact", "AP Timeline"],
   },
   path: {
-    eyebrow: "Navigation",
-    title: "Journey Navigator",
-    desc: "Visualizing your remaining milestones and estimated dates.",
-    stats: [["Est. Interview", "Oct 2026"], ["Journey Progress", "32%"]],
-    badge: "Path optimized for ISL",
-    badgeDesc: "Timeline adjusted based on Islamabad embassy processing trends.",
-    recoTitle: "Timeline Insights",
-    recoMain: "Documentary Qualified",
-    recoDesc: "Estimated time to reach DQ status is currently 4.5 months for IR-1.",
-    recoTags: ["NVC Queue", "Interview Wait"]
+    eyebrow: "Getting Started",
+    title: "Visa Path Finder",
+    desc: "Starting your IR-1 journey and not sure where to begin? Answer a few quick questions and get a clear recommendation with your first action.",
+    steps: [
+      {
+        n: 1,
+        label: "Answer 5 Questions",
+        desc: "Tell us about your relationship, citizenship, and current situation.",
+      },
+      {
+        n: 2,
+        label: "Confirm Your Path",
+        desc: "We confirm IR-1 is the right category and explain what that means.",
+      },
+      {
+        n: 3,
+        label: "See Your Next Step",
+        desc: "Get one clear action to take right now — petition, sponsor, or prepare.",
+      },
+    ],
+    tips: ["IR-1 Eligibility", "Petitioner vs Beneficiary", "Where to Start"],
   },
   interview: {
     eyebrow: "Preparation",
-    title: "Interview Simulator",
-    desc: "Practice common Islamabad Embassy interview questions.",
-    stats: [["Questions Ready", "45+"], ["Focus Area", "Relationship"]],
-    badge: "High focus on domicile",
-    badgeDesc: "Officers are currently scrutinizing US domicile for Pakistan cases.",
-    recoTitle: "Sample Question",
-    recoMain: "How do you stay in touch?",
-    recoDesc: "Prepare to show chat logs, call history, and money transfer receipts.",
-    recoTags: ["Common Traps", "Body Language"]
+    title: "Interview Prep",
+    desc: "Practice real Islamabad Embassy questions, learn what officers focus on, and walk in prepared — not guessing.",
+    steps: [
+      {
+        n: 1,
+        label: "Pick Your Focus",
+        desc: "Choose areas to practice — relationship, finances, or domicile.",
+      },
+      {
+        n: 2,
+        label: "Practice Questions",
+        desc: "Go through real ISL questions with model answers.",
+      },
+      {
+        n: 3,
+        label: "Build Confidence",
+        desc: "Know officer patterns and be ready for tough questions.",
+      },
+    ],
+    tips: ["Joint Finances", "Communication Proof", "Future Plans"],
   },
   sponsorship: {
-    eyebrow: "Focused Task",
-    title: "Affidavit Support Calculator",
-    desc: "Determine sponsorship setup and likely form path.",
-    stats: [["Sponsor income", "$48,000"], ["Required income", "$25,550"]],
-    badge: "Income appears sufficient",
-    badgeDesc: "Recommends the likely form path and supporting evidence to prepare.",
-    recoTitle: "Likely form recommendation",
-    recoMain: "Form I-864EZ",
-    recoDesc: "Suggested when the petitioner is the sole sponsor and income qualifies.",
-    recoTags: ["Tax transcript", "Pay stubs"]
+    eyebrow: "Financial Check",
+    title: "Sponsorship Calculator",
+    desc: "Check if the petitioner's income meets the I-864 poverty guideline threshold — and find out which form applies to your case.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Income",
+        desc: "Input the petitioner's income, household size, and assets.",
+      },
+      {
+        n: 2,
+        label: "Check Threshold",
+        desc: "Compared against the 2025 poverty guideline for your household.",
+      },
+      {
+        n: 3,
+        label: "Get Your Form",
+        desc: "See if I-864 or I-864EZ applies and if a joint sponsor is needed.",
+      },
+    ],
+    tips: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
   },
   dq: {
-    eyebrow: "Monitoring",
-    title: "DQ Watchdog",
-    desc: "Tracking NVC processing times and common RFE traps.",
-    stats: [["Avg. NVC Review", "18 Days"], ["Common Error", "Signatures"]],
-    badge: "Active RFE monitoring",
-    badgeDesc: "We track the latest rejection trends to help you avoid delays.",
-    recoTitle: "Critical Checklist",
-    recoMain: "Signature Verification",
-    recoDesc: "Ensure all PDF forms have hand-written signatures before scanning.",
-    recoTags: ["File Sizes", "Scan Clarity"]
+    eyebrow: "Scheduling",
+    title: "DQ Status Check",
+    desc: "See which Documentarily Qualified months are being scheduled at Islamabad right now, and estimate when your interview window will open.",
+    steps: [
+      {
+        n: 1,
+        label: "Select Embassy",
+        desc: "Choose your embassy — Islamabad or another consulate.",
+      },
+      {
+        n: 2,
+        label: "See Current Month",
+        desc: "Check which DQ months are being called right now.",
+      },
+      {
+        n: 3,
+        label: "Estimate Your Wait",
+        desc: "Compare your DQ month to see your approximate interview window.",
+      },
+    ],
+    tips: ["DQ Date", "Scheduling Month", "Wait Estimate"],
   },
   bulletin: {
-    eyebrow: "Priority Watch",
-    title: "Visa Bulletin Tracker",
-    desc: "Priority date monitoring and movement predictions.",
-    stats: [["Next Release", "5 Days"], ["Current Movement", "2 Months"]],
-    badge: "IR-1 is current",
-    badgeDesc: "Immediate relatives do not have a wait list for priority dates.",
-    recoTitle: "NVC Fee Payment",
-    recoMain: "Pay ASAP upon invoice",
-    recoDesc: "Paying fees immediately prevents NVC system lag and secures your place.",
-    recoTags: ["AOS Fee", "IV Fee"]
+    eyebrow: "Priority Date",
+    title: "Visa Bulletin Monitor",
+    desc: "IR-1 is always current — but if you're on a preference category, your priority date needs to be current before you can move forward. Track it here every month.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Priority Date",
+        desc: "Enter your priority date from your I-130 approval notice.",
+      },
+      {
+        n: 2,
+        label: "Check This Month",
+        desc: "We compare it to the latest Visa Bulletin cutoff dates automatically.",
+      },
+      {
+        n: 3,
+        label: "Track Movement",
+        desc: "See how many months the bulletin moved and whether your date is current.",
+      },
+    ],
+    tips: ["IR-1 Always Current", "Priority Date", "Monthly Updates"],
   },
   photo: {
-    eyebrow: "Compliance",
-    title: "Photo Booth Validator",
-    desc: "Verify your US visa photo against strict requirements.",
-    stats: [["Success Rate", "99%"], ["Common Fail", "Shadows"]],
-    badge: "ISL Studio database",
-    badgeDesc: "Matches requirements used by major studios in Islamabad/Lahore.",
-    recoTitle: "Photo Requirement",
-    recoMain: "2x2 Inches White Background",
-    recoDesc: "No glasses allowed. Neutral expression with both ears visible.",
-    recoTags: ["Head Size", "Lighting"]
+    eyebrow: "Photo Requirement",
+    title: "Photo Booth",
+    desc: "Make a compliant U.S. visa photo without a studio visit. Upload any photo and get a properly formatted 2×2 inch result.",
+    steps: [
+      {
+        n: 1,
+        label: "Upload Your Photo",
+        desc: "Take or upload any clear, front-facing photo.",
+      },
+      {
+        n: 2,
+        label: "Auto-Crop & Format",
+        desc: "Cropped to 2×2 inches, white background — embassy standard.",
+      },
+      {
+        n: 3,
+        label: "Download & Use",
+        desc: "Save your compliant photo and attach it to your application.",
+      },
+    ],
+    tips: ["No Glasses", "Neutral Expression", "Both Ears Visible"],
   },
   pdf: {
-    eyebrow: "Optimization",
-    title: "PDF Toolkit",
-    desc: "Organizing documents for NVC upload (max 2MB limit).",
-    stats: [["Max File Size", "2.0 MB"], ["Format Required", "PDF/JPG"]],
-    badge: "NVC-Ready scans",
-    badgeDesc: "Optimized resolution for CEAC system compatibility and readability.",
-    recoTitle: "Scanning Tip",
-    recoMain: "300 DPI Resolution",
-    recoDesc: "Balance clarity with file size. Use grayscale for non-photo documents.",
-    recoTags: ["Merge PDFs", "Compress File"]
+    eyebrow: "Document Tools",
+    title: "PDF Tool Kit",
+    desc: "Merge, compress, and format your immigration documents to meet NVC's strict 2MB upload limit and CEAC requirements.",
+    steps: [
+      {
+        n: 1,
+        label: "Upload Your Files",
+        desc: "Add PDFs, images, or scanned documents from any device.",
+      },
+      {
+        n: 2,
+        label: "Merge or Compress",
+        desc: "Combine files or reduce size to meet NVC's 2MB limit.",
+      },
+      {
+        n: 3,
+        label: "Download Ready",
+        desc: "Get a clean, NVC-ready PDF formatted for CEAC upload.",
+      },
+    ],
+    tips: ["Merge PDFs", "Compress Files", "Convert to PDF"],
+  },
+  snap: {
+    eyebrow: "Signatures",
+    title: "Snap & Sign",
+    desc: "Anywhere a signature is required — forms, letters, declarations, or documents — Snap & Sign creates a clean, professional digital signature in seconds.",
+    steps: [
+      {
+        n: 1,
+        label: "Draw, Type or Upload",
+        desc: "Choose how you want to create your signature — freehand, typed style, or upload an existing one.",
+      },
+      {
+        n: 2,
+        label: "Preview & Adjust",
+        desc: "Resize, reposition, and tweak until it looks exactly right on any form.",
+      },
+      {
+        n: 3,
+        label: "Download & Use",
+        desc: "Save as a transparent PNG and drop it onto any document, form, or PDF that needs signing.",
+      },
+    ],
+    tips: [
+      "Any Immigration Form",
+      "Letters & Declarations",
+      "Works on Mobile & Desktop",
+    ],
   },
   filler: {
-    eyebrow: "Automation",
-    title: "Smart Form Assistant",
-    desc: "Guided logic for complex sections of DS-260 and I-130.",
-    stats: [["Forms Covered", "I-130, DS-260"], ["Help Prompts", "120+"]],
-    badge: "Contextual Pakistani data",
-    badgeDesc: "Pre-filled address patterns and relationship terminology for Pakistan.",
-    recoTitle: "Section Highlight",
-    recoMain: "Social Media History",
-    recoDesc: "NVC now requires 5 years of social media handles. Have them ready.",
-    recoTags: ["Previous Travel", "Work History"]
-  },
-  status: {
-    eyebrow: "Tracking",
-    title: "Case Status Pro",
-    desc: "Automated status checking with historical trend analysis.",
-    stats: [["Last Check", "30m ago"], ["Current Status", "At NVC"]],
-    badge: "24/7 Automated monitor",
-    badgeDesc: "Get instant notifications if your USCIS or CEAC status changes.",
-    recoTitle: "Status Insight",
-    recoMain: "Case Creation",
-    recoDesc: "Usually takes 2-6 weeks for NVC to create case after USCIS approval.",
-    recoTags: ["Welcome Letter", "NVC ID"]
+    eyebrow: "Form Completion",
+    title: "Smart Form Filler",
+    desc: "Fill I-130, DS-260, and I-864 without the confusion. Enter your details once and get a completed, submission-ready PDF.",
+    steps: [
+      {
+        n: 1,
+        label: "Enter Your Details",
+        desc: "Fill in personal and case info once in a simple guided flow.",
+      },
+      {
+        n: 2,
+        label: "Auto-Fill Form",
+        desc: "Data mapped to the correct fields on the official form.",
+      },
+      {
+        n: 3,
+        label: "Download PDF",
+        desc: "Get a completed, submission-ready PDF in minutes.",
+      },
+    ],
+    tips: ["DS-260", "I-130A", "Review Before Submit"],
   },
 };
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
-const ITEM_W   = 108;
-const GAP      = 20;
-const STRIDE   = ITEM_W + GAP;
+const ITEM_W = 108;
+const GAP = 20;
+const STRIDE = ITEM_W + GAP;
 const DURATION = 28;
 
+// ── carousel: CSS auto-scroll, pauses on hover ────────────────────────────────
 
-// ── carousel with JS scroll & rAF centre-pop ──────────────────────────────────
-
-function ToolCarousel({ activeIdx }: { activeIdx: number }) {
-  const wrapRef  = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const rafRef   = useRef<number>(0);
-  const loopWidth = featuredTools.length * STRIDE;
-  
-  // Calculate continuous scroll position
-  const [scrollPos, setScrollPos] = useState(0);
-  const prevIdx = useRef(activeIdx);
-  const internalOffset = useRef(0);
+function ToolCarousel({
+  activeIdx,
+  onSelect,
+  onHoverChange,
+}: {
+  activeIdx: number;
+  onSelect: (idx: number) => void;
+  onHoverChange: (h: boolean) => void;
+}) {
+  const N         = featuredTools.length;
+  const COPIES    = 20;
+  const totalStep = useRef(10 * N); // start at copy 10, icon 0
+  const prevIdx   = useRef(activeIdx);
+  const [offset, setOffset]     = useState(() => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2));
+  const [animated, setAnimated] = useState(true);
 
   useEffect(() => {
-    // If activeIdx advanced by 1, move scroll by 1 STRIDE
-    if (activeIdx !== prevIdx.current) {
-      let diff = activeIdx - prevIdx.current;
-      if (diff < 0) diff += featuredTools.length; // wrap around
-      internalOffset.current += diff * STRIDE;
-      setScrollPos(internalOffset.current);
-      prevIdx.current = activeIdx;
-    }
-  }, [activeIdx]);
+    if (activeIdx === prevIdx.current) return;
+    // Advance by correct steps forward (handles wrap-around 10→0)
+    const diff = (activeIdx - prevIdx.current + N) % N;
+    totalStep.current += diff || N;
+    prevIdx.current = activeIdx;
+    setAnimated(true);
+    setOffset(300 - (GAP + totalStep.current * STRIDE + ITEM_W / 2));
+  }, [activeIdx, N]);
 
-  // rAF: measure every icon's distance from carousel centre → set inline styles
-  useEffect(() => {
-    const run = () => {
-      const wrap = wrapRef.current;
-      if (wrap) {
-        const wRect = wrap.getBoundingClientRect();
-        const centerX = wRect.left + wRect.width / 2;
-        const hotZone = wRect.width * 0.14; // pop region
-
-        wrap.querySelectorAll<HTMLElement>(".tc-icon-box").forEach((el) => {
-          const r = el.getBoundingClientRect();
-          const elCX = r.left + r.width / 2;
-          const dist = Math.abs(elCX - centerX);
-          const t = Math.max(0, 1 - dist / hotZone); // 0…1
-
-          const scale  = 1 + t * 0.22;
-          const lift   = -t * 5;
-          const border = el.dataset.border ?? "rgba(0,0,0,0.1)";
-          const shadow = `0 ${4 + t * 12}px ${12 + t * 18}px -4px ${border}`;
-
-          el.style.transform = `translateY(${lift}px) scale(${scale})`;
-          el.style.boxShadow = shadow;
-          el.style.zIndex = t > 0.5 ? "10" : "1";
-        });
-      }
-      rafRef.current = requestAnimationFrame(run);
-    };
-    rafRef.current = requestAnimationFrame(run);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
-
-  // Use plenty of clones so it can scroll infinitely
-  const items = [...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools, ...featuredTools];
-  // Center offset so the first item is in the middle initially
-  const initialOffset = 300 - (ITEM_W / 2) - GAP; 
+  const items = Array.from({ length: COPIES }, () => featuredTools).flat();
 
   return (
     <div
-      ref={wrapRef}
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
       style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        width: "100%",
-        height: 138,
-        overflow: "hidden",
-        borderTop: "1px solid #e8edf2",
+        position: "absolute", bottom: 0, left: 0, width: "100%", height: 138,
+        overflow: "hidden", borderTop: "1px solid #e8edf2",
         background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
-        display: "flex",
-        alignItems: "center",
-        WebkitMaskImage:
-          "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
-        maskImage:
-          "linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)",
+        WebkitMaskImage: "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        maskImage:       "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
       }}
     >
-      <div aria-hidden style={{
-        position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
-        background:
-          "radial-gradient(ellipse 28% 100% at 50% 50%,rgba(13,115,119,0.05),transparent 70%)",
-      }}/>
-
-      <div 
-        ref={trackRef}
+      <div
         style={{
-          display: "flex",
-          gap: GAP,
-          paddingLeft: GAP,
-          transform: `translateX(${initialOffset - scrollPos}px)`,
-          transition: "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)", // smooth slide between items
+          display: "flex", alignItems: "center", gap: GAP,
+          paddingLeft: GAP, height: "100%",
+          transform: `translateX(${offset}px)`,
+          transition: animated ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
           willChange: "transform",
         }}
       >
         {items.map((tool, idx) => {
-          const Icon = tool.icon;
+          const toolIdx  = idx % N;
+          const isActive = toolIdx === activeIdx;
+          const Icon     = tool.icon;
           return (
-            <div key={idx} style={{
-              display:"flex", flexDirection:"column", alignItems:"center",
-              gap:9, width:ITEM_W, flexShrink:0, position:"relative",
-            }}>
+            <div
+              key={idx}
+              onClick={() => onSelect(toolIdx)}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, width: ITEM_W, flexShrink: 0, cursor: "pointer" }}
+            >
+              {/* Icon box — pops when active */}
               <div
-                className="tc-icon-box"
-                data-border={tool.border}
                 style={{
-                  width:54, height:54,
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  borderRadius:16,
-                  background:tool.bg,
-                  border:`1.5px solid ${tool.border}`,
-                  boxShadow:`0 6px 16px -4px ${tool.border}`,
-                  position:"relative", overflow:"hidden",
-                  transition:"transform 0.1s ease-out, box-shadow 0.1s ease",
-                  transformOrigin:"50% 100%", 
-                  cursor:"default",
+                  width: 54, height: 54, minWidth: 54, minHeight: 54,
+                  borderRadius: 16, background: tool.fg,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transform: isActive ? "scale(1.13)" : "scale(1)",
+                  transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  outline: isActive ? `3px solid ${tool.fg}` : "none",
+                  outlineOffset: isActive ? "3px" : "0",
+                  boxShadow: isActive ? `0 8px 24px ${tool.fg}55` : "none",
                 }}
               >
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "radial-gradient(circle at 28% 28%,rgba(255,255,255,0.55),transparent 65%)",
-                  }}
-                />
-                <Icon
-                  size={24}
-                  color={tool.fg}
-                  strokeWidth={2}
-                  style={{ position: "relative" }}
-                />
+                <Icon size={tool.iconSize} color="white" strokeWidth={1.75} />
               </div>
-
+              {/* Fixed-height label so all icons sit at same level */}
               <span
                 style={{
-                  fontSize: 9.5,
-                  fontWeight: 800,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.07em",
-                  color: "#5a6a72",
-                  textAlign: "center",
-                  lineHeight: 1.3,
-                  maxWidth: 90,
-                  pointerEvents: "none",
+                  fontSize: 9.5, fontWeight: isActive ? 900 : 700,
+                  textTransform: "uppercase", letterSpacing: "0.07em",
+                  color: isActive ? tool.fg : "#5a6a72",
+                  textAlign: "center", lineHeight: 1.3, width: 90,
+                  height: 26, display: "flex", alignItems: "flex-start", justifyContent: "center",
+                  pointerEvents: "none", transition: "color 0.3s",
                 }}
               >
                 {tool.label}
@@ -1946,221 +2545,143 @@ function ToolCarousel({ activeIdx }: { activeIdx: number }) {
   );
 }
 
-// ── Main scene ────────────────────────────────────────────────────────────────
-
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [visible, setVisible]     = useState(true);
+  const [isPaused, setIsPaused]   = useState(false);
 
-  // Auto-advance: pause 2.5s at current, then crossfade to next
+  const goTo = useCallback((idx: number) => {
+    const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
+    setVisible(false);
+    window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 200);
+  }, []);
+
+  // Auto-advance every 5 s — shows each tool for 5 seconds
   useEffect(() => {
-    const pause = window.setTimeout(() => {
+    if (isPaused) return;
+    const t = window.setTimeout(() => {
       setVisible(false);
       window.setTimeout(() => {
         setActiveIdx((i) => (i + 1) % featuredTools.length);
         setVisible(true);
-      }, 300); // fade-out duration
-    }, 2700);
-    return () => window.clearTimeout(pause);
-  }, [activeIdx]);
+      }, 280);
+    }, 5000);
+    return () => window.clearTimeout(t);
+  }, [activeIdx, isPaused]);
 
   const tool    = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
     <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
       style={{
-        width: 600,
-        height: 500,
-        borderRadius: 32,
-        background: "white",
-        border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position: "absolute",
-        left: 40,
-        top: 30,
-        overflow: "hidden",
+        width: 600, height: 500, borderRadius: 32,
+        background: "white", border: "1px solid #dde8e6",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        position: "absolute", left: 40, top: 30,
+        overflow: "hidden", display: "flex", flexDirection: "column",
       }}
     >
-      {/* ── Info panel — fades on tool change ── */}
+      {/* ── Top bar — tool colour ── */}
       <div
         style={{
-          position   : "relative",
-          width      : "100%",
-          height     : 362,
-          opacity    : visible ? 1 : 0,
-          transform  : visible ? "translateY(0)" : "translateY(6px)",
-          transition : "opacity 0.28s ease, transform 0.28s ease",
+          height: 54, flexShrink: 0, background: tool.fg,
+          display: "flex", alignItems: "center",
+          padding: "0 20px", gap: 10,
+          transition: "background 0.3s ease",
         }}
       >
-        {/* Hero card — left column */}
-        <div
-          style={{
-            position      : "absolute",
-            left          : 22, top : 24,
-            width         : 288, height: 310,
-            borderRadius  : 24,
-            background    : "white",
-            border        : `2px solid ${tool.fg}`,
-            boxShadow     : `0 16px 48px ${tool.border}55`,
-            padding       : "16px",
-            display       : "flex",
-            flexDirection : "column",
-          }}
-        >
-          {/* Eyebrow badge */}
-          <span
-            style={{
-              display       : "inline-flex",
-              borderRadius  : 999,
-              border        : `1px solid ${tool.border}`,
-              background    : tool.bg,
-              padding       : "3px 10px",
-              fontSize      : 9.5, fontWeight: 800,
-              textTransform : "uppercase",
-              letterSpacing : "0.1em",
-              color         : tool.fg,
-              alignSelf     : "flex-start",
-            }}
-          >
+        <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {(() => { const Icon = tool.icon; return <div style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon size={16} color="white" strokeWidth={1.75} /></div>; })()}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 8.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.7)", lineHeight: 1 }}>
             {content.eyebrow}
-          </span>
-
-          <h3 style={{ fontSize:19, fontWeight:800, lineHeight:1.15, color:"#162126", margin:"10px 0 0" }}>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: "white", lineHeight: 1.2, marginTop: 2 }}>
             {content.title}
-          </h3>
-          <p style={{ fontSize:12.5, lineHeight:1.6, color:"#4a5c62", margin:"6px 0 0" }}>
+          </div>
+        </div>
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          style={{
+            flexShrink: 0, background: "white", color: tool.fg,
+            border: "none", borderRadius: 20, padding: "6px 14px",
+            fontSize: 11, fontWeight: 800, cursor: "pointer",
+            textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5,
+          }}
+        >
+          Get Started
+          <ArrowRight size={11} strokeWidth={2.5} />
+        </a>
+      </div>
+
+      {/* ── Main content ── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {/* Left: description + steps */}
+        <div
+          style={{
+            flex: 1, padding: "14px 16px",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(6px)",
+            transition: "opacity 0.25s ease, transform 0.25s ease",
+          }}
+        >
+          <div style={{ fontSize: 11.5, color: "#4a5c62", lineHeight: 1.6, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f0f4f8" }}>
             {content.desc}
-          </p>
-
-          <div style={{ marginTop:"auto", display:"flex", flexDirection:"column", gap:7 }}>
-            {content.stats.map(([label, value]: [string, string]) => (
+          </div>
+          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 8 }}>
+            How it works
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+            {content.steps.map((step: any) => (
               <div
-                key={label}
-                style={{
-                  display:"flex", alignItems:"center", justifyContent:"space-between",
-                  borderRadius:10, border:"1px solid #e2e8f0",
-                  background:"#f7fafc", padding:"6px 12px",
-                }}
+                key={step.n}
+                style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f8fafc", borderRadius: 12, padding: "9px 12px", border: "1px solid #f0f4f8" }}
               >
-                <span style={{ fontSize:11.5, color:"#4a5c62", fontWeight:600 }}>{label}</span>
-                <span style={{ fontSize:12.5, fontWeight:800, color:"#162126" }}>{value}</span>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: tool.fg, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 900, flexShrink: 0, transition: "background 0.3s" }}>
+                  {step.n}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, marginBottom: 2 }}>{step.label}</div>
+                  <div style={{ fontSize: 10.5, color: "#64748b", lineHeight: 1.5 }}>{step.desc}</div>
+                </div>
               </div>
             ))}
-
-            {/* Status badge */}
-            <div style={{ borderRadius:10, border:`1px solid ${tool.border}`, background:tool.bg, padding:"7px 12px" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:6, color:tool.fg }}>
-                <Check style={{ width:11, height:11 }} strokeWidth={3} />
-                <span style={{ fontSize:11.5, fontWeight:800 }}>{content.badge}</span>
-              </div>
-              <p style={{ fontSize:10.5, lineHeight:1.5, color:"#4a5c62", margin:"3px 0 0" }}>
-                {content.badgeDesc}
-              </p>
-            </div>
           </div>
         </div>
 
-        {/* Right column ── eyebrow */}
-        <div style={{ position:"absolute", left:328, top:26, fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.12em", color:"#a0b0b8" }}>
-          Related guides
-        </div>
-
-        {/* Guide card */}
+        {/* Right: key items */}
         <div
           style={{
-            position     : "absolute",
-            left         : 324, top: 46,
-            width        : 252, height: 80,
-            borderRadius : 16,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "11px 14px",
-            boxShadow    : "0 4px 14px rgba(15,23,42,0.06)",
-            display      : "flex", alignItems:"center", gap:12,
+            width: 148, background: "#f8fafc", borderLeft: "1px solid #f0f4f8",
+            padding: "14px 12px", display: "flex", flexDirection: "column", gap: 6,
+            opacity: visible ? 1 : 0, transition: "opacity 0.25s ease",
           }}
         >
-          <div style={{ width:42, height:42, borderRadius:12, background:tool.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-            <Lightbulb size={20} color={tool.fg} />
+          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 4 }}>
+            Key Items
           </div>
-          <div>
-            <div style={{ fontSize:12, fontWeight:800, color:"#162126", lineHeight:1.2 }}>How to use {tool.label}</div>
-            <div style={{ fontSize:10.5, lineHeight:1.4, color:"#6b8097", marginTop:4 }}>Step-by-step guide & FAQs</div>
-          </div>
-        </div>
-
-        {/* Insight / recommendation card */}
-        <div
-          style={{
-            position     : "absolute",
-            left         : 320, top: 142,
-            width        : 258,
-            borderRadius : 20,
-            background   : "white",
-            border       : "1px solid #dde8e6",
-            padding      : "14px 16px",
-            boxShadow    : "0 4px 16px rgba(15,23,42,0.06)",
-          }}
-        >
-          <div style={{ fontSize:9, fontWeight:800, textTransform:"uppercase", letterSpacing:"0.1em", color:"#6b8097" }}>
-            {content.recoTitle}
-          </div>
-
-          <div
-            style={{
-              marginTop  : 10,
-              borderRadius: 12,
-              background : "#051738",
-              padding    : "11px 14px",
-            }}
-          >
-            <div style={{ fontSize: 21, fontWeight: 800, color: "white", lineHeight: 1.1 }}>
-              Form I-864EZ
-            </div>
-            <p
-              style={{
-                fontSize  : 10.5,
-                lineHeight: 1.55,
-                color     : "rgba(255,255,255,0.72)",
-                marginTop : 5,
-                marginBottom: 0,
-              }}
+          {content.tips.map((tip: string) => (
+            <div
+              key={tip}
+              style={{ background: "white", borderRadius: 9, border: `1px solid ${tool.border}`, padding: "7px 10px", fontSize: 10.5, fontWeight: 700, color: tool.fg, lineHeight: 1.3, transition: "border-color 0.3s, color 0.3s" }}
             >
-              Suggested when the petitioner is the sole sponsor and income qualifies from employment.
-            </p>
-          </div>
-
-          <div
-            style={{
-              marginTop           : 10,
-              display             : "grid",
-              gridTemplateColumns : "1fr 1fr",
-              gap                 : 6,
-            }}
-          >
-            {["Tax transcript", "Pay stubs"].map((item) => (
-              <div
-                key={item}
-                style={{
-                  borderRadius: 8,
-                  border      : "1px solid #e2e8f0",
-                  background  : "#f7fafc",
-                  padding     : "5px 8px",
-                  fontSize    : 10,
-                  fontWeight  : 700,
-                  color       : "#2C3A3E",
-                }}
-              >
-                {item}
-              </div>
-            ))}
-          </div>
+              {tip}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── bottom carousel strip with centre-pop ── */}
-      <ToolCarousel activeIdx={activeIdx} />
+      {/* ── Carousel ── */}
+      <ToolCarousel
+        activeIdx={activeIdx}
+        onSelect={(idx) => { goTo(idx); setIsPaused(true); }}
+        onHoverChange={setIsPaused}
+      />
     </div>
   );
 }
@@ -2269,144 +2790,6 @@ function InteractiveClockWidget() {
 
         {/* Hands Container */}
         <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
-          <div
-            className="absolute w-[1.5px] rounded-full bg-[#0B666A]/15 origin-bottom shadow-[inset_0_1px_2px_rgba(11,102,106,0.1)]"
-            style={{ height: CLOCK_RADIUS * 0.6, bottom: '50%', transform: `rotate(180deg)` }}
-          />
-
-          <motion.div
-            className="absolute origin-bottom filter drop-shadow-[0_8px_16px_rgba(8,54,58,0.40)]"
-            style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: springAngle }}
-          >
-            <div className="w-[3.2px] h-full rounded-full bg-gradient-to-t from-[#041f23] via-[#0b7a7f] to-[#0d9398] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
-            <div className="absolute -top-1.5 -left-[5px] w-3 h-3 rounded-full bg-white border-2 border-[#041f23] shadow-[0_3px_8px_rgba(8,54,58,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)]" />
-          </motion.div>
-
-          {/* Premium Center Pin Stack */}
-          <div className="absolute w-5 h-5 rounded-full bg-gradient-to-b from-white to-[#f0f8f9] shadow-[0_4px_12px_rgba(0,0,0,0.12),inset_0_2px_4px_rgba(255,255,255,1)] z-20 flex items-center justify-center border-2 border-white">
-            <div className="w-2 h-2 rounded-full bg-gradient-to-b from-[#0B666A] to-[#041f23] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Enhanced Floating Time Display */}
-      <motion.div
-        animate={{ y: isHovered ? -3 : 0, scale: isHovered ? 1.02 : 1 }}
-        className="bg-gradient-to-b from-white via-white to-[#f8fbfc] backdrop-blur-md border border-white/80 px-6 py-4 rounded-[20px] shadow-[0_16px_48px_rgba(11,102,106,0.14),inset_0_1px_2px_rgba(255,255,255,1)] z-20 relative overflow-hidden group"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
-        <span className="text-[32px] font-bold text-[#041f23] tracking-tight font-['Inter',sans-serif] select-none">
-          {timeStr} <span className="text-xs font-semibold text-[#0B666A]/75 uppercase ml-2 tracking-widest">EST</span>
-        </span>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-export function ConsultationBanner({
-  onConsultationClick,
-}: {
-  onConsultationClick: () => void;
-}) {
-  const reduceMotion = useReducedMotion();
-  const helpWith = [
-    "Talk through your exact case",
-    "Clarity on the roadmap & timelines",
-    "Understand document preparation",
-    "Get expert, tailored guidance"
-  ];
-  const leaveWith = [
-    "A clear, defined next step",
-    "Better case understanding",
-    "Confidence on preparation",
-    "Actionable, strategic direction"
-  ];
-  const cardSections = [
-    {
-      label: "What we discuss",
-      title: "Case clarity",
-      description: "Practical guidance on exactly what will move your case forward.",
-      accent: "bg-[#0A2342]/10",
-      number: "01",
-      items: helpWith,
-      baseDelay: 0.6,
-    },
-    {
-      label: "What you leave with",
-      title: "A real next move",
-      description: "A clearer decision and a tight plan for the next steps.",
-      accent: "bg-[#0A2342]/8",
-      number: "02",
-      items: leaveWith,
-      baseDelay: 0.75,
-    },
-  ];
-
-  return (
-    <section
-      aria-labelledby="consultation-heading"
-      className="relative -mt-24 overflow-hidden px-6 pt-8 pb-16 sm:px-8 sm:pt-10 lg:-mt-28 lg:pt-12 lg:pb-24 bg-[#F4F7F6]"
-    >
-      {/* Elevated Dynamic Jewel-Tone Background — unified with landing palette */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large soft vignette to ground the whole section */}
-        <motion.div
-          animate={{ opacity: [0.7, 0.95, 0.7], scale: [1, 1.02, 1] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-[-10%] rounded-full pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse at center, rgba(11,102,106,0.06) 0%, rgba(10,35,66,0.04) 35%, transparent 60%)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-
-        {/* Recolored floating orbs aligned to site palette */}
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(6%, 9%) scale(1.08)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[12%] -left-[6%] w-[48vw] h-[48vw] rounded-full blur-[120px]"
-          style={{ background: '#0B666A', opacity: 0.085, mixBlendMode: 'screen' }}
-        />
-
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(-6%, -4%) scale(1.12)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-          className="absolute top-[18%] -right-[6%] w-[42vw] h-[42vw] rounded-full blur-[140px]"
-          style={{ background: '#0A2342', opacity: 0.07, mixBlendMode: 'screen' }}
-        />
-
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(8%, -8%) scale(1.06)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-          className="absolute -bottom-[18%] left-[18%] w-[62vw] h-[62vw] rounded-full blur-[160px]"
-          style={{ background: '#097969', opacity: 0.055, mixBlendMode: 'screen' }}
-        />
-
-        {/* Diagonal soft sheen to create a subtle 'wow' and tie tones together */}
-        <motion.div
-          animate={{ opacity: [0.0, 0.06, 0.0], rotate: [-4, 0, -4] }}
-          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(11,102,106,0.03) 45%, rgba(10,35,66,0.04) 100%)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-
-        {/* Very subtle noise texture for depth */}
-        <div
-          className="absolute inset-0"
-          style={{
-            opacity: 0.028,
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
-            mixBlendMode: 'soft-light',
-          }}
-        />
-      </div>
-
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative mx-auto max-w-[1140px] z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"

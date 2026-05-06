@@ -144,18 +144,18 @@ const TOOLS: Tool[] = [
     badge: "Live",
     entitlementFeature: "visa_bulletin_monitor",
   },
-  {
-    id: "uscis-case-status",
-    title: "USCIS Case Status",
-    description:
-      "Real-time USCIS case status lookup via the official Torch API.",
-    category: "Tracking",
-    href: "/case-status",
-    icon: FileSearch,
-    iconSrc: "/icons/checklist.svg",
-    badge: "Live",
-    // Public tool — no entitlement required
-  },
+  // {
+  //   id: "uscis-case-status",
+  //   title: "USCIS Case Status",
+  //   description:
+  //     "Real-time USCIS case status lookup via the official Torch API.",
+  //   category: "Tracking",
+  //   href: "/case-status",
+  //   icon: FileSearch,
+  //   iconSrc: "/icons/checklist.svg",
+  //   badge: "Live",
+  //   // Public tool — no entitlement required
+  // },
 
   // Docs & PDFs
   {
@@ -305,11 +305,6 @@ export default function ToolsPage({
         <UpgradeModal
           feature={upgradeModalFeature}
           onClose={() => setUpgradeModalFeature(null)}
-          onConfirm={(action: "upgrade" | "addon", target?: string) => {
-            // Redirect to pricing page with the selected plan pre-selected
-            const plan = typeof target === "string" ? target : "premium";
-            window.location.href = `/pricing?plan=${plan}`;
-          }}
         />
       )}
 
