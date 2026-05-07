@@ -184,12 +184,9 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         if (cancelled) return;
 
-        // Sync any missing steps from latest config into existing journey (silent, best-effort)
-        try {
-          await fetch(`/api/journeys/${targetJourneyId}/sync-steps`, { method: 'POST' });
-        } catch (syncErr) {
-          console.warn('[useWizard] Step sync failed (non-fatal):', syncErr);
-        }
+        // Sync any missing steps from latest config into existing journey (fire-and-forget, non-blocking)
+        fetch(`/api/journeys/${targetJourneyId}/sync-steps`, { method: 'POST' })
+          .catch(syncErr => console.warn('[useWizard] Step sync failed (non-fatal):', syncErr));
 
         if (cancelled) return;
 
