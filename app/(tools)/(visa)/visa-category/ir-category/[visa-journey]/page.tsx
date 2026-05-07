@@ -46,7 +46,7 @@ import { ProgressTree } from "./components/ProgressTree";
 import { StepDetail } from "./components/StepDetail";
 import { DocumentVault } from "./components/DocumentVault";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { RoadmapData, RoadmapStage } from "./components/types";
+import { RoadmapData } from "./components/types";
 import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutV2 from "./components/v2/RoadmapLayoutV2";
@@ -214,8 +214,7 @@ export default function IR1JourneyPage() {
       <RoadmapLayoutV2
         data={roadmapData}
         state={state}
-        actions={actions}
-        isLoaded={isLoaded && dataLoaded}
+        actions={actions as any}
       />
     );
   }
@@ -232,14 +231,14 @@ export default function IR1JourneyPage() {
                 <h1 className="text-3xl md:text-5xl font-bold">
                   {language === "ur" && (roadmapData as any).titleUr
                     ? (roadmapData as any).titleUr
-                    : (roadmapData as any).journey_name || roadmapData.title || t("ir1Journey.title")}
+                    : (roadmapData as any).journey_name || (roadmapData as any).title || t("ir1Journey.title")}
                 </h1>
                 <VisaCategoryTooltip roadmapData={roadmapData} language={language} />
               </div>
               <p className="text-slate-500 mb-6 md:mb-8 text-base md:text-lg max-w-2xl">
                 {language === "ur" && (roadmapData as any).descriptionUr
                   ? (roadmapData as any).descriptionUr
-                  : (roadmapData as any).journey_description || roadmapData.description || t("ir1Journey.description")}
+                  : (roadmapData as any).journey_description || (roadmapData as any).description || t("ir1Journey.description")}
               </p>
             </div>
             {isSignedIn && (
@@ -275,7 +274,7 @@ export default function IR1JourneyPage() {
                         </p>
                         <p className="font-semibold text-primary">
                           {roadmapData.scenarios ? (
-                            roadmapData.scenarios.find((s) => s.id === state.scenarioType)?.title
+                            roadmapData.scenarios.find((s: any) => s.id === state.scenarioType)?.title
                           ) : (
                             <>
                               {state.scenarioType === "bio" && "Biological Child"}
@@ -300,9 +299,9 @@ export default function IR1JourneyPage() {
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>{relationshipNotesOpen ? "Click to collapse" : "Click to expand"}</TooltipContent>
-                  {relationshipNotesOpen && roadmapData.scenarioNotes && roadmapData.scenarioNotes[state.scenarioType] && (
+                  {relationshipNotesOpen && (roadmapData as any).scenarioNotes && (roadmapData as any).scenarioNotes[state.scenarioType] && (
                     <div className="px-4 pb-4 text-sm text-muted-foreground border-t border-primary/10">
-                      {roadmapData.scenarioNotes[state.scenarioType]}
+                      {(roadmapData as any).scenarioNotes[state.scenarioType]}
                     </div>
                   )}
                 </div>
