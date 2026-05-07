@@ -437,78 +437,93 @@ function HomePageContent() {
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,22,0)_34%,rgba(5,12,22,0.22)_64%,rgba(5,12,22,0.88)_100%)]" />
 
               {/* 2xl:hidden */}
-              <div className="hidden lg:block">
-                <h1 className="absolute left-1/2 top-[50px] xl:top-[60px] 2xl:top-[65px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-[clamp(28px,3.2vw,48px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)] xl:top-[64px]">
-                  <span className="inline-block pb-2">
-                    Navigate your IR-1 journey with clarity.
-                  </span>
-                </h1>
-
-                <div className="absolute left-[5vw] top-[40vh] z-20 w-[300px] rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] xl:left-[10vw] xl:top-[38vh] xl:w-[350px] xl:px-8 xl:py-[30px] 2xl:left-[13vw] 2xl:w-[390px]">
-                  <AnimatePresence mode="wait">
-                    <motion.p
-                      key={heroScene}
-                      initial={{ opacity: 0, y: 18 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -14 }}
-                      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                      className={`${heroAnnotationFont.className} text-[28px] leading-[1.44] text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)] xl:text-[31px] xl:leading-[1.46]`}
-                    >
-                      {heroAnnotations[heroScene]}
-                    </motion.p>
-                  </AnimatePresence>
+              <div className="hidden lg:flex h-full flex-col relative z-10 px-[5vw] xl:px-[10vw] 2xl:px-[13vw]">
+                {/* Header Section */}
+                <div className="pt-[5vh] xl:pt-[7vh] 2xl:pt-[6vh]">
+                  <h1 className="relative z-10 w-full text-center text-[clamp(28px,3.2vw,48px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
+                    <span className="inline-block pb-2">
+                      Navigate your IR-1 journey with clarity.
+                    </span>
+                  </h1>
                 </div>
 
-                <svg
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-[27vw] top-[38vh] z-10 h-[118px] w-[32vw] overflow-visible xl:left-[33vw] xl:top-[37vh] xl:w-[25vw] 2xl:left-[34vw]"
-                  viewBox="0 0 470 140"
-                  fill="none"
-                >
-                  <defs>
-                    <filter
-                      id="heroConnectorGlow"
-                      x="-40%"
-                      y="-80%"
-                      width="180%"
-                      height="260%"
-                    >
-                      <feGaussianBlur stdDeviation="4" result="blur" />
-                      <feMerge>
-                        <feMergeNode in="blur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <path
-                    d="M -300 95 L 50 85 C 120 75 160 54 230 44 L 800 34"
-                    stroke="rgba(255,255,255,0.65)"
-                    strokeWidth="2"
-                    strokeDasharray="4 8"
-                    strokeLinecap="round"
-                  />
-                  <circle
-                    cx="50"
-                    cy="85"
-                    r="4.5"
-                    fill="rgba(255,255,255,0.96)"
-                    filter="url(#heroConnectorGlow)"
-                  />
-                  <circle
-                    cx="230"
-                    cy="44"
-                    r="4.5"
-                    fill="rgba(255,255,255,0.96)"
-                    filter="url(#heroConnectorGlow)"
-                  />
-                </svg>
+                {/* Middle Content - Centered vertically between header and CTA */}
+                <div className="relative flex-1 flex items-center justify-between w-full">
+                  {/* Annotation Card */}
+                  <div className="z-20 w-[300px] shrink-0 rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] xl:w-[350px] xl:px-8 xl:py-[30px] 2xl:w-[390px]">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={heroScene}
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -14 }}
+                        transition={{
+                          duration: 0.42,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        className={`${heroAnnotationFont.className} text-[28px] leading-[1.44] text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)] xl:text-[31px] xl:leading-[1.46]`}
+                      >
+                        {heroAnnotations[heroScene]}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
 
-                <div className="absolute right-[3vw] top-[75px] lg:top-[85px] xl:top-[90px] z-20 h-[clamp(470px,50vh,560px)] w-[clamp(560px,54vw,720px)] xl:right-[6vw] xl:top-[120px] xl:h-[clamp(500px,52vh,590px)] xl:w-[clamp(650px,47vw,760px)] 2xl:right-[11vw] 2xl:w-[clamp(700px,47vw,860px)]">
-                  <RealDashboardScene compact onSceneChange={setHeroScene} />
+                  {/* Connector Area - Bridges the gap between Card and Dashboard */}
+                  <div className="flex-1 relative h-[140px] z-10 mx-[-2px]">
+                    <svg
+                      className="absolute inset-0 w-full h-full overflow-visible"
+                      viewBox="0 0 1000 140"
+                      preserveAspectRatio="none"
+                      fill="none"
+                    >
+                      <defs>
+                        <filter
+                          id="heroConnectorGlow"
+                          x="-40%"
+                          y="-80%"
+                          width="180%"
+                          height="260%"
+                        >
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      </defs>
+                      <path
+                        d="M -500 100 L 0 85 C 222 84 388 18 811 35 C 916 39 944 41 1000 44 L 1500 48"
+                        stroke="rgba(255,255,255,0.65)"
+                        strokeWidth="2"
+                        strokeDasharray="4 8"
+                        strokeLinecap="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                    {/* Smooth Contact Circles - Fixed size to prevent distortion */}
+                    <div
+                      className="absolute left-0 top-[85px] -translate-x-1/2 -translate-y-1/2 z-20"
+                      style={{ filter: "url(#heroConnectorGlow)" }}
+                    >
+                      <div className="size-[9px] rounded-full bg-white/95 shadow-[0_0_15px_rgba(255,255,255,0.9)]" />
+                    </div>
+                    <div
+                      className="absolute right-0 top-[44px] translate-x-1/2 -translate-y-1/2 z-20"
+                      style={{ filter: "url(#heroConnectorGlow)" }}
+                    >
+                      <div className="size-[9px] rounded-full bg-white/95 shadow-[0_0_15px_rgba(255,255,255,0.9)]" />
+                    </div>
+                  </div>
+
+                  {/* Dashboard Demo */}
+                  <div className="z-20 h-[clamp(430px,48vh,560px)] w-[clamp(560px,54vw,720px)] shrink-0 xl:h-[clamp(450px,48vh,590px)] xl:w-[clamp(650px,47vw,760px)] 2xl:w-[clamp(700px,47vw,860px)]">
+                    <RealDashboardScene compact onSceneChange={setHeroScene} />
+                  </div>
                 </div>
 
-                <div className="absolute bottom-[8px] left-0 right-0 z-20 flex flex-col gap-4">
-                  <div className="flex px-[5vw] xl:px-[10vw] 2xl:px-[13vw]">
+                {/* Bottom CTA Section */}
+                <div className="pb-[8vh] xl:pb-[12vh] 2xl:pb-[14vh] z-20 flex flex-col gap-6">
+                  <div className="flex">
                     <Link
                       href={journeyHref}
                       className="inline-flex min-h-[57px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.38)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(13,115,119,0.46)]"
@@ -516,15 +531,9 @@ function HomePageContent() {
                       Start IR-1 Journey
                       <Icons.ArrowRight className="size-5" />
                     </Link>
-                    {/* <Link
-                      href="#how-it-works"
-                      className="inline-flex min-h-[57px] items-center justify-center rounded-[18px] border border-white/55 bg-[#08111f]/34 px-8 text-base font-black text-white shadow-[0_14px_32px_rgba(0,0,0,0.20)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/12"
-                    >
-                      See How It Works
-                    </Link> */}
                   </div>
                   <div className="">
-                    <p className="mx-auto text-center text-[15px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
+                    <p className="text-center text-[15px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
                       <span className="">
                         Rahvana gives you a structured step-by-step IR-1 roadmap
                         from petition filing to interview readiness with guided
