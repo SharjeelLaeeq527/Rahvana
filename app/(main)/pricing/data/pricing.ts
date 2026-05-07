@@ -107,7 +107,7 @@ export const defaultPlans: PlanData[] = [
       "Everything in Premium",
       "221(g) Action Planner",
       "Mock interview sessions",
-      "Expert document review — 2 sessions included",
+      "Expert case review — 2 sessions included",
       "Expert consultation calls — 2 sessions included",
       "PCC filing assistance (Sindh only)",
       "Document translation — 2 documents included",
@@ -157,7 +157,7 @@ export const CR2Plans: PlanData[] = [
       "Everything in Premium",
       "221(g) Action Planner",
       "Mock interview sessions",
-      "Expert document review — 2 sessions included",
+      "Expert case review — 2 sessions included",
       "Expert consultation calls — 2 sessions included",
       "PCC filing assistance (Sindh only)",
       "Document translation — 2 documents included",
@@ -248,7 +248,7 @@ export const COMPARISON_GROUPS = [
   {
     label: "Reviews & Support",
     rows: [
-      ["Expert Document Review",                    "—",             "—",             "2 included"  ],
+      ["Expert Case Review",                    "—",             "—",             "2 included"  ],
       ["Expert Consultation",                       "—",             "—",             "2 included"],
     ],
   },
@@ -257,7 +257,7 @@ export const COMPARISON_GROUPS = [
     rows: [
       ["PCC Filing (Sindh Only)",                   "—",             "—",             "Included"      ],
       ["Document Translation",                      "—",             "—",             "2 included" ],
-      ["Dedicated Case Manager",                    "—",             "—",             "—"],
+      // ["Dedicated Case Manager",                    "—",             "—",             "—"],
     ],
   },
 ];
@@ -325,7 +325,7 @@ export const ADDONS = [
   },
   {
     id: "doc-review",
-    title: "Expert Document Review",
+    title: "Expert Case Review",
     price: 59,
     unit: "per request",
     copy: "Human review of your application packet with written feedback on completeness, quality, and flagged issues.",
@@ -349,7 +349,7 @@ export const ADDONS = [
   },
   {
     id: "case-manager",
-    title: "Dedicated Case Manager",
+    // title: "Dedicated Case Manager",
     price: 300,
     unit: "per year",
     copy: "A named support contact who follows your case end-to-end, answers questions, and coordinates reviews.",

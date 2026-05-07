@@ -134,7 +134,7 @@ export const ADDON: Record<string, AddonInfo> = {
   },
   docReview: {
     id: "doc-review",
-    name: "Expert Document Review",
+    name: "Expert Case Review",
     price: 59,
     unit: "per request",
   },
@@ -174,12 +174,12 @@ export const ADDON: Record<string, AddonInfo> = {
     price: 5,
     unit: "per signature",
   },
-  caseManager: {
-    id: "case-manager",
-    name: "Dedicated Case Manager",
-    price: 300,
-    unit: "per year",
-  },
+  // caseManager: {
+  //   id: "case-manager",
+  //   name: "Dedicated Case Manager",
+  //   price: 300,
+  //   unit: "per year",
+  // },
 };
 
 // ─── Master entitlement table ─────────────────────────────────────────────────
@@ -439,12 +439,12 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Dedicated Case Manager.
    * Add-on at ALL tiers including Executive (never auto-included).
    */
-  case_manager: {
-    free: lockedBuy(ADDON.caseManager),
-    basic: lockedBuy(ADDON.caseManager),
-    premium: lockedBuy(ADDON.caseManager),
-    executive: lockedBuy(ADDON.caseManager),
-  },
+  // case_manager: {
+  //   free: lockedBuy(ADDON.caseManager),
+  //   basic: lockedBuy(ADDON.caseManager),
+  //   premium: lockedBuy(ADDON.caseManager),
+  //   executive: lockedBuy(ADDON.caseManager),
+  // },
 };
 
 // ─── Convenience lookup ───────────────────────────────────────────────────────
