@@ -1055,48 +1055,60 @@ function PricingContent() {
                           const cfg = ADDON_CONFIG[addon.id];
                           const Icon = cfg?.icon ?? Wand2;
                           return (
-                            <div
+                            <article
                               key={addon.id}
-                              className={`bg-card border rounded-[16px] p-4 flex gap-3 items-start transition-all ${isAdded ? "border-primary shadow-sm" : "border-border"}`}
+                              className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
                             >
                               <div
-                                className={`w-9 h-9 rounded-xl ${cfg?.iconBg ?? "bg-primary"} flex items-center justify-center shrink-0`}
+                                className={`resource-fcard-frame ${
+                                  cfg?.iconBg.includes("emerald") ||
+                                  cfg?.iconBg.includes("cyan")
+                                    ? "bg-[#EEF6F0] text-[#3A6E4A]"
+                                    : cfg?.iconBg.includes("indigo") ||
+                                        cfg?.iconBg.includes("blue")
+                                      ? "bg-[#EAF1FB] text-[#1A5FA3]"
+                                      : cfg?.iconBg.includes("amber") ||
+                                          cfg?.iconBg.includes("yellow")
+                                        ? "bg-[#FBF2E3] text-[#9B6220]"
+                                        : cfg?.iconBg.includes("violet") ||
+                                            cfg?.iconBg.includes("purple")
+                                          ? "bg-[#F3EFFE] text-[#5C3DAA]"
+                                          : "bg-[#FEF0F0] text-[#903030]"
+                                }`}
                               >
-                                <Icon className="w-4.5 h-4.5 text-white stroke-2" />
+                                <Icon className="w-7 h-7 opacity-70" />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start gap-2">
-                                  <div className="font-semibold text-[13.5px] leading-snug truncate">
-                                    {addon.title}
-                                  </div>
-                                  <div className="text-right shrink-0">
-                                    {/* <span className="font-bold text-[18px] leading-none"> */}
-                                    <span className="resource-fcard-price">
+
+                              <div className="resource-fcard-body">
+                                <h3 className="resource-fcard-name">
+                                  {addon.title}
+                                </h3>
+                                <p className="resource-fcard-desc">
+                                  {addon.copy}
+                                </p>
+
+                                <div className="resource-fcard-foot">
+                                  <div>
+                                    <div className="resource-fcard-price">
                                       ${addon.price}
-                                    </span>
-                                    <div className="text-[10px] text-muted-foreground">
+                                    </div>
+                                    <div className="resource-fcard-unit">
                                       {addon.unit}
                                     </div>
                                   </div>
+
+                                  <button
+                                    disabled={isAnyCheckoutLoading}
+                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                                    onClick={() => toggleAddon(addon.id)}
+                                  >
+                                    {isAdded
+                                      ? "✓ Added to order"
+                                      : "+ Add to order"}
+                                  </button>
                                 </div>
-                                <p className="text-muted-foreground text-[12px] mt-0.5 leading-[1.5] m-0 line-clamp-2">
-                                  {addon.copy}
-                                </p>
-                                <button
-                                  disabled={isAnyCheckoutLoading}
-                                  className={`mt-2 px-3 py-[5px] rounded-full text-[12px] font-semibold transition-colors border ${
-                                    isAnyCheckoutLoading
-                                      ? "opacity-50 cursor-not-allowed bg-muted/60 text-muted-foreground border-border"
-                                      : isAdded
-                                        ? "bg-muted/60 text-muted-foreground border-border cursor-pointer"
-                                        : "bg-[#0d7a5c] text-white border-transparent hover:bg-[#0a6048] cursor-pointer"
-                                  }`}
-                                  onClick={() => toggleAddon(addon.id)}
-                                >
-                                  {isAdded ? "✓ Added" : "+ Add"}
-                                </button>
                               </div>
-                            </div>
+                            </article>
                           );
                         })}
                       </div>
@@ -1122,7 +1134,7 @@ function PricingContent() {
                       </span>
                     </button>
                     {allAddonsOpen && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                         {ADDONS.filter(
                           (a) =>
                             !(PLAN_RECS[selectedPlan] || []).includes(a.id),
@@ -1131,47 +1143,60 @@ function PricingContent() {
                           const cfg = ADDON_CONFIG[addon.id];
                           const Icon = cfg?.icon ?? Wand2;
                           return (
-                            <div
+                            <article
                               key={addon.id}
-                              className={`bg-card border rounded-[16px] p-4 flex gap-3 items-start transition-all ${isAdded ? "border-primary shadow-sm" : "border-border"}`}
+                              className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
                             >
                               <div
-                                className={`w-9 h-9 rounded-xl ${cfg?.iconBg ?? "bg-primary"} flex items-center justify-center shrink-0`}
+                                className={`resource-fcard-frame ${
+                                  cfg?.iconBg.includes("emerald") ||
+                                  cfg?.iconBg.includes("cyan")
+                                    ? "bg-[#EEF6F0] text-[#3A6E4A]"
+                                    : cfg?.iconBg.includes("indigo") ||
+                                        cfg?.iconBg.includes("blue")
+                                      ? "bg-[#EAF1FB] text-[#1A5FA3]"
+                                      : cfg?.iconBg.includes("amber") ||
+                                          cfg?.iconBg.includes("yellow")
+                                        ? "bg-[#FBF2E3] text-[#9B6220]"
+                                        : cfg?.iconBg.includes("violet") ||
+                                            cfg?.iconBg.includes("purple")
+                                          ? "bg-[#F3EFFE] text-[#5C3DAA]"
+                                          : "bg-[#FEF0F0] text-[#903030]"
+                                }`}
                               >
-                                <Icon className="w-4.5 h-4.5 text-white stroke-2" />
+                                <Icon className="w-7 h-7 opacity-70" />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start gap-2">
-                                  <div className="font-semibold text-[13.5px] leading-snug truncate">
-                                    {addon.title}
-                                  </div>
-                                  <div className="text-right shrink-0">
-                                    <span className="font-bold text-[18px] leading-none">
+
+                              <div className="resource-fcard-body">
+                                <h3 className="resource-fcard-name">
+                                  {addon.title}
+                                </h3>
+                                <p className="resource-fcard-desc">
+                                  {addon.copy}
+                                </p>
+
+                                <div className="resource-fcard-foot">
+                                  <div>
+                                    <div className="resource-fcard-price">
                                       ${addon.price}
-                                    </span>
-                                    <div className="text-[10px] text-muted-foreground">
+                                    </div>
+                                    <div className="resource-fcard-unit">
                                       {addon.unit}
                                     </div>
                                   </div>
+
+                                  <button
+                                    disabled={isAnyCheckoutLoading}
+                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                                    onClick={() => toggleAddon(addon.id)}
+                                  >
+                                    {isAdded
+                                      ? "✓ Added to order"
+                                      : "+ Add to order"}
+                                  </button>
                                 </div>
-                                <p className="text-muted-foreground text-[12px] mt-0.5 leading-[1.5] m-0 line-clamp-2">
-                                  {addon.copy}
-                                </p>
-                                <button
-                                  disabled={isAnyCheckoutLoading}
-                                  className={`mt-2 px-3 py-[5px] rounded-full text-[12px] font-semibold transition-colors border ${
-                                    isAnyCheckoutLoading
-                                      ? "opacity-50 cursor-not-allowed bg-muted/60 text-muted-foreground border-border"
-                                      : isAdded
-                                        ? "bg-muted/60 text-muted-foreground border-border cursor-pointer"
-                                        : "bg-[#0d7a5c] text-white border-transparent hover:bg-[#0a6048] cursor-pointer"
-                                  }`}
-                                  onClick={() => toggleAddon(addon.id)}
-                                >
-                                  {isAdded ? "✓ Added" : "+ Add"}
-                                </button>
                               </div>
-                            </div>
+                            </article>
                           );
                         })}
                       </div>
@@ -1317,20 +1342,20 @@ function PricingContent() {
                           }`}
                         >
                           {/* Film holes top */}
-                          <div className="resource-fhole-row top">
+                          {/* <div className="resource-fhole-row top">
                             {[1, 2, 3, 4].map((i) => (
                               <div key={i} className="resource-fhole" />
                             ))}
-                          </div>
+                          </div> */}
 
                           <Icon className="w-7 h-7 opacity-70" />
 
                           {/* Film holes bottom */}
-                          <div className="resource-fhole-row bot">
+                          {/* <div className="resource-fhole-row bot">
                             {[1, 2, 3, 4].map((i) => (
                               <div key={i} className="resource-fhole" />
                             ))}
-                          </div>
+                          </div> */}
                         </div>
 
                         <div className="resource-fcard-body">
