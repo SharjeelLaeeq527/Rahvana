@@ -134,9 +134,9 @@ export default function IR1JourneyPage() {
 
   if (!isLoaded || !dataLoaded) {
     return (
-      <div className="min-h-screen w-full bg-[#f4f7fb] animate-in fade-in duration-300">
+      <div className="min-h-screen w-full bg-[#f4f7fb] animate-in fade-in duration-300 pt-[70px]">
         {/* Skeleton nav bar */}
-        <div className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 pt-2">
+        <div className="sticky top-[70px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40 pt-2">
           <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
         </div>
 
