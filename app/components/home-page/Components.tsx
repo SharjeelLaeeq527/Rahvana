@@ -1597,7 +1597,6 @@ export function TwoWaysSupportText({
         style={{
           fontSize: "clamp(13px,1.1vw,15px)",
           lineHeight: 1.62,
-          maxWidth: 520,
         }}
       >
         {path.supportText}
@@ -1981,13 +1980,7 @@ export function GuidedRoadmapScene() {
                         </div>
                       </div>
                       
-                      {isLocked && (
-                        <div className="absolute top-3.5 right-3.5">
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[7px] font-black uppercase text-slate-400 border border-slate-200">
-                            Upgrade
-                          </span>
-                        </div>
-                      )}
+
                     </div>
                   );
                 })}
@@ -2181,7 +2174,7 @@ export function GuidedRoadmapScene() {
                               {step[1]}
                             </div>
                             <div className="text-[11px] text-[#6b8097]">
-                              {isLocked ? "Pro Feature" : step[2]}
+                              {step[2]}
                             </div>
                           </div>
                         </div>
