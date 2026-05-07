@@ -38,6 +38,7 @@ import {
   RealDashboardScene,
   TwoWaysScene,
   ConsultationBanner,
+  JourneyConsultationBand,
 } from "./components/home-page/Components";
 
 export const journeyHref = "/visa-category/ir-category/ir1-journey";
@@ -702,9 +703,10 @@ function HomePageContent() {
               </div>
             </section>
 
-            <TwoWaysScene />
-
-            <ConsultationBanner onConsultationClick={handleConsultationClick} />
+            <JourneyConsultationBand>
+              <TwoWaysScene />
+              <ConsultationBanner onConsultationClick={handleConsultationClick} />
+            </JourneyConsultationBand>
 
             {/* FAQ SECTION */}
             <section className="py-8 md:py-12 bg-background" id="faq">

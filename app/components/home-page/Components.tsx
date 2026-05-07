@@ -151,7 +151,6 @@ export function StepRow({
   const isDone = status === "done";
   const isLocked = status === "locked";
   const isCurrent = status === "current" || active;
-
   return (
     <motion.div
       className={`relative flex items-center gap-3 rounded-[13px] border-[1.5px] px-4 py-3 shadow-[0_10px_28px_rgba(22,33,38,0.11),0_2px_8px_rgba(44,58,62,0.08)] ${
@@ -1240,7 +1239,7 @@ export function TwoWaysSection() {
             display: "flex",
             alignItems: "center",
             overflow: "hidden",
-            background: "#f7fbfa",
+            background: "transparent",
           }}
         >
           {/* Decorative radial highlights removed for seamless background */}
@@ -1457,7 +1456,7 @@ export function TwoWaysSection() {
         aria-label="Two ways to use Rahvana"
         className="block lg:hidden mt-32 sm:mt-40"
         style={{
-          background: "#f7fbfa",
+          background: "transparent",
         }}
       >
         <div
@@ -3283,8 +3282,8 @@ export function ConsultationBanner({
       description:
         "Practical guidance on exactly what will move your case forward.",
       accent: "#0B666A",
-      bg: "#F4F7F6",
-      pillBg: "rgba(11, 102, 106, 0.05)",
+      bg: "rgba(245,250,248,0.96)",
+      pillBg: "rgba(11, 102, 106, 0.08)",
       textColor: "#0F1F2A",
       labelColor: "#0B666A",
       number: "01",
@@ -3296,8 +3295,8 @@ export function ConsultationBanner({
       title: "A real next move",
       description: "A clearer decision and a tight plan for the next steps.",
       accent: "#B07D5B",
-      bg: "#FAF8F4",
-      pillBg: "rgba(176, 125, 91, 0.06)",
+      bg: "rgba(249,248,246,0.96)",
+      pillBg: "rgba(176, 125, 91, 0.10)",
       textColor: "#0F1F2A",
       labelColor: "#B07D5B",
       number: "02",
@@ -3311,7 +3310,7 @@ export function ConsultationBanner({
       aria-labelledby="consultation-heading"
       className="relative overflow-hidden"
       style={{
-        background: "#f7fbfa",
+        background: "transparent",
       }}
     >
       {/* Background decorations removed for seamless transition */}
@@ -3321,7 +3320,7 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto w-full px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"
+        className="relative mx-auto w-full px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.42fr_0.58fr] gap-14 lg:gap-20 xl:gap-28 items-center"
         style={{
           maxWidth: 1360,
           paddingTop: "clamp(48px,7vh,96px)",
@@ -3383,7 +3382,7 @@ export function ConsultationBanner({
             </motion.p>
           </div>
 
-          {/* Two-card illustrated grid */}
+         {/* Two-card illustrated grid */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -3394,17 +3393,17 @@ export function ConsultationBanner({
             {cardSections.map((card) => (
               <div
                 key={card.title}
-                className="group relative overflow-hidden rounded-[36px] border border-white/60 p-8 sm:p-9 shadow-[0_32px_64px_rgba(0,0,0,0.04)] transition-all duration-500 hover:shadow-[0_48px_80px_rgba(0,0,0,0.06)]"
+                className="group relative overflow-hidden rounded-2xl p-5 sm:p-6 shadow-[0_12px_30px_rgba(15,23,42,0.06)] transition-all duration-300"
                 style={{
                   background: `radial-gradient(circle at 70% 20%, white 0%, ${card.bg} 100%)`,
                 }}
               >
-                {/* Concentric rings decoration behind badge */}
-                <div className="absolute -right-16 -top-16 size-72 opacity-[0.05] pointer-events-none transition-transform duration-700 group-hover:scale-110">
+                {/* Subtle concentric rings behind badge (reduced) */}
+                <div className="absolute -right-16 -top-16 size-72 opacity-[0.02] pointer-events-none transition-transform duration-700 group-hover:scale-105">
                   {[...Array(12)].map((_, i) => (
                     <div
                       key={i}
-                      className="absolute inset-0 rounded-full border border-black/60"
+                      className="absolute inset-0 rounded-full border border-white/30"
                       style={{ transform: `scale(${1 - i * 0.08})` }}
                     />
                   ))}
@@ -3420,7 +3419,7 @@ export function ConsultationBanner({
                     </p>
                     <div className="h-[0.5px] w-full bg-black/10 mb-8" />
                     <h3
-                      className="text-[26px] font-bold tracking-tight leading-tight"
+                      className="text-[20px] font-bold tracking-tight leading-tight"
                       style={{ color: card.textColor }}
                     >
                       {card.title}
@@ -3440,7 +3439,7 @@ export function ConsultationBanner({
                 </div>
 
                 <p
-                  className="mt-5 mb-12 text-[15px] leading-relaxed opacity-70 font-medium max-w-none"
+                  className="mt-4 mb-6 text-[14px] leading-relaxed opacity-75 font-medium max-w-none"
                   style={{ color: card.textColor }}
                 >
                   {card.description}
@@ -3458,21 +3457,21 @@ export function ConsultationBanner({
                         ease: [0.22, 1, 0.36, 1],
                       }}
                       key={item}
-                      className="flex items-center gap-4 rounded-lg p-2.5 pr-6 transition-all duration-300 hover:translate-x-2"
+                      className="flex items-center gap-3 rounded-md p-2 pr-4 transition-all duration-200"
                       style={{ background: card.pillBg }}
                     >
                       {/* Bead-like number icon */}
                       <div
-                        className="relative flex size-9 shrink-0 items-center justify-center rounded-full text-[11px] font-black text-white shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_2px_rgba(255,255,255,0.4)]"
+                        className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-black text-white shadow-[0_3px_8px_rgba(0,0,0,0.12),inset_0_1px_1px_rgba(255,255,255,0.35)]"
                         style={{
                           background: `radial-gradient(circle at 35% 35%, ${card.accent}dd 0%, ${card.accent} 100%)`,
                         }}
                       >
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/25 to-transparent pointer-events-none" />
                         {(i + 1).toString().padStart(2, "0")}
                       </div>
                       <span
-                        className="text-[15px] font-bold tracking-tight"
+                        className="text-[14px] font-bold tracking-tight"
                         style={{ color: card.textColor }}
                       >
                         {item}
@@ -3484,7 +3483,7 @@ export function ConsultationBanner({
             ))}
           </motion.div>
         </div>
-
+        
         {/* RIGHT SIDE: Clock & CTA */}
         <motion.div
           initial={{ opacity: 0, x: 12 }}
@@ -3786,6 +3785,38 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
           Confirm Documents & Continue
         </motion.button>
       )}
+    </div>
+  );
+}
+
+// Shared background band used to visually join TwoWays and Consultation sections
+export function JourneyConsultationBand({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative overflow-hidden bg-[linear-gradient(180deg,#f7fffd_0%,#f3f8ff_30%,#fffafc_100%)]">
+      {/* uplifting, subtle multi-color fields (muted teal + soft lavender + warm coral hints) */}
+      <div
+        aria-hidden
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 blur-3xl opacity-40"
+        style={{ width: 1000, height: 220, background: "linear-gradient(90deg,rgba(11,118,116,0.06), rgba(240,249,255,0.02), rgba(255,239,230,0.02))" }}
+      />
+      <div
+        aria-hidden
+        className="absolute left-[6%] top-8 h-44 w-44 rounded-full bg-[#0B666A]/[0.06] blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="absolute right-[8%] top-28 h-44 w-44 rounded-full bg-[#ffd9c2]/[0.04] blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="absolute left-[28%] top-8 h-28 w-28 rounded-full bg-[#dff6ff]/[0.03] blur-2xl"
+      />
+
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }
