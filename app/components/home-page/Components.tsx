@@ -56,6 +56,8 @@ import {
   heroI130PreviewNatural,
   milestones,
 } from "@/data/home-page-data";
+import ir1Data from "@/data/visa-category/ir-1.json";
+import { StepQuestDemo } from "./StepQuestDemo";
 
 export const journeyHref = "/visa-category/ir-category/ir1-journey";
 export const toolsHref = "/tools";
@@ -1220,47 +1222,20 @@ export function TwoWaysSection() {
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
   const reduceMotion = useReducedMotion();
 
-  // ── Scroll-driven: switch after ~150 px of scrolling into the section ───────
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const onScroll = () => {
-      if (window.innerWidth < 1024) return;
-      const scrolled = window.scrollY - section.offsetTop;
-      if (scrolled < 0) return;
-      // Switch after 150 px — roughly one mouse-wheel click / one trackpad gesture
-      setActiveIndex((scrolled >= 150 ? 1 : 0) as TwoWaysIndex);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const selectPath = (idx: TwoWaysIndex) => {
-    if (sectionRef.current && window.innerWidth >= 1024) {
-      const s = sectionRef.current;
-      // Scroll to position that triggers the correct panel
-      const target = idx === 0 ? s.offsetTop : s.offsetTop + 200;
-      window.scrollTo({ top: target, behavior: "smooth" });
-    } else {
-      setActiveIndex(idx);
-    }
+    setActiveIndex(idx);
   };
 
   return (
     <>
       {/* ── Desktop (lg+): scroll-driven sticky ─────────────────────────── */}
       <section
-        ref={sectionRef}
         id="path"
         aria-label="Two ways to use Rahvana"
         className="relative hidden lg:block"
-        style={{ height: "calc(100vh + 600px)" }}
       >
         <div
           style={{
-            position: "sticky",
-            top: 0,
             height: "100vh",
             display: "flex",
             alignItems: "center",
@@ -1281,39 +1256,6 @@ export function TwoWaysSection() {
                 "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
             }}
           />
-
-          {/* Scroll-progress pill indicators — right edge */}
-          <div
-            style={{
-              position: "absolute",
-              right: 28,
-              top: "50%",
-              transform: "translateY(-50%)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              zIndex: 10,
-            }}
-          >
-            {([0, 1] as TwoWaysIndex[]).map((i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => selectPath(i)}
-                aria-label={`Show ${twoWaysPaths[i].title}`}
-                style={{
-                  width: 7,
-                  height: activeIndex === i ? 22 : 7,
-                  borderRadius: 4,
-                  background: activeIndex === i ? "#0d7377" : "#c8d5d3",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
-                }}
-              />
-            ))}
-          </div>
 
           {/* Main grid */}
           <div
@@ -2510,8 +2452,6 @@ function ToolCarousel({
         position: "absolute", bottom: 0, left: 0, width: "100%", height: 138,
         overflow: "hidden", borderTop: "1px solid #e8edf2",
         background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
-        WebkitMaskImage: "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
-        maskImage:       "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
       }}
     >
       <div
@@ -2572,7 +2512,6 @@ function ToolCarousel({
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [visible, setVisible]     = useState(true);
-  const [isPaused, setIsPaused]   = useState(false);
 
   const goTo = useCallback((idx: number) => {
     const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
@@ -2580,25 +2519,11 @@ export function IndividualToolsScene() {
     window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 220);
   }, []);
 
-  useEffect(() => {
-    if (isPaused) return;
-    const t = window.setTimeout(() => {
-      setVisible(false);
-      window.setTimeout(() => {
-        setActiveIdx((i) => (i + 1) % featuredTools.length);
-        setVisible(true);
-      }, 280);
-    }, 5000);
-    return () => window.clearTimeout(t);
-  }, [activeIdx, isPaused]);
-
   const tool    = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
     <div
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       style={{
         width: 600, height: 460, borderRadius: 32,
         background: "white", border: "1px solid #dde8e6",
@@ -2608,10 +2533,7 @@ export function IndividualToolsScene() {
       }}
     >
       {/* ── Top bar ── */}
-      <div style={{ height: 48, flexShrink: 0, background: tool.fg, display: "flex", alignItems: "center", padding: "0 18px", gap: 12, transition: "background 0.4s ease" }}>
-        <div style={{ width: 28, height: 28, borderRadius: 9, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {(() => { const Icon = tool.icon; return <Icon size={15} color="white" strokeWidth={1.75} />; })()}
-        </div>
+      <div style={{ height: 48, flexShrink: 0, background: tool.fg, display: "flex", alignItems: "center", padding: "0 18px", transition: "background 0.4s ease" }}>
         <div style={{ flex: 1, textAlign: "center" }}>
           <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.65)" }}>{content.eyebrow}</div>
           <div style={{ fontSize: 13, fontWeight: 900, color: "white" }}>{content.title}</div>
@@ -2628,31 +2550,30 @@ export function IndividualToolsScene() {
         <div
           style={{
             width: 195, flexShrink: 0, position: "relative", overflow: "hidden",
-            background: tool.fg, display: "flex", flexDirection: "column",
+            background: tool.bg, display: "flex", flexDirection: "column",
             alignItems: "center", justifyContent: "center", padding: "10px 16px 138px",
             transition: "background 0.4s ease",
           }}
         >
           {/* Decorative circles */}
-          <div style={{ position: "absolute", top: -40, right: -40, width: 130, height: 130, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-          <div style={{ position: "absolute", bottom: -25, left: -25, width: 90,  height: 90,  borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-          <div style={{ position: "absolute", top: "40%",  left: "60%", width: 50,  height: 50,  borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+          <div style={{ position: "absolute", top: -40, right: -40, width: 130, height: 130, borderRadius: "50%", background: `${tool.fg}08` }} />
+          <div style={{ position: "absolute", bottom: -25, left: -25, width: 90,  height: 90,  borderRadius: "50%", background: `${tool.fg}06` }} />
+          <div style={{ position: "absolute", top: "40%",  left: "60%", width: 50,  height: 50,  borderRadius: "50%", background: `${tool.fg}05` }} />
 
-          {/* Large icon */}
           <div
             style={{
               width: 80, height: 80, borderRadius: 24,
-              background: "rgba(255,255,255,0.18)",
+              background: tool.border,
               display: "flex", alignItems: "center", justifyContent: "center",
               marginBottom: 14,
-              boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+              boxShadow: `0 12px 32px ${tool.fg}15`,
             }}
           >
-            {(() => { const Icon = tool.icon; return <Icon size={36} color="white" strokeWidth={1.5} />; })()}
+            {(() => { const Icon = tool.icon; return <Icon size={36} color={tool.fg} strokeWidth={1.5} />; })()}
           </div>
 
           {/* Tool label */}
-          <div style={{ fontSize: 10, fontWeight: 900, color: "rgba(255,255,255,0.95)", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1.4, position: "relative" }}>
+          <div style={{ fontSize: 10, fontWeight: 900, color: tool.fg, textAlign: "center", textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1.4, position: "relative" }}>
             {tool.label}
           </div>
         </div>
@@ -2694,8 +2615,8 @@ export function IndividualToolsScene() {
       {/* ── Carousel ── */}
       <ToolCarousel
         activeIdx={activeIdx}
-        onSelect={(idx) => { goTo(idx); setIsPaused(true); }}
-        onHoverChange={setIsPaused}
+        onSelect={(idx) => { goTo(idx); }}
+        onHoverChange={() => {}}
       />
     </div>
   );
@@ -3242,183 +3163,6 @@ export function ConsultationPreviewVisual() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-export function StepQuestDemo({ onComplete }: { onComplete: () => void }) {
-  const [questDone, setQuestDone] = useState<Set<string>>(new Set());
-  const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
-
-  const quests = [
-    {
-      id: "q1",
-      title: "Petitioner is a U.S. Citizen",
-      subtitle: "Confirm the petitioner qualifies to file an IR-1 spouse petition",
-      icon: <User className="size-5" />,
-    },
-    {
-      id: "q2",
-      title: "A legally valid marriage exists",
-      subtitle: "Confirm there is a current, legally recognized civil marriage",
-      icon: <Users className="size-5" />,
-    },
-    {
-      id: "q3",
-      title: "All prior marriages were legally terminated",
-      subtitle:
-        "Confirm neither spouse was still married to anyone else when this marriage occurred",
-      icon: <Scale className="size-5" />,
-    },
-    {
-      id: "q4",
-      title: "Marriage is bona fide",
-      subtitle: "Screen for good-faith intent and evidence of a genuine relationship",
-      icon: <MessageSquare className="size-5" />,
-    },
-    {
-      id: "q5",
-      title: "Additional possible visa ineligibilities",
-      subtitle: "Early screening for common immigrant visa admissibility concerns",
-      icon: <ShieldCheck className="size-5" />,
-    },
-  ];
-
-  const toggleQuest = (id: string) => {
-    setQuestDone((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const isAllDone = questDone.size === quests.length;
-
-  if (activeQuestId) {
-    const quest = quests.find((q) => q.id === activeQuestId);
-    return (
-      <div className="flex-1 p-8 bg-white flex flex-col items-center text-center">
-        <div className="size-16 rounded-full bg-[#f0f3f7] flex items-center justify-center text-[#0d7377] mb-6">
-          {quest?.icon}
-        </div>
-        <h2 className="text-2xl font-black text-[#162126]">{quest?.title}</h2>
-        <p className="mt-2 text-[#6b8097] max-w-sm">{quest?.subtitle}</p>
-
-        <div className="mt-10 w-full max-w-sm space-y-4">
-          <div className="text-left text-sm font-bold text-[#162126] mb-2">
-            Demo Question:
-          </div>
-          <div className="rounded-2xl border border-[#0d7377] bg-[#f0f7f7] p-5 text-left transition-all hover:shadow-md cursor-pointer group">
-            <div className="flex items-center gap-3">
-              <div className="size-5 rounded-full border-2 border-[#0d7377] bg-white flex items-center justify-center group-hover:bg-[#0d7377] transition-all">
-                <div className="size-2 rounded-full bg-[#0d7377] group-hover:bg-white" />
-              </div>
-              <span className="font-bold text-[#0d7377]">
-                Yes, this requirement is met
-              </span>
-            </div>
-          </div>
-          <div className="rounded-2xl border border-[#dde8e6] bg-white p-5 text-left hover:border-[#0d7377] transition-all cursor-pointer">
-            <div className="flex items-center gap-3">
-              <div className="size-5 rounded-full border-2 border-[#dde8e6]" />
-              <span className="font-bold text-[#162126]">No, not yet</span>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={() => {
-            toggleQuest(activeQuestId);
-            setActiveQuestId(null);
-          }}
-          className="mt-12 rounded-full bg-[#0d7377] px-8 py-3 text-sm font-black uppercase tracking-wider text-white shadow-lg hover:bg-[#0a5c5f] transition-all"
-        >
-          Confirm & Save
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex-1 p-8 bg-[#f9fafb]">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-3xl font-black text-[#162126]">Determine Eligibility</h1>
-        {isAllDone && (
-          <div className="flex items-center gap-1.5 rounded-full bg-[#dcfce7] px-3 py-1 text-[11px] font-black uppercase text-[#166534] border border-[#bbf7d0]">
-            <Check size={14} strokeWidth={3} /> Done
-          </div>
-        )}
-      </div>
-      <p className="text-[#6b8097] max-w-xl leading-relaxed mb-6">
-        Before filing, confirm that the core eligibility conditions for an IR-1 spouse
-        petition are in place. Complete each section below.
-      </p>
-
-      <div className="h-px w-full bg-[#e1ebe8] mb-8" />
-
-      <div className="grid gap-4">
-        {quests.map((q) => {
-          const isDone = questDone.has(q.id);
-          return (
-            <div
-              key={q.id}
-              onClick={() => setActiveQuestId(q.id)}
-              className={`group flex items-center gap-5 rounded-2xl border-2 p-5 transition-all cursor-pointer bg-white ${
-                isDone
-                  ? "border-[#0d7377] shadow-sm"
-                  : "border-transparent shadow-sm hover:border-[#0d7377] hover:shadow-md"
-              }`}
-            >
-              <div
-                className={`flex size-14 shrink-0 items-center justify-center rounded-xl transition-all ${
-                  isDone ? "bg-[#0d7377] text-white" : "bg-[#f0f3f7] text-[#6b8097]"
-                }`}
-              >
-                {q.icon}
-              </div>
-              <div className="flex-1">
-                <h3
-                  className={`text-[16px] font-black ${
-                    isDone ? "text-[#0d7377]" : "text-[#162126]"
-                  }`}
-                >
-                  {q.title}
-                </h3>
-                <p className="text-[13px] text-[#6b8097] mt-0.5 line-clamp-1">
-                  {q.subtitle}
-                </p>
-              </div>
-              <div
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
-                  isDone
-                    ? "bg-[#0d7377] text-white"
-                    : "bg-slate-100 text-slate-400 group-hover:bg-[#0d7377]/10 group-hover:text-[#0d7377]"
-                }`}
-              >
-                {isDone ? (
-                  <>
-                    <Check size={12} strokeWidth={3} /> Completed
-                  </>
-                ) : (
-                  "Not started"
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {isAllDone && (
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={onComplete}
-          className="mt-8 w-full rounded-2xl bg-[#0d7377] py-5 text-base font-black uppercase tracking-widest text-white shadow-xl hover:bg-[#0a5c5f] transition-all"
-        >
-          Finish Step 1 & Continue
-        </motion.button>
-      )}
     </div>
   );
 }
