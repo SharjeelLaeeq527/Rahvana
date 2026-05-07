@@ -607,13 +607,38 @@ export default function AboutPage() {
             <motion.div
               key={i}
               layout
+              initial={false}
+              animate={{
+                opacity:
+                  hoveredTeamIndex === null || hoveredTeamIndex === i
+                    ? 1
+                    : 0.55,
+                filter:
+                  hoveredTeamIndex !== null && hoveredTeamIndex !== i
+                    ? "blur(1px)"
+                    : "blur(0px)",
+                scale:
+                  hoveredTeamIndex !== null && hoveredTeamIndex !== i
+                    ? 0.985
+                    : 1,
+              }}
+              transition={{
+                layout: {
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 28,
+                },
+                opacity: { duration: 0.4 },
+                filter: { duration: 0.4 },
+                scale: { duration: 0.4 },
+              }}
               onMouseEnter={() => setHoveredTeamIndex(i)}
-              className={`bg-white rounded-3xl p-9 shadow-sm border border-black/5 flex flex-col transition-all duration-300 ease-out md:min-h-[360px] ${
+              className={`bg-white rounded-3xl p-9 shadow-sm border border-black/5 flex flex-col md:min-h-[360px] ${
                 hoveredTeamIndex === null
                   ? "md:flex-1"
                   : hoveredTeamIndex === i
                     ? "md:flex-[1.6]"
-                    : "md:flex-[0.75] opacity-55 blur-[1px] scale-[0.985]"
+                    : "md:flex-[0.75]"
               }`}
             >
               <div className="relative w-50 h-50 mx-auto mb-7 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ring-4 ring-[#0d7a75]/10 shadow-lg">
@@ -635,13 +660,14 @@ export default function AboutPage() {
               <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#0d7a75] mb-4">
                 {member.role}
               </p>
-              <p
-                className={`text-sm text-gray-600 leading-relaxed transition-all ${
+              <motion.p
+                layout
+                className={`text-sm text-gray-600 leading-relaxed ${
                   hoveredTeamIndex === i ? "" : "line-clamp-4"
                 }`}
               >
                 {member.desc}
-              </p>
+              </motion.p>
             </motion.div>
           ))}
         </div>

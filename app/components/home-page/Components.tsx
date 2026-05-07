@@ -1775,6 +1775,22 @@ export function TwoWaysMobile({
   );
 }
 
+// Guide only runs on dashboard + chapter — step view has live interactive content
+const GUIDED_TOUR = [
+  {
+    view: "dashboard" as const,
+    label: "Welcome to your IR-1 roadmap",
+    sub: "Click Chapter 1 below to start exploring ↓",
+    dot: { top: 375, left: 118 }, // Chapter 1 card center
+  },
+  {
+    view: "chapter" as const,
+    label: "Each chapter has guided steps",
+    sub: "Click 'Determine Eligibility' to open it ↓",
+    dot: { top: 116, left: 455 }, // First step row, right panel
+  },
+] as const;
+
 export function GuidedRoadmapScene() {
   const [view, setView] = useState<"dashboard" | "chapter" | "step">(
     "dashboard",
@@ -1786,6 +1802,11 @@ export function GuidedRoadmapScene() {
   const [isCaseDetailsOpen, setIsCaseDetailsOpen] = useState(false);
   const [isMilestonesOpen, setIsMilestonesOpen] = useState(false);
   const reduceMotion = useReducedMotion();
+  const [tourIdx, setTourIdx] = useState(0);
+  const [showComplete, setShowComplete] = useState(false);
+  const completedOnce = useRef(false);
+
+  // Complete overlay triggers from handleSelectStep — no useEffect timer needed
 
   const activeChapter = chapters[activeChapterIdx];
   const activeStep =
@@ -1799,6 +1820,7 @@ export function GuidedRoadmapScene() {
     if (idx >= 1) return; // Only Chapter 1 is open in demo
     setActiveChapterIdx(idx);
     setView("chapter");
+    setTourIdx(1); // advance to chapter step
   };
 
   const handleSelectStep = (idx: number) => {
@@ -1841,9 +1863,15 @@ export function GuidedRoadmapScene() {
         <div className="flex items-center gap-3">
           {view !== "dashboard" ? (
             <button
-              onClick={() =>
-                view === "step" ? setView("chapter") : setView("dashboard")
-              }
+              onClick={() => {
+                if (view === "step") {
+                  setView("chapter");
+                  setTourIdx(1);
+                } else {
+                  setView("dashboard");
+                  setTourIdx(0);
+                }
+              }}
               className="flex size-9 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors"
             >
               <ChevronLeft size={18} strokeWidth={2.5} />
@@ -2251,14 +2279,25 @@ export function GuidedRoadmapScene() {
                 <StepQuestDemo
                   onComplete={() => {
                     toggleStep(activeStep[0]);
-                    setView("chapter");
+                    // User completed the quiz — show complete overlay immediately
+                    if (!completedOnce.current) {
+                      completedOnce.current = true;
+                      setShowComplete(true);
+                    } else {
+                      setView("chapter");
+                    }
                   }}
                 />
               ) : activeChapterIdx === 0 && activeStepIdx === 1 ? (
                 <StepDocsDemo
                   onComplete={() => {
                     toggleStep(activeStep[0]);
-                    setView("chapter");
+                    if (!completedOnce.current) {
+                      completedOnce.current = true;
+                      setShowComplete(true);
+                    } else {
+                      setView("chapter");
+                    }
                   }}
                 />
               ) : (
@@ -2320,6 +2359,237 @@ export function GuidedRoadmapScene() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── Demo Complete Overlay ──────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showComplete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 50,
+              background: "rgba(5,23,56,0.93)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              borderRadius: 32,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "32px 40px",
+              textAlign: "center",
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 220, damping: 18 }}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                background: "rgba(13,115,119,0.25)",
+                border: "2px solid #0d7377",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 18,
+              }}
+            >
+              <Check size={26} color="#0d7377" strokeWidth={3} />
+            </motion.div>
+
+            <motion.h3
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+              style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 900, color: "white", lineHeight: 1.2 }}
+            >
+              Demo Complete!
+            </motion.h3>
+
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38, duration: 0.3 }}
+              style={{ margin: "0 0 6px", fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.6, maxWidth: 320 }}
+            >
+              You've seen how the guided IR-1 roadmap works.
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.44, duration: 0.3 }}
+              style={{ margin: "0 0 28px", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 300 }}
+            >
+              Start your full journey — all chapters, steps, and built-in tools are free to use.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.52, duration: 0.3 }}
+              style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 280 }}
+            >
+              <a
+                href={journeyHref}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  background: "#0d7377",
+                  color: "white",
+                  borderRadius: 12,
+                  padding: "12px 20px",
+                  fontSize: 13,
+                  fontWeight: 900,
+                  textDecoration: "none",
+                  boxShadow: "0 8px 24px rgba(13,115,119,0.4)",
+                }}
+              >
+                Start Your Full Journey <ArrowRight size={14} />
+              </a>
+              <button
+                onClick={() => {
+                  setShowComplete(false);
+                  setView("dashboard");
+                  setActiveStepIdx(-1);
+                  setTourIdx(0);
+                }}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  color: "rgba(255,255,255,0.6)",
+                  borderRadius: 12,
+                  padding: "10px 20px",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Replay Demo
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Guided Tour Overlay — hidden in step view (user has live interactive content) */}
+      {!reduceMotion && !showComplete && view !== "step" && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`tour-${tourIdx}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="pointer-events-none"
+            style={{ position: "absolute", inset: 0, zIndex: 40 }}
+          >
+            {/* SVG curved arrow — from tooltip bottom to target dot */}
+            <svg
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}
+            >
+              <motion.path
+                key={`path-${tourIdx}`}
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 0.65 }}
+                transition={{ delay: 0.35, duration: 0.55, ease: "easeOut" }}
+                d={`M 340 56 C 340 ${56 + 36} ${GUIDED_TOUR[tourIdx].dot.left} ${GUIDED_TOUR[tourIdx].dot.top - 36} ${GUIDED_TOUR[tourIdx].dot.left} ${GUIDED_TOUR[tourIdx].dot.top - 12}`}
+                fill="none"
+                stroke="#0d7377"
+                strokeWidth="1.5"
+                strokeDasharray="5 3"
+              />
+              {/* Arrowhead triangle at dot */}
+              <motion.polygon
+                key={`head-${tourIdx}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.65 }}
+                transition={{ delay: 0.85, duration: 0.2 }}
+                points={`${GUIDED_TOUR[tourIdx].dot.left - 5},${GUIDED_TOUR[tourIdx].dot.top - 14} ${GUIDED_TOUR[tourIdx].dot.left + 5},${GUIDED_TOUR[tourIdx].dot.top - 14} ${GUIDED_TOUR[tourIdx].dot.left},${GUIDED_TOUR[tourIdx].dot.top - 2}`}
+                fill="#0d7377"
+              />
+            </svg>
+
+            {/* Tooltip bubble — centered in nav bar (empty zone between left & right nav content) */}
+            <motion.div
+              key={`tip-${tourIdx}`}
+              initial={{ opacity: 0, y: -8, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.92 }}
+              transition={{ delay: 0.1, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: "absolute",
+                top: 7,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 198,
+                background: "#0d7377",
+                borderRadius: 12,
+                padding: "9px 13px 10px",
+                boxShadow: "0 8px 24px rgba(13,115,119,0.38)",
+                textAlign: "center",
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 11, fontWeight: 900, color: "white", lineHeight: 1.3 }}>
+                {GUIDED_TOUR[tourIdx].label}
+              </p>
+              <p style={{ margin: "3px 0 0", fontSize: 9.5, color: "rgba(255,255,255,0.72)", lineHeight: 1.35 }}>
+                {GUIDED_TOUR[tourIdx].sub}
+              </p>
+              <div style={{ display: "flex", gap: 3, marginTop: 8, justifyContent: "center" }}>
+                {GUIDED_TOUR.map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      height: 3,
+                      width: i === tourIdx ? 16 : 4,
+                      borderRadius: 2,
+                      background: i === tourIdx ? "white" : "rgba(255,255,255,0.32)",
+                      transition: "width 0.35s ease",
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Pulsing ring at target element */}
+            <motion.div
+              key={`dot-${tourIdx}`}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.25, duration: 0.3 }}
+              style={{
+                position: "absolute",
+                top: GUIDED_TOUR[tourIdx].dot.top - 10,
+                left: GUIDED_TOUR[tourIdx].dot.left - 10,
+                width: 20,
+                height: 20,
+                borderRadius: "50%",
+                background: "rgba(13,115,119,0.15)",
+                border: "2px solid #0d7377",
+              }}
+            >
+              <motion.div
+                animate={{ scale: [1, 2.4, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
+                style={{
+                  position: "absolute",
+                  inset: -4,
+                  borderRadius: "50%",
+                  border: "1.5px solid rgba(13,115,119,0.45)",
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       {/* Bottom Status Bar */}
       <div className="grid grid-cols-3 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-4 text-center shrink-0">
@@ -2741,17 +3011,44 @@ function ToolCarousel({
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeIdxRef = useRef(0);
 
   const goTo = useCallback((idx: number) => {
     const next =
       ((idx % featuredTools.length) + featuredTools.length) %
       featuredTools.length;
+    activeIdxRef.current = next;
     setVisible(false);
     window.setTimeout(() => {
       setActiveIdx(next);
       setVisible(true);
     }, 220);
   }, []);
+
+  const startAutoPlay = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      goTo(activeIdxRef.current + 1);
+    }, 4500);
+  }, [goTo]);
+
+  useEffect(() => {
+    if (hovered) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+    startAutoPlay();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [hovered, startAutoPlay]);
+
+  const handleSelect = useCallback((idx: number) => {
+    goTo(idx);
+    if (!hovered) startAutoPlay();
+  }, [goTo, hovered, startAutoPlay]);
 
   const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
@@ -3002,10 +3299,8 @@ export function IndividualToolsScene() {
       {/* ── Carousel ── */}
       <ToolCarousel
         activeIdx={activeIdx}
-        onSelect={(idx) => {
-          goTo(idx);
-        }}
-        onHoverChange={() => {}}
+        onSelect={handleSelect}
+        onHoverChange={setHovered}
       />
     </div>
   );
