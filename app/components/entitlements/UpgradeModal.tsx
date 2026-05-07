@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Check, Crown, Zap, ShoppingCart, Loader2 } from "lucide-react";
+import { X, Check, Zap, ShoppingCart, Loader2 } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
 import {
@@ -596,7 +596,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
             onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
             className={`w-full py-3 rounded-2xl bg-gradient-to-r ${style.button} ${style.buttonHover} text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90`}
           >
-            {isUpgradeProcessing ? <Loader2 size={14} className="animate-spin" /> : <Crown size={14} strokeWidth={2.5} />}
+            {isUpgradeProcessing && <Loader2 size={14} className="animate-spin" />}
             {isUpgradeProcessing ? "Redirecting to payment..." : `Upgrade to ${TIER_NAMES[selectedTier]}`}
           </button>
 

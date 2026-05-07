@@ -1262,22 +1262,10 @@ export function TwoWaysSection() {
             display: "flex",
             alignItems: "center",
             overflow: "hidden",
-            background:
-              "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-            borderTop: "1px solid #e1ebe8",
-            borderBottom: "1px solid #e1ebe8",
+            background: "#f7fbfa",
           }}
         >
-          {/* Decorative radial highlights */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-72"
-            aria-hidden="true"
-            style={{
-              background:
-                "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
-                "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
-            }}
-          />
+          {/* Decorative radial highlights removed for seamless background */}
 
           {/* Scroll-progress pill indicators — right edge */}
           <div
@@ -1491,10 +1479,7 @@ export function TwoWaysSection() {
         aria-label="Two ways to use Rahvana"
         className="block lg:hidden mt-32 sm:mt-40"
         style={{
-          background:
-            "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-          borderTop: "1px solid #e1ebe8",
-          borderBottom: "1px solid #e1ebe8",
+          background: "#f7fbfa",
         }}
       >
         <div
@@ -2940,24 +2925,10 @@ export function ConsultationBanner({
       aria-labelledby="consultation-heading"
       className="relative overflow-hidden"
       style={{
-        background: "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
-        borderTop: "1px solid #e1ebe8",
-        borderBottom: "1px solid #e1ebe8",
+        background: "#f7fbfa",
       }}
     >
-      {/* Subtle background decoration */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div
-          animate={{ opacity: [0.7, 0.95, 0.7], scale: [1, 1.02, 1] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-x-0 top-0 h-72 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%),' +
-              'radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)',
-          }}
-        />
-      </div>
+      {/* Background decorations removed for seamless transition */}
 
       <motion.div
         initial={reduceMotion ? false : { opacity: 0, y: 20 }}
