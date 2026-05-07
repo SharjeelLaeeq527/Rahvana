@@ -348,18 +348,16 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
           {/* Warm amber-cream header */}
           <div className={`shrink-0 bg-gradient-to-br ${addonStyle.header} px-5 pt-6 pb-5`}>
             <div className="flex items-center gap-4 mb-3">
-              {/* Icon directly on gradient — transparent, no box */}
-              <TierIcon tier="executive" size={68} />
               <div>
                 <p className={`text-[10px] font-bold uppercase tracking-widest ${addonStyle.headerLabel} mb-0.5`}>
-                  Premium Feature
+                  Paid Feature
                 </p>
                 <h2 className={`text-[18px] font-extrabold tracking-tight leading-tight ${addonStyle.headerTitle}`}>
                   {addon.name}
                 </h2>
               </div>
             </div>
-            <p className={`text-[12px] ${addonStyle.headerSub}`}>
+            <p className={`text-[12px] font-medium ${addonStyle.headerSub}`} style={{ color: '#97753e' }}>
               Buy once, or get it included with a plan upgrade
             </p>
           </div>
