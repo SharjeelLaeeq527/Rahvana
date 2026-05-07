@@ -468,53 +468,55 @@ function HomePageContent() {
                     </AnimatePresence>
                   </div>
 
-                  {/* SVG Connector */}
-                  <svg
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-[22vw] top-1/2 z-10 h-[118px] w-[32vw] -translate-y-1/2 overflow-visible xl:left-[23vw] xl:w-[25vw] 2xl:left-[21vw]"
-                    viewBox="0 0 470 140"
-                    fill="none"
-                  >
-                    <defs>
-                      <filter
-                        id="heroConnectorGlow"
-                        x="-40%"
-                        y="-80%"
-                        width="180%"
-                        height="260%"
-                      >
-                        <feGaussianBlur stdDeviation="4" result="blur" />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    <path
-                      d="M -300 95 L 50 85 C 120 75 160 54 230 44 L 800 34"
-                      stroke="rgba(255,255,255,0.65)"
-                      strokeWidth="2"
-                      strokeDasharray="4 8"
-                      strokeLinecap="round"
-                    />
-                    <circle
-                      cx="50"
-                      cy="85"
-                      r="4.5"
-                      fill="rgba(255,255,255,0.96)"
-                      filter="url(#heroConnectorGlow)"
-                    />
-                    <circle
-                      cx="230"
-                      cy="44"
-                      r="4.5"
-                      fill="rgba(255,255,255,0.96)"
-                      filter="url(#heroConnectorGlow)"
-                    />
-                  </svg>
+                  {/* Connector Area - Bridges the gap between Card and Dashboard */}
+                  <div className="flex-1 relative h-[140px] z-10 mx-[-2px]">
+                    <svg
+                      className="absolute inset-0 w-full h-full overflow-visible"
+                      viewBox="0 0 1000 140"
+                      preserveAspectRatio="none"
+                      fill="none"
+                    >
+                      <defs>
+                        <filter
+                          id="heroConnectorGlow"
+                          x="-40%"
+                          y="-80%"
+                          width="180%"
+                          height="260%"
+                        >
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      </defs>
+                      <path
+                        d="M -500 100 L 0 85 C 222 84 388 18 811 35 C 916 39 944 41 1000 44 L 1500 48"
+                        stroke="rgba(255,255,255,0.65)"
+                        strokeWidth="2"
+                        strokeDasharray="4 8"
+                        strokeLinecap="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                    {/* Smooth Contact Circles - Fixed size to prevent distortion */}
+                    <div
+                      className="absolute left-0 top-[85px] -translate-x-1/2 -translate-y-1/2 z-20"
+                      style={{ filter: "url(#heroConnectorGlow)" }}
+                    >
+                      <div className="size-[9px] rounded-full bg-white/95 shadow-[0_0_15px_rgba(255,255,255,0.9)]" />
+                    </div>
+                    <div
+                      className="absolute right-0 top-[44px] translate-x-1/2 -translate-y-1/2 z-20"
+                      style={{ filter: "url(#heroConnectorGlow)" }}
+                    >
+                      <div className="size-[9px] rounded-full bg-white/95 shadow-[0_0_15px_rgba(255,255,255,0.9)]" />
+                    </div>
+                  </div>
 
                   {/* Dashboard Demo */}
-                  <div className="z-20 h-[clamp(4300px,48vh,560px)] w-[clamp(560px,54vw,720px)] shrink-0 xl:h-[clamp(450px,48vh,590px)] xl:w-[clamp(650px,47vw,760px)] 2xl:w-[clamp(700px,47vw,860px)]">
+                  <div className="z-20 h-[clamp(430px,48vh,560px)] w-[clamp(560px,54vw,720px)] shrink-0 xl:h-[clamp(450px,48vh,590px)] xl:w-[clamp(650px,47vw,760px)] 2xl:w-[clamp(700px,47vw,860px)]">
                     <RealDashboardScene compact onSceneChange={setHeroScene} />
                   </div>
                 </div>
