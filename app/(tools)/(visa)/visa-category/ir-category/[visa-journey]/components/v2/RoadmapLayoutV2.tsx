@@ -1,13 +1,33 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { RoadmapData } from "../types";
 import { DashboardView } from "./DashboardView";
 import { ChapterView } from "./ChapterView";
-import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
-import { ChevronRight, ArrowLeft, Check,X, LayoutDashboard } from "lucide-react";
+import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react";
+
+/** Lazy-load StepView (354 KB source) — only fetched when user navigates to a step */
+const LazyStepView = React.lazy(() =>
+  import("./StepView").then((mod) => ({ default: mod.StepView }))
+);
+
+function StepSkeleton() {
+  return (
+    <div className="flex-1 p-6 md:p-10 animate-pulse">
+      <div className="h-5 w-48 bg-slate-200 rounded mb-4" />
+      <div className="h-8 w-80 bg-slate-200 rounded mb-3" />
+      <div className="h-4 w-full max-w-lg bg-slate-100 rounded mb-2" />
+      <div className="h-4 w-full max-w-md bg-slate-100 rounded mb-8" />
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 w-full bg-slate-100 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -230,12 +250,14 @@ export default function RoadmapLayoutV2({
         )}
 
         {view === "step" && (
-          <StepView
-            data={data}
-            state={state}
-            onBack={handleBackToChapter}
-            actions={actions}
-          />
+          <Suspense fallback={<StepSkeleton />}>
+            <LazyStepView
+              data={data}
+              state={state}
+              onBack={handleBackToChapter}
+              actions={actions}
+            />
+          </Suspense>
         )}
       </main>
 

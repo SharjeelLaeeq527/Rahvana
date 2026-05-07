@@ -252,6 +252,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
   const canBuyAddon = e.state === "locked_buy" && !!e.addon;
   const showInclusionSection = fullUpgradeTiers.length > 0;
 
+  // ─── Shared card wrapper ──────────────────────────────────────────────────
   const cardCls = [
     "relative bg-white shadow-2xl flex flex-col overflow-hidden",
     "animate-in fade-in zoom-in-95 duration-200",

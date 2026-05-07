@@ -1,8 +1,8 @@
 :root {
-  --icon-free: url('/icons/Free.png');
-  --icon-basic: url('/icons/Basic.png');
-  --icon-premium: url('/icons/Premium.png');
-  --icon-executive: url('/icons/Executive.png');
+  --icon-free: url("/icons/Free.png");
+  --icon-basic: url("/icons/Basic.png");
+  --icon-premium: url("/icons/Premium.png");
+  --icon-executive: url("/icons/Executive.png");
 }
 
 .plan-icon {
@@ -15,14 +15,22 @@
   flex-shrink: 0;
 }
 
-.plan-icon--free      { background-image: var(--icon-free); }
-.plan-icon--basic     { background-image: var(--icon-basic); }
-.plan-icon--premium   { background-image: var(--icon-premium); }
-.plan-icon--executive { background-image: var(--icon-executive); }
+.plan-icon--free {
+  background-image: var(--icon-free);
+}
+.plan-icon--basic {
+  background-image: var(--icon-basic);
+}
+.plan-icon--premium {
+  background-image: var(--icon-premium);
+}
+.plan-icon--executive {
+  background-image: var(--icon-executive);
+}
 
 /* Universal background for all guides */
 .guide-bg {
-  background-image: url('/assets/images/guides-bg.png');
+  background-image: url("/assets/images/guides-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -37,7 +45,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: url('/assets/images/ch3steps-bg.png');
+  background-image: url("/assets/images/ch3steps-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -55,7 +63,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: url('/assets/images/ch1steps-bg.png');
+  background-image: url("/assets/images/ch1steps-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -71,7 +79,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: url('/assets/images/ch2steps-bg.png');
+  background-image: url("/assets/images/ch2steps-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -87,7 +95,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: url('/assets/images/ch3steps-bg.png');
+  background-image: url("/assets/images/ch3steps-bg.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -104,7 +112,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: url('/assets/images/chapter-2-bg.png') center/cover no-repeat fixed;
+  background: url("/assets/images/chapter-2-bg.png") center/cover no-repeat
+    fixed;
   opacity: 0.6;
 }
 
@@ -126,7 +135,9 @@
 /* Crisp Modal Styling for Steps */
 .step-modal {
   border-radius: 18px;
-  box-shadow: 0 8px 40px rgba(40,21,28,0.13), 0 1.5px 6px rgba(192,89,106,0.07);
+  box-shadow:
+    0 8px 40px rgba(40, 21, 28, 0.13),
+    0 1.5px 6px rgba(192, 89, 106, 0.07);
   border: 1.5px solid #e7e2e0;
   padding: 36px 32px 32px 32px;
 }
@@ -141,7 +152,7 @@
   color: #fff;
   border-radius: 14px;
   border: 1.5px solid #c0596a;
-  box-shadow: 0 4px 18px rgba(40,21,28,0.10);
+  box-shadow: 0 4px 18px rgba(40, 21, 28, 0.1);
 }
 
 .step-modal-spacing {
@@ -829,8 +840,12 @@
   padding: 0 8px;
 }
 
-.resource-fhole-row.top { top: 6px; }
-.resource-fhole-row.bot { bottom: 6px; }
+.resource-fhole-row.top {
+  top: 6px;
+}
+.resource-fhole-row.bot {
+  bottom: 6px;
+}
 
 .resource-fhole {
   width: 5px;
@@ -841,6 +856,7 @@
 }
 
 .resource-fcard-body {
+  background: #fff;
   padding: 12px 14px 14px;
   flex: 1;
   display: flex;
@@ -874,7 +890,7 @@
 }
 
 .resource-fcard-price {
-  font-family: 'DM Serif Display', serif;
+  font-family: "DM Serif Display", serif;
   font-size: 20px;
   color: #1a1a1a;
   line-height: 1;
@@ -889,24 +905,25 @@
 .resource-fbtn {
   font-size: 12px;
   padding: 5px 16px;
-  border: 1px solid #e2d8c3;
+  border: 1px solid var(--primary);
   border-radius: 20px;
   background: #fff;
-  color: #666;
+  border-color: var(--primary);
+  color: #0d7a5c;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.15s;
 }
 
 .resource-fbtn:hover:not(:disabled) {
-  border-color: #0d7a5c;
-  color: #0d7a5c;
-  background: #f4faf8;
+  /* border-color: #0d7a5c; */
+  color: #fff;
+  background: var(--primary);
 }
 
 .resource-fbtn.is-added {
-  background: #0d7a5c;
-  border-color: #0d7a5c;
+  background: var(--primary);
+  /* border-color: var(--primary-500); */
   color: #fff;
 }
 

@@ -23,12 +23,14 @@ export default function CheckoutButton({
   children,
   className = "",
   disabled = false,
-}: CheckoutButtonProps) {
+  onLoadingChange,
+}: CheckoutButtonProps & { onLoadingChange?: (loading: boolean) => void }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
   
     const handleCheckout = async () => {
       setIsLoading(true);
+      onLoadingChange?.(true);
       setError(null);
   
       try {
@@ -64,6 +66,7 @@ export default function CheckoutButton({
         err instanceof Error ? err.message : "Something went wrong";
       setError(errorMessage);
       setIsLoading(false);
+      onLoadingChange?.(false);
     }
   };
 

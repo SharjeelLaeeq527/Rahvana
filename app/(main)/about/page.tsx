@@ -61,92 +61,90 @@ export default function AboutPage() {
       className={`${dmSans.variable} ${playfair.variable} font-sans bg-[#faf7f2] text-[#2a2a2a] min-h-screen relative`}
     >
       {/* HERO */}
-      <section className="min-h-screen grid md:grid-cols-2 items-center gap-10 md:gap-16 px-8 md:px-20 pt-24 pb-20 bg-[#faf7f2] relative overflow-hidden">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={containerVariants}
-          className="flex flex-col gap-7"
-        >
-          <motion.div
-            variants={itemVariants}
-            className="inline-flex items-center gap-2 px-4 py-2 border-[1.5px] border-[#b5451b] rounded-full text-xs font-semibold tracking-wider text-[#b5451b] w-fit"
-          >
-            <Heart size={14} className="fill-current" />
-            OUR STORY
-          </motion.div>
-          <motion.h1
-            variants={itemVariants}
-            className="font-bold font-serif text-5xl md:text-6xl leading-[1.1] text-[#121e2e]"
-          >
-            Some journeys begin
-            <br />
-            with paperwork.
-            <br />
-            <em className="italic text-[#0d7a75] font-bold">Ours began</em>
-            <br />
-            with distance.
-          </motion.h1>
-          <motion.p
-            variants={itemVariants}
-            className="text-base leading-relaxed text-gray-600 max-w-md"
-          >
-            Rahvana was built for the space between people who belong together —
-            the weeks that stretch too long, the forms that carry real lives,
-            and the quiet hope families hold onto while they wait to be
-            reunited.
-          </motion.p>
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-wrap items-center gap-5 mt-2"
-          >
-            <Link
-              href="/visa-category/ir-category/ir-1"
-              className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5"
-            >
-              Start your journey <ArrowRight size={16} />
-            </Link>
-            <span className="text-xs text-gray-400 tracking-wide uppercase">
-              IR-1 · Spouse Visa · Phase 1
-            </span>
-          </motion.div>
-        </motion.div>
+      <section className="min-h-[100vh] flex items-center bg-[#faf7f2] relative overflow-hidden px-8 md:px-12 lg:px-20 pt-24 pb-20">
+        {/* Decorative background elements for large screens */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#0d7a75]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none hidden 2xl:block" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#b5451b]/5 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4 pointer-events-none hidden 2xl:block" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="relative flex justify-center"
-        >
-          <div className="relative w-full max-w-[520px] aspect-4/3 rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.14)] group">
-            <Image
-              src="/assets/images/about-hero-image.png"
-              alt="Airport reunion"
-              fill
-              priority
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute bottom-7 left-7 bg-white rounded-2xl px-5 py-3.5 flex items-center gap-3 shadow-xl">
-              <div className="w-9 h-9 bg-teal-50 rounded-full flex items-center justify-center text-[#0d7a75]">
-                <Heart size={18} />
-              </div>
-              <div>
-                <strong className="block text-sm text-[#121e2e]">
-                  IR-1 Journey
-                </strong>
-                <span className="text-xs text-gray-500">
-                  Guiding families home
-                </span>
+        <div className="max-w-[1440px] mx-auto grid md:grid-cols-2 items-center gap-12 lg:gap-20 2xl:gap-32 w-full relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={containerVariants}
+            className="flex flex-col gap-8 md:gap-10"
+          >
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 px-4 py-2 border-[1.5px] border-[#b5451b] rounded-full text-xs font-semibold tracking-wider text-[#b5451b] w-fit"
+            >
+              <Heart size={14} className="fill-current" />
+              OUR STORY
+            </motion.div>
+            <motion.h1
+              variants={itemVariants}
+              className="font-bold font-serif text-4xl sm:text-5xl lg:text-6xl 2xl:text-7xl leading-[1.1] text-[#121e2e]"
+            >
+              Some journeys begin with paperwork.{" "}
+              <em className="italic text-[#0d7a75] font-bold">Ours began</em> with
+              distance.
+            </motion.h1>
+            <motion.p
+              variants={itemVariants}
+              className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600 max-w-xl 2xl:max-w-2xl"
+            >
+              Rahvana was built for the space between people who belong together —
+              the weeks that stretch too long, the forms that carry real lives,
+              and the quiet hope families hold onto while they wait to be
+              reunited.
+            </motion.p>
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-wrap items-center gap-6 mt-2"
+            >
+              <Link
+                href="/visa-category/ir-category/ir-1"
+                className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
+              >
+                Start your journey <ArrowRight size={16} />
+              </Link>
+              <span className="text-xs 2xl:text-sm text-gray-400 tracking-wide uppercase font-medium">
+                IR-1 · Spouse Visa · Phase 1
+              </span>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}
+            className="relative flex justify-center lg:justify-end"
+          >
+            <div className="relative w-full max-w-[540px] 2xl:max-w-[680px] aspect-4/3 rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.16)] group">
+              <Image
+                src="/assets/images/about-hero-image.png"
+                alt="Airport reunion"
+                fill
+                priority
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+              />
+              <div className="absolute bottom-8 left-8 2xl:bottom-12 2xl:left-12 bg-white/90 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 shadow-2xl border border-white/20">
+                <div className="w-10 h-10 2xl:w-12 2xl:h-12 bg-[#0d7a75] rounded-full flex items-center justify-center text-white shadow-inner">
+                  <Heart size={20} />
+                </div>
+                <div>
+                  <strong className="block text-sm 2xl:text-base text-[#121e2e] font-bold">
+                    IR-1 Journey
+                  </strong>
+                  <span className="text-xs 2xl:text-sm text-gray-500 font-medium">
+                    Guiding families home
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-          {/* <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-400 text-[10px] tracking-[0.12em] uppercase">
-            <span>SCROLL</span>
-            <div className="w-px h-10 bg-gradient-to-b from-gray-400 to-transparent"></div>
-          </div> */}
-        </motion.div>
+          </motion.div>
+        </div>
       </section>
 
       {/* FRAGMENTS */}
@@ -582,19 +580,23 @@ export default function AboutPage() {
         >
           {[
             {
-              name: "Hams Laeeq",
-              initials: "HL",              image: "/assets/images/Hams.PNG",              color: "bg-[#0d7a75]",
+              name: "Hams",
+              initials: "HL",
+              image: "/assets/images/Hams.PNG",
+              color: "bg-[#0d7a75]",
               role: "Co-Founder",
               desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I’ve personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
             },
             {
-              name: "Sharjeel Laeeq",
-              initials: "SL",              image: "/assets/images/Sharjeel.PNG",              color: "bg-[#e8a020]",
+              name: "Sharjeel",
+              initials: "SL",
+              image: "/assets/images/Sharjeel.PNG",
+              color: "bg-[#e8a020]",
               role: "Founder",
               desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn’t have to face that process without clarity and guidance.",
             },
             {
-              name: "Javeria Laeeq",
+              name: "Javeria",
               initials: "JL",
               image: "/assets/images/Javeria.PNG",
               color: "bg-[#d9406a]",
@@ -614,7 +616,7 @@ export default function AboutPage() {
                     : "md:flex-[0.75] opacity-55 blur-[1px] scale-[0.985]"
               }`}
             >
-              <div className="relative w-20 h-20 mx-auto mb-4 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="relative w-50 h-50 mx-auto mb-7 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ring-4 ring-[#0d7a75]/10 shadow-lg">
                 <Image
                   src={member.image}
                   alt={member.name}
@@ -622,7 +624,7 @@ export default function AboutPage() {
                   className="object-cover object-top"
                 />
                 <div
-                  className={`absolute inset-0 rounded-full flex items-center justify-center text-lg font-bold text-white ${member.color} hidden`}
+                  className={`absolute inset-0 rounded-full flex items-center justify-center text-3xl font-bold text-white ${member.color} hidden`}
                 >
                   {member.initials}
                 </div>
@@ -679,7 +681,6 @@ export default function AboutPage() {
           · Lahore
         </p>
       </section>
-      
     </div>
   );
 }
