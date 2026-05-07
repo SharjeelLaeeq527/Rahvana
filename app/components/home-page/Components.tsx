@@ -2724,17 +2724,44 @@ function ToolCarousel({
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeIdxRef = useRef(0);
 
   const goTo = useCallback((idx: number) => {
     const next =
       ((idx % featuredTools.length) + featuredTools.length) %
       featuredTools.length;
+    activeIdxRef.current = next;
     setVisible(false);
     window.setTimeout(() => {
       setActiveIdx(next);
       setVisible(true);
     }, 220);
   }, []);
+
+  const startAutoPlay = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      goTo(activeIdxRef.current + 1);
+    }, 4500);
+  }, [goTo]);
+
+  useEffect(() => {
+    if (hovered) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+    startAutoPlay();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [hovered, startAutoPlay]);
+
+  const handleSelect = useCallback((idx: number) => {
+    goTo(idx);
+    if (!hovered) startAutoPlay();
+  }, [goTo, hovered, startAutoPlay]);
 
   const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
@@ -2985,10 +3012,8 @@ export function IndividualToolsScene() {
       {/* ── Carousel ── */}
       <ToolCarousel
         activeIdx={activeIdx}
-        onSelect={(idx) => {
-          goTo(idx);
-        }}
-        onHoverChange={() => {}}
+        onSelect={handleSelect}
+        onHoverChange={setHovered}
       />
     </div>
   );
