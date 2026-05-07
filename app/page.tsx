@@ -461,7 +461,7 @@ function HomePageContent() {
 
                 <svg
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-[27vw] top-[38vh] z-30 h-[118px] w-[32vw] overflow-visible xl:left-[33vw] xl:top-[37vh] xl:w-[25vw] 2xl:left-[34vw]"
+                  className="pointer-events-none absolute left-[27vw] top-[38vh] z-10 h-[118px] w-[32vw] overflow-visible xl:left-[33vw] xl:top-[37vh] xl:w-[25vw] 2xl:left-[34vw]"
                   viewBox="0 0 470 140"
                   fill="none"
                 >
@@ -481,7 +481,7 @@ function HomePageContent() {
                     </filter>
                   </defs>
                   <path
-                    d="M 50 85 C 90 84 120 18 196 35 C 215 39 220 41 230 44"
+                    d="M -300 95 L 50 85 C 120 75 160 54 230 44 L 800 34"
                     stroke="rgba(255,255,255,0.65)"
                     strokeWidth="2"
                     strokeDasharray="4 8"
@@ -741,8 +741,7 @@ function HomePageContent() {
                             openFAQ === i
                               ? "bg-rahvana-primary border-rahvana-primary text-white rotate-45"
                               : "border-border text-muted-foreground group-hover:border-rahvana-primary group-hover:text-rahvana-primary"
-    
-                            }`}
+                          }`}
                         >
                           <Icons.Plus className="w-4 h-4" />
                         </div>
