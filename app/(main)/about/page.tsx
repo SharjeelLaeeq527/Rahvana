@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, Variants } from "framer-motion";
 import {
   Heart,
@@ -34,6 +35,8 @@ const dmSans = DM_Sans({
 });
 
 export default function AboutPage() {
+  const [hoveredTeamIndex, setHoveredTeamIndex] = useState<number | null>(null);
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -573,43 +576,71 @@ export default function AboutPage() {
           </em>
         </h2>
 
-        <div className="flex flex-wrap justify-center gap-6 max-w-[900px] mx-auto">
+        <div
+          className="mx-auto flex max-w-[1100px] flex-col gap-6 md:flex-row md:items-stretch"
+          onMouseLeave={() => setHoveredTeamIndex(null)}
+        >
           {[
             {
-              initials: "AH",
-              color: "bg-[#0d7a75]",
-              role: "FOUNDER",
-              desc: "Built Rahvana after watching someone close navigate the IR-1 process entirely alone — every form, every wait, every unanswered question.",
+              name: "Hams Laeeq",
+              initials: "HL",              image: "/assets/images/Hams.PNG",              color: "bg-[#0d7a75]",
+              role: "Co-Founder",
+              desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I’ve personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
             },
             {
-              initials: "SR",
-              color: "bg-[#e8a020]",
-              role: "PRODUCT",
-              desc: "Believes that the right tool at the right moment can completely change how a hard journey feels.",
+              name: "Sharjeel Laeeq",
+              initials: "SL",              image: "/assets/images/Sharjeel.PNG",              color: "bg-[#e8a020]",
+              role: "Founder",
+              desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn’t have to face that process without clarity and guidance.",
             },
             {
-              initials: "FA",
+              name: "Javeria Laeeq",
+              initials: "JL",
+              image: "/assets/images/Javeria.PNG",
               color: "bg-[#d9406a]",
-              role: "SUPPORT & COMMUNITY",
-              desc: "Dedicated to making every interaction feel like you're talking to someone who has read your case — not just a script.",
+              role: "Co-Founder",
+              desc: "Behind every decision is the responsibility to build something people can rely on. At Rahvana, that means making sure we grow sustainably while staying focused on what actually matters is helping people through a difficult process without adding financial stress or uncertainty. We keep that balance intact.",
             },
           ].map((member, i) => (
-            <div
+            <motion.div
               key={i}
-              className="bg-white rounded-3xl p-9 w-full md:w-[260px] shadow-sm border border-black/5"
+              layout
+              onMouseEnter={() => setHoveredTeamIndex(i)}
+              className={`bg-white rounded-3xl p-9 shadow-sm border border-black/5 flex flex-col transition-all duration-300 ease-out md:min-h-[360px] ${
+                hoveredTeamIndex === null
+                  ? "md:flex-1"
+                  : hoveredTeamIndex === i
+                    ? "md:flex-[1.6]"
+                    : "md:flex-[0.75] opacity-55 blur-[1px] scale-[0.985]"
+              }`}
             >
-              <div
-                className={`${member.color} w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold text-white mx-auto mb-4`}
-              >
-                {member.initials}
+              <div className="relative w-20 h-20 mx-auto mb-4 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0">
+                <Image
+                  src={member.image}
+                  alt={member.name}
+                  fill
+                  className="object-cover object-top"
+                />
+                <div
+                  className={`absolute inset-0 rounded-full flex items-center justify-center text-lg font-bold text-white ${member.color} hidden`}
+                >
+                  {member.initials}
+                </div>
               </div>
-              <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#0d7a75] mb-3">
+              <p className="text-2xl font-serif font-bold text-[#121e2e] mb-1">
+                {member.name}
+              </p>
+              <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#0d7a75] mb-4">
                 {member.role}
               </p>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p
+                className={`text-sm text-gray-600 leading-relaxed transition-all ${
+                  hoveredTeamIndex === i ? "" : "line-clamp-4"
+                }`}
+              >
                 {member.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>

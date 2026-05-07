@@ -141,7 +141,9 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
  const UploadLockedNote = () => (
     <div className="mt-2 flex items-start gap-2 rounded-xl p-3"
       style={{ background: "#fbeaec", border: "1px solid rgba(130,132,191,0.3)" }}>
-      <span className="plan-icon plan-icon--premium scale-110 shrink-0 mt-0.5" aria-hidden="true" />
+      <span className="w-7 h-7 rounded-full border border-[#c5b9ff] bg-[#f0ebff] flex items-center justify-center shrink-0 mt-0.5 shadow-sm" aria-hidden="true">
+        <span className="plan-icon plan-icon--premium scale-110" aria-hidden="true" />
+      </span>
       <p className="text-[12px] leading-[1.6]" style={{ color: "#5a3040" }}>
         Uploading your approval notice automatically saves it to the document vault and extracts key information — approval date, receipt number, and more. This feature is available on <strong>Premium and above</strong>.{" "}
         <button onClick={() => setUpgradeModalFeature("approval_notice_upload")}

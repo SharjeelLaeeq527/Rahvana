@@ -29,6 +29,9 @@ import {
   Wand2,
   Bell,
   User,
+  Users,
+  ShieldCheck,
+  Scale,
   BookOpen,
 } from "lucide-react";
 import { getFormConfig } from "@/lib/formConfig";
@@ -1251,7 +1254,7 @@ export function TwoWaysSection() {
         ref={sectionRef}
         id="path"
         aria-label="Two ways to use Rahvana"
-        className="relative hidden lg:block mt-40 md:mt-56"
+        className="relative hidden lg:block"
         style={{ height: "calc(100vh + 600px)" }}
       >
         <div
@@ -1665,7 +1668,10 @@ export function TwoWaysSupportText({
 // internal absolute-positioned children render correctly.
 export function TwoWaysVisual({ index }: { index: TwoWaysIndex }) {
   return (
-    <div style={{ position: "relative", width: 680, height: 560 }}>
+    <div
+      className="flex size-full items-center justify-center"
+      style={{ position: "relative", width: 680, height: 520 }}
+    >
       {index === 0 ? <GuidedRoadmapScene /> : <IndividualToolsScene />}
     </div>
   );
@@ -1812,41 +1818,57 @@ export function TwoWaysMobile({
 }
 
 export function GuidedRoadmapScene() {
-  const [steps, setSteps] = useState([
-    { id: 1, title: "Determine Eligibility", status: "done" },
-    { id: 2, title: "Gather Required Documents", status: "done" },
-    { id: 3, title: "Review Filing Methods", status: "todo" },
-    { id: 4, title: "Fill Form I-130", status: "todo" },
-    { id: 5, title: "Fill Form I-130A", status: "active" },
-    { id: 6, title: "Submit to USCIS", status: "todo" },
-    { id: 7, title: "Wait for Receipt", status: "todo" },
-    { id: 8, title: "Prepare for Biometrics", status: "todo" },
-  ]);
+  const [view, setView] = useState<"dashboard" | "chapter" | "step">(
+    "dashboard",
+  );
+  const [activeChapterIdx, setActiveChapterIdx] = useState(0);
+  const [activeStepIdx, setActiveStepIdx] = useState(-1);
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [isBellOpen, setIsBellOpen] = useState(false);
+  const [isCaseDetailsOpen, setIsCaseDetailsOpen] = useState(false);
+  const [isMilestonesOpen, setIsMilestonesOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  const toggleStep = (id: number) => {
-    setSteps((prev) =>
-      prev.map((s) => {
-        if (s.id === id) {
-          return {
-            ...s,
-            status:
-              s.status === "done" ? (id === 5 ? "active" : "todo") : "done",
-          };
-        }
-        return s;
-      }),
-    );
+  const activeChapter = chapters[activeChapterIdx];
+  const activeStep =
+    activeStepIdx !== -1 ? activeChapter.steps[activeStepIdx] : null;
+
+  const nextStep =
+    chapters[0].steps.find((s) => !completedSteps.has(s[0])) ||
+    chapters[0].steps[0];
+
+  const handleSelectChapter = (idx: number) => {
+    if (idx >= 1) return; // Only Chapter 1 is open in demo
+    setActiveChapterIdx(idx);
+    setView("chapter");
   };
 
-  const completedCount = steps.filter((s) => s.status === "done").length;
-  const progressPct = Math.round((completedCount / steps.length) * 100);
-  const isAllDone = completedCount === steps.length;
+  const handleSelectStep = (idx: number) => {
+    setActiveStepIdx(idx);
+    setView("step");
+  };
+
+  const toggleStep = (stepId: string) => {
+    setCompletedSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(stepId)) next.delete(stepId);
+      else next.add(stepId);
+      return next;
+    });
+  };
+
+  const getChapterProgress = (chapterIdx: number) => {
+    const chapterSteps = chapters[chapterIdx].steps;
+    const done = chapterSteps.filter((s) => completedSteps.has(s[0])).length;
+    return Math.round((done / chapterSteps.length) * 100);
+  };
+
+  const totalDone = Array.from(completedSteps).length;
+  const totalSteps = chapters.reduce((acc, c) => acc + c.steps.length, 0);
 
   return (
     <div
-      className="relative flex flex-col overflow-visible rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
+      className="relative flex flex-col overflow-hidden rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
       style={{
         width: 680,
         height: 560,
@@ -1856,309 +1878,523 @@ export function GuidedRoadmapScene() {
         transform: "translate(-50%, -50%)",
       }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#e1ebe8] bg-white px-6 py-4 rounded-t-[32px]">
+      {/* Header / Nav */}
+      <div className="flex items-center justify-between border-b border-[#e1ebe8] bg-white px-6 py-4 rounded-t-[32px] shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-[#0d7377] text-white">
-            <Compass className="size-6" />
-          </div>
-          <div>
-            <div className="text-[15px] font-black uppercase tracking-wide text-[#162126]">
-              IR-1 Journey
+          {view !== "dashboard" ? (
+            <button
+              onClick={() =>
+                view === "step" ? setView("chapter") : setView("dashboard")
+              }
+              className="flex size-9 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors"
+            >
+              <ChevronLeft size={18} strokeWidth={2.5} />
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <LayoutDashboard size={18} className="text-[#0d7377]" />
+              <span className="text-[14px] font-black uppercase tracking-[0.1em] text-[#162126]">
+                Dashboard
+              </span>
             </div>
-            <div className="text-xs text-[#6b8097]">
-              Islamabad Embassy · Online Filing
-              {!isAllDone && (
-                <span className="ml-2 inline-flex items-center gap-1 font-bold text-[#0d7377]">
-                  · Click steps to try demo
-                </span>
-              )}
-            </div>
-          </div>
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsBellOpen(!isBellOpen)}
-            className="relative flex size-10 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors focus:outline-none"
-          >
-            <Bell className="size-5" />
-            <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#e34242] ring-2 ring-white" />
-            <AnimatePresence>
-              {isBellOpen && (
-                <motion.div
-                  initial={
-                    reduceMotion ? false : { opacity: 0, y: 5, scale: 0.95 }
-                  }
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={
-                    reduceMotion ? undefined : { opacity: 0, y: 5, scale: 0.95 }
-                  }
-                  transition={{ duration: 0.2 }}
-                  className="absolute right-0 top-12 z-[100] w-64 rounded-xl border border-[#dde8e6] bg-white p-4 shadow-xl text-left"
-                >
-                  <div className="text-xs font-bold text-[#162126]">
-                    Notifications
-                  </div>
-                  <div className="mt-2 rounded-lg bg-[#f0f3f7] p-2 text-xs text-[#4a5c62]">
-                    <span className="font-bold text-[#0d7377]">
-                      NADRA Review:
-                    </span>{" "}
-                    Your documents have been processed and are ready.
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </button>
-          <div className="flex size-10 items-center justify-center rounded-full border border-[#dde8e6] bg-[#f0f3f7] text-[#6b8097]">
-            <User className="size-5" />
-          </div>
-        </div>
-      </div>
 
-      {/* Horizontal Stepper */}
-      <div className="flex items-center gap-4 border-b border-[#e1ebe8] bg-white px-6 py-3">
-        <div className="flex items-center gap-3">
-          <div className="flex size-8 items-center justify-center rounded-full bg-[#8284bf] text-sm font-bold text-white shadow-sm">
-            1
-          </div>
-          <div>
-            <div className="text-xs font-bold text-[#162126]">
-              USCIS Petition
-            </div>
-            <div className="text-[10px] text-[#6b8097]">
-              {Math.round(33 + completedCount * 1.5)}% done
-            </div>
-          </div>
-        </div>
-        <div className="h-px w-8 bg-[#dde8e6]" />
-        <div className="flex items-center gap-3 opacity-50">
-          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
-            <Lock className="size-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-[#6b8097]">NVC / CEAC</div>
-            <div className="text-[10px] text-[#6b8097]">Locked</div>
-          </div>
-        </div>
-        <div className="h-px w-8 bg-[#dde8e6]" />
-        <div className="flex items-center gap-3 opacity-50">
-          <div className="flex size-8 items-center justify-center rounded-full border border-[#dde8e6] text-sm font-bold text-[#6b8097]">
-            <Lock className="size-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-[#6b8097]">
-              Med + Interview
-            </div>
-            <div className="text-[10px] text-[#6b8097]">Locked</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Left Sidebar */}
-        <div className="w-[240px] flex-shrink-0 border-r border-[#e1ebe8] bg-white p-5 flex flex-col relative z-10">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4E518C]">
-            <div className="size-1.5 rounded-full bg-[#4E518C]" />
-            CHAPTER 1 · IN PROGRESS
-          </div>
-          <h2 className="mt-2 text-[22px] font-black leading-tight text-[#162126]">
-            USCIS Petition Filing
-          </h2>
-          <div className="mt-4 flex items-center gap-2">
-            <div className="h-1.5 flex-1 rounded-full bg-[#eef1f7] overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-[#8284bf]"
-                initial={false}
-                animate={{ width: `${62.5 + completedCount * 3.5}%` }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              />
-            </div>
-            <span className="text-[11px] font-bold text-[#162126] w-8 text-right">
-              {completedCount} / 8
-            </span>
-          </div>
-
-          <div className="mt-8 text-[10px] font-bold uppercase tracking-widest text-[#6b8097]">
-            Active Step
-          </div>
-          <div className="mt-2 rounded-xl border border-[#c8d1dc] bg-[#f8f9fb] p-3 shadow-sm">
-            <div className="font-bold text-[#162126]">Fill Form I-130A</div>
-            <div className="mt-1 text-[11px] text-[#6b8097]">
-              Step 5 of 8 · In progress
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-xl border border-[#fde68a] bg-[#fef3c7]/40 p-3">
-            <div className="flex gap-2">
-              <div className="mt-1 size-1.5 shrink-0 rounded-full bg-[#d97706]" />
-              <div className="text-xs text-[#92400e] leading-snug">
-                Fresh NADRA records required for ISL embassy.
+        <div className="flex items-center gap-4">
+          {view === "dashboard" && (
+            <div className="flex items-center gap-2">
+              <div className="rounded-full bg-white px-4 py-1.5 text-[11px] font-black text-[#162126] border border-[#dde8e6] shadow-sm uppercase tracking-wider">
+                IR-1
+              </div>
+              <div className="rounded-full bg-[#f0f9f6] px-4 py-1.5 text-[11px] font-black text-[#0d7377] border border-[#d1e7e2] uppercase tracking-wider">
+                Saved
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="mt-auto pt-6">
-            <button
-              onClick={() => toggleStep(5)}
-              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] px-4 py-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#0a5c5f] hover:shadow-lg focus:outline-none"
-            >
-              <span>
-                {steps[4].status === "done"
-                  ? "Mark Incomplete"
-                  : "Continue Step"}
-              </span>
-              <ArrowRight className="size-4" strokeWidth={2.5} />
-            </button>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <button
+                onClick={() => setIsBellOpen(!isBellOpen)}
+                className="relative flex size-9 items-center justify-center rounded-full border border-[#dde8e6] text-[#6b8097] hover:bg-slate-50 transition-colors"
+              >
+                <Bell size={18} />
+                <span className="absolute right-2 top-2 size-2 rounded-full bg-[#e34242] ring-2 ring-white" />
+              </button>
+              <AnimatePresence>
+                {isBellOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 top-12 z-[100] w-64 rounded-xl border border-[#dde8e6] bg-white p-4 shadow-xl text-left"
+                  >
+                    <div className="text-[11px] font-black uppercase tracking-wider text-[#162126] mb-1">
+                      Notifications Center
+                    </div>
+                    <p className="text-[10px] text-[#6b8097] leading-relaxed mb-4">
+                      This is where your real-time case updates and automated
+                      tracking alerts will appear.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="rounded-lg bg-[#f0f9f6] p-2.5 border border-[#d1e7e2]">
+                        <div className="text-[10px] font-black text-[#0d7377] uppercase mb-1 flex items-center gap-1.5">
+                          <div className="size-1.5 rounded-full bg-[#0d7377]" />
+                          Live Case Tracking
+                        </div>
+                        <div className="text-[11px] leading-snug text-[#4a5c62]">
+                          Automated alerts for USCIS/NVC status changes and
+                          priority date movements.
+                        </div>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100 opacity-60">
+                        <div className="text-[10px] font-black text-[#6b8097] uppercase mb-1">
+                          System Intelligence
+                        </div>
+                        <div className="text-[11px] leading-snug text-[#6b8097]">
+                          Personalized reminders for upcoming deadlines and
+                          document expirations.
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="flex size-9 items-center justify-center rounded-full border border-[#dde8e6] bg-[#f0f3f7] text-[#6b8097]">
+              <User size={18} />
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Right Content */}
-        <div className="flex-1 bg-[#f9fafb] p-5 overflow-y-auto">
-          <div className="flex items-center gap-2 mb-4">
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#0d7377"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <AnimatePresence mode="wait">
+          {view === "dashboard" && (
+            <motion.div
+              key="dash"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex-1 p-5 overflow-y-auto"
             >
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377]">
-              CHAPTER 1 STEPS
-            </div>
-            <div className="ml-auto rounded border border-[#d0e4f7] bg-white px-2 py-0.5 text-[9px] font-bold text-[#6b8097]">
-              {completedCount} / 8 DONE
-            </div>
-          </div>
+              {/* Next Roadmap Step Card */}
+              <div className="mb-6 rounded-[24px] bg-[#051738] p-6 text-white shadow-lg relative overflow-hidden min-h-[170px] flex flex-col justify-center">
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
+                <div className="absolute -right-8 -bottom-8 size-48 rounded-full bg-[#0d7377]/10 blur-2xl" />
 
-          <div className="flex flex-col gap-1.5">
-            {steps.map((step) => {
-              const isDone = step.status === "done";
-              const isActive = step.status === "active";
+                <div className="relative z-10">
+                  <div className="text-[10px] font-black uppercase tracking-[0.1em] text-white/40 mb-1.5">
+                    Next Roadmap Step
+                  </div>
+                  <h3 className="text-2xl font-black mb-2">{nextStep[1]}</h3>
+                  <p className="text-[13px] text-white/50 max-w-sm leading-snug mb-5">
+                    {completedSteps.size === 0
+                      ? "Start your IR-1 journey today by confirming your eligibility."
+                      : "Complete the beneficiary spouse information form using Rahvana's guided Autofill."}
+                  </p>
+                  <button
+                    onClick={() => handleSelectChapter(0)}
+                    className="flex w-fit items-center gap-2 rounded-full bg-white px-6 py-2.5 text-[11px] font-black uppercase tracking-wider text-[#051738] hover:bg-white/90 transition-all shadow-md"
+                  >
+                    Continue Step <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
 
-              return (
-                <motion.div
-                  key={step.id}
-                  layout
-                  className={`relative flex items-center justify-between rounded-xl border p-3 transition-all ${
-                    isActive
-                      ? "border-[#8284bf] bg-[#f0f1fb] shadow-sm"
-                      : isDone
-                        ? "border-[#e1ebe8] bg-white"
-                        : "border-transparent hover:border-[#dde8e6] hover:bg-white"
-                  } group cursor-pointer`}
-                  onClick={() => toggleStep(step.id)}
-                >
-                  <div className="flex items-center gap-3">
+              {/* Chapters Grid */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                {chapters.map((chapter, idx) => {
+                  const isLocked = idx >= 1;
+                  const progress = getChapterProgress(idx);
+                  const colors = [
+                    {
+                      pillBg: "bg-[#F0F1FB]",
+                      pillText: "text-[#4E518C]",
+                      pillBorder: "border-[#B9BBE2]",
+                      bar: "bg-[#8284BF]",
+                    },
+                    {
+                      pillBg: "bg-[#F4E6F3]",
+                      pillText: "text-[#520A50]",
+                      pillBorder: "border-[#8B4388]",
+                      bar: "bg-[#520A50]",
+                    },
+                    {
+                      pillBg: "bg-[#E8ECF3]",
+                      pillText: "text-[#051738]",
+                      pillBorder: "border-[#31415F]",
+                      bar: "bg-[#051738]",
+                    },
+                  ][idx];
+
+                  return (
                     <div
-                      className={`flex size-7 items-center justify-center rounded-full transition-all ${
-                        isDone
-                          ? "bg-[#0d7377] text-white shadow-sm"
-                          : isActive
-                            ? "bg-[#8284bf] text-white"
-                            : "border border-[#dde8e6] bg-white text-[10px] font-bold text-[#6b8097]"
+                      key={chapter.name}
+                      onClick={() => !isLocked && handleSelectChapter(idx)}
+                      className={`group relative flex flex-col rounded-[20px] border-2 bg-white p-4 transition-all ${
+                        isLocked
+                          ? "border-[#dde8e6]/50 opacity-60 cursor-default"
+                          : "border-[#dde8e6] cursor-pointer hover:border-[#0d7377] hover:shadow-md"
                       }`}
                     >
-                      {isDone ? (
-                        <Check className="size-4" strokeWidth={3} />
-                      ) : isActive ? (
-                        <ChevronRight className="size-4" strokeWidth={3} />
-                      ) : (
-                        step.id
+                      <div className="flex items-start justify-between mb-4">
+                        <div
+                          className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-wider border ${colors.pillBg} ${colors.pillText} ${colors.pillBorder}`}
+                        >
+                          Chapter {idx + 1}
+                        </div>
+                        {isLocked && (
+                          <Lock size={14} className="text-slate-300" />
+                        )}
+                      </div>
+
+                      <h4
+                        className={`text-[14px] font-black leading-snug mb-6 ${isLocked ? "text-slate-400" : "text-[#162126]"}`}
+                      >
+                        {chapter.name}
+                      </h4>
+
+                      <div className="mt-auto">
+                        <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            className={`h-full rounded-full ${colors.bar}`}
+                          />
+                        </div>
+                      </div>
+
+                      {isLocked && (
+                        <div className="absolute top-3.5 right-3.5">
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[7px] font-black uppercase text-slate-400 border border-slate-200">
+                            Upgrade
+                          </span>
+                        </div>
                       )}
                     </div>
+                  );
+                })}
+              </div>
 
-                    <span
-                      className={`text-[13px] font-bold transition-colors ${
-                        isDone
-                          ? "text-[#0d7377]"
-                          : isActive
-                            ? "text-[#4E518C]"
-                            : "text-[#6b8097]"
-                      }`}
-                    >
-                      {step.title}
+              {/* Case Details & Milestones */}
+              <div className="mt-6 space-y-3 pb-6">
+                {/* Case Details */}
+                <div className="overflow-hidden rounded-[20px] border border-[#dde8e6] bg-white shadow-sm">
+                  <button
+                    onClick={() => setIsCaseDetailsOpen(!isCaseDetailsOpen)}
+                    className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
+                        <BookOpen size={16} />
+                      </div>
+                      <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
+                        Case Details
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={18}
+                      className={`text-[#6b8097] transition-transform duration-300 ${isCaseDetailsOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {isCaseDetailsOpen && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-[#dde8e6] bg-[#f9fafc] p-5">
+                          {caseFields.map(([label, value]) => (
+                            <div key={label}>
+                              <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+                                {label}
+                              </div>
+                              <div className="mt-0.5 text-[13px] font-bold text-[#162126]">
+                                {value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Milestone History */}
+                <div className="overflow-hidden rounded-[20px] border border-[#dde8e6] bg-white shadow-sm">
+                  <button
+                    onClick={() => setIsMilestonesOpen(!isMilestonesOpen)}
+                    className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
+                        <Signpost size={16} />
+                      </div>
+                      <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
+                        Milestone History
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={18}
+                      className={`text-[#6b8097] transition-transform duration-300 ${isMilestonesOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  <AnimatePresence>
+                    {isMilestonesOpen && (
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-3 border-t border-[#dde8e6] bg-[#f9fafc] p-5">
+                          {milestones.map(([title, completed], idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2.5"
+                            >
+                              <div
+                                className={`flex size-4 items-center justify-center rounded-full border ${completed ? "bg-[#0d7377] border-[#0d7377] text-white" : "border-[#dde8e6] bg-white text-transparent"}`}
+                              >
+                                <Check size={10} strokeWidth={4} />
+                              </div>
+                              <span
+                                className={`text-[12px] font-bold ${completed ? "text-[#162126]" : "text-slate-400"}`}
+                              >
+                                {title}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {view === "chapter" && (
+            <motion.div
+              key="chapter"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex"
+            >
+              <div className="w-[240px] shrink-0 border-r border-[#e1ebe8] bg-white p-5 flex flex-col">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4E518C]">
+                  <div className="size-1.5 rounded-full bg-[#4E518C]" />
+                  Chapter {activeChapterIdx + 1}
+                </div>
+                <h2 className="mt-2 text-[20px] font-black leading-tight text-[#162126]">
+                  {activeChapter.name}
+                </h2>
+                <p className="mt-3 text-xs leading-relaxed text-[#6b8097]">
+                  {activeChapter.description}
+                </p>
+
+                <div className="mt-auto">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#6b8097] mb-2">
+                    Chapter Progress
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className="h-full bg-[#0d7377] transition-all"
+                        style={{
+                          width: `${getChapterProgress(activeChapterIdx)}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-[11px] font-bold text-[#162126]">
+                      {getChapterProgress(activeChapterIdx)}%
                     </span>
                   </div>
+                </div>
+              </div>
 
-                  <div className="flex items-center gap-3">
-                    {isActive && !isDone && (
-                      <span className="rounded-md bg-[#e0e2f5] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-[#4E518C]">
-                        Active
-                      </span>
-                    )}
-                    {!isDone && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleStep(step.id);
-                        }}
-                        className={`rounded-md px-2.5 py-1.5 text-[10px] font-black transition-all ${
-                          isActive
-                            ? "bg-[#0d7377] text-white shadow-md hover:bg-[#0a5c5f]"
-                            : "opacity-0 group-hover:opacity-100 text-[#0d7377] hover:underline underline-offset-2"
+              <div className="flex-1 overflow-y-auto p-5 bg-[#f9fafb]">
+                <div className="flex flex-col gap-2">
+                  {activeChapter.steps.map((step, idx) => {
+                    const isDone = completedSteps.has(step[0]);
+                    const isLocked = !(activeChapterIdx === 0 && idx === 0);
+                    return (
+                      <div
+                        key={step[0]}
+                        onClick={() => !isLocked && handleSelectStep(idx)}
+                        className={`group flex items-center justify-between rounded-xl border p-3.5 transition-all ${
+                          isLocked
+                            ? "border-transparent bg-white/60 opacity-70 cursor-default"
+                            : isDone
+                              ? "border-[#0d7377] bg-white cursor-pointer"
+                              : "border-transparent bg-white shadow-sm hover:border-[#dde8e6] cursor-pointer"
                         }`}
                       >
-                        {isActive ? "Mark Completed" : "Complete"}
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-
-            <div className="mt-3 flex items-center justify-between rounded-xl border border-dashed border-[#dde8e6] bg-white p-3.5 opacity-60">
-              <div className="flex items-center gap-2">
-                <Lock className="size-4 text-[#6b8097]" />
-                <span className="text-[13px] font-bold text-[#6b8097]">
-                  Ch. 2 · NVC / CEAC Processing
-                </span>
+                        <div className="flex items-center gap-3">
+                          <div
+                            onClick={(e) => {
+                              if (isLocked) return;
+                              e.stopPropagation();
+                              toggleStep(step[0]);
+                            }}
+                            className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
+                              isLocked
+                                ? "border-slate-200 bg-slate-50 text-slate-300"
+                                : isDone
+                                  ? "bg-[#0d7377] border-[#0d7377] text-white"
+                                  : "border-[#dde8e6] text-slate-300 group-hover:border-[#0d7377] group-hover:text-[#0d7377]"
+                            }`}
+                          >
+                            {isLocked ? (
+                              <Lock size={12} />
+                            ) : isDone ? (
+                              <Check size={14} strokeWidth={3} />
+                            ) : (
+                              <div className="size-2 rounded-full bg-current" />
+                            )}
+                          </div>
+                          <div>
+                            <div
+                              className={`text-[13.5px] font-bold ${
+                                isLocked
+                                  ? "text-slate-400"
+                                  : isDone
+                                    ? "text-[#0d7377]"
+                                    : "text-[#162126]"
+                              }`}
+                            >
+                              {step[1]}
+                            </div>
+                            <div className="text-[11px] text-[#6b8097]">
+                              {isLocked ? "Pro Feature" : step[2]}
+                            </div>
+                          </div>
+                        </div>
+                        {!isLocked && (
+                          <ChevronRight
+                            size={16}
+                            className="text-slate-300 group-hover:translate-x-1 transition-all"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
-                Locked
-              </span>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          )}
+
+          {view === "step" && activeStep && (
+            <motion.div
+              key="step"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="flex-1 flex flex-col bg-white overflow-y-auto"
+            >
+              {activeChapterIdx === 0 && activeStepIdx === 0 ? (
+                <StepQuestDemo
+                  onComplete={() => {
+                    toggleStep(activeStep[0]);
+                    setView("chapter");
+                  }}
+                />
+              ) : activeChapterIdx === 0 && activeStepIdx === 1 ? (
+                <StepDocsDemo
+                  onComplete={() => {
+                    toggleStep(activeStep[0]);
+                    setView("chapter");
+                  }}
+                />
+              ) : (
+                <div className="flex-1 p-8 flex flex-col items-center justify-center text-center">
+                  <div className="flex size-16 items-center justify-center rounded-2xl bg-[#f0f1fb] text-[#4e518c] mb-6 shadow-sm">
+                    <FileText size={32} />
+                  </div>
+                  <h2 className="text-2xl font-black text-[#162126] mb-2">
+                    {activeStep[1]}
+                  </h2>
+                  <p className="max-w-md text-[#6b8097] leading-relaxed mb-8">
+                    In the full app, this step includes interactive guides,
+                    Pakistan-specific checklists, and automated tools to help
+                    you finish faster.
+                  </p>
+
+                  <div className="flex flex-col w-full max-w-sm gap-3">
+                    <button
+                      onClick={() => {
+                        toggleStep(activeStep[0]);
+                        setView("chapter");
+                      }}
+                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-4 text-[14px] font-black uppercase tracking-wider text-white shadow-lg hover:bg-[#0a5c5f] transition-all"
+                    >
+                      {completedSteps.has(activeStep[0])
+                        ? "Mark as Incomplete"
+                        : "Complete this step"}
+                      <Check size={18} />
+                    </button>
+                    <button
+                      onClick={() => setView("chapter")}
+                      className="w-full py-3 text-sm font-bold text-[#6b8097] hover:text-[#162126] transition-colors"
+                    >
+                      Back to Checklist
+                    </button>
+                  </div>
+
+                  <div className="mt-12 grid grid-cols-2 gap-4 w-full max-w-lg">
+                    <div className="rounded-xl border border-dashed border-[#dde8e6] p-4">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6b8097] mb-1">
+                        Free Access
+                      </div>
+                      <div className="text-sm font-bold text-[#162126]">
+                        Preview Only
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-[#d0e4f7] bg-[#f0f7ff] p-4">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377] mb-1">
+                        Pro Tool
+                      </div>
+                      <div className="text-sm font-bold text-[#0d7377]">
+                        Auto-Fill Ready
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="grid grid-cols-4 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-3.5 text-center rounded-b-[32px] relative z-20">
+      {/* Bottom Status Bar */}
+      <div className="grid grid-cols-3 divide-x divide-[#e1ebe8] border-t border-[#e1ebe8] bg-white py-4 text-center shrink-0">
+        <div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
+            Overall Progress
+          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
+            {Math.round((totalDone / totalSteps) * 100)}%
+          </div>
+        </div>
         <div>
           <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
             Steps Done
           </div>
           <div className="mt-0.5 text-[15px] font-black text-[#162126]">
-            {completedCount} / 18
+            {totalDone} / {totalSteps}
           </div>
         </div>
         <div>
           <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
-            Chapter
+            Demo Mode
           </div>
-          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
-            1 of 3
-          </div>
-        </div>
-        <div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
-            Est. Timeline
-          </div>
-          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
-            ~8 months
-          </div>
-        </div>
-        <div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
-            Overall
-          </div>
-          <div className="mt-0.5 text-[15px] font-black text-[#162126]">
-            {Math.round(17 + completedCount * 1.2)}%
+          <div className="mt-0.5 text-[15px] font-black text-[#0d7377]">
+            Free Preview
           </div>
         </div>
       </div>
@@ -2168,276 +2404,250 @@ export function GuidedRoadmapScene() {
 
 // ── tools ──
 const featuredTools = [
-  { id: "strength",    icon: Brain,         iconSize: 20, label: "Case Strength Analyzer",  bg: "#f5f3ff", fg: "#7c3aed", border: "#ddd6fe", iconSrc: "/icons/case-strength-analyser.svg" },
-  { id: "action",      icon: LifeBuoy,      iconSize: 20, label: "221(g) Action Planner",   bg: "#ecfdf5", fg: "#059669", border: "#d1fae5", iconSrc: "/icons/221g-action-plan.svg"        },
-  { id: "path",        icon: Compass,       iconSize: 18, label: "Visa Path Finder",        bg: "#fff7ed", fg: "#ea580c", border: "#ffedd5", iconSrc: "/icons/visa-path-finder.svg"         },
-  { id: "interview",   icon: MessageSquare, iconSize: 18, label: "Interview Prep",          bg: "#eff6ff", fg: "#2563eb", border: "#dbeafe", iconSrc: "/icons/interview-prep.svg"           },
-  { id: "sponsorship", icon: Calculator,    iconSize: 20, label: "Sponsorship Calculator",  bg: "#fff1f2", fg: "#e11d48", border: "#ffe4e6", iconSrc: "/icons/sponsorship-calculator.svg"   },
-  { id: "dq",          icon: Clock,         iconSize: 20, label: "DQ Status Check",         bg: "#fdf4ff", fg: "#c026d3", border: "#fae8ff", iconSrc: "/icons/dq-case-tracker.svg"          },
-  { id: "bulletin",    icon: Calendar,      iconSize: 19, label: "Visa Bulletin Monitor",   bg: "#f0fdfa", fg: "#0d9488", border: "#ccfbf1", iconSrc: "/icons/visa-bulletin-monitor.svg"    },
-  { id: "photo",       icon: Camera,        iconSize: 18, label: "Photo Booth",             bg: "#fefce8", fg: "#ca8a04", border: "#fef9c3", iconSrc: "/icons/photo-booth.svg"              },
-  { id: "pdf",         icon: Files,         iconSize: 19, label: "PDF Tool Kit",            bg: "#f0f9ff", fg: "#0369a1", border: "#bae6fd", iconSrc: "/icons/pdf-toolbox.svg"              },
-  { id: "snap",        icon: PenTool,       iconSize: 18, label: "Snap & Sign",             bg: "#eef2ff", fg: "#4f46e5", border: "#c7d2fe", iconSrc: "/icons/snap-and-sign.svg"            },
-  { id: "filler",      icon: Wand2,         iconSize: 20, label: "Smart Form Filler",       bg: "#fff7ed", fg: "#c2410c", border: "#fed7aa", iconSrc: "/icons/smart-form-filler.svg"        },
+  {
+    id: "strength",
+    icon: Brain,
+    iconSize: 20,
+    label: "Case Strength Analyzer",
+    bg: "#f5f3ff",
+    fg: "#7c3aed",
+    border: "#ddd6fe",
+    iconSrc: "/icons/case-strength-analyser.svg",
+  },
+  {
+    id: "action",
+    icon: LifeBuoy,
+    iconSize: 20,
+    label: "221(g) Action Planner",
+    bg: "#ecfdf5",
+    fg: "#059669",
+    border: "#d1fae5",
+    iconSrc: "/icons/221g-action-plan.svg",
+  },
+  {
+    id: "path",
+    icon: Compass,
+    iconSize: 18,
+    label: "Visa Path Finder",
+    bg: "#fff7ed",
+    fg: "#ea580c",
+    border: "#ffedd5",
+    iconSrc: "/icons/visa-path-finder.svg",
+  },
+  {
+    id: "interview",
+    icon: MessageSquare,
+    iconSize: 18,
+    label: "Interview Prep",
+    bg: "#eff6ff",
+    fg: "#2563eb",
+    border: "#dbeafe",
+    iconSrc: "/icons/interview-prep.svg",
+  },
+  {
+    id: "sponsorship",
+    icon: Calculator,
+    iconSize: 20,
+    label: "Sponsorship Calculator",
+    bg: "#fff1f2",
+    fg: "#e11d48",
+    border: "#ffe4e6",
+    iconSrc: "/icons/sponsorship-calculator.svg",
+  },
+  {
+    id: "dq",
+    icon: Clock,
+    iconSize: 20,
+    label: "DQ Status Check",
+    bg: "#fdf4ff",
+    fg: "#c026d3",
+    border: "#fae8ff",
+    iconSrc: "/icons/dq-case-tracker.svg",
+  },
+  {
+    id: "bulletin",
+    icon: Calendar,
+    iconSize: 19,
+    label: "Visa Bulletin Monitor",
+    bg: "#f0fdfa",
+    fg: "#0d9488",
+    border: "#ccfbf1",
+    iconSrc: "/icons/visa-bulletin-monitor.svg",
+  },
+  {
+    id: "photo",
+    icon: Camera,
+    iconSize: 18,
+    label: "Photo Booth",
+    bg: "#fefce8",
+    fg: "#ca8a04",
+    border: "#fef9c3",
+    iconSrc: "/icons/photo-booth.svg",
+  },
+  {
+    id: "pdf",
+    icon: Files,
+    iconSize: 19,
+    label: "PDF Tool Kit",
+    bg: "#f0f9ff",
+    fg: "#0369a1",
+    border: "#bae6fd",
+    iconSrc: "/icons/pdf-toolbox.svg",
+  },
+  {
+    id: "snap",
+    icon: PenTool,
+    iconSize: 18,
+    label: "Snap & Sign",
+    bg: "#eef2ff",
+    fg: "#4f46e5",
+    border: "#c7d2fe",
+    iconSrc: "/icons/snap-and-sign.svg",
+  },
+  {
+    id: "filler",
+    icon: Wand2,
+    iconSize: 20,
+    label: "Smart Form Filler",
+    bg: "#fff7ed",
+    fg: "#c2410c",
+    border: "#fed7aa",
+    iconSrc: "/icons/smart-form-filler.svg",
+  },
 ];
 
 const toolContent: Record<string, any> = {
   strength: {
     eyebrow: "Case Review",
     title: "Case Strength Analyzer",
-    desc: "Review your IR-1 evidence and get a clear picture of what's strong, what's missing, and what to fix before you submit.",
-    steps: [
-      {
-        n: 1,
-        label: "Upload & Input",
-        desc: "Share your relationship details, documents, and case info.",
-      },
-      {
-        n: 2,
-        label: "Analyze & Find Gaps",
-        desc: "Checks your evidence and flags weak areas against approval patterns.",
-      },
-      {
-        n: 3,
-        label: "Review & Fix",
-        desc: "Get a list of exactly what to strengthen before submission.",
-      },
+    headline: "Know if your case is ready before the officer does.",
+    subtext:
+      "Review your evidence, spot the gaps, and fix them before you submit — not after.",
+    benefits: [
+      "Evidence gaps flagged instantly",
+      "Domicile & financial check",
+      "Fix list included",
     ],
-    tips: ["Joint Bank Statements", "Domicile Proof", "Communication Logs"],
   },
   action: {
     eyebrow: "Post-Interview",
     title: "221(g) Action Planner",
-    desc: "Got a 221(g) slip after your interview? This tool tells you what documents are needed and what to do next — step by step.",
-    steps: [
-      {
-        n: 1,
-        label: "Enter Your Slip",
-        desc: "Input the details from your 221(g) or AP notice.",
-      },
-      {
-        n: 2,
-        label: "Get Your Checklist",
-        desc: "See exactly which documents are required and how to format them.",
-      },
-      {
-        n: 3,
-        label: "Submit & Track",
-        desc: "Know where to send your response and what to expect next.",
-      },
+    headline: "Got a 221(g)? Here's exactly what to do next.",
+    subtext:
+      "Step-by-step response guide — right documents, right format, right place.",
+    benefits: [
+      "Not a denial — act fast",
+      "Document checklist included",
+      "Embassy-specific guidance",
     ],
-    tips: ["CEAC Tracking", "Embassy Contact", "AP Timeline"],
   },
   path: {
     eyebrow: "Getting Started",
     title: "Visa Path Finder",
-    desc: "Starting your IR-1 journey and not sure where to begin? Answer a few quick questions and get a clear recommendation with your first action.",
-    steps: [
-      {
-        n: 1,
-        label: "Answer 5 Questions",
-        desc: "Tell us about your relationship, citizenship, and current situation.",
-      },
-      {
-        n: 2,
-        label: "Confirm Your Path",
-        desc: "We confirm IR-1 is the right category and explain what that means.",
-      },
-      {
-        n: 3,
-        label: "See Your Next Step",
-        desc: "Get one clear action to take right now — petition, sponsor, or prepare.",
-      },
+    headline: "5 questions. One clear starting point.",
+    subtext:
+      "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
+    benefits: [
+      "Confirm IR-1 eligibility",
+      "Know who files what",
+      "Instant next step",
     ],
-    tips: ["IR-1 Eligibility", "Petitioner vs Beneficiary", "Where to Start"],
   },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Prep",
-    desc: "Practice real Islamabad Embassy questions, learn what officers focus on, and walk in prepared — not guessing.",
-    steps: [
-      {
-        n: 1,
-        label: "Pick Your Focus",
-        desc: "Choose areas to practice — relationship, finances, or domicile.",
-      },
-      {
-        n: 2,
-        label: "Practice Questions",
-        desc: "Go through real ISL questions with model answers.",
-      },
-      {
-        n: 3,
-        label: "Build Confidence",
-        desc: "Know officer patterns and be ready for tough questions.",
-      },
+    headline: "Walk into ISL prepared, not guessing.",
+    subtext:
+      "Real Islamabad embassy questions, real model answers, built for IR-1 spouses.",
+    benefits: [
+      "50+ real ISL questions",
+      "Relationship & domicile focus",
+      "Officer pattern insights",
     ],
-    tips: ["Joint Finances", "Communication Proof", "Future Plans"],
   },
   sponsorship: {
     eyebrow: "Financial Check",
     title: "Sponsorship Calculator",
-    desc: "Check if the petitioner's income meets the I-864 poverty guideline threshold — and find out which form applies to your case.",
-    steps: [
-      {
-        n: 1,
-        label: "Enter Income",
-        desc: "Input the petitioner's income, household size, and assets.",
-      },
-      {
-        n: 2,
-        label: "Check Threshold",
-        desc: "Compared against the 2025 poverty guideline for your household.",
-      },
-      {
-        n: 3,
-        label: "Get Your Form",
-        desc: "See if I-864 or I-864EZ applies and if a joint sponsor is needed.",
-      },
+    headline: "Does your income qualify? Find out in 60 seconds.",
+    subtext:
+      "Check I-864 threshold, pick the right form, and see if a joint sponsor is needed.",
+    benefits: [
+      "2025 guidelines updated",
+      "I-864 vs I-864EZ",
+      "Joint sponsor check",
     ],
-    tips: ["Joint Sponsor", "Tax Returns", "Pay Stubs"],
   },
   dq: {
     eyebrow: "Scheduling",
     title: "DQ Status Check",
-    desc: "See which Documentarily Qualified months are being scheduled at Islamabad right now, and estimate when your interview window will open.",
-    steps: [
-      {
-        n: 1,
-        label: "Select Embassy",
-        desc: "Choose your embassy — Islamabad or another consulate.",
-      },
-      {
-        n: 2,
-        label: "See Current Month",
-        desc: "Check which DQ months are being called right now.",
-      },
-      {
-        n: 3,
-        label: "Estimate Your Wait",
-        desc: "Compare your DQ month to see your approximate interview window.",
-      },
+    headline: "See where the ISL scheduling queue stands today.",
+    subtext:
+      "Check which DQ months are being called and estimate when your interview window opens.",
+    benefits: [
+      "Live scheduling month",
+      "ISL embassy data",
+      "Estimate your wait",
     ],
-    tips: ["DQ Date", "Scheduling Month", "Wait Estimate"],
   },
   bulletin: {
     eyebrow: "Priority Date",
     title: "Visa Bulletin Monitor",
-    desc: "IR-1 is always current — but if you're on a preference category, your priority date needs to be current before you can move forward. Track it here every month.",
-    steps: [
-      {
-        n: 1,
-        label: "Enter Priority Date",
-        desc: "Enter your priority date from your I-130 approval notice.",
-      },
-      {
-        n: 2,
-        label: "Check This Month",
-        desc: "We compare it to the latest Visa Bulletin cutoff dates automatically.",
-      },
-      {
-        n: 3,
-        label: "Track Movement",
-        desc: "See how many months the bulletin moved and whether your date is current.",
-      },
+    headline: "IR-1 is always current. But yours might not be.",
+    subtext:
+      "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
+    benefits: [
+      "Monthly bulletin updates",
+      "Priority date tracker",
+      "Current or waiting?",
     ],
-    tips: ["IR-1 Always Current", "Priority Date", "Monthly Updates"],
   },
   photo: {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",
-    desc: "Make a compliant U.S. visa photo without a studio visit. Upload any photo and get a properly formatted 2×2 inch result.",
-    steps: [
-      {
-        n: 1,
-        label: "Upload Your Photo",
-        desc: "Take or upload any clear, front-facing photo.",
-      },
-      {
-        n: 2,
-        label: "Auto-Crop & Format",
-        desc: "Cropped to 2×2 inches, white background — embassy standard.",
-      },
-      {
-        n: 3,
-        label: "Download & Use",
-        desc: "Save your compliant photo and attach it to your application.",
-      },
+    headline: "Compliant visa photo. Without the studio visit.",
+    subtext:
+      "Upload any photo — get a 2×2 inch, white background, embassy-ready result.",
+    benefits: [
+      "Auto-crop & format",
+      "Meets USCIS standards",
+      "Download in seconds",
     ],
-    tips: ["No Glasses", "Neutral Expression", "Both Ears Visible"],
   },
   pdf: {
     eyebrow: "Document Tools",
     title: "PDF Tool Kit",
-    desc: "Merge, compress, and format your immigration documents to meet NVC's strict 2MB upload limit and CEAC requirements.",
-    steps: [
-      {
-        n: 1,
-        label: "Upload Your Files",
-        desc: "Add PDFs, images, or scanned documents from any device.",
-      },
-      {
-        n: 2,
-        label: "Merge or Compress",
-        desc: "Combine files or reduce size to meet NVC's 2MB limit.",
-      },
-      {
-        n: 3,
-        label: "Download Ready",
-        desc: "Get a clean, NVC-ready PDF formatted for CEAC upload.",
-      },
+    headline: "NVC rejects big files. We fix that.",
+    subtext:
+      "Merge, compress, and convert your documents to meet CEAC's strict 2MB upload limit.",
+    benefits: [
+      "Under 2MB guaranteed",
+      "Merge multiple files",
+      "PDF & JPG ready",
     ],
-    tips: ["Merge PDFs", "Compress Files", "Convert to PDF"],
   },
   snap: {
     eyebrow: "Signatures",
     title: "Snap & Sign",
-    desc: "Anywhere a signature is required — forms, letters, declarations, or documents — Snap & Sign creates a clean, professional digital signature in seconds.",
-    steps: [
-      {
-        n: 1,
-        label: "Draw, Type or Upload",
-        desc: "Choose how you want to create your signature — freehand, typed style, or upload an existing one.",
-      },
-      {
-        n: 2,
-        label: "Preview & Adjust",
-        desc: "Resize, reposition, and tweak until it looks exactly right on any form.",
-      },
-      {
-        n: 3,
-        label: "Download & Use",
-        desc: "Save as a transparent PNG and drop it onto any document, form, or PDF that needs signing.",
-      },
-    ],
-    tips: [
-      "Any Immigration Form",
-      "Letters & Declarations",
-      "Works on Mobile & Desktop",
+    headline: "Every document needs a signature. Make yours in seconds.",
+    subtext:
+      "Draw, type, or upload your signature — download as PNG and drop it anywhere.",
+    benefits: [
+      "Works on any form or doc",
+      "Transparent PNG download",
+      "Mobile & desktop ready",
     ],
   },
   filler: {
     eyebrow: "Form Completion",
     title: "Smart Form Filler",
-    desc: "Fill I-130, DS-260, and I-864 without the confusion. Enter your details once and get a completed, submission-ready PDF.",
-    steps: [
-      {
-        n: 1,
-        label: "Enter Your Details",
-        desc: "Fill in personal and case info once in a simple guided flow.",
-      },
-      {
-        n: 2,
-        label: "Auto-Fill Form",
-        desc: "Data mapped to the correct fields on the official form.",
-      },
-      {
-        n: 3,
-        label: "Download PDF",
-        desc: "Get a completed, submission-ready PDF in minutes.",
-      },
+    headline: "I-130 done in minutes. Not hours.",
+    subtext:
+      "Fill your details once and get a completed, submission-ready PDF — no blank fields.",
+    benefits: [
+      "I-130, DS-260, I-864",
+      "Pakistan-specific defaults",
+      "Review before you submit",
     ],
-    tips: ["DS-260", "I-130A", "Review Before Submit"],
   },
 };
 
@@ -2459,11 +2669,13 @@ function ToolCarousel({
   onSelect: (idx: number) => void;
   onHoverChange: (h: boolean) => void;
 }) {
-  const N         = featuredTools.length;
-  const COPIES    = 20;
+  const N = featuredTools.length;
+  const COPIES = 20;
   const totalStep = useRef(10 * N); // start at copy 10, icon 0
-  const prevIdx   = useRef(activeIdx);
-  const [offset, setOffset]     = useState(() => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2));
+  const prevIdx = useRef(activeIdx);
+  const [offset, setOffset] = useState(
+    () => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2),
+  );
   const [animated, setAnimated] = useState(true);
 
   useEffect(() => {
@@ -2483,40 +2695,67 @@ function ToolCarousel({
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
       style={{
-        position: "absolute", bottom: 0, left: 0, width: "100%", height: 138,
-        overflow: "hidden", borderTop: "1px solid #e8edf2",
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        width: "100%",
+        height: 138,
+        overflow: "hidden",
+        borderTop: "1px solid #e8edf2",
         background: "linear-gradient(to bottom, #ffffff, #f8fafc)",
-        WebkitMaskImage: "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
-        maskImage:       "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        WebkitMaskImage:
+          "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
+        maskImage:
+          "linear-gradient(90deg,transparent 0%,#000 12%,#000 88%,transparent 100%)",
       }}
     >
       <div
         style={{
-          display: "flex", alignItems: "center", gap: GAP,
-          paddingLeft: GAP, height: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: GAP,
+          paddingLeft: GAP,
+          height: "100%",
           transform: `translateX(${offset}px)`,
-          transition: animated ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+          transition: animated
+            ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)"
+            : "none",
           willChange: "transform",
         }}
       >
         {items.map((tool, idx) => {
-          const toolIdx  = idx % N;
+          const toolIdx = idx % N;
           const isActive = toolIdx === activeIdx;
-          const Icon     = tool.icon;
+          const Icon = tool.icon;
           return (
             <div
               key={idx}
               onClick={() => onSelect(toolIdx)}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, width: ITEM_W, flexShrink: 0, cursor: "pointer" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 9,
+                width: ITEM_W,
+                flexShrink: 0,
+                cursor: "pointer",
+              }}
             >
               {/* Icon box — pops when active */}
               <div
                 style={{
-                  width: 54, height: 54, minWidth: 54, minHeight: 54,
-                  borderRadius: 16, background: tool.fg,
-                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 54,
+                  height: 54,
+                  minWidth: 54,
+                  minHeight: 54,
+                  borderRadius: 16,
+                  background: tool.fg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   transform: isActive ? "scale(1.13)" : "scale(1)",
-                  transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  transition:
+                    "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   outline: isActive ? `3px solid ${tool.fg}` : "none",
                   outlineOffset: isActive ? "3px" : "0",
                   boxShadow: isActive ? `0 8px 24px ${tool.fg}55` : "none",
@@ -2527,12 +2766,20 @@ function ToolCarousel({
               {/* Fixed-height label so all icons sit at same level */}
               <span
                 style={{
-                  fontSize: 9.5, fontWeight: isActive ? 900 : 700,
-                  textTransform: "uppercase", letterSpacing: "0.07em",
+                  fontSize: 9.5,
+                  fontWeight: isActive ? 900 : 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.07em",
                   color: isActive ? tool.fg : "#5a6a72",
-                  textAlign: "center", lineHeight: 1.3, width: 90,
-                  height: 26, display: "flex", alignItems: "flex-start", justifyContent: "center",
-                  pointerEvents: "none", transition: "color 0.3s",
+                  textAlign: "center",
+                  lineHeight: 1.3,
+                  width: 90,
+                  height: 26,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "center",
+                  pointerEvents: "none",
+                  transition: "color 0.3s",
                 }}
               >
                 {tool.label}
@@ -2547,13 +2794,18 @@ function ToolCarousel({
 
 export function IndividualToolsScene() {
   const [activeIdx, setActiveIdx] = useState(0);
-  const [visible, setVisible]     = useState(true);
-  const [isPaused, setIsPaused]   = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
 
   const goTo = useCallback((idx: number) => {
-    const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
+    const next =
+      ((idx % featuredTools.length) + featuredTools.length) %
+      featuredTools.length;
     setVisible(false);
-    window.setTimeout(() => { setActiveIdx(next); setVisible(true); }, 200);
+    window.setTimeout(() => {
+      setActiveIdx(next);
+      setVisible(true);
+    }, 200);
   }, []);
 
   // Auto-advance every 5 s — shows each tool for 5 seconds
@@ -2569,7 +2821,7 @@ export function IndividualToolsScene() {
     return () => window.clearTimeout(t);
   }, [activeIdx, isPaused]);
 
-  const tool    = featuredTools[activeIdx];
+  const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
 
   return (
@@ -2577,30 +2829,85 @@ export function IndividualToolsScene() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       style={{
-        width: 600, height: 500, borderRadius: 32,
-        background: "white", border: "1px solid #dde8e6",
-        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
-        position: "absolute", left: 40, top: 30,
-        overflow: "hidden", display: "flex", flexDirection: "column",
+        width: 600,
+        height: 500,
+        borderRadius: 32,
+        background: "white",
+        border: "1px solid #dde8e6",
+        boxShadow:
+          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        position: "absolute",
+        left: 40,
+        top: 30,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* ── Top bar — tool colour ── */}
       <div
         style={{
-          height: 54, flexShrink: 0, background: tool.fg,
-          display: "flex", alignItems: "center",
-          padding: "0 20px", gap: 10,
+          height: 54,
+          flexShrink: 0,
+          background: tool.fg,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          gap: 10,
           transition: "background 0.3s ease",
         }}
       >
-        <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {(() => { const Icon = tool.icon; return <div style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon size={16} color="white" strokeWidth={1.75} /></div>; })()}
+        <div
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: 10,
+            background: "rgba(255,255,255,0.18)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {(() => {
+            const Icon = tool.icon;
+            return (
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon size={16} color="white" strokeWidth={1.75} />
+              </div>
+            );
+          })()}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 8.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.7)", lineHeight: 1 }}>
+          <div
+            style={{
+              fontSize: 8.5,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.7)",
+              lineHeight: 1,
+            }}
+          >
             {content.eyebrow}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 900, color: "white", lineHeight: 1.2, marginTop: 2 }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 900,
+              color: "white",
+              lineHeight: 1.2,
+              marginTop: 2,
+            }}
+          >
             {content.title}
           </div>
         </div>
@@ -2608,10 +2915,19 @@ export function IndividualToolsScene() {
           href="#"
           onClick={(e) => e.preventDefault()}
           style={{
-            flexShrink: 0, background: "white", color: tool.fg,
-            border: "none", borderRadius: 20, padding: "6px 14px",
-            fontSize: 11, fontWeight: 800, cursor: "pointer",
-            textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5,
+            flexShrink: 0,
+            background: "white",
+            color: tool.fg,
+            border: "none",
+            borderRadius: 20,
+            padding: "6px 14px",
+            fontSize: 11,
+            fontWeight: 800,
+            cursor: "pointer",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
           }}
         >
           Get Started
@@ -2624,30 +2940,90 @@ export function IndividualToolsScene() {
         {/* Left: description + steps */}
         <div
           style={{
-            flex: 1, padding: "14px 16px",
+            flex: 1,
+            padding: "14px 16px",
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(6px)",
             transition: "opacity 0.25s ease, transform 0.25s ease",
           }}
         >
-          <div style={{ fontSize: 11.5, color: "#4a5c62", lineHeight: 1.6, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f0f4f8" }}>
+          <div
+            style={{
+              fontSize: 11.5,
+              color: "#4a5c62",
+              lineHeight: 1.6,
+              marginBottom: 12,
+              paddingBottom: 10,
+              borderBottom: "1px solid #f0f4f8",
+            }}
+          >
             {content.desc}
           </div>
-          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 8 }}>
+          <div
+            style={{
+              fontSize: 8.5,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "#94a3b8",
+              marginBottom: 8,
+            }}
+          >
             How it works
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {content.steps.map((step: any) => (
               <div
                 key={step.n}
-                style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f8fafc", borderRadius: 12, padding: "9px 12px", border: "1px solid #f0f4f8" }}
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "flex-start",
+                  background: "#f8fafc",
+                  borderRadius: 12,
+                  padding: "9px 12px",
+                  border: "1px solid #f0f4f8",
+                }}
               >
-                <div style={{ width: 22, height: 22, borderRadius: "50%", background: tool.fg, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 900, flexShrink: 0, transition: "background 0.3s" }}>
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: "50%",
+                    background: tool.fg,
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 10.5,
+                    fontWeight: 900,
+                    flexShrink: 0,
+                    transition: "background 0.3s",
+                  }}
+                >
                   {step.n}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.2, marginBottom: 2 }}>{step.label}</div>
-                  <div style={{ fontSize: 10.5, color: "#64748b", lineHeight: 1.5 }}>{step.desc}</div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 800,
+                      color: "#1e293b",
+                      lineHeight: 1.2,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {step.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 10.5,
+                      color: "#64748b",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {step.desc}
+                  </div>
                 </div>
               </div>
             ))}
@@ -2657,18 +3033,43 @@ export function IndividualToolsScene() {
         {/* Right: key items */}
         <div
           style={{
-            width: 148, background: "#f8fafc", borderLeft: "1px solid #f0f4f8",
-            padding: "14px 12px", display: "flex", flexDirection: "column", gap: 6,
-            opacity: visible ? 1 : 0, transition: "opacity 0.25s ease",
+            width: 148,
+            background: "#f8fafc",
+            borderLeft: "1px solid #f0f4f8",
+            padding: "14px 12px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.25s ease",
           }}
         >
-          <div style={{ fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em", color: "#94a3b8", marginBottom: 4 }}>
+          <div
+            style={{
+              fontSize: 8.5,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "#94a3b8",
+              marginBottom: 4,
+            }}
+          >
             Key Items
           </div>
           {content.tips.map((tip: string) => (
             <div
               key={tip}
-              style={{ background: "white", borderRadius: 9, border: `1px solid ${tool.border}`, padding: "7px 10px", fontSize: 10.5, fontWeight: 700, color: tool.fg, lineHeight: 1.3, transition: "border-color 0.3s, color 0.3s" }}
+              style={{
+                background: "white",
+                borderRadius: 9,
+                border: `1px solid ${tool.border}`,
+                padding: "7px 10px",
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: tool.fg,
+                lineHeight: 1.3,
+                transition: "border-color 0.3s, color 0.3s",
+              }}
             >
               {tip}
             </div>
@@ -2679,7 +3080,10 @@ export function IndividualToolsScene() {
       {/* ── Carousel ── */}
       <ToolCarousel
         activeIdx={activeIdx}
-        onSelect={(idx) => { goTo(idx); setIsPaused(true); }}
+        onSelect={(idx) => {
+          goTo(idx);
+          setIsPaused(true);
+        }}
         onHoverChange={setIsPaused}
       />
     </div>
@@ -2702,11 +3106,46 @@ function InteractiveClockWidget() {
   ];
 
   const springAngle = useSpring(60, { stiffness: 30, damping: 15, mass: 1 });
-  const hourHandRotate = useTransform(springAngle, (v) => v * 0.5);
+
+  // Calculate time from angle (angle represents full 12-hour rotation = 720 minutes)
+  const totalMinutes = Math.floor((angle / 360) * 12 * 60);
+  let h = Math.floor(totalMinutes / 60) || 12;
+  let m = totalMinutes % 60;
+  m = Math.round(m / 5) * 5;
+  if (m === 60) {
+    m = 0;
+    h = h === 12 ? 1 : h + 1;
+  }
+
+  // Minute hand: Each minute = 6 degrees (360 / 60 minutes)
+  const minuteHandAngle = m * 6;
+
+  // Hour hand: Each hour = 30 degrees (360 / 12 hours) + each minute adds 0.5 degrees (30 / 60)
+  const hourHandAngle = (h % 12) * 30 + m * 0.5;
+
+  const minuteHandRotate = useSpring(minuteHandAngle, {
+    stiffness: 30,
+    damping: 15,
+    mass: 1,
+  });
+  const hourHandRotate = useSpring(hourHandAngle, {
+    stiffness: 30,
+    damping: 15,
+    mass: 1,
+  });
 
   useEffect(() => {
     springAngle.set(angle);
-  }, [angle, springAngle]);
+    minuteHandRotate.set(minuteHandAngle);
+    hourHandRotate.set(hourHandAngle);
+  }, [
+    angle,
+    minuteHandAngle,
+    hourHandAngle,
+    springAngle,
+    minuteHandRotate,
+    hourHandRotate,
+  ]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowHint(false), 3600);
@@ -2752,20 +3191,12 @@ function InteractiveClockWidget() {
     }
   };
 
-  const totalMinutes = Math.floor((angle / 360) * 12 * 60);
-  let h = Math.floor(totalMinutes / 60) || 12;
-  let m = totalMinutes % 60;
-  m = Math.round(m / 5) * 5;
-  if (m === 60) {
-    m = 0;
-    h = h === 12 ? 1 : h + 1;
-  }
-  const timeStr = `${h}:${m.toString().padStart(2, '0')}`;
+  const timeStr = `${h}:${m.toString().padStart(2, "0")}`;
 
   const CLOCK_RADIUS = 130;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -2777,16 +3208,18 @@ function InteractiveClockWidget() {
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] blur-[58px] rounded-full pointer-events-none"
         style={{
-          background: "linear-gradient(90deg, rgba(216, 236, 251, 0.98) 0%, rgba(216, 236, 251, 0.98) 48%, rgba(252, 243, 210, 0.98) 52%, rgba(252, 243, 210, 0.98) 100%)"
+          background:
+            "linear-gradient(90deg, rgba(216, 236, 251, 0.98) 0%, rgba(216, 236, 251, 0.98) 48%, rgba(252, 243, 210, 0.98) 52%, rgba(252, 243, 210, 0.98) 100%)",
         }}
       />
 
       <motion.div
         animate={{
           y: isHovered || isDragging ? -6 : 0,
-          boxShadow: isHovered || isDragging
-            ? "0 48px 96px rgba(8,54,58,0.22), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -3px 8px rgba(0,0,0,0.08)"
-            : "0 24px 56px rgba(11,102,106,0.16), inset 0 1px 3px rgba(255,255,255,0.8), inset 0 -2px 6px rgba(0,0,0,0.04)"
+          boxShadow:
+            isHovered || isDragging
+              ? "0 48px 96px rgba(8,54,58,0.22), inset 0 1px 2px rgba(255,255,255,0.95), inset 0 -3px 8px rgba(0,0,0,0.08)"
+              : "0 24px 56px rgba(11,102,106,0.16), inset 0 1px 3px rgba(255,255,255,0.8), inset 0 -2px 6px rgba(0,0,0,0.04)",
         }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         ref={clockRef}
@@ -2809,7 +3242,7 @@ function InteractiveClockWidget() {
 
         {/* Outer polished ring */}
         <div className="absolute inset-0 rounded-full border border-white/80 shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),inset_0_-1px_2px_rgba(0,0,0,0.02)] pointer-events-none" />
-        
+
         {/* Inner depth ring */}
         <div className="absolute inset-3 rounded-full border-[1.5px] border-white/50 shadow-[inset_0_6px_20px_rgba(0,0,0,0.05)] pointer-events-none" />
         <div className="absolute inset-[14px] rounded-full border-[0.5px] border-[#0B666A]/8 pointer-events-none" />
@@ -2819,9 +3252,13 @@ function InteractiveClockWidget() {
           <div
             key={i}
             className={`absolute rounded-full ${
-              i % 3 === 0 ? 'w-[2.8px] h-5 bg-gradient-to-b from-[#041f23] to-[#082d31] shadow-[0_2px_8px_rgba(8,54,58,0.16),inset_0_1px_1px_rgba(255,255,255,0.4)]' : 'w-[1.6px] h-3.5 bg-[#0B666A]/70 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
+              i % 3 === 0
+                ? "w-[2.8px] h-5 bg-gradient-to-b from-[#041f23] to-[#082d31] shadow-[0_2px_8px_rgba(8,54,58,0.16),inset_0_1px_1px_rgba(255,255,255,0.4)]"
+                : "w-[1.6px] h-3.5 bg-[#0B666A]/70 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
             }`}
-            style={{ transform: `rotate(${i * 30}deg) translateY(-${CLOCK_RADIUS * 0.72}px)` }}
+            style={{
+              transform: `rotate(${i * 30}deg) translateY(-${CLOCK_RADIUS * 0.72}px)`,
+            }}
           />
         ))}
 
@@ -2843,20 +3280,34 @@ function InteractiveClockWidget() {
         <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
           <div
             className="absolute w-[1.5px] rounded-full bg-[#0B666A]/15 origin-bottom shadow-[inset_0_1px_2px_rgba(11,102,106,0.1)]"
-            style={{ height: CLOCK_RADIUS * 0.6, bottom: '50%', transform: `rotate(180deg)` }}
+            style={{
+              height: CLOCK_RADIUS * 0.6,
+              bottom: "50%",
+              transform: `rotate(180deg)`,
+            }}
           />
 
+          {/* Minute Hand */}
           <motion.div
             className="absolute origin-bottom filter drop-shadow-[0_8px_16px_rgba(8,54,58,0.40)]"
-            style={{ height: CLOCK_RADIUS * 0.58, bottom: '50%', rotate: springAngle }}
+            style={{
+              height: CLOCK_RADIUS * 0.58,
+              bottom: "50%",
+              rotate: minuteHandRotate,
+            }}
           >
             <div className="w-[3px] h-full rounded-full bg-gradient-to-t from-[#06292d] via-[#0b7a7f] to-[#0ea5a8] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.2)]" />
             <div className="absolute -top-1 -left-[1.5px] w-[6px] h-[6px] rounded-full bg-[#f8fdff] border border-[#0a3c40] shadow-[0_2px_6px_rgba(8,54,58,0.24)]" />
           </motion.div>
 
+          {/* Hour Hand */}
           <motion.div
             className="absolute origin-bottom"
-            style={{ height: CLOCK_RADIUS * 0.36, bottom: '50%', rotate: hourHandRotate }}
+            style={{
+              height: CLOCK_RADIUS * 0.36,
+              bottom: "50%",
+              rotate: hourHandRotate,
+            }}
           >
             <div className="w-[4.4px] h-full rounded-full bg-gradient-to-t from-[#03181b] via-[#0a4e53] to-[#0b7a7f] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.26)]" />
           </motion.div>
@@ -2875,7 +3326,10 @@ function InteractiveClockWidget() {
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
         <span className="text-[32px] font-bold text-[#041f23] tracking-tight font-['Inter',sans-serif] select-none">
-          {timeStr} <span className="text-xs font-semibold text-[#0B666A]/75 uppercase ml-2 tracking-widest">EST</span>
+          {timeStr}{" "}
+          <span className="text-xs font-semibold text-[#0B666A]/75 uppercase ml-2 tracking-widest">
+            EST
+          </span>
         </span>
       </motion.div>
     </motion.div>
@@ -2892,19 +3346,20 @@ export function ConsultationBanner({
     "Talk through your exact case",
     "Clarity on the roadmap & timelines",
     "Understand document preparation",
-    "Get expert, tailored guidance"
+    "Get expert, tailored guidance",
   ];
   const leaveWith = [
     "A clear, defined next step",
     "Better case understanding",
     "Confidence on preparation",
-    "Actionable, strategic direction"
+    "Actionable, strategic direction",
   ];
   const cardSections = [
     {
       label: "What we discuss",
       title: "Case clarity",
-      description: "Practical guidance on exactly what will move your case forward.",
+      description:
+        "Practical guidance on exactly what will move your case forward.",
       accent: "bg-[#0A2342]/10",
       number: "01",
       items: helpWith,
@@ -2924,61 +3379,24 @@ export function ConsultationBanner({
   return (
     <section
       aria-labelledby="consultation-heading"
-      className="relative overflow-hidden px-14 sm:px-8 md:px-12 2xl:px-30 py-8 md:py-12 bg-[#F4F7F6]"
+      className="relative overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
+        borderTop: "1px solid #e1ebe8",
+        borderBottom: "1px solid #e1ebe8",
+      }}
     >
-      {/* Elevated Dynamic Jewel-Tone Background — unified with landing palette */}
+      {/* Subtle background decoration */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large soft vignette to ground the whole section */}
         <motion.div
           animate={{ opacity: [0.7, 0.95, 0.7], scale: [1, 1.02, 1] }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-[-10%] rounded-full pointer-events-none"
+          className="absolute inset-x-0 top-0 h-72 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse at center, rgba(11,102,106,0.06) 0%, rgba(10,35,66,0.04) 35%, transparent 60%)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-
-        {/* Recolored floating orbs aligned to site palette */}
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(6%, 9%) scale(1.08)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[12%] -left-[6%] w-[48vw] h-[48vw] rounded-full blur-[120px]"
-          style={{ background: '#0B666A', opacity: 0.085, mixBlendMode: 'screen' }}
-        />
-
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(-6%, -4%) scale(1.12)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-          className="absolute top-[18%] -right-[6%] w-[42vw] h-[42vw] rounded-full blur-[140px]"
-          style={{ background: '#0A2342', opacity: 0.07, mixBlendMode: 'screen' }}
-        />
-
-        <motion.div
-          animate={{ transform: ['translate(0%, 0%) scale(1)', 'translate(8%, -8%) scale(1.06)', 'translate(0%, 0%) scale(1)'] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-          className="absolute -bottom-[18%] left-[18%] w-[62vw] h-[62vw] rounded-full blur-[160px]"
-          style={{ background: '#097969', opacity: 0.055, mixBlendMode: 'screen' }}
-        />
-
-        {/* Diagonal soft sheen to create a subtle 'wow' and tie tones together */}
-        <motion.div
-          animate={{ opacity: [0.0, 0.06, 0.0], rotate: [-4, 0, -4] }}
-          transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(11,102,106,0.03) 45%, rgba(10,35,66,0.04) 100%)',
-            mixBlendMode: 'overlay',
-          }}
-        />
-
-        {/* Very subtle noise texture for depth */}
-        <div
-          className="absolute inset-0"
-          style={{
-            opacity: 0.028,
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")',
-            mixBlendMode: 'soft-light',
+            background:
+              "radial-gradient(circle at 16% 0%,rgba(13,115,119,0.08),transparent 30%)," +
+              "radial-gradient(circle at 86% 14%,rgba(219,128,144,0.07),transparent 28%)",
           }}
         />
       </div>
@@ -2988,108 +3406,100 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto max-w-[1140px] z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"
+        className="relative mx-auto w-full px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.28fr_0.72fr] gap-14 lg:gap-16 xl:gap-20 items-center"
+        style={{
+          maxWidth: 1360,
+          paddingTop: "clamp(48px,7vh,96px)",
+          paddingBottom: "clamp(48px,7vh,96px)",
+        }}
       >
         {/* LEFT SIDE: Hero + Cards */}
-        <div className="flex flex-col gap-8">
-
+        <div className="flex flex-col">
           {/* Hero Section */}
           <div className="flex flex-col items-start">
             {/* Badge with animated dot */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 mb-8 shadow-[0_4px_12px_rgba(11,102,106,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]"
             >
-              <motion.div 
+              <motion.div
                 animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="w-1.5 h-1.5 rounded-full bg-[#0B666A]" 
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="w-1.5 h-1.5 rounded-full bg-[#0B666A]"
               />
-              <span className="text-[10px] uppercase tracking-[0.25em] text-[#0B666A] font-bold">One-On-One Guidance</span>
+              <span className="text-[10px] uppercase tracking-[0.25em] text-[#0B666A] font-bold">
+                One-On-One Guidance
+              </span>
             </motion.div>
 
             {/* Animated Title with line-by-line reveal */}
             <h2
               id="consultation-heading"
-              className="max-w-[520px] mb-8"
+              className="mt-4 mb-0 font-extrabold text-[#162126]"
               style={{
-                fontSize: "clamp(30px,6.5vw,40px)",
-                lineHeight: 1.05,
-                fontWeight: 800,
-                color: "#162126",
-                margin: "0 0 14px 0",
+                fontSize: "clamp(30px,4.2vw,60px)",
+                lineHeight: 1.0,
+                maxWidth: 440,
               }}
             >
-              <div className="overflow-hidden pb-2">
-                <motion.div 
-                  initial={{ y: "100%" }} 
-                  whileInView={{ y: 0 }} 
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  You don't have
-                </motion.div>
-              </div>
-              <div className="overflow-hidden pb-2">
-                <motion.div 
-                  initial={{ y: "100%" }} 
-                  whileInView={{ y: 0 }} 
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  to do it{" "}
-                  <span className="relative inline-block text-[#0B666A]">
-                    alone.
-                    <svg className="absolute w-[110%] h-5 -bottom-2 -left-[5%] text-[#0B666A]/80 pointer-events-none drop-shadow-sm" viewBox="0 0 100 20" preserveAspectRatio="none">
-                      <motion.path 
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.5, delay: 0.8, ease: "easeInOut" }}
-                        d="M2,15 Q30,22 50,15 T98,10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" 
-                      />
-                    </svg>
-                  </span>
-                </motion.div>
-              </div>
+              You don't have to do it{" "}
+              <span className="inline-block text-[#0B666A]">alone.</span>
             </h2>
 
-            {/* Paragraph animation */}
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-[17px] text-[#4A5D5E] leading-relaxed max-w-[460px] font-medium"
+              className="mt-4 mb-0 text-[#4a5c62]"
+              style={{
+                fontSize: "clamp(14px,1.15vw,17px)",
+                lineHeight: 1.68,
+                maxWidth: 420,
+              }}
             >
-              If the roadmap feels like too much or a tool isn't enough, book a consultation for tailored clarity on your immigration case.
+              If the roadmap feels like too much or a tool isn't enough, book a
+              consultation for tailored clarity on your immigration case.
             </motion.p>
           </div>
 
           {/* Two-card illustrated grid */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2"
           >
             {cardSections.map((card) => (
               <div
                 key={card.title}
-                className="relative overflow-hidden rounded-2xl border border-[#E6ECEB] bg-white p-5 sm:p-6 shadow-[0_18px_36px_rgba(15,23,42,0.12)] hover:shadow-[0_24px_52px_rgba(15,23,42,0.18)] transition-shadow duration-300"
+                className="relative overflow-hidden rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,247,246,0.92)_100%)] p-5 sm:p-6 shadow-[0_16px_30px_rgba(15,23,42,0.10)] ring-1 ring-[#0B666A]/5 backdrop-blur-xl"
               >
-                <div className={`absolute left-0 top-6 bottom-6 w-1.5 rounded-r-md pointer-events-none ${card.accent}`} />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#0B666A]/35 to-transparent" />
+                <div
+                  className={`absolute left-0 top-6 bottom-6 w-1.5 rounded-r-md pointer-events-none ${card.accent}`}
+                />
                 <div className="relative flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-[#4F5F5F] font-bold">{card.label}</p>
-                    <h3 className="mt-2 text-[20px] font-extrabold tracking-[-0.03em] text-[#0F1F2A]">{card.title}</h3>
-                    <p className="mt-2 max-w-[260px] text-[13px] leading-relaxed text-[#47585A]">{card.description}</p>
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-[#4F5F5F] font-bold">
+                      {card.label}
+                    </p>
+                    <h3 className="mt-2 text-[20px] font-extrabold tracking-[-0.03em] text-[#0F1F2A]">
+                      {card.title}
+                    </h3>
+                    <p className="mt-2 max-w-[260px] text-[13px] leading-relaxed text-[#47585A]">
+                      {card.description}
+                    </p>
                   </div>
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#E0EBE8] bg-white text-[11px] font-black text-[#0F1F2A] shadow-[0_6px_14px_rgba(15,23,42,0.06)]">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#DCE9E6] bg-white text-[11px] font-black text-[#0B666A] shadow-[0_6px_14px_rgba(15,23,42,0.05)]">
                     {card.number}
                   </div>
                 </div>
@@ -3099,19 +3509,25 @@ export function ConsultationBanner({
                       initial={{ opacity: 0, y: 6 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.45, delay: card.baseDelay + (i * 0.06) }}
+                      transition={{
+                        duration: 0.45,
+                        delay: card.baseDelay + i * 0.06,
+                      }}
                       key={item}
-                      className="flex items-center gap-3 rounded-xl border border-[#F0F6F5] bg-white px-3 py-3 hover:translate-y-0.5 transition-transform duration-200"
+                      className="flex items-center gap-3 rounded-xl border border-[#F0F6F5] bg-white/88 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-colors duration-200"
                     >
-                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#E6EFEE] bg-white text-[11px] font-bold text-[#0F1F2A]">{(i + 1).toString().padStart(2, '0')}</span>
-                      <span className="text-[14px] font-medium leading-snug text-[#11202A]">{item}</span>
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-[#D9EAE7] bg-gradient-to-b from-white to-[#EEF8F6] text-[11px] font-bold text-[#0B666A] shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
+                        {(i + 1).toString().padStart(2, "0")}
+                      </span>
+                      <span className="text-[14px] font-medium leading-snug text-[#11202A]">
+                        {item}
+                      </span>
                     </motion.div>
                   ))}
                 </div>
               </div>
             ))}
           </motion.div>
-
         </div>
 
         {/* RIGHT SIDE: Clock & CTA */}
@@ -3120,13 +3536,13 @@ export function ConsultationBanner({
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center justify-center w-full relative lg:pt-3"
+          className="flex flex-col items-center justify-center w-full relative"
         >
           {/* Subtle connecting line */}
           <div className="absolute top-[40%] bottom-[20%] w-[1px] bg-gradient-to-b from-transparent via-[#0B666A]/20 to-transparent -z-10" />
 
           {/* Availability Header */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -3138,45 +3554,467 @@ export function ConsultationBanner({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0B666A] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0B666A]"></span>
               </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#2C3E3F] font-bold">Availability</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#2C3E3F] font-bold">
+                Availability
+              </span>
             </div>
             <p className="text-[13px] text-[#4A5D5E] font-medium text-center max-w-[240px] leading-relaxed">
-               Scheduled around your convenience. Choose what works best for you.
+              Scheduled around your convenience. Choose what works best for you.
             </p>
           </motion.div>
 
           {/* Clock Widget */}
           <InteractiveClockWidget />
 
-          {/* CTA Button with animated arrow */}
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          {/* CTA Button */}
+          <button
             onClick={onConsultationClick}
-            className="relative overflow-hidden mt-14 w-full max-w-[280px] bg-gradient-to-r from-[#0B666A] to-[#0A4144] text-white py-4.5 px-6 rounded-xl text-[15px] font-semibold transition-all shadow-[0_14px_28px_rgba(11,102,106,0.30)] hover:shadow-[0_24px_46px_rgba(11,102,106,0.40)] flex items-center justify-center gap-2 group border border-white/10"
+            className="mt-14 inline-flex min-h-11 w-full max-w-[280px] items-center justify-center gap-2 rounded-[13px] border border-[#0d7377] bg-[#0d7377] px-5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(13,115,119,0.22)] backdrop-blur-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/20"
           >
-            {/* Button Shine overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
-            
-            <span className="relative z-10 flex items-center gap-2">
-              Book a Consultation
-              <motion.svg 
-                animate={{ x: [0, 4, 0] }} 
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </motion.svg>
-            </span>
-          </motion.button>
+            Book a Consultation
+            <ArrowRight className="size-4" />
+          </button>
         </motion.div>
-
       </motion.div>
     </section>
   );
 }
 
+export function ConsultationPreviewVisual() {
+  const topics = [
+    { label: "Case questions", icon: FolderOpen },
+    { label: "Next-step guidance", icon: Signpost },
+    { label: "Document preparation", icon: Layers },
+    { label: "Interview / process clarity", icon: Mic },
+  ];
+  const slots = ["Tue · 2:30 PM", "Wed · 11:00 AM", "Thu · 4:00 PM"];
+  const outcomes = [
+    { label: "A clearer next step", icon: Compass },
+    { label: "Better understanding of your case", icon: Lightbulb },
+    { label: "Confidence about what to prepare", icon: ThumbsUp },
+  ];
+
+  return (
+    <div className="flex items-center justify-center lg:items-center lg:justify-start lg:grid lg:gap-4 md:grid-cols-[minmax(0,1fr)_254px] md:gap-5 lg:grid-cols-[minmax(0,460px)_254px] mt-6 lg:mt-8">
+      <div className="rounded-[20px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-6 shadow-[0_16px_30px_rgba(37,41,46,0.08)] sm:p-[26px]">
+        <span className="mb-5 inline-flex h-[30px] items-center rounded-full bg-[#cfeee3] px-3.5 text-[11px] font-bold uppercase tracking-[0.03em] text-[#24564c]">
+          One-on-one guidance
+        </span>
+        <h3 className="mb-7 text-[30px] font-black leading-none tracking-[-0.035em] text-[#12233a] sm:text-[32px]">
+          IR-1 Consultation
+        </h3>
+        <div className="flex flex-col gap-3">
+          {topics.map(({ label, icon: Icon }) => (
+            <div
+              key={label}
+              className="grid min-h-[64px] grid-cols-[42px_1fr_24px] items-center gap-3 rounded-[14px] border border-[rgba(34,44,55,0.06)] bg-white/50 px-4"
+            >
+              <span className="flex size-[42px] items-center justify-center text-[#154f50]">
+                <Icon className="size-8" strokeWidth={1.8} />
+              </span>
+              <span className="text-lg font-medium leading-tight text-[#111c29]">
+                {label}
+              </span>
+              <span className="flex size-6 items-center justify-center rounded-full bg-[#4f9a71] text-white">
+                <Check className="size-3.5" strokeWidth={3} />
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <div className="rounded-[18px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-5 shadow-[0_16px_30px_rgba(37,41,46,0.08)]">
+          <div className="mb-4 flex items-center gap-2.5">
+            <Calendar
+              className="size-[22px] text-[#154f50]"
+              strokeWidth={1.8}
+            />
+            <h4 className="m-0 text-[17px] font-black uppercase tracking-[-0.01em] text-[#101b27]">
+              Availability
+            </h4>
+          </div>
+          <p className="mb-3 text-[13px] text-[#6b7785]">
+            Scheduled around your convenience. Choose what works best for you.
+          </p>
+          <div className="flex flex-col gap-3">
+            {slots.map((slot) => (
+              <div
+                key={slot}
+                className="flex h-[44px] items-center rounded-[999px] border border-[rgba(34,44,55,0.04)] bg-[#ebe8e1]/70 px-4 text-[15px] font-medium text-[#111827]"
+              >
+                {slot}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[18px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-5 shadow-[0_16px_30px_rgba(37,41,46,0.08)]">
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <h4 className="m-0 text-[18px] font-black leading-tight tracking-[-0.02em] text-[#111827]">
+              What you&apos;ll leave with
+            </h4>
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                background: "#fef3c7",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  background: "#d97706",
+                  borderRadius: 2,
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-4">
+            {outcomes.map(({ label, icon: Icon }) => (
+              <div
+                key={label}
+                className="grid grid-cols-[30px_1fr] items-start gap-3"
+              >
+                <span className="flex size-[30px] items-center justify-center text-[#154f50]">
+                  <Icon className="size-7" strokeWidth={1.8} />
+                </span>
+                <span className="text-[15px] font-medium leading-snug text-[#111827]">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function StepQuestDemo({ onComplete }: { onComplete: () => void }) {
+  const [questDone, setQuestDone] = useState<Set<string>>(new Set());
+  const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
+
+  const quests = [
+    {
+      id: "q1",
+      title: "Petitioner is a U.S. Citizen",
+      subtitle:
+        "Confirm the petitioner qualifies to file an IR-1 spouse petition",
+      icon: <User className="size-5" />,
+    },
+    {
+      id: "q2",
+      title: "A legally valid marriage exists",
+      subtitle: "Confirm there is a current, legally recognized civil marriage",
+      icon: <Users className="size-5" />,
+    },
+    {
+      id: "q3",
+      title: "All prior marriages were legally terminated",
+      subtitle:
+        "Confirm neither spouse was still married to anyone else when this marriage occurred",
+      icon: <Scale className="size-5" />,
+    },
+    {
+      id: "q4",
+      title: "Marriage is bona fide",
+      subtitle:
+        "Screen for good-faith intent and evidence of a genuine relationship",
+      icon: <MessageSquare className="size-5" />,
+    },
+    {
+      id: "q5",
+      title: "Additional possible visa ineligibilities",
+      subtitle:
+        "Early screening for common immigrant visa admissibility concerns",
+      icon: <ShieldCheck className="size-5" />,
+    },
+  ];
+
+  const toggleQuest = (id: string) => {
+    setQuestDone((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const isAllDone = questDone.size === quests.length;
+
+  if (activeQuestId) {
+    const quest = quests.find((q) => q.id === activeQuestId);
+    return (
+      <div className="flex-1 p-8 bg-white flex flex-col items-center text-center">
+        <div className="size-16 rounded-full bg-[#f0f3f7] flex items-center justify-center text-[#0d7377] mb-6">
+          {quest?.icon}
+        </div>
+        <h2 className="text-2xl font-black text-[#162126]">{quest?.title}</h2>
+        <p className="mt-2 text-[#6b8097] max-w-sm">{quest?.subtitle}</p>
+
+        <div className="mt-10 w-full max-w-sm space-y-4">
+          <div className="text-left text-sm font-bold text-[#162126] mb-2">
+            Demo Question:
+          </div>
+          <div className="rounded-2xl border border-[#0d7377] bg-[#f0f7f7] p-5 text-left transition-all hover:shadow-md cursor-pointer group">
+            <div className="flex items-center gap-3">
+              <div className="size-5 rounded-full border-2 border-[#0d7377] bg-white flex items-center justify-center group-hover:bg-[#0d7377] transition-all">
+                <div className="size-2 rounded-full bg-[#0d7377] group-hover:bg-white" />
+              </div>
+              <span className="font-bold text-[#0d7377]">
+                Yes, this requirement is met
+              </span>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-[#dde8e6] bg-white p-5 text-left hover:border-[#0d7377] transition-all cursor-pointer">
+            <div className="flex items-center gap-3">
+              <div className="size-5 rounded-full border-2 border-[#dde8e6]" />
+              <span className="font-bold text-[#162126]">No, not yet</span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            toggleQuest(activeQuestId);
+            setActiveQuestId(null);
+          }}
+          className="mt-12 rounded-full bg-[#0d7377] px-8 py-3 text-sm font-black uppercase tracking-wider text-white shadow-lg hover:bg-[#0a5c5f] transition-all"
+        >
+          Confirm & Save
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 p-8 bg-[#f9fafb]">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-3xl font-black text-[#162126]">
+          Determine Eligibility
+        </h1>
+        {isAllDone && (
+          <div className="flex items-center gap-1.5 rounded-full bg-[#dcfce7] px-3 py-1 text-[11px] font-black uppercase text-[#166534] border border-[#bbf7d0]">
+            <Check size={14} strokeWidth={3} /> Done
+          </div>
+        )}
+      </div>
+      <p className="text-[#6b8097] max-w-xl leading-relaxed mb-6">
+        Before filing, confirm that the core eligibility conditions for an IR-1
+        spouse petition are in place. Complete each section below.
+      </p>
+
+      <div className="h-px w-full bg-[#e1ebe8] mb-8" />
+
+      <div className="grid gap-4">
+        {quests.map((q) => {
+          const isDone = questDone.has(q.id);
+          return (
+            <div
+              key={q.id}
+              onClick={() => setActiveQuestId(q.id)}
+              className={`group flex items-center gap-5 rounded-2xl border-2 p-5 transition-all cursor-pointer bg-white ${
+                isDone
+                  ? "border-[#0d7377] shadow-sm"
+                  : "border-transparent shadow-sm hover:border-[#0d7377] hover:shadow-md"
+              }`}
+            >
+              <div
+                className={`flex size-14 shrink-0 items-center justify-center rounded-xl transition-all ${
+                  isDone
+                    ? "bg-[#0d7377] text-white"
+                    : "bg-[#f0f3f7] text-[#6b8097]"
+                }`}
+              >
+                {q.icon}
+              </div>
+              <div className="flex-1">
+                <h3
+                  className={`text-[16px] font-black ${
+                    isDone ? "text-[#0d7377]" : "text-[#162126]"
+                  }`}
+                >
+                  {q.title}
+                </h3>
+                <p className="text-[13px] text-[#6b8097] mt-0.5 line-clamp-1">
+                  {q.subtitle}
+                </p>
+              </div>
+              <div
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  isDone
+                    ? "bg-[#0d7377] text-white"
+                    : "bg-slate-100 text-slate-400 group-hover:bg-[#0d7377]/10 group-hover:text-[#0d7377]"
+                }`}
+              >
+                {isDone ? (
+                  <>
+                    <Check size={12} strokeWidth={3} /> Completed
+                  </>
+                ) : (
+                  "Not started"
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {isAllDone && (
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={onComplete}
+          className="mt-8 w-full rounded-2xl bg-[#0d7377] py-5 text-base font-black uppercase tracking-widest text-white shadow-xl hover:bg-[#0a5c5f] transition-all"
+        >
+          Finish Step 1 & Continue
+        </motion.button>
+      )}
+    </div>
+  );
+}
+
+export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
+  const [docStatus, setDocStatus] = useState<Record<string, string>>({
+    doc_citizenship: "not-started",
+    doc_passport_ben: "not-started",
+    doc_nikah_nama: "not-started",
+    doc_mrc: "not-started",
+  });
+
+  const docs = [
+    {
+      id: "doc_citizenship",
+      name: "Proof of U.S. Citizenship",
+      subtitle: "Establishes the petitioner's right to file",
+      icon: <ShieldCheck className="size-5" />,
+    },
+    {
+      id: "doc_passport_ben",
+      name: "Beneficiary Passport",
+      subtitle: "Pakistan passport of the immigrant spouse",
+      icon: <User className="size-5" />,
+    },
+    {
+      id: "doc_nikah_nama",
+      name: "Nikah Nama (Original)",
+      subtitle: "Islamic marriage contract — foundational doc",
+      icon: <FileText className="size-5" />,
+    },
+    {
+      id: "doc_mrc",
+      name: "NADRA Marriage Certificate",
+      subtitle: "Government civil registration (MRC)",
+      icon: <FileCheck2 className="size-5" />,
+    },
+  ];
+
+  const toggleDoc = (id: string) => {
+    setDocStatus((prev) => ({
+      ...prev,
+      [id]: prev[id] === "reviewed" ? "not-started" : "reviewed",
+    }));
+  };
+
+  const doneCount = Object.values(docStatus).filter(
+    (s) => s === "reviewed",
+  ).length;
+  const isAllDone = doneCount === docs.length;
+
+  return (
+    <div className="flex-1 p-8 bg-[#f9fafb]">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-3xl font-black text-[#162126]">Gather Documents</h1>
+        <div className="flex items-center gap-2 text-[12px] font-bold text-[#0d7377] bg-white px-3 py-1 rounded-full border border-[#dde8e6]">
+          {doneCount} / {docs.length} COLLECTED
+        </div>
+      </div>
+      <p className="text-[#6b8097] max-w-xl leading-relaxed mb-8">
+        Prepare the documents needed for your IR-1 spouse petition. In the full
+        app, you get Pakistan-specific guides for each.
+      </p>
+
+      <div className="grid gap-3">
+        {docs.map((doc) => {
+          const isDone = docStatus[doc.id] === "reviewed";
+          return (
+            <div
+              key={doc.id}
+              onClick={() => toggleDoc(doc.id)}
+              className={`group flex items-center justify-between rounded-2xl border-2 p-4 transition-all cursor-pointer bg-white ${
+                isDone
+                  ? "border-[#0d7377] shadow-sm"
+                  : "border-transparent shadow-sm hover:border-[#dde8e6]"
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={`flex size-12 shrink-0 items-center justify-center rounded-xl transition-all ${
+                    isDone
+                      ? "bg-[#0d7377] text-white"
+                      : "bg-slate-50 text-slate-400"
+                  }`}
+                >
+                  {doc.icon}
+                </div>
+                <div>
+                  <h4
+                    className={`font-black text-[15px] ${
+                      isDone ? "text-[#0d7377]" : "text-[#162126]"
+                    }`}
+                  >
+                    {doc.name}
+                  </h4>
+                  <p className="text-[12px] text-[#6b8097]">{doc.subtitle}</p>
+                </div>
+              </div>
+              <div
+                className={`flex size-8 items-center justify-center rounded-full border-2 transition-all ${
+                  isDone
+                    ? "bg-[#0d7377] border-[#0d7377] text-white"
+                    : "border-[#dde8e6] text-transparent group-hover:border-[#0d7377]"
+                }`}
+              >
+                <Check size={16} strokeWidth={4} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-10 p-5 rounded-2xl bg-[#051738] text-white flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center">
+            <Lock className="size-5 text-white/60" />
+          </div>
+          <div>
+            <div className="text-sm font-black">Pakistan-Specific Guides</div>
+            <div className="text-[11px] text-white/50">
+              Unlock Nikah Nama & NADRA instructions with Pro
+            </div>
+          </div>
+        </div>
+        <button className="rounded-lg bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-wider hover:bg-white/20 transition-all">
+          Upgrade
+        </button>
+      </div>
+
+      {isAllDone && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={onComplete}
+          className="mt-8 w-full rounded-2xl bg-[#0d7377] py-5 text-base font-black uppercase tracking-widest text-white shadow-xl hover:bg-[#0a5c5f] transition-all"
+        >
+          Confirm Documents & Continue
+        </motion.button>
+      )}
+    </div>
+  );
+}

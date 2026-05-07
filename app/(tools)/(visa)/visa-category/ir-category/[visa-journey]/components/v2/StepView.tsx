@@ -1563,10 +1563,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
     const canReadGuide = plan.canUse(guideFeature);
     const canUpload = plan.canUse("document_vault");
+  const guideTierIconClass = (() => {
+    const target = plan.entitlement(guideFeature).upgradeTarget;
+    return target ? `plan-icon--${target}` : "plan-icon--premium";
+  })();
+  const uploadTierIconClass = (() => {
+    const target = plan.entitlement("document_vault").upgradeTarget;
+    return target ? `plan-icon--${target}` : "plan-icon--premium";
+  })();
 
     return (
       <>
-        {docActionUpgradeFeature && (
+           { docActionUpgradeFeature && (
           <UpgradeModal
             feature={docActionUpgradeFeature}
             onClose={() => setDocActionUpgradeFeature(null)}
@@ -1646,20 +1654,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                         : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
                     }`}
-                  >
-                    {/* Crown badge — only when locked */}
-                    {!canReadGuide && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                        <Crown
-                          size={10}
-                          className="text-[#c49a0a]"
-                          strokeWidth={2.5}
-                        />
-                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                          Upgrade
-                        </span>
-                      </div>
-                    )}
+                >
+                  {/* Tier badge — only when locked */}
+                  {!canReadGuide && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <span className={`plan-icon ${guideTierIconClass} scale-110`} aria-hidden="true" />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
 
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
@@ -1746,21 +1750,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       canUpload
                         ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                         : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
-                    }`}
-                  >
-                    {/* Crown badge — only when locked */}
-                    {!canUpload && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                        <Crown
-                          size={10}
-                          className="text-[#c49a0a]"
-                          strokeWidth={2.5}
-                        />
-                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                          Upgrade
-                        </span>
-                      </div>
-                    )}
+                    }`}>
+{/* Tier badge — only when locked */}
+                  {!canUpload && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <span className={`plan-icon ${uploadTierIconClass} scale-110`} aria-hidden="true" />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
 
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
@@ -4639,152 +4638,147 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* Guide / Wallet Cards Row */}
-          {(tool.guide_card || tool.wallet_card) && (
-            <div
-              className={`grid grid-cols-1 ${
-                tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
-              } gap-[12px] mb-[28px]`}
-            >
-              {tool.guide_card &&
-                (() => {
-                  const guideFeatureKey = "step_guides";
-                  const isGuideLocked = !plan.canUse(guideFeatureKey);
+{(tool.guide_card || tool.wallet_card) && (
+  <div
+    className={`grid grid-cols-1 ${
+      tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
+    } gap-[12px] mb-[28px]`}
+  >
+    {tool.guide_card && (() => {
+      const guideFeatureKey = "step_guides";
+      const isGuideLocked = !plan.canUse(guideFeatureKey);
+      const guideCardTierIconClass = (() => {
+        const target = plan.entitlement(guideFeatureKey).upgradeTarget;
+        return target ? `plan-icon--${target}` : "plan-icon--premium";
+      })();
 
-                  return (
-                    <button
-                      onClick={() => {
-                        if (isGuideLocked) {
-                          setUpgradeModalFeature(guideFeatureKey);
-                        } else {
-                          setTutorialIdx(0);
-                          setIsTutorialOpen(true);
-                        }
-                      }}
-                      className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative ${
-                        tool.wallet_card
-                          ? `p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] ${
-                              isGuideLocked
-                                ? "hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
-                                : "hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
-                            } hover:-translate-y-px`
-                          : `p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
-                              isGuideLocked
-                                ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
-                                : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
-                            }`
-                      }`}
-                    >
-                      {/* Crown lock badge — shown only when locked */}
-
-                      {tool.wallet_card ? (
-                        /* Vertical Design (Original - Shared) */
-                        <>
-                          <div className="flex items-center gap-[10px] mb-[12px]">
-                            <div
-                              className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 transition-opacity ${
-                                isGuideLocked
-                                  ? "bg-[#f3f0fb] border-[#c9bef2] opacity-50"
-                                  : "bg-[#f3f0fb] border-[#c9bef2]"
-                              }`}
-                            >
-                              <Monitor
-                                size={18}
-                                className="text-[#4a2d8a]"
-                                strokeWidth={1.7}
-                              />
-                            </div>
-                          </div>
-                          <h3
-                            className={`text-[14px] font-semibold mb-1 ${
-                              isGuideLocked
-                                ? "text-[#6b8097]"
-                                : "text-[#0c1b33]"
-                            }`}
-                          >
-                            {tool.guide_card.title}
-                          </h3>
-                          <p
-                            className={`text-[12px] leading-normal ${
-                              isGuideLocked
-                                ? "text-[#9aabb8]"
-                                : "text-[#6b8097]"
-                            }`}
-                          >
-                            {tool.guide_card.subtitle}
-                          </p>
-                          <div
-                            className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-                              isGuideLocked ? "text-[#a06000]" : "text-primary"
-                            }`}
-                          >
-                            {isGuideLocked ? (
-                              <>
-                                <Crown size={11} strokeWidth={2.4} />
-                                <span>View guide</span>
-                                <ArrowRight size={11} strokeWidth={2} />
-                              </>
-                            ) : (
-                              <>
-                                <span>View guide</span>
-                                <ArrowRight size={11} strokeWidth={2} />
-                              </>
-                            )}
-                          </div>
-                        </>
-                      ) : (
-                        /* Horizontal Design (New Reference - Solo) */
-                        <>
-                          <div
-                            className={`w-[52px] h-[52px] rounded-[14px] border flex items-center justify-center shrink-0 transition-opacity ${
-                              isGuideLocked
-                                ? "bg-[#f3f0fb] border-[#c9bef2]/60 opacity-50"
-                                : "bg-[#f3f0fb] border-[#c9bef2]/60"
-                            }`}
-                          >
-                            <Monitor
-                              size={22}
-                              className="text-[#4a2d8a]"
-                              strokeWidth={1.7}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3
-                              className={`text-[15px] font-bold mb-1 sm:mb-1.5 truncate ${
-                                isGuideLocked
-                                  ? "text-[#6b8097]"
-                                  : "text-[#0c1b33]"
-                              }`}
-                            >
-                              {tool.guide_card.title}
-                            </h3>
-                            <p
-                              className={`text-[13px] leading-relaxed sm:leading-normal line-clamp-2 ${
-                                isGuideLocked
-                                  ? "text-[#9aabb8]"
-                                  : "text-[#6b8097]"
-                              }`}
-                            >
-                              {tool.guide_card.subtitle}
-                            </p>
-                          </div>
-                          <div
-                            className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors shrink-0 ${
-                              isGuideLocked
-                                ? "bg-[#fef3d8] text-[#a06000] group-hover:bg-[#f0c878] group-hover:text-[#6b3a00]"
-                                : "bg-[#f4f7fb] text-[#6b8097] group-hover:bg-primary group-hover:text-white"
-                            }`}
-                          >
-                            {isGuideLocked ? (
-                              <Crown size={13} strokeWidth={2.4} />
-                            ) : (
-                              <ArrowRight size={14} strokeWidth={2.5} />
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </button>
-                  );
-                })()}
+      return (
+        <button
+          onClick={() => {
+            if (isGuideLocked) {
+              setUpgradeModalFeature(guideFeatureKey);
+            } else {
+              setTutorialIdx(0);
+              setIsTutorialOpen(true);
+            }
+          }}
+          className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative ${
+            tool.wallet_card
+              ? `p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] ${
+                  isGuideLocked
+                    ? "hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
+                    : "hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+                } hover:-translate-y-px`
+              : `p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
+                  isGuideLocked
+                    ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
+                    : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
+                }`
+          }`}
+        >
+          {/* Tier lock badge — shown only when locked */}
+          
+          {tool.wallet_card ? (
+            /* Vertical Design (Original - Shared) */
+            <>
+              <div className="flex items-center gap-[10px] mb-[12px]">
+                <div
+                  className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 transition-opacity ${
+                    isGuideLocked
+                      ? "bg-[#f3f0fb] border-[#c9bef2] opacity-50"
+                      : "bg-[#f3f0fb] border-[#c9bef2]"
+                  }`}
+                >
+                  <Monitor
+                    size={18}
+                    className="text-[#4a2d8a]"
+                    strokeWidth={1.7}
+                  />
+                </div>
+              </div>
+              <h3
+                className={`text-[14px] font-semibold mb-1 ${
+                  isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
+                }`}
+              >
+                {tool.guide_card.title}
+              </h3>
+              <p
+                className={`text-[12px] leading-normal ${
+                  isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
+                }`}
+              >
+                {tool.guide_card.subtitle}
+              </p>
+              <div
+                className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+                  isGuideLocked ? "text-[#a06000]" : "text-primary"
+                }`}
+              >
+                {isGuideLocked ? (
+  <>
+    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
+    <span>View guide</span>
+    <ArrowRight size={11} strokeWidth={2} />
+  </>
+) : (
+  <>
+    <span>View guide</span>
+    <ArrowRight size={11} strokeWidth={2} />
+  </>
+)}
+              </div>
+            </>
+          ) : (
+            /* Horizontal Design (New Reference - Solo) */
+            <>
+              <div
+                className={`w-[52px] h-[52px] rounded-[14px] border flex items-center justify-center shrink-0 transition-opacity ${
+                  isGuideLocked
+                    ? "bg-[#f3f0fb] border-[#c9bef2]/60 opacity-50"
+                    : "bg-[#f3f0fb] border-[#c9bef2]/60"
+                }`}
+              >
+                <Monitor
+                  size={22}
+                  className="text-[#4a2d8a]"
+                  strokeWidth={1.7}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3
+                  className={`text-[15px] font-bold mb-1 sm:mb-1.5 truncate ${
+                    isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
+                  }`}
+                >
+                  {tool.guide_card.title}
+                </h3>
+                <p
+                  className={`text-[13px] leading-relaxed sm:leading-normal line-clamp-2 ${
+                    isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
+                  }`}
+                >
+                  {tool.guide_card.subtitle}
+                </p>
+              </div>
+              <div
+  className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors shrink-0 ${
+    isGuideLocked
+      ? "bg-[#fef3d8] text-[#a06000] group-hover:bg-[#f0c878] group-hover:text-[#6b3a00]"
+      : "bg-[#f4f7fb] text-[#6b8097] group-hover:bg-primary group-hover:text-white"
+  }`}
+>
+  {isGuideLocked ? (
+    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
+  ) : (
+    <ArrowRight size={14} strokeWidth={2.5} />
+  )}
+</div>
+            </>
+          )}
+        </button>
+      );
+    })()}
 
               {tool.wallet_card &&
                 (() => {
@@ -4815,43 +4809,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
         }
       `}
-                    >
-                      {/* Crown lock badge */}
-
-                      <div className="flex items-center gap-[10px] mb-[12px]">
-                        <div
-                          className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
-                            isWalletLocked
-                              ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
-                              : (tool.wallet_card?.type === "ceac_creds" &&
-                                    ceacCredentials) ||
-                                  (tool.wallet_card?.type === "nvc_fee" &&
-                                    state.metadata.nvcFeeStatus)
-                                ? "bg-[#e8f5ef] border-[#a8d9be]"
-                                : tool.wallet_card?.type === "ceac_creds"
-                                  ? "bg-[#e8f5ef] border-[#a8d9be]"
-                                  : "bg-[#e6f6f6] border-[#9fd8d8]"
-                          }`}
-                        >
-                          {tool.wallet_card?.type === "ceac_creds" ? (
-                            <Lock
-                              size={18}
-                              className="text-[#15744f]"
-                              strokeWidth={1.7}
-                            />
-                          ) : (
-                            <CreditCard
-                              size={18}
-                              className={
-                                isWalletLocked
-                                  ? "text-[#0f7373]"
-                                  : "text-[#0f7373]"
-                              }
-                              strokeWidth={1.7}
-                            />
-                          )}
-                        </div>
-                      </div>
+>
+      {/* Tier lock badge */}
+     
+      <div className="flex items-center gap-[10px] mb-[12px]">
+        <div
+          className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
+            isWalletLocked
+              ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
+              : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+                (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+                ? "bg-[#e8f5ef] border-[#a8d9be]"
+                : tool.wallet_card?.type === "ceac_creds"
+                  ? "bg-[#e8f5ef] border-[#a8d9be]"
+                  : "bg-[#e6f6f6] border-[#9fd8d8]"
+          }`}
+        >
+          {tool.wallet_card?.type === "ceac_creds" ? (
+            <Lock size={18} className="text-[#15744f]" strokeWidth={1.7} />
+          ) : (
+            <CreditCard size={18} className={isWalletLocked ? "text-[#0f7373]" : "text-[#0f7373]"} strokeWidth={1.7} />
+          )}
+        </div>
+      </div>
 
                       <h3
                         className={`text-[14px] font-semibold mb-1 ${

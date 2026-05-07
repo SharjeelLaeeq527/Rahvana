@@ -436,8 +436,9 @@ function HomePageContent() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_42%,rgba(255,255,255,0.24),transparent_27%),radial-gradient(circle_at_71%_52%,rgba(13,115,119,0.16),transparent_30%),radial-gradient(circle_at_center,rgba(5,12,22,0)_38%,rgba(5,12,22,0.34)_100%)]" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,22,0)_34%,rgba(5,12,22,0.22)_64%,rgba(5,12,22,0.88)_100%)]" />
 
-              <div className="hidden lg:block 2xl:hidden">
-                <h1 className="absolute left-1/2 top-[50px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-[clamp(28px,3.2vw,48px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)] xl:top-[64px]">
+              {/* 2xl:hidden */}
+              <div className="hidden lg:block">
+                <h1 className="absolute left-1/2 top-[50px] xl:top-[60px] 2xl:top-[65px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-[clamp(28px,3.2vw,48px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)] xl:top-[64px]">
                   <span className="inline-block pb-2">
                     Navigate your IR-1 journey with clarity.
                   </span>
@@ -502,7 +503,7 @@ function HomePageContent() {
                   />
                 </svg>
 
-                <div className="absolute right-[3vw] top-[75px] z-20 h-[clamp(470px,50vh,560px)] w-[clamp(560px,54vw,720px)] xl:right-[6vw] xl:top-[120px] xl:h-[clamp(500px,52vh,590px)] xl:w-[clamp(650px,47vw,760px)] 2xl:right-[11vw] 2xl:w-[clamp(700px,47vw,860px)]">
+                <div className="absolute right-[3vw] top-[75px] lg:top-[85px] xl:top-[90px] z-20 h-[clamp(470px,50vh,560px)] w-[clamp(560px,54vw,720px)] xl:right-[6vw] xl:top-[120px] xl:h-[clamp(500px,52vh,590px)] xl:w-[clamp(650px,47vw,760px)] 2xl:right-[11vw] 2xl:w-[clamp(700px,47vw,860px)]">
                   <RealDashboardScene compact onSceneChange={setHeroScene} />
                 </div>
 
@@ -536,17 +537,17 @@ function HomePageContent() {
               </div>
 
               {/* Desktop Layout (xl and up, >1280px) */}
-              <div className="hidden 2xl:flex absolute inset-0 z-10 w-full max-w-[1600px] mx-auto px-[5vw] 2xl:px-[8vw] pt-[120px] pb-[40px] flex-col pointer-events-none">
+              {/* <div className="hidden 2xl:flex absolute inset-0 z-10 w-full max-w-[1600px] mx-auto px-[5vw] 2xl:px-[8vw] pt-[120px] pb-[40px] flex-col pointer-events-none">
                 <h1 className="absolute left-1/2 top-[60px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-[clamp(28px,3.2vw,48px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
                   <span className="inline-block pb-2">
                     Navigate your IR-1 journey with clarity.
                   </span>
-                </h1>
+                </h1> */}
 
-                {/* Main Middle Section: Card, Connector, Dashboard */}
-                <div className="flex flex-1 items-center justify-between w-full relative mt-[4vh]">
-                  {/* Left: Card */}
-                  <div className="z-20 w-[340px] 2xl:w-[380px] shrink-0 rounded-[22px] border border-white/40 bg-white/[0.18] px-8 py-[30px] shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] pointer-events-auto">
+              {/* Main Middle Section: Card, Connector, Dashboard */}
+              {/* <div className="flex flex-1 items-center justify-between w-full relative mt-[4vh]"> */}
+              {/* Left: Card */}
+              {/* <div className="z-20 w-[340px] 2xl:w-[380px] shrink-0 rounded-[22px] border border-white/40 bg-white/[0.18] px-8 py-[30px] shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] pointer-events-auto">
                     <AnimatePresence mode="wait">
                       <motion.p
                         key={heroScene}
@@ -562,10 +563,10 @@ function HomePageContent() {
                         {heroAnnotations[heroScene]}
                       </motion.p>
                     </AnimatePresence>
-                  </div>
+                  </div> */}
 
-                  {/* Middle: Flexible Connector */}
-                  <div className="flex-1 relative z-30 mx-[-4px] pointer-events-none flex items-center justify-center">
+              {/* Middle: Flexible Connector */}
+              {/* <div className="flex-1 relative z-30 mx-[-4px] pointer-events-none flex items-center justify-center">
                     <svg
                       viewBox="0 0 180 67"
                       className="w-full max-w-[280px] drop-shadow-lg overflow-visible"
@@ -608,16 +609,16 @@ function HomePageContent() {
                         filter="url(#heroConnectorGlowFlex)"
                       />
                     </svg>
-                  </div>
+                  </div> */}
 
-                  {/* Right: Dashboard */}
-                  <div className="z-20 w-[clamp(650px,47vw,760px)] 2xl:w-[clamp(720px,47vw,840px)] shrink-0 h-[clamp(500px,52vh,590px)] pointer-events-auto">
+              {/* Right: Dashboard */}
+              {/* <div className="z-20 w-[clamp(650px,47vw,760px)] 2xl:w-[clamp(720px,47vw,840px)] shrink-0 h-[clamp(500px,52vh,590px)] pointer-events-auto">
                     <RealDashboardScene compact onSceneChange={setHeroScene} />
                   </div>
-                </div>
+                </div> */}
 
-                {/* Bottom CTA Section */}
-                <div className="mt-auto pt-6 z-20 flex items-center justify-between gap-6 w-full pointer-events-auto">
+              {/* Bottom CTA Section */}
+              {/* <div className="mt-auto pt-6 z-20 flex items-center justify-between gap-6 w-full pointer-events-auto">
                   <div className="w-[50%]">
                     <p className="text-left text-[17px] leading-[1.65] text-white/90 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)]">
                       Rahvana gives you a structured step-by-step IR-1 roadmap
@@ -636,7 +637,7 @@ function HomePageContent() {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               <div className="relative z-10 flex min-h-screen flex-col gap-7 px-5 pb-10 pt-24 sm:px-7 lg:hidden">
                 <h1 className="text-center text-[clamp(2.2rem,8vw,4.2rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">

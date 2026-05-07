@@ -7,7 +7,7 @@ import { ChapterView } from "./ChapterView";
 import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
-import { ChevronRight, ArrowLeft, Check, LayoutDashboard } from "lucide-react";
+import { ChevronRight, ArrowLeft, Check,X, LayoutDashboard } from "lucide-react";
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -198,8 +198,8 @@ export default function RoadmapLayoutV2({
             aria-label="Reset progress"
           >
             <X size={14} />
-          </button>
-          */}
+          </button> */}
+         
         </div>
       </nav>
 
