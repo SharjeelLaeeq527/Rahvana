@@ -11,15 +11,42 @@ import {
 } from "@/components/ui/tooltip";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronDown, Save, ArrowRight, Folder } from "lucide-react";
-import * as icons from "lucide-react";
+import {
+  ChevronDown,
+  Save,
+  ArrowRight,
+  Folder,
+  AlertCircle,
+  FileText,
+  Globe,
+  Heart,
+  Briefcase,
+  ShieldCheck,
+  Star,
+  Building2,
+  Activity,
+  Cpu,
+  BookOpen,
+  Users,
+  Clock,
+  MapPin,
+  Scale,
+  type LucideIcon,
+} from "lucide-react";
+
+/** Curated icon lookup for stage cards — avoids `import * as icons` which bundles ALL 1000+ Lucide icons */
+const STAGE_ICON_MAP: Record<string, LucideIcon> = {
+  FileText, Globe, Heart, Briefcase, ShieldCheck, Star,
+  Building2, Activity, Cpu, BookOpen, Users, Clock,
+  MapPin, Scale, AlertCircle, ArrowRight, Folder, Save,
+};
 import { Loader } from "@/components/ui/spinner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { ProgressTree } from "./components/ProgressTree";
 import { StepDetail } from "./components/StepDetail";
 import { DocumentVault } from "./components/DocumentVault";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { RoadmapData, RoadmapStage } from "./components/types";
+import { RoadmapData } from "./components/types";
 import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutV2 from "./components/v2/RoadmapLayoutV2";
@@ -102,20 +129,60 @@ export default function IR1JourneyPage() {
 
   if (!isLoaded || !dataLoaded) {
     return (
-          <div className="flex flex-col items-center justify-center h-screen gap-4">
-            <Loader size="lg" />
-            <p className="text-[#0d7377] text-sm font-medium mt-2">
-              Loading your Journey...
-            </p>
+      <div className="min-h-screen w-full bg-[#f4f7fb] animate-in fade-in duration-300">
+        {/* Skeleton nav bar */}
+        <div className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 pt-2">
+          <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
+        </div>
+
+        {/* Skeleton dashboard content */}
+        <div className="max-w-5xl mx-auto px-5 py-8 space-y-6">
+          {/* Hero skeleton */}
+          <div className="rounded-2xl bg-white border border-[#d0e4f7] p-8 space-y-4">
+            <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
+            <div className="h-8 w-72 bg-slate-200 rounded animate-pulse" />
+            <div className="h-4 w-full max-w-md bg-slate-100 rounded animate-pulse" />
           </div>
-        );
+
+          {/* Chapter cards skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="rounded-2xl bg-white border border-[#d0e4f7] p-6 space-y-4 animate-pulse"
+              >
+                <div className="h-3 w-20 bg-slate-200 rounded" />
+                <div className="h-5 w-40 bg-slate-200 rounded" />
+                <div className="h-2 w-full bg-slate-100 rounded-full" />
+              </div>
+            ))}
+          </div>
+
+          {/* Steps skeleton */}
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="rounded-xl bg-white border border-[#d0e4f7] p-5 flex items-center gap-4 animate-pulse"
+              >
+                <div className="h-8 w-8 rounded-full bg-slate-200 shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-48 bg-slate-200 rounded" />
+                  <div className="h-3 w-32 bg-slate-100 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-8">
         <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-2">
-          <icons.AlertCircle size={32} />
+          <AlertCircle size={32} />
         </div>
         <h2 className="text-2xl font-bold text-slate-800">Connection Error</h2>
         <p className="text-slate-500 text-center max-w-md">
@@ -147,8 +214,7 @@ export default function IR1JourneyPage() {
       <RoadmapLayoutV2
         data={roadmapData}
         state={state}
-        actions={actions}
-        isLoaded={isLoaded && dataLoaded}
+        actions={actions as any}
       />
     );
   }
@@ -165,14 +231,14 @@ export default function IR1JourneyPage() {
                 <h1 className="text-3xl md:text-5xl font-bold">
                   {language === "ur" && (roadmapData as any).titleUr
                     ? (roadmapData as any).titleUr
-                    : (roadmapData as any).journey_name || roadmapData.title || t("ir1Journey.title")}
+                    : (roadmapData as any).journey_name || (roadmapData as any).title || t("ir1Journey.title")}
                 </h1>
                 <VisaCategoryTooltip roadmapData={roadmapData} language={language} />
               </div>
               <p className="text-slate-500 mb-6 md:mb-8 text-base md:text-lg max-w-2xl">
                 {language === "ur" && (roadmapData as any).descriptionUr
                   ? (roadmapData as any).descriptionUr
-                  : (roadmapData as any).journey_description || roadmapData.description || t("ir1Journey.description")}
+                  : (roadmapData as any).journey_description || (roadmapData as any).description || t("ir1Journey.description")}
               </p>
             </div>
             {isSignedIn && (
@@ -208,7 +274,7 @@ export default function IR1JourneyPage() {
                         </p>
                         <p className="font-semibold text-primary">
                           {roadmapData.scenarios ? (
-                            roadmapData.scenarios.find((s) => s.id === state.scenarioType)?.title
+                            roadmapData.scenarios.find((s: any) => s.id === state.scenarioType)?.title
                           ) : (
                             <>
                               {state.scenarioType === "bio" && "Biological Child"}
@@ -233,9 +299,9 @@ export default function IR1JourneyPage() {
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>{relationshipNotesOpen ? "Click to collapse" : "Click to expand"}</TooltipContent>
-                  {relationshipNotesOpen && roadmapData.scenarioNotes && roadmapData.scenarioNotes[state.scenarioType] && (
+                  {relationshipNotesOpen && (roadmapData as any).scenarioNotes && (roadmapData as any).scenarioNotes[state.scenarioType] && (
                     <div className="px-4 pb-4 text-sm text-muted-foreground border-t border-primary/10">
-                      {roadmapData.scenarioNotes[state.scenarioType]}
+                      {(roadmapData as any).scenarioNotes[state.scenarioType]}
                     </div>
                   )}
                 </div>
@@ -261,7 +327,8 @@ export default function IR1JourneyPage() {
               {(roadmapData.chapters || (roadmapData as any).stages || [])
                 .filter((stage: any) => !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
                 .map((stage: any, sIdx: number, filteredStages: any[]) => {
-                  const Icon = (icons as unknown as Record<string, React.ElementType>)[(stage.icon || (stage as any).chapter_icon) || "FileText"] || icons.FileText;
+                  const iconName = (stage.icon || (stage as any).chapter_icon) || "FileText";
+                  const Icon = STAGE_ICON_MAP[iconName] || FileText;
                   const isLast = sIdx === filteredStages.length - 1;
                   const stageId = stage.chapter_key || stage.id;
                   const stageName = stage.chapter_name || stage.name;
