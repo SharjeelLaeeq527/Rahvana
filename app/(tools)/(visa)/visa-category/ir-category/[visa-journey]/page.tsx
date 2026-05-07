@@ -1,6 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+
+// ── Static JSON imports — zero runtime network cost ───────────────────────────
+// IR-1 is 314 KB of JSON, so we import it statically as it is the primary
+// journey. Other journeys remain dynamic since they are rarely used.
+import ir1Data from "@/data/visa-category/ir-1.json";
+import ir5Data from "@/data/visa-category/ir-5.json";
+import f1Data from "@/data/visa-category/f-1.json";
+import germanyData from "@/data/visa-category/germany-student-journey.json";
+
+const JOURNEY_DATA_MAP: Record<string, any> = {
+  "ir-1": ir1Data,
+  "ir-5": ir5Data,
+  "f-1": f1Data,
+  "germany-student-journey": germanyData,
+};
+
+function resolveJourneyData(visaJourney: string): any | null {
+  return JOURNEY_DATA_MAP[visaJourney] ?? null;
+}
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import {
@@ -67,31 +86,17 @@ export default function IR1JourneyPage() {
 
   const visaJourney = journeyMapping[visaJourneyParam] || visaJourneyParam;
 
-  const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [showScenarioModal, setShowScenarioModal] = useState(false);
-  const [hasScenarios, setHasScenarios] = useState(false);
   const [relationshipNotesOpen, setRelationshipNotesOpen] = useState(false);
 
-  useEffect(() => {
-    if (visaJourney) {
-      import(`@/data/visa-category/${visaJourney}.json`)
-        .then((mod) => {
-          const data = mod.default || mod;
-          setRoadmapData(data);
-          const chapters = data.chapters || data.stages || [];
-          const hasScenarioSteps = chapters.some((s: any) =>
-            (s.steps || []).some((st: any) => st.scenarioSpecific),
-          );
-          setHasScenarios(hasScenarioSteps);
-          setDataLoaded(true);
-        })
-        .catch((err) => {
-          console.error("Failed to load visa journey data", err);
-          setDataLoaded(true);
-        });
-    }
-  }, [visaJourney]);
+  // Static lookup — resolves synchronously, no network call needed
+  const roadmapData = resolveJourneyData(visaJourney) as RoadmapData | null;
+  const dataLoaded = true;
+  const hasScenarios = !!(roadmapData && (
+    (roadmapData.chapters || (roadmapData as any).stages || []).some((s: any) =>
+      (s.steps || []).some((st: any) => st.scenarioSpecific)
+    )
+  ));
 
   const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } =
     useWizard({

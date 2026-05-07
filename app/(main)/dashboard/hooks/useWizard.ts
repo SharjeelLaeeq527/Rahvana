@@ -136,7 +136,7 @@ export function useWizard(options: UseWizardOptions = {}) {
     });
   }, [activeRoadmap]);
 
-  // ─── Load Progress ────────────────────────────────────────────────────────
+  // ─── Load Progress (single combined API call) ─────────────────────────────
   useEffect(() => {
     let cancelled = false;
 
@@ -145,86 +145,57 @@ export function useWizard(options: UseWizardOptions = {}) {
       setIsLoaded(false);
 
       try {
-        console.log(`[useWizard] Syncing for journey: ${journeyId}`);
+        console.log(`[useWizard] Initializing journey: ${journeyId}`);
 
-        const listRes = await fetch(`/api/journeys?journey_type=${journeyId.toUpperCase()}`);
-        const listData = await listRes.json();
+        // Single call replaces: list → create → sync-steps → detail (4 round-trips → 1)
+        const res = await fetch("/api/journeys/initialize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ journey_type: journeyId }),
+        });
 
-        let targetJourneyId: string | null = null;
-        if (listData.success && listData.data && listData.data.length > 0) {
-          const found = listData.data.find((j: any) => {
-            const itemType = j.journey.journey_type.toLowerCase().replace(/-/g, "");
-            const queryType = journeyId.toLowerCase().replace(/-/g, "");
-            return itemType === queryType;
-          });
-          if (found) targetJourneyId = found.journey.id;
-        }
-
-        if (!targetJourneyId) {
-          const configType = journeyId.toLowerCase() === 'ir1' ? 'ir-1' : journeyId.toLowerCase();
-          const initRes = await fetch('/api/journeys/create-from-config', {
-            method: 'POST',
-            body: JSON.stringify({ visa_type: configType }),
-          });
-          const initData = await initRes.json();
-          if (initData.success) {
-            targetJourneyId = initData.data.journey.id;
-          } else {
-            if (initData.error?.includes("unique constraint")) {
-               const retryRes = await fetch(`/api/journeys?journey_type=${journeyId.toUpperCase()}`);
-               const retryData = await retryRes.json();
-               if (retryData.success && retryData.data.length > 0) {
-                 targetJourneyId = retryData.data[0].journey.id;
-               } else throw new Error("Conflict during creation and failed to fetch.");
-            } else {
-              throw new Error(initData.error || 'Failed to initialize journey');
-            }
-          }
-        }
-
+        if (!res.ok) throw new Error(`Initialize failed: HTTP ${res.status}`);
+        const { data } = await res.json();
         if (cancelled) return;
 
-        // Sync any missing steps from latest config into existing journey (fire-and-forget, non-blocking)
-        fetch(`/api/journeys/${targetJourneyId}/sync-steps`, { method: 'POST' })
-          .catch(syncErr => console.warn('[useWizard] Step sync failed (non-fatal):', syncErr));
+        const { journey, steps, case_data } = data;
 
-        if (cancelled) return;
+        const stepMap: Record<string, string> = {};
+        const completedSet = new Set<string>();
 
-        const detailRes = await fetch(`/api/journeys/${targetJourneyId}`);
-        const detailData = await detailRes.json();
+        steps.forEach((s: any) => {
+          stepMap[s.step_key] = s.id;
+          if (s.status === "completed") completedSet.add(s.step_key);
+        });
 
-        if (detailData.success && !cancelled) {
-          const { journey, steps, case_data } = detailData.data;
+        const metadata: Record<string, any> = {};
+        case_data.forEach((cd: any) => {
+          metadata[cd.data_key] = cd.data_value;
+        });
 
-          const stepMap: Record<string, string> = {};
-          const completedSet = new Set<string>();
-          
-          steps.forEach((s: any) => {
-            stepMap[s.step_key] = s.id;
-            if (s.status === 'completed') {
-              completedSet.add(s.step_key);
-            }
-          });
+        const filingMethod = journey.filing_method || "online";
 
-          const metadata: Record<string, any> = {};
-          case_data.forEach((cd: any) => {
-            metadata[cd.data_key] = cd.data_value;
-          });
+        // Derive stage/step position from roadmap JSON (if available)
+        // Note: activeRoadmap is no longer a dependency — we derive best-effort
+        const roadmapChapters =
+          activeRoadmap?.chapters || activeRoadmap?.stages || [];
 
-          const filingMethod = journey.filing_method || 'online';
-          const roadmapChapters = activeRoadmap?.chapters || activeRoadmap?.stages || [];
-          
-          let derivedStage = 0;
-          let derivedStep = 0;
+        let derivedStage = 0;
+        let derivedStep = 0;
 
+        if (roadmapChapters.length > 0) {
           for (let ci = 0; ci < roadmapChapters.length; ci++) {
-            const chapterSteps = (roadmapChapters[ci].steps || []).filter((s: any) => {
-              const branch = s.branch;
-              return !branch || branch === 'both' || branch === filingMethod;
-            });
-            const allDone = chapterSteps.length > 0 && chapterSteps.every(
-              (s: any) => completedSet.has(s.step_key || s.id)
+            const chapterSteps = (roadmapChapters[ci].steps || []).filter(
+              (s: any) => {
+                const branch = s.branch;
+                return !branch || branch === "both" || branch === filingMethod;
+              }
             );
+            const allDone =
+              chapterSteps.length > 0 &&
+              chapterSteps.every((s: any) =>
+                completedSet.has(s.step_key || s.id)
+              );
             if (!allDone) {
               derivedStage = ci;
               const firstIncomplete = chapterSteps.findIndex(
@@ -235,30 +206,31 @@ export function useWizard(options: UseWizardOptions = {}) {
             }
             if (ci === roadmapChapters.length - 1) {
               derivedStage = ci;
-              derivedStep = chapterSteps.length > 0 ? chapterSteps.length - 1 : 0;
+              derivedStep = Math.max(0, chapterSteps.length - 1);
             }
           }
-
-          setState((prev) => ({
-            ...prev,
-            backendId: targetJourneyId!,
-            stepMap,
-            completedSteps: completedSet,
-            metadata: {
-              ...metadata,
-              tracking_status: journey.tracking_status || {},
-            },
-            filingType: (journey.filing_method as any) || prev.filingType,
-            currentStage: derivedStage,
-            currentStep: derivedStep,
-            started: journey.status !== 'not_started',
-          }));
-
-          setHasExistingProgress(journey.status !== 'not_started');
-          setIsLoaded(true);
         }
+
+        setState((prev) => ({
+          ...prev,
+          backendId: journey.id,
+          stepMap,
+          completedSteps: completedSet,
+          metadata: {
+            ...metadata,
+            tracking_status: journey.tracking_status || {},
+          },
+          filingType: (journey.filing_method as any) || prev.filingType,
+          currentStage: derivedStage,
+          currentStep: derivedStep,
+          started: journey.status !== "not_started",
+        }));
+
+        setHasExistingProgress(journey.status !== "not_started");
+        setIsLoaded(true);
       } catch (err) {
-        console.error("[useWizard] Critical sync error:", err);
+        if (cancelled) return;
+        console.error("[useWizard] Initialize error:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
         toast.error("Cloud synchronization failed.");
         setIsLoaded(true);
@@ -266,12 +238,30 @@ export function useWizard(options: UseWizardOptions = {}) {
     }
 
     loadProgress();
-    return () => { cancelled = true; };
-  }, [userId, journeyId, activeRoadmap]);
+    return () => {
+      cancelled = true;
+    };
+    // activeRoadmap intentionally excluded — API starts immediately on userId
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, journeyId]);
 
   // ─── Actions ───────────────────────────────────────────────────────────────
-  const actions = useMemo(() => ({
-    setStage: (idx: number) => {
+  const actions = useMemo(() => {
+    // Helper to invalidate server cache in the background after a mutation
+    const invalidateJourneyCache = () => {
+      if (!userId || !journeyId) return;
+      fetch("/api/journeys/initialize", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "x-cache-bust": "1" 
+        },
+        body: JSON.stringify({ journey_type: journeyId }),
+      }).catch(() => {}); // Non-blocking
+    };
+
+    return {
+      setStage: (idx: number) => {
       setState((prev) => {
         const chapters = activeRoadmap.chapters || activeRoadmap.stages;
         const chapter = chapters[idx];
@@ -298,6 +288,7 @@ export function useWizard(options: UseWizardOptions = {}) {
           const stepUuid = prev.stepMap[stepId];
           fetch(`/api/journeys/${state.backendId}`, {
             method: "PATCH",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
               current_step_id: stepUuid,
               current_chapter_id: stage?.id,
@@ -510,6 +501,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (success) {
           console.log("[useWizard] sync success:", stepKey);
           window.dispatchEvent(new CustomEvent("refresh-reminders"));
+          invalidateJourneyCache(); // Bust server cache
         } else {
           console.error("[useWizard] sync failed after 3 attempts:", stepKey, lastErr);
           toast.error("Progress saved locally. Will sync when connection is restored.");
@@ -577,6 +569,7 @@ export function useWizard(options: UseWizardOptions = {}) {
           }));
           await fetch("/api/case_data", {
             method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               journey_id: state.backendId,
               batch: true,
@@ -585,6 +578,7 @@ export function useWizard(options: UseWizardOptions = {}) {
           });
           // Notify other components that reminders might have changed
           window.dispatchEvent(new CustomEvent("refresh-reminders"));
+          invalidateJourneyCache(); // Bust server cache
         } catch (err) {
           console.error("[useWizard] Case data sync failed:", err);
         }
@@ -666,7 +660,11 @@ export function useWizard(options: UseWizardOptions = {}) {
 
     resetProgress: async () => {
       if (state.backendId) {
-        await fetch(`/api/journeys/${state.backendId}`, { method: "DELETE" }).catch(() => {});
+        await fetch(`/api/journeys/${state.backendId}`, { 
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" }
+        }).catch(() => {});
+        invalidateJourneyCache(); // Bust server cache
       }
       setState(DEFAULT_STATE);
       setHasExistingProgress(false);
@@ -676,8 +674,10 @@ export function useWizard(options: UseWizardOptions = {}) {
       if (state.backendId) {
         await fetch(`/api/journeys/${state.backendId}`, {
           method: "PATCH",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "in_progress" }),
         });
+        invalidateJourneyCache(); // Bust server cache
       }
       setState((prev) => ({ ...prev, started: true }));
       setHasExistingProgress(true);
@@ -838,7 +838,8 @@ export function useWizard(options: UseWizardOptions = {}) {
         throw err;
       }
     },
-  }), [state.backendId, state.metadata, state.completedSteps, state.stepMap, state.role, journeyId, userId, activeRoadmap, normalizeState]);
+    }
+  }, [state.backendId, state.metadata, state.completedSteps, state.stepMap, state.role, journeyId, userId, activeRoadmap, normalizeState]);
 
   return { state, actions, isLoaded, hasExistingProgress, isSyncing, error };
 }
