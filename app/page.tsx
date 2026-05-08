@@ -38,6 +38,7 @@ import {
   RealDashboardScene,
   TwoWaysScene,
   ConsultationBanner,
+  JourneyConsultationBand,
 } from "./components/home-page/Components";
 
 export const journeyHref = "/visa-category/ir-category/ir1-journey";
@@ -702,79 +703,78 @@ function HomePageContent() {
               </div>
             </section>
 
-            <TwoWaysScene />
+            <JourneyConsultationBand>
+              <TwoWaysScene />
+              <ConsultationBanner onConsultationClick={handleConsultationClick} />
+          
 
-            <ConsultationBanner onConsultationClick={handleConsultationClick} />
+         <section className="py-8 md:py-12" id="faq">
+  <div className="w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
+    <div className="text-center w-full md:w-3/4 mx-auto mb-5">
+      <motion.span
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
+      >
+        <Icons.HelpCircle className="w-4 h-4" />
+        {t("homePage.faqBadge")}
+      </motion.span>
+      <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+        {t("homePage.faqTitle") || "Frequently Asked Questions"}
+      </h2>
+    </div>
 
-            {/* FAQ SECTION */}
-            <section className="py-8 md:py-12 bg-background" id="faq">
-              <div className="w-full mx-auto px-6 sm:px-8 md:px-12  2xl:px-30 ">
-                <div className="text-center w-full md:w-3/4 mx-auto mb-5">
-                  <motion.span
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
-                  >
-                    <Icons.HelpCircle className="w-4 h-4" />
-                    {t("homePage.faqBadge")}
-                  </motion.span>
-                  <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-                    {t("homePage.faqTitle") || "Frequently Asked Questions"}
-                  </h2>
+    <div className="w-full md:w-3/4 mx-auto space-y-4">
+      {FAQS.map((faq, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.05 }}
+          viewport={{ once: true }}
+          className={`rounded-2xl border transition-all ${
+            openFAQ === i
+              ? "border-rahvana-primary bg-rahvana-primary-pale/30 shadow-md"
+              : "border-border bg-card/60 hover:border-rahvana-primary/30"
+          }`}
+        >
+          <HydrationSafeButton
+            onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
+            className="w-full px-5 md:px-8 py-6 text-left flex items-center justify-between"
+          >
+            <span className="text-lg font-bold text-foreground pr-4 md:pr-8">
+              {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
+            </span>
+            <div
+              className={`w-6 h-6 md:h-8 md:w-8 shrink-0 rounded-full border flex items-center justify-center transition-all ${
+                openFAQ === i
+                  ? "bg-rahvana-primary border-rahvana-primary text-white rotate-45"
+                  : "border-border text-muted-foreground group-hover:border-rahvana-primary group-hover:text-rahvana-primary"
+              }`}
+            >
+              <Icons.Plus className="w-4 h-4" />
+            </div>
+          </HydrationSafeButton>
+          <AnimatePresence>
+            {openFAQ === i && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="px-8 pb-6 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-4">
+                  {t(`homePage.faqs.q${i + 1}.a`) || faq.a}
                 </div>
-
-                <div className="w-full md:w-3/4 mx-auto space-y-4">
-                  {FAQS.map((faq, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      viewport={{ once: true }}
-                      className={`rounded-2xl border transition-all ${
-                        openFAQ === i
-                          ? "border-rahvana-primary bg-rahvana-primary-pale/30 shadow-md"
-                          : "border-border bg-card hover:border-rahvana-primary/30"
-                      }`}
-                    >
-                      <HydrationSafeButton
-                        onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
-                        className="w-full px-5 md:px-8 py-6 text-left flex items-center justify-between"
-                      >
-                        <span className="text-lg font-bold text-foreground pr-4 md:pr-8">
-                          {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
-                        </span>
-                        <div
-                          className={`w-6 h-6 md:h-8 md:w-8 shrink-0 rounded-full  border flex items-center justify-center transition-all ${
-                            openFAQ === i
-                              ? "bg-rahvana-primary border-rahvana-primary text-white rotate-45"
-                              : "border-border text-muted-foreground group-hover:border-rahvana-primary group-hover:text-rahvana-primary"
-                          }`}
-                        >
-                          <Icons.Plus className="w-4 h-4" />
-                        </div>
-                      </HydrationSafeButton>
-                      <AnimatePresence>
-                        {openFAQ === i && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-8 pb-6 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-4">
-                              {t(`homePage.faqs.q${i + 1}.a`) || faq.a}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</section>
             {/* GET IN TOUCH */}
             {/* wrap in animation */}
             <motion.div
@@ -786,6 +786,8 @@ function HomePageContent() {
             >
               <GetInTouch />
             </motion.div>
+  </JourneyConsultationBand>
+
 
             {/* AUTH MODAL */}
             <AnimatePresence>
@@ -830,6 +832,7 @@ function HomePageContent() {
             onToggleAuth={handleToggleAuth}
           />
         )}
+        
       </main>
 
       {showMfaPrompt && (

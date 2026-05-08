@@ -2415,7 +2415,7 @@ function OriginalHomepageFaq({
   const { t } = useLanguage();
 
   return (
-    <section className="bg-background py-8 md:py-12" id="faq">
+    <section className="py-8 md:py-12" id="faq" style={{background: 'linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)'}}>
       <div className="mx-auto w-full px-6 sm:px-8 md:px-12 2xl:px-30">
         <div className="mx-auto mb-5 w-full text-center md:w-3/4">
           <motion.span
@@ -2658,9 +2658,46 @@ export default function RahvanaIr1Homepage() {
         </div>
       </section>
 
-      <TwoWaysScene />
+      <div
+        className="relative isolate overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(180deg,#ffffff 0%,#eef8f7 18%,#dff2ef 42%,#fbf0df 74%,#fffaf4 100%)",
+        }}
+      >
+        {/* Shared layered background to add depth while keeping the transition continuous */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-20 top-[-12%] h-[34rem] w-[34rem] rounded-full blur-[110px]"
+          style={{ background: "rgba(13,115,119,0.18)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-[-8rem] top-[10%] h-[28rem] w-[28rem] rounded-full blur-[120px]"
+          style={{ background: "rgba(11,102,106,0.11)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-[8%] bottom-[-10rem] h-[30rem] w-[30rem] rounded-full blur-[120px]"
+          style={{ background: "rgba(176,125,91,0.14)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(circle at 14% 18%, rgba(13,115,119,0.18), transparent 26%),' +
+              'radial-gradient(circle at 86% 22%, rgba(11,102,106,0.10), transparent 22%),' +
+              'radial-gradient(circle at 68% 78%, rgba(176,125,91,0.13), transparent 24%),' +
+              'radial-gradient(circle at 38% 62%, rgba(255,255,255,0.42), transparent 34%)',
+            mixBlendMode: 'normal',
+          }}
+        />
 
-      <ConsultationBanner onConsultationClick={handleConsultationClick} />
+        <TwoWaysScene />
+
+        <ConsultationBanner onConsultationClick={handleConsultationClick} />
+      </div>
 
       <OriginalHomepageFaq openFAQ={openFAQ} setOpenFAQ={setOpenFAQ} />
 
