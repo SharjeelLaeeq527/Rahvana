@@ -20,6 +20,7 @@ import {
   ArrowRight,
   ChevronDown,
   Lock,
+  Crown,
 } from "lucide-react";
 
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -34,7 +35,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // ─── Data & Types ─────────────────────────────────────────────────────────────
-
 type ToolCategory =
   | "AI & Planning"
   | "Money & Sponsorship"
@@ -82,6 +82,7 @@ const TOOLS: Tool[] = [
     iconSrc: "/icons/221g-action-plan.svg",
     badge: "Live",
     entitlementFeature: "action_221g",
+    
   },
   {
     id: "visa-path",
@@ -337,6 +338,7 @@ export default function ToolsPage({
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
           />
         </div>
+        
 
         {/* Category tabs */}
         <div
@@ -427,42 +429,72 @@ export default function ToolsPage({
 
 const CATEGORY_STYLES: Record<
   ToolCategory,
-  { iconBox: string; innerBox: string; link: string; borderGradient: string }
+  {
+    iconBox: string;
+    innerBox: string;
+    link: string;
+    hoverBg: string;
+    ribbonColor: string;
+    ribbonMid: string;
+    ribbonDeep: string;
+    ribbonIcon: string;
+    ribbonBorder: string;
+  }
 > = {
   "AI & Planning": {
     iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
     innerBox: "bg-white/20",
     link: "text-violet-600 dark:text-violet-400",
-    borderGradient:
-      "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
+    hoverBg: "group-hover:bg-violet-50",
+    ribbonColor: "#f3e8ff",
+    ribbonMid: "#c4b5fd",
+    ribbonDeep: "#7c3aed",
+    ribbonIcon: "#7c3aed",
+    ribbonBorder: "#ddd6fe",
   },
   "Money & Sponsorship": {
     iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
     innerBox: "bg-white/20",
     link: "text-emerald-600 dark:text-emerald-400",
-    borderGradient:
-      "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
+    hoverBg: "group-hover:bg-emerald-50",
+    ribbonColor: "#dff7ea",
+    ribbonMid: "#86efac",
+    ribbonDeep: "#047857",
+    ribbonIcon: "#047857",
+    ribbonBorder: "#bbf7d0",
   },
   Tracking: {
     iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
     innerBox: "bg-white/20",
     link: "text-amber-600 dark:text-amber-400",
-    borderGradient:
-      "from-amber-300 to-amber-200 dark:from-amber-300 dark:to-amber-200",
+    hoverBg: "group-hover:bg-amber-50",
+    ribbonColor: "#fff4d6",
+    ribbonMid: "#fcd34d",
+    ribbonDeep: "#b45309",
+    ribbonIcon: "#b45309",
+    ribbonBorder: "#fde68a",
   },
   "Docs & PDFs": {
     iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
     innerBox: "bg-white/20",
     link: "text-rose-600 dark:text-rose-400",
-    borderGradient:
-      "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
+    hoverBg: "group-hover:bg-rose-50",
+    ribbonColor: "#ffe4e6",
+    ribbonMid: "#fda4af",
+    ribbonDeep: "#be123c",
+    ribbonIcon: "#be123c",
+    ribbonBorder: "#fda4af",
   },
   "Forms & Automation": {
     iconBox: "bg-cyan-600 text-white border-transparent dark:bg-cyan-500",
     innerBox: "bg-white/20",
     link: "text-cyan-600 dark:text-cyan-400",
-    borderGradient:
-      "from-cyan-300 to-cyan-200 dark:from-cyan-300 dark:to-cyan-200",
+    hoverBg: "group-hover:bg-cyan-50",
+    ribbonColor: "#e0f2fe",
+    ribbonMid: "#7dd3fc",
+    ribbonDeep: "#0e7490",
+    ribbonIcon: "#0e7490",
+    ribbonBorder: "#bae6fd",
   },
 };
 
@@ -499,10 +531,10 @@ function ToolCard({
     transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
     ${
       featureLocked
-        ? "border-[1.5px] border-transparent cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.25)] hover:-translate-y-1"
+        ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
         : isNavigable
-          ? "border-[1.5px] border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border-[1.5px] border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+          ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+          : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
     }
     animate-fade-up`;
 
@@ -513,25 +545,80 @@ function ToolCard({
       className={cardClasses}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Sleek Professional Border for Locked/Premium cards */}
+      {/* Ribbon bookmark for Locked/Premium cards */}
       {featureLocked && (
-        <div className="absolute inset-0 rounded-[30px] p-[1.5px] bg-gradient-to-br from-indigo-500/30 via-purple-500/30 to-pink-500/30 group-hover:from-indigo-500/70 group-hover:via-purple-500/70 group-hover:to-pink-500/70 transition-all duration-500 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude" />
+        <>
+        <div className="absolute -top-[1px] right-[42px] z-20 pointer-events-none">
+          <svg
+            width="32"
+            height="64"
+            viewBox="0 0 32 64"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ display: "block", overflow: "visible" }}
+          >
+            <defs>
+              <linearGradient
+                id={`rb-fill-${tool.id}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop offset="0%" stopColor={styles.ribbonColor} />
+                <stop offset="100%" stopColor={styles.ribbonMid} />
+              </linearGradient>
+              <filter
+                id={`rb-shadow-${tool.id}`}
+                x="-30%"
+                y="-18%"
+                width="160%"
+                height="160%"
+              >
+                <feDropShadow
+                  dx="0"
+                  dy="4"
+                  stdDeviation="3"
+                  floodColor={styles.ribbonDeep}
+                  floodOpacity="0.28"
+                />
+                <feDropShadow
+                  dx="0"
+                  dy="1"
+                  stdDeviation="1"
+                  floodColor="#000000"
+                  floodOpacity="0.06"
+                />
+              </filter>
+            </defs>
+
+            <g filter={`url(#rb-shadow-${tool.id})`}>
+              <polygon
+                points="0,0 32,0 32,50 16,64 0,50"
+                fill={`url(#rb-fill-${tool.id})`}
+              />
+            </g>
+            <path
+              d="M10,20 L13.2,24.5 L16,18.5 L18.8,24.5 L22,20 L20.8,29 L11.2,29 Z"
+              fill="none"
+              stroke={styles.ribbonDeep}
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+        
+        </>
       )}
 
-      {/* Professional Ribbon for Locked/Premium cards */}
-      {featureLocked && (
-        <div className="absolute -top-[1.5px] -right-[1.5px] h-[95px] w-[95px] overflow-hidden rounded-tr-[30px] pointer-events-none z-20">
-          <div className="absolute top-[22px] right-[-28px] w-[130px] rotate-45 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 py-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.2)] border-y border-white/20 dark:border-white/10 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white flex items-center gap-[4px] drop-shadow-md">
-              <Lock size={10} strokeWidth={3} className="mb-[1px]" /> PRO
-            </span>
-          </div>
-        </div>
-      )}
+      {/* Hover overlay: pastel fill on hover, sits under ribbon (applies to locked + unlocked) */}
+      <div
+        className={`absolute inset-0 rounded-[30px] transition-colors duration-400 pointer-events-none z-0 bg-transparent ${styles.hoverBg}`}
+      />
 
       {/* Floating icon box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
       >
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
@@ -539,18 +626,13 @@ function ToolCard({
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      {/* Border gradient on hover (category color) */}
-      {!featureLocked && (
-        <div
-          className={`absolute inset-0 rounded-[30px] p-[1.5px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
-        />
-      )}
+      
 
       {/* Radial glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col grow pt-2">
+      <div className="relative z-30 flex flex-col grow pt-2">
         <h3 className="text-xl font-bold mb-1 text-foreground transition-colors">
           {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
         </h3>
@@ -572,7 +654,7 @@ function ToolCard({
             <Lock size={14} className="mb-[1px]" />{" "}
             {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"
               ? t("toolsPage.unlockPro")
-              : "Unlock Pro"}
+              : "Unlock"}
           </span>
         ) : isNavigable ? (
           <span

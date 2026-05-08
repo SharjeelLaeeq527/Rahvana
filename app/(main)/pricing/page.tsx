@@ -41,7 +41,7 @@ import type { PlanData } from "./data/pricing";
    =========================================================================== */
 const TIER = {
   basic: {
-    cardBg: "bg-gradient-to-br from-[#e8f5f1] to-[#cce9df]",
+       cardBg: "bg-gradient-to-br from-[#e8f5f1] to-[#cce9df]",
     border: "border-[#92ccbc]",
     selBorder: "border-[#0d7a5c]",
     textAccent: "text-[#0d7a5c]",
@@ -55,7 +55,7 @@ const TIER = {
     glow: "[box-shadow:0_16px_52px_rgba(13,122,92,0.15)]",
   },
   premium: {
-    cardBg: "bg-gradient-to-br from-[#ede8f8] to-[#d9d0f2]",
+  cardBg: "bg-gradient-to-br from-[#ede8f8] to-[#d9d0f2]",
     border: "border-[#b5a5e3]",
     selBorder: "border-[#5c2db8]",
     textAccent: "text-[#5c2db8]",
@@ -69,7 +69,7 @@ const TIER = {
     glow: "[box-shadow:0_16px_52px_rgba(92,45,184,0.15)]",
   },
   executive: {
-    cardBg: "bg-gradient-to-br from-[#fdf4e2] to-[#f1dea8]",
+      cardBg: "bg-gradient-to-br from-[#fdf4e2] to-[#f1dea8]",
     border: "border-[#d9ba6e]",
     selBorder: "border-[#b45309]",
     textAccent: "text-[#b45309]",
@@ -522,7 +522,11 @@ function PricingContent() {
 
   const resourcesForCat = useMemo(() => {
     if (resourceCat === "all") {
-      return [...ADDONS].sort((a, b) => a.title.localeCompare(b.title));
+      const titledAddons = ADDONS.filter(
+        (addon): addon is (typeof ADDONS)[number] & { title: string } =>
+          typeof addon.title === "string",
+      );
+      return [...titledAddons].sort((a, b) => a.title.localeCompare(b.title));
     }
     const cat = RESOURCE_CATS.find((c) => c.id === resourceCat);
     if (!cat) return ADDONS;
@@ -767,6 +771,7 @@ function PricingContent() {
                     }`}
                     onClick={() => setSelectedPlan(plan.id)}
                   >
+                    
                     {plan.recommended && (
                       <div
                         className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
@@ -782,27 +787,32 @@ function PricingContent() {
                       </div>
                     )}
 
-                    <div
-                      className={`text-[11px] font-extrabold tracking-widest uppercase mb-3 ${tc.textAccent}`}
-                    >
-                      {plan.name}
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-[40px] font-bold tracking-tight leading-none">
-                          ${planDisplayPrice(plan)}
-                        </span>
-                        <span className="text-[13px] text-muted-foreground">
-                          /mo
-                        </span>
-                      </div>
-                      <div className="text-[12px] text-muted-foreground mt-0.5">
-                        ${plan.annualPrice} total
-                      </div>
-                    </div>
-                    <p className="text-muted-foreground text-[13px] leading-[1.5] mb-4">
-                      {plan.tagline}
-                    </p>
+
+                      {/* Icon + Name/Price row */}
+                      <div className="flex items-center gap-0 mb-4 -ml-3">
+  <span
+    aria-hidden="true"
+    className={`plan-icon plan-icon--${plan.id}`}
+    style={{ width: 72, height: 72, flexShrink: 0 }}
+  />
+  <div className="flex flex-col gap-0.5">
+    <div className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}>
+      {plan.name}
+    </div>
+    <div className="flex items-baseline gap-1">
+      <span className="text-[34px] font-bold tracking-tight leading-none">
+        ${planDisplayPrice(plan)}
+      </span>
+      <span className="text-[12px] text-muted-foreground">/mo</span>
+    </div>
+    <div className="text-[11px] text-muted-foreground">
+      ${plan.annualPrice} total
+    </div>
+  </div>
+</div>
+                      <p className="text-muted-foreground text-[13px] leading-[1.5] mb-4">
+                        {plan.tagline}
+                      </p>
 
                     {/* Key features — single line each */}
                     <ul className="list-none p-0 m-0 space-y-2 flex-1">
