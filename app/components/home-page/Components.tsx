@@ -4083,34 +4083,39 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
     </div>
   );
 }
-
-// Shared background band used to visually join TwoWays and Consultation sections
 export function JourneyConsultationBand({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative overflow-hidden bg-[linear-gradient(180deg,#f7fffd_0%,#f3f8ff_30%,#fffafc_100%)]">
-      {/* uplifting, subtle multi-color fields (muted teal + soft lavender + warm coral hints) */}
+    <div
+      className="relative overflow-hidden"
+      style={{
+        background: "linear-gradient(155deg, #f5fdf9 0%, #f9fdff 50%, #fffdf7 100%)",
+      }}
+    >
+      {/* Top hairline */}
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 blur-3xl opacity-40"
-        style={{ width: 1000, height: 220, background: "linear-gradient(90deg,rgba(11,118,116,0.06), rgba(240,249,255,0.02), rgba(255,239,230,0.02))" }}
+        className="absolute inset-x-0 top-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(13,115,119,0.12) 40%, rgba(13,115,119,0.12) 60%, transparent 100%)",
+        }}
       />
+      {/* Centre teal bloom */}
       <div
         aria-hidden
-        className="absolute left-[6%] top-8 h-44 w-44 rounded-full bg-[#0B666A]/[0.06] blur-3xl"
+        className="pointer-events-none absolute left-1/2 -top-[10%] -translate-x-1/2"
+        style={{
+          width: "60%",
+          height: "80%",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse, rgba(13,115,119,0.04) 0%, transparent 65%)",
+        }}
       />
-      <div
-        aria-hidden
-        className="absolute right-[8%] top-28 h-44 w-44 rounded-full bg-[#ffd9c2]/[0.04] blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="absolute left-[28%] top-8 h-28 w-28 rounded-full bg-[#dff6ff]/[0.03] blur-2xl"
-      />
-
       <div className="relative z-10">{children}</div>
     </div>
   );
