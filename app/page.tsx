@@ -438,10 +438,10 @@ function HomePageContent() {
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,22,0)_34%,rgba(5,12,22,0.22)_64%,rgba(5,12,22,0.88)_100%)]" />
 
               {/* 2xl:hidden */}
-              <div className="hidden lg:flex h-full flex-col relative z-10 px-[5vw] xl:px-[10vw] 2xl:px-[13vw]">
+              <div className="hidden lg:flex h-full flex-col relative z-10 px-[5vw] xl:px-[10vw] 2xl:px-[13vw] pt-[45px] 2xl:pt-[60px]">
                 {/* Header Section */}
-                <div className="pt-[5vh] xl:pt-[7vh] 2xl:pt-[6vh]">
-                  <h1 className="relative z-10 w-full text-center text-[clamp(28px,3.2vw,48px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
+                <div className="py-[1vh] xl:py-[3vh] 2xl:py-[5vh]">
+                  <h1 className="relative z-10 w-full text-center text-[clamp(24px,2.8vw,42px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
                     <span className="inline-block pb-2">
                       Navigate your IR-1 journey with clarity.
                     </span>
@@ -523,7 +523,7 @@ function HomePageContent() {
                 </div>
 
                 {/* Bottom CTA Section */}
-                <div className="pb-[8vh] xl:pb-[12vh] 2xl:pb-[14vh] z-20 flex flex-col gap-6">
+                <div className="pb-[8px] xl:pb-[12px] 2xl:pb-[14vh] z-20 flex flex-col gap-5">
                   <div className="flex">
                     <Link
                       href={journeyHref}
@@ -534,7 +534,7 @@ function HomePageContent() {
                     </Link>
                   </div>
                   <div className="">
-                    <p className="text-center text-[15px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
+                    <p className="text-center text-[12px] 2xl:text-[15px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
                       <span className="">
                         Rahvana gives you a structured step-by-step IR-1 roadmap
                         from petition filing to interview readiness with guided
@@ -705,89 +705,89 @@ function HomePageContent() {
 
             <JourneyConsultationBand>
               <TwoWaysScene />
-              <ConsultationBanner onConsultationClick={handleConsultationClick} />
-          
+              <ConsultationBanner
+                onConsultationClick={handleConsultationClick}
+              />
 
-         <section className="py-8 md:py-12" id="faq">
-  <div className="w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
-    <div className="text-center w-full md:w-3/4 mx-auto mb-5">
-      <motion.span
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
-      >
-        <Icons.HelpCircle className="w-4 h-4" />
-        {t("homePage.faqBadge")}
-      </motion.span>
-      <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-        {t("homePage.faqTitle") || "Frequently Asked Questions"}
-      </h2>
-    </div>
+              <section className="py-8 md:py-12" id="faq">
+                <div className="w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
+                  <div className="text-center w-full md:w-3/4 mx-auto mb-5">
+                    <motion.span
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
+                    >
+                      <Icons.HelpCircle className="w-4 h-4" />
+                      {t("homePage.faqBadge")}
+                    </motion.span>
+                    <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                      {t("homePage.faqTitle") || "Frequently Asked Questions"}
+                    </h2>
+                  </div>
 
-    <div className="w-full md:w-3/4 mx-auto space-y-4">
-      {FAQS.map((faq, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05 }}
-          viewport={{ once: true }}
-          className={`rounded-2xl border transition-all ${
-            openFAQ === i
-              ? "border-rahvana-primary bg-rahvana-primary-pale/30 shadow-md"
-              : "border-border bg-card/60 hover:border-rahvana-primary/30"
-          }`}
-        >
-          <HydrationSafeButton
-            onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
-            className="w-full px-5 md:px-8 py-6 text-left flex items-center justify-between"
-          >
-            <span className="text-lg font-bold text-foreground pr-4 md:pr-8">
-              {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
-            </span>
-            <div
-              className={`w-6 h-6 md:h-8 md:w-8 shrink-0 rounded-full border flex items-center justify-center transition-all ${
-                openFAQ === i
-                  ? "bg-rahvana-primary border-rahvana-primary text-white rotate-45"
-                  : "border-border text-muted-foreground group-hover:border-rahvana-primary group-hover:text-rahvana-primary"
-              }`}
-            >
-              <Icons.Plus className="w-4 h-4" />
-            </div>
-          </HydrationSafeButton>
-          <AnimatePresence>
-            {openFAQ === i && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="px-8 pb-6 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-4">
-                  {t(`homePage.faqs.q${i + 1}.a`) || faq.a}
+                  <div className="w-full md:w-3/4 mx-auto space-y-4">
+                    {FAQS.map((faq, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        viewport={{ once: true }}
+                        className={`rounded-2xl border transition-all ${
+                          openFAQ === i
+                            ? "border-rahvana-primary bg-rahvana-primary-pale/30 shadow-md"
+                            : "border-border bg-card/60 hover:border-rahvana-primary/30"
+                        }`}
+                      >
+                        <HydrationSafeButton
+                          onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
+                          className="w-full px-5 md:px-8 py-6 text-left flex items-center justify-between"
+                        >
+                          <span className="text-lg font-bold text-foreground pr-4 md:pr-8">
+                            {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
+                          </span>
+                          <div
+                            className={`w-6 h-6 md:h-8 md:w-8 shrink-0 rounded-full border flex items-center justify-center transition-all ${
+                              openFAQ === i
+                                ? "bg-rahvana-primary border-rahvana-primary text-white rotate-45"
+                                : "border-border text-muted-foreground group-hover:border-rahvana-primary group-hover:text-rahvana-primary"
+                            }`}
+                          >
+                            <Icons.Plus className="w-4 h-4" />
+                          </div>
+                        </HydrationSafeButton>
+                        <AnimatePresence>
+                          {openFAQ === i && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-8 pb-6 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-4">
+                                {t(`homePage.faqs.q${i + 1}.a`) || faq.a}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
+              </section>
+              {/* GET IN TOUCH */}
+              {/* wrap in animation */}
+              <motion.div
+                id="contact"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className=""
+              >
+                <GetInTouch />
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-</section>
-            {/* GET IN TOUCH */}
-            {/* wrap in animation */}
-            <motion.div
-              id="contact"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className=""
-            >
-              <GetInTouch />
-            </motion.div>
-  </JourneyConsultationBand>
-
+            </JourneyConsultationBand>
 
             {/* AUTH MODAL */}
             <AnimatePresence>
@@ -832,7 +832,6 @@ function HomePageContent() {
             onToggleAuth={handleToggleAuth}
           />
         )}
-        
       </main>
 
       {showMfaPrompt && (
