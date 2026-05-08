@@ -3685,7 +3685,7 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto w-full px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.42fr_0.58fr] gap-14 lg:gap-20 xl:gap-28 items-center"
+        className="relative mx-auto w-full px-6 sm:px-8 md:px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.42fr_0.58fr] gap-14 lg:gap-20 xl:gap-28 items-center"
         style={{
           maxWidth: 1360,
           paddingTop: "clamp(48px,7vh,96px)",
