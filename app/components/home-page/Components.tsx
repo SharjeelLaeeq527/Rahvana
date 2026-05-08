@@ -1259,13 +1259,13 @@ export function TwoWaysSection() {
 
           {/* Main grid */}
           <div
-            className="relative mx-auto w-full px-10 xl:px-12"
+            className="relative mx-auto w-full px-8 xl:px-12"
             style={{
               maxWidth: 1360,
               display: "grid",
-              gridTemplateColumns: "minmax(0,420px) 1fr",
-              gap: "clamp(48px,6vw,100px)",
-              alignItems: "start",
+              gridTemplateColumns: "minmax(0,400px) 1fr",
+              gap: "clamp(40px,5vw,90px)",
+              alignItems: "center",
             }}
           >
             {/* Left: text + selectors + CTAs */}
@@ -1431,10 +1431,10 @@ export function TwoWaysSection() {
         </div>
       </section>
 
-      {/* ── Mobile / tablet (below lg): stacked, click to switch ─────────── */}
+      {/* ── Mobile / tablet (below lg) ───────────────────────────────────── */}
       <section
         aria-label="Two ways to use Rahvana"
-        className="block lg:hidden mt-32 sm:mt-40"
+        className="block lg:hidden"
         style={{
           background:
             "linear-gradient(180deg,#ffffff 0%,#f7fbfa 52%,#ffffff 100%)",
@@ -1443,129 +1443,141 @@ export function TwoWaysSection() {
         }}
       >
         <div
-          className="relative mx-auto px-5 sm:px-8 py-14 sm:py-16"
+          className="relative mx-auto px-5 sm:px-8 md:px-10 py-12 sm:py-16 md:py-20"
           style={{ maxWidth: 1360 }}
         >
-          <div className="grid grid-cols-1 gap-y-10">
-            {/* Text + selectors */}
+          {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+
+            {/* Left: heading + selectors + CTAs */}
             <div>
               <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
                 TWO WAYS TO MOVE FORWARD
               </p>
               <h2
                 className="mt-4 mb-0 font-extrabold text-[#162126]"
-                style={{ fontSize: "clamp(30px,6.5vw,40px)", lineHeight: 1.05 }}
+                style={{ fontSize: "clamp(26px,5.5vw,42px)", lineHeight: 1.08 }}
               >
                 Choose how you want to use Rahvana.
               </h2>
               <p
-                style={{
-                  fontSize: 16,
-                  lineHeight: 1.65,
-                  color: "#4a5c62",
-                  margin: "14px 0 28px 0",
-                }}
+                className="mt-3 mb-0 text-[#4a5c62]"
+                style={{ fontSize: "clamp(14px,2vw,16px)", lineHeight: 1.65 }}
               >
                 Use the full IR-1 roadmap, or jump into focused tools and
                 resources when you need targeted help.
               </p>
 
-              <div className="space-y-3">
+              {/* Active panel label */}
+              <div className="mt-5 overflow-hidden" style={{ minHeight: 60 }}>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
+                      {twoWaysPaths[activeIndex].eyebrow}
+                    </p>
+                    <h3
+                      className="mb-0 mt-1 font-extrabold text-[#162126]"
+                      style={{ fontSize: "clamp(15px,2.5vw,19px)", lineHeight: 1.2 }}
+                    >
+                      {twoWaysPaths[activeIndex].shortTitle}
+                    </h3>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Selector buttons */}
+              <div className="mt-4 space-y-2.5">
                 {twoWaysPaths.map((path, i) => (
                   <button
                     key={path.title}
                     type="button"
                     onClick={() => setActiveIndex(i as TwoWaysIndex)}
                     aria-current={activeIndex === i ? "true" : undefined}
-                    className={`flex w-full items-start gap-3 rounded-[18px] border p-4 text-left transition ${
+                    className={`flex w-full items-center gap-3 rounded-[14px] border px-3.5 py-3 text-left transition-all ${
                       activeIndex === i
-                        ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_12px_28px_rgba(13,115,119,0.12)]"
+                        ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_8px_20px_rgba(13,115,119,0.12)]"
                         : "border-[#d7e6e2] bg-white/80"
                     }`}
                   >
                     <span
-                      className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
+                      className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${
                         activeIndex === i
                           ? "bg-[#0d7377] text-white"
                           : "border border-[#c8d5d3] text-[#7f9290]"
                       }`}
                     >
-                      {String(i + 1).padStart(2, "00")}
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                    <div>
-                      <h3
-                        className={`text-lg font-black leading-tight ${
-                          activeIndex === i
-                            ? "text-[#0d7377]"
-                            : "text-[#162126]"
-                        }`}
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className="text-[14px] font-black leading-tight"
+                        style={{ color: activeIndex === i ? "#0d7377" : "#162126" }}
                       >
                         {path.title}
-                      </h3>
-                      <p className="mt-1 text-sm leading-6 text-[#4a5c62]">
+                      </div>
+                      <div className="mt-0.5 text-[12px] leading-snug text-[#9aaeac]">
                         {path.teaser}
-                      </p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
+
+              {/* CTAs */}
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <Link
+                  href={journeyHref}
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13px] font-bold text-white no-underline"
+                  style={{ boxShadow: "0 8px 20px rgba(13,115,119,0.22)" }}
+                >
+                  Start the Roadmap
+                  <ArrowRight className="size-3.5" />
+                </Link>
+                <Link
+                  href={toolsHref}
+                  className="inline-flex min-h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13px] font-bold text-[#162126] no-underline"
+                >
+                  Browse Resources
+                </Link>
+              </div>
             </div>
 
-            {/* Visual preview card */}
-            <div className="overflow-hidden rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
-              <div className="p-5 sm:p-6">
+            {/* Right: visual card — uses ResponsiveVisual for proper scaling */}
+            <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
+              <div className="p-4 sm:p-5">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
                     transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <div className="relative h-[300px] overflow-hidden border-t border-[#d7e6e2] bg-white sm:h-[380px]">
+              <div className="border-t border-[#d7e6e2]">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeIndex}
-                    className="absolute left-1/2 top-1/2 origin-center"
-                    style={{ width: 680, height: 560 }}
-                    initial={
-                      reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }
-                    }
-                    animate={{ opacity: 1, y: 0, scale: 0.5 }}
-                    exit={
-                      reduceMotion
-                        ? undefined
-                        : { opacity: 0, y: -8, scale: 0.49 }
-                    }
-                    transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                    initial={reduceMotion ? false : { opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={reduceMotion ? undefined : { opacity: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <div style={{ transform: "translate(-50%, -50%)" }}>
-                      <TwoWaysVisual index={activeIndex} />
-                    </div>
+                    <ResponsiveVisual index={activeIndex} />
                   </motion.div>
                 </AnimatePresence>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href={journeyHref}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white"
-              >
-                Start the Roadmap
-                <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                href={toolsHref}
-                className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126]"
-              >
-                Browse Resources
-              </Link>
-            </div>
           </div>
         </div>
       </section>
@@ -1762,15 +1774,17 @@ export function TwoWaysMobile({
 const GUIDED_TOUR = [
   {
     view: "dashboard" as const,
-    label: "Welcome to your IR-1 roadmap",
-    sub: "Click Chapter 1 below to start exploring ↓",
-    dot: { top: 375, left: 118 }, // Chapter 1 card center
+    text: "Click here to begin",
+    dot: { top: 375, left: 118 },
+    // tooltip sits above the dot, arrow points down at it
+    tip: { top: 322, left: 44, arrow: "down" as const },
   },
   {
     view: "chapter" as const,
-    label: "Each chapter has guided steps",
-    sub: "Click 'Determine Eligibility' to open it ↓",
-    dot: { top: 116, left: 455 }, // First step row, right panel
+    text: "Click to open this step",
+    dot: { top: 116, left: 455 },
+    // tooltip sits to the left of the dot, arrow points right at it
+    tip: { top: 100, left: 295, arrow: "right" as const },
   },
 ] as const;
 
@@ -2462,7 +2476,7 @@ export function GuidedRoadmapScene() {
         )}
       </AnimatePresence>
 
-      {/* ── Guided Tour Overlay — hidden in step view (user has live interactive content) */}
+      {/* ── Guided Tour Overlay ── */}
       {!reduceMotion && !showComplete && view !== "step" && (
         <AnimatePresence mode="wait">
           <motion.div
@@ -2470,103 +2484,73 @@ export function GuidedRoadmapScene() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
             className="pointer-events-none"
             style={{ position: "absolute", inset: 0, zIndex: 40 }}
           >
-            {/* SVG curved arrow — from tooltip bottom to target dot */}
-            <svg
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}
-            >
-              <motion.path
-                key={`path-${tourIdx}`}
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 0.65 }}
-                transition={{ delay: 0.35, duration: 0.55, ease: "easeOut" }}
-                d={`M 340 56 C 340 ${56 + 36} ${GUIDED_TOUR[tourIdx].dot.left} ${GUIDED_TOUR[tourIdx].dot.top - 36} ${GUIDED_TOUR[tourIdx].dot.left} ${GUIDED_TOUR[tourIdx].dot.top - 12}`}
-                fill="none"
-                stroke="#0d7377"
-                strokeWidth="1.5"
-                strokeDasharray="5 3"
-              />
-              {/* Arrowhead triangle at dot */}
-              <motion.polygon
-                key={`head-${tourIdx}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.65 }}
-                transition={{ delay: 0.85, duration: 0.2 }}
-                points={`${GUIDED_TOUR[tourIdx].dot.left - 5},${GUIDED_TOUR[tourIdx].dot.top - 14} ${GUIDED_TOUR[tourIdx].dot.left + 5},${GUIDED_TOUR[tourIdx].dot.top - 14} ${GUIDED_TOUR[tourIdx].dot.left},${GUIDED_TOUR[tourIdx].dot.top - 2}`}
-                fill="#0d7377"
-              />
-            </svg>
-
-            {/* Tooltip bubble — centered in nav bar (empty zone between left & right nav content) */}
+            {/* Small tooltip — sits right next to the target ring */}
             <motion.div
               key={`tip-${tourIdx}`}
-              initial={{ opacity: 0, y: -8, scale: 0.92 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.92 }}
-              transition={{ delay: 0.1, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ delay: 0.1, duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 position: "absolute",
-                top: 7,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 198,
-                background: "#0d7377",
-                borderRadius: 12,
-                padding: "9px 13px 10px",
-                boxShadow: "0 8px 24px rgba(13,115,119,0.38)",
-                textAlign: "center",
+                top: GUIDED_TOUR[tourIdx].tip.top,
+                left: GUIDED_TOUR[tourIdx].tip.left,
+                background: "#051738",
+                borderRadius: 8,
+                padding: "6px 11px",
+                whiteSpace: "nowrap",
+                boxShadow: "0 4px 14px rgba(5,23,56,0.30)",
               }}
             >
-              <p style={{ margin: 0, fontSize: 11, fontWeight: 900, color: "white", lineHeight: 1.3 }}>
-                {GUIDED_TOUR[tourIdx].label}
-              </p>
-              <p style={{ margin: "3px 0 0", fontSize: 9.5, color: "rgba(255,255,255,0.72)", lineHeight: 1.35 }}>
-                {GUIDED_TOUR[tourIdx].sub}
-              </p>
-              <div style={{ display: "flex", gap: 3, marginTop: 8, justifyContent: "center" }}>
-                {GUIDED_TOUR.map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      height: 3,
-                      width: i === tourIdx ? 16 : 4,
-                      borderRadius: 2,
-                      background: i === tourIdx ? "white" : "rgba(255,255,255,0.32)",
-                      transition: "width 0.35s ease",
-                    }}
-                  />
-                ))}
-              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: "white", letterSpacing: "0.01em" }}>
+                {GUIDED_TOUR[tourIdx].text}
+              </span>
+              {/* CSS arrow — points toward the pulsing ring */}
+              {GUIDED_TOUR[tourIdx].tip.arrow === "down" && (
+                <div style={{
+                  position: "absolute", bottom: -6, left: "50%",
+                  transform: "translateX(-50%)",
+                  borderLeft: "6px solid transparent", borderRight: "6px solid transparent",
+                  borderTop: "6px solid #051738",
+                }} />
+              )}
+              {GUIDED_TOUR[tourIdx].tip.arrow === "right" && (
+                <div style={{
+                  position: "absolute", right: -6, top: "50%",
+                  transform: "translateY(-50%)",
+                  borderTop: "6px solid transparent", borderBottom: "6px solid transparent",
+                  borderLeft: "6px solid #051738",
+                }} />
+              )}
             </motion.div>
 
-            {/* Pulsing ring at target element */}
+            {/* Pulsing ring on the target element */}
             <motion.div
               key={`dot-${tourIdx}`}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.25, duration: 0.3 }}
+              transition={{ delay: 0.15, duration: 0.22 }}
               style={{
                 position: "absolute",
                 top: GUIDED_TOUR[tourIdx].dot.top - 10,
                 left: GUIDED_TOUR[tourIdx].dot.left - 10,
-                width: 20,
-                height: 20,
+                width: 20, height: 20,
                 borderRadius: "50%",
                 background: "rgba(13,115,119,0.15)",
                 border: "2px solid #0d7377",
               }}
             >
               <motion.div
-                animate={{ scale: [1, 2.4, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ scale: [1, 2.5, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  position: "absolute",
-                  inset: -4,
+                  position: "absolute", inset: -4,
                   borderRadius: "50%",
-                  border: "1.5px solid rgba(13,115,119,0.45)",
+                  border: "1.5px solid rgba(13,115,119,0.4)",
                 }}
               />
             </motion.div>
