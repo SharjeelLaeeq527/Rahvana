@@ -72,6 +72,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Shared context to avoid redundant auth calls in data-access
+    const dbClient = { supabase, user };
+
     const { journey_type } = await req.json();
     if (!journey_type) {
       return NextResponse.json(
@@ -101,7 +104,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Find or create journey ────────────────────────────────────────────────
-    const allJourneys = await db.getAllJourneysDB();
+    const allJourneys = await db.getAllJourneysDB(undefined, dbClient);
     const normalizedQuery = normType(journey_type);
     const existing = allJourneys.find(
       (j) => normType(j.journey_type) === normalizedQuery
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
           createErr?.message?.includes("unique") ||
           createErr?.message?.includes("duplicate")
         ) {
-          const retryJourneys = await db.getAllJourneysDB();
+          const retryJourneys = await db.getAllJourneysDB(undefined, dbClient);
           const retried = retryJourneys.find(
             (j) => normType(j.journey_type) === normalizedQuery
           );
@@ -141,9 +144,9 @@ export async function POST(req: NextRequest) {
 
     // ── Fetch all needed data in parallel ─────────────────────────────────────
     const [journeyRow, stepsRows, caseDataRows] = await Promise.all([
-      db.getJourneyDB(journeyId),
-      db.getStepsForJourneyDB(journeyId),
-      db.getCaseDataForJourneyDB(journeyId),
+      db.getJourneyDB(journeyId, dbClient),
+      db.getStepsForJourneyDB(journeyId, undefined, dbClient),
+      db.getCaseDataForJourneyDB(journeyId, undefined, dbClient),
     ]);
 
     if (!journeyRow) {

@@ -52,18 +52,42 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (auth.error) return auth.error
 
     const { supabase } = auth
+    const cacheBust = request.headers.get('x-cache-bust') === '1' || 
+                     request.nextUrl.searchParams.get('force') === '1';
+
+    // Step 1: Check cooldown from DB to prevent heavy generation across all instances
+    const { data: journey } = await supabase
+      .from('journeys')
+      .select('reminders_last_generated_at')
+      .eq('id', journeyId)
+      .single();
+
+    const lastRun = journey?.reminders_last_generated_at ? new Date(journey.reminders_last_generated_at).getTime() : 0;
+    const nowTimestamp = Date.now();
+    const GENERATION_COOLDOWN = 15 * 60 * 1000; // 15 minutes
+    const shouldRunEngine = cacheBust || (nowTimestamp - lastRun > GENERATION_COOLDOWN);
 
     // Create service role client for background inserts/updates
     const adminSupabase = getAdminClient()
 
-    // Step 1a: Stateless condition-based reminders (documents, fees, etc.)
-    const engine = new ReminderEngine(adminSupabase)
-    await engine.generateReminders(journeyId)
+    if (shouldRunEngine) {
+      console.log(`[GET /reminders] Running heavy engine for journey ${journeyId} (Bust: ${cacheBust})`);
+      
+      // Step 1a: Stateless condition-based reminders (documents, fees, etc.)
+      const engine = new ReminderEngine(adminSupabase)
+      await engine.generateReminders(journeyId)
 
-    // Step 1b: Unified registry — schedule + suppress
-    const unified = new UnifiedReminderEngine(adminSupabase)
-    await unified.checkAndScheduleAll(journeyId)
-    await unified.runSuppression(journeyId)
+      // Step 1b: Unified registry — schedule + suppress
+      const unified = new UnifiedReminderEngine(adminSupabase)
+      await unified.checkAndScheduleAll(journeyId)
+      await unified.runSuppression(journeyId)
+
+      // Update the timestamp in DB
+      await adminSupabase
+        .from('journeys')
+        .update({ reminders_last_generated_at: new Date().toISOString() })
+        .eq('id', journeyId);
+    }
 
     // Step 1c: Immediately deliver any DUE scheduled notifications for this journey
     // so user sees them without waiting for the cron job (6-hour delay).

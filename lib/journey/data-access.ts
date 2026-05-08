@@ -21,7 +21,9 @@ import {
 } from "./types";
 
 // Helper: Get authenticated Supabase client - Throws "Unauthorized" if no user session
-async function getSupabaseWithUser() {
+async function getSupabaseWithUser(injectedClient?: { supabase: any; user: any }) {
+  if (injectedClient) return injectedClient;
+  
   const supabase = await createClient();
   const {
     data: { user },
@@ -36,8 +38,9 @@ async function getSupabaseWithUser() {
 // Create a new journey for the user
 export async function createJourneyDB(
   journeyData: JourneyInput,
+  client?: { supabase: any; user: any }
 ): Promise<Journey> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   const { data, error } = await supabase
     .from("journeys")
@@ -65,8 +68,11 @@ export async function createJourneyDB(
 }
 
 // Get a specific journey by ID
-export async function getJourneyDB(journeyId: string): Promise<Journey | null> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getJourneyDB(
+  journeyId: string,
+  client?: { supabase: any; user: any }
+): Promise<Journey | null> {
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   const { data, error } = await supabase
     .from("journeys")
@@ -88,13 +94,16 @@ export async function getJourneyDB(journeyId: string): Promise<Journey | null> {
  * @param filters - Optional status, journey_type, limit, offset
  * @returns Array of Journeys
  */
-export async function getAllJourneysDB(filters?: {
-  status?: string;
-  journey_type?: string;
-  limit?: number;
-  offset?: number;
-}): Promise<Journey[]> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getAllJourneysDB(
+  filters?: {
+    status?: string;
+    journey_type?: string;
+    limit?: number;
+    offset?: number;
+  },
+  client?: { supabase: any; user: any }
+): Promise<Journey[]> {
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   let query = supabase
     .from("journeys")
@@ -126,8 +135,10 @@ export async function getAllJourneysDB(filters?: {
 }
 
 // Fetch latest in-progress journey
-export async function getLatestInProgressJourneyDB(): Promise<Journey | null> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getLatestInProgressJourneyDB(
+  client?: { supabase: any; user: any }
+): Promise<Journey | null> {
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   const { data, error } = await supabase
     .from("journeys")
@@ -150,11 +161,12 @@ export async function getLatestInProgressJourneyDB(): Promise<Journey | null> {
 export async function updateJourneyDB(
   journeyId: string,
   updates: JourneyUpdate,
+  client?: { supabase: any; user: any }
 ): Promise<Journey> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user before updating
-  const existing = await getJourneyDB(journeyId);
+  const existing = await getJourneyDB(journeyId, { supabase, user });
   if (!existing) throw new Error("Journey not found or not owned");
 
   const { data, error } = await supabase
@@ -188,11 +200,14 @@ export async function updateJourneyDB(
 }
 
 // Delete a journey
-export async function deleteJourneyDB(journeyId: string): Promise<boolean> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function deleteJourneyDB(
+  journeyId: string,
+  client?: { supabase: any; user: any }
+): Promise<boolean> {
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user before deleting
-  const existing = await getJourneyDB(journeyId);
+  const existing = await getJourneyDB(journeyId, { supabase, user });
   if (!existing) throw new Error("Journey not found or not owned");
 
   const { error } = await supabase
@@ -207,8 +222,10 @@ export async function deleteJourneyDB(journeyId: string): Promise<boolean> {
 }
 
 // Delete all journeys for a user
-export async function deleteAllJourneysDB(): Promise<number> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function deleteAllJourneysDB(
+  client?: { supabase: any; user: any }
+): Promise<number> {
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Fetch all user journeys
   const { data: journeys, error: fetchError } = await supabase
@@ -236,8 +253,9 @@ export async function deleteAllJourneysDB(): Promise<number> {
 export async function updateJourneyProgressDB(
   journeyId: string,
   progressData: ProgressData,
+  client?: { supabase: any; user: any }
 ): Promise<void> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   const { error } = await supabase
     .from("journeys")
@@ -330,11 +348,12 @@ export async function getChaptersForJourneyDB(
     limit?: number;
     offset?: number;
   },
+  client?: { supabase: any; user: any }
 ): Promise<Chapter[]> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user before fetching chapters
-  const journey = await getJourneyDB(journeyId);
+  const journey = await getJourneyDB(journeyId, { supabase, user });
   if (!journey) throw new Error("Journey not found or not owned");
 
   let query = supabase
@@ -579,11 +598,12 @@ export async function getStepsForJourneyDB(
     limit?: number;
     offset?: number;
   },
+  client?: { supabase: any; user: any }
 ): Promise<Step[]> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
-  // Check if chapter exists
-  const existingJourney = await getJourneyDB(journeyId);
+  // Check if journey exists and belongs to user
+  const existingJourney = await getJourneyDB(journeyId, { supabase, user });
   if (!existingJourney) throw new Error("Journey not found or not owned");
 
   let query = supabase
@@ -746,11 +766,12 @@ export async function upsertCaseDataDB(
   journeyId: string,
   dataKey: string,
   caseDataInput: CaseDataInput,
+  client?: { supabase: any; user: any }
 ): Promise<CaseData> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user
-  const existingJourney = await getJourneyDB(journeyId);
+  const existingJourney = await getJourneyDB(journeyId, { supabase, user });
   if (!existingJourney) throw new Error("Journey not found or not owned");
 
   // Prepare data with defaults
@@ -789,11 +810,12 @@ export async function upsertCaseDataDB(
 export async function getCaseDataByKeyDB(
   journeyId: string,
   dataKey: string,
+  client?: { supabase: any; user: any }
 ): Promise<CaseData | null> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user
-  const existingJourney = await getJourneyDB(journeyId);
+  const existingJourney = await getJourneyDB(journeyId, { supabase, user });
   if (!existingJourney) throw new Error("Journey not found or not owned");
 
   const { data, error } = await supabase
@@ -815,11 +837,12 @@ export async function getCaseDataByKeyDB(
 export async function getCaseDataForJourneyDB(
   journeyId: string,
   filters?: CaseDataFilters,
+  client?: { supabase: any; user: any }
 ): Promise<CaseData[]> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user
-  const existingJourney = await getJourneyDB(journeyId);
+  const existingJourney = await getJourneyDB(journeyId, { supabase, user });
   if (!existingJourney) throw new Error("Journey not found or not owned");
 
   let query = supabase
@@ -856,11 +879,12 @@ export async function getCaseDataForJourneyDB(
 export async function getCaseDataByKeysDB(
   journeyId: string,
   dataKeys: string[],
+  client?: { supabase: any; user: any }
 ): Promise<Record<string, CaseData>> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user
-  const existingJourney = await getJourneyDB(journeyId);
+  const existingJourney = await getJourneyDB(journeyId, { supabase, user });
   if (!existingJourney) throw new Error("Journey not found or not owned");
 
   const { data, error } = await supabase
@@ -1073,7 +1097,7 @@ export async function getAllCasesWithTrackers(): Promise<string[]> {
     if (error) throw error;
 
     // Get unique case IDs
-    const caseIds = [...new Set(data.map((row: any) => row.case_id))];
+    const caseIds: string[] = Array.from(new Set((data || []).map((row: any) => row.case_id as string)));
     return caseIds;
   } catch (error) {
     console.error("[Data Access] Error getting cases with trackers:", error);

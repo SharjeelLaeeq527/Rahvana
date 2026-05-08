@@ -8,6 +8,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useRef,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -128,15 +129,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
   // useMemo ensures the same client instance is used across renders,
   // preventing stale closures in fetchProfile and onAuthStateChange.
   const supabase = useMemo(() => createClient(), []);
 
+  // Track last fetched userId to prevent redundant 'burst' calls on mount
+  const fetchingRef = useRef<{ id: string; timestamp: number } | null>(null);
+
   // MFA auth state
   const authLevel = (session as { aal?: string })?.aal ?? "aal1";
-
   const mfaEnrolled = Array.isArray(user?.factors) && user.factors.length > 0;
-
   const mfaPending = mfaEnrolled && authLevel === "aal1";
   const isAuthenticated = !!user && !mfaPending;
 
@@ -218,126 +221,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    const getInitialSession = async () => {
-      // Safety timeout: never keep UI blocked forever if Supabase call hangs.
-      const loadingWatchdog = setTimeout(() => {
+    // Deduplicated initialization helper
+    const initializeUser = async (u: User | null, s: Session | null) => {
+      if (!u) {
+        setUser(null);
+        setSession(s);
+        setProfile(null);
+        setIsAdmin(false);
         setIsLoading(false);
-      }, 7000);
+        fetchingRef.current = null;
+        return;
+      }
 
+      // Check if we already fetched for THIS user recently (within 5s)
+      const now = Date.now();
+      if (fetchingRef.current?.id === u.id && now - fetchingRef.current.timestamp < 5000) {
+        return;
+      }
+      fetchingRef.current = { id: u.id, timestamp: now };
+
+      setUser(u);
+      setSession(s);
+      
+      // Preliminary profile
+      setProfile(prev => prev || {
+        full_name: u.user_metadata?.full_name || u.email?.split("@")[0] || "User",
+        email: u.email || "",
+        role: "user",
+      });
+
+      // Fetch full details in background
+      fetchProfile(u.id, {
+        full_name: u.user_metadata?.full_name,
+        name: u.user_metadata?.name,
+        email: u.email,
+      });
+
+      fetchUserProfile(u.id).then(setIsAdmin);
+    };
+
+    const getInitialSession = async () => {
+      const loadingWatchdog = setTimeout(() => setIsLoading(false), 7000);
       try {
-        // ── STEP 1: Handle PKCE auth code in URL ────────────────────────
         if (typeof window !== "undefined") {
           const params = new URLSearchParams(window.location.search);
           const code = params.get("code");
           if (code) {
-            const { error: exchangeError } =
-              await supabase.auth.exchangeCodeForSession(code);
-            if (exchangeError) {
-              console.error(
-                "[AuthContext] PKCE code exchange error:",
-                exchangeError.message,
-              );
-            }
+            await supabase.auth.exchangeCodeForSession(code);
             const cleanUrl = new URL(window.location.href);
             cleanUrl.searchParams.delete("code");
-            window.history.replaceState(
-              {},
-              "",
-              cleanUrl.pathname + cleanUrl.search,
-            );
+            window.history.replaceState({}, "", cleanUrl.pathname + cleanUrl.search);
           }
         }
 
-        // Inside getInitialSession()
-        const {
-          data: { session: currentSession },
-        } = await Promise.race([
-          supabase.auth.getSession(),
-          new Promise<{
-            data: { session: Session | null };
-          }>((resolve) =>
-            setTimeout(() => resolve({ data: { session: null } }), 5000),
-          ),
-        ]);
-
-        const {
-          data: { user: validatedUser },
-        } = await Promise.race([
-          supabase.auth.getUser(),
-          new Promise<{
-            data: { user: User | null };
-          }>((resolve) =>
-            setTimeout(() => resolve({ data: { user: null } }), 5000),
-          ),
-        ]);
-
-        // Immediately set preliminary profile to avoid skeleton forever
-        if (validatedUser) {
-          setUser(validatedUser);
-          setSession(currentSession);
-          setProfile(
-            (prev) =>
-              prev || {
-                full_name:
-                  validatedUser.user_metadata?.full_name ||
-                  validatedUser.email?.split("@")[0] ||
-                  "User",
-                email: validatedUser.email || "",
-                role: "user",
-              },
-          );
-          setIsLoading(false); // <-- unlock UI immediately
-          fetchProfile(validatedUser.id); // background fetch
-          fetchUserProfile(validatedUser.id).then(setIsAdmin);
-        } else {
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-          setIsAdmin(false);
-          setIsLoading(false);
-        }
-      } catch (_error) {
-        console.error("Error getting initial session:", _error);
-        setIsLoading(false);
+        const { data: { session: s } } = await supabase.auth.getSession();
+        const { data: { user: u } } = await supabase.auth.getUser();
+        
+        await initializeUser(u, s);
+      } catch (err) {
+        console.error("Error getting initial session:", err);
       } finally {
+        setIsLoading(false);
         clearTimeout(loadingWatchdog);
       }
     };
 
     getInitialSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session: Session | null) => {
-        setUser(session?.user ?? null);
-        setSession(session ?? null);
-        // Unlock UI immediately on auth event; profile/admin checks can continue in background.
-        setIsLoading(false);
-
-        if (session?.user) {
-          setProfile({
-            full_name:
-              session.user.user_metadata?.full_name ||
-              session.user.email?.split("@")[0] ||
-              "User",
-            email: session.user.email || "",
-            role: "user",
-          });
-
-          fetchProfile(session.user.id, {
-            full_name: session.user.user_metadata?.full_name,
-            name: session.user.user_metadata?.name,
-            email: session.user.email,
-          });
-          fetchUserProfile(session.user.id).then((adminStatus) => {
-            setIsAdmin(adminStatus);
-          });
-        } else {
-          setProfile(null);
-          setIsAdmin(false);
+        // Only trigger initialization for relevant events to avoid loops
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+          await initializeUser(session?.user ?? null, session);
+        } else if (event === 'SIGNED_OUT') {
+          await initializeUser(null, null);
         }
-      },
+        setIsLoading(false);
+      }
     );
 
     return () => subscription.unsubscribe();
@@ -437,7 +397,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const getAuthenticatorAssuranceLevel = async () => {
     try {
-      const supabase = createClient();
       const { data, error } =
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
@@ -464,7 +423,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const listMFACheckFactors = async () => {
     try {
-      const supabase = createClient();
       const { data, error } = await supabase.auth.mfa.listFactors();
 
       if (error) {

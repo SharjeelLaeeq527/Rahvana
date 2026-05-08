@@ -142,32 +142,40 @@ export class ProgressCalculationService {
   }
 
   //   Get progress summary for a journey
-  async getJourneyProgressSummary(journeyId: string) {
+  async getJourneyProgressSummary(journeyId: string, client?: { supabase: any; user: any }) {
     try {
-      const journey = await db.getJourneyDB(journeyId);
+      const journey = await db.getJourneyDB(journeyId, client);
       if (!journey) throw new Error("Journey not found");
 
-      const chapters = await db.getChaptersForJourneyDB(journeyId);
+      const chapters = await db.getChaptersForJourneyDB(journeyId, undefined, client);
       const filingMethod = journey.filing_method || 'online';
 
-      // Build per-chapter progress from LIVE step statuses (not stale DB percentages)
-      const chapterProgress = await Promise.all(
-        chapters.map(async (ch) => {
-          const steps = await db.getStepsForChapterDB(ch.id);
-          const activeSteps = steps.filter((s) => {
-            const branch = (s.metadata as any)?.branch;
-            return !branch || branch === 'both' || branch === filingMethod;
-          });
-          const completedCount = activeSteps.filter(s => s.status === 'completed').length;
-          const total = activeSteps.length;
-          const pct = total === 0 ? 0 : Math.round((completedCount / total) * 100);
-          return { ch, activeSteps, completedCount, total, pct };
-        })
-      );
+      // Optimized: Fetch ALL steps for the journey in ONE query instead of N (chapters) queries
+      const allSteps = await db.getStepsForJourneyDB(journeyId, undefined, client);
+      
+      // Group steps by chapter ID in memory
+      const stepsByChapter = allSteps.reduce((acc, step) => {
+        if (!acc[step.chapter_id]) acc[step.chapter_id] = [];
+        acc[step.chapter_id].push(step);
+        return acc;
+      }, {} as Record<string, Step[]>);
+
+      // Build per-chapter progress from memory-grouped steps
+      const chapterProgress = chapters.map((ch) => {
+        const steps = stepsByChapter[ch.id] || [];
+        const activeSteps = steps.filter((s) => {
+          const branch = (s.metadata as any)?.branch;
+          return !branch || branch === 'both' || branch === filingMethod;
+        });
+        const completedCount = activeSteps.filter(s => s.status === 'completed').length;
+        const total = activeSteps.length;
+        const pct = total === 0 ? 0 : Math.round((completedCount / total) * 100);
+        return { ch, activeSteps, completedCount, total, pct };
+      });
 
       const completedChapters = chapterProgress.filter(c => c.pct === 100).length;
 
-      // Current chapter = first chapter that is NOT 100% complete (by live calculation)
+      // Current chapter = first chapter that is NOT 100% complete
       let currentChapterIdx = chapterProgress.findIndex(c => c.pct < 100);
       if (currentChapterIdx === -1) currentChapterIdx = chapters.length - 1;
 
@@ -1151,12 +1159,19 @@ export class JourneyService {
   //   Get all journeys for current user with progress
   async getAllJourneysWithProgress() {
     try {
-      const journeys = await db.getAllJourneysDB();
+      // Create a shared client for all sub-calls to avoid redundant auth/getUser overhead
+      const { createClient } = await import('@/lib/supabase/server');
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Unauthorized");
+      const client = { supabase, user };
+
+      const journeys = await db.getAllJourneysDB(undefined, client);
 
       const journeysWithProgress = await Promise.all(
         journeys.map(async (journey) => {
           const progressSummary =
-            await this.progressService.getJourneyProgressSummary(journey.id);
+            await this.progressService.getJourneyProgressSummary(journey.id, client);
           return {
             journey,
             progress_summary: progressSummary,
