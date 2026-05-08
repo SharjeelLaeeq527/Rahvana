@@ -407,12 +407,14 @@ export function DashboardView({
         style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.6 }}
       />
       <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700 relative z-10">
-        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
-          IR-1 Spouse Visa · Pakistan
+        <div className={`w-full ${showSidebar ? "" : "lg:max-w-4xl mx-auto"}`}>
+          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
+            IR-1 Spouse Visa · Pakistan
+          </div>
+          <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-8 text-center lg:text-left">
+            Case Dashboard
+          </h1>
         </div>
-        <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-8 text-center lg:text-left">
-          Case Dashboard
-        </h1>
 
         <div
           className={`flex flex-col lg:flex-row gap-8 items-start ${!showSidebar ? "justify-center" : ""}`}
