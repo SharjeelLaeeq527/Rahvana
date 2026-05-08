@@ -2387,7 +2387,12 @@ export function GuidedRoadmapScene() {
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 220, damping: 18 }}
+              transition={{
+                delay: 0.2,
+                type: "spring",
+                stiffness: 220,
+                damping: 18,
+              }}
               style={{
                 width: 56,
                 height: 56,
@@ -2407,7 +2412,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 900, color: "white", lineHeight: 1.2 }}
+              style={{
+                margin: "0 0 8px",
+                fontSize: 22,
+                fontWeight: 900,
+                color: "white",
+                lineHeight: 1.2,
+              }}
             >
               Demo Complete!
             </motion.h3>
@@ -2416,7 +2427,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.38, duration: 0.3 }}
-              style={{ margin: "0 0 6px", fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.6, maxWidth: 320 }}
+              style={{
+                margin: "0 0 6px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.72)",
+                lineHeight: 1.6,
+                maxWidth: 320,
+              }}
             >
               You've seen how the guided IR-1 roadmap works.
             </motion.p>
@@ -2424,16 +2441,29 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.44, duration: 0.3 }}
-              style={{ margin: "0 0 28px", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 300 }}
+              style={{
+                margin: "0 0 28px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.55)",
+                lineHeight: 1.6,
+                maxWidth: 300,
+              }}
             >
-              Start your full journey — all chapters, steps, and built-in tools are free to use.
+              Start your full journey — all chapters, steps, and built-in tools
+              are free to use.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.52, duration: 0.3 }}
-              style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 280 }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                width: "100%",
+                maxWidth: 280,
+              }}
             >
               <a
                 href={journeyHref}
@@ -2493,7 +2523,13 @@ export function GuidedRoadmapScene() {
           >
             {/* SVG curved arrow — from tooltip bottom to target dot */}
             <svg
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                overflow: "visible",
+              }}
             >
               <motion.path
                 key={`path-${tourIdx}`}
@@ -2523,7 +2559,11 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: -8, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.92 }}
-              transition={{ delay: 0.1, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                delay: 0.1,
+                duration: 0.28,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               style={{
                 position: "absolute",
                 top: 7,
@@ -2537,13 +2577,35 @@ export function GuidedRoadmapScene() {
                 textAlign: "center",
               }}
             >
-              <p style={{ margin: 0, fontSize: 11, fontWeight: 900, color: "white", lineHeight: 1.3 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 11,
+                  fontWeight: 900,
+                  color: "white",
+                  lineHeight: 1.3,
+                }}
+              >
                 {GUIDED_TOUR[tourIdx].label}
               </p>
-              <p style={{ margin: "3px 0 0", fontSize: 9.5, color: "rgba(255,255,255,0.72)", lineHeight: 1.35 }}>
+              <p
+                style={{
+                  margin: "3px 0 0",
+                  fontSize: 9.5,
+                  color: "rgba(255,255,255,0.72)",
+                  lineHeight: 1.35,
+                }}
+              >
                 {GUIDED_TOUR[tourIdx].sub}
               </p>
-              <div style={{ display: "flex", gap: 3, marginTop: 8, justifyContent: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 3,
+                  marginTop: 8,
+                  justifyContent: "center",
+                }}
+              >
                 {GUIDED_TOUR.map((_, i) => (
                   <div
                     key={i}
@@ -2551,7 +2613,8 @@ export function GuidedRoadmapScene() {
                       height: 3,
                       width: i === tourIdx ? 16 : 4,
                       borderRadius: 2,
-                      background: i === tourIdx ? "white" : "rgba(255,255,255,0.32)",
+                      background:
+                        i === tourIdx ? "white" : "rgba(255,255,255,0.32)",
                       transition: "width 0.35s ease",
                     }}
                   />
@@ -2578,7 +2641,11 @@ export function GuidedRoadmapScene() {
             >
               <motion.div
                 animate={{ scale: [1, 2.4, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 1.7, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 1.7,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 style={{
                   position: "absolute",
                   inset: -4,
@@ -3045,10 +3112,13 @@ export function IndividualToolsScene() {
     };
   }, [hovered, startAutoPlay]);
 
-  const handleSelect = useCallback((idx: number) => {
-    goTo(idx);
-    if (!hovered) startAutoPlay();
-  }, [goTo, hovered, startAutoPlay]);
+  const handleSelect = useCallback(
+    (idx: number) => {
+      goTo(idx);
+      if (!hovered) startAutoPlay();
+    },
+    [goTo, hovered, startAutoPlay],
+  );
 
   const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
@@ -3651,7 +3721,7 @@ export function ConsultationBanner({
             {/* Animated Title with line-by-line reveal */}
             <h2
               id="consultation-heading"
-              className="mt-4 mb-0 max-w-full font-extrabold text-[#162126] md:max-w-[640px] lg:max-w-none"
+              className="mt-4 mb-0 max-w-full font-extrabold text-[#162126] md:max-w-[640px] lg:max-w-none lg:whitespace-nowrap"
               style={{
                 fontSize: "clamp(30px,4.2vw,60px)",
                 lineHeight: 1.0,
@@ -3677,7 +3747,7 @@ export function ConsultationBanner({
             </motion.p>
           </div>
 
-         {/* Two-card illustrated grid */}
+          {/* Two-card illustrated grid */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -3778,7 +3848,7 @@ export function ConsultationBanner({
             ))}
           </motion.div>
         </div>
-        
+
         {/* RIGHT SIDE: Clock & CTA */}
         <motion.div
           initial={{ opacity: 0, x: 12 }}
@@ -4092,7 +4162,8 @@ export function JourneyConsultationBand({
     <div
       className="relative overflow-hidden"
       style={{
-        background: "linear-gradient(155deg, #f5fdf9 0%, #f9fdff 50%, #fffdf7 100%)",
+        background:
+          "linear-gradient(155deg, #f5fdf9 0%, #f9fdff 50%, #fffdf7 100%)",
       }}
     >
       {/* Top hairline */}
