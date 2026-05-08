@@ -1776,15 +1776,17 @@ const GUIDED_TOUR = [
     view: "dashboard" as const,
     text: "Click here to begin",
     dot: { top: 375, left: 118 },
-    // tooltip sits above the dot, arrow points down at it
-    tip: { top: 322, left: 44, arrow: "down" as const },
+    // text below ring — scrollTop will be subtracted at render time
+    tip: { top: 392, left: 52 },
+    side: "below" as const,
   },
   {
     view: "chapter" as const,
-    text: "Click to open this step",
+    text: "Click to open",
     dot: { top: 116, left: 455 },
-    // tooltip sits to the left of the dot, arrow points right at it
-    tip: { top: 100, left: 295, arrow: "right" as const },
+    // text to the RIGHT of ring with ← arrow — clear of content
+    tip: { top: 108, left: 485 },
+    side: "right" as const,
   },
 ] as const;
 
@@ -1802,6 +1804,8 @@ export function GuidedRoadmapScene() {
   const [tourIdx, setTourIdx] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
   const completedOnce = useRef(false);
+  const dashScrollRef = useRef<HTMLDivElement>(null);
+  const [dashScrollTop, setDashScrollTop] = useState(0);
 
   // Complete overlay triggers from handleSelectStep — no useEffect timer needed
 
@@ -1960,6 +1964,8 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              ref={dashScrollRef}
+              onScroll={() => setDashScrollTop(dashScrollRef.current?.scrollTop ?? 0)}
               className="flex-1 p-5 overflow-y-auto"
             >
               {/* Next Roadmap Step Card */}
@@ -2488,47 +2494,44 @@ export function GuidedRoadmapScene() {
             className="pointer-events-none"
             style={{ position: "absolute", inset: 0, zIndex: 40 }}
           >
-            {/* Small tooltip — sits right next to the target ring */}
-            <motion.div
-              key={`tip-${tourIdx}`}
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85 }}
-              transition={{ delay: 0.1, duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              style={{
-                position: "absolute",
-                top: GUIDED_TOUR[tourIdx].tip.top,
-                left: GUIDED_TOUR[tourIdx].tip.left,
-                background: "#051738",
-                borderRadius: 8,
-                padding: "6px 11px",
-                whiteSpace: "nowrap",
-                boxShadow: "0 4px 14px rgba(5,23,56,0.30)",
-              }}
-            >
-              <span style={{ fontSize: 11, fontWeight: 800, color: "white", letterSpacing: "0.01em" }}>
-                {GUIDED_TOUR[tourIdx].text}
-              </span>
-              {/* CSS arrow — points toward the pulsing ring */}
-              {GUIDED_TOUR[tourIdx].tip.arrow === "down" && (
-                <div style={{
-                  position: "absolute", bottom: -6, left: "50%",
-                  transform: "translateX(-50%)",
-                  borderLeft: "6px solid transparent", borderRight: "6px solid transparent",
-                  borderTop: "6px solid #051738",
-                }} />
-              )}
-              {GUIDED_TOUR[tourIdx].tip.arrow === "right" && (
-                <div style={{
-                  position: "absolute", right: -6, top: "50%",
-                  transform: "translateY(-50%)",
-                  borderTop: "6px solid transparent", borderBottom: "6px solid transparent",
-                  borderLeft: "6px solid #051738",
-                }} />
-              )}
-            </motion.div>
+            {/* Teal text — below ring (dashboard) or right of ring with ← (chapter) */}
+            {(() => {
+              const step = GUIDED_TOUR[tourIdx];
+              const scrollOffset = step.view === "dashboard" ? dashScrollTop : 0;
+              return (
+                <motion.div
+                  key={`tip-${tourIdx}`}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: 0.12, duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    position: "absolute",
+                    top: step.tip.top - scrollOffset,
+                    left: step.tip.left,
+                    whiteSpace: "nowrap",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  {step.side === "right" && (
+                    <span style={{ fontSize: 12, color: "#0d7377", fontWeight: 900, lineHeight: 1 }}>←</span>
+                  )}
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: "#0d7377",
+                    letterSpacing: "0.01em",
+                    textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
+                  }}>
+                    {step.text}
+                  </span>
+                </motion.div>
+              );
+            })()}
 
-            {/* Pulsing ring on the target element */}
+            {/* Pulsing ring — follows scroll on dashboard */}
             <motion.div
               key={`dot-${tourIdx}`}
               initial={{ opacity: 0, scale: 0.5 }}
@@ -2536,7 +2539,7 @@ export function GuidedRoadmapScene() {
               transition={{ delay: 0.15, duration: 0.22 }}
               style={{
                 position: "absolute",
-                top: GUIDED_TOUR[tourIdx].dot.top - 10,
+                top: GUIDED_TOUR[tourIdx].dot.top - 10 - (GUIDED_TOUR[tourIdx].view === "dashboard" ? dashScrollTop : 0),
                 left: GUIDED_TOUR[tourIdx].dot.left - 10,
                 width: 20, height: 20,
                 borderRadius: "50%",
