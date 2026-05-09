@@ -1465,7 +1465,6 @@ export function TwoWaysSection() {
         >
           {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
-
             {/* Left: heading + selectors + CTAs */}
             <div>
               <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
@@ -1500,7 +1499,10 @@ export function TwoWaysSection() {
                     </p>
                     <h3
                       className="mb-0 mt-1 font-extrabold text-[#162126]"
-                      style={{ fontSize: "clamp(15px,2.5vw,19px)", lineHeight: 1.2 }}
+                      style={{
+                        fontSize: "clamp(15px,2.5vw,19px)",
+                        lineHeight: 1.2,
+                      }}
                     >
                       {twoWaysPaths[activeIndex].shortTitle}
                     </h3>
@@ -1534,7 +1536,9 @@ export function TwoWaysSection() {
                     <div className="min-w-0 flex-1">
                       <div
                         className="text-[14px] font-black leading-tight"
-                        style={{ color: activeIndex === i ? "#0d7377" : "#162126" }}
+                        style={{
+                          color: activeIndex === i ? "#0d7377" : "#162126",
+                        }}
                       >
                         {path.title}
                       </div>
@@ -1594,7 +1598,6 @@ export function TwoWaysSection() {
                 </AnimatePresence>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -1982,7 +1985,9 @@ export function GuidedRoadmapScene() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               ref={dashScrollRef}
-              onScroll={() => setDashScrollTop(dashScrollRef.current?.scrollTop ?? 0)}
+              onScroll={() =>
+                setDashScrollTop(dashScrollRef.current?.scrollTop ?? 0)
+              }
               className="flex-1 p-5 overflow-y-auto"
             >
               {/* Next Roadmap Step Card */}
@@ -2455,7 +2460,7 @@ export function GuidedRoadmapScene() {
                 maxWidth: 320,
               }}
             >
-              You've seen how the guided IR-1 roadmap works.
+              You&apos;ve seen how the guided IR-1 roadmap works.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 8 }}
@@ -2544,14 +2549,19 @@ export function GuidedRoadmapScene() {
             {/* Teal text — below ring (dashboard) or right of ring with ← (chapter) */}
             {(() => {
               const step = GUIDED_TOUR[tourIdx];
-              const scrollOffset = step.view === "dashboard" ? dashScrollTop : 0;
+              const scrollOffset =
+                step.view === "dashboard" ? dashScrollTop : 0;
               return (
                 <motion.div
                   key={`tip-${tourIdx}`}
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  transition={{ delay: 0.12, duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{
+                    delay: 0.12,
+                    duration: 0.2,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
                   style={{
                     position: "absolute",
                     top: step.tip.top - scrollOffset,
@@ -2563,15 +2573,27 @@ export function GuidedRoadmapScene() {
                   }}
                 >
                   {step.side === "right" && (
-                    <span style={{ fontSize: 12, color: "#0d7377", fontWeight: 900, lineHeight: 1 }}>←</span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: "#0d7377",
+                        fontWeight: 900,
+                        lineHeight: 1,
+                      }}
+                    >
+                      ←
+                    </span>
                   )}
-                  <span style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: "#0d7377",
-                    letterSpacing: "0.01em",
-                    textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
-                  }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: "#0d7377",
+                      letterSpacing: "0.01em",
+                      textShadow:
+                        "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
+                    }}
+                  >
                     {step.text}
                   </span>
                 </motion.div>
@@ -2586,9 +2608,15 @@ export function GuidedRoadmapScene() {
               transition={{ delay: 0.15, duration: 0.22 }}
               style={{
                 position: "absolute",
-                top: GUIDED_TOUR[tourIdx].dot.top - 10 - (GUIDED_TOUR[tourIdx].view === "dashboard" ? dashScrollTop : 0),
+                top:
+                  GUIDED_TOUR[tourIdx].dot.top -
+                  10 -
+                  (GUIDED_TOUR[tourIdx].view === "dashboard"
+                    ? dashScrollTop
+                    : 0),
                 left: GUIDED_TOUR[tourIdx].dot.left - 10,
-                width: 20, height: 20,
+                width: 20,
+                height: 20,
                 borderRadius: "50%",
                 background: "rgba(13,115,119,0.15)",
                 border: "2px solid #0d7377",
@@ -2596,10 +2624,14 @@ export function GuidedRoadmapScene() {
             >
               <motion.div
                 animate={{ scale: [1, 2.5, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-
+                transition={{
+                  duration: 1.6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 style={{
-                  position: "absolute", inset: -4,
+                  position: "absolute",
+                  inset: -4,
                   borderRadius: "50%",
                   border: "1.5px solid rgba(13,115,119,0.4)",
                 }}
@@ -2692,8 +2724,17 @@ const featuredTools = [
     border: "#ffe4e6",
     iconSrc: "/icons/sponsorship-calculator.svg",
   },
+  {
     id: "dq",
     icon: Clock,
+    iconSize: 20,
+    label: "DQ Status Check",
+    bg: "#fdf4ff",
+    fg: "#c026d3",
+    border: "#fae8ff",
+    iconSrc: "/icons/dq-case-tracker.svg",
+  },
+  {
     id: "bulletin",
     icon: Calendar,
     iconSize: 19,
