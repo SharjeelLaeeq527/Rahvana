@@ -1235,57 +1235,25 @@ export function TwoWaysSection() {
       >
         <div
           style={{
-            height: "100vh",
+            minHeight: "100vh",
             display: "flex",
             alignItems: "center",
-            overflow: "hidden",
             background: "transparent",
+            paddingBlock: "clamp(40px,6vh,80px)",
+            boxSizing: "border-box",
           }}
         >
           {/* Decorative radial highlights removed for seamless background */}
 
-          {/* Scroll-progress pill indicators — right edge */}
-          <div
-            style={{
-              position: "absolute",
-              right: 28,
-              top: "50%",
-              transform: "translateY(-50%)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              zIndex: 10,
-            }}
-          >
-            {([0, 1] as TwoWaysIndex[]).map((i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => selectPath(i)}
-                aria-label={`Show ${twoWaysPaths[i].title}`}
-                style={{
-                  width: 7,
-                  height: activeIndex === i ? 22 : 7,
-                  borderRadius: 4,
-                  background: activeIndex === i ? "#0d7377" : "#c8d5d3",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Main grid */}
+        {/* Main grid */}
           <div
             className="relative mx-auto w-full px-8 xl:px-12"
             style={{
-              maxWidth: 1360,
+              maxWidth: 1300,
               display: "grid",
-              gridTemplateColumns: "minmax(0,400px) 1fr",
-              gap: "clamp(40px,5vw,90px)",
-              alignItems: "center",
+              gridTemplateColumns: "minmax(0,380px) minmax(0,1fr)",
+              gap: "clamp(32px,4vw,72px)",
+              alignItems: "start",
             }}
           >
             {/* Left: text + selectors + CTAs */}
@@ -1319,7 +1287,7 @@ export function TwoWaysSection() {
               </p>
 
               {/* Active-panel label */}
-              <div style={{ minHeight: 80, marginTop: 22, overflow: "hidden" }}>
+              <div style={{ minHeight: 64, marginTop: 16, overflow: "hidden" }}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeIndex}
@@ -1332,11 +1300,11 @@ export function TwoWaysSection() {
                       {twoWaysPaths[activeIndex].eyebrow}
                     </p>
                     <h3
-                      className="mb-0 mt-1.5 font-extrabold text-[#162126]"
+                      className="mb-0 mt-1 font-extrabold text-[#162126]"
                       style={{
-                        fontSize: "clamp(17px,1.5vw,21px)",
+                        fontSize: "clamp(15px,1.3vw,19px)",
                         lineHeight: 1.2,
-                        maxWidth: 420,
+                        maxWidth: 380,
                       }}
                     >
                       {twoWaysPaths[activeIndex].shortTitle}
@@ -1427,26 +1395,28 @@ export function TwoWaysSection() {
             </div>
 
             {/* Right: animated visual */}
-            {reduceMotion ? (
-              <div className="flex min-w-0 flex-col gap-5">
-                <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                <ResponsiveVisual index={activeIndex} />
-              </div>
-            ) : (
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={activeIndex}
-                  className="flex min-w-0 flex-col gap-5"
-                  initial={{ opacity: 0, y: 18, scale: 0.988 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.992 }}
-                  transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                >
+            <div className="min-w-0 flex flex-col gap-3">
+              {reduceMotion ? (
+                <>
                   <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
                   <ResponsiveVisual index={activeIndex} />
-                </motion.div>
-              </AnimatePresence>
-            )}
+                </>
+              ) : (
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    className="flex min-w-0 flex-col gap-3"
+                    initial={{ opacity: 0, y: 18, scale: 0.988 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -12, scale: 0.992 }}
+                    transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                    <ResponsiveVisual index={activeIndex} />
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -1611,21 +1581,22 @@ export function TwoWaysSupportText({
   path: (typeof twoWaysPaths)[number];
 }) {
   return (
-    <div className="w-full">
+    <div className="w-full min-w-0">
       <p className="m-0 text-[11px] font-black uppercase tracking-[0.08em] text-[#0d7377]">
         {path.supportEyebrow}
       </p>
       <h3
-        className="mb-0 mt-1.5 font-extrabold tracking-tight text-[#162126]"
-        style={{ fontSize: "clamp(18px,1.8vw,24px)", lineHeight: 1.18 }}
+        className="mb-0 mt-1 font-extrabold tracking-tight text-[#162126]"
+        style={{ fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.18 }}
       >
         {path.supportLead}
       </h3>
       <p
         className="mt-2 mb-0 text-[#4a5c62]"
         style={{
-          fontSize: "clamp(13px,1.1vw,15px)",
-          lineHeight: 1.62,
+          fontSize: "clamp(13px,1vw,14.5px)",
+          lineHeight: 1.6,
+          maxWidth: 560,
         }}
       >
         {path.supportText}
@@ -1639,8 +1610,7 @@ export function TwoWaysSupportText({
 export function TwoWaysVisual({ index }: { index: TwoWaysIndex }) {
   return (
     <div
-      className="flex size-full items-center justify-center"
-      style={{ position: "relative", width: 680, height: 520 }}
+      style={{ position: "relative", width: 680, height: 560 }}
     >
       {index === 0 ? <GuidedRoadmapScene /> : <IndividualToolsScene />}
     </div>
@@ -1792,17 +1762,17 @@ const GUIDED_TOUR = [
   {
     view: "dashboard" as const,
     text: "Click here to begin",
-    dot: { top: 375, left: 118 },
-    // text below ring — scrollTop will be subtracted at render time
-    tip: { top: 392, left: 52 },
-    side: "below" as const,
+    dot: { top: 335, left: 157 },
+    // text placed near the top-right of the card, pointing towards the card
+    tip: { top: 285, left: 105 },
+    side: "top" as const,
   },
   {
     view: "chapter" as const,
     text: "Click to open",
-    dot: { top: 116, left: 455 },
+    dot: { top: 116, left: 520 },
     // text to the RIGHT of ring with ← arrow — clear of content
-    tip: { top: 108, left: 485 },
+    tip: { top: 106, left: 545 },
     side: "right" as const,
   },
 ] as const;
@@ -1904,6 +1874,16 @@ export function GuidedRoadmapScene() {
           )}
         </div>
 
+        {/* Centre guide text — only in step view */}
+        {view === "step" && (
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-[#d1e7e2] bg-[#f0f9f6] px-3.5 py-1.5">
+            <span className="size-1.5 rounded-full bg-[#0d7377] shrink-0" />
+            <span className="text-[11px] font-normal text-[#0d7377] leading-none whitespace-nowrap">
+              Tap each section to answer and confirm your eligibility
+            </span>
+          </div>
+        )}
+
         <div className="flex items-center gap-4">
           {view === "dashboard" && (
             <div className="flex items-center gap-2">
@@ -1983,7 +1963,7 @@ export function GuidedRoadmapScene() {
               exit={{ opacity: 0, y: -10 }}
               ref={dashScrollRef}
               onScroll={() => setDashScrollTop(dashScrollRef.current?.scrollTop ?? 0)}
-              className="flex-1 p-5 overflow-y-auto"
+              className="flex-1 p-5 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {/* Next Roadmap Step Card */}
               <div className="mb-6 rounded-[24px] bg-[#051738] p-6 text-white shadow-lg relative overflow-hidden min-h-[170px] flex flex-col justify-center">
@@ -2085,9 +2065,6 @@ export function GuidedRoadmapScene() {
                     className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
-                        <BookOpen size={16} />
-                      </div>
                       <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
                         Case Details
                       </span>
@@ -2129,9 +2106,6 @@ export function GuidedRoadmapScene() {
                     className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
-                        <Signpost size={16} />
-                      </div>
                       <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
                         Milestone History
                       </span>
@@ -2216,7 +2190,7 @@ export function GuidedRoadmapScene() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-5 bg-[#f9fafb]">
+              <div className="flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-5 bg-[#f9fafb]">
                 <div className="flex flex-col gap-2">
                   {activeChapter.steps.map((step, idx) => {
                     const isDone = completedSteps.has(step[0]);
@@ -2511,7 +2485,7 @@ export function GuidedRoadmapScene() {
             className="pointer-events-none"
             style={{ position: "absolute", inset: 0, zIndex: 40 }}
           >
-            {/* Teal text — below ring (dashboard) or right of ring with ← (chapter) */}
+            {/* Teal text — with animated guiding arrow */}
             {(() => {
               const step = GUIDED_TOUR[tourIdx];
               const scrollOffset = step.view === "dashboard" ? dashScrollTop : 0;
@@ -2529,21 +2503,39 @@ export function GuidedRoadmapScene() {
                     whiteSpace: "nowrap",
                     display: "flex",
                     alignItems: "center",
-                    gap: 4,
+                    gap: 6,
+                    flexDirection: step.side === "top" ? "column" : "row",
                   }}
                 >
                   {step.side === "right" && (
-                    <span style={{ fontSize: 12, color: "#0d7377", fontWeight: 900, lineHeight: 1 }}>←</span>
+                    <motion.div
+                      animate={{ x: [-4, 0, -4] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5M5 12L12 19M5 12L12 5" />
+                      </svg>
+                    </motion.div>
                   )}
                   <span style={{
-                    fontSize: 11,
-                    fontWeight: 800,
+                    fontSize: 12,
+                    fontWeight: 400,
                     color: "#0d7377",
                     letterSpacing: "0.01em",
                     textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
                   }}>
                     {step.text}
                   </span>
+                  {step.side === "top" && (
+                    <motion.div
+                      animate={{ y: [-4, 0, -4] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5V19M12 19L5 12M12 19L19 12" />
+                      </svg>
+                    </motion.div>
+                  )}
                 </motion.div>
               );
             })()}
