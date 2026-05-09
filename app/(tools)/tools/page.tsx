@@ -444,7 +444,7 @@ const CATEGORY_STYLES: Record<
   "AI & Planning": {
     iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
     innerBox: "bg-white/20",
-    link: "text-violet-600 dark:text-violet-400",
+    link: "text-teal-600 dark:text-teal-400",
     hoverBg: "group-hover:bg-violet-50",
     ribbonColor: "#f3e8ff",
     ribbonMid: "#c4b5fd",
@@ -455,7 +455,7 @@ const CATEGORY_STYLES: Record<
   "Money & Sponsorship": {
     iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
     innerBox: "bg-white/20",
-    link: "text-emerald-600 dark:text-emerald-400",
+    link: "text-teal-600 dark:text-teal-400",
     hoverBg: "group-hover:bg-emerald-50",
     ribbonColor: "#dff7ea",
     ribbonMid: "#86efac",
@@ -466,7 +466,7 @@ const CATEGORY_STYLES: Record<
   Tracking: {
     iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
     innerBox: "bg-white/20",
-    link: "text-amber-600 dark:text-amber-400",
+    link: "text-teal-600 dark:text-teal-400",
     hoverBg: "group-hover:bg-amber-50",
     ribbonColor: "#fff4d6",
     ribbonMid: "#fcd34d",
@@ -477,7 +477,7 @@ const CATEGORY_STYLES: Record<
   "Docs & PDFs": {
     iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
     innerBox: "bg-white/20",
-    link: "text-rose-600 dark:text-rose-400",
+    link: "text-teal-600 dark:text-teal-400",
     hoverBg: "group-hover:bg-rose-50",
     ribbonColor: "#ffe4e6",
     ribbonMid: "#fda4af",
@@ -488,7 +488,7 @@ const CATEGORY_STYLES: Record<
   "Forms & Automation": {
     iconBox: "bg-cyan-600 text-white border-transparent dark:bg-cyan-500",
     innerBox: "bg-white/20",
-    link: "text-cyan-600 dark:text-cyan-400",
+    link: "text-teal-600 dark:text-teal-400",
     hoverBg: "group-hover:bg-cyan-50",
     ribbonColor: "#e0f2fe",
     ribbonMid: "#7dd3fc",
@@ -546,71 +546,16 @@ function ToolCard({
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Ribbon bookmark for Locked/Premium cards */}
-      {featureLocked && (
-        <>
-        <div className="absolute -top-[1px] right-[42px] z-20 pointer-events-none">
-          <svg
-            width="32"
-            height="64"
-            viewBox="0 0 32 64"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ display: "block", overflow: "visible" }}
-          >
-            <defs>
-              <linearGradient
-                id={`rb-fill-${tool.id}`}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="0%" stopColor={styles.ribbonColor} />
-                <stop offset="100%" stopColor={styles.ribbonMid} />
-              </linearGradient>
-              <filter
-                id={`rb-shadow-${tool.id}`}
-                x="-30%"
-                y="-18%"
-                width="160%"
-                height="160%"
-              >
-                <feDropShadow
-                  dx="0"
-                  dy="4"
-                  stdDeviation="3"
-                  floodColor={styles.ribbonDeep}
-                  floodOpacity="0.28"
-                />
-                <feDropShadow
-                  dx="0"
-                  dy="1"
-                  stdDeviation="1"
-                  floodColor="#000000"
-                  floodOpacity="0.06"
-                />
-              </filter>
-            </defs>
-
-            <g filter={`url(#rb-shadow-${tool.id})`}>
-              <polygon
-                points="0,0 32,0 32,50 16,64 0,50"
-                fill={`url(#rb-fill-${tool.id})`}
-              />
-            </g>
-            <path
-              d="M10,20 L13.2,24.5 L16,18.5 L18.8,24.5 L22,20 L20.8,29 L11.2,29 Z"
-              fill="none"
-              stroke={styles.ribbonDeep}
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-        
-        </>
-      )}
-
+<div className="absolute -top-21 -right-3 z-20 pointer-events-none">
+  <Image
+    src="/icons/ribbon.png"
+    alt="Premium ribbon"
+    width={160}
+    height={220}
+    priority={false}
+    className="block w-40 h-56 object-contain"
+  />
+</div>
       {/* Hover overlay: pastel fill on hover, sits under ribbon (applies to locked + unlocked) */}
       <div
         className={`absolute inset-0 rounded-[30px] transition-colors duration-400 pointer-events-none z-0 bg-transparent ${styles.hoverBg}`}
@@ -650,7 +595,7 @@ function ToolCard({
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
         {featureLocked ? (
-          <span className="text-sm font-semibold flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 group-hover:underline decoration-2 underline-offset-2">
+          <span className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}>
             <Lock size={14} className="mb-[1px]" />{" "}
             {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"
               ? t("toolsPage.unlockPro")
