@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, Variants } from "framer-motion";
 import {
   Heart,
@@ -36,6 +36,25 @@ const dmSans = DM_Sans({
 
 export default function AboutPage() {
   const [hoveredTeamIndex, setHoveredTeamIndex] = useState<number | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTeamMouseEnter = (i: number) => {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => setHoveredTeamIndex(i), 80);
+  };
+
+  const handleTeamMouseLeave = () => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    leaveTimer.current = setTimeout(() => setHoveredTeamIndex(null), 200);
+  };
+
+  // Pure CSS flex-grow values — browser interpolates on compositor, no JS per frame
+  const getFlexGrow = (i: number) => {
+    if (hoveredTeamIndex === null) return 1;
+    return hoveredTeamIndex === i ? 1.7 : 0.65;
+  };
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -61,18 +80,18 @@ export default function AboutPage() {
       className={`${dmSans.variable} ${playfair.variable} font-sans bg-[#faf7f2] text-[#2a2a2a] min-h-screen relative`}
     >
       {/* HERO */}
-      <section className="min-h-[100vh] flex items-center bg-[#faf7f2] relative overflow-hidden px-8 md:px-12 lg:px-20 pt-24 pb-20">
+      <section className="min-h-screen 2xl:min-h-fit flex items-center bg-[#faf7f2] relative overflow-hidden px-8 md:px-12 lg:px-20 pt-24 pb-20 2xl:py-40">
         {/* Decorative background elements for large screens */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#0d7a75]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none hidden 2xl:block" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#b5451b]/5 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4 pointer-events-none hidden 2xl:block" />
 
-        <div className="max-w-[1440px] mx-auto grid md:grid-cols-2 items-center gap-12 lg:gap-20 2xl:gap-32 w-full relative z-10">
+        <div className="max-w-[1440px] mx-auto w-full relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={containerVariants}
-            className="flex flex-col gap-8 md:gap-10"
+            className="flex flex-col gap-4 md:gap-6 mb-8 2xl:mb-12"
           >
             <motion.div
               variants={itemVariants}
@@ -83,67 +102,78 @@ export default function AboutPage() {
             </motion.div>
             <motion.h1
               variants={itemVariants}
-              className="font-bold font-serif text-4xl sm:text-5xl lg:text-6xl 2xl:text-7xl leading-[1.1] text-[#121e2e]"
+              className="font-bold text-center font-serif text-4xl sm:text-5xl lg:text-6xl 2xl:text-7xl leading-[1.1] text-[#121e2e]"
             >
               Some journeys begin with paperwork.{" "}
-              <em className="italic text-[#0d7a75] font-bold">Ours began</em> with
-              distance.
+              <em className="italic text-[#0d7a75] font-bold">Ours began</em>{" "}
+              with distance.
             </motion.h1>
-            <motion.p
-              variants={itemVariants}
-              className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600 max-w-xl 2xl:max-w-2xl"
-            >
-              Rahvana was built for the space between people who belong together —
-              the weeks that stretch too long, the forms that carry real lives,
-              and the quiet hope families hold onto while they wait to be
-              reunited.
-            </motion.p>
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap items-center gap-6 mt-2"
-            >
-              <Link
-                href="/visa-category/ir-category/ir-1"
-                className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
-              >
-                Start your journey <ArrowRight size={16} />
-              </Link>
-              <span className="text-xs 2xl:text-sm text-gray-400 tracking-wide uppercase font-medium">
-                IR-1 · Spouse Visa · Phase 1
-              </span>
-            </motion.div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="relative flex justify-center lg:justify-end"
-          >
-            <div className="relative w-full max-w-[540px] 2xl:max-w-[680px] aspect-4/3 rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.16)] group">
-              <Image
-                src="/assets/images/about-hero-image.png"
-                alt="Airport reunion"
-                fill
-                priority
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-              />
-              <div className="absolute bottom-8 left-8 2xl:bottom-12 2xl:left-12 bg-white/90 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 shadow-2xl border border-white/20">
-                <div className="w-10 h-10 2xl:w-12 2xl:h-12 bg-[#0d7a75] rounded-full flex items-center justify-center text-white shadow-inner">
-                  <Heart size={20} />
-                </div>
-                <div>
-                  <strong className="block text-sm 2xl:text-base text-[#121e2e] font-bold">
-                    IR-1 Journey
-                  </strong>
-                  <span className="text-xs 2xl:text-sm text-gray-500 font-medium">
-                    Guiding families home
-                  </span>
+          <div className="grid md:grid-cols-2 items-center gap-12 lg:gap-20 2xl:gap-32">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={containerVariants}
+              className="flex flex-col gap-8 md:gap-10"
+            >
+              <motion.p
+                variants={itemVariants}
+                className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600"
+              >
+                Rahvana was built for the space between people who belong
+                together — the weeks that stretch too long, the forms that carry
+                real lives, and the quiet hope families hold onto while they
+                wait to be reunited.
+              </motion.p>
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-wrap items-center gap-6 mt-2"
+              >
+                <Link
+                  href="/visa-category/ir-category/ir-1"
+                  className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
+                >
+                  Start your journey <ArrowRight size={16} />
+                </Link>
+                <span className="text-xs 2xl:text-sm text-gray-400 tracking-wide uppercase font-medium">
+                  IR-1 · Spouse Visa · Phase 1
+                </span>
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              viewport={{ once: true }}
+              className="relative flex justify-center lg:justify-end"
+            >
+              <div className="relative w-full max-w-[540px] 2xl:max-w-[680px] aspect-4/3 rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.16)] group">
+                <Image
+                  src="/assets/images/about-hero-image.png"
+                  alt="Airport reunion"
+                  fill
+                  priority
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                />
+                <div className="absolute bottom-8 left-8 2xl:bottom-12 2xl:left-12 bg-white/90 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 shadow-2xl border border-white/20">
+                  <div className="w-10 h-10 2xl:w-12 2xl:h-12 bg-[#0d7a75] rounded-full flex items-center justify-center text-white shadow-inner">
+                    <Heart size={20} />
+                  </div>
+                  <div>
+                    <strong className="block text-sm 2xl:text-base text-[#121e2e] font-bold">
+                      IR-1 Journey
+                    </strong>
+                    <span className="text-xs 2xl:text-sm text-gray-500 font-medium">
+                      Guiding families home
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -354,16 +384,7 @@ export default function AboutPage() {
                 <h3 className="font-serif text-3xl md:text-4xl leading-[1.15] mb-6 max-w-xl">
                   Immigration help should feel humane, not mechanical.
                 </h3>
-                {/* <p className="text-white/80 text-[15px] md:text-[16px] leading-relaxed max-w-md mb-8">
-                  We built every part of this experience around one question:
-                  does this make someone&apos;s life easier? If not, we rethink
-                  it.
-                </p>
-                <div className="inline-flex items-center bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-[12px] font-medium border border-white/10">
-                  Human-first design
-                </div> */}
               </div>
-              {/* Subtle background decoration */}
               <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-white/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
             </motion.div>
 
@@ -372,7 +393,6 @@ export default function AboutPage() {
               variants={itemVariants}
               className="bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] relative overflow-hidden group"
             >
-              {/* <div className="relative z-10"> */}
               <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
                 <Lightbulb size={20} />
               </div>
@@ -382,13 +402,6 @@ export default function AboutPage() {
               <h3 className="font-serif text-2xl md:text-3xl leading-tight text-[#121e2e] mb-5">
                 Clarity is a form of care.
               </h3>
-              {/* <p className="text-gray-500 text-[15px] leading-relaxed">
-                  Plain language. No jargon. Always.
-                </p> */}
-              {/* </div> */}
-              {/* <div className="absolute top-4 right-8 font-serif text-8xl text-gray-50 opacity-[0.08] pointer-events-none select-none group-hover:scale-110 transition-transform duration-500">
-                02
-              </div> */}
             </motion.div>
 
             {/* CARD 3: DISTANCE */}
@@ -406,9 +419,6 @@ export default function AboutPage() {
                 Being far from your loved ones is already hard enough. The tools
                 you use shouldn't add to that burden.
               </h3>
-              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
-                The tools you use shouldn&apos;t add to that burden.
-              </p> */}
             </motion.div>
 
             {/* CARD 4: EVERY FILE */}
@@ -425,9 +435,6 @@ export default function AboutPage() {
               <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-4">
                 Every case number belongs to a real person with a real story.
               </h3>
-              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
-                One step, one form, one checkpoint at a time.
-              </p> */}
             </motion.div>
 
             {/* CARD 5: RESPECT */}
@@ -435,7 +442,6 @@ export default function AboutPage() {
               variants={itemVariants}
               className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] relative overflow-hidden group"
             >
-              {/* <div className="relative z-10"> */}
               <div className="w-12 h-12 rounded-2xl bg-[#0d7a75]/5 flex items-center justify-center text-[#0d7a75] mb-8 group-hover:bg-[#0d7a75] group-hover:text-white transition-all duration-500">
                 <Compass size={20} />
               </div>
@@ -445,13 +451,6 @@ export default function AboutPage() {
               <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-5">
                 Good guidance respects your intelligence and your situation.
               </h3>
-              {/* <p className="text-gray-500 text-[14px] leading-relaxed">
-                  No hidden agendas. No false promises. Just the truth.
-                </p> */}
-              {/* </div>
-              <div className="absolute top-4 right-8 font-serif text-8xl text-gray-50 opacity-[0.08] pointer-events-none select-none group-hover:scale-110 transition-transform duration-500">
-                05
-              </div> */}
             </motion.div>
           </div>
         </div>
@@ -576,7 +575,7 @@ export default function AboutPage() {
 
         <div
           className="mx-auto flex max-w-[1100px] flex-col gap-6 md:flex-row md:items-stretch"
-          onMouseLeave={() => setHoveredTeamIndex(null)}
+          onMouseLeave={handleTeamMouseLeave}
         >
           {[
             {
@@ -585,7 +584,7 @@ export default function AboutPage() {
               image: "/assets/images/Hams.PNG",
               color: "bg-[#0d7a75]",
               role: "Co-Founder",
-              desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I’ve personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
+              desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
             },
             {
               name: "Sharjeel",
@@ -593,7 +592,91 @@ export default function AboutPage() {
               image: "/assets/images/Sharjeel.PNG",
               color: "bg-[#e8a020]",
               role: "Founder",
-              desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn’t have to face that process without clarity and guidance.",
+              desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn't have to face that process without clarity and guidance.",
+            },
+            {
+              name: "Javeria",
+              initials: "JL",
+              image: "/assets/images/Javeria.PNG",
+              color: "bg-[#d9406a]",
+              role: "Co-Founder",
+              desc: "Behind every decision is the responsibility to build something people can rely on. At Rahvana, that means making sure we grow sustainably while staying focused on what actually matters is helping people through a difficult process without adding financial stress or uncertainty. We keep that balance intact.",
+            },
+          ].map((member, i) => {
+            const isHovered = hoveredTeamIndex === i;
+            const isOther = hoveredTeamIndex !== null && !isHovered;
+            return (
+              <div
+                key={i}
+                onMouseEnter={() => handleTeamMouseEnter(i)}
+                style={{
+                  flexGrow: getFlexGrow(i),
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  opacity: isOther ? 0.55 : 1,
+                  filter: isOther ? "blur(1px)" : "blur(0px)",
+                  transform: isOther ? "scale(0.985)" : "scale(1)",
+                  // Single CSS transition — runs on compositor, zero JS per frame
+                  transition:
+                    "flex-grow 480ms cubic-bezier(0.4,0,0.2,1), opacity 350ms ease, filter 350ms ease, transform 350ms ease",
+                  willChange: "flex-grow, opacity, filter, transform",
+                }}
+                className="hidden md:flex bg-white rounded-3xl p-9 shadow-sm border border-black/5 flex-col min-h-[360px] overflow-hidden"
+              >
+                <div className="relative w-20 h-20 mx-auto mb-7 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ring-4 ring-[#0d7a75]/10 shadow-lg">
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    className="object-cover object-top"
+                  />
+                  <div
+                    className={`absolute inset-0 rounded-full flex items-center justify-center text-3xl font-bold text-white ${member.color} hidden`}
+                  >
+                    {member.initials}
+                  </div>
+                </div>
+                <p className="text-2xl font-serif font-bold text-[#121e2e] mb-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                  {member.name}
+                </p>
+                <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#0d7a75] mb-4">
+                  {member.role}
+                </p>
+                <p
+                  style={{
+                    opacity: isHovered ? 1 : 0.75,
+                    transition: "opacity 350ms ease",
+                    display: "-webkit-box",
+                    WebkitLineClamp: isHovered ? "unset" : 4,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textAlign: isHovered ? "center" : "left",
+                  }}
+                  className="text-sm text-gray-600 leading-relaxed"
+                >
+                  {member.desc}
+                </p>
+              </div>
+            );
+          })}
+
+          {/* Mobile layout — stacked, no animation */}
+          {[
+            {
+              name: "Hams",
+              initials: "HL",
+              image: "/assets/images/Hams.PNG",
+              color: "bg-[#0d7a75]",
+              role: "Co-Founder",
+              desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
+            },
+            {
+              name: "Sharjeel",
+              initials: "SL",
+              image: "/assets/images/Sharjeel.PNG",
+              color: "bg-[#e8a020]",
+              role: "Founder",
+              desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn't have to face that process without clarity and guidance.",
             },
             {
               name: "Javeria",
@@ -604,55 +687,17 @@ export default function AboutPage() {
               desc: "Behind every decision is the responsibility to build something people can rely on. At Rahvana, that means making sure we grow sustainably while staying focused on what actually matters is helping people through a difficult process without adding financial stress or uncertainty. We keep that balance intact.",
             },
           ].map((member, i) => (
-            <motion.div
-              key={i}
-              layout
-              initial={false}
-              animate={{
-                opacity:
-                  hoveredTeamIndex === null || hoveredTeamIndex === i
-                    ? 1
-                    : 0.55,
-                filter:
-                  hoveredTeamIndex !== null && hoveredTeamIndex !== i
-                    ? "blur(1px)"
-                    : "blur(0px)",
-                scale:
-                  hoveredTeamIndex !== null && hoveredTeamIndex !== i
-                    ? 0.985
-                    : 1,
-              }}
-              transition={{
-                layout: {
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 28,
-                },
-                opacity: { duration: 0.4 },
-                filter: { duration: 0.4 },
-                scale: { duration: 0.4 },
-              }}
-              onMouseEnter={() => setHoveredTeamIndex(i)}
-              className={`bg-white rounded-3xl p-9 shadow-sm border border-black/5 flex flex-col md:min-h-[360px] ${
-                hoveredTeamIndex === null
-                  ? "md:flex-1"
-                  : hoveredTeamIndex === i
-                    ? "md:flex-[1.6]"
-                    : "md:flex-[0.75]"
-              }`}
+            <div
+              key={`mobile-${i}`}
+              className="md:hidden bg-white rounded-3xl p-9 shadow-sm border border-black/5 flex flex-col"
             >
-              <div className="relative w-50 h-50 mx-auto mb-7 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ring-4 ring-[#0d7a75]/10 shadow-lg">
+              <div className="relative w-20 h-20 mx-auto mb-7 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ring-4 ring-[#0d7a75]/10 shadow-lg">
                 <Image
                   src={member.image}
                   alt={member.name}
                   fill
                   className="object-cover object-top"
                 />
-                <div
-                  className={`absolute inset-0 rounded-full flex items-center justify-center text-3xl font-bold text-white ${member.color} hidden`}
-                >
-                  {member.initials}
-                </div>
               </div>
               <p className="text-2xl font-serif font-bold text-[#121e2e] mb-1">
                 {member.name}
@@ -660,15 +705,10 @@ export default function AboutPage() {
               <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#0d7a75] mb-4">
                 {member.role}
               </p>
-              <motion.p
-                layout
-                className={`text-sm text-gray-600 leading-relaxed ${
-                  hoveredTeamIndex === i ? "" : "line-clamp-4"
-                }`}
-              >
+              <p className="text-sm text-gray-600 leading-relaxed text-left">
                 {member.desc}
-              </motion.p>
-            </motion.div>
+              </p>
+            </div>
           ))}
         </div>
       </section>
