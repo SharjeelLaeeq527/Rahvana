@@ -403,6 +403,7 @@ export function UpgradeModal({
               >
                 One-time purchase · No subscription required
               </p>
+
               <button
                 disabled={isAddonProcessing || isUpgradeProcessing}
                 onClick={() =>
@@ -458,39 +459,34 @@ export function UpgradeModal({
                             : "text-neutral-500 hover:text-neutral-700"
                         }`}
                       >
-                        {/* Icon flush — zero padding around it */}
-                        <TierIcon tier={t} size={16} />
                         {TIER_NAMES[t]}
                       </button>
                     ))}
                   </div>
                 )}
 
-                <p
-                  className={`text-[10px] font-bold uppercase tracking-widest ${planStyle.featureText} mb-1`}
-                >
-                  {TIER_NAMES[selectedTier]} Plan
-                </p>
+               <div className="flex flex-col mb-3">
+                <div className="flex items-center gap-1 mb-2">
+                  <TierIcon tier={selectedTier} size={54} />
 
-                {planPrice && (
-                  <div className="mb-3">
-                    <div className="flex items-baseline gap-1">
-                      <span
-                        className={`text-[26px] font-black ${planStyle.priceText} leading-none`}
-                      >
-                        ${planPrice.monthly}
-                      </span>
-                      <span className="text-[12px] text-neutral-500 font-medium">
-                        /mo
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-neutral-400 mt-0.5">
-                      ${planPrice.annual} total
-                    </div>
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${planStyle.featureText} mb-1`}>
+                      {TIER_NAMES[selectedTier]} Plan
+                    </p>
+
+                    {planPrice && (
+                      <div className="flex items-baseline gap-1 flex-wrap">
+                        <span className={`text-[26px] font-black ${planStyle.priceText} leading-none`}>
+                          ${planPrice.monthly}
+                        </span>
+                        <span className="text-[12px] text-neutral-500 font-medium">/mo</span>
+                        <span className="text-[11px] text-neutral-400">· ${planPrice.annual} total</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
 
-                <ul className="flex flex-col gap-1.5 mb-3">
+                <ul className="flex flex-col gap-1.5 mt-1 pl-3">
                   {TIER_HIGHLIGHTS[selectedTier].slice(0, 4).map((item) => (
                     <li
                       key={item}
@@ -510,6 +506,7 @@ export function UpgradeModal({
                     </li>
                   )}
                 </ul>
+              </div>
 
                 <button
                   disabled={isAddonProcessing || isUpgradeProcessing}

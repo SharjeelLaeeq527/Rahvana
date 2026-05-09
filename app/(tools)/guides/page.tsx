@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
   FileText,
@@ -472,7 +473,7 @@ function GuideCard({
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${featureLocked
-        ? `border-2 ${tierStyle.cardBorder} cursor-pointer ${tierStyle.cardShadow} hover:-translate-y-1 ${tierStyle.cardHoverShadow}`
+        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
         : isNavigable
           ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
           : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
@@ -480,13 +481,19 @@ function GuideCard({
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Tier-matched gradient border for locked cards */}
-      {featureLocked && (
-        <div
-          className="absolute inset-0 rounded-[30px] pointer-events-none"
-          style={tierGradientBorderStyle}
-        />
-      )}
+          {/* Ribbon for locked cards */}
+          {featureLocked && (
+            <div className="absolute -top-12.5 -right-3 z-20 pointer-events-none">
+              <Image
+                src="/icons/ribbon.png"
+                alt="Premium ribbon"
+                width={220}
+                height={280}
+                priority={false}
+                className="w-32 h-36 object-contain drop-shadow-lg"
+              />
+            </div>
+          )}
 
       {/* Floating Icon Box */}
       <div
@@ -498,20 +505,7 @@ function GuideCard({
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      {/* Tier badge — top-right corner, white box so PNG pops */}
-      {featureLocked && (
-        <div className="absolute top-3.5 right-4 z-10">
-          <span
-            className={`inline-flex h-12 w-12 items-center justify-center rounded-full border bg-white shadow-md ${tierStyle.badgeBorder}`}
-          >
-            <span
-              className={`plan-icon ${tierIconClass}`}
-              style={{ width: 32, height: 32 }}
-              aria-hidden="true"
-            />
-          </span>
-        </div>
-      )}
+      {/* (Removed tier badge — ribbon now indicates locked state) */}
 
       {/* Border gradient on hover (category color, non-locked only) */}
       {!featureLocked && (

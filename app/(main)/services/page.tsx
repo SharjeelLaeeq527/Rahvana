@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, ArrowRight, ChevronDown } from "lucide-react";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import {
@@ -419,9 +420,7 @@ function ServiceCard({
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${featureLocked
-        ? requiredTier === "executive"
-          ? "border-2 border-[#8a5a08] dark:border-[#b88716] cursor-pointer shadow-[0_18px_38px_-24px_rgba(138,90,8,0.9),0_0_0_1px_rgba(255,215,112,0.28)_inset] hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgba(138,90,8,0.95),0_0_26px_rgba(212,161,44,0.22)]"
-          : "border-2 border-[#c0c0cc] dark:border-[#a0a0b0] cursor-pointer shadow-[0_18px_38px_-24px_rgba(100,100,130,0.6),0_0_0_1px_rgba(200,200,220,0.28)_inset] hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgba(100,100,130,0.75),0_0_26px_rgba(180,180,210,0.22)]"
+        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
         : isNavigable
           ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
           : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
@@ -429,22 +428,18 @@ function ServiceCard({
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Gradient border — visible for locked cards, color depends on tier */}
+      {/* Ribbon for locked cards */}
       {featureLocked && (
-        <div
-          className="absolute inset-0 rounded-[30px] pointer-events-none"
-          style={{
-            padding: "2.5px",
-            background: requiredTier === "executive"
-              ? "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%)"
-              : "linear-gradient(135deg, #8a8a9a 0%, #c8c8d8 25%, #e8e8f0 50%, #b0b0c8 75%, #8a8a9a 100%)",
-            WebkitMask:
-              "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-            opacity: 0.96,
-          }}
-        />
+        <div className="absolute -top-12.5 -right-0 z-20 pointer-events-none">
+          <Image
+            src="/icons/ribbon2.png"
+            alt="Premium ribbon"
+            width={260}
+            height={320}
+            priority={false}
+            className="w-32 h-36 object-contain drop-shadow-lg"
+          />
+        </div>
       )}
  
       {/* Floating Icon Box */}
@@ -464,30 +459,7 @@ function ServiceCard({
           : service.icon}
       </div>
  
-      {/* Tier badge — top-right corner, shown only for locked cards */}
-      {featureLocked && (
-        <div className="absolute top-3.5 right-4 z-10">
-          <span
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm
-              ${requiredTier === "executive"
-                ? "border-[#e8c96a] bg-[#fdf6e3]"
-                : requiredTier === "premium"
-                  ? "border-[#c0c0cc] bg-[#f0f0f0]"
-                  : "border-[#a8d4d4] bg-[#e8f4f4]"
-              }`}
-          >
-            <span
-              className={`plan-icon ${
-                requiredTier === "executive"
-                  ? "plan-icon--executive"
-                  : requiredTier === "premium"
-                    ? "plan-icon--premium"
-                    : "plan-icon--basic"
-              }`}
-            />
-          </span>
-        </div>
-      )}
+      {/* (Removed tier badge — ribbon now indicates locked state) */}
  
       {/* Border gradient on hover (category color) */}
       {!featureLocked && (
