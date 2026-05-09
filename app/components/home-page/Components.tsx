@@ -1535,22 +1535,20 @@ export function TwoWaysSection() {
               </div>
             </div>
 
-            {/* Right: visual card — uses ResponsiveVisual for proper scaling */}
-            <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
-              <div className="p-4 sm:p-5">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              <div className="border-t border-[#d7e6e2]">
+            {/* Right: text above + visual card below — both left-aligned at x=0 */}
+            <div className="flex flex-col gap-4">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeIndex}
+                  initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                </motion.div>
+              </AnimatePresence>
+              <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeIndex}
@@ -3043,7 +3041,7 @@ export function IndividualToolsScene() {
         boxShadow:
           "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
         position: "relative",
-        margin: "auto",
+        margin: 0,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
