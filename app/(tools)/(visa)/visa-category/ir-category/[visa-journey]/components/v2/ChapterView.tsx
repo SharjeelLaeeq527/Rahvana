@@ -60,6 +60,7 @@ export function ChapterView({
         ? "plan-icon--premium"
         : "plan-icon--executive";
 
+
   // Chapter backgrounds
   // const chapter1Bg = "/assets/images/chapter1-bg.png";
   // const chapter1StepBg = "/assets/images/ch1steps-bg.png";
@@ -231,45 +232,28 @@ export function ChapterView({
           </div>
         )}
 
-      {/* Plan Card */}
+{/* Plan Card */}
 <div
-  className={`
-    relative overflow-hidden
-    rounded-2xl border border-slate-200 ring-1 ring-slate-200/70
-    bg-gradient-to-br from-white via-[#fbfbfc] to-[#f6f7fa]
-    shadow-[0_14px_34px_rgba(15,23,42,0.08)] p-5 mb-4
-  `}
+  className={`rounded-2xl px-5 py-4 mb-4 flex items-center gap-4 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] border-[1.5px] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] hover:scale-[1.01]
+    ${plan.tier === "free"
+      ? "border-[#a8c4e0]"
+      : plan.tier === "basic"
+          ? "border-[#7fbfba]"
+        : plan.tier === "premium"
+          ? "border-[#b399d8]"
+          : "border-[#d4a855]"
+    }`}
 >
   <div
-    className={`
-      absolute inset-0 pointer-events-none
+    className={`rounded-full flex items-center justify-center flex-shrink-0 border-2 shadow-[0_2px_8px_rgba(0,0,0,0.09)] transition-all
       ${plan.tier === "free"
-        ? "bg-[radial-gradient(circle_at_top_right,rgba(187,203,227,0.18),transparent_58%)]"
+        ? "w-12 h-12 bg-[#f0f4fb] border-[#8fa8d4]"
         : plan.tier === "basic"
-          ? "bg-[radial-gradient(circle_at_top_right,rgba(143,209,203,0.18),transparent_58%)]"
+          ? "w-12 h-12 bg-[#eef9f8] border-[#bfe5e2]"
           : plan.tier === "premium"
-            ? "bg-[radial-gradient(circle_at_top_right,rgba(197,185,255,0.18),transparent_58%)]"
-            : "bg-[radial-gradient(circle_at_top_right,rgba(242,216,152,0.22),transparent_58%)]"
-      }
-    `}
-  />
-
-  <div className={`absolute left-0 top-0 h-full w-1.5 ${plan.tier === "free" ? "bg-[#9bb3d3]" : plan.tier === "basic" ? "bg-[#4baea4]" : plan.tier === "premium" ? "bg-[#b9afeb]" : "bg-[#d2a43f]"}`} />
-
-  {/* Icon (Top-right) */}
-  <span
-    title={`${plan.tier === "free" ? "Free Plan" : plan.tier === "basic" ? "Basic Plan" : plan.tier === "premium" ? "Premium Plan" : "Executive Plan"}`}
-    aria-label={`${plan.tier === "free" ? "Free Plan" : plan.tier === "basic" ? "Basic Plan" : plan.tier === "premium" ? "Premium Plan" : "Executive Plan"}`}
-    className={`absolute top-3 right-3 inline-flex items-center justify-center ${plan.tier === "executive" ? "w-9 h-9" : "w-11 h-11"} rounded-full border shadow-[0_8px_16px_rgba(15,23,42,0.08)] ring-1 ring-white/60
-      ${plan.tier === "free"
-        ? "bg-[#eef3fb] border-[#b8cae5]"
-        : plan.tier === "basic"
-          ? "bg-[#e7f7f5] border-[#7ecfc6]"
-          : plan.tier === "premium"
-            ? "bg-[#f0ebff] border-[#c5b9ff]"
-            : "bg-[#fff4cf] border-[#d8b95d]"
-      }
-    `}
+            ? "w-12 h-12 bg-[#faf7fe] border-[#a088d8]"
+            : "w-12 h-12 bg-[#fef9f0] border-[#c9a855]"
+      }`}
   >
     <span
       className={`plan-icon ${
@@ -279,53 +263,54 @@ export function ChapterView({
             ? "plan-icon--basic"
             : plan.tier === "premium"
               ? "plan-icon--premium"
-              : "plan-icon--executive scale-[0.85]"
+              : "plan-icon--executive"
       }`}
+      style={{
+        fontSize: plan.tier === "executive" ? 23 : plan.tier === "basic" ? 23 : 23,
+        color: plan.tier === "basic" ? basicTealPalette.text : undefined,
+        fontWeight: 600,
+      }}
       aria-hidden="true"
     />
-  </span>
-
-  <div className="pr-14">
-    {/* Button */}
-    {plan.tier !== "executive" && (
-      <button
-        onClick={() => setUpgradeModalFeature("checklist_engine")}
-        className={`
-          relative overflow-hidden
-          inline-flex w-fit items-center justify-center px-5 py-2.5 rounded-xl
-          font-semibold whitespace-nowrap text-sm
-          shadow-sm hover:shadow-md
-          active:scale-[0.98]
-          transition-all duration-150
-          group
-          mb-2.5
-          ${plan.tier === "free"
-            ? "bg-[#e3ebf7] text-[#2f4a72] hover:bg-[#d5e0f1]"
-            : plan.tier === "basic"
-              ? "bg-[#dff5f2] text-[#166b62] hover:bg-[#d2ede8]"
-              : plan.tier === "premium"
-                ? "bg-[#ece6ff] text-[#4b3587] hover:bg-[#ded5fb]"
-                : "bg-[#f6e3ae] text-[#7a560f] hover:bg-[#efd894]"
-          }
-        `}
-      >
-        <span className="text-[13px] font-semibold leading-none">Upgrade Plan</span>
-      </button>
-    )}
-
-    {/* Description */}
-    <p className="text-[13px] text-slate-600 leading-relaxed">
-      {plan.tier === "free"
-        ? "Access is limited right now. Upgrading unlocks the full roadmap, step-by-step guidance, and tools to make the next steps easier."
-        : plan.tier === "basic"
-          ? "Core roadmap is available. Premium adds step-by-step guidance, a document vault, reminders, and a more complete setup."
-          : plan.tier === "premium"
-            ? "Advanced toolkit included. Executive adds expert consultation, document reviews, interview preparation, and hands-on support."
-            : "Full plan active with complete tools and end-to-end support for the entire process."}
-    </p>
   </div>
-</div>
 
+  <p
+    className={`text-[13px] leading-relaxed m-0 flex-1 font-semibold
+      ${plan.tier === "free"
+        ? "text-[#2e4f72]"
+        : plan.tier === "basic"
+          ? "text-[#0f6f6d]"
+          : plan.tier === "premium"
+            ? "text-[#332d80]"
+            : "text-[#6b4a0d]"
+      }`}
+  >
+    {plan.tier === "free"
+      ? "Upgrade to unlock the full roadmap, step-by-step guidance, and tools for your next steps."
+      : plan.tier === "basic"
+        ? "Upgrade to Premium for step-by-step guidance, a document vault, and reminders."
+        : plan.tier === "premium"
+          ? "Upgrade to Executive for expert consultation, document reviews, and hands-on support."
+          : "Full plan active — complete tools and end-to-end support throughout the process."}
+  </p>
+
+  {plan.tier !== "executive" && (
+    <button
+      onClick={() => setUpgradeModalFeature("checklist_engine")}
+      className={`flex-shrink-0 inline-flex items-center gap-1.5 text-[12.5px] font-bold px-5.5 py-2.75 rounded-xl text-white transition-all active:scale-[0.96] shadow-md hover:shadow-xl hover:-translate-y-0.5 border border-white/15 group relative overflow-hidden
+        ${plan.tier === "free"
+          ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
+          : plan.tier === "basic"
+              ? "bg-[#2f9a95] hover:bg-[#257e7a]"
+            : "bg-[#9b7dd8] hover:bg-[#8b6dcf]"
+        }`}
+    >
+      <span className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+      <span className="relative">Upgrade Plan</span>
+        <ChevronRight size={16} strokeWidth={3} className="relative" />
+    </button>
+  )}
+</div>
         <div className="flex flex-col gap-1.5">
           {activeSteps.map((step, idx) => {
             const sId = step.step_key || (step as any).id;
@@ -493,7 +478,7 @@ export function ChapterView({
                     {step.step_short_description || ""}
                   </div>
                 </div>
-                <ChevronRight
+               <ChevronRight
                   className={`shrink-0 ${isStepLocked ? "text-[#c5cfd9] opacity-50" : "text-[#b3a6b3] opacity-30"}`}
                   size={14}
                   strokeWidth={3}

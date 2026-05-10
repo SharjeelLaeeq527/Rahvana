@@ -483,14 +483,14 @@ function GuideCard({
     >
           {/* Ribbon for locked cards */}
           {featureLocked && (
-            <div className="absolute -top-12.5 -right-3 z-20 pointer-events-none">
+            <div className="absolute -top-21 -right-3 z-20 pointer-events-none">
               <Image
                 src="/icons/ribbon.png"
                 alt="Premium ribbon"
-                width={220}
-                height={280}
+                width={240}
+                height={300}
                 priority={false}
-                className="w-32 h-36 object-contain drop-shadow-lg"
+                className="w-40 h-56 object-contain drop-shadow-lg"
               />
             </div>
           )}

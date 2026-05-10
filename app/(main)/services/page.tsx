@@ -430,14 +430,14 @@ function ServiceCard({
     >
       {/* Ribbon for locked cards */}
       {featureLocked && (
-        <div className="absolute -top-12.5 -right-0 z-20 pointer-events-none">
+        <div className="absolute -top-21 -right-3 z-20 pointer-events-none">
           <Image
-            src="/icons/ribbon2.png"
+            src="/icons/ribbon.png"
             alt="Premium ribbon"
             width={260}
             height={320}
             priority={false}
-            className="w-32 h-36 object-contain drop-shadow-lg"
+            className="w-40 h-56 object-contain drop-shadow-lg"
           />
         </div>
       )}
