@@ -80,18 +80,18 @@ export default function AboutPage() {
       className={`${dmSans.variable} ${playfair.variable} font-sans bg-[#faf7f2] text-[#2a2a2a] min-h-screen relative`}
     >
       {/* HERO */}
-      <section className="min-h-[100vh] flex items-center bg-[#faf7f2] relative overflow-hidden px-8 md:px-12 lg:px-20 pt-24 pb-20">
+      <section className="min-h-screen 2xl:min-h-fit flex items-center bg-[#faf7f2] relative overflow-hidden px-8 md:px-12 lg:px-20 pt-24 pb-20 2xl:py-40">
         {/* Decorative background elements for large screens */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#0d7a75]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none hidden 2xl:block" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#b5451b]/5 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4 pointer-events-none hidden 2xl:block" />
 
-        <div className="max-w-[1440px] mx-auto grid md:grid-cols-2 items-center gap-12 lg:gap-20 2xl:gap-32 w-full relative z-10">
+        <div className="max-w-[1440px] mx-auto w-full relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={containerVariants}
-            className="flex flex-col gap-8 md:gap-10"
+            className="flex flex-col gap-4 md:gap-6 mb-8 2xl:mb-12"
           >
             <motion.div
               variants={itemVariants}
@@ -102,67 +102,78 @@ export default function AboutPage() {
             </motion.div>
             <motion.h1
               variants={itemVariants}
-              className="font-bold font-serif text-4xl sm:text-5xl lg:text-6xl 2xl:text-7xl leading-[1.1] text-[#121e2e]"
+              className="font-bold text-center font-serif text-4xl sm:text-5xl lg:text-6xl 2xl:text-7xl leading-[1.1] text-[#121e2e]"
             >
               Some journeys begin with paperwork.{" "}
-              <em className="italic text-[#0d7a75] font-bold">Ours began</em> with
-              distance.
+              <em className="italic text-[#0d7a75] font-bold">Ours began</em>{" "}
+              with distance.
             </motion.h1>
-            <motion.p
-              variants={itemVariants}
-              className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600 max-w-xl 2xl:max-w-2xl"
-            >
-              Rahvana was built for the space between people who belong together —
-              the weeks that stretch too long, the forms that carry real lives,
-              and the quiet hope families hold onto while they wait to be
-              reunited.
-            </motion.p>
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-wrap items-center gap-6 mt-2"
-            >
-              <Link
-                href="/visa-category/ir-category/ir-1"
-                className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
-              >
-                Start your journey <ArrowRight size={16} />
-              </Link>
-              <span className="text-xs 2xl:text-sm text-gray-400 tracking-wide uppercase font-medium">
-                IR-1 · Spouse Visa · Phase 1
-              </span>
-            </motion.div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="relative flex justify-center lg:justify-end"
-          >
-            <div className="relative w-full max-w-[540px] 2xl:max-w-[680px] aspect-4/3 rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.16)] group">
-              <Image
-                src="/assets/images/about-hero-image.png"
-                alt="Airport reunion"
-                fill
-                priority
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-              />
-              <div className="absolute bottom-8 left-8 2xl:bottom-12 2xl:left-12 bg-white/90 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 shadow-2xl border border-white/20">
-                <div className="w-10 h-10 2xl:w-12 2xl:h-12 bg-[#0d7a75] rounded-full flex items-center justify-center text-white shadow-inner">
-                  <Heart size={20} />
-                </div>
-                <div>
-                  <strong className="block text-sm 2xl:text-base text-[#121e2e] font-bold">
-                    IR-1 Journey
-                  </strong>
-                  <span className="text-xs 2xl:text-sm text-gray-500 font-medium">
-                    Guiding families home
-                  </span>
+          <div className="grid md:grid-cols-2 items-center gap-12 lg:gap-20 2xl:gap-32">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={containerVariants}
+              className="flex flex-col gap-8 md:gap-10"
+            >
+              <motion.p
+                variants={itemVariants}
+                className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600"
+              >
+                Rahvana was built for the space between people who belong
+                together — the weeks that stretch too long, the forms that carry
+                real lives, and the quiet hope families hold onto while they
+                wait to be reunited.
+              </motion.p>
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-wrap items-center gap-6 mt-2"
+              >
+                <Link
+                  href="/visa-category/ir-category/ir-1"
+                  className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
+                >
+                  Start your journey <ArrowRight size={16} />
+                </Link>
+                <span className="text-xs 2xl:text-sm text-gray-400 tracking-wide uppercase font-medium">
+                  IR-1 · Spouse Visa · Phase 1
+                </span>
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              viewport={{ once: true }}
+              className="relative flex justify-center lg:justify-end"
+            >
+              <div className="relative w-full max-w-[540px] 2xl:max-w-[680px] aspect-4/3 rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.16)] group">
+                <Image
+                  src="/assets/images/about-hero-image.png"
+                  alt="Airport reunion"
+                  fill
+                  priority
+                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                />
+                <div className="absolute bottom-8 left-8 2xl:bottom-12 2xl:left-12 bg-white/90 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 shadow-2xl border border-white/20">
+                  <div className="w-10 h-10 2xl:w-12 2xl:h-12 bg-[#0d7a75] rounded-full flex items-center justify-center text-white shadow-inner">
+                    <Heart size={20} />
+                  </div>
+                  <div>
+                    <strong className="block text-sm 2xl:text-base text-[#121e2e] font-bold">
+                      IR-1 Journey
+                    </strong>
+                    <span className="text-xs 2xl:text-sm text-gray-500 font-medium">
+                      Guiding families home
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 

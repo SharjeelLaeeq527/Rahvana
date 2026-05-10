@@ -752,25 +752,27 @@ export function SiteHeader({
                 Pricing
               </Link>
             </div>
-            <div className="relative pt-2 pb-0">
-              <Link
-                href="/#faq"
-                onClick={(e) => handleNav("faq", e)}
-                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  isHomeHeroState
-                    ? isActive("faq")
-                      ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("faq")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                FAQ
-              </Link>
-            </div>
+            {pathname === "/" && (
+              <div className="relative pt-2 pb-0">
+                <Link
+                  href="/#faq"
+                  onClick={(e) => handleNav("faq", e)}
+                  className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                    isHomeHeroState
+                      ? isActive("faq")
+                        ? "bg-white/20 text-white"
+                        : "text-white/90 hover:bg-white/15 hover:text-white"
+                      : isHomeHeroP2State
+                        ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        : isActive("faq")
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                  }`}
+                >
+                  FAQ
+                </Link>
+              </div>
+            )}
             <div className="relative pt-2 pb-0">
               <Link
                 href="/#contact"
@@ -1622,17 +1624,19 @@ export function SiteHeader({
                 <CreditCard className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                 <span className="font-bold">Pricing</span>
               </HydrationSafeButton>
-              <HydrationSafeButton
-                onClick={() => handleNav("faq")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive("faq")
-                    ? "bg-[#0d7377]/10 text-[#0d7377]"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <HelpCircleIcon className="w-5 h-5 text-cyan-500 dark:text-cyan-400 text-" />
-                <span className="font-bold">FAQ</span>
-              </HydrationSafeButton>
+              {pathname === "/" && (
+                <HydrationSafeButton
+                  onClick={() => handleNav("faq")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                    isActive("faq")
+                      ? "bg-[#0d7377]/10 text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <HelpCircleIcon className="w-5 h-5 text-cyan-500 dark:text-cyan-400 text-" />
+                  <span className="font-bold">FAQ</span>
+                </HydrationSafeButton>
+              )}
               {/* {isSignedIn && (
                   <>
                     <HydrationSafeButton

@@ -74,73 +74,73 @@ export function useWizard(options: UseWizardOptions = {}) {
   }, [state]);
 
   // ─── Normalize State ───────────
-  const normalizeState = useCallback(() => {
-    if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
+  // const normalizeState = useCallback(() => {
+  //   if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
 
-    setState((prev) => {
-      let { currentStage, currentStep } = prev;
-      const chapters = activeRoadmap.chapters || activeRoadmap.stages;
-      const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
+  //   setState((prev) => {
+  //     let { currentStage, currentStep } = prev;
+  //     const chapters = activeRoadmap.chapters || activeRoadmap.stages;
+  //     const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
 
-      const getActiveStepsForChapter = (chapterIdx: number) => {
-        const chapter = chapters[chapterIdx];
-        if (!chapter) return [];
-        return chapter.steps.filter((s: any) => {
-          const visibleWhen = s.visible_when;
-          if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-            if (visibleWhen.filingMethod) {
-              return visibleWhen.filingMethod === filingMethod;
-            }
-          }
-          const branch = s.branch;
-          if (!branch || branch === 'both') return true;
-          return branch === filingMethod;
-        });
-      };
+  //     const getActiveStepsForChapter = (chapterIdx: number) => {
+  //       const chapter = chapters[chapterIdx];
+  //       if (!chapter) return [];
+  //       return chapter.steps.filter((s: any) => {
+  //         const visibleWhen = s.visible_when;
+  //         if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+  //           if (visibleWhen.filingMethod) {
+  //             return visibleWhen.filingMethod === filingMethod;
+  //           }
+  //         }
+  //         const branch = s.branch;
+  //         if (!branch || branch === 'both') return true;
+  //         return branch === filingMethod;
+  //       });
+  //     };
 
-      if (currentStage < 0) currentStage = 0;
-      if (currentStage >= chapters.length) {
-        currentStage = Math.max(0, chapters.length - 1);
-      }
+  //     if (currentStage < 0) currentStage = 0;
+  //     if (currentStage >= chapters.length) {
+  //       currentStage = Math.max(0, chapters.length - 1);
+  //     }
 
-      let activeSteps = getActiveStepsForChapter(currentStage);
+  //     let activeSteps = getActiveStepsForChapter(currentStage);
 
-      while (activeSteps.length === 0 && currentStage < chapters.length - 1) {
-        currentStage++;
-        activeSteps = getActiveStepsForChapter(currentStage);
-      }
+  //     while (activeSteps.length === 0 && currentStage < chapters.length - 1) {
+  //       currentStage++;
+  //       activeSteps = getActiveStepsForChapter(currentStage);
+  //     }
 
-      let narrowedStep: number;
-      const stepsInChapter = chapters[currentStage]?.steps || [];
-      const activeStepsInChapter = getActiveStepsForChapter(currentStage);
+  //     let narrowedStep: number;
+  //     const stepsInChapter = chapters[currentStage]?.steps || [];
+  //     const activeStepsInChapter = getActiveStepsForChapter(currentStage);
 
-      if (currentStep === null || currentStep < 0 || currentStep >= stepsInChapter.length) {
-        const firstIncomplete = stepsInChapter.findIndex((s: any) => {
-          const sId = s.step_key || s.id;
-          const isActive = activeStepsInChapter.some((as: any) => 
-            (as.step_key || as.id) === sId
-          );
-          return isActive && !prev.completedSteps.has(sId);
-        });
+  //     if (currentStep === null || currentStep < 0 || currentStep >= stepsInChapter.length) {
+  //       const firstIncomplete = stepsInChapter.findIndex((s: any) => {
+  //         const sId = s.step_key || s.id;
+  //         const isActive = activeStepsInChapter.some((as: any) => 
+  //           (as.step_key || as.id) === sId
+  //         );
+  //         return isActive && !prev.completedSteps.has(sId);
+  //       });
         
-        if (firstIncomplete === -1) {
-          narrowedStep = activeStepsInChapter.length > 0 ? stepsInChapter.findIndex((s: any) =>
-            activeStepsInChapter.some((as: any) => (as.step_key || as.id) === (s.step_key || s.id))
-          ) : 0;
-        } else {
-          narrowedStep = firstIncomplete;
-        }
-      } else {
-        narrowedStep = currentStep;
-      }
+  //       if (firstIncomplete === -1) {
+  //         narrowedStep = activeStepsInChapter.length > 0 ? stepsInChapter.findIndex((s: any) =>
+  //           activeStepsInChapter.some((as: any) => (as.step_key || as.id) === (s.step_key || s.id))
+  //         ) : 0;
+  //       } else {
+  //         narrowedStep = firstIncomplete;
+  //       }
+  //     } else {
+  //       narrowedStep = currentStep;
+  //     }
 
-      return {
-        ...prev,
-        currentStage,
-        currentStep: narrowedStep,
-      };
-    });
-  }, [activeRoadmap]);
+  //     return {
+  //       ...prev,
+  //       currentStage,
+  //       currentStep: narrowedStep,
+  //     };
+  //   });
+  // }, [activeRoadmap]);
 
   // ─── Load Progress (single combined API call) ─────────────────────────────
   useEffect(() => {
@@ -322,84 +322,72 @@ export function useWizard(options: UseWizardOptions = {}) {
           return;
         }
 
-        if (!currentState.backendId) {
-          console.warn("[useWizard] toggleComplete: No backendId found");
-          return;
-        }
-
         const isCompleted = currentState.completedSteps.has(stepKey);
 
-        // ENFORCE DEPENDENCY-BASED COMPLETION (ONLY when marking as completed)
+        // ENFORCE SEQUENTIAL ORDERING — runs before backendId check so the
+        // toast always fires even if the journey hasn't fully synced yet.
         if (!isCompleted) {
-          const chapters = activeRoadmap.chapters || activeRoadmap.stages || [];
+          const chapters = activeRoadmap?.chapters || activeRoadmap?.stages || [];
           const filingMethod = currentState.metadata?.filingMethod || currentState.filingType || 'online';
+          const metadata = currentState.metadata;
 
           const isStepActiveForCurrentFlow = (s: any): boolean => {
             const visibleWhen = s.visible_when;
             if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-              if (
-                visibleWhen.filingMethod &&
-                visibleWhen.filingMethod !== filingMethod
-              ) {
-                return false;
-              }
-              if (visibleWhen.filingMethodConfirmed !== undefined) {
-                const isConfirmed = Boolean(currentState.metadata?.filingMethodConfirmed);
-                if (Boolean(visibleWhen.filingMethodConfirmed) !== isConfirmed) {
-                  return false;
+              let isVisible = true;
+              for (const [key, value] of Object.entries<any>(visibleWhen)) {
+                if (key === 'filingMethod') {
+                  if (value !== filingMethod) isVisible = false;
+                } else {
+                  const stateValue = metadata?.[key];
+                  if (Array.isArray(value)) {
+                    if (!(value as any[]).includes(stateValue)) isVisible = false;
+                  } else {
+                    if (stateValue !== value) isVisible = false;
+                  }
                 }
               }
+              if (!isVisible) return false;
             }
-
             const branch = s.branch;
             if (!branch || branch === 'both') return true;
             return branch === filingMethod;
           };
 
-          const activeStepKeys = new Set<string>();
+          // Build ordered list of all active steps with their display names
+          const orderedActiveSteps: Array<{ key: string; name: string }> = [];
           chapters.forEach((chapter: any) => {
             (chapter.steps || []).forEach((s: any) => {
               if (isStepActiveForCurrentFlow(s)) {
-                activeStepKeys.add(s.step_key || s.id);
+                orderedActiveSteps.push({
+                  key: s.step_key || s.id,
+                  name: s.step_name || s.name || (s.step_key || s.id),
+                });
               }
             });
           });
-          
-          // Find the target step to get its explicit dependencies
-          let targetStep: any = null;
-          for (const chapter of chapters) {
-            const found = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === stepKey);
-            if (found) {
-              targetStep = found;
-              break;
-            }
-          }
 
-          // Check explicit dependencies from the step definition
-          if (targetStep && targetStep.dependencies && targetStep.dependencies.length > 0) {
-            const incompleteDep = targetStep.dependencies.find(
-              (depKey: string) =>
-                activeStepKeys.has(depKey) && !currentState.completedSteps.has(depKey),
-            );
-            
-            if (incompleteDep) {
-              // Find the dependency step name for better error message
-              let depStepName = incompleteDep;
-              for (const chapter of chapters) {
-                const depStep = (chapter.steps || []).find((s: any) => (s.step_key || s.id) === incompleteDep);
-                if (depStep) {
-                  depStepName = depStep.step_name;
-                  break;
-                }
-              }
-              
-              toast.error(`Required step pending: "${depStepName}"`, {
+          // Block completion if any preceding active step is not yet completed
+          const targetIdx = orderedActiveSteps.findIndex((s) => s.key === stepKey);
+
+          if (targetIdx > 0) {
+            const firstIncomplete = orderedActiveSteps
+              .slice(0, targetIdx)
+              .find((s) => !currentState.completedSteps.has(s.key));
+
+            if (firstIncomplete) {
+              toast.error(`Required step pending: "${firstIncomplete.name}"`, {
                 description: "Please complete the required preceding step first.",
-                duration: 4000
+                duration: 4000,
               });
-              return; // HARD BLOCK
+              return;
             }
           }
+        }
+
+        if (!currentState.backendId) {
+          console.warn("[useWizard] toggleComplete: No backendId found");
+          return;
         }
 
         if (!currentState.stepMap[stepKey]) {
