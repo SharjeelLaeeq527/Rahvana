@@ -1,21 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import {
-  ProcessingTimeModal,
-  MilestonesModal,
-  AfterI130ApprovalModal,
-  RelationshipEvidenceModal,
-  AffidavitSupportModal,
-  AddEvidenceNoteModal,
-} from "./StatusModals";
-import { GuideTutorialOverlay } from "./GuideTutorialOverlays";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
@@ -26,7 +10,6 @@ import {
   CheckSquare,
   ArrowRight,
   ShieldCheck,
-  Shield,
   Search,
   MessageSquare,
   Scale,
@@ -59,7 +42,6 @@ import {
   Clock,
   RefreshCw,
   Sparkles,
-  Crown,
 } from "lucide-react";
 
 import {
@@ -71,9 +53,7 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   RoadmapData,
@@ -88,7 +68,6 @@ import { ActionStepRenderer } from "./ActionStepRenderer";
 import {
   getAllActiveSteps,
   getStageProgress,
-  getDisplayStepNumber,
 } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
@@ -103,17 +82,12 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   HOUSEHOLD_TUTORIAL_STEPS,
-  HOUSEHOLD_GUIDE_CONTENT,
 } from "./HouseholdTutorialData";
 import {
   SUBMISSION_TUTORIAL_STEPS,
   SubmissionTutorialOverlay,
 } from "./SubmissionTutorialData";
 import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
-import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
-import { MEDICAL_EXAM_DATA } from "./MedicalExamData";
-import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
-import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
@@ -152,17 +126,14 @@ import {
 } from "./GuideTutorialOverlays";
 import {
   DqRecordingTool,
-  InterviewSchedulingTool,
   AppointmentReceivedTool,
   MedicalExamTool,
   PolioCertificateTool,
   PoliceClearanceTool,
-  GatheringChecklistTool,
 } from "./StepToolRenderer";
 import { getStepIcon } from "./StepIcon";
 import { AwaitingReviewStep } from "./AwaitingReviewStep";
 import { FinancialChecklistTool } from "./FinancialChecklistTool";
-import { HouseholdMemberTool } from "./HouseholdMemberTool";
 import { SubmissionReviewTool } from "./SubmissionReviewTool";
 import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./CourierRegistrationTool";
@@ -183,11 +154,7 @@ import {
   getStepLockStatus,
   getModalFeatureForTier,
 } from "@/lib/entitlements/hardLockRules";
-
-import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
-import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
 import { ApprovalNoticeTool } from "./ApprovalNoticeTool";
-
 import RegisterReceiptStep from "./RegisterReceiptStep";
 import TrackCaseStatusStep from "./TrackCaseStatusStep";
 interface SecurityQuestion {
@@ -267,89 +234,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const plan = usePlan();
   const stepEntitlement = useStepEntitlement(sId);
 
-  // --- Robust Chapter 1 detection for all substeps ---
-  // Status Guide Tutorial Overlay state
-  const [showStatusGuide, setShowStatusGuide] = useState(false);
-  const [statusGuideStep, setStatusGuideStep] = useState(0);
-
-  // USCIS Status Tutorial Steps (from HTML)
-  const USCIS_STATUS_TUTORIAL_STEPS = [
-    {
-      label: "Step 1 of 4 — Open official USCIS status tools",
-      heading: "Start with the official case-status view",
-      instruction:
-        "USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.",
-      url: "egov.uscis.gov",
-      kicker: "Official USCIS tracking",
-      head: "Case Status Online",
-      copy: "Track your case using the 13-character receipt number.",
-      pills: [
-        "Receipt number required",
-        "Last action shown",
-        "Official USCIS tool",
-      ],
-      note: "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet.",
-    },
-    {
-      label: "Step 2 of 4 — Understand common pending statuses",
-      heading:
-        "Learn the difference between waiting and action-required states",
-      instruction:
-        "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
-      url: "rahvana.local/status-map",
-      kicker: "Status guide",
-      head: "Status meanings",
-      copy: "Separate passive waiting from states that require action.",
-      pills: ["Received", "Actively reviewed", "RFE", "Approved"],
-      note: "Use this guide to understand whether you need to act now or simply stay prepared.",
-    },
-    {
-      label: "Step 3 of 4 — Use the waiting period well",
-      heading: "Turn waiting time into preparation time",
-      instruction:
-        "Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.",
-      url: "rahvana.local/pending-prep",
-      kicker: "While-you-wait tools",
-      head: "Stay prepared while waiting",
-      copy: "A prep checklist, next-step preview, and useful modules for this waiting period.",
-      pills: ["Prep checklist", "Coming next", "Useful right now"],
-      note: "A few small tasks now can make the next phase feel much easier when the case moves forward.",
-    },
-    {
-      label: "Step 4 of 4 — Know when the page should pivot",
-      heading: "Be ready for the next meaningful change",
-      instruction:
-        "If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.",
-      url: "rahvana.local/conditional-next-steps",
-      kicker: "Next-step guide",
-      head: "Pivot when USCIS changes the status",
-      copy: "RFE and approval should each unlock their own dedicated next-step experiences.",
-      pills: ["Conditional branches", "Next step unlocks", "Action clarity"],
-      note: "Your next task should match the actual update USCIS gives you.",
-    },
-  ];
   const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<
     string | null
   >(null);
   // Add Evidence Note modal state
-  const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] =
-    useState(false);
-  // Useful Right Now modals
-  const [showAfterI130Modal, setShowAfterI130Modal] = useState(false);
-  const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] =
-    useState(false);
-  const [showAffidavitSupportModal, setShowAffidavitSupportModal] =
-    useState(false);
-  // Modal state for status explainer panel
-  const [showProcessingModal, setShowProcessingModal] = React.useState(false);
-  const [showMilestonesModal, setShowMilestonesModal] = React.useState(false);
-  // Status panel modal states for step_1_16 (must be inside component)
-  const [isProcessingTimeModalOpen, setIsProcessingTimeModalOpen] =
-    useState(false);
-  const [isMilestonesModalOpen, setIsMilestonesModalOpen] = useState(false);
-  const handleProcessingTimeModalToggle = () =>
-    setIsProcessingTimeModalOpen((v) => !v);
-  const handleMilestonesModalToggle = () => setIsMilestonesModalOpen((v) => !v);
+
   const { user } = useAuth();
   const {
     openUploadModal,
@@ -756,7 +645,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
   const [selectedGatheringItem, setSelectedGatheringItem] =
     useState<DocumentGatheringItem | null>(null);
-  const [gatheringGuideStep, setGatheringGuideStep] = useState(0);
 
   // --- UTILS & DERIVED ---
   const [pccData, setPccData] = useState({
@@ -777,15 +665,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Step 3.6 Courier Registration Guide States
   const [isCourierGuideOpen, setIsCourierGuideOpen] = useState(false);
   const [courierGuideIdx, setCourierGuideIdx] = useState(0);
-
-  const handleToggleSubmissionCheck = (idx: number) => {
-    const next = {
-      ...submissionChecklistStatus,
-      [idx]: !submissionChecklistStatus[idx],
-    };
-    setSubmissionChecklistStatus(next);
-    actions.updateMetadata({ submissionChecklistStatus: next });
-  };
 
   // Sync selectedScenario with sponsorshipResult once on load
   useEffect(() => {
@@ -920,9 +799,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     return null;
   }, [chapters]);
 
-  const filingMethod =
-    state.metadata?.filingMethod || state.filingType || "online";
-
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
     return getActiveStepsForStage(
@@ -964,16 +840,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     priorityDate: "",
     caseLabel: "",
   });
-  const [rcptUpload, setRcptUpload] = React.useState({
-    file: null,
-    receipt: "",
-    noticeDate: "",
-    priorityDate: "",
-  });
-  const [rcptError, setRcptError] = React.useState("");
-  const [rcptSuccess, setRcptSuccess] = React.useState(false);
-  const [isRcptGuideOpen, setIsRcptGuideOpen] = React.useState(false);
-  const [rcptGuideStep, setRcptGuideStep] = React.useState(0);
 
   // Sync with metadata on mount
   React.useEffect(() => {
@@ -989,32 +855,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         setRcptUiState("tracked");
       }
     }
-  }, [
-    state.metadata?.uscis_receipt_number,
-    state.metadata?.uscis_tracking_enabled,
-  ]);
-
-  const handleSaveReceipt = () => {
-    const isValid = /^[A-Z]{3}[0-9]{10}$/.test(rcptManual.receipt);
-    if (!isValid) {
-      setRcptError(
-        "Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).",
-      );
-      setRcptSuccess(false);
-      return;
-    }
-    setRcptError("");
-    setRcptSuccess(true);
-
-    actions.updateMetadata({
-      uscis_receipt_number: rcptManual.receipt,
-      uscis_notice_date: rcptManual.noticeDate,
-      uscis_priority_date: rcptManual.priorityDate,
-      uscis_tracking_enabled: true,
-    });
-
-    setRcptUiState("tracked");
-  };
+  }, [state.metadata.uscis_notice_date, state.metadata.uscis_priority_date, state.metadata.uscis_receipt_number, state.metadata.uscis_tracking_enabled]);
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
@@ -1054,7 +895,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   );
   const chapterProg = useMemo(
     () => getStageProgress(data, state.currentStage, state),
-    [data, state.currentStage, state],
+    [data, state],
   );
 
   const prevStep = globalIdx > 0 ? allActiveSteps[globalIdx - 1] : null;
@@ -2249,7 +2090,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               <select
                 value={jsCount}
                 onChange={(e) => setJsCount(parseInt(e.target.value))}
-                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
+                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-position-[right_10px_center] bg-no-repeat pr-[30px]"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
                 }}
@@ -6838,7 +6679,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
 
                 {/* Tutorial Body */}
-                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
+                <div className="flex-1 min-h-0 overflow-y-auto p-[48px_24px_40px] flex flex-col items-center bg-white">
                   <div className="w-full max-w-[580px] flex flex-col">
                     <div
                       className={`text-[11px] font-semibold tracking-widest uppercase mb-4 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -7398,7 +7239,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
       {/* Gathering Guide Overlay (Step 3.4) */}
       {isGatheringGuideOpen && selectedGatheringItem && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans bg-white">
+        <div className="fixed inset-0 z-100 flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans bg-white">
           {/* Guide Topbar */}
           <div className="flex items-center px-2 sm:px-4 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -7496,7 +7337,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans bg-white">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button
