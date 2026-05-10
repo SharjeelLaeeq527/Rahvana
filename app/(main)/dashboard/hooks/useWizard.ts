@@ -74,73 +74,73 @@ export function useWizard(options: UseWizardOptions = {}) {
   }, [state]);
 
   // ─── Normalize State ───────────
-  const normalizeState = useCallback(() => {
-    if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
+  // const normalizeState = useCallback(() => {
+  //   if (!activeRoadmap || !(activeRoadmap.chapters || activeRoadmap.stages)) return;
 
-    setState((prev) => {
-      let { currentStage, currentStep } = prev;
-      const chapters = activeRoadmap.chapters || activeRoadmap.stages;
-      const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
+  //   setState((prev) => {
+  //     let { currentStage, currentStep } = prev;
+  //     const chapters = activeRoadmap.chapters || activeRoadmap.stages;
+  //     const filingMethod = prev.metadata?.filingMethod || prev.filingType || 'online';
 
-      const getActiveStepsForChapter = (chapterIdx: number) => {
-        const chapter = chapters[chapterIdx];
-        if (!chapter) return [];
-        return chapter.steps.filter((s: any) => {
-          const visibleWhen = s.visible_when;
-          if (visibleWhen && Object.keys(visibleWhen).length > 0) {
-            if (visibleWhen.filingMethod) {
-              return visibleWhen.filingMethod === filingMethod;
-            }
-          }
-          const branch = s.branch;
-          if (!branch || branch === 'both') return true;
-          return branch === filingMethod;
-        });
-      };
+  //     const getActiveStepsForChapter = (chapterIdx: number) => {
+  //       const chapter = chapters[chapterIdx];
+  //       if (!chapter) return [];
+  //       return chapter.steps.filter((s: any) => {
+  //         const visibleWhen = s.visible_when;
+  //         if (visibleWhen && Object.keys(visibleWhen).length > 0) {
+  //           if (visibleWhen.filingMethod) {
+  //             return visibleWhen.filingMethod === filingMethod;
+  //           }
+  //         }
+  //         const branch = s.branch;
+  //         if (!branch || branch === 'both') return true;
+  //         return branch === filingMethod;
+  //       });
+  //     };
 
-      if (currentStage < 0) currentStage = 0;
-      if (currentStage >= chapters.length) {
-        currentStage = Math.max(0, chapters.length - 1);
-      }
+  //     if (currentStage < 0) currentStage = 0;
+  //     if (currentStage >= chapters.length) {
+  //       currentStage = Math.max(0, chapters.length - 1);
+  //     }
 
-      let activeSteps = getActiveStepsForChapter(currentStage);
+  //     let activeSteps = getActiveStepsForChapter(currentStage);
 
-      while (activeSteps.length === 0 && currentStage < chapters.length - 1) {
-        currentStage++;
-        activeSteps = getActiveStepsForChapter(currentStage);
-      }
+  //     while (activeSteps.length === 0 && currentStage < chapters.length - 1) {
+  //       currentStage++;
+  //       activeSteps = getActiveStepsForChapter(currentStage);
+  //     }
 
-      let narrowedStep: number;
-      const stepsInChapter = chapters[currentStage]?.steps || [];
-      const activeStepsInChapter = getActiveStepsForChapter(currentStage);
+  //     let narrowedStep: number;
+  //     const stepsInChapter = chapters[currentStage]?.steps || [];
+  //     const activeStepsInChapter = getActiveStepsForChapter(currentStage);
 
-      if (currentStep === null || currentStep < 0 || currentStep >= stepsInChapter.length) {
-        const firstIncomplete = stepsInChapter.findIndex((s: any) => {
-          const sId = s.step_key || s.id;
-          const isActive = activeStepsInChapter.some((as: any) => 
-            (as.step_key || as.id) === sId
-          );
-          return isActive && !prev.completedSteps.has(sId);
-        });
+  //     if (currentStep === null || currentStep < 0 || currentStep >= stepsInChapter.length) {
+  //       const firstIncomplete = stepsInChapter.findIndex((s: any) => {
+  //         const sId = s.step_key || s.id;
+  //         const isActive = activeStepsInChapter.some((as: any) => 
+  //           (as.step_key || as.id) === sId
+  //         );
+  //         return isActive && !prev.completedSteps.has(sId);
+  //       });
         
-        if (firstIncomplete === -1) {
-          narrowedStep = activeStepsInChapter.length > 0 ? stepsInChapter.findIndex((s: any) =>
-            activeStepsInChapter.some((as: any) => (as.step_key || as.id) === (s.step_key || s.id))
-          ) : 0;
-        } else {
-          narrowedStep = firstIncomplete;
-        }
-      } else {
-        narrowedStep = currentStep;
-      }
+  //       if (firstIncomplete === -1) {
+  //         narrowedStep = activeStepsInChapter.length > 0 ? stepsInChapter.findIndex((s: any) =>
+  //           activeStepsInChapter.some((as: any) => (as.step_key || as.id) === (s.step_key || s.id))
+  //         ) : 0;
+  //       } else {
+  //         narrowedStep = firstIncomplete;
+  //       }
+  //     } else {
+  //       narrowedStep = currentStep;
+  //     }
 
-      return {
-        ...prev,
-        currentStage,
-        currentStep: narrowedStep,
-      };
-    });
-  }, [activeRoadmap]);
+  //     return {
+  //       ...prev,
+  //       currentStage,
+  //       currentStep: narrowedStep,
+  //     };
+  //   });
+  // }, [activeRoadmap]);
 
   // ─── Load Progress (single combined API call) ─────────────────────────────
   useEffect(() => {

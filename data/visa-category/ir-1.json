@@ -3004,7 +3004,11 @@
                 "ss_label": "Invoice ID Location",
                 "ss_headline": "Invoice Identification Number",
                 "ss_desc": "XXXXXXXXXXXXXXXX",
-                "note": "Both the NVC Case Number and the Invoice ID are required for CEAC login. Neither alone is sufficient."
+                "note": "Both the NVC Case Number and the Invoice ID are required for CEAC login. Neither alone is sufficient.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step1/03-invoice-id.png"
+                }
               },
               {
                 "label": "Step 4 of 5 — Enter your details into CEAC",
@@ -3013,7 +3017,11 @@
                 "url": "ceac.state.gov",
                 "ss_label": "CEAC Portal Login",
                 "ss_headline": "Immigrant Visa Case — CEAC Login",
-                "ss_desc": "Sign In"
+                "ss_desc": "Sign In",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step1/04-login-to-ceac.png"
+                }
               },
               {
                 "label": "Step 5 of 5 — Return and save your details",
@@ -3022,7 +3030,11 @@
                 "url": "Save to Portal Wallet",
                 "ss_label": "Save to Portal Wallet",
                 "ss_headline": "CEAC accessed successfully",
-                "ss_desc": "Return to this Rahvana step and use the credential vault."
+                "ss_desc": "Return to this Rahvana step and use the credential vault.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step1/5-portal-wallet.png"
+                }
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nCredentials are stored locally for your session only. Manage them in your Portal Wallet."
@@ -5384,9 +5396,18 @@
           "tool_data": {
             "type": "interview_outcome",
             "chips": [
-              { "label": "Post-Interview", "type": "purple" },
-              { "label": "Outcome Tracking", "type": "sky" },
-              { "label": "Unlocks Next Steps", "type": "gold" }
+              {
+                "label": "Post-Interview",
+                "type": "purple"
+              },
+              {
+                "label": "Outcome Tracking",
+                "type": "sky"
+              },
+              {
+                "label": "Unlocks Next Steps",
+                "type": "gold"
+              }
             ],
             "outcomes": [
               {
@@ -5441,38 +5462,80 @@
                 "id": "received_letter",
                 "question": "Did you receive a 221(g) letter or refusal sheet at the window?",
                 "options": [
-                  { "value": "yes", "label": "Yes — I was handed a paper or sheet" },
-                  { "value": "no", "label": "No — I was only told verbally" },
-                  { "value": "not_sure", "label": "Not sure" }
+                  {
+                    "value": "yes",
+                    "label": "Yes — I was handed a paper or sheet"
+                  },
+                  {
+                    "value": "no",
+                    "label": "No — I was only told verbally"
+                  },
+                  {
+                    "value": "not_sure",
+                    "label": "Not sure"
+                  }
                 ]
               },
               {
                 "id": "docs_asked",
                 "question": "Were you asked to submit specific documents?",
                 "options": [
-                  { "value": "yes", "label": "Yes — specific items were listed or requested" },
-                  { "value": "no", "label": "No — nothing specific was mentioned" },
-                  { "value": "not_sure", "label": "Not sure" }
+                  {
+                    "value": "yes",
+                    "label": "Yes — specific items were listed or requested"
+                  },
+                  {
+                    "value": "no",
+                    "label": "No — nothing specific was mentioned"
+                  },
+                  {
+                    "value": "not_sure",
+                    "label": "Not sure"
+                  }
                 ]
               },
               {
                 "id": "passport_kept",
                 "question": "Was your passport kept at the embassy or returned to you?",
                 "options": [
-                  { "value": "kept", "label": "Kept at the embassy" },
-                  { "value": "returned", "label": "Returned to me" },
-                  { "value": "not_sure", "label": "Not sure" }
+                  {
+                    "value": "kept",
+                    "label": "Kept at the embassy"
+                  },
+                  {
+                    "value": "returned",
+                    "label": "Returned to me"
+                  },
+                  {
+                    "value": "not_sure",
+                    "label": "Not sure"
+                  }
                 ]
               },
               {
                 "id": "ceac_status",
                 "question": "What does CEAC currently show, if you have checked?",
                 "options": [
-                  { "value": "issued", "label": "Issued" },
-                  { "value": "ap", "label": "Administrative Processing" },
-                  { "value": "refused", "label": "Refused" },
-                  { "value": "ready", "label": "Ready" },
-                  { "value": "not_checked", "label": "I haven't checked CEAC yet" }
+                  {
+                    "value": "issued",
+                    "label": "Issued"
+                  },
+                  {
+                    "value": "ap",
+                    "label": "Administrative Processing"
+                  },
+                  {
+                    "value": "refused",
+                    "label": "Refused"
+                  },
+                  {
+                    "value": "ready",
+                    "label": "Ready"
+                  },
+                  {
+                    "value": "not_checked",
+                    "label": "I haven't checked CEAC yet"
+                  }
                 ]
               }
             ],
@@ -5491,7 +5554,9 @@
           "estimated_duration_days": 7,
           "is_required": true,
           "display_order": 10,
-          "visible_when": { "interviewOutcome": "approved" },
+          "visible_when": {
+            "interviewOutcome": "approved"
+          },
           "actions": [
             "Log into USVisaScheduling courier portal",
             "Confirm delivery address and schedule",
@@ -5502,9 +5567,18 @@
           "tool_data": {
             "type": "visa_issuance",
             "chips": [
-              { "label": "Visa Approved", "type": "green" },
-              { "label": "Delivery Tracking", "type": "sky" },
-              { "label": "Final Step", "type": "purple" }
+              {
+                "label": "Visa Approved",
+                "type": "green"
+              },
+              {
+                "label": "Delivery Tracking",
+                "type": "sky"
+              },
+              {
+                "label": "Final Step",
+                "type": "purple"
+              }
             ],
             "congratulations": {
               "eyebrow": "Visa approved",
@@ -5533,7 +5607,9 @@
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
-          "visible_when": { "interviewOutcome": "221g" },
+          "visible_when": {
+            "interviewOutcome": "221g"
+          },
           "actions": [
             "Open your 221(g) letter",
             "Select every item the embassy has requested",
@@ -5543,14 +5619,19 @@
           "tool_data": {
             "type": "input_221g",
             "chips": [
-              { "label": "221(g) Review", "type": "amber" },
-              { "label": "Action Required", "type": "red" }
+              {
+                "label": "221(g) Review",
+                "type": "amber"
+              },
+              {
+                "label": "Action Required",
+                "type": "red"
+              }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
           }
         },
         {
-
           "step_key": "step_3_11",
           "step_number": 11,
           "step_type": "tool",
@@ -5564,7 +5645,10 @@
           "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": ["docs_requested", "both"]
+            "outcome221gSubtype": [
+              "docs_requested",
+              "both"
+            ]
           },
           "actions": [
             "Read your 221(g) letter thoroughly",
@@ -5575,9 +5659,18 @@
           "tool_data": {
             "type": "respond_221g",
             "chips": [
-              { "label": "Document Submission", "type": "amber" },
-              { "label": "Action Required", "type": "red" },
-              { "label": "221(g) Response", "type": "sky" }
+              {
+                "label": "Document Submission",
+                "type": "amber"
+              },
+              {
+                "label": "Action Required",
+                "type": "red"
+              },
+              {
+                "label": "221(g) Response",
+                "type": "sky"
+              }
             ],
             "explainer": {
               "eyebrow": "221(g) — Document Submission Required",
@@ -5597,10 +5690,22 @@
                 "Not Available"
               ],
               "docs_requested_options": [
-                { "label": "Select...", "value": "" },
-                { "label": "Yes — documents requested", "value": "yes" },
-                { "label": "No — no additional docs requested", "value": "no" },
-                { "label": "Unknown / not confirmed", "value": "unknown" }
+                {
+                  "label": "Select...",
+                  "value": ""
+                },
+                {
+                  "label": "Yes — documents requested",
+                  "value": "yes"
+                },
+                {
+                  "label": "No — no additional docs requested",
+                  "value": "no"
+                },
+                {
+                  "label": "Unknown / not confirmed",
+                  "value": "unknown"
+                }
               ]
             },
             "action_steps": [
@@ -5654,7 +5759,10 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": ["further_review", "both"]
+            "outcome221gSubtype": [
+              "further_review",
+              "both"
+            ]
           },
           "actions": [
             "Check CEAC status weekly",
@@ -5666,9 +5774,18 @@
           "tool_data": {
             "type": "adm_processing",
             "chips": [
-              { "label": "Post-Interview Review", "type": "gold" },
-              { "label": "CEAC Tracking", "type": "sky" },
-              { "label": "Administrative Processing", "type": "amber" }
+              {
+                "label": "Post-Interview Review",
+                "type": "gold"
+              },
+              {
+                "label": "CEAC Tracking",
+                "type": "sky"
+              },
+              {
+                "label": "Administrative Processing",
+                "type": "amber"
+              }
             ],
             "explainer": {
               "eyebrow": "What post-interview review means",
@@ -5688,10 +5805,22 @@
                 "Not Available"
               ],
               "docs_requested_options": [
-                { "label": "Select...", "value": "" },
-                { "label": "Yes — documents requested", "value": "yes" },
-                { "label": "No — no additional docs requested", "value": "no" },
-                { "label": "Unknown / not confirmed", "value": "unknown" }
+                {
+                  "label": "Select...",
+                  "value": ""
+                },
+                {
+                  "label": "Yes — documents requested",
+                  "value": "yes"
+                },
+                {
+                  "label": "No — no additional docs requested",
+                  "value": "no"
+                },
+                {
+                  "label": "Unknown / not confirmed",
+                  "value": "unknown"
+                }
               ]
             },
             "info_sections": [
@@ -5736,7 +5865,10 @@
           "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": ["docs_requested", "both"]
+            "outcome221gSubtype": [
+              "docs_requested",
+              "both"
+            ]
           },
           "actions": [
             "Confirm submission was received",
@@ -5748,9 +5880,18 @@
           "tool_data": {
             "type": "adm_processing",
             "chips": [
-              { "label": "Post-Submission", "type": "sky" },
-              { "label": "Case Monitoring", "type": "purple" },
-              { "label": "Awaiting Resolution", "type": "gold" }
+              {
+                "label": "Post-Submission",
+                "type": "sky"
+              },
+              {
+                "label": "Case Monitoring",
+                "type": "purple"
+              },
+              {
+                "label": "Awaiting Resolution",
+                "type": "gold"
+              }
             ],
             "explainer": {
               "eyebrow": "Post-submission monitoring",
@@ -5770,10 +5911,22 @@
                 "Not Available"
               ],
               "docs_requested_options": [
-                { "label": "Select...", "value": "" },
-                { "label": "Yes — documents requested", "value": "yes" },
-                { "label": "No — no additional docs requested", "value": "no" },
-                { "label": "Unknown / not confirmed", "value": "unknown" }
+                {
+                  "label": "Select...",
+                  "value": ""
+                },
+                {
+                  "label": "Yes — documents requested",
+                  "value": "yes"
+                },
+                {
+                  "label": "No — no additional docs requested",
+                  "value": "no"
+                },
+                {
+                  "label": "Unknown / not confirmed",
+                  "value": "unknown"
+                }
               ]
             },
             "info_sections": [
