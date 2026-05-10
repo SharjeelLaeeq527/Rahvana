@@ -6896,7 +6896,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       }}
                     />
 
-                    {/* Screenshot Block — Fallback UI with Browser Chrome */}
+                    {/* Screenshot Block — Media or Fallback UI with Browser Chrome */}
                     <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
                       {/* Browser Chrome Bar */}
                       <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
@@ -6910,19 +6910,27 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         </div>
                       </div>
 
-                      {/* Content Area — fixed: aspectRatio only, no minHeight conflict */}
+                      {/* Content Area — Image or Mock UI */}
                       <div
                         className="relative w-full bg-[#f8f9fb]"
                         style={{ aspectRatio: "4/3" }}
                       >
-                        <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center justify-center overflow-hidden">
-                          <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
-                            {currentTutStep.vlabel}
-                          </span>
-                          <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
-                            {currentTutStep.heading}
+                        {currentTutStep.media && currentTutStep.media.type === 'img' ? (
+                          <img
+                            src={currentTutStep.media.src}
+                            alt={currentTutStep.heading}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center justify-center overflow-hidden">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
+                              {currentTutStep.vlabel}
+                            </span>
+                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
+                              {currentTutStep.heading}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
 
