@@ -167,6 +167,7 @@ import { SubmissionReviewTool } from "./SubmissionReviewTool";
 import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
+import { DocListSection } from "./DocListSection";
 import { InterviewDayTool } from "./InterviewDayTool";
 import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
 import { TrackVisaIssuanceTool } from "./TrackVisaIssuanceTool";
@@ -234,6 +235,24 @@ interface FilingQuizResult {
   factors: { icon: string; text: string }[];
   emphasize: "online" | "paper" | null;
 }
+
+// Vault document IDs for Chapter 3 Step 6 gathering checklist items
+const GATHERING_VAULT_IDS: Record<string, string> = {
+  passport: "passport-beneficiary",
+  "birth-cert": "birth-cert-beneficiary",
+  "marriage-cert": "nadra-mrc",
+  pcc: "police-certificate-pakistan",
+  "interview-letter": "interview-letter",
+  "i864-original": "i-864-affidavit",
+  "tax-docs": "tax-returns-petitioner",
+  "employment-letter": "employment-letter",
+  photos: "passport-photos",
+  "medical-packet": "medical-results-envelope",
+  "ds260-original": "misc-document",
+  "polio-cert": "misc-document",
+  "courier-registration-certificate": "misc-document",
+  folders: "misc-document",
+};
 
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Top-level step/chapter detection logic for use throughout the file
@@ -476,8 +495,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Civil Documents States
   const [activeCivilDoc, setActiveCivilDoc] = useState<any>(null);
   const [isCivilDocGuideOpen, setIsCivilDocGuideOpen] = useState(false);
+  const [docGuideContext, setDocGuideContext] = useState<"civil" | "gathering">("civil");
   const civilDocsStatus =
     (state.metadata.civilDocsStatus as Record<string, string>) || {};
+  const gatheringDocsStatus =
+    (state.metadata.gatheringDocsStatus as Record<string, string>) || {};
 
   // Financial Documents States (Step 6)
   const [activeFinancialDoc, setActiveFinancialDoc] = useState<any>(null);
@@ -1500,6 +1522,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   };
 
   const handleMarkDocReviewed = (docId: string) => {
+    if (docGuideContext === "gathering") {
+      const next = { ...gatheringDocsStatus, [docId]: "reviewed" };
+      actions.updateMetadata({ gatheringDocsStatus: next });
+      if (sId === "step_3_6") {
+        const tool = currentStep.tool_data;
+        if (tool?.doc_gathering) {
+          const total = tool.doc_gathering.groups.reduce(
+            (acc: number, g: any) => acc + g.items.length,
+            0,
+          );
+          const reviewedCount = Object.values(next).filter((s) => s === "reviewed").length;
+          if (reviewedCount >= total && !isCompleted) handleToggleComplete();
+        }
+      }
+      return;
+    }
+
     const next = { ...civilDocsStatus, [docId]: "reviewed" };
     actions.updateMetadata({ civilDocsStatus: next });
 
@@ -3267,22 +3306,50 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />
           )}
 
-          {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
+          {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" && (
-            <GatheringChecklistTool
-              tool={tool}
-              state={state}
-              actions={actions}
-              gatheringState={{
-                gatheringStatus,
-                setGatheringStatus,
-                selectedGatheringItem,
-                setSelectedGatheringItem,
-                isGatheringGuideOpen,
-                setIsGatheringGuideOpen,
-                gatheringGuideStep,
-                setGatheringGuideStep,
+            <DocListSection
+              groups={tool.doc_gathering?.groups || []}
+              docsStatus={gatheringDocsStatus}
+              uploadedDocuments={uploadedDocuments}
+              isDeletingIds={isDeletingIds}
+              isReloadingDocs={isReloadingDocs}
+              getVaultId={(item) =>
+                GATHERING_VAULT_IDS[item.id] || mapDocumentNameToId(item.title)
+              }
+              onItemClick={(item) => {
+                setDocActionModal({
+                  isOpen: true,
+                  doc: item,
+                  title: item.title,
+                  subtitle: item.sub,
+                  onReadGuide: () => {
+                    if (!stepEntitlement.guard()) return;
+                    actions.updateMetadata({
+                      gatheringDocsStatus: {
+                        ...gatheringDocsStatus,
+                        [item.id]: "in-progress",
+                      },
+                    });
+                    setDocGuideContext("gathering");
+                    setActiveCivilDoc(item);
+                    setIsCivilDocGuideOpen(true);
+                  },
+                  onUpload: () => {
+                    const vaultId =
+                      GATHERING_VAULT_IDS[item.id] || mapDocumentNameToId(item.title);
+                    setActiveUploadId(item.id);
+                    setActiveUploadType("doc");
+                    if (!stepEntitlement.guard()) return;
+                    openUploadModal(vaultId);
+                  },
+                });
               }}
+              onPreview={(uploadedDocId) => {
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank");
+              }}
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
+              progressLabel="packed"
             />
           )}
 
@@ -4151,6 +4218,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                       [item.id]: "in-progress",
                                     },
                                   });
+                                  setDocGuideContext("civil");
                                   setActiveCivilDoc(item);
                                   setIsCivilDocGuideOpen(true);
                                 }
@@ -5411,8 +5479,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
                 {/* )} */}
 
-                {/* Document Cards */}
-                {(() => {
+                {/* Document Cards — rendered by DocListSection below */}
+                {false && (() => {
                   const effectiveDocItems =
                     sId === "step_1_2" && questionnaireDocItems
                       ? questionnaireDocItems
@@ -5901,6 +5969,140 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </>
                   );
                 })()}
+
+                {/* DocListSection — standardised doc-upload UI for step_1_2 */}
+                {(() => {
+                  const effectiveDocItems =
+                    sId === "step_1_2" && questionnaireDocItems
+                      ? questionnaireDocItems
+                      : (currentStep as any).document_items ||
+                        currentStep.document_items;
+                  if (!effectiveDocItems) return null;
+
+                  const ICON_MAP: Record<string, string> = {
+                    ShieldCheck: "police", User: "user", FileText: "file-text",
+                    FileCheck: "file-text", MessageSquare: "message",
+                    Scale: "prior-marriage", Globe: "translations",
+                    ClipboardList: "clipboard", Lock: "police", Camera: "camera",
+                  };
+                  const BADGE_MAP: Record<string, string> = {
+                    "Required Now": "req", "USCIS Intake Order": "req",
+                    "Required if Applicable": "cond", "Supporting Evidence": "cond",
+                    "Gather Now for Later": "Recommended",
+                  };
+                  const GROUP_ORDER = [
+                    "Required Now", "Required if Applicable", "USCIS Intake Order",
+                    "Supporting Evidence", "Gather Now for Later",
+                  ];
+
+                  const docReviewStatus =
+                    (state.metadata?.docReviewStatus as Record<string, string>) || {};
+                  const step1_2Status: Record<string, string> = { ...docReviewStatus };
+                  for (const doc of effectiveDocItems) {
+                    if (!step1_2Status[doc.id] && state.documentChecklist[doc.name]) {
+                      step1_2Status[doc.id] = "reviewed";
+                    }
+                  }
+
+                  const grouped: Record<string, any[]> = {};
+                  for (const doc of effectiveDocItems) {
+                    const g = doc.group || "Required Now";
+                    if (!grouped[g]) grouped[g] = [];
+                    grouped[g].push({
+                      id: doc.id,
+                      icon: ICON_MAP[doc.icon] || "file-text",
+                      title: doc.name,
+                      sub: doc.subtitle,
+                      tags: doc.tag
+                        ? [
+                            doc.tag === "petitioner"
+                              ? "pet"
+                              : doc.tag === "beneficiary"
+                                ? "bene"
+                                : doc.tag === "both"
+                                  ? "both"
+                                  : "3p",
+                          ]
+                        : [],
+                      guideUrl: doc.guideUrl,
+                    });
+                  }
+                  const step1_2Groups = GROUP_ORDER.filter((g) => grouped[g]).map((g) => ({
+                    id: g.replace(/\s+/g, "-").toLowerCase(),
+                    label: g,
+                    badge: BADGE_MAP[g] || "req",
+                    items: grouped[g],
+                  }));
+
+                  return (
+                    <div className="w-full max-w-[740px] px-0 mb-10">
+                      <DocListSection
+                        groups={step1_2Groups}
+                        docsStatus={step1_2Status}
+                        uploadedDocuments={uploadedDocuments}
+                        isDeletingIds={isDeletingIds}
+                        isReloadingDocs={isReloadingDocs}
+                        getVaultId={(item) => mapDocumentNameToId(item.title)}
+                        showTags
+                        onItemClick={(item) => {
+                          setDocActionModal({
+                            isOpen: true,
+                            doc: { ...item, name: item.title },
+                            title: item.title,
+                            subtitle: item.sub,
+                            onReadGuide: () => {
+                              if (item.guideUrl && item.guideUrl !== "/guides") {
+                                window.open(item.guideUrl, "_blank");
+                                if (actions.updateDocumentStatus && item.id)
+                                  actions.updateDocumentStatus(item.id, "reviewed");
+                              } else {
+                                setSelectedGuideId(item.id || null);
+                                if (actions.updateDocumentStatus && item.id)
+                                  actions.updateDocumentStatus(item.id, "in-progress");
+                              }
+                            },
+                            onUpload: () => {
+                              const defId = mapDocumentNameToId(item.title);
+                              setActiveUploadId(item.id);
+                              setActiveUploadType("doc");
+                              if (!stepEntitlement.guard()) return;
+                              if (item.id === "doc_citizenship") {
+                                setMultipleUploadModalState({
+                                  isOpen: true, categoryId: defId, documentName: item.title,
+                                  options: ["U.S. passport", "U.S. birth certificate", "Certificate of Naturalization (Form N-550)", "Certificate of Citizenship (Form N-560)", "Consular Report of Birth Abroad (Form FS-240 / DS-1350)"],
+                                });
+                              } else if (item.id === "doc_relationship") {
+                                setMultipleUploadModalState({
+                                  isOpen: true, categoryId: defId, documentName: item.title,
+                                  options: ["Communication history", "Photos together", "Travel history", "Shared finances", "Shared residence", "Family evidence", "Affidavits"],
+                                });
+                              } else if (item.id === "doc_translations") {
+                                setMultipleUploadModalState({
+                                  isOpen: true, categoryId: defId, documentName: item.title,
+                                  options: ["Translated Nikah Nama", "Translated NADRA MRC", "Translated Birth Certificate", "Translated Divorce Decree"],
+                                });
+                              } else {
+                                openUploadModal(defId);
+                              }
+                            },
+                          });
+                        }}
+                        onPreview={(uploadedDocId) =>
+                          window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+                        }
+                        onDelete={(id, name) => setDocumentToDelete({ id, name })}
+                        progressLabel="reviewed"
+                      />
+                      <div className="mt-10 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center">
+                        <span className="block text-[10px] sm:text-[12px] leading-relaxed">
+                          Rahvana provides structured guidance only. This is not legal advice.{" "}
+                          <br className="hidden sm:block" />
+                          Consult a licensed immigration attorney for case-specific decisions.
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </>
           ) : currentStep.step_type === "filing" ? (
@@ -6386,7 +6588,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           isOpen={isCivilDocGuideOpen}
           onClose={() => setIsCivilDocGuideOpen(false)}
           doc={activeCivilDoc}
-          status={civilDocsStatus[activeCivilDoc.id] || "not-started"}
+          status={
+            (docGuideContext === "gathering" ? gatheringDocsStatus : civilDocsStatus)[
+              activeCivilDoc.id
+            ] || "not-started"
+          }
           onMarkReviewed={() => handleMarkDocReviewed(activeCivilDoc.id)}
         />
       )}

@@ -1235,57 +1235,25 @@ export function TwoWaysSection() {
       >
         <div
           style={{
-            height: "100vh",
+            minHeight: "100vh",
             display: "flex",
             alignItems: "center",
-            overflow: "hidden",
             background: "transparent",
+            paddingBlock: "clamp(40px,6vh,80px)",
+            boxSizing: "border-box",
           }}
         >
           {/* Decorative radial highlights removed for seamless background */}
 
-          {/* Scroll-progress pill indicators — right edge */}
-          <div
-            style={{
-              position: "absolute",
-              right: 28,
-              top: "50%",
-              transform: "translateY(-50%)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              zIndex: 10,
-            }}
-          >
-            {([0, 1] as TwoWaysIndex[]).map((i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => selectPath(i)}
-                aria-label={`Show ${twoWaysPaths[i].title}`}
-                style={{
-                  width: 7,
-                  height: activeIndex === i ? 22 : 7,
-                  borderRadius: 4,
-                  background: activeIndex === i ? "#0d7377" : "#c8d5d3",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Main grid */}
+        {/* Main grid */}
           <div
             className="relative mx-auto w-full px-8 xl:px-12"
             style={{
-              maxWidth: 1360,
+              maxWidth: 1300,
               display: "grid",
-              gridTemplateColumns: "minmax(0,400px) 1fr",
-              gap: "clamp(40px,5vw,90px)",
-              alignItems: "center",
+              gridTemplateColumns: "minmax(0,380px) minmax(0,1fr)",
+              gap: "clamp(32px,4vw,72px)",
+              alignItems: "start",
             }}
           >
             {/* Left: text + selectors + CTAs */}
@@ -1319,7 +1287,7 @@ export function TwoWaysSection() {
               </p>
 
               {/* Active-panel label */}
-              <div style={{ minHeight: 80, marginTop: 22, overflow: "hidden" }}>
+              <div style={{ minHeight: 64, marginTop: 16, overflow: "hidden" }}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeIndex}
@@ -1332,11 +1300,11 @@ export function TwoWaysSection() {
                       {twoWaysPaths[activeIndex].eyebrow}
                     </p>
                     <h3
-                      className="mb-0 mt-1.5 font-extrabold text-[#162126]"
+                      className="mb-0 mt-1 font-extrabold text-[#162126]"
                       style={{
-                        fontSize: "clamp(17px,1.5vw,21px)",
+                        fontSize: "clamp(15px,1.3vw,19px)",
                         lineHeight: 1.2,
-                        maxWidth: 420,
+                        maxWidth: 380,
                       }}
                     >
                       {twoWaysPaths[activeIndex].shortTitle}
@@ -1427,26 +1395,28 @@ export function TwoWaysSection() {
             </div>
 
             {/* Right: animated visual */}
-            {reduceMotion ? (
-              <div className="flex min-w-0 flex-col gap-5">
-                <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                <ResponsiveVisual index={activeIndex} />
-              </div>
-            ) : (
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={activeIndex}
-                  className="flex min-w-0 flex-col gap-5"
-                  initial={{ opacity: 0, y: 18, scale: 0.988 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.992 }}
-                  transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                >
+            <div className="min-w-0 flex flex-col gap-3">
+              {reduceMotion ? (
+                <>
                   <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
                   <ResponsiveVisual index={activeIndex} />
-                </motion.div>
-              </AnimatePresence>
-            )}
+                </>
+              ) : (
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeIndex}
+                    className="flex min-w-0 flex-col gap-3"
+                    initial={{ opacity: 0, y: 18, scale: 0.988 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -12, scale: 0.992 }}
+                    transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                    <ResponsiveVisual index={activeIndex} />
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -1465,6 +1435,7 @@ export function TwoWaysSection() {
         >
           {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+
             {/* Left: heading + selectors + CTAs */}
             <div>
               <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
@@ -1499,10 +1470,7 @@ export function TwoWaysSection() {
                     </p>
                     <h3
                       className="mb-0 mt-1 font-extrabold text-[#162126]"
-                      style={{
-                        fontSize: "clamp(15px,2.5vw,19px)",
-                        lineHeight: 1.2,
-                      }}
+                      style={{ fontSize: "clamp(15px,2.5vw,19px)", lineHeight: 1.2 }}
                     >
                       {twoWaysPaths[activeIndex].shortTitle}
                     </h3>
@@ -1536,9 +1504,7 @@ export function TwoWaysSection() {
                     <div className="min-w-0 flex-1">
                       <div
                         className="text-[14px] font-black leading-tight"
-                        style={{
-                          color: activeIndex === i ? "#0d7377" : "#162126",
-                        }}
+                        style={{ color: activeIndex === i ? "#0d7377" : "#162126" }}
                       >
                         {path.title}
                       </div>
@@ -1569,22 +1535,20 @@ export function TwoWaysSection() {
               </div>
             </div>
 
-            {/* Right: visual card — uses ResponsiveVisual for proper scaling */}
-            <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
-              <div className="p-4 sm:p-5">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              <div className="border-t border-[#d7e6e2]">
+            {/* Right: text above + visual card below — both left-aligned at x=0 */}
+            <div className="flex flex-col gap-4">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeIndex}
+                  initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
+                </motion.div>
+              </AnimatePresence>
+              <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeIndex}
@@ -1598,6 +1562,7 @@ export function TwoWaysSection() {
                 </AnimatePresence>
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -1614,21 +1579,22 @@ export function TwoWaysSupportText({
   path: (typeof twoWaysPaths)[number];
 }) {
   return (
-    <div className="w-full">
+    <div className="w-full min-w-0">
       <p className="m-0 text-[11px] font-black uppercase tracking-[0.08em] text-[#0d7377]">
         {path.supportEyebrow}
       </p>
       <h3
-        className="mb-0 mt-1.5 font-extrabold tracking-tight text-[#162126]"
-        style={{ fontSize: "clamp(18px,1.8vw,24px)", lineHeight: 1.18 }}
+        className="mb-0 mt-1 font-extrabold tracking-tight text-[#162126]"
+        style={{ fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.18 }}
       >
         {path.supportLead}
       </h3>
       <p
         className="mt-2 mb-0 text-[#4a5c62]"
         style={{
-          fontSize: "clamp(13px,1.1vw,15px)",
-          lineHeight: 1.62,
+          fontSize: "clamp(13px,1vw,14.5px)",
+          lineHeight: 1.6,
+          maxWidth: 560,
         }}
       >
         {path.supportText}
@@ -1642,8 +1608,7 @@ export function TwoWaysSupportText({
 export function TwoWaysVisual({ index }: { index: TwoWaysIndex }) {
   return (
     <div
-      className="flex size-full items-center justify-center"
-      style={{ position: "relative", width: 680, height: 520 }}
+      style={{ position: "relative", width: 680, height: 560 }}
     >
       {index === 0 ? <GuidedRoadmapScene /> : <IndividualToolsScene />}
     </div>
@@ -1795,17 +1760,17 @@ const GUIDED_TOUR = [
   {
     view: "dashboard" as const,
     text: "Click here to begin",
-    dot: { top: 375, left: 118 },
-    // text below ring — scrollTop will be subtracted at render time
-    tip: { top: 392, left: 52 },
-    side: "below" as const,
+    dot: { top: 335, left: 157 },
+    // text placed near the top-right of the card, pointing towards the card
+    tip: { top: 285, left: 105 },
+    side: "top" as const,
   },
   {
     view: "chapter" as const,
     text: "Click to open",
-    dot: { top: 116, left: 455 },
+    dot: { top: 116, left: 520 },
     // text to the RIGHT of ring with ← arrow — clear of content
-    tip: { top: 108, left: 485 },
+    tip: { top: 106, left: 545 },
     side: "right" as const,
   },
 ] as const;
@@ -1907,6 +1872,16 @@ export function GuidedRoadmapScene() {
           )}
         </div>
 
+        {/* Centre guide text — only in step view */}
+        {view === "step" && (
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-[#d1e7e2] bg-[#f0f9f6] px-3.5 py-1.5">
+            <span className="size-1.5 rounded-full bg-[#0d7377] shrink-0" />
+            <span className="text-[11px] font-normal text-[#0d7377] leading-none whitespace-nowrap">
+              Tap each section to answer and confirm your eligibility
+            </span>
+          </div>
+        )}
+
         <div className="flex items-center gap-4">
           {view === "dashboard" && (
             <div className="flex items-center gap-2">
@@ -1985,10 +1960,8 @@ export function GuidedRoadmapScene() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               ref={dashScrollRef}
-              onScroll={() =>
-                setDashScrollTop(dashScrollRef.current?.scrollTop ?? 0)
-              }
-              className="flex-1 p-5 overflow-y-auto"
+              onScroll={() => setDashScrollTop(dashScrollRef.current?.scrollTop ?? 0)}
+              className="flex-1 p-5 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {/* Next Roadmap Step Card */}
               <div className="mb-6 rounded-[24px] bg-[#051738] p-6 text-white shadow-lg relative overflow-hidden min-h-[170px] flex flex-col justify-center">
@@ -2090,9 +2063,6 @@ export function GuidedRoadmapScene() {
                     className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
-                        <BookOpen size={16} />
-                      </div>
                       <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
                         Case Details
                       </span>
@@ -2134,9 +2104,6 @@ export function GuidedRoadmapScene() {
                     className="flex w-full items-center justify-between px-5 py-3.5 transition-colors hover:bg-slate-50"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-[#f0f3f7] text-[#0d7377]">
-                        <Signpost size={16} />
-                      </div>
                       <span className="text-[12px] font-black uppercase tracking-wider text-[#162126]">
                         Milestone History
                       </span>
@@ -2221,7 +2188,7 @@ export function GuidedRoadmapScene() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-5 bg-[#f9fafb]">
+              <div className="flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-5 bg-[#f9fafb]">
                 <div className="flex flex-col gap-2">
                   {activeChapter.steps.map((step, idx) => {
                     const isDone = completedSteps.has(step[0]);
@@ -2412,12 +2379,7 @@ export function GuidedRoadmapScene() {
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{
-                delay: 0.2,
-                type: "spring",
-                stiffness: 220,
-                damping: 18,
-              }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 220, damping: 18 }}
               style={{
                 width: 56,
                 height: 56,
@@ -2437,13 +2399,7 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              style={{
-                margin: "0 0 8px",
-                fontSize: 22,
-                fontWeight: 900,
-                color: "white",
-                lineHeight: 1.2,
-              }}
+              style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 900, color: "white", lineHeight: 1.2 }}
             >
               Demo Complete!
             </motion.h3>
@@ -2452,43 +2408,24 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.38, duration: 0.3 }}
-              style={{
-                margin: "0 0 6px",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.72)",
-                lineHeight: 1.6,
-                maxWidth: 320,
-              }}
+              style={{ margin: "0 0 6px", fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.6, maxWidth: 320 }}
             >
-              You&apos;ve seen how the guided IR-1 roadmap works.
+              You've seen how the guided IR-1 roadmap works.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.44, duration: 0.3 }}
-              style={{
-                margin: "0 0 28px",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.55)",
-                lineHeight: 1.6,
-                maxWidth: 300,
-              }}
+              style={{ margin: "0 0 28px", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 300 }}
             >
-              Start your full journey — all chapters, steps, and built-in tools
-              are free to use.
+              Start your full journey — all chapters, steps, and built-in tools are free to use.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.52, duration: 0.3 }}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                width: "100%",
-                maxWidth: 280,
-              }}
+              style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 280 }}
             >
               <a
                 href={journeyHref}
@@ -2546,22 +2483,17 @@ export function GuidedRoadmapScene() {
             className="pointer-events-none"
             style={{ position: "absolute", inset: 0, zIndex: 40 }}
           >
-            {/* Teal text — below ring (dashboard) or right of ring with ← (chapter) */}
+            {/* Teal text — with animated guiding arrow */}
             {(() => {
               const step = GUIDED_TOUR[tourIdx];
-              const scrollOffset =
-                step.view === "dashboard" ? dashScrollTop : 0;
+              const scrollOffset = step.view === "dashboard" ? dashScrollTop : 0;
               return (
                 <motion.div
                   key={`tip-${tourIdx}`}
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  transition={{
-                    delay: 0.12,
-                    duration: 0.2,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
+                  transition={{ delay: 0.12, duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                   style={{
                     position: "absolute",
                     top: step.tip.top - scrollOffset,
@@ -2569,33 +2501,39 @@ export function GuidedRoadmapScene() {
                     whiteSpace: "nowrap",
                     display: "flex",
                     alignItems: "center",
-                    gap: 4,
+                    gap: 6,
+                    flexDirection: step.side === "top" ? "column" : "row",
                   }}
                 >
                   {step.side === "right" && (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: "#0d7377",
-                        fontWeight: 900,
-                        lineHeight: 1,
-                      }}
+                    <motion.div
+                      animate={{ x: [-4, 0, -4] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      ←
-                    </span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5M5 12L12 19M5 12L12 5" />
+                      </svg>
+                    </motion.div>
                   )}
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      color: "#0d7377",
-                      letterSpacing: "0.01em",
-                      textShadow:
-                        "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
-                    }}
-                  >
+                  <span style={{
+                    fontSize: 12,
+                    fontWeight: 400,
+                    color: "#0d7377",
+                    letterSpacing: "0.01em",
+                    textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
+                  }}>
                     {step.text}
                   </span>
+                  {step.side === "top" && (
+                    <motion.div
+                      animate={{ y: [-4, 0, -4] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5V19M12 19L5 12M12 19L19 12" />
+                      </svg>
+                    </motion.div>
+                  )}
                 </motion.div>
               );
             })()}
@@ -2608,15 +2546,9 @@ export function GuidedRoadmapScene() {
               transition={{ delay: 0.15, duration: 0.22 }}
               style={{
                 position: "absolute",
-                top:
-                  GUIDED_TOUR[tourIdx].dot.top -
-                  10 -
-                  (GUIDED_TOUR[tourIdx].view === "dashboard"
-                    ? dashScrollTop
-                    : 0),
+                top: GUIDED_TOUR[tourIdx].dot.top - 10 - (GUIDED_TOUR[tourIdx].view === "dashboard" ? dashScrollTop : 0),
                 left: GUIDED_TOUR[tourIdx].dot.left - 10,
-                width: 20,
-                height: 20,
+                width: 20, height: 20,
                 borderRadius: "50%",
                 background: "rgba(13,115,119,0.15)",
                 border: "2px solid #0d7377",
@@ -2624,14 +2556,9 @@ export function GuidedRoadmapScene() {
             >
               <motion.div
                 animate={{ scale: [1, 2.5, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{
-                  duration: 1.6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  position: "absolute",
-                  inset: -4,
+                  position: "absolute", inset: -4,
                   borderRadius: "50%",
                   border: "1.5px solid rgba(13,115,119,0.4)",
                 }}
@@ -3095,13 +3022,10 @@ export function IndividualToolsScene() {
     };
   }, [hovered, startAutoPlay]);
 
-  const handleSelect = useCallback(
-    (idx: number) => {
-      goTo(idx);
-      if (!hovered) startAutoPlay();
-    },
-    [goTo, hovered, startAutoPlay],
-  );
+  const handleSelect = useCallback((idx: number) => {
+    goTo(idx);
+    if (!hovered) startAutoPlay();
+  }, [goTo, hovered, startAutoPlay]);
 
   const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
@@ -3117,7 +3041,7 @@ export function IndividualToolsScene() {
         boxShadow:
           "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
         position: "relative",
-        margin: "auto",
+        margin: 0,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -3668,7 +3592,7 @@ export function ConsultationBanner({
         whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto w-full px-6 sm:px-8 md:px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.42fr_0.58fr] gap-14 lg:gap-20 xl:gap-28 items-center"
+        className="relative mx-auto w-full px-10 xl:px-12 z-10 grid grid-cols-1 lg:grid-cols-[1.42fr_0.58fr] gap-14 lg:gap-20 xl:gap-28 items-center"
         style={{
           maxWidth: 1360,
           paddingTop: "clamp(48px,7vh,96px)",
@@ -3704,7 +3628,7 @@ export function ConsultationBanner({
             {/* Animated Title with line-by-line reveal */}
             <h2
               id="consultation-heading"
-              className="mt-4 mb-0 max-w-full font-extrabold text-[#162126] md:max-w-[640px] lg:max-w-none lg:whitespace-nowrap"
+              className="mt-4 mb-0 max-w-full font-extrabold text-[#162126] md:max-w-[640px] lg:max-w-none"
               style={{
                 fontSize: "clamp(30px,4.2vw,60px)",
                 lineHeight: 1.0,
@@ -3730,7 +3654,7 @@ export function ConsultationBanner({
             </motion.p>
           </div>
 
-          {/* Two-card illustrated grid */}
+         {/* Two-card illustrated grid */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -3831,7 +3755,7 @@ export function ConsultationBanner({
             ))}
           </motion.div>
         </div>
-
+        
         {/* RIGHT SIDE: Clock & CTA */}
         <motion.div
           initial={{ opacity: 0, x: 12 }}
@@ -4145,8 +4069,7 @@ export function JourneyConsultationBand({
     <div
       className="relative overflow-hidden"
       style={{
-        background:
-          "linear-gradient(155deg, #f5fdf9 0%, #f9fdff 50%, #fffdf7 100%)",
+        background: "linear-gradient(155deg, #f5fdf9 0%, #f9fdff 50%, #fffdf7 100%)",
       }}
     >
       {/* Top hairline */}

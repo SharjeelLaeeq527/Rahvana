@@ -29,6 +29,7 @@ import {
   Syringe,
   Hospital,
   Copy,
+  Truck,
 } from "lucide-react";
 
 export const getStepIcon = (iconKey: string) => {
@@ -106,6 +107,8 @@ export const getStepIcon = (iconKey: string) => {
       return <Hospital size={18} />;
     case "copy":
       return <Copy size={18} />;
+    case "truck":
+      return <Truck size={18} />;
     default:
       return null;
   }
