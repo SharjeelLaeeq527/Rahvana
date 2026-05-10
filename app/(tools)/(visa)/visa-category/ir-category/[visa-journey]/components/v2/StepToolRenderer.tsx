@@ -780,7 +780,7 @@ export const PolioCertificateTool: React.FC<{
             setPolioGuideStep(0);
             setIsPolioGuideOpen(true);
           }}
-          className="w-full bg-[#3b7dd8]---- hover:bg-teal-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+          className="w-full bg-[#3b7dd8] hover:bg-[#3b7dd8]  text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
         >
           {polioLaunched
             ? data.launchModule.buttonLabels.completed
