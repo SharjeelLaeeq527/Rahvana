@@ -267,7 +267,7 @@ export function ChapterView({
       }`}
       style={{
         fontSize: plan.tier === "executive" ? 23 : plan.tier === "basic" ? 23 : 23,
-        color: plan.tier === "basic" ? basicTealPalette.text : undefined,
+        color: plan.tier === "basic" ? "#296d6c" : undefined,
         fontWeight: 600,
       }}
       aria-hidden="true"
