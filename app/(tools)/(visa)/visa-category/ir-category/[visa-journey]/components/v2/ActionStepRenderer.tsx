@@ -51,16 +51,25 @@ interface ActionStepRendererProps {
 
 // Tailwind-compatible color values
 const COLORS = {
-  navy: "#0c1b33",
-  ink: "#1c2b3a",
-  soft: "#3a4f63",
-  muted: "#6b8097",
-  line: "#d7e3ef",
-  sky: "#e8f1fb",
-  accent: "#2f6fd4",
-  accent2: "#2460bb",
-  green: "#15744f",
-  greenbg: "#e8f5ef",
+  navy: "var(--rv-navy)",
+  ink: "var(--rv-ink)",
+  soft: "var(--rv-soft)",
+  muted: "var(--rv-muted)",
+  line: "var(--rv-line)",
+  sky: "var(--rv-sky)",
+  accent: "var(--rv-blue)",
+  accent2: "var(--rv-blue-dark)",
+  green: "var(--rv-green)",
+  greenbg: "var(--rv-green-bg)",
+};
+
+const CHAPTER1 = {
+  accent: "var(--rv-ch1)",
+  accentDark: "var(--rv-ch1-dark)",
+  bg: "var(--rv-ch1-module-bg)",
+  feature: "var(--rv-ch1-feature-bg)",
+  panel: "var(--rv-ch1-panel)",
+  text: "var(--rv-ch1-text)",
 };
 
 // Helper: Format relative time
@@ -661,7 +670,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           font-weight: 800;
           text-transform: uppercase;
           letter-spacing: 0.12em;
-          color: #636B97;
+          color: var(--rv-ch1-text);
           margin-bottom: 8px;
           display: flex;
           flex-wrap: wrap;
@@ -669,8 +678,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           gap: 4px;
           line-height: 1.4;
         }
-        .asr-eyebrow-sep { color: #BDD7F1; margin: 0 6px; }
-        .asr-eyebrow-current { color: #3B7DD8; }
+        .asr-eyebrow-sep { color: var(--rv-ch1); margin: 0 6px; }
+        .asr-eyebrow-current { color: var(--rv-ch1); }
  
         /* ── Title ── */
         .asr-title {
@@ -680,9 +689,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           letter-spacing: -0.02em;
           margin-bottom: 4px;
         }
-        .asr-title--ch1 { color: #8284bf; }
+        .asr-title--ch1 { color: var(--rv-ch1); }
         .asr-title--ch2 { color: #27192e; }
-        .asr-title--default { color: #0c1b33; }
+        .asr-title--default { color: var(--rv-ch1-text); }
  
         /* ── Description ── */
         .asr-desc {
@@ -691,9 +700,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           max-width: 560px;
           margin-bottom: 16px;
         }
-        .asr-desc--ch1 { color: #8284bf; }
+        .asr-desc--ch1 { color: var(--rv-ch1-text); }
         .asr-desc--ch2 { color: #b48ad6; }
-        .asr-desc--default { color: #3a4f63; }
+        .asr-desc--default { color: var(--rv-ch1-text); }
  
         /* ── Chips ── */
         .asr-chips {
@@ -713,14 +722,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           white-space: nowrap;
         }
         .asr-chip--default {
-          background: #e8f1fb;
-          border-color: #d0e4f7;
-          color: #2f6fd4;
+          background: var(--rv-ch1-feature-bg);
+          border-color: var(--rv-ch1-feature-bg);
+          color: var(--rv-ch1);
         }
         .asr-chip--ch1 {
-          background: #f3f0fb;
-          border-color: #c9bef2;
-          color: #4a2d8a;
+          background: var(--rv-ch1-feature-bg);
+          border-color: rgba(130, 132, 191, 0.28);
+          color: var(--rv-ch1-text);
         }
         .asr-chip--ch2 {
           background: #f4e6f3;
@@ -730,7 +739,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
  
         /* ── Hero Section ── */
         .asr-hero {
-          background: linear-gradient(180deg, #251f32 0%, #251f32 100%);
+          background: var(--rv-ch1-module-bg);
           color: #fff;
           border-radius: clamp(16px, 3vw, 24px);
           padding: clamp(14px, 3.5vw, 28px);
@@ -743,7 +752,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           line-height: 1.15;
           margin-bottom: 6px;
         }
-        .asr-hero__heading--rose { color: #8284bf; }
+        .asr-hero__heading--rose { color: var(--rv-ch1); }
         .asr-hero__desc {
           font-size: clamp(13px, 1.8vw, 14px);
           line-height: 1.65;
@@ -766,8 +775,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           color: #fff;
         }
         .asr-badge--rose {
-          background: #fff;
-          color: #8284bf;
+          background: var(--rv-ch1-feature-bg);
+          color: var(--rv-ch1-text);
         }
  
         /* ── Action Tips Grid ── */
@@ -809,12 +818,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           text-align: center;
           line-height: 1.3;
         }
-        .asr-btn--rose { background: #8284bf; color: #fff; }
-        .asr-btn--rose:hover { background: #7a7aaa; }
-        .asr-btn--accent { background: #2f6fd4; color: #fff; }
-        .asr-btn--accent:hover { background: #2460bb; }
-        .asr-btn--sky { background: #e8f1fb; color: #1a3054; }
-        .asr-btn--sky:hover { opacity: 0.8; }
+        .asr-btn--rose { background: var(--rv-ch1); color: #fff; }
+        .asr-btn--rose:hover { background: var(--rv-ch1-dark); }
+        .asr-btn--accent { background: var(--rv-ch1); color: #fff; }
+        .asr-btn--accent:hover { background: var(--rv-ch1-dark); }
+        .asr-btn--sky { background: var(--rv-ch1-feature-bg); color: var(--rv-ch1-text); }
+        .asr-btn--sky:hover { opacity: 0.9; }
         .asr-btn:disabled { cursor: not-allowed; opacity: 0.6; }
  
         /* ── Info Cards Row ── */
@@ -832,14 +841,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           box-shadow: 0 8px 20px rgba(12,27,51,0.04);
         }
         .asr-card__title {
-          font-size: clamp(14px, 2vw, 16px);
+          font-size: 15px;
           font-weight: 700;
           color: #0c1b33;
           margin-bottom: 6px;
         }
         .asr-card__sub {
-          font-size: clamp(12px, 1.6vw, 13px);
-          line-height: 1.6;
+          font-size: 13px;
+          line-height: 1.55;
           color: #6b8097;
           margin-bottom: 14px;
         }
@@ -856,28 +865,28 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           gap: 6px;
         }
         .asr-label {
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
           color: #6b8097;
         }
         .asr-input {
           padding: 12px 14px;
-          border: 1px solid #d7e3ef;
+          border: 1px solid var(--rv-ch1-feature-bg);
           border-radius: 10px;
           font-size: clamp(13px, 1.8vw, 14px);
           font-family: inherit;
           transition: border-color 0.2s, box-shadow 0.2s;
-          color: #1c2b3a;
+          color: var(--rv-ch1-text);
           background: #fff;
           outline: none;
           width: 100%;
           box-sizing: border-box;
         }
         .asr-input:focus {
-          border-color: #2f6fd4;
-          box-shadow: 0 0 0 3px rgba(47,111,212,0.12);
+          border-color: var(--rv-ch1);
+          box-shadow: 0 0 0 3px rgba(130,132,191,0.12);
         }
         .asr-input--error {
           border-color: #ef4444 !important;
@@ -996,7 +1005,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         .asr-guide-modal {
           position: fixed;
           inset: 0;
-          background: #fafcff;
+          background: white;
           z-index: 200;
           display: flex;
           flex-direction: column;
@@ -1007,21 +1016,21 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           display: flex;
           align-items: center;
           height: clamp(56px, 8vw, 72px);
-          border-bottom: 1px solid #d7e3ef;
+          border-bottom: 1px solid var(--rv-ch1-feature-bg);
           padding: 0 clamp(12px, 3vw, 24px);
           gap: 16px;
           flex-shrink: 0;
-          background: #fafcff;
+          background: white;
         }
         .asr-guide-close-btn {
           width: 36px;
           height: 36px;
           min-width: 36px;
           border-radius: 50%;
-          background: #f4f7fb;
+          background: var(--rv-ch1-feature-bg);
           border: none;
           cursor: pointer;
-          color: #3a4f63;
+          color: var(--rv-ch1-text);
           font-size: 20px;
           font-weight: bold;
           transition: background 0.2s;
@@ -1030,23 +1039,23 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           align-items: center;
           justify-content: center;
         }
-        .asr-guide-close-btn:hover { background: #e8f1fb; }
+        .asr-guide-close-btn:hover { background: var(--rv-ch1-feature-bg); }
         .asr-progress-bar {
           flex: 1;
           height: 6px;
-          background: #d0e4f7;
+          background: var(--rv-ch1-feature-bg);
           border-radius: 10px;
           overflow: hidden;
         }
         .asr-progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #2f6fd4, #69a5ef);
+          background: linear-gradient(90deg, var(--rv-ch1), rgba(130,132,191,0.6));
           transition: width 0.4s ease-out;
         }
         .asr-guide-counter {
           font-size: 12px;
           font-weight: 700;
-          color: #6b8097;
+          color: var(--rv-ch1-text);
           min-width: 50px;
           text-align: right;
           flex-shrink: 0;
@@ -1356,7 +1365,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         {/* Hero Section */}
         <section
           style={{
-            background: isChapter1 ? "#251f32" : isChapter2 ? "#1a0a18" : "#051738",
+            background: isChapter1 ? CHAPTER1.bg : isChapter2 ? "#1a0a18" : "#051738",
             color: "#fff",
             borderRadius: "24px",
             padding: isMobile ? "16px" : "24px",
@@ -1375,7 +1384,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               right: 0,
               height: "2px",
               background: isChapter1
-                ? "linear-gradient(90deg, #8284bf 0%, rgba(130,132,191,0.3) 100%)"
+                ? "linear-gradient(90deg, var(--rv-ch1), var(--rv-ch1-module-bg), transparent)"
                 : isChapter2
                 ? "linear-gradient(90deg, #520a50 0%, rgba(82,10,80,0.3) 100%)"
                 : "linear-gradient(90deg, #051738 0%, rgba(5,23,56,0.3) 100%)",
@@ -1384,12 +1393,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           {/* Heading */}
           <h2
             style={{
-              fontSize: isMobile ? "22px" : "28px",
+              fontSize: isMobile ? "22px" : "26px",
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
-              color: isChapter1 ? "#b8a8d9" : isChapter2 ? "#d99dcf" : "#7ba3d9",
-              textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              color: isChapter1 ? CHAPTER1.accent : isChapter2 ? "#d99dcf" : "#7ba3d9",
+              textShadow: "none",
             }}
           >
             {actionData.hero_heading}
@@ -1399,12 +1408,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           {actionData.hero_description && (
             <p
               style={{
-                fontSize: "14px",
-                lineHeight: 1.65,
+                fontSize: "13.5px",
+                lineHeight: 1.55,
                 color:
                   step.step_key === "step_1_11"
-                    ? "#fff"
+                    ? CHAPTER1.text
                     : "rgba(255, 255, 255, 0.74)",
+                maxWidth: "470px",
               }}
             >
               {actionData.hero_description}
@@ -1416,21 +1426,21 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <div
               style={{
                 display: "inline-flex",
-                padding: "8px 12px",
+                padding: "6px 11px",
                 borderRadius: "999px",
                 background:
                   step.step_key === "step_1_11"
-                    ? "#fff"
+                    ? CHAPTER1.feature
                     : "rgba(255, 255, 255, 0.1)",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: ".08em",
+                fontSize: "10px",
+                fontWeight: 700,
+                letterSpacing: ".1em",
                 textTransform: "uppercase",
                 marginTop: "10px",
                 marginBottom: "12px",
-                color: isChapter1 ? "#8284bf" : isChapter2 ? "#d99dcf" : "#7ba3d9",
+                color: isChapter1 ? CHAPTER1.text : isChapter2 ? "#d99dcf" : "#7ba3d9",
                 backdropFilter: "blur(4px)",
-                border: `1px solid ${isChapter1 ? "rgba(130,132,191,0.4)" : isChapter2 ? "rgba(217,157,207,0.4)" : "rgba(123,163,217,0.4)"}`,
+                border: `1px solid ${isChapter1 ? "rgba(130,132,191,0.28)" : isChapter2 ? "rgba(217,157,207,0.4)" : "rgba(123,163,217,0.4)"}`,
               }}
             >
               {actionData.badge}
@@ -1454,8 +1464,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     background: "rgba(255, 255, 255, 0.06)",
                     padding: "12px",
                     borderRadius: "14px",
-                    fontSize: "13px",
-                    lineHeight: 1.45,
+                      fontSize: "13px",
+                      lineHeight: 1.5,
                     color: "rgba(255, 255, 255, 0.82)",
                   }}
                 >
@@ -1485,7 +1495,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background: stepEntitlement.isLocked ? "#4a5568" : isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738",
+                  background: stepEntitlement.isLocked ? "#4a5568" : isChapter1 ? CHAPTER1.accent : isChapter2 ? "#520a50" : "#051738",
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1496,10 +1506,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#7a7aaa" : isChapter2 ? "#3d0b3d" : "#041028";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? CHAPTER1.accentDark : isChapter2 ? "#3d0b3d" : "#041028";
                 }}
                 onMouseLeave={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738";
+                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? CHAPTER1.accent : isChapter2 ? "#520a50" : "#051738";
                 }}
               >
                 {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
@@ -1552,7 +1562,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   justifyContent: "center",
                   width: "100%",
                   background:
-                    stepEntitlement.isLocked ? "#4a5568" : (step.step_key === "step_1_11" ? "#8284bf" : COLORS.accent),
+                    stepEntitlement.isLocked ? "#4a5568" : (step.step_key === "step_1_11" ? CHAPTER1.accent : COLORS.accent),
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1566,13 +1576,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 onMouseEnter={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? "#7a7aaa" : COLORS.accent2;
+                      step.step_key === "step_1_11" ? CHAPTER1.accentDark : COLORS.accent2;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? "#8284bf" : COLORS.accent;
+                      step.step_key === "step_1_11" ? CHAPTER1.accent : COLORS.accent;
                   }
                 }}
               >

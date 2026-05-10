@@ -19,36 +19,36 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
   return (
     <div className="w-full">
       {/* Launch Module */}
-      <div className="relative bg-[#1a0a18] border border-[#520a50]/30 rounded-[16px] border border-white/7 overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#3b7dd8] to-[#3b7dd8]/70 opacity-70" />
+      <div className="relative bg-[var(--rv-ch2-module-bg)] border border-[var(--rv-ch2)]/30 rounded-[16px] overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[var(--rv-ch2)] to-[var(--rv-ch2-module-bg)] opacity-70" />
         <div className="p-[32px_34px_28px]">
           <div className="flex items-start gap-[16px] mb-[22px]">
-            <div className="w-[46px] h-[46px] rounded-[11px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+            <div className="w-[46px] h-[46px] rounded-[11px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
               <Calculator
                 size={22}
-                className="text-white/75"
+                className="text-white"
                 strokeWidth={1.6}
               />
             </div>
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-[4px]">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-ch2-text)] mb-[4px]">
                 {tool.launch_module.label || "Affidavit Support Calculator"}
               </div>
-              <div className="text-[clamp(19px,2.8vw,23px)] text-white/90 leading-[1.25]">
+              <div className="text-[clamp(19px,2.8vw,23px)] text-[var(--rv-ch2-text)] leading-[1.25]">
                 {tool.launch_module.title ||
                   "Determine your sponsorship setup first"}
               </div>
             </div>
           </div>
-          <div className="h-px bg-white/9 mb-[20px]" />
+          <div className="h-px bg-[var(--rv-ch2)]/30 mb-[20px]" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
             {tool.launch_module.features.map((feat: string, i: number) => (
               <div
                 key={i}
-                className="bg-white/5 border border-white/10 rounded-[10px] px-[13px] py-[11px] flex items-start gap-[9px]"
+                className="bg-[var(--rv-ch2-feature-bg)] border border-[var(--rv-ch2)]/30 rounded-[10px] px-[13px] py-[11px] flex items-start gap-[9px]"
               >
-                <div className="w-[5px] h-[5px] rounded-full bg-[rgb(156, 103, 125)] shrink-0 mt-[5px]" />
-                <div className="text-[13px] text-white/55 leading-[1.4]">
+                <div className="w-[5px] h-[5px] rounded-full bg-[var(--rv-ch2)] shrink-0 mt-[5px]" />
+                <div className="text-[13px] text-[var(--rv-ch2-text)] leading-[1.4]">
                   {feat}
                 </div>
               </div>
@@ -56,7 +56,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
           </div>
           <button
             onClick={onOpenCalc}
-            className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[#520a50] pointer-events-none text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all bg-[#520a50] text-white shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[#3a073a] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)]"
+            className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[var(--rv-ch2)] pointer-events-none text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[var(--rv-ch2-dark)] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)]"
           >
             {tool.launch_module.buttonText || "Start Sponsorship Calculator"}
           </button>

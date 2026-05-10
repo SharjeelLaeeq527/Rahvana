@@ -82,7 +82,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
   useEffect(() => {
     if (selectedOutcome !== "approved") return;
     const end = Date.now() + 2200;
-    const colors = ["#15744f", "#6aa8f0", "#f0d98a", "#a8d9be", "#ffffff"];
+    const colors = ["var(--rv-green)", "var(--rv-launch-blue)", "var(--rv-amber)", "#a8d9be", "#ffffff"];
     const frame = () => {
       confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors });
       confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors });
@@ -119,10 +119,10 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                   outcome.id === "approved"
-                    ? "bg-[#15744f]/10 text-[#15744f]"
+                    ? "bg-[var(--rv-green)]/10 text-[var(--rv-green)]"
                     : outcome.id === "221g"
-                      ? "bg-[#8a6200]/10 text-[#8a6200]"
-                      : "bg-[#2f6fd4]/10 text-[#2f6fd4]"
+                      ? "bg-[var(--rv-amber)]/10 text-[var(--rv-amber)]"
+                      : "bg-[var(--rv-blue)]/10 text-[var(--rv-blue)]"
                 }`}
               >
                 {outcome.icon === "check-circle" && <CheckCircle2 size={20} />}
@@ -138,10 +138,10 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                     <span
                       className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                         outcome.badgeType === "green"
-                          ? "bg-[#e8f5ef] text-[#15744f]"
+                          ? "bg-[var(--rv-green-bg)] text-[var(--rv-green)]"
                           : outcome.badgeType === "amber"
-                            ? "bg-[#fef8e8] text-[#8a6200]"
-                            : "bg-[#e8f1fb] text-[#2f6fd4]"
+                            ? "bg-[var(--rv-amber-bg)] text-[var(--rv-amber)]"
+                            : "bg-[var(--rv-sky)] text-[var(--rv-blue)]"
                       }`}
                     >
                       {outcome.badge}
@@ -158,18 +158,18 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
       </div>
 
       {selectedOutcome === "not_sure" && !showRecommendation && currentQuestion && (
-        <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[24px] shadow-[0_4px_24px_rgba(47,111,212,0.08)] mb-4 animate-in slide-in-from-top-2">
+        <div className="bg-[var(--rv-sky)] border-[1.5px] border-[var(--rv-line)] rounded-[16px] p-[24px] shadow-[0_4px_24px_rgba(47,111,212,0.08)] mb-4 animate-in slide-in-from-top-2">
           {/* Progress Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="text-[12px] font-bold text-[#2f6fd4] flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-[#2f6fd4] text-white flex items-center justify-center text-[10px]">
+            <div className="text-[12px] font-bold text-[var(--rv-blue)] flex items-center gap-1.5">
+              <span className="w-5 h-5 rounded-full bg-[var(--rv-blue)] text-white flex items-center justify-center text-[10px]">
                 {currentQuestionIdx + 1}
               </span>
               Question {currentQuestionIdx + 1} of {tool.clarification_questions.length}
             </div>
             <div className="w-32 h-1.5 bg-white rounded-full overflow-hidden">
               <div 
-                className="h-full bg-[#2f6fd4] transition-all duration-500" 
+                className="h-full bg-[var(--rv-blue)] transition-all duration-500" 
                 style={{ width: `${progress}%` }} 
               />
             </div>
@@ -188,8 +188,8 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                     onClick={() => handleQuestionAnswer(currentQuestion.id, opt.value)}
                     className={`p-4 rounded-xl text-[13.5px] font-bold border transition-all text-left flex items-center gap-3 ${
                       questionAnswers[currentQuestion.id] === opt.value
-                        ? "bg-[#2f6fd4] text-white border-[#2f6fd4] shadow-md"
-                        : "bg-white text-[#3a4f63] border-[#d0e4f7] hover:border-[#2f6fd4]/50"
+                        ? "bg-[var(--rv-blue)] text-white border-[var(--rv-blue)] shadow-md"
+                        : "bg-white text-[var(--rv-soft)] border-[var(--rv-line)] hover:border-[var(--rv-blue)]/50"
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center ${
@@ -209,7 +209,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
             {currentQuestionIdx > 0 && (
               <button
                 onClick={prevQuestion}
-                className="flex-1 p-3.5 bg-white text-[#6b8097] border-[1.5px] border-[#d0e4f7] rounded-xl font-bold hover:bg-slate-50 transition-all"
+                className="flex-1 p-3.5 bg-white text-[var(--rv-muted)] border-[1.5px] border-[var(--rv-line)] rounded-xl font-bold hover:bg-slate-50 transition-all"
               >
                 Back
               </button>
@@ -217,7 +217,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
             <button
               onClick={nextQuestion}
               disabled={!questionAnswers[currentQuestion.id]}
-              className={`p-3.5 bg-[#2f6fd4] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#2f6fd4]/90 transition-all disabled:opacity-50 ${currentQuestionIdx === 0 ? 'w-full' : 'flex-1'}`}
+              className={`p-3.5 bg-[var(--rv-blue)] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[var(--rv-blue)]/90 transition-all disabled:opacity-50 ${currentQuestionIdx === 0 ? 'w-full' : 'flex-1'}`}
             >
               <span>{currentQuestionIdx === (tool.clarification_questions?.length || 0) - 1 ? 'See Recommendation' : 'Next Question'}</span>
               <ArrowRight size={18} />
@@ -229,15 +229,15 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
       {selectedOutcome === "not_sure" && showRecommendation && (
         <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[24px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] mb-4 animate-in zoom-in-95 duration-300">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-[#e8f1fb] text-[#2f6fd4] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[var(--rv-sky)] text-[var(--rv-blue)] rounded-full flex items-center justify-center">
               <Sparkles size={20} />
             </div>
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b8097]">Our Recommendation</div>
-              <div className="text-[16px] font-bold text-[#0c1b33]">{recommendation.label}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-muted)]">Our Recommendation</div>
+              <div className="text-[16px] font-bold text-[var(--rv-navy)]">{recommendation.label}</div>
             </div>
           </div>
-          <p className="text-[13px] text-[#3a4f63] leading-relaxed mb-6">
+          <p className="text-[13px] text-[var(--rv-soft)] leading-relaxed mb-6">
             {recommendation.description}
           </p>
           <div className="flex flex-col gap-3">
@@ -247,7 +247,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                 if (recommendation.subtype) handleSubtypeSelect(recommendation.subtype);
                 setShowRecommendation(false);
               }}
-              className="w-full p-3.5 bg-primary text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+              className="w-full p-3.5 bg-[var(--primary)] text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/20"
             >
               Apply this outcome and continue
             </button>
@@ -257,7 +257,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                 setQuestionAnswers({});
                 setCurrentQuestionIdx(0);
               }}
-              className="w-full p-3.5 bg-white text-[#6b8097] border-[1.5px] border-[#d0e4f7] rounded-xl font-bold hover:bg-slate-50 transition-all"
+              className="w-full p-3.5 bg-white text-[var(--rv-muted)] border-[1.5px] border-[var(--rv-line)] rounded-xl font-bold hover:bg-slate-50 transition-all"
             >
               Retake questions
             </button>

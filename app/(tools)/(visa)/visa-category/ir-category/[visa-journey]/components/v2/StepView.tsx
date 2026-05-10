@@ -2092,23 +2092,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         </div>
 
         {/* PRIMARY LAUNCH MODULE */}
-        <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+        <div className="bg-[var(--rv-ch2-module-bg)] rounded-[16px] border border-[var(--rv-ch2)]/30 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[var(--rv-ch2)] via-[var(--rv-ch2-feature-bg)] to-transparent opacity-70" />
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-[22px]">
-              <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
-                <Users className="text-white/75" size={22} />
+              <div className="w-[46px] h-[46px] rounded-[11px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
+                <Users className="text-white" size={22} />
               </div>
               <div>
-                <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
+                <div className="text-[10px] font-bold tracking-widest uppercase text-[var(--rv-ch2-text)]/60 mb-1">
                   CEAC Guidance
                 </div>
-                <div className="text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">
+                <div className="text-[clamp(19px,2.8vw,23px)] text-[var(--rv-ch2-text)] leading-tight">
                   Add sponsorship participants in CEAC
                 </div>
               </div>
             </div>
-            <div className="h-px bg-white/10 mb-5" />
+            <div className="h-px bg-[var(--rv-ch2)]/20 mb-5" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
               {[
                 "Access the affidavit support section",
@@ -2118,10 +2118,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               ].map((cue, idx) => (
                 <div
                   key={idx}
-                  className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
+                  className="bg-[var(--rv-ch2-feature-bg)] border border-[var(--rv-ch2)]/30 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
                 >
-                  <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
-                  <div className="text-[13px] text-white/55 leading-tight">
+                  <div className="w-[5px] h-[5px] rounded-full bg-[var(--rv-ch2)] shrink-0 mt-[5px]" />
+                  <div className="text-[13px] text-[var(--rv-ch2-text)] leading-tight">
                     {cue}
                   </div>
                 </div>
@@ -2134,7 +2134,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
-              className="w-full py-4 px-7 bg-[#b48ad6] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#561864] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full py-4 px-7 text-white rounded-[12px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+              style={{
+                backgroundColor: "var(--rv-ch2)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--rv-ch2-dark)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--rv-ch2)";
+              }}
             >
               Start CEAC Guide
             </button>
@@ -2698,7 +2707,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {tool.type === "interview_scheduling" && (
             <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
               {/* Queue status card */}
-              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+              <div className="relative bg-[#1a0a18] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
                   Post-DQ Queue Status
@@ -2707,7 +2716,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
                   style={{ fontFamily: "'DM Serif Display', serif" }}
                 >
-                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#973680] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   In queue — awaiting interview letter
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
@@ -2889,7 +2898,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <button
                         onClick={handleFetch}
                         disabled={ivLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-[12px] font-bold hover:bg-primary/90 disabled:opacity-60 transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-[var(--rv-ch2)] text-white rounded-lg text-[12px] font-bold hover:bg-[var(--rv-ch2-dark)] disabled:opacity-60 transition-all shadow-[0_4px_14px_rgba(82,10,80,0.18)] hover:shadow-[0_6px_18px_rgba(82,10,80,0.24)]"
                       >
                         {ivLoading ? (
                           <>
@@ -3820,16 +3829,30 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             tool.type !== "adm_processing" &&
             tool.type !== "courier_registration" && (
               <div
-                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "bg-[#28151c] border border-[#c0596a]" : "bg-[#0e1e38] border border-white/7"}`}
-                style={!isChapter1 ? { backgroundColor: launchBg } : {}}
+                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "border" : isChapter2 ? "bg-[var(--rv-ch2-module-bg)] border border-[var(--rv-ch2)]" : "bg-[var(--rv-launch-navy)] border border-white/7"}`}
+                style={
+                  isChapter1
+                    ? {
+                        backgroundColor: "var(--rv-ch1-module-bg)",
+                        borderColor: "var(--rv-ch1)",
+                      }
+                    : isChapter2
+                      ? {
+                          backgroundColor: "var(--rv-ch2-module-bg)",
+                          borderColor: "var(--rv-ch2)",
+                        }
+                      : { backgroundColor: launchBg }
+                }
               >
                 {/* Accent Stripe */}
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
                   style={{
                     background: isChapter1
-                      ? "linear-gradient(90deg, #c0596a 0%, #28151c 100%)"
-                      : stripeGradient,
+                      ? "linear-gradient(90deg, var(--rv-ch1) 0%, var(--rv-ch1-module-bg) 100%)"
+                      : isChapter2
+                        ? "linear-gradient(90deg, var(--rv-ch2) 0%, var(--rv-ch2-module-bg) 100%)"
+                        : stripeGradient,
                   }}
                 />
 
@@ -3837,22 +3860,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {/* Module Header */}
                   <div className="flex items-start gap-[16px] mb-[26px]">
                     <div
-                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
+                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "bg-white/[0.055] border-white/10"}`}
+                      style={isChapter1 ? { backgroundColor: "var(--rv-ch1)" } : isChapter2 ? { backgroundColor: "var(--rv-ch2)" } : undefined}
                     >
                       <IconComponent
                         size={22}
-                        className={isChapter1 ? "text-white" : "text-white/75"}
+                        className={isChapter1 || isChapter2 ? "text-white" : "text-white/75"}
                         strokeWidth={1.6}
                       />
                     </div>
                     <div className="flex-1">
                       <div
-                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[#c0596a]" : "text-white/35"}`}
+                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
                       >
                         {tool.launch_module.eyebrow}
                       </div>
                       <h2
-                        className={`text-[clamp(20px,3vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : "text-white/90"}`}
+                        className={`text-[clamp(20px,3vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
                       >
                         {tool.launch_module.heading}
                       </h2>
@@ -3860,7 +3884,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
 
                   <div
-                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[#c0596a]/30" : "bg-white/9"}`}
+                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[var(--rv-ch1)]/30" : isChapter2 ? "bg-[var(--rv-ch2)]/30" : "bg-white/9"}`}
                   />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
@@ -3926,24 +3950,39 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       (feat: string, i: number) => (
                         <div
                           key={i}
-                          className={`${isChapter1 ? "bg-[#3a232a] border border-[#c0596a]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          className={`${isChapter1 ? "border" : isChapter2 ? "bg-[var(--rv-ch2-panel)] border border-[var(--rv-ch2)]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          style={
+                            isChapter1
+                              ? {
+                                  backgroundColor: "var(--rv-ch1-feature-bg)",
+                                  borderColor: "rgba(130,132,191,0.3)",
+                                }
+                              : isChapter2
+                                ? {
+                                    backgroundColor: "var(--rv-ch2-feature-bg)",
+                                    borderColor: "rgba(82,10,80,0.28)",
+                                  }
+                                : {}
+                          }
                         >
                           <div
                             className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
                               isChapter1
-                                ? "bg-[#c0596a]"
-                                : tool.launch_module.stripe_variant === "gold"
-                                  ? "bg-[rgba(212,168,47,0.7)]"
-                                  : tool.launch_module.stripe_variant ===
-                                      "green"
-                                    ? "bg-[rgba(100,220,160,0.6)]"
-                                    : isBeneficiaryTheme
-                                      ? "bg-[#20a8a8bf]"
-                                      : "bg-[#6aa8f0b3]"
+                                ? "bg-[var(--rv-ch1)]"
+                                : isChapter2
+                                  ? "bg-[var(--rv-ch2)]"
+                                  : tool.launch_module.stripe_variant === "gold"
+                                    ? "bg-[rgba(212,168,47,0.7)]"
+                                    : tool.launch_module.stripe_variant ===
+                                        "green"
+                                      ? "bg-[rgba(100,220,160,0.6)]"
+                                      : isBeneficiaryTheme
+                                        ? "bg-[#20a8a8bf]"
+                                        : "bg-[var(--rv-launch-blue)]/70"
                             }`}
                           />
                           <div
-                            className={`text-[13px] leading-[1.4] ${isChapter1 ? "text-[#fbeaec]" : "text-white/55"}`}
+                            className={`text-[13px] leading-[1.4] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/55"}`}
                           >
                             {feat}
                           </div>
@@ -3966,7 +4005,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                 key={i}
                                 className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
                               >
-                                <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
+                                <div className="w-[4px] h-[4px] rounded-full bg-[var(--rv-launch-blue)]/60 shrink-0 mt-[5px]" />
                                 <span>{req}</span>
                               </div>
                             ),
@@ -3994,14 +4033,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
-                                ? "bg-[#c0596a] pointer-events-none"
+                                ? "bg-[var(--rv-ch1)] pointer-events-none"
                                 : isChapter2
-                                  ? "bg-[#b48ad6] pointer-events-none"
-                                  : "bg-[#3b7dd8] pointer-events-none"
+                                  ? "bg-[var(--rv-ch2)] pointer-events-none"
+                                  : "bg-[var(--primary)] pointer-events-none"
                               : isChapter1
-                                ? "bg-[#c0596a] hover:bg-[#a13e4e] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)]"
+                                ? "bg-[var(--rv-ch1)] hover:bg-[var(--rv-ch1-dark)] text-white shadow-[0_4px_20px_rgba(130,132,191,0.25)]"
                                 : isChapter2
-                                  ? "bg-[#b48ad6] text-white shadow-[0_4px_20px_rgba(180,138,214,0.25)] hover:bg-[#a47cc1] hover:text-white hover:shadow-[0_8px_32px_rgba(180,138,214,0.35)] hover:translate-y-[-2px]"
+                                  ? "bg-[var(--rv-ch2)] text-white shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[var(--rv-ch2-dark)] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)] hover:translate-y-[-2px]"
                                   : "bg-[#2f6fd4] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
                           }`}
                         style={
@@ -4010,7 +4049,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             : !isLaunched || !tool.launch_module.return_note
                               ? {
                                   backgroundColor: isChapter2
-                                    ? "#b48ad6"
+                                    ? "var(--rv-ch2)"
                                     : accentColor,
                                 }
                               : {}
@@ -4035,7 +4074,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       </button>
 
                       <div
-                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${isChapter1 ? "text-[#fbeaec]" : isChapter2 ? "text-[#b48ad6]/90" : "text-white/35"}`}
+                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-launch-note)]/90" : "text-white/35"}`}
                       >
                         <ExternalLink size={11} strokeWidth={1.8} />
                         <span>
