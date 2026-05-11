@@ -27,6 +27,7 @@ import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
 import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 import { toast } from "sonner";
 import Link from "next/link";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface StepToolRendererProps {
   tool: any;
@@ -115,70 +116,131 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
     dqCountry,
     setDqCountry,
   } = dqState;
+
   const [isSaving, setIsSaving] = React.useState(false);
+  const [showErrors, setShowErrors] = React.useState(false);
+
+  // -----------------------------
+  // OPTIONS
+  // -----------------------------
+  const categoryOptions = [
+    { value: "IR-1", label: "IR-1" },
+  ];
+
+  const postOptions = [
+    { value: "Islamabad", label: "Islamabad" },
+    { value: "Karachi", label: "Karachi" },
+  ];
+
+  // -----------------------------
+  // VALIDATION
+  // -----------------------------
+  const isValid =
+    dqDate &&
+    dqCategory &&
+    dqPost;
+  const errorBorder = "border-red-500 focus:ring-red-500";
+  const normalBorder = "border-slate-300 focus:ring-blue-500";
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+
+      {/* HEADER */}
       <div className="flex gap-[7px] flex-wrap mb-[32px]">
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#fffbec] text-[#b38600] border border-[#e8d47a]">
+        <span className="text-[11px] font-semibold uppercase px-[12px] py-[3px] rounded-full bg-[#fffbec] text-[#b38600] border border-[#e8d47a]">
           Major Milestone
         </span>
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+        <span className="text-[11px] font-semibold uppercase px-[12px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
           Tracking Active
         </span>
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+        <span className="text-[11px] font-semibold uppercase px-[12px] py-[3px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
           Dashboard Update
         </span>
       </div>
 
+      {/* INFO CARD */}
       <div className="relative bg-[#1a0a18] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
+
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
           NVC — Documentary Qualification Received
         </div>
+
         <div className="text-[22px] text-white/92 mb-[6px]">
           Your documents have been accepted by NVC
         </div>
-        <div className="text-[13px] text-white/55 leading-[1.55]">
-          This is a significant milestone. Case is now documentarily complete.
+
+        <div className="text-[13px] text-white/55">
+          Case is now documentarily complete.
         </div>
       </div>
 
+      {/* FORM */}
       {!dqSaved ? (
-        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[16px]">
-            <input
-              type="date"
-              value={dqDate}
-              max={new Date().toISOString().split("T")[0]}
-              onChange={(e) => setDqDate(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            />
-            <select
-              value={dqCategory}
-              onChange={(e) => setDqCategory(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Category</option>
-              <option value="IR-1">IR-1</option>
-              <option value="F2A">F2A</option>
-            </select>
-            <select
-              value={dqPost}
-              onChange={(e) => setDqPost(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Post</option>
-              <option value="Islamabad">Islamabad</option>
-              <option value="Karachi">Karachi</option>
-            </select>
+        <div className="bg-white border border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px]">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[12px]">
+
+            {/* DATE */}
+            <div>
+              <input
+                type="date"
+                value={dqDate}
+                max={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setDqDate(e.target.value)}
+                className={`w-full p-2.5 border rounded-lg ${
+                  showErrors && !dqDate ? errorBorder : normalBorder
+                }`}
+              />
+              {showErrors && !dqDate && (
+                <p className="text-xs text-red-500 mt-1">Date is required</p>
+              )}
+            </div>
+
+            {/* CATEGORY */}
+            <div>
+              <div className={showErrors && !dqCategory ? "border border-red-500 rounded-lg" : ""}>
+                <CustomDropdown
+                  value={dqCategory}
+                  onChange={(val) => setDqCategory(val)}
+                  options={categoryOptions}
+                  placeholder="Select Category"
+                />
+              </div>
+              {showErrors && !dqCategory && (
+                <p className="text-xs text-red-500 mt-1">Category is required</p>
+              )}
+            </div>
+
+            {/* POST */}
+            <div>
+              <div className={showErrors && !dqPost ? "border border-red-500 rounded-lg" : ""}>
+                <CustomDropdown
+                  value={dqPost}
+                  onChange={(val) => setDqPost(val)}
+                  options={postOptions}
+                  placeholder="Select Post"
+                />
+              </div>
+              {showErrors && !dqPost && (
+                <p className="text-xs text-red-500 mt-1">Post is required</p>
+              )}
+            </div>
           </div>
+
+          {/* SAVE BUTTON */}
           <button
             onClick={async () => {
+              setShowErrors(true);
+
+              if (!isValid) return;
               if (guard && !guard()) return;
+
               setIsSaving(true);
+
               try {
                 setDqSaved(true);
+
                 await actions.updateMetadata({
                   dqSaved: true,
                   dqDate,
@@ -191,8 +253,8 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
                 setIsSaving(false);
               }
             }}
-            disabled={isSaving}
-            className="w-full bg-primary text-white py-3 rounded-lg font-bold disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isSaving || !isValid}
+            className="w-full bg-primary text-white py-3 rounded-lg font-bold disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isSaving ? "Saving..." : "Save DQ & Activate Tracking"}
           </button>
@@ -822,31 +884,40 @@ export const PolioCertificateTool: React.FC<{
           {data.completionCard.title}
         </div>
         <div className="flex flex-col gap-3">
-          {data.completionCard.items.map((item: string, i: number) => (
-            <label
-              key={i}
-              className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${polioChecks[i] ? "bg-emerald-50 border-emerald-100" : "hover:bg-slate-50 border-transparent"}`}
-            >
-              <input
-                type="checkbox"
-                checked={polioChecks[i]}
-                onChange={async () => {
-                  if (guard && !guard()) return;
-                  const next = [...polioChecks];
-                  next[i] = !next[i];
-                  setPolioChecks(next);
-                  await actions.updateMetadata({ polio_checks: next });
-                }}
-                className="mt-1"
-              />
-              <span
-                className={`text-xs leading-tight ${polioChecks[i] ? "text-emerald-800 font-bold" : "text-slate-600"}`}
-              >
-                {item}
-              </span>
-            </label>
-          ))}
-        </div>
+  {data.completionCard.items.map((item: string, i: number) => (
+    <label
+      key={i}
+      className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+        polioChecks[i]
+          ? "bg-[#0d7377]/10 border-[#0d7377]/30"
+          : "hover:bg-slate-50 border-transparent"
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={polioChecks[i]}
+        onChange={async () => {
+          if (guard && !guard()) return;
+          const next = [...polioChecks];
+          next[i] = !next[i];
+          setPolioChecks(next);
+          await actions.updateMetadata({ polio_checks: next });
+        }}
+        className="mt-1 accent-[#0d7377]"
+      />
+
+      <span
+        className={`text-xs leading-tight ${
+          polioChecks[i]
+            ? "text-[#0d7377] font-bold"
+            : "text-slate-600"
+        }`}
+      >
+        {item}
+      </span>
+    </label>
+  ))}
+</div>
       </div>
 
       {isPolioGuideOpen && (

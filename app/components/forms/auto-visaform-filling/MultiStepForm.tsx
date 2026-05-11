@@ -9,13 +9,7 @@ import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
-import {
-  X,
-  ChevronRight,
-  Check,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
 import { autoFillForm } from "@/lib/autoFill/mapper";
@@ -24,6 +18,7 @@ import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentRole } from "@/lib/document-vault/types";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Loader } from "@/components/ui/spinner";
+import { ExpandableTooltip } from "../../shared/ExpandableTooltip";
 
 const FORM_ID_MAPPING: Record<string, string> = {
   i130: "i-130-petition",
@@ -376,17 +371,17 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         setCameFromIntro(false);
         return;
       }
-    
+
       // normal behavior (go to previous section LAST question)
       const prevStep = currentStep - 1;
       setCurrentStep(prevStep);
       setProgressiveSubQuestionIndices({});
-    
+
       const prevSection = sections[prevStep - 1];
       const prevVisible = prevSection.fields.filter(
-        (field) => !field.condition || field.condition(formData)
+        (field) => !field.condition || field.condition(formData),
       );
-    
+
       setCurrentQuestionIndex(Math.max(0, prevVisible.length - 1));
     }
   };
@@ -860,7 +855,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }
 
   return (
-    <div className="w-full min-h-screen" style={{ backgroundColor: "#f7fbfb" }}>
+    <div
+      className="w-full min-h-screen flex flex-col"
+      style={{ backgroundColor: "#f7fbfb" }}
+    >
       {/* Sticky Header */}
       <Header
         formTitle={config.formTitle}
@@ -923,96 +921,95 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         )}
       </AnimatePresence>
 
-      {/* Main Layout - Desktop with Sidebar & Centered Content */}
-      <div className="flex gap-6 px-4 md:px-8 py-6 guide-grid-bg justify-center">
-        {/* Desktop Sidebar - Hide when intro is visible */}
-        {view === "form" && !(showSectionIntro && introVisible) && (
+      {/* Desktop Floating Sidebar Panel (slides from LEFT edge with attached toggle handle) */}
+      {view === "form" && !(showSectionIntro && introVisible) && (
+        <div className="hidden lg:block">
+          {/* Sliding Panel */}
           <motion.aside
-            initial={{ width: isSidebarCollapsed ? 80 : 304 }}
-            animate={{ width: isSidebarCollapsed ? 80 : 304 }}
-            transition={{ type: "spring", damping: 26, stiffness: 220 }}
-            className="hidden lg:block shrink-0"
+            initial={false}
+            animate={{ x: isSidebarCollapsed ? "-100%" : "0%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 240 }}
+            className="fixed top-20 mt-20 left-0 z-30 w-[325px] h-[calc(100vh-280px)] overflow-hidden"
+            aria-hidden={isSidebarCollapsed}
           >
             <div
-              className={`sticky top-6 rounded-2xl transition-all duration-300 flex flex-col 
-                max-h-[calc(100vh-180px)] min-h-[calc(100vh-180px)]
-                ${
-                  isSidebarCollapsed
-                    ? "items-center justify-start p-2"
-                    : "items-stretch border p-4 overflow-y-auto custom-scrollbar"
-                }`}
+              className="relative h-full rounded-r-2xl border border-l-0 p-4 overflow-hidden custom-scrollbar flex flex-col"
               style={{
-                backgroundColor: isSidebarCollapsed
-                  ? "transparent"
-                  : "rgba(255, 255, 255, 0.95)",
-                borderColor: isSidebarCollapsed ? "transparent" : "#e8f6f6",
-                backdropFilter: isSidebarCollapsed ? "none" : "blur(10px)",
+                backgroundColor: "rgba(255, 255, 255, 0.97)",
+                borderColor: "#e8f6f6",
+                backdropFilter: "blur(10px)",
+                boxShadow: "4px 0 24px -8px rgba(13, 115, 119, 0.15)",
               }}
             >
-              <AnimatePresence mode="wait">
-                {isSidebarCollapsed ? (
-                  <motion.div
-                    key="collapsed"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex justify-center w-full"
-                  >
-                    <motion.button
-                      onClick={() => setIsSidebarCollapsed(false)}
-                      className="p-2 rounded-lg"
-                      style={{ color: "#0d7377" }}
-                      whileHover={{
-                        backgroundColor: "rgba(13, 115, 119, 0.08)",
-                      }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <PanelLeftOpen className="w-5 h-5" />
-                    </motion.button>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="expanded"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="w-full flex flex-col"
-                  >
-                    {/* Header Row */}
-                    <div className="flex items-center justify-between mb-4 px-1">
-                      <h3
-                        className="text-[11px] font-bold uppercase tracking-[0.14em]"
-                        style={{ color: "#0a5a5d" }}
-                      >
-                        Sections
-                      </h3>
+              {/* Header Row */}
+              <div className="flex items-center justify-between mb-4 px-1">
+                <h3
+                  className="text-[11px] font-bold uppercase tracking-[0.14em]"
+                  style={{ color: "#0a5a5d" }}
+                >
+                  Sections
+                </h3>
+              </div>
 
-                      <motion.button
-                        onClick={() => setIsSidebarCollapsed(true)}
-                        className="p-2 rounded-lg"
-                        style={{ color: "#0d7377" }}
-                        whileHover={{ backgroundColor: "#e8f6f6" }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <PanelLeftClose className="w-5 h-5" />
-                      </motion.button>
-                    </div>
+              {/* Content */}
+              <div className="flex-1">
+                <SectionList />
+              </div>
 
-                    {/* Content */}
-                    <div className="flex-1">
-                      <SectionList />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <motion.button
+                onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+                className="absolute top-1/2 -translate-y-1/2 -right-2 z-50"
+                style={{
+                  width: 28,
+                  height: 64,
+                  background: "#0d7377",
+                  color: "#fff",
+                  borderTopRightRadius: 12,
+                  borderBottomRightRadius: 12,
+                  boxShadow: "2px 2px 10px rgba(0,0,0,0.2)",
+                }}
+              >
+                {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
+              </motion.button>
             </div>
           </motion.aside>
-        )}
 
+          {/* Edge Handle (visible only when panel is collapsed) */}
+          <AnimatePresence>
+            {isSidebarCollapsed && (
+              <motion.button
+                key="edge-handle"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setIsSidebarCollapsed(false)}
+                whileHover={{ scale: 1.05, x: 2 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Open sections panel"
+                className="fixed left-0 top-[calc(50vh-40px)] -translate-y-1/2 z-30 flex items-center justify-center"
+                style={{
+                  width: 24,
+                  height: 56,
+                  borderTopRightRadius: 12,
+                  borderBottomRightRadius: 12,
+                  background: "#0d7377",
+                  color: "#fff",
+                  boxShadow: "2px 2px 8px rgba(13, 115, 119, 0.3)",
+                }}
+              >
+                <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Main Layout - Centered Content (sidebar floats as overlay) */}
+      <div className="flex gap-6 px-4 md:px-8 py-0 guide-grid-bg justify-center items-stretch flex-1 min-h-0">
         {/* Right Content Area */}
         <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex-1 flex items-start justify-center py-8">
+          <div className="flex-1 flex items-start justify-center py-6 w-full">
             <div className="w-full max-w-2xl px-4 md:px-0">
               {view === "form" && currentSection && (
                 <>
@@ -1024,120 +1021,79 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         initial={{ opacity: 0, y: 30, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
                         className="flex items-center justify-center min-h-[60vh] px-4"
                       >
-                        <div className="relative max-w-3xl w-full">
-                          <div className="absolute -inset-6 bg-gradient-to-r from-[#0d7377]/20 via-[#14a0a6]/10 to-transparent blur-3xl rounded-[40px]" />
+                        <div className="w-full max-w-2xl">
+                          <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
+                            {/* Top Label */}
+                            <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
+                              Moving on to{" "}
+                              {currentSection?.title || "Next Section"}
+                            </p>
 
-                          <div className="relative overflow-hidden rounded-[28px] border border-white/20 shadow-[0_30px_100px_-40px_rgba(13,115,119,0.35)] backdrop-blur-xl bg-white">
-                            <div className="absolute inset-0 flex">
-                              <div className="w-1/2 bg-gradient-to-br from-[#0d7377] via-[#14a0a6] to-[#32e0c4]" />
-                              <div className="w-1/2 bg-gradient-to-br from-[#0d7377] via-[#14a0a6] to-[#32e0c4]" />
+                            {/* Greeting */}
+                            {/* <h3 className="mt-4 text-lg font-semibold text-gray-800">
+            {getSectionIntroMessage(currentSection.title).greeting}
+          </h3> */}
+
+                            {/* Message */}
+                            <p className="mt-2 text-sm text-gray-600 leading-relaxed text-center font-semibold">
+                              {
+                                getSectionIntroMessage(currentSection.title)
+                                  .message
+                              }
+                            </p>
+
+                            {/* Expandable Tooltip */}
+                            <div className="mt-6">
+                              <ExpandableTooltip
+                                icon={"i"}
+                                defaultOpen={false}
+                                title="Before you continue"
+                                message={`Provide accurate details to ensure faster processing. This information will be used in official forms, so make sure everything is correct. Don’t worry—you’ll still be able to review and edit everything later.`}
+                              />
                             </div>
 
-                            <div className="absolute inset-0 overflow-hidden">
-                              {Array.from({ length: 18 }).map((_, i) => (
-                                <span
-                                  key={i}
-                                  className="absolute w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse"
-                                  style={{
-                                    top: `${Math.random() * 100}%`,
-                                    left: `${Math.random() * 100}%`,
-                                    animationDuration: `${2 + Math.random() * 3}s`,
+                            {/* Progress */}
+                            <div className="mt-6">
+                              <div className="flex justify-between text-xs text-gray-500 mb-2">
+                                <span>Section Progress</span>
+                                <span>
+                                  {currentStep}/{totalSteps}
+                                </span>
+                              </div>
+                              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{
+                                    width: `${(currentStep / totalSteps) * 100}%`,
                                   }}
+                                  className="h-full bg-gradient-to-r from-[#0d7377] to-[#32e0c4]"
                                 />
-                              ))}
-                            </div>
-
-                            <div className="relative z-10 grid md:grid-cols-2">
-                              <div className="p-10 md:p-14 flex flex-col justify-center text-white">
-                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 w-fit">
-                                  <span className="text-[11px] uppercase tracking-[0.2em] font-semibold">
-                                    {currentSection?.title || "Next Section"}
-                                  </span>
-                                </div>
-
-                                <h2 className="mt-6 text-3xl md:text-4xl font-semibold leading-tight">
-                                  {
-                                    getSectionIntroMessage(currentSection.title)
-                                      .greeting
-                                  }
-                                </h2>
-
-                                <p className="mt-4 text-sm md:text-base text-white/80 leading-relaxed">
-                                  {
-                                    getSectionIntroMessage(currentSection.title)
-                                      .message
-                                  }
-                                </p>
-                              </div>
-
-                              <div className="p-10 md:p-14 flex flex-col justify-center bg-white relative">
-                                {/* subtle gradient overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-[#f7fbfb] to-white" />
-
-                                <div className="relative z-10">
-                                  <h3 className="text-2xl font-semibold text-[#0F0F0E]">
-                                    Ready to Dive in?
-                                  </h3>
-
-                                  <div className="mt-6 space-y-3">
-                                    <div className="flex items-start gap-2 text-sm text-gray-500">
-                                      <span className="mt-4 w-2 h-2 rounded-full bg-[#14a0a6]" />
-                                      Provide accurate details for faster
-                                      processing
-                                    </div>
-                                    <div className="flex items-start gap-2 text-sm text-gray-500">
-                                      <span className="mt-4 w-2 h-2 rounded-full bg-[#14a0a6]" />
-                                      This information will be used in official
-                                      forms
-                                    </div>
-                                    <div className="flex items-start gap-2 text-sm text-gray-500">
-                                      <span className="mt-4 w-2 h-2 rounded-full bg-[#14a0a6]" />
-                                      You can review and edit everything later
-                                    </div>
-                                  </div>
-
-                                  {/* Progress mini indicator */}
-                                  <div className="mt-6">
-                                    <div className="flex justify-between text-xs text-gray-500 mb-2">
-                                      <span>Section Progress</span>
-                                      <span>
-                                        {currentStep}/{totalSteps}
-                                      </span>
-                                    </div>
-                                    <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                                      <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{
-                                          width: `${(currentStep / totalSteps) * 100}%`,
-                                        }}
-                                        className="h-full bg-gradient-to-r from-[#0d7377] to-[#32e0c4]"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* CTA */}
-                                  <motion.button
-                                    onClick={() => {
-                                      setIntroVisible(false);
-                                      setCameFromIntro(true); 
-                                      setTimeout(() => setShowSectionIntro(false), 400);
-                                    }}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="mt-8 w-full py-3.5 rounded-xl font-semibold text-white shadow-lg"
-                                    style={{
-                                      background:
-                                        "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
-                                    }}
-                                  >
-                                    Continue →
-                                  </motion.button>
-                                </div>
                               </div>
                             </div>
+
+                            {/* CTA */}
+                            <motion.button
+                              onClick={() => {
+                                setIntroVisible(false);
+                                setCameFromIntro(true);
+                                setTimeout(
+                                  () => setShowSectionIntro(false),
+                                  400,
+                                );
+                              }}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+                              }}
+                            >
+                              Continue →
+                            </motion.button>
                           </div>
                         </div>
                       </motion.div>
@@ -1249,12 +1205,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       {/* Progress Footer */}
       {view === "form" && (
-        <ProgressFooter
-          current={currentStep}
-          total={totalSteps}
-          progress={progress}
-          sections={sections}
-        />
+        <div className="shrink-0">
+          <ProgressFooter
+            current={currentStep}
+            total={totalSteps}
+            progress={progress}
+            sections={sections}
+          />
+        </div>
       )}
     </div>
   );
