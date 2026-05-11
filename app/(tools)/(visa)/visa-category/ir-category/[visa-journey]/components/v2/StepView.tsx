@@ -117,7 +117,6 @@ import { AppointmentReceivedTool } from "./components/AppointmentReceivedTool";
 import { MedicalExamTool } from "./components/MedicalExamTool";
 import { PolioCertificateTool } from "./components/PolioCertificateTool";
 import { PoliceClearanceTool } from "./components/PoliceClearanceTool";
-import { GatheringChecklistTool } from "./components/GatheringChecklistTool";
 import { getStepIcon } from "./StepIcon";
 import { SubmissionReviewTool } from "./components/SubmissionReviewTool";
 import { MedicalExamGuideTool } from "./components/MedicalExamGuideTool";
@@ -1456,21 +1455,26 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" && (
-            <GatheringChecklistTool
-              tool={tool}
-              state={state}
-              actions={actions}
-              gatheringState={{
-                gatheringStatus,
-                setGatheringStatus,
-                selectedGatheringItem,
-                setSelectedGatheringItem,
-                isGatheringGuideOpen,
-                setIsGatheringGuideOpen,
-                gatheringGuideStep,
-                setGatheringGuideStep,
+            <DocListSection
+              groups={tool.doc_gathering?.groups || []}
+              docsStatus={gatheringStatus}
+              uploadedDocuments={uploadedDocuments}
+              isDeletingIds={isDeletingIds}
+              isReloadingDocs={isReloadingDocs}
+              getVaultId={(item) => mapDocumentNameToId(item.title)}
+              progressLabel="packed"
+              onItemClick={(item) => {
+                if (!stepEntitlement.guard()) return;
+                setSelectedGatheringItem(item as unknown as DocumentGatheringItem);
+                setIsGatheringGuideOpen(true);
+                if (!gatheringStatus[item.id] || gatheringStatus[item.id] === "not-started") {
+                  setGatheringStatus((prev: any) => ({ ...prev, [item.id]: "in-progress" }));
+                }
               }}
-              guard={stepEntitlement.guard}
+              onPreview={(uploadedDocId) =>
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+              }
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
           )}
 
