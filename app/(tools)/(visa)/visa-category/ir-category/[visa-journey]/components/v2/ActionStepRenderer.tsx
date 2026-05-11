@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   CheckCircle,
   Package,
@@ -2235,7 +2236,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       </div>
 
       {/* Full-Screen Guide Modal */}
-      {showGuide && filteredSteps && filteredSteps.length > 0 && (
+      {showGuide && filteredSteps && filteredSteps.length > 0 && createPortal(
         <div
           style={{
             display: "flex",
@@ -2609,11 +2610,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Guide Choice Modal for Step 1.11 */}
-      {showGuideChoice && (
+      {showGuideChoice && createPortal(
         <div
           style={{
             position: "fixed",
@@ -2795,7 +2797,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {previewConfig.isOpen &&
