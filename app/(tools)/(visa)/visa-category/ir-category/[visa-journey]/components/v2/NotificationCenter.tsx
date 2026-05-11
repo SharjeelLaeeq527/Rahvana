@@ -75,10 +75,14 @@ export default function NotificationCenter({
   const [reminders, setReminders]   = useState<JourneyReminder[]>([]);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
-  const [seeding, setSeeding]       = useState(false);
+  const [readIds, setReadIds]       = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem("rahvana_notif_read");
+      return saved ? new Set(JSON.parse(saved)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
 
   const [resolvedJourneyId, setResolvedJourneyId] = useState<string | null>(journeyId === "ir-1" ? null : (journeyId || null));
-  const isDev = process.env.NODE_ENV === 'development';
 
   // ── Fetch from real API ──────────────────────────────────
   const fetchReminders = useCallback(async () => {
@@ -143,43 +147,16 @@ export default function NotificationCenter({
     }).catch(() => {});
   };
 
-  // ── Snooze 3 days ────────────────────────────────────────
-  const snooze = async (reminderId: string) => {
-    if (!resolvedJourneyId) return;
-    setReminders((prev) => prev.filter((r) => r.id !== reminderId));
-    await fetch(`/api/v1/journeys/${resolvedJourneyId}/reminders/${reminderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "snooze", snooze_days: 3 }),
-    }).catch(() => {});
+
+  const markOneRead = (id: string) => {
+    setReadIds((prev) => {
+      const next = new Set([...prev, id]);
+      try { localStorage.setItem("rahvana_notif_read", JSON.stringify([...next])); } catch {}
+      return next;
+    });
   };
 
-  // ── Dev: seed sample notifications ──────────────────────
-  const seedDemo = async () => {
-    if (!resolvedJourneyId) return;
-    setSeeding(true);
-    await fetch('/api/dev/seed-notifications', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ journeyId: resolvedJourneyId }),
-    }).catch(() => {});
-    await fetchReminders();
-    setSeeding(false);
-  };
-
-  const clearDemo = async () => {
-    if (!resolvedJourneyId) return;
-    setSeeding(true);
-    await fetch('/api/dev/seed-notifications', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ journeyId: resolvedJourneyId }),
-    }).catch(() => {});
-    await fetchReminders();
-    setSeeding(false);
-  };
-
-  const unread = reminders.filter((r) => !r.is_dismissed);
+  const unread = reminders.filter((r) => !readIds.has(r.id));
 
   // ── No real journey ID yet ───────────────────────────────
   const noRealId = !resolvedJourneyId;
@@ -201,13 +178,6 @@ export default function NotificationCenter({
               {unread.length}
             </span>
           )}
-          <button
-            onClick={fetchReminders}
-            disabled={loading}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[#6b8097] hover:bg-[#f4f7fb] transition-colors"
-          >
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
-          </button>
           {onClose && (
             <button
               onClick={onClose}
@@ -268,25 +238,34 @@ export default function NotificationCenter({
         {/* Notification list */}
         {!noRealId && !loading && reminders.length > 0 && (
           <div className="divide-y divide-[#d0e4f7]/50">
-            {reminders.map((r) => (
+            {reminders.map((r) => {
+              const isRead = readIds.has(r.id);
+              return (
               <div
                 key={r.id}
                 className={`p-5 transition-colors relative group ${
-                  r.priority === "critical" || r.priority === "high"
-                    ? "bg-primary/5"
-                    : "hover:bg-slate-50"
+                  !isRead
+                    ? r.priority === "critical" || r.priority === "high"
+                      ? "bg-orange-50"
+                      : "bg-[#f0f7ff]"
+                    : "bg-white hover:bg-slate-50"
                 }`}
               >
-                {/* Priority dot */}
-                <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${PRIORITY_DOT[r.priority] ?? "bg-primary"}`} />
+                {/* Left border — only when unread */}
+                {!isRead && (
+                  <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${PRIORITY_DOT[r.priority] ?? "bg-primary"}`} />
+                )}
 
                 <div className="flex gap-3">
                   <div className="mt-0.5 shrink-0">
-                    <ReminderIcon type={r.reminder_type} priority={r.priority} />
+                    {!isRead
+                      ? <ReminderIcon type={r.reminder_type} priority={r.priority} />
+                      : <div className="w-4 h-4" />
+                    }
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[13px] font-bold text-[#0c1b33] line-clamp-1">
+                      <span className={`text-[13px] line-clamp-1 ${isRead ? "font-medium text-[#6b8097]" : "font-bold text-[#0c1b33]"}`}>
                         {r.title}
                       </span>
                       <span className="text-[10px] text-[#6b8097] whitespace-nowrap ml-2">
@@ -296,7 +275,7 @@ export default function NotificationCenter({
                       </span>
                     </div>
 
-                    <p className="text-[12px] text-[#3a4f63] leading-relaxed mb-3 line-clamp-3">
+                    <p className={`text-[12px] leading-relaxed mb-3 line-clamp-3 ${isRead ? "text-[#6b8097]" : "text-[#3a4f63]"}`}>
                       {r.body}
                     </p>
 
@@ -310,23 +289,27 @@ export default function NotificationCenter({
                           <ChevronRight size={12} strokeWidth={3} />
                         </a>
                       )}
-                      <button
-                        onClick={() => snooze(r.id)}
-                        className="text-[10px] text-[#6b8097] hover:text-[#3a4f63] font-medium"
-                      >
-                        Snooze 3d
-                      </button>
+                      {!isRead && (
+                        <button
+                          onClick={() => markOneRead(r.id)}
+                          className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1"
+                        >
+                          <span className="w-3 h-3 rounded-full border border-primary flex items-center justify-center text-[7px]">✓</span>
+                          Mark as read
+                        </button>
+                      )}
                       <button
                         onClick={() => dismiss(r.id)}
-                        className="text-[10px] text-[#6b8097] hover:text-red-400 font-medium"
+                        className="text-[10px] text-[#6b8097] hover:text-red-400 font-medium ml-auto"
                       >
-                        Dismiss
+                        Delete
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -338,30 +321,11 @@ export default function NotificationCenter({
             onClick={() => reminders.forEach((r) => dismiss(r.id))}
             className="w-full py-2.5 rounded-lg border border-[#d0e4f7] bg-white text-[12px] font-bold text-[#3a4f63] hover:bg-slate-50 transition-colors"
           >
-            Dismiss all
+            Delete all
           </button>
         </div>
       )}
 
-      {/* Dev-only: Demo seeding controls */}
-      {isDev && resolvedJourneyId && (
-        <div className="p-3 border-t border-orange-200 bg-orange-50 flex gap-2">
-          <button
-            onClick={seedDemo}
-            disabled={seeding}
-            className="flex-1 py-2 rounded-lg bg-orange-500 text-white text-[11px] font-black hover:bg-orange-600 disabled:opacity-50 transition-colors"
-          >
-            {seeding ? "Loading..." : "Load Demo Notifications"}
-          </button>
-          <button
-            onClick={clearDemo}
-            disabled={seeding}
-            className="px-3 py-2 rounded-lg bg-white border border-orange-200 text-[11px] font-bold text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition-colors"
-          >
-            Clear
-          </button>
-        </div>
-      )}
     </div>
   );
 }

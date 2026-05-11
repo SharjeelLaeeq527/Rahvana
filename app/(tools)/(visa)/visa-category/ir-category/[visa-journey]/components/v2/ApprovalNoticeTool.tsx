@@ -1,7 +1,7 @@
 "use client";
  
 import React, { useRef, useState } from "react";
-import { X, Info, Check, RefreshCw, Upload, Lock, Crown } from "lucide-react";
+import { X, Info, Check, RefreshCw, Upload, Lock } from "lucide-react";
 import { APPROVAL_NOTICE_DATA as data } from "./ApprovalNoticeData";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { toast } from "sonner";
@@ -111,10 +111,10 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
         onClick={handleUploadClick}
         className={`inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[13px] font-bold ${
           approvalDoc && !isBasic
-            ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] hover:border-[#15744f]"
+            ? "bg-[var(--rv-green-bg)] border-[#a8d9be] text-[var(--rv-green)] hover:border-[var(--rv-green)]"
             : isBasic
-              ? "bg-[#fbeaec] border-[rgba(192,89,106,0.4)] text-[#c0596a]"
-              : "bg-white border-[#d0e4f7] text-[#0c1b33] hover:border-[#2f6fd4] hover:text-[#2f6fd4]"
+              ? "bg-[var(--rv-rose-bg)] border-[rgba(130,132,191,0.4)] text-[var(--rv-ch1)]"
+              : "bg-white border-[var(--rv-line)] text-[var(--rv-navy)] hover:border-[var(--rv-blue)] hover:text-[var(--rv-blue)]"
         }`}
       >
         {isBasic ? (
@@ -131,7 +131,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
             : "Upload approval notice"}
         {isBasic && (
           <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-            style={{ background: "rgba(192,89,106,0.15)", color: "#c0596a" }}>
+            style={{ background: "rgba(130,132,191,0.15)", color: "var(--rv-ch1)" }}>
             Premium
           </span>
         )}
@@ -140,12 +140,14 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
   );
  const UploadLockedNote = () => (
     <div className="mt-2 flex items-start gap-2 rounded-xl p-3"
-      style={{ background: "#fbeaec", border: "1px solid rgba(192,89,106,0.3)" }}>
-      <Crown size={14} className="shrink-0 mt-0.5" style={{ color: "#c0596a" }} />
+      style={{ background: "var(--rv-rose-bg)", border: "1px solid rgba(130,132,191,0.3)" }}>
+      <span className="w-7 h-7 rounded-full border border-[#c5b9ff] bg-[#f0ebff] flex items-center justify-center shrink-0 mt-0.5 shadow-sm" aria-hidden="true">
+        <span className="plan-icon plan-icon--premium scale-110" aria-hidden="true" />
+      </span>
       <p className="text-[12px] leading-[1.6]" style={{ color: "#5a3040" }}>
         Uploading your approval notice automatically saves it to the document vault and extracts key information — approval date, receipt number, and more. This feature is available on <strong>Premium and above</strong>.{" "}
         <button onClick={() => setUpgradeModalFeature("approval_notice_upload")}
-          className="underline font-bold" style={{ color: "#c0596a" }}>
+          className="underline font-bold" style={{ color: "var(--rv-ch1)" }}>
           Upgrade to unlock
         </button>
       </p>
@@ -153,22 +155,22 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
   );
 
   return (
-    <div className={`flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[#1c2b3a] min-h-screen`}>
+    <div className={`flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[var(--rv-ink)] min-h-screen`}>
  
       {/* LAUNCH MODULE */}
-      <section className="bg-[#28151c] rounded-[16px] border border-white/10 shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden relative">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#4b85e7] via-[#82b8ff] to-transparent opacity-80" />
+      <section className="rounded-[16px] border shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden relative" style={{ backgroundColor: "var(--rv-ch1-module-bg)", borderColor: "var(--rv-ch1)" }}>
+        <div className="absolute top-0 left-0 right-0 h-[2px] opacity-80" style={{ background: "linear-gradient(90deg, var(--rv-ch1) 0%, var(--rv-ch1-module-bg) 100%)" }} />
         <div className="p-[30px_32px_28px]">
           <div className="flex flex-col sm:flex-row justify-between gap-4 items-start mb-[18px]">
             <div className="flex gap-[16px] items-start">
-              <div className="w-[48px] h-[48px] rounded-[12px] bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+              <div className="w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border" style={{ backgroundColor: "var(--rv-ch1)", borderColor: "var(--rv-ch1)" }}>
                 <svg viewBox="0 0 24 24" className="w-[22px] h-[22px] stroke-white/80 fill-none stroke-[1.75px] stroke-linecap-round stroke-linejoin-round">
                   <path d="M9 12l2 2 4-4" />
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
               </div>
               <div>
-                <div className="text-[10px] font-bold tracking-[0.12em] uppercase text-[#c0596a] mb-[4px]">
+                <div className="text-[10px] font-bold tracking-[0.12em] uppercase mb-[4px]" style={{ color: "var(--rv-ch1)" }}>
                   {data.launchModule.eyebrow}
                 </div>
                 <h2 className="text-[clamp(22px,3vw,27px)] leading-[1.18] text-white/95 mb-[7px]">
@@ -179,14 +181,14 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                 </p>
               </div>
             </div>
-            <div className="px-3 py-2 rounded-full bg-[#a8d9be1f] border border-[#a8d9be4d] text-[#c0596a] text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap">
+            <div className="px-3 py-2 rounded-full border text-[11px] font-bold tracking-[0.08em] uppercase whitespace-nowrap" style={{ backgroundColor: "rgba(130,132,191,0.12)", borderColor: "rgba(130,132,191,0.28)", color: "var(--rv-ch1)" }}>
               {data.launchModule.badge}
             </div>
           </div>
           <div className="h-[1px] bg-white/10 my-[18px] sm:my-[16px]" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[10px] mb-[16px]">
             {data.metrics.map((m, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-[12px] p-[13px_14px]">
+              <div key={i} className="rounded-[12px] p-[13px_14px] border" style={{ backgroundColor: "var(--rv-ch1-feature-bg)", borderColor: "rgba(130,132,191,0.22)" }}>
                 <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-white/40 mb-[6px]">{m.label}</div>
                 <div className="text-[14px] font-semibold text-white/95 leading-[1.35]">{m.value}</div>
                 <div className="text-[11px] text-white/60 mt-[4px] leading-[1.4]">{m.sub}</div>
@@ -196,7 +198,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
             <button
               onClick={handleReceivedBtn}
-              className="flex items-center justify-center gap-[10px] p-[15px_18px] rounded-[12px] text-[14px] font-semibold bg-[#c0596a] hover:bg-[rgb(243,110,134)] hover:text-[#fff] shadow-[0_4px_20px_rgba(47,111,212,0.35)] transition-all hover:-translate-y-[1px]"
+              className="flex items-center justify-center gap-[10px] p-[15px_18px] rounded-[12px] text-[14px] font-semibold bg-[var(--rv-ch1)] hover:bg-[var(--rv-ch1-dark)] hover:text-[#fff] shadow-[0_4px_20px_rgba(47,111,212,0.35)] transition-all hover:-translate-y-[1px]"
             >
               <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] stroke-white fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round">
                 <polyline points="20 6 9 17 4 12" />
@@ -429,6 +431,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                   Approval date
                 </label>
                 <input id="approvalDate" type="date" value={approvalDetails.approvalDate}
+                  max={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setApprovalDetails({ ...approvalDetails, approvalDate: e.target.value })}
                   className="p-[11px_13px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all" />
               </div>
@@ -459,6 +462,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                   Priority date (optional)
                 </label>
                 <input id="priorityDate" type="date" value={approvalDetails.priorityDate}
+                  max={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setApprovalDetails({ ...approvalDetails, priorityDate: e.target.value })}
                   className="p-[11px_13px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#2f6fd4] focus:shadow-[0_0_0_3px_rgba(47,111,212,0.12)] transition-all" />
               </div>
@@ -566,9 +570,6 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
         <UpgradeModal
           feature={upgradeModalFeature}
           onClose={() => setUpgradeModalFeature(null)}
-          onConfirm={(action, target) => {
-            console.log("upgrade", action, target);
-          }}
         />
       )}
     </div>

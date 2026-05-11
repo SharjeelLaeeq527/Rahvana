@@ -1,18 +1,33 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { RoadmapData } from "../types";
 import { DashboardView } from "./DashboardView";
 import { ChapterView } from "./ChapterView";
-import { StepView } from "./StepView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import {
-  ChevronRight,
-  ArrowLeft,
-  Check,
-  LayoutDashboard,
-  X,
-} from "lucide-react";
+import { getActiveStepsForStage } from "./journeyHelpers";
+import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react";
+
+/** Lazy-load StepView (354 KB source) — only fetched when user navigates to a step */
+const LazyStepView = React.lazy(() =>
+  import("./StepView").then((mod) => ({ default: mod.StepView }))
+);
+
+function StepSkeleton() {
+  return (
+    <div className="flex-1 p-6 md:p-10 animate-pulse">
+      <div className="h-5 w-48 bg-slate-200 rounded mb-4" />
+      <div className="h-8 w-80 bg-slate-200 rounded mb-3" />
+      <div className="h-4 w-full max-w-lg bg-slate-100 rounded mb-2" />
+      <div className="h-4 w-full max-w-md bg-slate-100 rounded mb-8" />
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 w-full bg-slate-100 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface RoadmapLayoutV2Props {
   data: RoadmapData;
@@ -84,8 +99,9 @@ export default function RoadmapLayoutV2({
     })();
 
   const handleToggleComplete = () => {
+    if (state.currentStep == null || state.currentStep === -1) return;
     const chapter = data.chapters?.[state.currentStage];
-    const step = chapter?.steps[state.currentStep || 0];
+    const step = chapter?.steps[state.currentStep ?? 0];
     const sKey = step?.step_key;
     if (sKey) actions.toggleComplete(sKey);
   };
@@ -98,27 +114,24 @@ export default function RoadmapLayoutV2({
     )
       return null;
     const chapter = data.chapters?.[state.currentStage];
-    const step = chapter?.steps[state.currentStep];
-    const filingMethod = state.metadata?.filingMethod || state.filingType;
-    const activeSteps =
-      chapter?.steps.filter(
-        (s: any) =>
-          !s.branch || s.branch === "both" || s.branch === filingMethod,
-      ) ?? [];
+    const step = chapter?.steps[state.currentStep ?? 0];
+    const activeSteps = chapter
+      ? getActiveStepsForStage(data, state.currentStage ?? 0, state.metadata, state.filingType)
+      : [];
     return step
       ? activeSteps.findIndex(
           (s: any) =>
             (s.step_key || s.id) === (step.step_key || (step as any).id),
         ) + 1
-      : state.currentStep + 1;
+      : (state.currentStep ?? 0) + 1;
   })();
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500"
+      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500 pt-[70px]"
     >
       {/* Top Navigation */}
-      <nav className="sticky top-[55px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40 pt-2">
+      <nav className="sticky top-[70px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40 pt-2">
         {/* Dynamic Back / Logo */}
         <div className="flex items-center gap-3">
           {view !== "dashboard" && (
@@ -188,6 +201,7 @@ export default function RoadmapLayoutV2({
             </button>
           )}
 
+          {/* DEV ONLY — reset button, uncomment for local testing
           <button
             onClick={async () => {
               if (
@@ -204,7 +218,8 @@ export default function RoadmapLayoutV2({
             aria-label="Reset progress"
           >
             <X size={14} />
-          </button>
+          </button> */}
+         
         </div>
       </nav>
 
@@ -235,12 +250,14 @@ export default function RoadmapLayoutV2({
         )}
 
         {view === "step" && (
-          <StepView
-            data={data}
-            state={state}
-            onBack={handleBackToChapter}
-            actions={actions}
-          />
+          <Suspense fallback={<StepSkeleton />}>
+            <LazyStepView
+              data={data}
+              state={state}
+              onBack={handleBackToChapter}
+              actions={actions}
+            />
+          </Suspense>
         )}
       </main>
 
@@ -273,7 +290,7 @@ export default function RoadmapLayoutV2({
         /* ─── Nav bar ──────────────────────────────────────────── */
         .roadmap-nav {
           position: sticky;
-          top: 55px;
+          top: 70px;
           z-index: 100;
           width: 100%;
           overflow-x: hidden;

@@ -67,9 +67,10 @@ export default function GetInTouch() {
 
   return (
     <section
-      className="relative bg-background overflow-hidden py-8 md:py-16 font-sans"
+      className="relative overflow-hidden py-8 md:py-16 font-sans"
       id="contact"
       suppressHydrationWarning
+      style={{ background: 'linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)' }}
     >
       {/* Texture overlay - matching opacity from original */}
       <div

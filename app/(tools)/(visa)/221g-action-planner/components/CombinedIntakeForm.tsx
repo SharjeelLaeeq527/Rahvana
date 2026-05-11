@@ -2863,6 +2863,20 @@ export default function CombinedIntakeForm({
               />
               <div className="flex gap-3 pt-4 border-t">
                 <Button variant="outline" onClick={goBack}>
+                  ← Back
+                </Button>
+                <Button 
+                  onClick={goNext}
+                  className="ml-auto bg-primary hover:bg-primary/90 shadow-lg"
+                  disabled={
+                    Object.values(selected221gItems).filter((v) => Boolean(v)).length === 0
+                  }
+                >
+                  Continue to Review →
+                </Button>
+              </div>
+              <div style={{ display: "none" }}>
+                <Button variant="outline" onClick={goBack}>
                   â† Back
                 </Button>
               </div>

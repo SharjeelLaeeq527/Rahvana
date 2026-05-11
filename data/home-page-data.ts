@@ -1,4 +1,5 @@
 import * as Icons from "lucide-react";
+import { Caveat } from "next/font/google";
 
 export const JOURNEYS = [
   // Family & Protection
@@ -465,3 +466,126 @@ export const FAQS = [
     a: "Yes. We use bank-level encryption (AES-256) to secure your files. For Free users, progress is stored locally in your browser. Plus users benefit from secure, encrypted cloud synchronization across all devices.",
   },
 ];
+
+export const heroI130PreviewDisplay = {
+  width: 520,
+  height: 673,
+} as const;
+export const heroI130PreviewNatural = {
+  width: 1040,
+  height: 1346,
+} as const;
+export const heroAnnotationFont = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+});
+
+export const accent = {
+  teal: "#0d7377",
+  ink: "#162126",
+  body: "#2C3A3E",
+  dashboard: "#051738",
+  chapter1: "#8284BF",
+  chapter1Dark: "#4E518C",
+  chapter1Tint: "#F0F1FB",
+  chapter1Border: "#B9BBE2",
+  chapter2: "#520A50",
+  chapter2Tint: "#F4E6F3",
+  chapter2Border: "#8B4388",
+  chapter3: "#051738",
+  chapter3Tint: "#E8ECF3",
+  chapter3Border: "#31415F",
+  rose: "#db8090",
+};
+
+export const heroAnnotations = [
+  "A smart dashboard keeps your IR-1 journey, progress, and next actions in one place.",
+  "Open the chapter you're working on and pick up right where you left off.",
+  "Completed steps stay organized, so the next step is always clear.",
+  "Built-in tools appear exactly where you need them in the journey.",
+  "Simple auto form filling helps you move faster with less manual work.",
+  "Review the completed form before moving forward with confidence.",
+  "Return to your roadmap with progress updated and your next step ready.",
+] as const;
+
+export const chapters = [
+  {
+    number: 1,
+    name: "USCIS Petition Filing",
+    description:
+      "File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani spouse.",
+    pct: 41,
+    color: accent.chapter1,
+    border: "border-[#B9BBE2]",
+    tint: "bg-[#F0F1FB]",
+    text: "text-[#4E518C]",
+    steps: [
+      ["step_1_1", "Determine Eligibility", "Confirm IR-1 qualification", "done"],
+      ["step_1_2", "Gather Required Documents", "Pakistan-specific full checklist", "done"],
+      ["step_1_3", "Review Filing Methods", "Online $625 or Paper $675", "current"],
+      ["step_1_4", "Fill Form I-130", "via Rahvana wizard", "locked"],
+      ["step_1_5", "Fill Form I-130A", "via Rahvana wizard", "locked"],
+      ["step_1_8", "Upload Forms & Evidence", "PDF/JPG, 12 MB max", "locked"],
+    ],
+  },
+  {
+    number: 2,
+    name: "NVC / CEAC Processing",
+    description:
+      "Pay fees, complete DS-260, prepare civil and financial documents, and track documentary qualification.",
+    pct: 28,
+    color: accent.chapter2,
+    border: "border-[#8B4388]",
+    tint: "bg-[#F4E6F3]",
+    text: "text-[#520A50]",
+    steps: [
+      ["step_2_1", "Access CEAC Case", "Secure case details & sign in", "done"],
+      ["step_2_2", "Pay NVC Fees", "AOS & IV fee payment", "current"],
+      ["step_2_3", "Complete Form DS-260", "Immigrant visa application", "todo"],
+      ["step_2_4", "Prepare Civil Documents", "Gather required records", "todo"],
+      ["step_2_5", "Affidavit of Support", "Determine and prepare sponsorship", "locked"],
+      ["step_2_10", "Record Documentary Qualification", "Record DQ date & activate tracking", "locked"],
+    ],
+  },
+  {
+    number: 3,
+    name: "Medical + Interview",
+    description:
+      "Prepare medical clearance, courier registration, original documents, interview readiness, and outcome tracking.",
+    pct: 9,
+    color: accent.chapter3,
+    border: "border-[#31415F]",
+    tint: "bg-[#E8ECF3]",
+    text: "text-[#051738]",
+    steps: [
+      ["step_3_1", "Schedule Medical Examination", "Official medical clearance", "current"],
+      ["step_3_2", "Obtain Polio Vaccination Certificate", "Required for Pakistan applicants", "todo"],
+      ["step_3_3", "Obtain Fresh Police Clearance Certificate", "Required for interview", "todo"],
+      ["step_3_6", "Gather Original Documents", "Official document compilation", "todo"],
+      ["step_3_7", "Prepare for Interview", "Practice questions and build confidence", "locked"],
+      ["step_3_10", "Track Visa Issuance", "Passport delivery and visa issuance", "locked"],
+    ],
+  },
+] as const;
+
+export const milestones = [
+  ["Eligibility confirmed", true],
+  ["Documents gathered", true],
+  ["Filing method selected", true],
+  ["I-130 submitted to USCIS", false],
+  ["NVC fees paid", false],
+  ["DS-260 submitted", false],
+  ["Documents submitted to NVC", false],
+  ["Documentarily Qualified", false],
+  ["Interview scheduled", false],
+  ["Visa interview attended", false],
+] as const;
+
+export const caseFields = [
+  ["Filing method", "Online"],
+  ["Receipt number", "Pending"],
+  ["NVC case number", "Unavailable"],
+  ["NVC invoice ID", "Unavailable"],
+  ["DQ date", "Not recorded"],
+  ["Interview date", "Not scheduled"],
+] as const;

@@ -90,6 +90,7 @@ import {
   getStageProgress,
   getDisplayStepNumber,
 } from "./journeyHelpers";
+import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { toast } from "sonner";
@@ -124,7 +125,10 @@ import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool"
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
+import {
+  computeDocumentList,
+  deriveDocAnswersFromEligibility,
+} from "@/lib/questionnaire/engine";
 import type {
   QuestionnaireResult,
   ConditionalDocument,
@@ -148,7 +152,7 @@ import {
 } from "./GuideTutorialOverlays";
 import {
   DqRecordingTool,
-  // InterviewSchedulingTool,
+  InterviewSchedulingTool,
   AppointmentReceivedTool,
   MedicalExamTool,
   PolioCertificateTool,
@@ -163,11 +167,22 @@ import { SubmissionReviewTool } from "./SubmissionReviewTool";
 import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./CourierRegistrationTool";
 import { InterviewPrepTool } from "./InterviewPrepTool";
+import { DocListSection } from "./DocListSection";
 import { InterviewDayTool } from "./InterviewDayTool";
+import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
+import { TrackVisaIssuanceTool } from "./TrackVisaIssuanceTool";
+import { Respond221gTool } from "./Respond221gTool";
+import { Input221gTool } from "./Input221gTool";
 import CaseRegistrationForm from "./CaseRegistrationForm";
 import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
+import { useStepEntitlement } from "./useStepEntitlement";
+import { StepLockedContent } from "./StepLockedContent";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import {
+  getStepLockStatus,
+  getModalFeatureForTier,
+} from "@/lib/entitlements/hardLockRules";
 
 import { EMBASSY_GUIDANCE_DATA } from "@/app/(tools)/(visa)/221g-action-planner/utils/embassyGuidance";
 import { APPROVAL_NOTICE_DATA } from "./ApprovalNoticeData";
@@ -221,6 +236,24 @@ interface FilingQuizResult {
   emphasize: "online" | "paper" | null;
 }
 
+// Vault document IDs for Chapter 3 Step 6 gathering checklist items
+const GATHERING_VAULT_IDS: Record<string, string> = {
+  passport: "passport-beneficiary",
+  "birth-cert": "birth-cert-beneficiary",
+  "marriage-cert": "nadra-mrc",
+  pcc: "police-certificate-pakistan",
+  "interview-letter": "interview-letter",
+  "i864-original": "i-864-affidavit",
+  "tax-docs": "tax-returns-petitioner",
+  "employment-letter": "employment-letter",
+  photos: "passport-photos",
+  "medical-packet": "medical-results-envelope",
+  "ds260-original": "misc-document",
+  "polio-cert": "misc-document",
+  "courier-registration-certificate": "misc-document",
+  folders: "misc-document",
+};
+
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
@@ -230,6 +263,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
+  // ── Step-level entitlement gating ──────────────────────────────────────────
+  const plan = usePlan();
+  const stepEntitlement = useStepEntitlement(sId);
+
   // --- Robust Chapter 1 detection for all substeps ---
   // Status Guide Tutorial Overlay state
   const [showStatusGuide, setShowStatusGuide] = useState(false);
@@ -291,8 +328,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       note: "Your next task should match the actual update USCIS gives you.",
     },
   ];
-const plan = usePlan();
-const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | null>(null);
+  const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<
+    string | null
+  >(null);
   // Add Evidence Note modal state
   const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] =
     useState(false);
@@ -387,7 +425,11 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
       status: "not-started",
       required: doc.required,
     }));
-  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
+  }, [
+    isDocQuestionnaireCompleted,
+    state.metadata?.docQuestionnaireAnswers,
+    derivedDocAnswers,
+  ]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -412,7 +454,14 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
     state.metadata.filingMethodConfirmed || false,
   );
   const [isLaunched, setIsLaunched] = useState(false);
-
+  // Guarded upload — checks entitlement before opening the vault upload modal
+  const guardedOpenUploadModal = useCallback(
+    (defId: string) => {
+      if (!stepEntitlement.guard()) return;
+      openUploadModal(defId);
+    },
+    [stepEntitlement, openUploadModal],
+  );
   // Wallet States
   const [uscisCredentials, setUscisCredentials] =
     useState<PortalCredential | null>(null);
@@ -446,16 +495,25 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
   // Civil Documents States
   const [activeCivilDoc, setActiveCivilDoc] = useState<any>(null);
   const [isCivilDocGuideOpen, setIsCivilDocGuideOpen] = useState(false);
+  const [docGuideContext, setDocGuideContext] = useState<"civil" | "gathering">("civil");
   const civilDocsStatus =
     (state.metadata.civilDocsStatus as Record<string, string>) || {};
+  const gatheringDocsStatus =
+    (state.metadata.gatheringDocsStatus as Record<string, string>) || {};
 
   // Financial Documents States (Step 6)
   const [activeFinancialDoc, setActiveFinancialDoc] = useState<any>(null);
   const [isFinancialDocGuideOpen, setIsFinancialDocGuideOpen] = useState(false);
+  const guardedSetIsFinancialDocGuideOpen = useCallback(
+    (open: boolean) => {
+      if (open && !stepEntitlement.guard()) return;
+      setIsFinancialDocGuideOpen(open);
+    },
+    [stepEntitlement],
+  );
   const financialDocsStatus =
     (state.metadata.financialDocsStatus as Record<string, string>) || {};
 
-  // Tutorial State
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialIdx, setTutorialIdx] = useState(0);
   const [tutorialPath, setTutorialPath] = useState<
@@ -602,7 +660,9 @@ const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<string | 
   // CEAC tracking — refused sub-type prompt
   const [refusedPromptOpen, setRefusedPromptOpen] = useState(false);
   const [ceacApiLoading, setCeacApiLoading] = useState(false);
-const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
+    null,
+  );
   // Step 1.17 Approval Notice States
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [isApprovalGuideOpen, setIsApprovalGuideOpen] = useState(false);
@@ -681,13 +741,6 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     }
     setRefusedPromptOpen(false);
   };
-
-  {upgradeModalFeature && (
-  <UpgradeModal
-    feature={upgradeModalFeature}
-    onClose={() => setUpgradeModalFeature(null)}
-  />
-)}
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
   const [gatheringStatus, setGatheringStatus] = useState<
@@ -859,7 +912,9 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   const courierToolData = useMemo(() => {
     if (!chapters) return null;
     for (const ch of chapters) {
-      const step = ch.steps?.find((s: any) => s.tool_data?.type === "courier_registration");
+      const step = ch.steps?.find(
+        (s: any) => s.tool_data?.type === "courier_registration",
+      );
       if (step?.tool_data) return step.tool_data;
     }
     return null;
@@ -868,15 +923,21 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   const filingMethod =
     state.metadata?.filingMethod || state.filingType || "online";
 
-  const getIcon = getStepIcon;
-
   const activeStepsInChapter = useMemo(() => {
     if (!currentChapter) return [];
-    return currentChapter.steps.filter(
-      (step: any) =>
-        !step.branch || step.branch === "both" || step.branch === filingMethod,
+    return getActiveStepsForStage(
+      data,
+      state.currentStage ?? 0,
+      state.metadata,
+      state.filingType,
     );
-  }, [currentChapter, filingMethod]);
+  }, [
+    data,
+    currentChapter,
+    state.currentStage,
+    state.metadata,
+    state.filingType,
+  ]);
 
   // (removed duplicate declarations, see above)
   const isCompleted = state.completedSteps.has(sId);
@@ -917,36 +978,41 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   // Sync with metadata on mount
   React.useEffect(() => {
     if (state.metadata?.uscis_receipt_number) {
-      setRcptManual(prev => ({
+      setRcptManual((prev) => ({
         ...prev,
         receipt: state.metadata.uscis_receipt_number,
         noticeDate: state.metadata.uscis_notice_date || "",
         priorityDate: state.metadata.uscis_priority_date || "",
       }));
-      
+
       if (state.metadata.uscis_tracking_enabled) {
         setRcptUiState("tracked");
       }
     }
-  }, [state.metadata?.uscis_receipt_number, state.metadata?.uscis_tracking_enabled]);
+  }, [
+    state.metadata?.uscis_receipt_number,
+    state.metadata?.uscis_tracking_enabled,
+  ]);
 
   const handleSaveReceipt = () => {
     const isValid = /^[A-Z]{3}[0-9]{10}$/.test(rcptManual.receipt);
     if (!isValid) {
-      setRcptError("Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).");
+      setRcptError(
+        "Receipt number must be 3 letters followed by 10 digits (e.g., IOE1234567890).",
+      );
       setRcptSuccess(false);
       return;
     }
     setRcptError("");
     setRcptSuccess(true);
-    
+
     actions.updateMetadata({
       uscis_receipt_number: rcptManual.receipt,
       uscis_notice_date: rcptManual.noticeDate,
       uscis_priority_date: rcptManual.priorityDate,
-      uscis_tracking_enabled: true
+      uscis_tracking_enabled: true,
     });
-    
+
     setRcptUiState("tracked");
   };
 
@@ -964,18 +1030,20 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     );
   } else if (sId === "step_1_16" && currentStep.tool_data) {
     customRenderer = (
+      //     <StepLockedContent stepKey={sId} mode="overlay">
       <TrackCaseStatusStep
         tool={currentStep.tool_data}
         state={state}
         actions={actions}
         journeyId={journeyId}
       />
+      // </StepLockedContent>
     );
   }
 
   const allActiveSteps = useMemo(
-    () => getAllActiveSteps(data, filingMethod),
-    [data, filingMethod],
+    () => getAllActiveSteps(data, state.metadata, state.filingType),
+    [data, state.metadata, state.filingType],
   );
 
   const globalIdx = allActiveSteps.findIndex(
@@ -984,7 +1052,6 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   const localIdx = activeStepsInChapter.findIndex(
     (s: any) => (s.step_key || s.id) === sId,
   );
-
   const chapterProg = useMemo(
     () => getStageProgress(data, state.currentStage, state),
     [data, state.currentStage, state],
@@ -998,6 +1065,37 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
   // Use the percentage from journeyHelpers to match ChapterView
   const progressPct = chapterProg.pct;
+
+  const nextStepInfo = useMemo(() => {
+    if (!nextStep) return null;
+    const nsId = nextStep.step_key || (nextStep as any).id;
+    const activeChapters = data.chapters || (data as any).stages;
+    for (let cIdx = 0; cIdx < activeChapters.length; cIdx++) {
+      const activeSteps = getActiveStepsForStage(
+        data,
+        cIdx,
+        state.metadata,
+        state.filingType,
+      );
+      const lIdx = activeSteps.findIndex(
+        (s: any) => (s.step_key || s.id) === nsId,
+      );
+      if (lIdx !== -1) return { chapterIdx: cIdx, localIdx: lIdx };
+    }
+    return null;
+  }, [nextStep, data, state.metadata, state.filingType]);
+
+  const nextStepLock = useMemo(() => {
+    if (!nextStep || !nextStepInfo)
+      return { isLocked: false, requiredPlan: null };
+    const nsId = nextStep.step_key || (nextStep as any).id;
+    return getStepLockStatus(
+      nsId,
+      plan.tier,
+      nextStepInfo.chapterIdx,
+      nextStepInfo.localIdx,
+    );
+  }, [nextStep, nextStepInfo, plan.tier]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
@@ -1363,6 +1461,18 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         key: "receiptNum",
         value: () => new Date().toISOString().slice(0, 10),
       }, // I-130 submitted to USCIS
+      step_1_6: {
+        key: "uscisPortalSaved",
+        value: () => "true",
+      }, // Portal credentials saved
+      step_1_7: {
+        key: "filingFeeDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Filing fee paid
+      step_1_8: {
+        key: "submissionDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // Online submission sent
       step_2_10: {
         key: "dqDate",
         value: () => new Date().toISOString().slice(0, 10),
@@ -1384,6 +1494,10 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         value: () => "INVC-" + Math.floor(Math.random() * 1000000),
       }, // NVC invoice ID (demo value)
       step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
+      step_1_17: {
+        key: "approvalDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      }, // I-130 approval notice received
     };
     actions.toggleComplete(stepKey);
     // If this step is a milestone, set the metadata field if not already set
@@ -1408,6 +1522,23 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   };
 
   const handleMarkDocReviewed = (docId: string) => {
+    if (docGuideContext === "gathering") {
+      const next = { ...gatheringDocsStatus, [docId]: "reviewed" };
+      actions.updateMetadata({ gatheringDocsStatus: next });
+      if (sId === "step_3_6") {
+        const tool = currentStep.tool_data;
+        if (tool?.doc_gathering) {
+          const total = tool.doc_gathering.groups.reduce(
+            (acc: number, g: any) => acc + g.items.length,
+            0,
+          );
+          const reviewedCount = Object.values(next).filter((s) => s === "reviewed").length;
+          if (reviewedCount >= total && !isCompleted) handleToggleComplete();
+        }
+      }
+      return;
+    }
+
     const next = { ...civilDocsStatus, [docId]: "reviewed" };
     actions.updateMetadata({ civilDocsStatus: next });
 
@@ -1450,22 +1581,45 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       }
     }
   };
- const renderDocActionModal = () => {
+  const renderDocActionModal = () => {
     if (!docActionModal.doc) return null;
     const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
- 
-    const canReadGuide = plan.canUse("step_guides");
+
+    const isTranslation =
+      doc.id === "doc_translations" ||
+      doc.guideKey === "doc_translations" ||
+      doc.selectedGuideId === "doc_translations";
+    const isPassportPhoto =
+      doc.id === "doc_passport_photos" ||
+      doc.guideKey === "doc_passport_photos" ||
+      doc.selectedGuideId === "doc_passport_photos";
+
+    const guideFeature = isTranslation
+      ? "document_translation"
+      : isPassportPhoto
+        ? "photo_booth"
+        : "step_guides";
+
+    const canReadGuide = plan.canUse(guideFeature);
     const canUpload = plan.canUse("document_vault");
- 
+  const guideTierIconClass = (() => {
+    const target = plan.entitlement(guideFeature).upgradeTarget;
+    return target ? `plan-icon--${target}` : "plan-icon--premium";
+  })();
+  const uploadTierIconClass = (() => {
+    const target = plan.entitlement("document_vault").upgradeTarget;
+    return target ? `plan-icon--${target}` : "plan-icon--premium";
+  })();
+
     return (
       <>
-        {docActionUpgradeFeature && (
+           { docActionUpgradeFeature && (
           <UpgradeModal
             feature={docActionUpgradeFeature}
             onClose={() => setDocActionUpgradeFeature(null)}
           />
         )}
- 
+
         <Dialog
           open={docActionModal.isOpen}
           onOpenChange={(open) =>
@@ -1477,7 +1631,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               {/* Background Decorations */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
- 
+
               <div className="relative p-8">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
@@ -1520,79 +1674,84 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                     </p>
                   </div>
                 </div>
- 
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* ── Read Guide / Launch Tool Card ───────────────────── */}
+                  {/* ── Read Guide / Launch Tool Card ── */}
                   <button
                     onClick={() => {
                       if (!canReadGuide) {
                         setDocActionModal({ ...docActionModal, isOpen: false });
-                        setDocActionUpgradeFeature("step_guides");
+                        setDocActionUpgradeFeature(guideFeature);
                         return;
                       }
                       setDocActionModal({ ...docActionModal, isOpen: false });
                       if (onReadGuide) onReadGuide();
                     }}
                     className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
-                      ${
-                        canReadGuide
-                          ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
-                          : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
-                      }`}
-                  >
-                    {/* Crown badge — top-right, only when locked */}
-                    {!canReadGuide && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                        <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
-                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                          Upgrade
-                        </span>
-                      </div>
-                    )}
- 
+                    ${
+                      canReadGuide
+                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
+                    }`}
+                >
+                  {/* Tier badge — only when locked */}
+                  {!canReadGuide && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <span className={`plan-icon ${guideTierIconClass} scale-110`} aria-hidden="true" />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
+
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
-                        ${
-                          canReadGuide
-                            ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
-                            : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
-                        }`}
+                      ${
+                        canReadGuide
+                          ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
+                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
+                      }`}
                     >
-                      {doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations" ? (
+                      {isTranslation ? (
                         <Sparkles size={20} />
-                      ) : doc.id === "doc_passport_photos" ||
-                        doc.guideKey === "doc_passport_photos" ||
-                        doc.selectedGuideId === "doc_passport_photos" ? (
+                      ) : isPassportPhoto ? (
                         <Camera size={20} />
                       ) : (
                         <BookOpen size={20} />
                       )}
                     </div>
- 
+
                     <h4 className="font-bold text-[#0f1f38] mb-1">
-                      {doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations" ||
-                      doc.id === "doc_passport_photos" ||
-                      doc.guideKey === "doc_passport_photos" ||
-                      doc.selectedGuideId === "doc_passport_photos"
+                      {isTranslation || isPassportPhoto
                         ? "Launch the Tool"
                         : "Read the Guide"}
                     </h4>
                     <p className="text-xs text-[#6b8097] leading-relaxed">
-                      {doc.id === "doc_translations" ||
-                      doc.guideKey === "doc_translations" ||
-                      doc.selectedGuideId === "doc_translations"
+                      {isTranslation
                         ? "Use our automated tool to prepare certified translations for your documents."
-                        : doc.id === "doc_passport_photos" ||
-                          doc.guideKey === "doc_passport_photos" ||
-                          doc.selectedGuideId === "doc_passport_photos"
+                        : isPassportPhoto
                           ? "Generate and validate your passport photos to meet U.S. specifications."
                           : "View requirements, pitfalls, and step-by-step instructions."}
                     </p>
- 
+
+                    {/* Photo booth credits badge — only when unlocked and limited */}
+                    {isPassportPhoto &&
+                      canReadGuide &&
+                      (() => {
+                        const ent = plan.entitlement("photo_booth");
+                        if (ent.state === "limited") {
+                          return (
+                            <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                                {ent.limit} Credits Included
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
                     {/* Locked hint text */}
                     {!canReadGuide && (
                       <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
@@ -1601,12 +1760,24 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       </p>
                     )}
                   </button>
- 
-                  {/* ── Upload Document Card ─────────────────────────────── */}
+
+                  {/* ── Upload Document Card ── */}
                   <button
                     onClick={() => {
                       if (!canUpload) {
                         setDocActionModal({ ...docActionModal, isOpen: false });
+                        // Context-specific toast for certain steps
+                        if (sId === "step_1_15") {
+                          toast.info(
+                            "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
+                            { duration: 6000 },
+                          );
+                        } else if (sId === "step_1_17") {
+                          toast.info(
+                            "Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.",
+                            { duration: 6000 },
+                          );
+                        }
                         setDocActionUpgradeFeature("document_vault");
                         return;
                       }
@@ -1614,40 +1785,39 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       if (onUpload) onUpload();
                     }}
                     className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
-                      ${
-                        canUpload
-                          ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
-                          : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
-                      }`}
-                  >
-                    {/* Crown badge — top-right, only when locked */}
-                    {!canUpload && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                        <Crown size={10} className="text-[#c49a0a]" strokeWidth={2.5} />
-                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                          Upgrade
-                        </span>
-                      </div>
-                    )}
- 
+                    ${
+                      canUpload
+                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
+                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
+                    }`}>
+{/* Tier badge — only when locked */}
+                  {!canUpload && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                      <span className={`plan-icon ${uploadTierIconClass} scale-110`} aria-hidden="true" />
+                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                        Upgrade
+                      </span>
+                    </div>
+                  )}
+
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
-                        ${
-                          canUpload
-                            ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
-                            : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
-                        }`}
+                      ${
+                        canUpload
+                          ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
+                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
+                      }`}
                     >
                       <Upload size={20} />
                     </div>
- 
+
                     <h4 className="font-bold text-[#0f1f38] mb-1">
                       Upload Document
                     </h4>
                     <p className="text-xs text-[#6b8097] leading-relaxed">
                       Attach and submit your document for processing.
                     </p>
- 
+
                     {/* Locked hint text */}
                     {!canUpload && (
                       <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
@@ -1657,7 +1827,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                     )}
                   </button>
                 </div>
- 
+
                 <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
                   <button
                     onClick={() =>
@@ -1961,23 +2131,23 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         </div>
 
         {/* PRIMARY LAUNCH MODULE */}
-        <div className="bg-[#0e1e38] rounded-[16px] border border-white/7 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary via-[#6aa8f0] to-transparent opacity-70" />
+        <div className="bg-[var(--rv-ch2-module-bg)] rounded-[16px] border border-[var(--rv-ch2)]/30 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[var(--rv-ch2)] via-[var(--rv-ch2-feature-bg)] to-transparent opacity-70" />
           <div className="p-8 md:p-[32px_34px_28px]">
             <div className="flex items-start gap-4 mb-[22px]">
-              <div className="w-[46px] h-[46px] rounded-[11px] bg-white/6 border border-white/10 flex items-center justify-center shrink-0">
-                <Users className="text-white/75" size={22} />
+              <div className="w-[46px] h-[46px] rounded-[11px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
+                <Users className="text-white" size={22} />
               </div>
               <div>
-                <div className="text-[10px] font-bold tracking-widest uppercase text-white/35 mb-1">
+                <div className="text-[10px] font-bold tracking-widest uppercase text-[var(--rv-ch2-text)]/60 mb-1">
                   CEAC Guidance
                 </div>
-                <div className="text-[clamp(19px,2.8vw,23px)] text-white/92 leading-tight">
+                <div className="text-[clamp(19px,2.8vw,23px)] text-[var(--rv-ch2-text)] leading-tight">
                   Add sponsorship participants in CEAC
                 </div>
               </div>
             </div>
-            <div className="h-px bg-white/10 mb-5" />
+            <div className="h-px bg-[var(--rv-ch2)]/20 mb-5" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
               {[
                 "Access the affidavit support section",
@@ -1987,10 +2157,10 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               ].map((cue, idx) => (
                 <div
                   key={idx}
-                  className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
+                  className="bg-[var(--rv-ch2-feature-bg)] border border-[var(--rv-ch2)]/30 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
                 >
-                  <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
-                  <div className="text-[13px] text-white/55 leading-tight">
+                  <div className="w-[5px] h-[5px] rounded-full bg-[var(--rv-ch2)] shrink-0 mt-[5px]" />
+                  <div className="text-[13px] text-[var(--rv-ch2-text)] leading-tight">
                     {cue}
                   </div>
                 </div>
@@ -1998,11 +2168,21 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
             </div>
             <button
               onClick={() => {
+                if (!stepEntitlement.guard()) return;
                 setUseCeacGuideData(true);
                 setTutorialIdx(0);
                 setIsTutorialOpen(true);
               }}
-              className="w-full py-4 px-7 bg-[#b48ad6] text-white rounded-[12px] text-[15px] font-semibold cursor-pointer hover:bg-[#561864] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)] hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full py-4 px-7 text-white rounded-[12px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+              style={{
+                backgroundColor: "var(--rv-ch2)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--rv-ch2-dark)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--rv-ch2)";
+              }}
             >
               Start CEAC Guide
             </button>
@@ -2021,6 +2201,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   <button
                     key={card.id}
                     onClick={() => {
+                      if (!stepEntitlement.guard()) return;
                       const pathMap: Record<
                         string,
                         "household_member" | "joint_sponsor"
@@ -2278,6 +2459,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       <div
         key={item.id}
         onClick={() => {
+          if (!stepEntitlement.guard()) return;
           if (hhDocsStatus[item.id] === "not-started") {
             const next = { ...hhDocsStatus, [item.id]: "in-progress" };
             setHhDocsStatus(next);
@@ -2437,6 +2619,14 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           {/* Entitlement Banner — shown when step features are locked for current plan */}
           <StepEntitlementBanner stepKey={sId} />
 
+          {/* UpgradeModal — triggered by stepEntitlement.guard() when user clicks locked content */}
+          {stepEntitlement.upgradeModalFeature && (
+            <UpgradeModal
+              feature={stepEntitlement.upgradeModalFeature}
+              onClose={stepEntitlement.closeUpgradeModal}
+            />
+          )}
+
           {/* Companion Context Badge (Step 5 Specific) */}
           {(sId === "step_1_5" || sId === "step_1_2_b") && (
             <div className="flex items-center gap-[9px] mb-6">
@@ -2518,20 +2708,16 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
           {/* SPONSORSHIP CALCULATOR TOOL RENDERING */}
           {tool.type === "sponsorship_calculator" && (
-          <div className="relative">
             <SponsorshipModule
               sponsorshipResult={sponsorshipResult}
               onOpenCalc={() => {
-                if (!plan.canUse("sponsorship_calc")) {
-                  setUpgradeModalFeature("sponsorship_calc");
-                  return;
-                }
+                if (!stepEntitlement.guard()) return;
                 setIsSponsorshipCalcOpen(true);
               }}
               tool={tool}
+              guard={stepEntitlement.guard}
             />
-          </div>
-        )}
+          )}
 
           {/* DQ RECORDING TOOL RENDERING */}
           {tool.type === "dq_recording" && (
@@ -2552,6 +2738,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 dqCountry,
                 setDqCountry,
               }}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -2559,7 +2746,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           {tool.type === "interview_scheduling" && (
             <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
               {/* Queue status card */}
-              <div className="relative bg-[#0c1b33] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
+              <div className="relative bg-[#1a0a18] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
                 <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
                   Post-DQ Queue Status
@@ -2568,7 +2755,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
                   style={{ fontFamily: "'DM Serif Display', serif" }}
                 >
-                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#6aa8f0] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
+                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#973680] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
                   In queue — awaiting interview letter
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
@@ -2621,6 +2808,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                     "") as string;
 
                   const handleFetch = async () => {
+                    if (!stepEntitlement.guard()) return;
                     if (!postName) {
                       setIvError(
                         "No embassy/post found. Please complete Step 2.10 first.",
@@ -2749,7 +2937,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       <button
                         onClick={handleFetch}
                         disabled={ivLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-[12px] font-bold hover:bg-primary/90 disabled:opacity-60 transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-[var(--rv-ch2)] text-white rounded-lg text-[12px] font-bold hover:bg-[var(--rv-ch2-dark)] disabled:opacity-60 transition-all shadow-[0_4px_14px_rgba(82,10,80,0.18)] hover:shadow-[0_6px_18px_rgba(82,10,80,0.24)]"
                       >
                         {ivLoading ? (
                           <>
@@ -2950,6 +3138,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 isApprovalSaved,
                 setIsApprovalSaved,
               }}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -2967,47 +3156,54 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 consulateLocation,
                 setConsulateLocation,
               }}
+              guard={stepEntitlement.guard}
             />
           )}
 
           {tool.type === "medical_exam" && (
-            <MedicalExamTool
-              state={state}
-              actions={actions}
-              medState={{
-                medSaved,
-                setMedSaved,
-                medDate,
-                setMedDate,
-                medTime,
-                setMedTime,
-                medClinic,
-                setMedClinic,
-                isMedWizardOpen,
-                setIsMedWizardOpen,
-                medWizardStep,
-                setMedWizardStep,
-                medWizardMode,
-                setMedWizardMode,
-              }}
-            />
+            <StepLockedContent stepKey={sId} mode="overlay">
+              <MedicalExamTool
+                state={state}
+                actions={actions}
+                medState={{
+                  medSaved,
+                  setMedSaved,
+                  medDate,
+                  setMedDate,
+                  medTime,
+                  setMedTime,
+                  medClinic,
+                  setMedClinic,
+                  isMedWizardOpen,
+                  setIsMedWizardOpen,
+                  medWizardStep,
+                  setMedWizardStep,
+                  medWizardMode,
+                  setMedWizardMode,
+                }}
+                guard={stepEntitlement.guard}
+              />
+            </StepLockedContent>
           )}
 
           {tool.type === "polio_certificate" && (
-            <PolioCertificateTool
-              state={state}
-              actions={actions}
-              polioState={{
-                polioLaunched,
-                setPolioLaunched,
-                isPolioGuideOpen,
-                setIsPolioGuideOpen,
-                polioGuideStep,
-                setPolioGuideStep,
-                polioChecks,
-                setPolioChecks,
-              }}
-            />
+            <StepLockedContent stepKey={sId} mode="overlay">
+              <PolioCertificateTool
+                state={state}
+                actions={actions}
+                polioState={{
+                  polioLaunched,
+                  setPolioLaunched,
+                  isPolioGuideOpen,
+                  setIsPolioGuideOpen,
+                  polioGuideStep,
+                  setPolioGuideStep,
+                  polioChecks,
+                  setPolioChecks,
+                }}
+                guard={stepEntitlement.guard}
+              />
+            </StepLockedContent>
           )}
 
           {tool.type === "police_clearance" && (
@@ -3032,26 +3228,30 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               uploadedDocuments={uploadedDocuments}
+              guard={stepEntitlement.guard}
             />
           )}
 
           {/* FINANCIAL CHECKLIST (Step 2.6 SPECIFIC) */}
           {tool.type === "financial_checklist" && (
-            <FinancialChecklistTool
-              selectedScenario={selectedScenario}
-              setSelectedScenario={setSelectedScenario}
-              financialDocsStatus={financialDocsStatus}
-              uploadedDocuments={uploadedDocuments}
-              isReloadingDocs={isReloadingDocs}
-              isDeletingIds={isDeletingIds}
-              openUploadModal={openUploadModal}
-              setActiveUploadId={setActiveUploadId}
-              setActiveUploadType={setActiveUploadType}
-              setDocActionModal={setDocActionModal}
-              updateMetadata={actions.updateMetadata}
-              setActiveFinancialDoc={setActiveFinancialDoc}
-              setIsFinancialDocGuideOpen={setIsFinancialDocGuideOpen}
-            />
+            // <StepLockedContent stepKey={sId} mode="overlay">
+              <FinancialChecklistTool
+                selectedScenario={selectedScenario}
+                setSelectedScenario={setSelectedScenario}
+                financialDocsStatus={financialDocsStatus}
+                uploadedDocuments={uploadedDocuments}
+                isReloadingDocs={isReloadingDocs}
+                isDeletingIds={isDeletingIds}
+                openUploadModal={guardedOpenUploadModal}
+                setActiveUploadId={setActiveUploadId}
+                setActiveUploadType={setActiveUploadType}
+                setDocActionModal={setDocActionModal}
+                updateMetadata={actions.updateMetadata}
+                setActiveFinancialDoc={setActiveFinancialDoc}
+                setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
+                guard={stepEntitlement.guard}
+              />
+            // </StepLockedContent>
           )}
 
           {/* Step 2.7 Household Member Builder Rendering */}
@@ -3073,63 +3273,92 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
           {tool.type === "household_member" && renderHouseholdBuilder()}
 
-  {tool.type === "submission_review" && (
-  <div className="relative">
-    
-      <SubmissionReviewTool
-    tool={tool}
-    submissionChecklistStatus={submissionChecklistStatus}
-    setSubmissionChecklistStatus={setSubmissionChecklistStatus}
-    setSubmissionGuideIdx={setSubmissionGuideIdx}
-    setIsSubmissionGuideOpen={(open) => {
-      if (!plan.canUse("step_guides")) {
-        setUpgradeModalFeature("step_guides");
-        return;
-      }
-      setIsSubmissionGuideOpen(open);
-    }}
-    submissionSaved={submissionSaved}
-    submissionDate={submissionDate}
-    isStatusLocked={!plan.canUse("tracker_reminders")}
-    onLockedClick={() => setUpgradeModalFeature("tracker_reminders")}
-    onSave={(data) => {
-      if (!plan.canUse("tracker_reminders")) {
-        setUpgradeModalFeature("tracker_reminders");
-        return;
-      }
-      setSubmissionSaved(data.saved);
-      setSubmissionDate(data.date);
-      actions.updateMetadata({
-        submissionSaved: data.saved,
-        submissionDate: data.date,
-      });
-    }}
-  />
-
-  </div>
-)}
+          {tool.type === "submission_review" && (
+            <div className="relative">
+              <SubmissionReviewTool
+                tool={tool}
+                submissionChecklistStatus={submissionChecklistStatus}
+                setSubmissionChecklistStatus={setSubmissionChecklistStatus}
+                setSubmissionGuideIdx={setSubmissionGuideIdx}
+                setIsSubmissionGuideOpen={(open) => {
+                  if (!plan.canUse("step_guides")) {
+                    setUpgradeModalFeature("step_guides");
+                    return;
+                  }
+                  setIsSubmissionGuideOpen(open);
+                }}
+                submissionSaved={submissionSaved}
+                submissionDate={submissionDate}
+                isStatusLocked={!plan.canUse("tracker_reminders")}
+                onLockedClick={() =>
+                  setUpgradeModalFeature("tracker_reminders")
+                }
+                onSave={(data) => {
+                  if (!plan.canUse("tracker_reminders")) {
+                    setUpgradeModalFeature("tracker_reminders");
+                    return;
+                  }
+                  setSubmissionSaved(data.saved);
+                  setSubmissionDate(data.date);
+                  actions.updateMetadata({
+                    submissionSaved: data.saved,
+                    submissionDate: data.date,
+                  });
+                }}
+                guard={stepEntitlement.guard}
+              />
+            </div>
+          )}
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && (
             <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />
           )}
 
-          {/* GATHER ORIGINAL DOCUMENTS (Step 3.4 SPECIFIC) */}
+          {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" && (
-            <GatheringChecklistTool
-              tool={tool}
-              state={state}
-              actions={actions}
-              gatheringState={{
-                gatheringStatus,
-                setGatheringStatus,
-                selectedGatheringItem,
-                setSelectedGatheringItem,
-                isGatheringGuideOpen,
-                setIsGatheringGuideOpen,
-                gatheringGuideStep,
-                setGatheringGuideStep,
+            <DocListSection
+              groups={tool.doc_gathering?.groups || []}
+              docsStatus={gatheringDocsStatus}
+              uploadedDocuments={uploadedDocuments}
+              isDeletingIds={isDeletingIds}
+              isReloadingDocs={isReloadingDocs}
+              getVaultId={(item) =>
+                GATHERING_VAULT_IDS[item.id] || mapDocumentNameToId(item.title)
+              }
+              onItemClick={(item) => {
+                setDocActionModal({
+                  isOpen: true,
+                  doc: item,
+                  title: item.title,
+                  subtitle: item.sub,
+                  onReadGuide: () => {
+                    if (!stepEntitlement.guard()) return;
+                    actions.updateMetadata({
+                      gatheringDocsStatus: {
+                        ...gatheringDocsStatus,
+                        [item.id]: "in-progress",
+                      },
+                    });
+                    setDocGuideContext("gathering");
+                    setActiveCivilDoc(item);
+                    setIsCivilDocGuideOpen(true);
+                  },
+                  onUpload: () => {
+                    const vaultId =
+                      GATHERING_VAULT_IDS[item.id] || mapDocumentNameToId(item.title);
+                    setActiveUploadId(item.id);
+                    setActiveUploadType("doc");
+                    if (!stepEntitlement.guard()) return;
+                    openUploadModal(vaultId);
+                  },
+                });
               }}
+              onPreview={(uploadedDocId) => {
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank");
+              }}
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
+              progressLabel="packed"
             />
           )}
 
@@ -3139,6 +3368,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               tool={tool}
               setMedicalGuideIdx={setMedicalGuideIdx}
               setIsMedicalGuideOpen={setIsMedicalGuideOpen}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3153,6 +3383,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               setIsWalletViewOpen={setIsWalletViewOpen}
               setWalletMode={setWalletMode}
               setIsWalletFormOpen={setIsWalletFormOpen}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3162,6 +3393,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               tool={tool}
               isPrepLaunched={isPrepLaunched}
               setIsPrepLaunched={setIsPrepLaunched}
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3171,6 +3403,49 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               tool={tool}
               setInterviewDayTutIdx={setInterviewDayTutIdx}
               setIsInterviewDayTutOpen={setIsInterviewDayTutOpen}
+              guard={stepEntitlement.guard}
+            />
+          )}
+
+          {/* INTERVIEW OUTCOME CONTENT (Step 3.9 SPECIFIC) */}
+          {tool.type === "interview_outcome" && (
+            <InterviewOutcomeTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+          {/* VISA ISSUANCE CONTENT (Step 3.10 SPECIFIC) */}
+          {tool.type === "visa_issuance" && (
+            <TrackVisaIssuanceTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+          {/* INPUT 221(g) CONTENT (Step 3.10b SPECIFIC) */}
+          {tool.type === "input_221g" && (
+            <Input221gTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
+
+          {/* RESPOND TO 221(g) CONTENT (Step 3.11 SPECIFIC) */}
+          {tool.type === "respond_221g" && (
+            <Respond221gTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+              setDocActionModal={setDocActionModal}
+              openUploadModal={openUploadModal}
+              setActiveUploadId={setActiveUploadId}
+              setActiveUploadType={setActiveUploadType}
             />
           )}
 
@@ -3292,6 +3567,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                         <input
                           type="date"
                           value={apDetails.lastCheck}
+                          max={new Date().toISOString().split("T")[0]}
                           onChange={(e) =>
                             setApDetails({
                               ...apDetails,
@@ -3346,6 +3622,10 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                         actions.updateMetadata({
                           apDetails: apDetails,
                           apSaved: "true",
+                          ...(apDetails.ceacStatus === "Issued" &&
+                          !state.metadata?.ceacIssuedAt
+                            ? { ceacIssuedAt: new Date().toISOString() }
+                            : {}),
                         });
                         // Trigger CEAC notification system
                         if (apDetails.ceacStatus === "Refused") {
@@ -3616,16 +3896,30 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
             tool.type !== "adm_processing" &&
             tool.type !== "courier_registration" && (
               <div
-                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "bg-[#28151c] border border-[#c0596a]" : "bg-[#0e1e38] border border-white/7"}`}
-                style={!isChapter1 ? { backgroundColor: launchBg } : {}}
+                className={`relative rounded-[16px] overflow-hidden mb-[20px] ${isChapter1 ? "border" : isChapter2 ? "bg-[var(--rv-ch2-module-bg)] border border-[var(--rv-ch2)]" : "bg-[var(--rv-launch-navy)] border border-white/7"}`}
+                style={
+                  isChapter1
+                    ? {
+                        backgroundColor: "var(--rv-ch1-module-bg)",
+                        borderColor: "var(--rv-ch1)",
+                      }
+                    : isChapter2
+                      ? {
+                          backgroundColor: "var(--rv-ch2-module-bg)",
+                          borderColor: "var(--rv-ch2)",
+                        }
+                      : { backgroundColor: launchBg }
+                }
               >
                 {/* Accent Stripe */}
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px] opacity-70"
                   style={{
                     background: isChapter1
-                      ? "linear-gradient(90deg, #c0596a 0%, #28151c 100%)"
-                      : stripeGradient,
+                      ? "linear-gradient(90deg, var(--rv-ch1) 0%, var(--rv-ch1-module-bg) 100%)"
+                      : isChapter2
+                        ? "linear-gradient(90deg, var(--rv-ch2) 0%, var(--rv-ch2-module-bg) 100%)"
+                        : stripeGradient,
                   }}
                 />
 
@@ -3633,22 +3927,23 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   {/* Module Header */}
                   <div className="flex items-start gap-[16px] mb-[26px]">
                     <div
-                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "bg-[#c0596a] border-[#c0596a]" : "bg-white/[0.055] border-white/10"}`}
+                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "bg-white/[0.055] border-white/10"}`}
+                      style={isChapter1 ? { backgroundColor: "var(--rv-ch1)" } : isChapter2 ? { backgroundColor: "var(--rv-ch2)" } : undefined}
                     >
                       <IconComponent
                         size={22}
-                        className={isChapter1 ? "text-white" : "text-white/75"}
+                        className={isChapter1 || isChapter2 ? "text-white" : "text-white/75"}
                         strokeWidth={1.6}
                       />
                     </div>
                     <div className="flex-1">
                       <div
-                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[#c0596a]" : "text-white/35"}`}
+                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
                       >
                         {tool.launch_module.eyebrow}
                       </div>
                       <h2
-                        className={`text-[clamp(20px,3vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : "text-white/90"}`}
+                        className={`text-[clamp(20px,3vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
                       >
                         {tool.launch_module.heading}
                       </h2>
@@ -3656,7 +3951,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   </div>
 
                   <div
-                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[#c0596a]/30" : "bg-white/9"}`}
+                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[var(--rv-ch1)]/30" : isChapter2 ? "bg-[var(--rv-ch2)]/30" : "bg-white/9"}`}
                   />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
@@ -3722,24 +4017,39 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       (feat: string, i: number) => (
                         <div
                           key={i}
-                          className={`${isChapter1 ? "bg-[#3a232a] border border-[#c0596a]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          className={`${isChapter1 ? "border" : isChapter2 ? "bg-[var(--rv-ch2-panel)] border border-[var(--rv-ch2)]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          style={
+                            isChapter1
+                              ? {
+                                  backgroundColor: "var(--rv-ch1-feature-bg)",
+                                  borderColor: "rgba(130,132,191,0.3)",
+                                }
+                              : isChapter2
+                                ? {
+                                    backgroundColor: "var(--rv-ch2-feature-bg)",
+                                    borderColor: "rgba(82,10,80,0.28)",
+                                  }
+                                : {}
+                          }
                         >
                           <div
                             className={`w-[5px] h-[5px] rounded-full mt-[6px] shrink-0 ${
                               isChapter1
-                                ? "bg-[#c0596a]"
-                                : tool.launch_module.stripe_variant === "gold"
-                                  ? "bg-[rgba(212,168,47,0.7)]"
-                                  : tool.launch_module.stripe_variant ===
-                                      "green"
-                                    ? "bg-[rgba(100,220,160,0.6)]"
-                                    : isBeneficiaryTheme
-                                      ? "bg-[#20a8a8bf]"
-                                      : "bg-[#6aa8f0b3]"
+                                ? "bg-[var(--rv-ch1)]"
+                                : isChapter2
+                                  ? "bg-[var(--rv-ch2)]"
+                                  : tool.launch_module.stripe_variant === "gold"
+                                    ? "bg-[rgba(212,168,47,0.7)]"
+                                    : tool.launch_module.stripe_variant ===
+                                        "green"
+                                      ? "bg-[rgba(100,220,160,0.6)]"
+                                      : isBeneficiaryTheme
+                                        ? "bg-[#20a8a8bf]"
+                                        : "bg-[var(--rv-launch-blue)]/70"
                             }`}
                           />
                           <div
-                            className={`text-[13px] leading-[1.4] ${isChapter1 ? "text-[#fbeaec]" : "text-white/55"}`}
+                            className={`text-[13px] leading-[1.4] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/55"}`}
                           >
                             {feat}
                           </div>
@@ -3762,7 +4072,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                 key={i}
                                 className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
                               >
-                                <div className="w-[4px] h-[4px] rounded-full bg-[#6aa8f0]/60 shrink-0 mt-[5px]" />
+                                <div className="w-[4px] h-[4px] rounded-full bg-[var(--rv-launch-blue)]/60 shrink-0 mt-[5px]" />
                                 <span>{req}</span>
                               </div>
                             ),
@@ -3776,6 +4086,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                     <div className="flex flex-col gap-[11px]">
                       <button
                         onClick={() => {
+                          if (!stepEntitlement.guard()) return;
                           if (tool.launch_module.href) {
                             window.open(
                               tool.launch_module.href,
@@ -3789,14 +4100,14 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
-                                ? "bg-[#c0596a] pointer-events-none"
+                                ? "bg-[var(--rv-ch1)] pointer-events-none"
                                 : isChapter2
-                                  ? "bg-[#b48ad6] pointer-events-none"
-                                  : "bg-[#3b7dd8] pointer-events-none"
+                                  ? "bg-[var(--rv-ch2)] pointer-events-none"
+                                  : "bg-[var(--primary)] pointer-events-none"
                               : isChapter1
-                                ? "bg-[#c0596a] hover:bg-[#a13e4e] text-white shadow-[0_4px_20px_rgba(192,89,106,0.25)]"
+                                ? "bg-[var(--rv-ch1)] hover:bg-[var(--rv-ch1-dark)] text-white shadow-[0_4px_20px_rgba(130,132,191,0.25)]"
                                 : isChapter2
-                                  ? "bg-[#b48ad6] text-white shadow-[0_4px_20px_rgba(180,138,214,0.25)] hover:bg-[#a47cc1] hover:text-white hover:shadow-[0_8px_32px_rgba(180,138,214,0.35)] hover:translate-y-[-2px]"
+                                  ? "bg-[var(--rv-ch2)] text-white shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[var(--rv-ch2-dark)] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)] hover:translate-y-[-2px]"
                                   : "bg-[#2f6fd4] text-white shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:translate-y-[-2px] hover:shadow-[0_8px_32px_rgba(47,111,212,0.45)]"
                           }`}
                         style={
@@ -3805,7 +4116,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                             : !isLaunched || !tool.launch_module.return_note
                               ? {
                                   backgroundColor: isChapter2
-                                    ? "#b48ad6"
+                                    ? "var(--rv-ch2)"
                                     : accentColor,
                                 }
                               : {}
@@ -3830,7 +4141,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       </button>
 
                       <div
-                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${isChapter1 ? "text-[#fbeaec]" : isChapter2 ? "text-[#b48ad6]/90" : "text-white/35"}`}
+                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-launch-note)]/90" : "text-white/35"}`}
                       >
                         <ExternalLink size={11} strokeWidth={1.8} />
                         <span>
@@ -3925,6 +4236,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                               title: item.title,
                               subtitle: item.sub,
                               onReadGuide: () => {
+                                if (!stepEntitlement.guard()) return;
                                 if (item.external_href) {
                                   window.open(
                                     item.external_href,
@@ -3945,6 +4257,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                       [item.id]: "in-progress",
                                     },
                                   });
+                                  setDocGuideContext("civil");
                                   setActiveCivilDoc(item);
                                   setIsCivilDocGuideOpen(true);
                                 }
@@ -3953,7 +4266,51 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                 const defId = mapDocumentNameToId(item.title);
                                 setActiveUploadId(item.id);
                                 setActiveUploadType("doc");
-                                openUploadModal(defId);
+                                if (!stepEntitlement.guard()) return;
+
+                                if (item.id === "doc_citizenship") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "U.S. passport",
+                                      "U.S. birth certificate",
+                                      "Certificate of Naturalization (Form N-550)",
+                                      "Certificate of Citizenship (Form N-560)",
+                                      "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                    ],
+                                  });
+                                } else if (item.id === "doc_relationship") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "Communication history",
+                                      "Photos together",
+                                      "Travel history",
+                                      "Shared finances",
+                                      "Shared residence",
+                                      "Family evidence",
+                                      "Affidavits",
+                                    ],
+                                  });
+                                } else if (item.id === "doc_translations") {
+                                  setMultipleUploadModalState({
+                                    isOpen: true,
+                                    categoryId: defId,
+                                    documentName: item.title,
+                                    options: [
+                                      "Translated Nikah Nama",
+                                      "Translated NADRA MRC",
+                                      "Translated Birth Certificate",
+                                      "Translated Divorce Decree",
+                                    ],
+                                  });
+                                } else {
+                                  openUploadModal(defId);
+                                }
                               },
                             });
                           }}
@@ -4182,6 +4539,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 {/* Tutorial / Guide Card */}
                 <button
                   onClick={() => {
+                    if (!stepEntitlement.guard()) return;
                     setTutorialIdx(0);
                     setIsTutorialOpen(true);
                   }}
@@ -4217,6 +4575,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   /* Saved Card */
                   <button
                     onClick={() => {
+                      if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4252,6 +4611,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   /* Unsaved Card */
                   <button
                     onClick={() => {
+                      if (!stepEntitlement.guard()) return;
                       const portal = sId === "step_1_6" ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
@@ -4394,6 +4754,10 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
     {tool.guide_card && (() => {
       const guideFeatureKey = "step_guides";
       const isGuideLocked = !plan.canUse(guideFeatureKey);
+      const guideCardTierIconClass = (() => {
+        const target = plan.entitlement(guideFeatureKey).upgradeTarget;
+        return target ? `plan-icon--${target}` : "plan-icon--premium";
+      })();
 
       return (
         <button
@@ -4419,7 +4783,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 }`
           }`}
         >
-          {/* Crown lock badge — shown only when locked */}
+          {/* Tier lock badge — shown only when locked */}
           
           {tool.wallet_card ? (
             /* Vertical Design (Original - Shared) */
@@ -4460,7 +4824,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               >
                 {isGuideLocked ? (
   <>
-    <Crown size={11} strokeWidth={2.4} />
+    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
     <span>View guide</span>
     <ArrowRight size={11} strokeWidth={2} />
   </>
@@ -4512,7 +4876,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
   }`}
 >
   {isGuideLocked ? (
-    <Crown size={13} strokeWidth={2.4} />
+    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
   ) : (
     <ArrowRight size={14} strokeWidth={2.5} />
   )}
@@ -4523,35 +4887,37 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       );
     })()}
 
-    {tool.wallet_card && (() => {
-  const walletFeatureKey = "tracker_reminders";
-  const isWalletLocked = !plan.canUse(walletFeatureKey);
+              {tool.wallet_card &&
+                (() => {
+                  const walletFeatureKey = "tracker_reminders";
+                  const isWalletLocked = !plan.canUse(walletFeatureKey);
 
-  return (
-    <button
-      onClick={() => {
-        if (isWalletLocked) {
-          setUpgradeModalFeature(walletFeatureKey);
-          return;
-        }
-        if (tool.wallet_card?.type === "nvc_fee") {
-          setIsNvcFeeModalOpen(true);
-        } else if (tool.wallet_card?.type === "ceac_creds") {
-          setIsCeacModalOpen(true);
-        }
-      }}
-      className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col relative
+                  return (
+                    <button
+                      onClick={() => {
+                        if (isWalletLocked) {
+                          setUpgradeModalFeature(walletFeatureKey);
+                          return;
+                        }
+                        if (tool.wallet_card?.type === "nvc_fee") {
+                          setIsNvcFeeModalOpen(true);
+                        } else if (tool.wallet_card?.type === "ceac_creds") {
+                          setIsCeacModalOpen(true);
+                        }
+                      }}
+                      className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col relative
         ${
           isWalletLocked
             ? "border-[#d0e4f7] hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
             : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+                (tool.wallet_card?.type === "nvc_fee" &&
+                  state.metadata.nvcFeeStatus)
               ? "border-[#a8d9be] bg-[#e8f5ef]"
               : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
         }
       `}
-    >
-      {/* Crown lock badge */}
+>
+      {/* Tier lock badge */}
      
       <div className="flex items-center gap-[10px] mb-[12px]">
         <div
@@ -4574,60 +4940,74 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         </div>
       </div>
 
-      <h3
-        className={`text-[14px] font-semibold mb-1 ${
-          isWalletLocked
-            ? "text-[#6b8097]"
-            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-              ? "text-[#15744f]"
-              : "text-[#0c1b33]"
-        }`}
-      >
-        {!isWalletLocked &&
-        ((tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-          (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus))
-          ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
-          : tool.wallet_card?.title}
-      </h3>
+                      <h3
+                        className={`text-[14px] font-semibold mb-1 ${
+                          isWalletLocked
+                            ? "text-[#6b8097]"
+                            : (tool.wallet_card?.type === "ceac_creds" &&
+                                  ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" &&
+                                  state.metadata.nvcFeeStatus)
+                              ? "text-[#15744f]"
+                              : "text-[#0c1b33]"
+                        }`}
+                      >
+                        {!isWalletLocked &&
+                        ((tool.wallet_card?.type === "ceac_creds" &&
+                          ceacCredentials) ||
+                          (tool.wallet_card?.type === "nvc_fee" &&
+                            state.metadata.nvcFeeStatus))
+                          ? `✓ ${tool.wallet_card?.title.replace("Save", "Details")}`
+                          : tool.wallet_card?.title}
+                      </h3>
 
-      <p className={`text-[12px] leading-normal ${isWalletLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}>
-        {tool.wallet_card?.subtitle}
-      </p>
+                      <p
+                        className={`text-[12px] leading-normal ${isWalletLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}
+                      >
+                        {tool.wallet_card?.subtitle}
+                      </p>
 
-      <div
-        className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-          isWalletLocked
-            ? "text-[#a06000]"
-            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-              (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-              ? "text-[#15744f]"
-              : "text-primary"
-        }`}
-      >
-        {isWalletLocked ? (
-          <>
-            <Lock size={11} strokeWidth={2.2} />
-            <span>Unlock feature</span>
-            <ArrowRight size={11} strokeWidth={2} />
-          </>
-        ) : (
-          <span>
-            {(tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-            (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-              ? "View saved details"
-              : tool.wallet_card?.type === "ceac_creds"
-                ? "Open credential vault"
-                : "Update payment record"}
-            <ArrowRight size={11} strokeWidth={2} className="inline ml-1" />
-          </span>
-        )}
-      </div>
-    </button>
-  );
-})()}
-  </div>
-)}
+                      <div
+                        className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+                          isWalletLocked
+                            ? "text-[#a06000]"
+                            : (tool.wallet_card?.type === "ceac_creds" &&
+                                  ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" &&
+                                  state.metadata.nvcFeeStatus)
+                              ? "text-[#15744f]"
+                              : "text-primary"
+                        }`}
+                      >
+                        {isWalletLocked ? (
+                          <>
+                            <Lock size={11} strokeWidth={2.2} />
+                            <span>Unlock feature</span>
+                            <ArrowRight size={11} strokeWidth={2} />
+                          </>
+                        ) : (
+                          <span>
+                            {(tool.wallet_card?.type === "ceac_creds" &&
+                              ceacCredentials) ||
+                            (tool.wallet_card?.type === "nvc_fee" &&
+                              state.metadata.nvcFeeStatus)
+                              ? "View saved details"
+                              : tool.wallet_card?.type === "ceac_creds"
+                                ? "Open credential vault"
+                                : "Update payment record"}
+                            <ArrowRight
+                              size={11}
+                              strokeWidth={2}
+                              className="inline ml-1"
+                            />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })()}
+            </div>
+          )}
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
@@ -4636,9 +5016,11 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   key={card.id}
                   onClick={() => {
                     if (card.type === "tutorial") {
+                      if (!stepEntitlement.guard()) return;
                       setTutorialIdx(0);
                       setIsTutorialOpen(true);
                     } else if (card.href) {
+                      if (!stepEntitlement.guard()) return;
                       window.open(card.href, "_blank", "noopener,noreferrer");
                     }
                   }}
@@ -4679,63 +5061,62 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               ))}
             </div>
           )}
-{/* Disclaimer */}
+          {/* Disclaimer */}
           <p
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
-              "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."}
+              "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."}
           </p>
         </div>
       </div>
     );
   };
 
-   if (customRenderer) {
+  if (customRenderer) {
     return (
       <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
         <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
           {customRenderer}
         </div>
-              <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-        {/* Prev */}
-        <button
-          onClick={() =>
-            prevStep &&
-            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-          }
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-        >
-          <ArrowLeft size={13} strokeWidth={2.5} />
-          Prev
-        </button>
+        <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+          {/* Prev */}
+          <button
+            onClick={() =>
+              prevStep &&
+              handleNavigate((prevStep as any).step_key || (prevStep as any).id)
+            }
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+          >
+            <ArrowLeft size={13} strokeWidth={2.5} />
+            Prev
+          </button>
 
-        {/* Progress */}
-        <div className="flex-1 flex items-center gap-2">
-          <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
-              style={{ width: `${progressPct}%` }}
-            />
+          {/* Progress */}
+          <div className="flex-1 flex items-center gap-2">
+            <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+              {localIdx + 1} / {activeStepsInChapter.length}
+            </span>
           </div>
-          <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-            {localIdx + 1} / {activeStepsInChapter.length}
-          </span>
-        </div>
 
-        {/* Next */}
-        <button
-          onClick={() => {
-            if (!nextStep || !isCompleted) return;
-            handleNavigate((nextStep as any).step_key || (nextStep as any).id);
-          }}
-          aria-disabled={!isCompleted}
-          className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all ${!isCompleted ? "opacity-50 cursor-not-allowed" : "hover:brightness-110 active:scale-95"} shrink-0 shadow-sm shadow-primary/20 ${!nextStep ? "invisible pointer-events-none" : ""}`}
-        >
-          Next
-          <ArrowRight size={13} strokeWidth={2.5} />
-        </button>
-      </footer>
+          {/* Next */}
+          <button
+            onClick={() =>
+              nextStep &&
+              handleNavigate((nextStep as any).step_key || (nextStep as any).id)
+            }
+            className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
+          >
+            Next
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </button>
+        </footer>
       </div>
     );
   }
@@ -4746,18 +5127,19 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
   return (
     <div
-      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
-      style={
-        isChapter3
-          ? {
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.72)), url(/assets/images/ch3steps-bg.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }
-          : undefined
-      }
+      // className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
+      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans`}
+      // style={
+      //   isChapter3
+      //     ? {
+      //         backgroundImage:
+      //           "linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.72)), url(/assets/images/ch3steps-bg.png)",
+      //         backgroundSize: "cover",
+      //         backgroundPosition: "center",
+      //         backgroundRepeat: "no-repeat",
+      //       }
+      //     : undefined
+      // }
     >
       <div
         className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
@@ -5033,7 +5415,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         >
           {currentStep.step_type === "quest" ? (
             <div
-              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
+              //              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
+              className={`w-full min-h-[600px] flex flex-col items-center`}
             >
               <QuestRenderer
                 quest={currentStep.quest_data as unknown as QuestSuite}
@@ -5049,29 +5432,29 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
             renderToolStep()
           ) : currentStep.step_type === "action" ? (
             <div
-              style={
-                isChapter3
-                  ? {
-                      backgroundImage:
-                        "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                      backgroundAttachment: "fixed",
-                      minHeight: "100vh",
-                    }
-                  : isChapter2
-                    ? {
-                        backgroundImage:
-                          "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        backgroundRepeat: "no-repeat",
-                        backgroundAttachment: "fixed",
-                        minHeight: "100vh",
-                      }
-                    : {}
-              }
+            // style={
+            //   isChapter3
+            //     ? {
+            //         backgroundImage:
+            //           "linear-gradient(rgba(255,255,255,0.32), rgba(255,255,255,0.32)), url('/assets/images/ch3steps-bg.png')",
+            //         backgroundSize: "cover",
+            //         backgroundPosition: "center",
+            //         backgroundRepeat: "no-repeat",
+            //         backgroundAttachment: "fixed",
+            //         minHeight: "100vh",
+            //       }
+            //     : isChapter2
+            //       ? {
+            //           backgroundImage:
+            //             "linear-gradient(rgba(255,255,255,0.54), rgba(255,255,255,0.54)), url('/assets/images/ch2steps-bg.png')",
+            //           backgroundSize: "cover",
+            //           backgroundPosition: "center",
+            //           backgroundRepeat: "no-repeat",
+            //           backgroundAttachment: "fixed",
+            //           minHeight: "100vh",
+            //         }
+            //       : {}
+            // }
             >
               <ActionStepRenderer
                 step={currentStep}
@@ -5088,6 +5471,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 isChapter1={isChapter1}
                 isChapter2={isChapter2}
                 isChapter3={isChapter3}
+                guard={stepEntitlement.guard}
               />
             </div>
           ) : currentStep.step_type === "docs" ? (
@@ -5108,8 +5492,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                   }}
                 />
               )}
-            <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-
+              <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                 {/* Questionnaire CTA */}
                 {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
                 <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
@@ -5124,7 +5507,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       Personalize Your Document Checklist
                     </h3>
                     <p className="text-xs sm:text-[13px] text-[#6b8097] leading-relaxed mb-2 sm:mb-3">
-                      Answer a few questions about your situation so we can add or remove documents that apply to you specifically.
+                      Answer a few questions about your situation so we can add
+                      or remove documents that apply to you specifically.
                     </p>
                     <div className="flex items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-primary">
                       <span>Start Personalization</span>
@@ -5134,12 +5518,13 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 </div>
                 {/* )} */}
 
-                {/* Document Cards */}
-                {(() => {
+                {/* Document Cards — rendered by DocListSection below */}
+                {false && (() => {
                   const effectiveDocItems =
                     sId === "step_1_2" && questionnaireDocItems
                       ? questionnaireDocItems
-                      : (currentStep as any).document_items || currentStep.document_items;
+                      : (currentStep as any).document_items ||
+                        currentStep.document_items;
                   return (
                     <>
                       <div className="w-full max-w-[740px] px-0">
@@ -5148,7 +5533,11 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                             const docItems = effectiveDocItems;
                             if (!docItems) return [];
                             const uniqueGroups = Array.from(
-                              new Set(docItems.map((d: any) => d.group || "Required Now")),
+                              new Set(
+                                docItems.map(
+                                  (d: any) => d.group || "Required Now",
+                                ),
+                              ),
                             );
                             const defaultOrder = [
                               "Required Now",
@@ -5160,7 +5549,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                             return (uniqueGroups as string[]).sort((a, b) => {
                               const idxA = defaultOrder.indexOf(a);
                               const idxB = defaultOrder.indexOf(b);
-                              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                              if (idxA !== -1 && idxB !== -1)
+                                return idxA - idxB;
                               if (idxA !== -1) return -1;
                               if (idxB !== -1) return 1;
                               return a.localeCompare(b);
@@ -5168,10 +5558,12 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                           })().map((groupName) => {
                             const docItems = effectiveDocItems;
                             const groupItems = docItems?.filter(
-                              (d: any) => (d.group || "Required Now") === groupName,
+                              (d: any) =>
+                                (d.group || "Required Now") === groupName,
                             );
 
-                            if (!groupItems || groupItems.length === 0) return null;
+                            if (!groupItems || groupItems.length === 0)
+                              return null;
 
                             return (
                               <div
@@ -5188,14 +5580,21 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
                                 <div className="flex flex-col gap-2 sm:gap-2.5">
                                   {groupItems.map((doc: any, idx: number) => {
-                                    const docReviewStatus = state.metadata?.docReviewStatus?.[doc.id];
+                                    const docReviewStatus =
+                                      state.metadata?.docReviewStatus?.[doc.id];
                                     const isReviewed =
-                                      docReviewStatus === "reviewed" || state.documentChecklist[doc.name];
-                                    const hasAttachment = state.docUploads[doc.name] || state.notes[doc.name];
+                                      docReviewStatus === "reviewed" ||
+                                      state.documentChecklist[doc.name];
+                                    const hasAttachment =
+                                      state.docUploads[doc.name] ||
+                                      state.notes[doc.name];
                                     const isInProgress =
-                                      (hasAttachment && !isReviewed) || docReviewStatus === "in-progress";
-                                    const isPetitioner = doc.tag === "petitioner";
-                                    const isBeneficiary = doc.tag === "beneficiary";
+                                      (hasAttachment && !isReviewed) ||
+                                      docReviewStatus === "in-progress";
+                                    const isPetitioner =
+                                      doc.tag === "petitioner";
+                                    const isBeneficiary =
+                                      doc.tag === "beneficiary";
 
                                     return (
                                       <div
@@ -5207,23 +5606,97 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                             title: doc.name,
                                             subtitle: doc.subtitle,
                                             onReadGuide: () => {
-                                              if (doc.guideUrl && doc.guideUrl !== "/guides") {
-                                                window.open(doc.guideUrl, "_blank");
-                                                if (actions.updateDocumentStatus && doc.id) {
-                                                  actions.updateDocumentStatus(doc.id, "reviewed");
+                                              if (
+                                                doc.guideUrl &&
+                                                doc.guideUrl !== "/guides"
+                                              ) {
+                                                window.open(
+                                                  doc.guideUrl,
+                                                  "_blank",
+                                                );
+                                                if (
+                                                  actions.updateDocumentStatus &&
+                                                  doc.id
+                                                ) {
+                                                  actions.updateDocumentStatus(
+                                                    doc.id,
+                                                    "reviewed",
+                                                  );
                                                 }
                                               } else {
-                                                setSelectedGuideId(doc.id || null);
-                                                if (actions.updateDocumentStatus && doc.id) {
-                                                  actions.updateDocumentStatus(doc.id, "in-progress");
+                                                setSelectedGuideId(
+                                                  doc.id || null,
+                                                );
+                                                if (
+                                                  actions.updateDocumentStatus &&
+                                                  doc.id
+                                                ) {
+                                                  actions.updateDocumentStatus(
+                                                    doc.id,
+                                                    "in-progress",
+                                                  );
                                                 }
                                               }
                                             },
                                             onUpload: () => {
-                                              const defId = mapDocumentNameToId(doc.name);
+                                              const defId = mapDocumentNameToId(
+                                                doc.name,
+                                              );
                                               setActiveUploadId(doc.id);
                                               setActiveUploadType("doc");
-                                              openUploadModal(defId);
+
+                                              if (!stepEntitlement.guard())
+                                                return;
+
+                                              if (
+                                                doc.id === "doc_citizenship"
+                                              ) {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "U.S. passport",
+                                                    "U.S. birth certificate",
+                                                    "Certificate of Naturalization (Form N-550)",
+                                                    "Certificate of Citizenship (Form N-560)",
+                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                                  ],
+                                                });
+                                              } else if (
+                                                doc.id === "doc_relationship"
+                                              ) {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Communication history",
+                                                    "Photos together",
+                                                    "Travel history",
+                                                    "Shared finances",
+                                                    "Shared residence",
+                                                    "Family evidence",
+                                                    "Affidavits",
+                                                  ],
+                                                });
+                                              } else if (
+                                                doc.id === "doc_translations"
+                                              ) {
+                                                setMultipleUploadModalState({
+                                                  isOpen: true,
+                                                  categoryId: defId,
+                                                  documentName: doc.name,
+                                                  options: [
+                                                    "Translated Nikah Nama",
+                                                    "Translated NADRA MRC",
+                                                    "Translated Birth Certificate",
+                                                    "Translated Divorce Decree",
+                                                  ],
+                                                });
+                                              } else {
+                                                openUploadModal(defId);
+                                              }
                                             },
                                           });
                                         }}
@@ -5235,40 +5708,87 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                           hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] 
                                           hover:-translate-y-px active:translate-y-0 
                                           active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)]
-                                          ${isReviewed
-                                            ? "bg-[#eaf7ff] border-[#b8daff]"
-                                            : isInProgress
-                                              ? "bg-[#fff9e6] border-[#fde68a]/50"
-                                              : "bg-white border-[#d0e4f7]"
+                                          ${
+                                            isReviewed
+                                              ? "bg-[#eaf7ff] border-[#b8daff]"
+                                              : isInProgress
+                                                ? "bg-[#fff9e6] border-[#fde68a]/50"
+                                                : "bg-white border-[#d0e4f7]"
                                           }`}
                                       >
                                         {/* Icon */}
                                         <div
                                           className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 border
-                                            ${isReviewed
-                                              ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
-                                              : isInProgress
-                                                ? "bg-white border-[#fde68a] text-[#d97706]"
-                                                : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
+                                            ${
+                                              isReviewed
+                                                ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
+                                                : isInProgress
+                                                  ? "bg-white border-[#fde68a] text-[#d97706]"
+                                                  : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
                                             }`}
                                         >
                                           {isReviewed ? (
-                                            <CheckCircle2 size={16} strokeWidth={2.5} className="sm:w-[18px] sm:h-[18px]" />
+                                            <CheckCircle2
+                                              size={16}
+                                              strokeWidth={2.5}
+                                              className="sm:w-[18px] sm:h-[18px]"
+                                            />
                                           ) : (
                                             (() => {
                                               const iconSize = 16;
                                               switch (doc.icon) {
-                                                case "ShieldCheck": return <ShieldCheck size={iconSize} />;
-                                                case "User": return <User size={iconSize} />;
-                                                case "FileText": return <FileText size={iconSize} />;
-                                                case "FileCheck": return <FileCheck size={iconSize} />;
-                                                case "MessageSquare": return <MessageSquare size={iconSize} />;
-                                                case "Scale": return <Scale size={iconSize} />;
-                                                case "Globe": return <Globe size={iconSize} />;
-                                                case "ClipboardList": return <ClipboardList size={iconSize} />;
-                                                case "Lock": return <Lock size={iconSize} />;
-                                                case "Camera": return <Camera size={iconSize} />;
-                                                default: return <FileText size={iconSize} />;
+                                                case "ShieldCheck":
+                                                  return (
+                                                    <ShieldCheck
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "User":
+                                                  return (
+                                                    <User size={iconSize} />
+                                                  );
+                                                case "FileText":
+                                                  return (
+                                                    <FileText size={iconSize} />
+                                                  );
+                                                case "FileCheck":
+                                                  return (
+                                                    <FileCheck
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "MessageSquare":
+                                                  return (
+                                                    <MessageSquare
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "Scale":
+                                                  return (
+                                                    <Scale size={iconSize} />
+                                                  );
+                                                case "Globe":
+                                                  return (
+                                                    <Globe size={iconSize} />
+                                                  );
+                                                case "ClipboardList":
+                                                  return (
+                                                    <ClipboardList
+                                                      size={iconSize}
+                                                    />
+                                                  );
+                                                case "Lock":
+                                                  return (
+                                                    <Lock size={iconSize} />
+                                                  );
+                                                case "Camera":
+                                                  return (
+                                                    <Camera size={iconSize} />
+                                                  );
+                                                default:
+                                                  return (
+                                                    <FileText size={iconSize} />
+                                                  );
                                               }
                                             })()
                                           )}
@@ -5286,14 +5806,18 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                             {doc.tag && (
                                               <span
                                                 className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em]
-                                                  ${isPetitioner
-                                                    ? "bg-[#e8f1fb] text-primary/80"
-                                                    : isBeneficiary
-                                                      ? "bg-[#eaf7f2] text-[#1a7a5e]"
-                                                      : "bg-[#f3f0fb] text-[#4a2d80]"
+                                                  ${
+                                                    isPetitioner
+                                                      ? "bg-[#e8f1fb] text-primary/80"
+                                                      : isBeneficiary
+                                                        ? "bg-[#eaf7f2] text-[#1a7a5e]"
+                                                        : "bg-[#f3f0fb] text-[#4a2d80]"
                                                   }`}
                                               >
-                                                {doc.tag.charAt(0).toUpperCase() + doc.tag.slice(1)}
+                                                {doc.tag
+                                                  .charAt(0)
+                                                  .toUpperCase() +
+                                                  doc.tag.slice(1)}
                                               </span>
                                             )}
                                             {isBeneficiary && (
@@ -5308,38 +5832,48 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                         <div className="shrink-0 flex items-center gap-1.5 self-start sm:self-center mt-0.5 sm:mt-0">
                                           {/* Status Badge */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(doc.name);
-                                            const isUploadedInVault = uploadedDocuments.some(
-                                              (ud) => ud.documentDefId === defId,
+                                            const defId = mapDocumentNameToId(
+                                              doc.name,
                                             );
-                                            const uploadedDoc = uploadedDocuments.find(
-                                              (ud) => ud.documentDefId === defId,
-                                            );
+                                            const isUploadedInVault =
+                                              uploadedDocuments.some(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
+                                            const uploadedDoc =
+                                              uploadedDocuments.find(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(uploadedDoc.id)
+                                              ? isDeletingIds.includes(
+                                                  uploadedDoc.id,
+                                                )
                                               : false;
 
                                             if (isDeleting) return null;
 
-                                            const displayStatus = isUploadedInVault
-                                              ? "Uploaded"
-                                              : isReloadingDocs
-                                                ? "Checking..."
-                                                : isReviewed
-                                                  ? "Reviewed"
-                                                  : isInProgress
-                                                    ? "In progress"
-                                                    : "Not started";
+                                            const displayStatus =
+                                              isUploadedInVault
+                                                ? "Uploaded"
+                                                : isReloadingDocs
+                                                  ? "Checking..."
+                                                  : isReviewed
+                                                    ? "Reviewed"
+                                                    : isInProgress
+                                                      ? "In progress"
+                                                      : "Not started";
 
-                                            const statusClasses = isUploadedInVault
-                                              ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                              : isReloadingDocs
-                                                ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                                : isReviewed
-                                                  ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                                  : isInProgress
-                                                    ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                                    : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
+                                            const statusClasses =
+                                              isUploadedInVault
+                                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                                : isReloadingDocs
+                                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                                  : isReviewed
+                                                    ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                                    : isInProgress
+                                                      ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                                             return (
                                               <div
@@ -5352,19 +5886,30 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
                                           {/* Upload State / Dropdown */}
                                           {(() => {
-                                            const defId = mapDocumentNameToId(doc.name);
-                                            const uploadedDoc = uploadedDocuments.find(
-                                              (ud) => ud.documentDefId === defId,
+                                            const defId = mapDocumentNameToId(
+                                              doc.name,
                                             );
+                                            const uploadedDoc =
+                                              uploadedDocuments.find(
+                                                (ud) =>
+                                                  ud.documentDefId === defId,
+                                              );
                                             const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(uploadedDoc.id)
+                                              ? isDeletingIds.includes(
+                                                  uploadedDoc.id,
+                                                )
                                               : false;
 
-                                            if (isReloadingDocs && !uploadedDoc) {
+                                            if (
+                                              isReloadingDocs &&
+                                              !uploadedDoc
+                                            ) {
                                               return (
                                                 <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground font-medium animate-pulse">
                                                   <div className="h-2.5 w-2.5 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                                  <span className="hidden sm:inline">Checking...</span>
+                                                  <span className="hidden sm:inline">
+                                                    Checking...
+                                                  </span>
                                                 </div>
                                               );
                                             }
@@ -5373,7 +5918,9 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                               return (
                                                 <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-red-500 font-medium animate-pulse">
                                                   <div className="h-2.5 w-2.5 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
-                                                  <span className="hidden sm:inline">Deleting...</span>
+                                                  <span className="hidden sm:inline">
+                                                    Deleting...
+                                                  </span>
                                                 </div>
                                               );
                                             }
@@ -5383,10 +5930,15 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <button
-                                                      onClick={(e) => e.stopPropagation()}
+                                                      onClick={(e) =>
+                                                        e.stopPropagation()
+                                                      }
                                                       className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
                                                     >
-                                                      <MoreVertical size={15} className="sm:w-[18px] sm:h-[18px]" />
+                                                      <MoreVertical
+                                                        size={15}
+                                                        className="sm:w-[18px] sm:h-[18px]"
+                                                      />
                                                     </button>
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent
@@ -5397,21 +5949,33 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        window.open(`/api/documents/${uploadedDoc.id}/download`, "_blank");
+                                                        window.open(
+                                                          `/api/documents/${uploadedDoc.id}/download`,
+                                                          "_blank",
+                                                        );
                                                       }}
                                                       className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5"
                                                     >
-                                                      <Eye size={14} className="text-primary sm:w-4 sm:h-4" />
+                                                      <Eye
+                                                        size={14}
+                                                        className="text-primary sm:w-4 sm:h-4"
+                                                      />
                                                       Preview
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setDocumentToDelete({ id: uploadedDoc.id, name: doc.name });
+                                                        setDocumentToDelete({
+                                                          id: uploadedDoc.id,
+                                                          name: doc.name,
+                                                        });
                                                       }}
                                                       className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
                                                     >
-                                                      <Trash2 size={14} className="sm:w-4 sm:h-4" />
+                                                      <Trash2
+                                                        size={14}
+                                                        className="sm:w-4 sm:h-4"
+                                                      />
                                                       Delete
                                                     </DropdownMenuItem>
                                                   </DropdownMenuContent>
@@ -5435,12 +5999,147 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       {/* Footer Disclaimer */}
                       <div className="mt-10 sm:mt-12 mx-3 sm:mx-0 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center max-w-[740px] w-full mb-5 sm:mb-6">
                         <span className="block text-[10px] sm:text-[12px] leading-relaxed">
+                          Rahvana provides structured guidance only. This is not
+                          legal advice. <br className="hidden sm:block" />
+                          Consult a licensed immigration attorney for
+                          case-specific decisions.
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
+
+                {/* DocListSection — standardised doc-upload UI for step_1_2 */}
+                {(() => {
+                  const effectiveDocItems =
+                    sId === "step_1_2" && questionnaireDocItems
+                      ? questionnaireDocItems
+                      : (currentStep as any).document_items ||
+                        currentStep.document_items;
+                  if (!effectiveDocItems) return null;
+
+                  const ICON_MAP: Record<string, string> = {
+                    ShieldCheck: "police", User: "user", FileText: "file-text",
+                    FileCheck: "file-text", MessageSquare: "message",
+                    Scale: "prior-marriage", Globe: "translations",
+                    ClipboardList: "clipboard", Lock: "police", Camera: "camera",
+                  };
+                  const BADGE_MAP: Record<string, string> = {
+                    "Required Now": "req", "USCIS Intake Order": "req",
+                    "Required if Applicable": "cond", "Supporting Evidence": "cond",
+                    "Gather Now for Later": "Recommended",
+                  };
+                  const GROUP_ORDER = [
+                    "Required Now", "Required if Applicable", "USCIS Intake Order",
+                    "Supporting Evidence", "Gather Now for Later",
+                  ];
+
+                  const docReviewStatus =
+                    (state.metadata?.docReviewStatus as Record<string, string>) || {};
+                  const step1_2Status: Record<string, string> = { ...docReviewStatus };
+                  for (const doc of effectiveDocItems) {
+                    if (!step1_2Status[doc.id] && state.documentChecklist[doc.name]) {
+                      step1_2Status[doc.id] = "reviewed";
+                    }
+                  }
+
+                  const grouped: Record<string, any[]> = {};
+                  for (const doc of effectiveDocItems) {
+                    const g = doc.group || "Required Now";
+                    if (!grouped[g]) grouped[g] = [];
+                    grouped[g].push({
+                      id: doc.id,
+                      icon: ICON_MAP[doc.icon] || "file-text",
+                      title: doc.name,
+                      sub: doc.subtitle,
+                      tags: doc.tag
+                        ? [
+                            doc.tag === "petitioner"
+                              ? "pet"
+                              : doc.tag === "beneficiary"
+                                ? "bene"
+                                : doc.tag === "both"
+                                  ? "both"
+                                  : "3p",
+                          ]
+                        : [],
+                      guideUrl: doc.guideUrl,
+                    });
+                  }
+                  const step1_2Groups = GROUP_ORDER.filter((g) => grouped[g]).map((g) => ({
+                    id: g.replace(/\s+/g, "-").toLowerCase(),
+                    label: g,
+                    badge: BADGE_MAP[g] || "req",
+                    items: grouped[g],
+                  }));
+
+                  return (
+                    <div className="w-full max-w-[740px] px-0 mb-10">
+                      <DocListSection
+                        groups={step1_2Groups}
+                        docsStatus={step1_2Status}
+                        uploadedDocuments={uploadedDocuments}
+                        isDeletingIds={isDeletingIds}
+                        isReloadingDocs={isReloadingDocs}
+                        getVaultId={(item) => mapDocumentNameToId(item.title)}
+                        showTags
+                        onItemClick={(item) => {
+                          setDocActionModal({
+                            isOpen: true,
+                            doc: { ...item, name: item.title },
+                            title: item.title,
+                            subtitle: item.sub,
+                            onReadGuide: () => {
+                              if (item.guideUrl && item.guideUrl !== "/guides") {
+                                window.open(item.guideUrl, "_blank");
+                                if (actions.updateDocumentStatus && item.id)
+                                  actions.updateDocumentStatus(item.id, "reviewed");
+                              } else {
+                                setSelectedGuideId(item.id || null);
+                                if (actions.updateDocumentStatus && item.id)
+                                  actions.updateDocumentStatus(item.id, "in-progress");
+                              }
+                            },
+                            onUpload: () => {
+                              const defId = mapDocumentNameToId(item.title);
+                              setActiveUploadId(item.id);
+                              setActiveUploadType("doc");
+                              if (!stepEntitlement.guard()) return;
+                              if (item.id === "doc_citizenship") {
+                                setMultipleUploadModalState({
+                                  isOpen: true, categoryId: defId, documentName: item.title,
+                                  options: ["U.S. passport", "U.S. birth certificate", "Certificate of Naturalization (Form N-550)", "Certificate of Citizenship (Form N-560)", "Consular Report of Birth Abroad (Form FS-240 / DS-1350)"],
+                                });
+                              } else if (item.id === "doc_relationship") {
+                                setMultipleUploadModalState({
+                                  isOpen: true, categoryId: defId, documentName: item.title,
+                                  options: ["Communication history", "Photos together", "Travel history", "Shared finances", "Shared residence", "Family evidence", "Affidavits"],
+                                });
+                              } else if (item.id === "doc_translations") {
+                                setMultipleUploadModalState({
+                                  isOpen: true, categoryId: defId, documentName: item.title,
+                                  options: ["Translated Nikah Nama", "Translated NADRA MRC", "Translated Birth Certificate", "Translated Divorce Decree"],
+                                });
+                              } else {
+                                openUploadModal(defId);
+                              }
+                            },
+                          });
+                        }}
+                        onPreview={(uploadedDocId) =>
+                          window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+                        }
+                        onDelete={(id, name) => setDocumentToDelete({ id, name })}
+                        progressLabel="reviewed"
+                      />
+                      <div className="mt-10 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center">
+                        <span className="block text-[10px] sm:text-[12px] leading-relaxed">
                           Rahvana provides structured guidance only. This is not legal advice.{" "}
                           <br className="hidden sm:block" />
                           Consult a licensed immigration attorney for case-specific decisions.
                         </span>
                       </div>
-                    </>
+                    </div>
                   );
                 })()}
               </div>
@@ -5448,15 +6147,17 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           ) : currentStep.step_type === "filing" ? (
             <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
               <div className="flex flex-col w-full max-w-[660px] pb-[80px] px-[24px]">
-               <h1 className="
+                <h1
+                  className="
                 mt-8 sm:mt-10 md:mt-0
                 text-[clamp(26px,4vw,34px)]
                 font-black
                 text-[#0f1f38]
                 leading-[1.2]
-                ">
-                {currentStep.step_name}
-              </h1>
+                "
+                >
+                  {currentStep.step_name}
+                </h1>
                 <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
                   {currentStep.filing_data?.subtitle ||
                     currentStep.step_description}
@@ -5725,47 +6426,54 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         </div>
       </div>
 
-           {/* Redesigned Bottom Navigation Footer */}
-     <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-  {/* Prev */}
-  <button
-    onClick={() =>
-      prevStep &&
-      handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-    }
-    className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-  >
-    <ArrowLeft size={13} strokeWidth={2.5} />
-    Prev
-  </button>
+      {/* Redesigned Bottom Navigation Footer */}
+      <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        {/* Prev */}
+        <button
+          onClick={() =>
+            prevStep &&
+            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
+          }
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+        >
+          <ArrowLeft size={13} strokeWidth={2.5} />
+          Prev
+        </button>
 
-  {/* Progress */}
-  <div className="flex-1 flex items-center gap-2">
-    <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
-      <div
-        className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
-        style={{ width: `${progressPct}%` }}
-      />
-    </div>
-    <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-      {localIdx + 1} / {activeStepsInChapter.length}
-    </span>
-  </div>
+        {/* Progress */}
+        <div className="flex-1 flex items-center gap-2">
+          <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
+            {localIdx + 1} / {activeStepsInChapter.length}
+          </span>
+        </div>
 
-  {/* Next */}
-  <button
-    onClick={() => {
-      if (!nextStep || !isCompleted) return;
-      handleNavigate((nextStep as any).step_key || (nextStep as any).id);
-    }}
-    onKeyDown={(e) => { if (e.key === 'Enter' && (!nextStep || !isCompleted)) e.preventDefault(); }}
-    className={`flex items-center gap-1.5 px-4 py-2 bg-primary rounded-[10px] text-[13px] font-semibold text-white transition-all ${!isCompleted ? "opacity-50 cursor-not-allowed" : "hover:brightness-110 active:scale-95"} shrink-0 shadow-sm shadow-primary/20 ${!nextStep ? "invisible pointer-events-none" : ""}`}
-  >
-    Next
-    <ArrowRight size={13} strokeWidth={2.5} />
-  </button>
-</footer>
-
+        {/* Next */}
+        <button
+          onClick={() => {
+            if (nextStepLock.isLocked) {
+              setUpgradeModalFeature(
+                getModalFeatureForTier(nextStepLock.requiredPlan!),
+              );
+              return;
+            }
+            nextStep &&
+              handleNavigate(
+                (nextStep as any).step_key || (nextStep as any).id,
+              );
+          }}
+          className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""} ${nextStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
+        >
+          {nextStepLock.isLocked && <Lock size={12} className="mr-1" />}
+          Next
+          <ArrowRight size={12} strokeWidth={2.5} />
+        </button>
+      </footer>
 
       {/* Sponsorship Calculator Tool Overlay */}
       <SponsorshipCalculatorTool
@@ -5852,6 +6560,13 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         }}
       />
 
+      {upgradeModalFeature && (
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
+      )}
+
       {renderDocActionModal()}
 
       <ConfirmationModal
@@ -5912,7 +6627,11 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           isOpen={isCivilDocGuideOpen}
           onClose={() => setIsCivilDocGuideOpen(false)}
           doc={activeCivilDoc}
-          status={civilDocsStatus[activeCivilDoc.id] || "not-started"}
+          status={
+            (docGuideContext === "gathering" ? gatheringDocsStatus : civilDocsStatus)[
+              activeCivilDoc.id
+            ] || "not-started"
+          }
           onMarkReviewed={() => handleMarkDocReviewed(activeCivilDoc.id)}
         />
       )}
@@ -5933,8 +6652,8 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
         />
       )}
 
-{selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out guide-bg">
+      {selectedGuideId && InlineGuideData[selectedGuideId] && (
+        <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out bg-white">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6130,7 +6849,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
             const currentTutStep = steps[tutorialIdx];
 
             return (
-              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
+              <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out">
                 {/* Tutorial Topbar */}
                 <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                   <button
@@ -6158,7 +6877,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                 </div>
 
                 {/* Tutorial Body */}
-                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center guide-bg">
+                <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
                   <div className="w-full max-w-[580px] flex flex-col">
                     <div
                       className={`text-[11px] font-semibold tracking-widest uppercase mb-4 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -6177,7 +6896,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                       }}
                     />
 
-                    {/* Screenshot Block — Fallback UI with Browser Chrome */}
+                    {/* Screenshot Block — Media or Fallback UI with Browser Chrome */}
                     <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
                       {/* Browser Chrome Bar */}
                       <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
@@ -6191,19 +6910,27 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
                         </div>
                       </div>
 
-                      {/* Content Area — fixed: aspectRatio only, no minHeight conflict */}
+                      {/* Content Area — Image or Mock UI */}
                       <div
                         className="relative w-full bg-[#f8f9fb]"
                         style={{ aspectRatio: "4/3" }}
                       >
-                        <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center justify-center overflow-hidden">
-                          <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
-                            {currentTutStep.vlabel}
-                          </span>
-                          <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
-                            {currentTutStep.heading}
+                        {currentTutStep.media && currentTutStep.media.type === 'img' ? (
+                          <img
+                            src={currentTutStep.media.src}
+                            alt={currentTutStep.heading}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center justify-center overflow-hidden">
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
+                              {currentTutStep.vlabel}
+                            </span>
+                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
+                              {currentTutStep.heading}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
 
@@ -6280,7 +7007,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
           const currentTutStep = steps[tutorialIdx];
 
           return (
-            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out guide-bg">
+            <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
               {/* Tutorial Topbar */}
               <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
                 <button
@@ -6309,7 +7036,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
               </div>
 
               {/* Tutorial Body */}
-              <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center guide-bg">
+              <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
                 <div className="w-full max-w-[580px] flex flex-col">
                   <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                     {isDynamic
@@ -6718,7 +7445,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
 
       {/* Gathering Guide Overlay (Step 3.4) */}
       {isGatheringGuideOpen && selectedGatheringItem && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans guide-bg">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col animate-in slide-in-from-bottom duration-260 ease-[cubic-bezier(0.4,0,0.2,1)] font-sans bg-white">
           {/* Guide Topbar */}
           <div className="flex items-center px-2 sm:px-4 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
             <button
@@ -6816,7 +7543,7 @@ const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(nu
       {/* Medical Exam Guide Overlay (Step 3.5) */}
       {isMedicalGuideOpen &&
         currentStep?.tool_data?.type === "medical_exam_guide" && (
-          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans guide-bg">
+          <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans bg-white">
             {/* Topbar */}
             <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
               <button

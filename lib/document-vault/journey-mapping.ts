@@ -56,18 +56,33 @@ export function mapDocumentNameToId(name: string): string {
     'divorce decree': 'divorce-decree-beneficiary',
     'talaq nama': 'divorce-decree-beneficiary',
     'certified english translations': 'certified-translations',
+    'translated nikah nama': 'nikah-nama-translation',
+    'translated nadra mrc': 'nadra-mrc-translation',
+    'translated birth certificate': 'birth-cert-translation',
+    'translated divorce decree': 'divorce-decree-translation',
+    'other translated': 'certified-translations',
+    'translation': 'certified-translations',
   };
 
-  // Try direct mapping
-  for (const [key, id] of Object.entries(mapping)) {
-    if (normalized.includes(key)) return id;
+  // Try exact match first
+  if (mapping[normalized]) return mapping[normalized];
+
+  // Try substring matches, preferring longer (more specific) keys first
+  const sortedKeys = Object.keys(mapping).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    if (normalized.includes(key)) return mapping[key];
   }
 
-  // Try to find in ALL_DOCUMENTS by name
-  const match = ALL_DOCUMENTS.find(d => 
+  // Try to find in ALL_DOCUMENTS by name (fallback)
+  const allMatches = ALL_DOCUMENTS.filter(d => 
     normalized.includes(d.name.toLowerCase()) || 
     d.name.toLowerCase().includes(normalized)
   );
+  
+  if (allMatches.length > 0) {
+    // Return the one with the longest name match to be most specific
+    return allMatches.sort((a, b) => b.name.length - a.name.length)[0].id;
+  }
 
-  return match?.id || 'misc-document';
+  return 'misc-document';
 }

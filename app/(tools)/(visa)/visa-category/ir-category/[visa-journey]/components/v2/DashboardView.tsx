@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { getJourneyLockStatus } from "@/lib/journey-lock";
 import {
   getNextBestAction,
   getStageProgress,
@@ -24,6 +25,7 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { getActiveStepsForStage } from "./journeyHelpers";
+import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -103,6 +105,22 @@ export function DashboardView({
   const nextActionData = useMemo(
     () => getNextBestAction(data, state),
     [data, state],
+  );
+
+  const nextStepLock = useMemo(() => {
+    if (!nextActionData) return { isLocked: false, requiredPlan: null };
+    const stepId = nextActionData.step.step_key;
+    return getStepLockStatus(
+      stepId,
+      plan.tier,
+      nextActionData.chapterIdx,
+      nextActionData.stepIdxInChapter,
+    );
+  }, [nextActionData, plan.tier]);
+
+  const lockStatus = useMemo(
+    () => getJourneyLockStatus(state.metadata || {}),
+    [state.metadata],
   );
 
   const alerts = useMemo(() => {
@@ -389,12 +407,14 @@ export function DashboardView({
         style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.6 }}
       />
       <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700 relative z-10">
-        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
-          IR-1 Spouse Visa · Pakistan
+        <div className={`w-full ${showSidebar ? "" : "lg:max-w-4xl mx-auto"}`}>
+          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
+            IR-1 Spouse Visa · Pakistan
+          </div>
+          <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-8 text-center lg:text-left">
+            Case Dashboard
+          </h1>
         </div>
-        <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-8 text-center lg:text-left">
-          Case Dashboard
-        </h1>
 
         <div
           className={`flex flex-col lg:flex-row gap-8 items-start ${!showSidebar ? "justify-center" : ""}`}
@@ -417,6 +437,54 @@ export function DashboardView({
                 description="Congratulations — you have completed every step of the roadmap. Your journey is now in read-only mode for reference."
                 status="complete"
               />
+            )}
+
+            {/* Journey Locked — 14-day window expired */}
+            {lockStatus.isLocked && (
+              <div className="bg-[#1a1a2e] border border-[#3a3a5c] rounded-2xl p-5 flex items-start gap-4 animate-in fade-in duration-300">
+                <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <Lock size={18} className="text-white/60" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-white/40 mb-1">
+                    Journey Locked
+                  </div>
+                  <div className="text-[15px] font-bold text-white/90 mb-1">
+                    This journey is now in read-only mode
+                  </div>
+                  <div className="text-[13px] text-white/55 leading-relaxed">
+                    The 14-day editing window following your CEAC status being marked as Issued has ended. Your roadmap is preserved for reference. Contact support if you need to make changes.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Lock Warning — approaching lock (≤ 3 days remaining) */}
+            {lockStatus.isWarning && !lockStatus.isLocked && (
+              <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-2xl p-5 flex items-start gap-4 animate-in fade-in duration-300">
+                <div className="w-10 h-10 bg-[#f0d98a]/30 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertTriangle size={18} className="text-[#8a6200]" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-[#8a6200]/60 mb-1">
+                    Journey Locking Soon
+                  </div>
+                  <div className="text-[15px] font-bold text-[#0c1b33] mb-1">
+                    {lockStatus.daysRemaining === 1
+                      ? "Your journey locks tomorrow"
+                      : `Your journey locks in ${lockStatus.daysRemaining} days`}
+                  </div>
+                  <div className="text-[13px] text-[#8a6200]/80 leading-relaxed">
+                    After{" "}
+                    {lockStatus.lockDate?.toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                    , this journey will become read-only. Complete any remaining steps before then.
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Visa Approved — show when outcome confirmed but journey not yet closed */}
@@ -479,6 +547,12 @@ export function DashboardView({
                       return;
                     }
                     if (nextActionData) {
+                      // Check if the next action step is locked for the user's tier
+                      if (nextStepLock.isLocked) {
+                        setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
+                        return;
+                      }
+
                       if (onSelectStep) {
                         onSelectStep(
                           nextActionData.chapterIdx,
@@ -524,6 +598,7 @@ export function DashboardView({
                   const isLocked = !isStageUnlocked(data, originalIdx, state);
                   const isDone = prog.pct === 100;
                   const isActive = !isLocked && prog.pct > 0 && !isDone;
+                  const useChapterPalette = originalIdx < 2;
 
                   const isDarkCard = isDone;
 
@@ -536,12 +611,36 @@ export function DashboardView({
           outline outline-1 outline-[#e2e8f0]
           ${
             isLocked
-              ? "bg-white opacity-50 cursor-default border-2 border-[#d0e4f7]"
+              ? originalIdx === 0
+                ? "bg-white opacity-50 cursor-default border-2 border-[#c6c8ea]"
+                : originalIdx === 1
+                  ? "bg-white opacity-50 cursor-default border-2 border-[#d5abd2]"
+                  : originalIdx === 2
+                    ? "bg-white opacity-50 cursor-default border-2 border-[#b7c2d4]"
+                    : "bg-white opacity-50 cursor-default border-2 border-[#d0e4f7]"
               : isDone
-              ? "bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#0f766e] border border-[#334155] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(76,29,149,0.18),0_4px_12px_rgba(15,118,110,0.12)]"
+              ? originalIdx === 0
+                ? "bg-[#8284bf] border border-[#c6c8ea] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(130,132,191,0.18)]"
+                : originalIdx === 1
+                  ? "bg-[#520a50] border border-[#d5abd2] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(82,10,80,0.18)]"
+                  : originalIdx === 2
+                    ? "bg-[#051738] border border-[#b7c2d4] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(5,23,56,0.18)]"
+                    : "bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#0f766e] border border-[#334155] cursor-pointer hover:brightness-110 hover:shadow-[0_10px_25px_rgba(76,29,149,0.18),0_4px_12px_rgba(15,118,110,0.12)]"
                 : isActive
-                  ? "bg-primary/10 border-2 border-primary cursor-pointer hover:-translate-y-[2px]"
-                  : "bg-white border-2 border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:-translate-y-[2px]"
+                  ? originalIdx === 0
+                    ? "bg-[#f0f1fb] border-2 border-[#8284bf] cursor-pointer hover:-translate-y-[2px]"
+                    : originalIdx === 1
+                      ? "bg-[#f4e6f3] border-2 border-[#520a50] cursor-pointer hover:-translate-y-[2px]"
+                      : originalIdx === 2
+                        ? "bg-[#e8ecf3] border-2 border-[#051738] cursor-pointer hover:-translate-y-[2px]"
+                        : "bg-primary/10 border-2 border-primary cursor-pointer hover:-translate-y-[2px]"
+                  : originalIdx === 0
+                    ? "bg-white border-2 border-[#c6c8ea] cursor-pointer hover:border-[#8284bf] hover:-translate-y-[2px]"
+                    : originalIdx === 1
+                      ? "bg-white border-2 border-[#d5abd2] cursor-pointer hover:border-[#520a50] hover:-translate-y-[2px]"
+                      : originalIdx === 2
+                        ? "bg-white border-2 border-[#b7c2d4] cursor-pointer hover:border-[#051738] hover:-translate-y-[2px]"
+                        : "bg-white border-2 border-[#d0e4f7] cursor-pointer hover:border-[#b8d4f0] hover:-translate-y-[2px]"
           }`}
                     >
                       {/* Header */}
@@ -583,11 +682,12 @@ export function DashboardView({
                               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold w-fit ${
                                 isDarkCard
                                   ? "bg-white/10 text-[#e0e7ff] border border-white/20"
-                                  : "bg-[#ede9fe] text-[#5b21b6] border border-[#c4b5fd]"
+                                  : useChapterPalette
+                                    ? "bg-[#f4e6f3] text-[#520a50] border border-[#d5abd2]"
+                                    : "bg-[#ede9fe] text-[#5b21b6] border border-[#c4b5fd]"
                               }`}
                             >
-                              <Lock size={8} strokeWidth={2.5} />
-                              {lockedCount} locked
+                              Limited Access
                             </div>
                           );
                         })()}
@@ -596,14 +696,34 @@ export function DashboardView({
                       <div className="flex items-center gap-2 mt-auto">
                         <div
                           className={`flex-1 h-1.5 rounded-full overflow-hidden ${
-                            isDarkCard ? "bg-[#1e293b]" : "bg-[#e2e8f0]"
+                            isDarkCard
+                              ? "bg-[#1e293b]"
+                              : useChapterPalette || originalIdx === 2
+                                ? originalIdx === 0
+                                  ? "bg-[#f0f1fb]"
+                                  : originalIdx === 1
+                                    ? "bg-[#f4e6f3]"
+                                    : "bg-[#e8ecf3]"
+                                : "bg-[#e2e8f0]"
                           }`}
                         >
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
                               isDarkCard
-                                ? "bg-gradient-to-r from-[#6366f1] to-[#14b8a6]"
-                                : "bg-gradient-to-r from-primary to-primary/70"
+                                ? originalIdx === 0
+                                  ? "bg-[#8284bf]"
+                                  : originalIdx === 1
+                                    ? "bg-[#520a50]"
+                                    : originalIdx === 2
+                                      ? "bg-[#051738]"
+                                      : "bg-gradient-to-r from-[#6366f1] to-[#14b8a6]"
+                                : originalIdx === 0
+                                  ? "bg-[#8284bf]"
+                                  : originalIdx === 1
+                                    ? "bg-[#520a50]"
+                                    : originalIdx === 2
+                                      ? "bg-[#051738]"
+                                      : "bg-gradient-to-r from-primary to-primary/70"
                             }`}
                             style={{ width: `${prog.pct}%` }}
                           />
@@ -868,16 +988,20 @@ export function DashboardView({
                   const diffTime = new Date().getTime() - dqDateObj.getTime();
                   const rawDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                   const daysSinceDq = Math.max(0, rawDays);
+                  // DQ dates must be in the past — if >60 days in future it's a data entry error
+                  const isDqDateInvalid = rawDays < -60;
                   const dqLabel =
-                    rawDays < -1
-                      ? `in ${Math.abs(rawDays)} days`
-                      : rawDays === -1
-                        ? "tomorrow"
-                        : rawDays === 0
-                          ? "today"
-                          : rawDays === 1
-                            ? "1 day ago"
-                            : `${rawDays} days ago`;
+                    isDqDateInvalid
+                      ? "Check date"
+                      : rawDays < -1
+                        ? `in ${Math.abs(rawDays)} days`
+                        : rawDays === -1
+                          ? "tomorrow"
+                          : rawDays === 0
+                            ? "today"
+                            : rawDays === 1
+                              ? "1 day ago"
+                              : `${rawDays} days ago`;
 
                   if (!currentSchedulingMonthYear) {
                     return (
@@ -904,10 +1028,15 @@ export function DashboardView({
                                 year: "numeric",
                               })}
                             </span>
-                            <span className="text-[10px] text-[#34d399] font-black uppercase">
-                              {dqLabel.toUpperCase()}
+                            <span className={`text-[10px] font-black uppercase ${isDqDateInvalid ? "text-amber-400" : "text-[#34d399]"}`}>
+                              {isDqDateInvalid ? "⚠ Date seems incorrect" : dqLabel.toUpperCase()}
                             </span>
                           </div>
+                          {isDqDateInvalid && (
+                            <p className="text-[11px] text-amber-400 mt-2">
+                              DQ dates are in the past. Please go to <b>Chapter 2 → Step 10</b> and correct your DQ date.
+                            </p>
+                          )}
                         </div>
                       </div>
                     );

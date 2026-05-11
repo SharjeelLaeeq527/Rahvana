@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { Search, ArrowRight, ChevronDown, Crown } from "lucide-react";
+import Image from "next/image";
+import { Search, ArrowRight, ChevronDown } from "lucide-react";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import {
   DropdownMenu,
@@ -37,6 +38,14 @@ const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
   "pcc-filing-service-—-sindh":   "pcc_filing",
   "book-medical-appointment":     "medical_booking",
   "urdu-→-english-translation":   "document_translation",
+};
+/** Maps service ID → minimum required plan tier */
+const SERVICE_TIER_MAP: Record<string, "basic" | "premium" | "executive"> = {
+  "book-a-consultation":          "premium",
+  "expert-case-review":           "premium",
+  "pcc-filing-service-—-sindh":   "executive",
+  "book-medical-appointment":     "premium",
+  "urdu-→-english-translation":   "premium",
 };
 
 interface CategoryOption {
@@ -191,10 +200,6 @@ export default function ServicesPage({
         <UpgradeModal
           feature={upgradeModalFeature}
           onClose={() => setUpgradeModalFeature(null)}
-          onConfirm={(action, target) => {
-            const plan = typeof target === "string" ? target : "premium";
-            window.location.href = `/pricing?plan=${plan}`;
-          }}
         />
       )}
 
@@ -396,7 +401,8 @@ function ServiceCard({
     !!service.entitlementFeature &&
     !plan.isLoading &&
     plan.isLocked(service.entitlementFeature);
-
+  // Determine required tier for this service
+  const requiredTier = SERVICE_TIER_MAP[service.id] ?? "premium";
   const isNavigable = !service.disabled;
   const CardWrapper = isNavigable ? Link : "div";
 
@@ -407,14 +413,14 @@ function ServiceCard({
     }
   };
 
-  return (
+ return (
     <CardWrapper
       href={isNavigable ? service.href : "#"}
       onClick={handleClick}
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${featureLocked
-        ? "border-2 border-[#8a5a08] dark:border-[#b88716] cursor-pointer shadow-[0_18px_38px_-24px_rgba(138,90,8,0.9),0_0_0_1px_rgba(255,215,112,0.28)_inset] hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgba(138,90,8,0.95),0_0_26px_rgba(212,161,44,0.22)]"
+        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
         : isNavigable
           ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
           : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
@@ -422,23 +428,20 @@ function ServiceCard({
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Gold gradient border — always visible for locked/premium cards */}
+      {/* Ribbon for locked cards */}
       {featureLocked && (
-        <div
-          className="absolute inset-0 rounded-[30px] pointer-events-none"
-          style={{
-            padding: "2.5px",
-            background:
-              "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%), repeating-linear-gradient(45deg, rgba(255,255,255,0.36) 0 1px, transparent 1px 5px)",
-            backgroundBlendMode: "overlay",
-            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-            opacity: 0.96,
-          }}
-        />
+        <div className="absolute -top-21 -right-3 z-20 pointer-events-none">
+          <Image
+            src="/icons/ribbon.png"
+            alt="Premium ribbon"
+            width={260}
+            height={320}
+            priority={false}
+            className="w-40 h-56 object-contain drop-shadow-lg"
+          />
+        </div>
       )}
-
+ 
       {/* Floating Icon Box */}
       <div
         className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
@@ -455,26 +458,19 @@ function ServiceCard({
             )
           : service.icon}
       </div>
-
-      {/* Crown badge — top-right corner */}
-      {featureLocked && (
-        <div className="absolute top-3.5 right-4 z-10">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#8a5a08] bg-[radial-gradient(circle_at_30%_20%,#fff2b8_0%,#d9a62e_36%,#8a5a08_78%,#4d2e00_100%)] text-[#4d2e00] shadow-[0_7px_18px_rgba(138,90,8,0.42),inset_0_1px_0_rgba(255,255,255,0.65)]">
-            <Crown size={20} strokeWidth={3} fill="currentColor" />
-          </span>
-        </div>
-      )}
-
+ 
+      {/* (Removed tier badge — ribbon now indicates locked state) */}
+ 
       {/* Border gradient on hover (category color) */}
       {!featureLocked && (
         <div
           className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
         />
       )}
-
+ 
       {/* Radial Glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
-
+ 
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
         <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
@@ -489,11 +485,11 @@ function ServiceCard({
           {service.description}
         </p>
       </div>
-
+ 
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
-
+ 
         {featureLocked ? (
           <span aria-hidden="true" className="h-5" />
         ) : isNavigable ? (
@@ -511,3 +507,4 @@ function ServiceCard({
     </CardWrapper>
   );
 }
+ 

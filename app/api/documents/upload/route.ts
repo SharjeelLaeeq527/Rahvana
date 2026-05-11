@@ -18,15 +18,14 @@ import {
 import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
 import { calculateExpirationDate } from '@/lib/document-vault/expiration-tracker';
 import { ALL_DOCUMENTS } from '@/lib/document-vault/document-definitions';
-import { UploadedDocument, DocumentRole } from '@/lib/document-vault/types';
+import { UploadedDocument, DocumentRole, DocumentCategory } from '@/lib/document-vault/types';
 import { createClient as createClientJs } from '@supabase/supabase-js';
 import { encryptFile } from '@/lib/document-vault/file-encryption';
 
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
 // Python backend URL for PDF compression
-const COMPRESSION_API_URL =
-  process.env.COMPRESSION_API_URL ?? "http://localhost:8000/api/v1";
+const COMPRESSION_API_URL = process.env.COMPRESSION_API_URL ?? 'http://localhost:8000/api/v1';
 
 /**
  * Get Supabase client with SERVICE ROLE key (bypasses RLS)
@@ -157,7 +156,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Find document definition
-    const documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
+    let documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
+
+    // If not found in static list, check if it's a dynamic definition
+    if (!documentDef && documentDefId.startsWith('dynamic-')) {
+      const dynamicName = formData.get('dynamicName') as string;
+      const dynamicCategory = formData.get('dynamicCategory') as DocumentCategory || 'MISC';
+
+      if (dynamicName) {
+        // Create a synthetic definition for dynamic slots
+        documentDef = {
+          id: documentDefId,
+          key: `DYNAMIC_${dynamicCategory.toUpperCase()}`, // generic key for filename
+          name: dynamicName,
+          description: `Custom document: ${dynamicName}`,
+          category: dynamicCategory,
+          roles: ['BENEFICIARY'], // Default, can be refined if needed
+          stages: ['NVC'],
+          required: false,
+          multipleFilesAllowed: true,
+          validityType: 'none',
+        };
+      }
+    }
+
     if (!documentDef) {
       return NextResponse.json(
         { error: 'Invalid document definition' },
@@ -287,6 +309,7 @@ export async function POST(request: NextRequest) {
       version,
       expirationDate,
       isExpired: false,
+      isRead: false,
       status: 'UPLOADED',
       notes,
     };

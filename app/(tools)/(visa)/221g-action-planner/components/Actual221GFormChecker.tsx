@@ -76,10 +76,10 @@ export default function Actual221GFormChecker({
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">
-          221(g) Form Checker
+          What Did Your 221(g) Letter Request?
         </CardTitle>
         <CardDescription>
-          Check the boxes that match your actual 221(g) letter
+          Select every item your letter asked for — we'll build your action plan from this
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -95,7 +95,7 @@ export default function Actual221GFormChecker({
         <div className="space-y-4">
           <div className="p-6 bg-card rounded-lg border-2 border-border shadow-sm">
             <h4 className="font-bold text-lg mb-6 text-foreground">
-              221(g) FORM - REQUIRED DOCUMENTS
+              SELECT WHAT WAS REQUESTED
             </h4>
 
             {/* Administrative processing */}
@@ -1136,35 +1136,6 @@ export default function Actual221GFormChecker({
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-          <h4 className="font-medium text-yellow-700 flex items-center">
-            <span className="mr-2">💡</span>
-            Instructions
-          </h4>
-          <p className="text-sm text-yellow-700 mt-1">
-            Carefully compare each item with your actual 221(g) letter. Check
-            all items that match your specific situation. Based on your
-            selections, you will receive tailored guidance on next steps.
-          </p>
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <Button
-            onClick={onNext}
-            disabled={
-              Object.values(selectedItems).filter((value) => Boolean(value))
-                .length === 0
-            }
-            className="bg-primary hover:bg-primary/90"
-          >
-            Continue with Selected Items (
-            {
-              Object.values(selectedItems).filter((value) => Boolean(value))
-                .length
-            }
-            )
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );

@@ -4,11 +4,6 @@ import React, { useMemo, useState } from "react";
 import {
   ChevronRight,
   AlertTriangle,
-  Lock,
-  Crown,
-  Zap,
-  Star,
-  Sparkles,
 } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -16,6 +11,7 @@ import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { PlanTier } from "@/lib/entitlements/config";
+import { getStepLockStatus, HARD_LOCK_RULES, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 
 interface ChapterViewProps {
   data: RoadmapData;
@@ -63,14 +59,21 @@ export function ChapterView({
 
   const isChapter1 = chapterIdx === 0;
   const isFreeTier = plan.tier === "free";
+  const upgradeIconClass =
+    plan.tier === "free"
+      ? "plan-icon--basic"
+      : plan.tier === "basic"
+        ? "plan-icon--premium"
+        : "plan-icon--executive";
+
 
   // Chapter backgrounds
-  const chapter1Bg = "/assets/images/chapter1-bg.png";
-  const chapter1StepBg = "/assets/images/ch1steps-bg.png";
-  const chapter2Bg = "/assets/images/chapter-2-bg.png";
-  const chapter2StepBg = "/assets/images/ch2steps-bg.png";
-  const chapter3Bg = "/assets/images/chapter-3-bg.png";
-  const chapter3StepBg = "/assets/images/ch3steps-bg.png";
+  // const chapter1Bg = "/assets/images/chapter1-bg.png";
+  // const chapter1StepBg = "/assets/images/ch1steps-bg.png";
+  // const chapter2Bg = "/assets/images/chapter-2-bg.png";
+  // const chapter2StepBg = "/assets/images/ch2steps-bg.png";
+  // const chapter3Bg = "/assets/images/chapter-3-bg.png";
+  // const chapter3StepBg = "/assets/images/ch3steps-bg.png";
 
   const isChapter2 = chapterIdx === 1;
   const isChapter3 = chapterIdx === 2;
@@ -89,62 +92,9 @@ export function ChapterView({
     typeof state.currentStep === "number" &&
     state.currentStep >= 0;
 
-  const HARD_LOCK_RULES: Record<string, PlanTier[]> = {
-    step_1_16: ["free"],
-    step_2_1: ["free"],
-    step_2_2: ["free"],
-    step_2_3: ["free"],
-    step_2_4: ["free"],
-    step_2_5: ["free"],
-    step_2_6: ["free"],
-    step_2_7: ["free"],
-    step_2_8: ["free"],
-    step_2_9: ["free"],
-    step_2_10: ["free"],
-    step_2_11: ["free"],
-    step_2_12: ["free"],
-    step_3_1: ["free"],
-    step_3_2: ["free"],
-    step_3_3: ["free"],
-    step_3_4: ["free"],
-    step_3_5: ["free"],
-    step_3_6: ["free"],
-    step_3_7: ["free"],
-    step_3_8: ["free"],
-    step_3_9: ["free"],
-  };
-
-  // Helper function to determine which feature to use for modal based on tier requirement
-  const getModalFeatureForTier = (requiredPlan: PlanTier): string => {
-    if (requiredPlan === "basic") return "checklist_engine"; // Defaults to basic tier
-    if (requiredPlan === "premium") return "document_vault"; // Defaults to premium tier
-    if (requiredPlan === "executive") return "pcc_filing"; // Defaults to executive tier
-    return "step_guides";
-  };
-
   // Helper function to check if a step is locked and why
-  const getStepLockStatus = (idx: number, sId: string) => {
-    // Free tier restriction — only first step of Chapter 1 accessible
-    if (isFreeTier && isChapter1 && idx > 0) {
-      return {
-        isLocked: true,
-        requiredPlan: "basic" as PlanTier,
-        reason: "free",
-      };
-    }
-
-    // Hard lock rules (specific tiers can't access specific steps)
-    const restrictedTiers = HARD_LOCK_RULES[sId];
-    if (restrictedTiers && restrictedTiers.includes(plan.tier)) {
-      // Find the minimum required tier to access this step
-      const allTiers: PlanTier[] = ["free", "basic", "premium", "executive"];
-      const requiredPlan =
-        (allTiers.find((t) => !restrictedTiers.includes(t)) as PlanTier) ||
-        "premium";
-      return { isLocked: true, requiredPlan, reason: "tier" };
-    }
-
-    return { isLocked: false, requiredPlan: null, reason: null };
+  const getStepLockStatusLocal = (idx: number, sId: string) => {
+    return getStepLockStatus(sId, plan.tier, chapterIdx, idx);
   };
 
   return (
@@ -161,19 +111,19 @@ export function ChapterView({
       {isChapter3 && !isChapter3Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-            backgroundImage: `url(${chapter3Bg})`,
-            opacity: 0.5,
-          }}
+          // style={{
+          //   backgroundImage: `url(${chapter3Bg})`,
+          //   opacity: 0.5,
+          // }}
         />
       )}
       {isChapter1 && !isChapter1Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-            backgroundImage: `url(${chapter1Bg})`,
-            opacity: 0.35,
-          }}
+          // style={{
+          //   backgroundImage: `url(${chapter1Bg})`,
+          //   opacity: 0.35,
+          // }}
         />
       )}
       {/* For Chapter 1 and 2, show only their main backgrounds, never the step backgrounds */}
@@ -181,10 +131,10 @@ export function ChapterView({
       {isChapter2 && !isChapter2Step && (
         <div
           className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
-          style={{
-            backgroundImage: `url(${chapter2Bg})`,
-            opacity: 0.5,
-          }}
+          // style={{
+          //   backgroundImage: `url(${chapter2Bg})`,
+          //   opacity: 0.5,
+          // }}
         />
       )}
 
@@ -207,7 +157,7 @@ export function ChapterView({
             shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]
             transition-all duration-300 hover:scale-[1.018] hover:shadow-[0_16px_56px_rgba(36,42,66,0.22),0_6px_24px_rgba(44,62,80,0.18)]
             border-solid
-            ${isChapter3 ? "border-[#2b6e7a]" : isChapter2 ? "border-[#7c5e8a]" : "border-[#b97c7c]"}
+            ${isChapter3 ? "border-[#051738]" : isChapter2 ? "border-[#520a50]" : "border-[#8284bf]"}
           `}
         >
           <div
@@ -215,21 +165,21 @@ export function ChapterView({
               ${
                 isDone
                   ? isChapter3
-                    ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
+                    ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
                     : isChapter2
-                      ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
-                      : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
+                      ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
+                      : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
                   : isInProgress
                     ? isChapter3
-                      ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
+                      ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
                       : isChapter2
-                        ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
-                        : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
+                        ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
+                        : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
                     : isChapter3
-                      ? "bg-[#eaf4f6] border-[#2b6e7a] text-[#2b6e7a]"
+                      ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
                       : isChapter2
-                        ? "bg-[#f3f0fa] border-[#7c5e8a] text-[#7c5e8a]"
-                        : "bg-[#f7e0ec] border-[#b97c7c] text-[#b97c7c]"
+                        ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
+                        : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
               }`}
           >
             {isDone
@@ -250,22 +200,22 @@ export function ChapterView({
 
           <div className="flex items-center gap-2.5">
             <div
-              className={`flex-1 h-[7px] rounded-[13px] overflow-hidden ${isChapter3 ? "bg-[#eaf4f6]" : isChapter2 ? "bg-[#f3f0fa]" : "bg-[#f7e0ec]"}`}
+              className={`flex-1 h-[7px] rounded-[13px] overflow-hidden ${isChapter3 ? "bg-[#e8ecf3]" : isChapter2 ? "bg-[#f4e6f3]" : "bg-[#f0f1fb]"}`}
             >
               <div
                 className="h-full rounded-[13px] transition-all duration-500 shadow-[0_2.5px_12px_rgba(36,42,66,0.18)]"
                 style={{
                   width: `${prog.pct}%`,
                   background: isChapter3
-                    ? "#2b6e7a"
+                    ? "#051738"
                     : isChapter2
-                      ? "#7c5e8a"
-                      : "#b97c7c",
+                      ? "#520a50"
+                      : "#8284bf",
                 }}
               />
             </div>
             <div
-              className={`text-[12px] font-bold ${isChapter3 ? "text-[#217a8b]" : isChapter2 ? "text-[#7a326a]" : "text-[#a06ca7]"}`}
+              className={`text-[12px] font-bold ${isChapter3 ? "text-[#051738]" : isChapter2 ? "text-[#2f062e]" : "text-[#4e518c]"}`}
             >
               {prog.pct}%
             </div>
@@ -288,133 +238,85 @@ export function ChapterView({
           </div>
         )}
 
-        {/* Plan Card */}
-        <div
-          className="
-relative overflow-hidden
-rounded-2xl
-border-2 border-teal-600
-bg-gradient-to-br from-slate-100 via-white to-slate-50
-shadow-sm
-p-6
-mb-4
-"
-        >
-          <div
-            className="
-    absolute inset-0
-    bg-[radial-gradient(circle_at_top_right,rgba(15,118,110,0.10),transparent_55%)]
-    pointer-events-none
-  "
-          />
+{/* Plan Card */}
+<div
+  className={`rounded-2xl px-5 py-4 mb-4 flex items-center gap-4 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] border-[1.5px] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] hover:scale-[1.01]
+    ${plan.tier === "free"
+      ? "border-[#a8c4e0]"
+      : plan.tier === "basic"
+          ? "border-[#7fbfba]"
+        : plan.tier === "premium"
+          ? "border-[#b399d8]"
+          : "border-[#d4a855]"
+    }`}
+>
+  <div
+    className={`rounded-full flex items-center justify-center flex-shrink-0 border-2 shadow-[0_2px_8px_rgba(0,0,0,0.09)] transition-all
+      ${plan.tier === "free"
+        ? "w-12 h-12 bg-[#f0f4fb] border-[#8fa8d4]"
+        : plan.tier === "basic"
+          ? "w-12 h-12 bg-[#eef9f8] border-[#bfe5e2]"
+          : plan.tier === "premium"
+            ? "w-12 h-12 bg-[#faf7fe] border-[#a088d8]"
+            : "w-12 h-12 bg-[#fef9f0] border-[#c9a855]"
+      }`}
+  >
+    <span
+      className={`plan-icon ${
+        plan.tier === "free"
+          ? "plan-icon--free"
+          : plan.tier === "basic"
+            ? "plan-icon--basic"
+            : plan.tier === "premium"
+              ? "plan-icon--premium"
+              : "plan-icon--executive"
+      }`}
+      style={{
+        fontSize: plan.tier === "executive" ? 23 : plan.tier === "basic" ? 23 : 23,
+        color: plan.tier === "basic" ? "#296d6c" : undefined,
+        fontWeight: 600,
+      }}
+      aria-hidden="true"
+    />
+  </div>
 
-          <div className="relative flex items-start justify-between gap-5">
-            {/* LEFT SIDE */}
-            <div className="flex-1 min-w-0">
-              {/* Badge Row */}
-              <div
-                className="
-        inline-flex items-center gap-2
-        px-3.5 py-2
-        rounded-full
-        bg-white
-        border border-slate-200
-        shadow-sm
-        mb-3
-      "
-              >
-                {plan.tier === "free" ? (
-                  <>
-                    <Lock
-                      size={14}
-                      className="text-slate-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                      Free Plan
-                    </span>
-                  </>
-                ) : plan.tier === "basic" ? (
-                  <>
-                    <Star
-                      size={14}
-                      className="text-blue-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">
-                      Basic Plan
-                    </span>
-                  </>
-                ) : plan.tier === "premium" ? (
-                  <>
-                    <Sparkles
-                      size={14}
-                      className="text-violet-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-violet-700 uppercase tracking-wider">
-                      Premium Plan
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Crown
-                      size={14}
-                      className="text-amber-600"
-                      strokeWidth={2.5}
-                    />
-                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">
-                      Executive Plan
-                    </span>
-                  </>
-                )}
-              </div>
+  <p
+    className={`text-[13px] leading-relaxed m-0 flex-1 font-semibold
+      ${plan.tier === "free"
+        ? "text-[#2e4f72]"
+        : plan.tier === "basic"
+          ? "text-[#0f6f6d]"
+          : plan.tier === "premium"
+            ? "text-[#332d80]"
+            : "text-[#6b4a0d]"
+      }`}
+  >
+    {plan.tier === "free"
+      ? "Upgrade to unlock the full roadmap, step-by-step guidance, and tools for your next steps."
+      : plan.tier === "basic"
+        ? "Upgrade to Premium for step-by-step guidance, a document vault, and reminders."
+        : plan.tier === "premium"
+          ? "Upgrade to Executive for expert consultation, document reviews, and hands-on support."
+          : "Full plan active — complete tools and end-to-end support throughout the process."}
+  </p>
 
-              {/* Title */}
-              <h3 className="text-[15px] font-bold text-slate-900 mb-1">
-                {plan.tier === "executive"
-                  ? "Your Current Plan"
-                  : "Upgrade Plan"}
-              </h3>
-
-              {/* Description */}
-              <p className="text-[13.5px] text-slate-600 leading-relaxed line-clamp-2">
-                {plan.tier === "free"
-                  ? "Your Free plan includes limited access. Upgrade to unlock the full experience."
-                  : plan.tier === "basic"
-                    ? "Your Basic plan includes full roadmap access. Upgrade to Premium for step guides and vault."
-                    : plan.tier === "premium"
-                      ? "Your Premium plan unlocks guides, document vault, tracking, and all productivity tools."
-                      : "Your Executive plan includes everything plus 221g planner, mock interviews, and support."}
-              </p>
-            </div>
-
-            {/* RIGHT SIDE */}
-            {plan.tier !== "executive" && (
-              <div className="pt-[2px]">
-                <button
-                  onClick={() => setUpgradeModalFeature("checklist_engine")}
-                  className="
-            inline-flex items-center gap-2
-            px-4 py-2.5
-            rounded-xl
-            bg-gradient-to-r from-teal-600 to-emerald-600
-            hover:from-teal-700 hover:to-emerald-700
-            active:scale-[0.98]
-            text-white text-[12.5px] font-semibold
-            transition-all duration-200
-            shadow-md hover:shadow-lg
-            whitespace-nowrap
-          "
-                >
-                  <Zap size={16} strokeWidth={2.5} />
-                  Upgrade
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
+  {plan.tier !== "executive" && (
+    <button
+      onClick={() => setUpgradeModalFeature("checklist_engine")}
+      className={`flex-shrink-0 inline-flex items-center gap-1.5 text-[12.5px] font-bold px-5.5 py-2.75 rounded-xl text-white transition-all active:scale-[0.96] shadow-md hover:shadow-xl hover:-translate-y-0.5 border border-white/15 group relative overflow-hidden
+        ${plan.tier === "free"
+          ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
+          : plan.tier === "basic"
+              ? "bg-[#2f9a95] hover:bg-[#257e7a]"
+            : "bg-[#9b7dd8] hover:bg-[#8b6dcf]"
+        }`}
+    >
+      <span className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+      <span className="relative">Upgrade Plan</span>
+        <ChevronRight size={16} strokeWidth={3} className="relative" />
+    </button>
+  )}
+</div>
         <div className="flex flex-col gap-1.5">
           {activeSteps.map((step, idx) => {
             const sId = step.step_key || (step as any).id;
@@ -431,83 +333,91 @@ mb-4
             );
 
             // Check if step is locked
-            const lockStatus = getStepLockStatus(idx, sId);
+            const lockStatus = getStepLockStatusLocal(idx, sId);
             const isStepLocked = lockStatus.isLocked;
+            const accessTier = lockStatus.requiredPlan || "basic";
+            const accessTierLabel =
+              accessTier === "basic"
+                ? "Basic"
+                : accessTier === "premium"
+                  ? "Premium"
+                  : "Executive";
 
             // Accent and border colors to match screenshot
             // Updated to a nicer shade of purple for Chapter 2, blue for Chapter 3
             // --- Enhanced accent color palette and depth for step cards ---
             // Harmonized, premium step card colors
             let borderColor = isChapter3
-              ? "border-[#2b6e7a]"
+              ? "border-[#051738]"
               : isChapter2
-                ? "border-[#7c5e8a]"
-                : "border-[#b97c7c]";
+                ? "border-[#520a50]"
+                : "border-[#8284bf]";
             let bgColor =
               "bg-gradient-to-br from-white via-white/95 to-neutral-50";
             let textColor = isChapter3
-              ? "text-[#2b6e7a]"
+              ? "text-[#051738]"
               : isChapter2
-                ? "text-[#7c5e8a]"
-                : "text-[#b97c7c]";
+                ? "text-[#520a50]"
+                : "text-[#8284bf]";
             let iconBg = "bg-white";
             let iconBorder = borderColor;
             let iconText = textColor;
 
-            // If step is locked, override colors to grayed out
+            // If step is locked, keep content legible while indicating locked state
             if (isStepLocked) {
               borderColor = "border-[#d0d7e0]";
               bgColor = "bg-[#f7f8fa]";
-              textColor = "text-[#8b94a5]";
+              textColor = "text-[#8b94a5]"; // darker title for legibility
               iconBg = "bg-[#e5eaef]";
               iconBorder = "border-[#c5cfd9]";
-              iconText = "text-[#8b94a5]";
+                         iconText = "text-[#8b94a5]";
+
             } else if (isCompleted) {
               borderColor = isChapter3
-                ? "border-[#2b6e7a]"
+                ? "border-[#051738]"
                 : isChapter2
-                  ? "border-[#7c5e8a]"
-                  : "border-[#b97c7c]";
+                  ? "border-[#520a50]"
+                  : "border-[#8284bf]";
               bgColor = isChapter3
-                ? "bg-[#2b6e7a]"
+                ? "bg-[#051738]"
                 : isChapter2
-                  ? "bg-[#7c5e8a]"
-                  : "bg-[#b97c7c]";
+                  ? "bg-[#520a50]"
+                  : "bg-[#8284bf]";
               textColor = "text-white";
               iconBg = "bg-white/20";
               iconBorder = isChapter3
-                ? "border-[#b2dbe0]"
+                ? "border-[#b7c2d4]"
                 : isChapter2
-                  ? "border-[#d6cbe0]"
-                  : "border-[#e7bfc2]";
+                  ? "border-[#d5abd2]"
+                  : "border-[#c6c8ea]";
               iconText = "text-white";
             } else if (isCurrent) {
               borderColor = isChapter3
-                ? "border-[#2b6e7a]"
+                ? "border-[#051738]"
                 : isChapter2
-                  ? "border-[#7c5e8a]"
-                  : "border-[#b97c7c]";
+                  ? "border-[#520a50]"
+                  : "border-[#8284bf]";
               bgColor = "bg-white/80 backdrop-blur-sm"; // softly transparent for all chapters
               textColor = isChapter3
-                ? "text-[#217a8b]" // deep teal accent
+                ? "text-[#051738]" // deep blue accent
                 : isChapter2
-                  ? "text-[#7c5e8a]" // deep lavender accent
-                  : "text-[#b97c7c]"; // deep rose accent
+                  ? "text-[#520a50]" // deep purple accent
+                  : "text-[#8284bf]"; // purple accent
               iconBg = "bg-white";
               iconBorder = borderColor;
               iconText = textColor;
             } else {
               borderColor = isChapter3
-                ? "border-[#b2dbe0]"
+                ? "border-[#b7c2d4]"
                 : isChapter2
-                  ? "border-[#d6cbe0]"
-                  : "border-[#e7bfc2]";
+                  ? "border-[#d5abd2]"
+                  : "border-[#c6c8ea]";
               bgColor = "bg-white";
               textColor = isChapter3
-                ? "text-[#2b6e7a]"
+                ? "text-[#051738]"
                 : isChapter2
-                  ? "text-[#7c5e8a]"
-                  : "text-[#b97c7c]";
+                  ? "text-[#520a50]"
+                  : "text-[#8284bf]";
               iconBg = "bg-white";
               iconBorder = borderColor;
               iconText = textColor;
@@ -528,28 +438,38 @@ mb-4
                   // Step is accessible — open it normally
                   onSelectStep(chapterIdx, fullStepIdx);
                 }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-[13px] ${isStepLocked ? "cursor-not-allowed" : "cursor-pointer"} transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
+                className={`group flex items-center gap-3 px-4 py-3 rounded-[13px] cursor-pointer transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
                   ${
                     isCompleted
                       ? "shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
                       : "shadow-[0_4px_20px_rgba(36,42,66,0.13),0_2px_8px_rgba(44,62,80,0.10)] hover:shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
                   }
                   active:scale-[0.98]
-                  ${!isStepLocked && isCurrent ? (isChapter3 ? "before:bg-[#2b6e7a]" : isChapter2 ? "before:bg-[#7c5e8a]" : "before:bg-[#b97c7c]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""}
+                  ${!isStepLocked && isCurrent ? (isChapter3 ? "before:bg-[#051738]" : isChapter2 ? "before:bg-[#520a50]" : "before:bg-[#8284bf]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""}
                 `}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
-                <div
-                  className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-[11.5px] font-bold transition-all shrink-0 ${iconBg} ${iconBorder} ${iconText}
-                    shadow-[0_1.5px_6px_rgba(36,42,66,0.10)]
-                  `}
-                >
-                  {isStepLocked ? (
-                    <Lock size={14} strokeWidth={2.5} />
-                  ) : isCompleted ? (
-                    "✓"
-                  ) : (
-                    idx + 1
+                <div className="relative shrink-0 flex items-center gap-2">
+                  <div
+                    className={`rounded-full border-2 flex items-center justify-center text-[10px] font-bold tracking-[0.04em] transition-all ${iconBg} ${iconBorder} ${iconText}
+                      shadow-[0_1.5px_6px_rgba(36,42,66,0.10)]
+                      ${isStepLocked ? "w-7 h-7" : "w-7 h-7"}
+                    `}
+                  >
+                    {isCompleted ? "✓" : idx + 1}
+                  </div>
+                  {isStepLocked && (
+                    <div
+                      className={`pointer-events-none absolute left-8 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] opacity-0 shadow-sm transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0 translate-x-[-4px] ${
+                        accessTier === "basic"
+                          ? "bg-[#e7f7f5] border-[#7ecfc6] text-[#166b62]"
+                          : accessTier === "premium"
+                            ? "bg-[#f0ebff] border-[#c5b9ff] text-[#4b3587]"
+                            : "bg-[#fff4cf] border-[#d8b95d] text-[#7a560f]"
+                      }`}
+                    >
+                      Unlocks with {accessTierLabel}
+                    </div>
                   )}
                 </div>
                 <div className="flex-1">
@@ -564,8 +484,7 @@ mb-4
                     {step.step_short_description || ""}
                   </div>
                 </div>
-                
-                <ChevronRight
+               <ChevronRight
                   className={`shrink-0 ${isStepLocked ? "text-[#c5cfd9] opacity-50" : "text-[#b3a6b3] opacity-30"}`}
                   size={14}
                   strokeWidth={3}

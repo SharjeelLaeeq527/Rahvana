@@ -27,12 +27,14 @@ import { DocumentPreviewModal } from "./DocumentPreviewModal";
 import { UploadedDocument } from "@/lib/document-vault/types";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
 interface PendingUpload {
   id: string;
+  file: File | null;
   type: string;
   notes: string;
-  file: File | null;
+  customName?: string;
 }
 
 interface MultipleDocumentUploadModalProps {
@@ -60,11 +62,13 @@ export function MultipleDocumentUploadModal({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null);
   const {
     config,
     uploadedDocuments: vaultDocuments,
     deleteDocument,
     isDeletingIds,
+    addNamedDynamicSlot,
   } = useDocumentVaultStore();
   const { t } = useLanguage();
 
@@ -81,8 +85,37 @@ export function MultipleDocumentUploadModal({
 
   // Derive already uploaded documents and their types for this category
   const uploadedDocuments = useMemo(() => {
-    return vaultDocuments.filter((d) => d.documentDefId === categoryId);
-  }, [vaultDocuments, categoryId]);
+    const allowedIds = [
+      categoryId,
+      ...options.map((opt) => mapDocumentNameToId(opt)),
+    ];
+    const currentCategory = (documentDef as any).category || categoryId;
+
+    return vaultDocuments.filter((d) => {
+      // Direct ID match
+      if (allowedIds.includes(d.documentDefId)) return true;
+
+      // Dynamic slot match
+      if (d.documentDefId.startsWith("dynamic-")) {
+        const docCategory = d.documentDefId.split("-")[1];
+
+        // If we are in translations modal, only show dynamic translations
+        if (currentCategory === "TRANSLATIONS") {
+          return docCategory === "TRANSLATIONS";
+        }
+
+        // For other modals (CIVIL, RELATIONSHIP, etc.), show dynamic docs from its own category
+        // OR from the OTHER (Other Documents) category where "Other" uploads go
+        return (
+          docCategory === currentCategory ||
+          docCategory === "OTHER" ||
+          docCategory === "MISC"
+        );
+      }
+
+      return false;
+    });
+  }, [vaultDocuments, categoryId, options, documentDef]);
 
   const uploadedTypes = useMemo(() => {
     return uploadedDocuments
@@ -102,7 +135,13 @@ export function MultipleDocumentUploadModal({
       setPendingUploads((prev) => {
         if (prev.length === 0) {
           return [
-            { id: Math.random().toString(), type: "", notes: "", file: null },
+            {
+              id: Math.random().toString(),
+              type: "",
+              notes: "",
+              file: null,
+              customName: "",
+            },
           ];
         }
         return prev;
@@ -115,7 +154,13 @@ export function MultipleDocumentUploadModal({
   const addPendingUpload = () => {
     setPendingUploads((prev) => [
       ...prev,
-      { id: Math.random().toString(), type: "", notes: "", file: null },
+      {
+        id: Math.random().toString(),
+        type: "",
+        notes: "",
+        file: null,
+        customName: "",
+      },
     ]);
   };
 
@@ -129,28 +174,59 @@ export function MultipleDocumentUploadModal({
     );
   };
 
+  const processFile = (id: string, file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be less than 10MB");
+      return;
+    }
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Invalid file type. Please upload PDF or image.");
+      return;
+    }
+    updatePendingUpload(id, { file });
+  };
+
   const handleFileSelect = (
     id: string,
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("File size must be less than 10MB");
-        return;
-      }
-      const allowedTypes = [
-        "application/pdf",
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-      ];
-      if (!allowedTypes.includes(file.type)) {
-        toast.error("Invalid file type. Please upload PDF or image.");
-        return;
-      }
-      updatePendingUpload(id, { file });
+      processFile(id, file);
+    }
+  };
+
+  const handleDragOver = (id: string, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!uploading) {
+      setDragActiveId(id);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActiveId(null);
+  };
+
+  const handleDrop = (id: string, e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActiveId(null);
+
+    if (uploading) return;
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(id, file);
     }
   };
 
@@ -195,13 +271,47 @@ export function MultipleDocumentUploadModal({
         validUploads.map(async (uploadItem) => {
           const formData = new FormData();
           formData.append("file", uploadItem.file!);
-          formData.append("documentDefId", documentDef.id);
+
+          let specificDefId: string;
+          if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
+            // Determine target category for "Other" docs
+            let targetCategory =
+              (documentDef as any).category || categoryId || "CIVIL";
+
+            // User request: "Other" should go to OTHER (Other Documents),
+            // but "Other Translation" should stay in TRANSLATIONS
+            if (targetCategory !== "TRANSLATIONS") {
+              targetCategory = "OTHER";
+            }
+
+            specificDefId = addNamedDynamicSlot(
+              targetCategory,
+              uploadItem.customName,
+            );
+          } else {
+            specificDefId = mapDocumentNameToId(uploadItem.type);
+          }
+
+          formData.append("documentDefId", specificDefId);
+          if (specificDefId.startsWith("dynamic-")) {
+            const docCategory = specificDefId.split("-")[1];
+            formData.append(
+              "dynamicName",
+              uploadItem.customName || uploadItem.type,
+            );
+            formData.append("dynamicCategory", docCategory);
+          }
           formData.append("role", parentRole);
           formData.append("caseId", config.caseId || "CASE");
           formData.append("personName", personName);
           // Special storage: Save the selected document type inside the notes
           // format: Type: [type]\nNotes: [notes]
-          let notesPayload = `Type: ${uploadItem.type}`;
+          const storedType =
+            uploadItem.type === OTHER_OPTION && uploadItem.customName
+              ? uploadItem.customName
+              : uploadItem.type;
+
+          let notesPayload = `Type: ${storedType}`;
           if (uploadItem.notes.trim()) {
             notesPayload += `\nNotes: ${uploadItem.notes.trim()}`;
           }
@@ -305,9 +415,23 @@ export function MultipleDocumentUploadModal({
               </h4>
               <div className="space-y-3">
                 {uploadedDocuments.map((doc) => {
-                  const typeLabel = doc.notes?.startsWith("Type: ")
+                  let typeLabel = doc.notes?.startsWith("Type: ")
                     ? doc.notes.split("\n")[0].replace("Type: ", "").trim()
                     : "Document";
+
+                  // Fallback for "Other" dynamic documents if type is not specifically set in notes
+                  if (
+                    (typeLabel === OTHER_OPTION || !typeLabel) &&
+                    doc.documentDefId.startsWith("dynamic-")
+                  ) {
+                    const category = doc.documentDefId.split("-")[1];
+                    const dynamicDoc = config?.dynamicDocuments?.[
+                      category
+                    ]?.find((d) => d.id === doc.documentDefId);
+                    if (dynamicDoc) {
+                      typeLabel = dynamicDoc.name;
+                    }
+                  }
                   return (
                     <div
                       key={doc.id}
@@ -399,10 +523,11 @@ export function MultipleDocumentUploadModal({
               return (
                 <div
                   key={uploadItem.id}
-                  className="p-5 rounded-2xl border-2 border-[#e8f1fb] bg-white shadow-sm flex flex-col md:flex-row gap-5 items-start md:items-center relative transition-all hover:border-[#d0e4f7]"
+                  className="p-6 rounded-2xl border-2 border-[#e8f1fb] bg-white shadow-sm flex flex-col gap-6 relative transition-all hover:border-[#d0e4f7]"
                 >
-                  <div className="w-full md:w-1/3 shrink-0">
-                    <Label className="text-[13px] font-semibold text-[#3a4f63] mb-1.5 block">
+                  {/* Document Type Section */}
+                  <div className="w-full pr-8">
+                    <Label className="text-[13px] font-semibold text-[#3a4f63] mb-2 block">
                       Document Type
                     </Label>
                     <CustomDropdown
@@ -427,95 +552,156 @@ export function MultipleDocumentUploadModal({
                     />
                   </div>
 
-                  <div className="flex-1 w-full flex flex-col gap-4 min-w-0">
-                    <div className="flex flex-col md:flex-row gap-5">
-                      <div className="flex-1 min-w-0">
-                        <Label className="text-[13px] font-semibold text-[#3a4f63] mb-1.5 block">
-                          Select File
-                        </Label>
-                        <div className="relative">
-                          {uploadItem.file ? (
-                            <div className="flex items-center justify-between p-3 rounded-xl border-2 border-[#e8f1fb] bg-slate-50/50">
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="w-8 h-8 rounded shrink-0 bg-primary/10 text-primary flex items-center justify-center">
-                                  <FileText size={16} />
-                                </div>
-                                <span className="text-[14px] font-semibold text-[#0f1f38] truncate block">
-                                  {uploadItem.file.name}
-                                </span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg px-2"
-                                onClick={() =>
-                                  updatePendingUpload(uploadItem.id, {
-                                    file: null,
-                                  })
-                                }
-                                disabled={uploading}
-                              >
-                                Remove
-                              </Button>
-                            </div>
-                          ) : (
-                            <label className="flex items-center justify-center w-full min-h-[52px] p-3 border-2 border-dashed border-[#d0e4f7] rounded-xl cursor-pointer hover:bg-primary/5 hover:border-primary transition-all group">
-                              <div className="flex flex-row items-center justify-center gap-2">
-                                <Upload className="w-5 h-5 text-primary/70 group-hover:text-primary transition-colors" />
-                                <p className="text-[14px] font-medium text-[#3a4f63] group-hover:text-primary transition-colors">
-                                  Click to browse...
-                                </p>
-                              </div>
-                              <input
-                                type="file"
-                                accept=".pdf,.jpg,.jpeg,.png,.gif"
-                                className="hidden"
-                                onChange={(e) =>
-                                  handleFileSelect(uploadItem.id, e)
-                                }
-                                disabled={uploading}
-                              />
-                            </label>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <Label className="text-[13px] font-semibold text-[#3a4f63] block">
-                            Notes (Optional)
-                          </Label>
-                          <span
-                            className={`text-[10px] font-bold ${uploadItem.notes.length > 180 ? "text-orange-500" : "text-slate-400"}`}
-                          >
-                            {uploadItem.notes.length}/200
-                          </span>
-                        </div>
-                        <input
-                          type="text"
-                          placeholder="Brief description..."
-                          value={uploadItem.notes}
-                          onChange={(e) =>
-                            updatePendingUpload(uploadItem.id, {
-                              notes: e.target.value.slice(0, 200),
-                            })
-                          }
-                          className="w-full border-2 border-[#e8f1fb] rounded-xl p-3 text-[14px] font-medium text-[#0f1f38] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none bg-slate-50/50"
-                          disabled={uploading}
-                        />
-                      </div>
+                  {/* Custom Name Section (Only if Other is selected) */}
+                  {uploadItem.type === OTHER_OPTION && (
+                    <div className="w-full pr-8 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <Label className="text-[13px] font-semibold text-[#3a4f63] mb-2 block">
+                        Document Name
+                      </Label>
+                      <input
+                        type="text"
+                        placeholder="Type document name (e.g. Divorce Decree)..."
+                        value={uploadItem.customName || ""}
+                        onChange={(e) =>
+                          updatePendingUpload(uploadItem.id, {
+                            customName: e.target.value,
+                          })
+                        }
+                        className="w-full border-2 border-primary/30 rounded-xl px-4 py-3 text-[14px] font-semibold text-[#0f1f38] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none bg-white"
+                        disabled={uploading}
+                      />
                     </div>
+                  )}
+
+                  {/* File Dropzone Section - Enlarged */}
+                  <div className="w-full pr-8">
+                    <Label className="text-[13px] font-semibold text-[#3a4f63] mb-2 block">
+                      Select File
+                    </Label>
+                    <div className="relative">
+                      {uploadItem.file ? (
+                        <div className="flex items-center justify-between p-4 rounded-xl border-2 border-[#e8f1fb] bg-slate-50/50">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-10 h-10 rounded-lg shrink-0 bg-primary/10 text-primary flex items-center justify-center">
+                              <FileText size={20} />
+                            </div>
+                            <div>
+                              <span className="text-[14px] font-semibold text-[#0f1f38] truncate block">
+                                {uploadItem.file.name}
+                              </span>
+                              <span className="text-[11px] text-[#6b8097]">
+                                {(uploadItem.file.size / 1024 / 1024).toFixed(
+                                  2,
+                                )}{" "}
+                                MB
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg px-3"
+                            onClick={() =>
+                              updatePendingUpload(uploadItem.id, {
+                                file: null,
+                              })
+                            }
+                            disabled={uploading}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <label
+                          className={`flex flex-col items-center justify-center w-full min-h-[140px] p-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all group ${
+                            dragActiveId === uploadItem.id
+                              ? "border-primary bg-primary/5"
+                              : "border-[#d0e4f7] hover:bg-primary/[0.02] hover:border-primary"
+                          }`}
+                          onDragOver={(e) => handleDragOver(uploadItem.id, e)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(uploadItem.id, e)}
+                        >
+                          <div className="flex flex-col items-center justify-center gap-3 text-center">
+                            <div
+                              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                                dragActiveId === uploadItem.id
+                                  ? "bg-primary/20"
+                                  : "bg-primary/10 group-hover:bg-primary/20"
+                              }`}
+                            >
+                              <Upload
+                                className={`w-6 h-6 transition-colors ${
+                                  dragActiveId === uploadItem.id
+                                    ? "text-primary"
+                                    : "text-primary/70 group-hover:text-primary"
+                                }`}
+                              />
+                            </div>
+                            <div>
+                              <p
+                                className={`text-[15px] font-bold transition-colors ${
+                                  dragActiveId === uploadItem.id
+                                    ? "text-primary"
+                                    : "text-[#0f1f38] group-hover:text-primary"
+                                }`}
+                              >
+                                {dragActiveId === uploadItem.id
+                                  ? "Drop it here!"
+                                  : "Click or drag to upload"}
+                              </p>
+                              <p className="text-[12px] text-[#6b8097] mt-1 font-medium">
+                                PDF, JPG, PNG or GIF (max. 10MB)
+                              </p>
+                            </div>
+                          </div>
+                          <input
+                            type="file"
+                            accept=".pdf,.jpg,.jpeg,.png,.gif"
+                            className="hidden"
+                            onChange={(e) => handleFileSelect(uploadItem.id, e)}
+                            disabled={uploading}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Notes Section */}
+                  <div className="w-full pr-8">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-[13px] font-semibold text-[#3a4f63] block">
+                        Notes (Optional)
+                      </Label>
+                      <span
+                        className={`text-[10px] font-bold ${uploadItem.notes.length > 180 ? "text-orange-500" : "text-slate-400"}`}
+                      >
+                        {uploadItem.notes.length}/200
+                      </span>
+                    </div>
+                    <textarea
+                      rows={2}
+                      placeholder="Add a brief description or note about this document..."
+                      value={uploadItem.notes}
+                      onChange={(e) =>
+                        updatePendingUpload(uploadItem.id, {
+                          notes: e.target.value.slice(0, 200),
+                        })
+                      }
+                      className="w-full border-2 border-[#e8f1fb] rounded-xl p-3.5 text-[14px] font-medium text-[#0f1f38] focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none bg-slate-50/50 resize-none"
+                      disabled={uploading}
+                    />
                   </div>
 
                   {pendingUploads.length > 1 && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-3 right-3 md:relative md:top-0 md:right-0 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full md:mt-6 shrink-0"
+                      className="absolute top-4 right-4 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full shrink-0 transition-all"
                       onClick={() => removePendingUpload(uploadItem.id)}
                       disabled={uploading}
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={20} />
                     </Button>
                   )}
                 </div>
@@ -523,17 +709,17 @@ export function MultipleDocumentUploadModal({
             })}
 
             {/* Add Button */}
-            {getAvailableOptions("").length > 0 && (
-              <Button
-                variant="outline"
-                className="w-full py-6 border-2 border-dashed border-[#d0e4f7] rounded-2xl text-brand font-semibold hover:border-brand hover:bg-brand/5 transition-all flex items-center justify-center gap-2"
-                onClick={addPendingUpload}
-                disabled={uploading}
-              >
-                <Plus size={18} strokeWidth={2.5} />
-                Add Another Document Type
-              </Button>
-            )}
+            {/* {getAvailableOptions("").length > 0 && ( */}
+            <Button
+              variant="outline"
+              className="w-full py-6 border-2 border-dashed border-[#d0e4f7] rounded-2xl text-brand font-semibold hover:border-brand hover:bg-brand/5 transition-all flex items-center justify-center gap-2"
+              onClick={addPendingUpload}
+              disabled={uploading}
+            >
+              <Plus size={18} strokeWidth={2.5} />
+              Add Another Document Type
+            </Button>
+            {/* )} */}
           </div>
 
           {/* Action Footer */}

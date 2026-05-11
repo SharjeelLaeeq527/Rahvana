@@ -72,7 +72,7 @@ export const AwaitingReviewStep: React.FC<{
           </span>
         ))}
       </div>
-      <div className="relative bg-[#0c1b33] border border-white/5 rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-xl">
+      <div className="relative bg-[#1a0a18] border border-white/5 rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-xl">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[8px]">
           {data.statusCard.label}
@@ -115,8 +115,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
     dqCountry,
     setDqCountry,
   } = dqState;
-const [isSaving, setIsSaving] = React.useState(false);
-const [showUpgradePrompt, setShowUpgradePrompt] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
@@ -132,7 +131,7 @@ const [showUpgradePrompt, setShowUpgradePrompt] = React.useState(false);
         </span>
       </div>
 
-      <div className="relative bg-gradient-to-br from-[#0c1b33] to-[#1a3054] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
+      <div className="relative bg-[#1a0a18] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
           NVC — Documentary Qualification Received
@@ -151,6 +150,7 @@ const [showUpgradePrompt, setShowUpgradePrompt] = React.useState(false);
             <input
               type="date"
               value={dqDate}
+              max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setDqDate(e.target.value)}
               className="p-2.5 border rounded-lg"
             />
@@ -173,33 +173,10 @@ const [showUpgradePrompt, setShowUpgradePrompt] = React.useState(false);
               <option value="Karachi">Karachi</option>
             </select>
           </div>
-          {showUpgradePrompt && (
-          <div className="mb-3 flex items-start gap-3 rounded-[14px] border border-[#f0d98a] bg-[#fef8e8] px-4 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex-1 min-w-0">
-              <p className="text-[12.5px] font-bold text-[#0c1b33] mb-0.5">
-                Tracking Not Included in Your Plan
-              </p>
-              <p className="text-[12px] text-[#4a5568] leading-[1.6]">
-                Case tracking, reminders, and status monitoring are not available on the Basic plan. Upgrade to unlock automatic tracking when your DQ is saved.
-              </p>
-              <button
-                onClick={() => {/* wire to upgrade modal */}}
-                className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-bold text-[#2f6fd4] hover:text-[#1a4fa0] transition-colors group"
-              >
-                View upgrade options
-                <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
-              </button>
-            </div>
-          </div>
-        )}
           <button
             onClick={async () => {
-            if (guard && !guard()) {
-              setShowUpgradePrompt(true); // ← show nudge instead of silent fail
-              return;
-            }
-            setShowUpgradePrompt(false);
-            setIsSaving(true);
+              if (guard && !guard()) return;
+              setIsSaving(true);
               try {
                 setDqSaved(true);
                 await actions.updateMetadata({
@@ -318,7 +295,7 @@ export const AppointmentReceivedTool: React.FC<{
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
-      <div className="relative bg-linear-to-br from-[#0a1a2e] to-[#163258] rounded-[16px] p-[26px_28px] mb-[18px] overflow-hidden shadow-xl">
+      <div className="relative bg-[#1a0a18] rounded-[16px] p-[26px_28px] mb-[18px] overflow-hidden shadow-xl">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-amber-400 to-transparent opacity-80" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[7px]">
           {data.heroBanner.eyebrow}
@@ -803,7 +780,7 @@ export const PolioCertificateTool: React.FC<{
             setPolioGuideStep(0);
             setIsPolioGuideOpen(true);
           }}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+          className="w-full bg-[#3b7dd8] hover:bg-[#3b7dd8]  text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
         >
           {polioLaunched
             ? data.launchModule.buttonLabels.completed
@@ -849,7 +826,7 @@ export const PolioCertificateTool: React.FC<{
       </div>
 
       {isPolioGuideOpen && (
-        <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom-5 duration-300 guide-bg">
+        <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom-5 duration-300 bg-white">
           <div className="p-6 border-b flex items-center gap-4">
             <button
               onClick={() => setIsPolioGuideOpen(false)}

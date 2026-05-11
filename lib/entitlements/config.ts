@@ -16,7 +16,7 @@
  * so users are motivated to upgrade.
  */
 
-export type PlanTier = 'free' | 'basic' | 'premium' | 'executive';
+export type PlanTier = "free" | "basic" | "premium" | "executive";
 
 /**
  * Normalized feature states.
@@ -31,14 +31,14 @@ export type PlanTier = 'free' | 'basic' | 'premium' | 'executive';
  * preview        → Free-tier teaser: partial read-only, no saves/actions
  */
 export type FeatureState =
-  | 'full'
-  | 'list_only'
-  | 'save_only'
-  | 'locked_upgrade'
-  | 'locked_buy'
-  | 'limited'
-  | 'executive_only'
-  | 'preview';
+  | "full"
+  | "list_only"
+  | "save_only"
+  | "locked_upgrade"
+  | "locked_buy"
+  | "limited"
+  | "executive_only"
+  | "preview";
 
 export interface AddonInfo {
   id: string;
@@ -60,22 +60,34 @@ type TierMap = Record<PlanTier, FeatureEntitlement>;
 
 // ─── Shorthand constructors ───────────────────────────────────────────────────
 
-const full    = (): FeatureEntitlement => ({ state: 'full' });
-const preview = (): FeatureEntitlement => ({ state: 'preview' });
-const saveOnly = (hint?: string): FeatureEntitlement => ({ state: 'save_only', hint });
-const listOnly = (hint?: string): FeatureEntitlement => ({ state: 'list_only', hint });
-const limited  = (count: number, addon?: AddonInfo): FeatureEntitlement =>
-  ({ state: 'limited', limit: count, addon });
+const full = (): FeatureEntitlement => ({ state: "full" });
+const preview = (): FeatureEntitlement => ({ state: "preview" });
+const saveOnly = (hint?: string): FeatureEntitlement => ({
+  state: "save_only",
+  hint,
+});
+const listOnly = (hint?: string): FeatureEntitlement => ({
+  state: "list_only",
+  hint,
+});
+const limited = (count: number, addon?: AddonInfo): FeatureEntitlement => ({
+  state: "limited",
+  limit: count,
+  addon,
+});
 
 /** Must upgrade — no add-on option. */
-const lockedUpgrade = (target: PlanTier = 'premium'): FeatureEntitlement => ({
-  state: target === 'executive' ? 'executive_only' : 'locked_upgrade',
+const lockedUpgrade = (target: PlanTier = "premium"): FeatureEntitlement => ({
+  state: target === "executive" ? "executive_only" : "locked_upgrade",
   upgradeTarget: target,
 });
 
 /** Locked, but can purchase as standalone add-on instead of upgrading. */
-const lockedBuy = (addon: AddonInfo, target: PlanTier = 'premium'): FeatureEntitlement => ({
-  state: 'locked_buy',
+const lockedBuy = (
+  addon: AddonInfo,
+  target: PlanTier = "premium",
+): FeatureEntitlement => ({
+  state: "locked_buy",
   addon,
   upgradeTarget: target,
 });
@@ -83,21 +95,91 @@ const lockedBuy = (addon: AddonInfo, target: PlanTier = 'premium'): FeatureEntit
 // ─── Add-on catalog (keyed to Stripe add-on IDs) ─────────────────────────────
 
 export const ADDON: Record<string, AddonInfo> = {
-  smart:       { id: 'smart',        name: 'Smart Form Filler',          price: 39,  unit: 'per form'    },
-  photo:       { id: 'photo',        name: 'Photo Booth Credits',         price: 15,  unit: 'per photo'   },
-  sponsor:     { id: 'sponsor',      name: 'Sponsorship Calculator',      price: 15,  unit: 'one-time'    },
-  caseStrength:{ id: 'case-strength',name: 'Case Strength Analyzer',      price: 49,  unit: 'one-time'    },
-  mock:        { id: 'mock',         name: 'Mock Interview',               price: 39,  unit: 'one-time'    },
-  rapid:       { id: 'rapid',        name: 'Interview Rapid Fire Mode',    price: 39,  unit: 'one-time'    },
-  action221g:  { id: '221g',         name: '221(g) Action Planner',        price: 199, unit: 'one-time'    },
-  docReview:   { id: 'doc-review',   name: 'Expert Document Review',       price: 59,  unit: 'per request' },
-  consultation:{ id: 'consultation', name: 'Expert Consultation',          price: 99,  unit: 'per 30 min'  },
-  medical:     { id: 'medical',      name: 'Book Medical Appointment',      price: 5,   unit: 'per request' },
-  pcc:         { id: 'pcc',          name: 'PCC Filing (Sindh Only)',       price: 25,  unit: 'per request' },
-  translate:   { id: 'translate',    name: 'Document Translation',          price: 25,  unit: 'per document'},
-  civilGuides: { id: 'civil-guid',   name: 'Civil Document Guides',         price: 5,   unit: 'per guide'   },
-  snapSign:    { id: 'snap-sign',    name: 'Snap & Sign',                   price: 5,   unit: 'per signature'},
-  caseManager: { id: 'case-manager', name: 'Dedicated Case Manager',        price: 300, unit: 'per year'    },
+  smart: {
+    id: "smart",
+    name: "Smart Form Filler",
+    price: 39,
+    unit: "per form",
+  },
+  photo: {
+    id: "photo",
+    name: "Photo Booth Credits",
+    price: 15,
+    unit: "per photo",
+  },
+  sponsor: {
+    id: "sponsor",
+    name: "Sponsorship Calculator",
+    price: 15,
+    unit: "one-time",
+  },
+  caseStrength: {
+    id: "case-strength",
+    name: "Case Strength Analyzer",
+    price: 49,
+    unit: "one-time",
+  },
+  mock: { id: "mock", name: "Mock Interview", price: 39, unit: "one-time" },
+  rapid: {
+    id: "rapid",
+    name: "Interview Rapid Fire Mode",
+    price: 39,
+    unit: "one-time",
+  },
+  action221g: {
+    id: "221g",
+    name: "221(g) Action Planner",
+    price: 199,
+    unit: "one-time",
+  },
+  docReview: {
+    id: "doc-review",
+    name: "Expert Case Review",
+    price: 59,
+    unit: "per request",
+  },
+  consultation: {
+    id: "consultation",
+    name: "Expert Consultation",
+    price: 99,
+    unit: "per 30 min",
+  },
+  medical: {
+    id: "medical",
+    name: "Book Medical Appointment",
+    price: 5,
+    unit: "per request",
+  },
+  pcc: {
+    id: "pcc",
+    name: "PCC Filing (Sindh Only)",
+    price: 25,
+    unit: "per request",
+  },
+  translate: {
+    id: "translate",
+    name: "Document Translation",
+    price: 25,
+    unit: "per document",
+  },
+  civilGuides: {
+    id: "civil-guid",
+    name: "Civil Document Guides",
+    price: 5,
+    unit: "per guide",
+  },
+  snapSign: {
+    id: "snap-sign",
+    name: "Snap & Sign",
+    price: 5,
+    unit: "per signature",
+  },
+  // caseManager: {
+  //   id: "case-manager",
+  //   name: "Dedicated Case Manager",
+  //   price: 300,
+  //   unit: "per year",
+  // },
 };
 
 // ─── Master entitlement table ─────────────────────────────────────────────────
@@ -111,40 +193,39 @@ export const ADDON: Record<string, AddonInfo> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const ENTITLEMENTS: Record<string, TierMap> = {
-
   // ══════════════════════════════════════════════════════════════════════════
   // CORE JOURNEY PLATFORM
   // ══════════════════════════════════════════════════════════════════════════
 
   /** Roadmap visibility (all steps/chapters visible for all paid tiers). */
   roadmap_access: {
-    free:      preview(),
-    basic:     full(),
-    premium:   full(),
+    free: preview(),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
   /** Checklist engine for case-specific document lists. */
   checklist_engine: {
-    free:      lockedUpgrade('basic'),
-    basic:     full(),
-    premium:   full(),
+    free: lockedUpgrade("basic"),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
   /** Tracker & reminders (DQ, interview, mail, case status). */
   tracker_reminders: {
-    free:      lockedUpgrade('premium'),
-    basic:     lockedUpgrade('premium'),
-    premium:   full(),
+    free: lockedUpgrade("premium"),
+    basic: lockedUpgrade("premium"),
+    premium: full(),
     executive: full(),
   },
 
   /** Document vault — upload, store, auto-extract from uploaded docs. */
   document_vault: {
-    free:      lockedUpgrade('premium'),
-    basic:     lockedUpgrade('premium'),
-    premium:   full(),
+    free: lockedUpgrade("premium"),
+    basic: lockedUpgrade("premium"),
+    premium: full(),
     executive: full(),
   },
 
@@ -154,49 +235,49 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Visa Bulletin Monitor. */
   visa_bulletin_monitor: {
-    free:      lockedUpgrade('basic'),
-    basic:     full(),
-    premium:   full(),
+    free: lockedUpgrade("basic"),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
   /** Portal Wallet — save and manage credentials (USCIS, CEAC, Courier…). */
   portal_wallet: {
-    free:      lockedUpgrade('basic'),
-    basic:     full(),
-    premium:   full(),
+    free: lockedUpgrade("basic"),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
   /** Snap & Sign — sign documents digitally. */
   snap_sign: {
-    free:      lockedUpgrade('basic'),
-    basic:     full(),
-    premium:   full(),
+    free: lockedUpgrade("basic"),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
   /** PDF Tool Kit — merge, edit, compress PDF documents. */
   pdf_toolkit: {
-    free:      lockedUpgrade('basic'),
-    basic:     full(),
-    premium:   full(),
+    free: lockedUpgrade("basic"),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
   /** DQ Status Check tool. */
   dq_status_check: {
-    free:      lockedUpgrade('basic'),
-    basic:     full(),
-    premium:   full(),
+    free: full(), // lockedUpgrade('basic'),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
   /** Basic Interview Prep (non-mock general practice). */
   basic_interview_prep: {
-    free:      lockedUpgrade('basic'),
-    basic:     full(),
-    premium:   full(),
+    free: lockedUpgrade("basic"),
+    basic: full(),
+    premium: full(),
     executive: full(),
   },
 
@@ -211,41 +292,41 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Upgrade to Premium (or buy individual guides where available) to unlock.
    */
   step_guides: {
-    free:      lockedUpgrade('premium'),
-    basic:     lockedUpgrade('premium'),
-    premium:   full(),
+    free: lockedUpgrade("premium"),
+    basic: lockedUpgrade("premium"),
+    premium: full(),
     executive: full(),
   },
 
   /** Case Strength Analyzer tool. */
   case_strength: {
-    free:      lockedBuy(ADDON.caseStrength, 'premium'),
-    basic:     lockedBuy(ADDON.caseStrength, 'premium'),
-    premium:   full(),
+    free: lockedBuy(ADDON.caseStrength, "premium"),
+    basic: lockedBuy(ADDON.caseStrength, "premium"),
+    premium: full(),
     executive: full(),
   },
 
   /** Interview Prep — Rapid Fire Mode. */
   interview_rapid_fire: {
-    free:      lockedBuy(ADDON.rapid, 'premium'),
-    basic:     lockedBuy(ADDON.rapid, 'premium'),
-    premium:   full(),
+    free: lockedBuy(ADDON.rapid, "premium"),
+    basic: lockedBuy(ADDON.rapid, "premium"),
+    premium: full(),
     executive: full(),
   },
 
   /** Smart Form Filler (I-130, I-130A auto-fill tool). */
   smart_form_filler: {
-    free:      lockedBuy(ADDON.smart, 'premium'),
-    basic:     lockedBuy(ADDON.smart, 'premium'),
-    premium:   full(),
+    free: lockedBuy(ADDON.smart, "premium"),
+    basic: lockedBuy(ADDON.smart, "premium"),
+    premium: full(),
     executive: full(),
   },
 
   /** Sponsorship Calculator. */
   sponsorship_calc: {
-    free:      lockedBuy(ADDON.sponsor, 'premium'),
-    basic:     lockedBuy(ADDON.sponsor, 'premium'),
-    premium:   full(),
+    free: lockedBuy(ADDON.sponsor, "premium"),
+    basic: lockedBuy(ADDON.sponsor, "premium"),
+    premium: full(),
     executive: full(),
   },
 
@@ -254,17 +335,17 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Basic: buy credits. Premium: 2 credits included. Executive: unlimited.
    */
   photo_booth: {
-    free:      lockedBuy(ADDON.photo, 'premium'),
-    basic:     lockedBuy(ADDON.photo, 'premium'),
-    premium:   limited(2, ADDON.photo),
+    free: lockedBuy(ADDON.photo, "premium"),
+    basic: lockedBuy(ADDON.photo, "premium"),
+    premium: limited(2, ADDON.photo),
     executive: full(),
   },
 
   /** Book Medical Appointment through Rahvana. */
   medical_booking: {
-    free:      lockedUpgrade('premium'),
-    basic:     lockedUpgrade('premium'),
-    premium:   full(),
+    free: lockedUpgrade("premium"),
+    basic: lockedUpgrade("premium"),
+    premium: full(),
     executive: full(),
   },
 
@@ -274,17 +355,17 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Basic & Premium can purchase as a standalone add-on.
    */
   polio_certificate: {
-    free:      lockedUpgrade('premium'),
-    basic:     lockedUpgrade('premium'),
-    premium:   full(),
+    free: lockedUpgrade("premium"),
+    basic: lockedUpgrade("premium"),
+    premium: full(),
     executive: full(),
   },
 
   /** Country-specific Civil Document Guides (add-on for Basic; included Premium+). */
   civil_doc_guides: {
-    free:      lockedBuy(ADDON.civilGuides, 'premium'),
-    basic:     lockedBuy(ADDON.civilGuides, 'premium'),
-    premium:   full(),
+    free: lockedBuy(ADDON.civilGuides, "premium"),
+    basic: lockedBuy(ADDON.civilGuides, "premium"),
+    premium: full(),
     executive: full(),
   },
 
@@ -297,9 +378,9 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Executive included; Basic & Premium can purchase as standalone add-on.
    */
   action_221g: {
-    free:      lockedBuy(ADDON.action221g, 'executive'),
-    basic:     lockedBuy(ADDON.action221g, 'executive'),
-    premium:   lockedBuy(ADDON.action221g, 'executive'),
+    free: lockedBuy(ADDON.action221g, "executive"),
+    basic: lockedBuy(ADDON.action221g, "executive"),
+    premium: lockedBuy(ADDON.action221g, "executive"),
     executive: full(),
   },
 
@@ -308,9 +389,9 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Executive included; Basic & Premium can purchase as standalone add-on.
    */
   mock_interview: {
-    free:      lockedBuy(ADDON.mock, 'executive'),
-    basic:     lockedBuy(ADDON.mock, 'executive'),
-    premium:   lockedBuy(ADDON.mock, 'executive'),
+    free: lockedBuy(ADDON.mock, "executive"),
+    basic: lockedBuy(ADDON.mock, "executive"),
+    premium: lockedBuy(ADDON.mock, "executive"),
     executive: full(),
   },
 
@@ -320,17 +401,17 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Expert Document Review (offline). Executive: 2 included; others add-on. */
   expert_doc_review: {
-    free:      lockedBuy(ADDON.docReview, 'executive'),
-    basic:     lockedBuy(ADDON.docReview, 'executive'),
-    premium:   lockedBuy(ADDON.docReview, 'executive'),
+    free: lockedBuy(ADDON.docReview, "executive"),
+    basic: lockedBuy(ADDON.docReview, "executive"),
+    premium: lockedBuy(ADDON.docReview, "executive"),
     executive: limited(2, ADDON.docReview),
   },
 
   /** Expert Consultation. Executive: 2 included; others add-on. */
   expert_consultation: {
-    free:      lockedBuy(ADDON.consultation, 'executive'),
-    basic:     lockedBuy(ADDON.consultation, 'executive'),
-    premium:   lockedBuy(ADDON.consultation, 'executive'),
+    free: lockedBuy(ADDON.consultation, "executive"),
+    basic: lockedBuy(ADDON.consultation, "executive"),
+    premium: lockedBuy(ADDON.consultation, "executive"),
     executive: limited(2, ADDON.consultation),
   },
 
@@ -340,17 +421,17 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** PCC Filing (Sindh Only). Executive included; Basic & Premium upgrade-only. */
   pcc_filing: {
-    free:      lockedUpgrade('executive'),
-    basic:     lockedUpgrade('executive'),
-    premium:   lockedUpgrade('executive'),
+    free: lockedUpgrade("executive"),
+    basic: lockedUpgrade("executive"),
+    premium: lockedUpgrade("executive"),
     executive: full(),
   },
 
   /** Document Translation. Executive: 2 included; others add-on. */
   document_translation: {
-    free:      lockedBuy(ADDON.translate, 'executive'),
-    basic:     lockedBuy(ADDON.translate, 'executive'),
-    premium:   lockedBuy(ADDON.translate, 'executive'),
+    free: lockedBuy(ADDON.translate, "executive"),
+    basic: lockedBuy(ADDON.translate, "executive"),
+    premium: lockedBuy(ADDON.translate, "executive"),
     executive: limited(2, ADDON.translate),
   },
 
@@ -358,12 +439,12 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Dedicated Case Manager.
    * Add-on at ALL tiers including Executive (never auto-included).
    */
-  case_manager: {
-    free:      lockedBuy(ADDON.caseManager),
-    basic:     lockedBuy(ADDON.caseManager),
-    premium:   lockedBuy(ADDON.caseManager),
-    executive: lockedBuy(ADDON.caseManager),
-  },
+  // case_manager: {
+  //   free: lockedBuy(ADDON.caseManager),
+  //   basic: lockedBuy(ADDON.caseManager),
+  //   premium: lockedBuy(ADDON.caseManager),
+  //   executive: lockedBuy(ADDON.caseManager),
+  // },
 };
 
 // ─── Convenience lookup ───────────────────────────────────────────────────────
@@ -372,37 +453,53 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
  * Look up what a given tier can do with a specific feature.
  * Returns `locked_upgrade` pointing to Basic for any unknown feature (fail-safe).
  */
-export function getEntitlement(feature: string, tier: PlanTier): FeatureEntitlement {
-  return ENTITLEMENTS[feature]?.[tier] ?? { state: 'locked_upgrade', upgradeTarget: 'basic' };
+export function getEntitlement(
+  feature: string,
+  tier: PlanTier,
+): FeatureEntitlement {
+  return (
+    ENTITLEMENTS[feature]?.[tier] ?? {
+      state: "locked_upgrade",
+      upgradeTarget: "basic",
+    }
+  );
 }
 
 /** True if the tier has any meaningful access to the feature (not locked or preview-only). */
 export function isAccessible(feature: string, tier: PlanTier): boolean {
   const { state } = getEntitlement(feature, tier);
-  return state === 'full' || state === 'limited' || state === 'list_only' || state === 'save_only';
+  return (
+    state === "full" ||
+    state === "limited" ||
+    state === "list_only" ||
+    state === "save_only"
+  );
 }
 
 /** Minimum tier required to get `full` access to a feature. */
 export function minimumFullTier(feature: string): PlanTier | null {
-  const order: PlanTier[] = ['free', 'basic', 'premium', 'executive'];
+  const order: PlanTier[] = ["free", "basic", "premium", "executive"];
   for (const tier of order) {
-    if (ENTITLEMENTS[feature]?.[tier]?.state === 'full') return tier;
+    if (ENTITLEMENTS[feature]?.[tier]?.state === "full") return tier;
   }
   return null;
 }
 
-export const TIER_ORDER: PlanTier[] = ['free', 'basic', 'premium', 'executive'];
+export const TIER_ORDER: PlanTier[] = ["free", "basic", "premium", "executive"];
 
 export const TIER_NAMES: Record<PlanTier, string> = {
-  free:      'Free',
-  basic:     'Basic',
-  premium:   'Premium',
-  executive: 'Executive',
+  free: "Free",
+  basic: "Basic",
+  premium: "Premium",
+  executive: "Executive",
 };
 
-export const TIER_PRICES: Record<PlanTier, { annual: number; monthly: number } | null> = {
-  free:      null,
-  basic:     { annual: 349,  monthly: 29 },
-  premium:   { annual: 699,  monthly: 58 },
+export const TIER_PRICES: Record<
+  PlanTier,
+  { annual: number; monthly: number } | null
+> = {
+  free: null,
+  basic: { annual: 349, monthly: 29 },
+  premium: { annual: 699, monthly: 58 },
   executive: { annual: 1099, monthly: 92 },
 };

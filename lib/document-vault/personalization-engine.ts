@@ -16,6 +16,10 @@ export const DYNAMIC_CATEGORIES = [
   "ADDRESS_PROOF",
   "EDUCATION",
   "WORK",
+  "CIVIL",
+  "MISC",
+  "TRANSLATIONS",
+  "OTHER",
 ];
 
 export const CATEGORY_SUGGESTIONS: Record<string, string[]> = {
@@ -111,8 +115,10 @@ export function generateRequiredDocuments(
 
   // Filter documents based on requirements
   let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
-    // If category is dynamic, ignore static definitions
-    if (DYNAMIC_CATEGORIES.includes(doc.category)) {
+    // Some categories are dynamic BUT should still keep their static definitions
+    // (e.g., CIVIL has Nikah Nama, MISC has generic docs, etc.)
+    const keepStatic = ["CIVIL", "MISC", "TRANSLATIONS"];
+    if (DYNAMIC_CATEGORIES.includes(doc.category) && !keepStatic.includes(doc.category)) {
       return false;
     }
     return isDocumentRequired(doc, visaCategory, scenarioFlags);
@@ -123,6 +129,9 @@ export function generateRequiredDocuments(
     const slots = config.dynamicDocuments?.[category] || [];
 
     if (slots.length === 0) {
+      // Don't show default slot for these categories to keep it clean
+      if (["CIVIL", "MISC", "TRANSLATIONS", "OTHER"].includes(category)) return;
+
       // Default first slot if none exist
       const displayName = getCategoryDisplayName(category);
       // Remove "Documents" or "Evidence" from suffix for cleaner naming if exists
@@ -228,7 +237,22 @@ export function generateRequiredDocuments(
     if (a.category !== b.category) {
       return a.category.localeCompare(b.category);
     }
-    return a.name.localeCompare(b.name);
+
+    // Special logic for translations: place them immediately after the original
+    const getSortName = (doc: DocumentDefinition) => {
+      if (doc.translationOf) {
+        const original = ALL_DOCUMENTS.find((d) => d.id === doc.translationOf);
+        if (original) {
+          return `${original.name} - Translation`;
+        }
+      }
+      return doc.name;
+    };
+
+    const nameA = getSortName(a);
+    const nameB = getSortName(b);
+
+    return nameA.localeCompare(nameB);
   });
 }
 

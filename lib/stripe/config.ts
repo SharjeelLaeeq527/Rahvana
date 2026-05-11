@@ -80,7 +80,7 @@ export const PRODUCTS = {
     tier: 'executive',
     features: [
       'Everything in Premium',
-      'Dedicated case manager',
+      // 'Dedicated case manager',
       'Three expert review sessions and mock prep',
       'Expanded coordination and highest support priority',
     ],
@@ -95,12 +95,12 @@ export const PRODUCTS = {
     "smart": { name: 'Smart Form Filler', price: 39, priceId: STRIPE_PRICES.ADDONS["smart"] },
     "snap": { name: 'Snap & Sign', price: 5, priceId: STRIPE_PRICES.ADDONS["snap"] },
     "sponsor": { name: 'Sponsorship Calculator', price: 15, priceId: STRIPE_PRICES.ADDONS["sponsor"] },
-    "doc-review": { name: 'Expert Document Review (Offline)', price: 59, priceId: STRIPE_PRICES.ADDONS["doc-review"] },
+    "doc-review": { name: 'Expert Case Review (Offline)', price: 59, priceId: STRIPE_PRICES.ADDONS["doc-review"] },
     "consultation": { name: 'Expert Consultation', price: 99, priceId: STRIPE_PRICES.ADDONS["consultation"] },
     "medical": { name: 'Book Medical Appointment', price: 5, priceId: STRIPE_PRICES.ADDONS["medical"] },
     "pcc": { name: 'PCC Filing (Sindh Only)', price: 25, priceId: STRIPE_PRICES.ADDONS["pcc"] },
     "translate": { name: 'Document Translation', price: 25, priceId: STRIPE_PRICES.ADDONS["translate"] },
-    "case-manager": { name: 'Dedicated Case Manager', price: 300, priceId: STRIPE_PRICES.ADDONS["case-manager"] },
+    // "case-manager": { name: 'Dedicated Case Manager', price: 300, priceId: STRIPE_PRICES.ADDONS["case-manager"] },
     "civil-guid": { name: 'Civil Document Guides', price: 5, priceId: STRIPE_PRICES.ADDONS["civil-guid"] },
   },
 } as const;
