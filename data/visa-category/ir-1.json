@@ -3390,6 +3390,7 @@
           ],
           "tool_data": {
             "id": "step_2_4",
+            "type": "doc_list",
             "title": "Prepare Civil Documents",
             "subtitle": "Review and prepare the civil documents needed for NVC / CEAC document upload and later consular interview readiness.",
             "doc_list": {
@@ -4485,8 +4486,8 @@
               }
             ],
             "launch_module": {
-              "label": "CEAC Submission Walkthrough",
-              "title": "Review every file before sending to NVC",
+              "eyebrow": "CEAC Submission Walkthrough",
+              "heading": "Review every file before sending to NVC",
               "icon": "check",
               "features": [
                 "Verify each file under the correct person",
@@ -4494,7 +4495,7 @@
                 "Check readability and translation pairing",
                 "Submit and confirm receipt in CEAC"
               ],
-              "buttonText": "Start Submission Guide"
+              "button_label": "Start Submission Guide"
             },
             "disclaimer": "Rahvana provides structured guidance only. Always confirm submission status directly in CEAC after submitting."
           }

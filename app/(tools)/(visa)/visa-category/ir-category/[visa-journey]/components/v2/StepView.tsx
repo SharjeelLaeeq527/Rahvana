@@ -17,7 +17,6 @@ import {
   Lock,
   Check,
   Book,
-  BookOpen,
   Camera,
   FileCheck,
   X,
@@ -28,20 +27,15 @@ import {
   CreditCard,
   Wallet,
   User,
-  Users,
   FileText,
   ClipboardList,
   ChevronLeft,
-  Calendar,
   Info,
   Eye,
   Trash2,
   Truck,
   MoreVertical,
-  Activity,
-  Clock,
-  RefreshCw,
-  Sparkles,
+  ArrowUpRight,
 } from "lucide-react";
 
 import {
@@ -51,11 +45,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   RoadmapData,
   QuestSuite,
   TutorialStepData,
@@ -63,8 +52,6 @@ import {
   DocumentGatheringItem,
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { QuestRenderer } from "./QuestRenderer";
-import { ActionStepRenderer } from "./ActionStepRenderer";
 import {
   getAllActiveSteps,
   getStageProgress,
@@ -75,7 +62,6 @@ import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCrede
 import { toast } from "sonner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
-import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import Image from "next/image";
@@ -96,8 +82,11 @@ import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
-import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
-import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
+import { usePortalWallet } from "./hooks/usePortalWallet";
+import { useFilingQuiz } from "./hooks/useFilingQuiz";
+import { useSponsorship } from "./hooks/useSponsorship";
+import { DocActionModal } from "./components/DocActionModal";
+import { HouseholdMemberTool } from "./components/HouseholdMemberTool";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
 import {
   computeDocumentList,
@@ -111,9 +100,8 @@ import { StepHeader } from "./StepHeader";
 import {
   CeacCredsModal,
   NvcFeeModal,
-  ApUpdateModal,
 } from "./PortalWalletManager";
-import { SponsorshipModule } from "./SponsorshipModule";
+import { SponsorshipModule } from "./components/SponsorshipModule";
 import {
   CivilDocGuideOverlay,
   FinancialDocGuideOverlay,
@@ -124,27 +112,26 @@ import {
   CourierTutOverlay,
   InterviewDayTutOverlay,
 } from "./GuideTutorialOverlays";
-import {
-  DqRecordingTool,
-  AppointmentReceivedTool,
-  MedicalExamTool,
-  PolioCertificateTool,
-  PoliceClearanceTool,
-} from "./StepToolRenderer";
+import { DqRecordingTool } from "./components/DqRecordingTool";
+import { AppointmentReceivedTool } from "./components/AppointmentReceivedTool";
+import { MedicalExamTool } from "./components/MedicalExamTool";
+import { PolioCertificateTool } from "./components/PolioCertificateTool";
+import { PoliceClearanceTool } from "./components/PoliceClearanceTool";
+import { GatheringChecklistTool } from "./components/GatheringChecklistTool";
 import { getStepIcon } from "./StepIcon";
-import { AwaitingReviewStep } from "./AwaitingReviewStep";
-import { FinancialChecklistTool } from "./FinancialChecklistTool";
-import { SubmissionReviewTool } from "./SubmissionReviewTool";
-import { MedicalExamGuideTool } from "./MedicalExamGuideTool";
-import { CourierRegistrationTool } from "./CourierRegistrationTool";
-import { InterviewPrepTool } from "./InterviewPrepTool";
-import { DocListSection } from "./DocListSection";
-import { InterviewDayTool } from "./InterviewDayTool";
-import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
-import { TrackVisaIssuanceTool } from "./TrackVisaIssuanceTool";
-import { Respond221gTool } from "./Respond221gTool";
-import { Input221gTool } from "./Input221gTool";
-import CaseRegistrationForm from "./CaseRegistrationForm";
+import { SubmissionReviewTool } from "./components/SubmissionReviewTool";
+import { MedicalExamGuideTool } from "./components/MedicalExamGuideTool";
+import { CourierRegistrationTool } from "./components/CourierRegistrationTool";
+import { InterviewPrepTool } from "./components/InterviewPrepTool";
+import { DocListSection } from "./components/DocListSection";
+import { InterviewSchedulingTool } from "./components/InterviewSchedulingTool";
+import { AdministrativeProcessingTool } from "./components/AdministrativeProcessingTool";
+import { InterviewDayTool } from "./components/InterviewDayTool";
+import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
+import { TrackVisaIssuanceTool } from "./components/TrackVisaIssuanceTool";
+import { Respond221gTool } from "./components/Respond221gTool";
+import { Input221gTool } from "./components/Input221gTool";
+import CaseRegistrationForm from "./components/CaseRegistrationForm";
 import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
 import { useStepEntitlement } from "./useStepEntitlement";
 import { StepLockedContent } from "./StepLockedContent";
@@ -154,24 +141,17 @@ import {
   getStepLockStatus,
   getModalFeatureForTier,
 } from "@/lib/entitlements/hardLockRules";
-import { ApprovalNoticeTool } from "./ApprovalNoticeTool";
-import RegisterReceiptStep from "./RegisterReceiptStep";
-import TrackCaseStatusStep from "./TrackCaseStatusStep";
-interface SecurityQuestion {
-  id: string;
-  question: string;
-  answer: string | null;
-}
-
-interface PortalCredential {
-  id: string;
-  portal_type: string;
-  username: string;
-  password: string | null;
-  nvc_case_number?: string | null;
-  nvc_invoice_id?: string | null;
-  security_questions: SecurityQuestion[];
-}
+import { ApprovalNoticeTool } from "./components/ApprovalNoticeTool";
+import RegisterReceiptStep from "./components/RegisterReceiptStep";
+import TrackCaseStatusStep from "./components/TrackCaseStatusStep";
+import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
+import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
+import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
+import { ApUpdateModal } from "./PortalWalletManager";
+import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
+import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
+import { QuestRenderer } from "./QuestRenderer";
+import { ActionStepRenderer } from "./ActionStepRenderer";
 
 interface StepViewProps {
   data: RoadmapData;
@@ -195,32 +175,6 @@ interface StepViewProps {
   onBack: () => void;
 }
 
-interface FilingQuizResult {
-  type: "online" | "paper" | "lean-online" | "discuss";
-  headline: string;
-  body: string;
-  factors: { icon: string; text: string }[];
-  emphasize: "online" | "paper" | null;
-}
-
-// Vault document IDs for Chapter 3 Step 6 gathering checklist items
-const GATHERING_VAULT_IDS: Record<string, string> = {
-  passport: "passport-beneficiary",
-  "birth-cert": "birth-cert-beneficiary",
-  "marriage-cert": "nadra-mrc",
-  pcc: "police-certificate-pakistan",
-  "interview-letter": "interview-letter",
-  "i864-original": "i-864-affidavit",
-  "tax-docs": "tax-returns-petitioner",
-  "employment-letter": "employment-letter",
-  photos: "passport-photos",
-  "medical-packet": "medical-results-envelope",
-  "ds260-original": "misc-document",
-  "polio-cert": "misc-document",
-  "courier-registration-certificate": "misc-document",
-  folders: "misc-document",
-};
-
 export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
@@ -234,9 +188,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const plan = usePlan();
   const stepEntitlement = useStepEntitlement(sId);
 
-  const [docActionUpgradeFeature, setDocActionUpgradeFeature] = useState<
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<
     string | null
   >(null);
+  const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
   // Add Evidence Note modal state
 
   const { user } = useAuth();
@@ -332,17 +287,135 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     options: [],
   });
 
-  // Filing Quiz States
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizScreenIdx, setQuizScreenIdx] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState<
-    Record<string, { value: string; signal: string }>
-  >({});
-  const [quizResult, setQuizResult] = useState<FilingQuizResult | null>(null);
-  const [isLocked, setIsLocked] = useState(
-    state.metadata.filingMethodConfirmed || false,
-  );
+  const isCompleted = state.completedSteps.has(sId);
+
+  const handleToggleComplete = useCallback(() => {
+    const stepKey = currentStep.step_key || sId;
+    // Map step keys to correct metadata fields for milestone tracking
+    const milestoneMetaMap: Record<
+      string,
+      { key: string; value?: () => string }
+    > = {
+      step_1_3: {
+        key: "receiptNum",
+        value: () => new Date().toISOString().slice(0, 10),
+      },
+      step_1_6: {
+        key: "uscisPortalSaved",
+        value: () => "true",
+      },
+      step_1_7: {
+        key: "filingFeeDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      },
+      step_1_8: {
+        key: "submissionDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      },
+      step_2_10: {
+        key: "dqDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      },
+      step_3_1: {
+        key: "medicalDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      },
+      step_3_7: {
+        key: "interviewDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      },
+      step_2_1: {
+        key: "nvcCaseNum",
+        value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
+      },
+      step_2_2: {
+        key: "nvcInvoice",
+        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
+      },
+      step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" },
+      step_1_17: {
+        key: "approvalDate",
+        value: () => new Date().toISOString().slice(0, 10),
+      },
+    };
+    actions.toggleComplete(stepKey);
+    // If this step is a milestone, set the metadata field if not already set
+    const metaObj = milestoneMetaMap[stepKey];
+    if (
+      metaObj &&
+      (state.metadata[metaObj.key] === undefined ||
+        state.metadata[metaObj.key] === null ||
+        state.metadata[metaObj.key] === "")
+    ) {
+      const value = metaObj.value
+        ? metaObj.value()
+        : new Date().toISOString().slice(0, 10);
+      actions.updateMetadata({ [metaObj.key]: value });
+    }
+  }, [sId, currentStep, actions, state.metadata]);
+
+  // --- 1. Extracted Hooks for State Management ---
+  const {
+    uscisCredentials,
+    ceacCredentials,
+    courierCredentials,
+    isWalletFormOpen,
+    setIsWalletFormOpen,
+    isWalletViewOpen,
+    setIsWalletViewOpen,
+    walletPortalType,
+    setWalletPortalType,
+    walletMode,
+    setWalletMode,
+    isCeacModalOpen,
+    setIsCeacModalOpen,
+    handleSaveCredentials,
+    handleDeleteCredentials,
+    handleRevealPassword,
+    handleRevealAnswer,
+    isSubmittingCreds,
+    showDeleteConfirmation,
+    setShowDeleteConfirmation,
+  } = usePortalWallet({ sId, isCompleted, actions });
+
+  const {
+    showQuiz,
+    setShowQuiz,
+    quizScreenIdx,
+    setQuizScreenIdx,
+    quizAnswers,
+    setQuizAnswers,
+    quizResult,
+    setQuizResult,
+    isLocked,
+    setIsLocked,
+    handleNextQuiz,
+    handleConfirmation,
+  } = useFilingQuiz({ 
+    currentStep, 
+    isCompleted, 
+    actions, 
+    handleToggleComplete, 
+    metadata: state.metadata 
+  });
+
+  const {
+    jsCount,
+    setJsCount,
+    hhCount,
+    setHhCount,
+    hhRelationships,
+    setHhRelationships,
+    hhDocsStatus,
+    setHhDocsStatus,
+    isSponsorshipCalcOpen,
+    setIsSponsorshipCalcOpen,
+    sponsorshipResult,
+  } = useSponsorship({ metadata: state.metadata });
+
+  // --- 2. Remaining Local State ---
   const [isLaunched, setIsLaunched] = useState(false);
+
   // Guarded upload — checks entitlement before opening the vault upload modal
   const guardedOpenUploadModal = useCallback(
     (defId: string) => {
@@ -351,17 +424,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     },
     [stepEntitlement, openUploadModal],
   );
-  // Wallet States
-  const [uscisCredentials, setUscisCredentials] =
-    useState<PortalCredential | null>(null);
-  const [isWalletFormOpen, setIsWalletFormOpen] = useState(false);
-  const [isWalletViewOpen, setIsWalletViewOpen] = useState(false);
-  const [walletPortalType, setWalletPortalType] = useState<
-    "USCIS" | "NVC" | "COURIER"
-  >("USCIS");
-  const [walletMode, setWalletMode] = useState<"add" | "edit">("add");
-  const [isSubmittingCreds, setIsSubmittingCreds] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
 
   // NVC Fee States
   const [isNvcFeeModalOpen, setIsNvcFeeModalOpen] = useState(false);
@@ -371,15 +434,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     date: "",
     note: "",
   };
-
-  // CEAC Credentials States
-  const [ceacCredentials, setCeacCredentials] =
-    useState<PortalCredential | null>(null);
-  const [isCeacModalOpen, setIsCeacModalOpen] = useState(false);
-
-  // Courier Credentials State
-  const [courierCredentials, setCourierCredentials] =
-    useState<PortalCredential | null>(null);
 
   // Civil Documents States
   const [activeCivilDoc, setActiveCivilDoc] = useState<any>(null);
@@ -409,28 +463,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     "household_member" | "joint_sponsor" | null
   >(null);
   const [useCeacGuideData, setUseCeacGuideData] = useState(false); // Flag for Start CEAC Guide button
-  const [ivLoading, setIvLoading] = useState(false);
-  const [ivError, setIvError] = useState<string | null>(null);
 
   // Household Member Builder States (Step 7)
-  const [jsCount, setJsCount] = useState<number>(
-    (state.metadata.jsCount as number) || 0,
-  );
-  const [hhCount, setHhCount] = useState<number>(
-    (state.metadata.hhCount as number) || 0,
-  );
-  const [hhRelationships, setHhRelationships] = useState<
-    Record<number, string>
-  >((state.metadata.hhRelationships as Record<number, string>) || {});
   const [activeHhDoc, setActiveHhDoc] = useState<any>(null);
   const [isHhDocGuideOpen, setIsHhDocGuideOpen] = useState(false);
-  const [hhDocsStatus, setHhDocsStatus] = useState<Record<string, string>>(
-    (state.metadata.hhDocsStatus as Record<string, string>) || {},
-  );
 
   // Sponsorship Calculator State
-  const [isSponsorshipCalcOpen, setIsSponsorshipCalcOpen] = useState(false);
-  const sponsorshipResult = (state.metadata.sponsorshipResult as any) || null;
 
   // Selected scenario for Step 6 (Gather Financial Documents)
   const [selectedScenario, setSelectedScenario] = useState<string>("pet-only");
@@ -529,29 +567,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [interviewDayTutIdx, setInterviewDayTutIdx] = useState(0);
 
   // Step 3.9 Administrative Processing States
-  const [apDetails, setApDetails] = useState(() => {
-    return (
-      state.metadata.apDetails || {
-        interviewDate: "",
-        received: null,
-        ceacStatus: "",
-        lastCheck: "",
-        docsRequested: "",
-        notes: "",
-      }
-    );
-  });
-  const [apUpdateLog, setApUpdateLog] = useState<any[]>(
-    state.metadata.apUpdateLog || [],
-  );
-  const [isApSaved, setIsApSaved] = useState(state.metadata.apSaved === "true");
-  const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
-  // CEAC tracking — refused sub-type prompt
-  const [refusedPromptOpen, setRefusedPromptOpen] = useState(false);
-  const [ceacApiLoading, setCeacApiLoading] = useState(false);
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
-    null,
-  );
   // Step 1.17 Approval Notice States
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [isApprovalGuideOpen, setIsApprovalGuideOpen] = useState(false);
@@ -569,67 +584,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     state.metadata.approvalSaved === "true",
   );
 
-  const handleSaveApUpdate = (entry: any) => {
-    const nextLog = [entry, ...apUpdateLog];
-    setApUpdateLog(nextLog);
-    actions.updateMetadata({ apUpdateLog: nextLog });
-  };
-
-  // Maps the JSON ceac_options strings → our CeacStatus type
-  const CEAC_STATUS_MAP: Record<string, string> = {
-    "Administrative Processing": "ap",
-    Ready: "ready",
-    Issued: "issued",
-    Refused: "refused",
-    "In Transit": "in_transit",
-  };
-
-  /** Call POST /api/ceac/status when user saves AP details in step_3_9 */
-  const triggerCeacStatusUpdate = async (
-    ceacStatusLabel: string,
-    refusedSubType?: "refusal_221g" | "refusal_final",
-  ) => {
-    const journeyId = state.backendId;
-    if (!journeyId) return; // no backend journey yet — skip silently
-
-    const newStatus = CEAC_STATUS_MAP[ceacStatusLabel];
-    if (!newStatus) return; // "Pending" / "Not Available" — not tracked
-
-    setCeacApiLoading(true);
-    try {
-      await fetch("/api/ceac/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ journeyId, newStatus, refusedSubType }),
-      });
-    } catch {
-      // Fail silently — reminders are a background feature, don't break the UI
-    } finally {
-      setCeacApiLoading(false);
-    }
-  };
-
-  /** Call PATCH /api/ceac/status to clarify refused sub-type */
-  const clarifyRefusedSubType = async (
-    refusedSubType: "refusal_221g" | "refusal_final",
-  ) => {
-    const journeyId = state.backendId;
-    if (!journeyId) return;
-    try {
-      await fetch("/api/ceac/status", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          journeyId,
-          action: "clarify_refused",
-          refusedSubType,
-        }),
-      });
-    } catch {
-      /* silent */
-    }
-    setRefusedPromptOpen(false);
-  };
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
   const [gatheringStatus, setGatheringStatus] = useState<
@@ -645,6 +599,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
   const [selectedGatheringItem, setSelectedGatheringItem] =
     useState<DocumentGatheringItem | null>(null);
+  const [gatheringGuideStep, setGatheringGuideStep] = useState(0);
 
   // --- UTILS & DERIVED ---
   const [pccData, setPccData] = useState({
@@ -691,12 +646,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     if (state.metadata.hhDocsStatus) {
       setHhDocsStatus(state.metadata.hhDocsStatus as Record<string, string>);
     }
-  }, [state.metadata.hhDocsStatus]);
+  }, [state.metadata.hhDocsStatus, setHhDocsStatus]);
 
   // Sync household counts and relationships back to metadata
   useEffect(() => {
     actions.updateMetadata({ jsCount, hhCount, hhRelationships });
-  }, [jsCount, hhCount, hhRelationships]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [jsCount, hhCount, hhRelationships, actions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- SYNC TOOL STATES FROM METADATA ---
 
@@ -771,8 +726,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     if (state.metadata.gathering_status) {
       try {
         setGatheringStatus(JSON.parse(state.metadata.gathering_status));
-      } catch (err) {
-        console.error("Failed to sync gathering status:", err);
+      } catch {
+        console.error("Failed to sync gathering status");
       }
     }
   }, [state.metadata.gathering_status]);
@@ -816,7 +771,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   ]);
 
   // (removed duplicate declarations, see above)
-  const isCompleted = state.completedSteps.has(sId);
 
   const [receiptGuideSteps, setReceiptGuideSteps] = React.useState<any[]>([]);
   React.useEffect(() => {
@@ -830,7 +784,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     });
   }, []);
 
-  // --- STEP 1.15 STATES LIFTED OUT OF CONDITION ---
   const [rcptUiState, setRcptUiState] = React.useState<
     "waiting" | "register" | "tracked"
   >("waiting");
@@ -947,32 +900,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setIsLocked(state.metadata.filingMethodConfirmed || false);
   }, [state.metadata.filingMethodConfirmed]);
 
-  const fetchCredentials = useCallback(async () => {
-    try {
-      const res = await fetch("/api/portal-wallet");
-      const data = await res.json();
-      if (data.credentials) {
-        const uscis = data.credentials.find(
-          (c: PortalCredential) => c.portal_type.toUpperCase() === "USCIS",
-        );
-        const ceac = data.credentials.find(
-          (c: PortalCredential) => c.portal_type.toUpperCase() === "NVC",
-        );
-        const courier = data.credentials.find(
-          (c: PortalCredential) => c.portal_type.toUpperCase() === "COURIER",
-        );
-        setUscisCredentials(uscis || null);
-        setCeacCredentials(ceac || null);
-        setCourierCredentials(courier || null);
-      }
-    } catch (err) {
-      console.error("Failed to fetch credentials:", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCredentials();
-  }, [fetchCredentials, sId]);
 
   // Initialize Document Vault Config — runs on mount, no user.id dependency
   // The API uses the session cookie to get real user_id, so userId here is just a local label
@@ -1026,115 +953,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     isSubmissionGuideOpen,
   ]);
 
-  const handleSaveCredentials = async (data: {
-    portalType: "USCIS" | "NVC" | "COURIER";
-    username?: string;
-    password?: string;
-    nvcCaseNumber?: string;
-    nvcInvoiceId?: string;
-    securityQuestions?: { question: string; answer: string }[];
-  }) => {
-    setIsSubmittingCreds(true);
-    try {
-      const res = await fetch("/api/portal-wallet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to save");
-      toast.success("Credentials saved successfully!");
-      setIsWalletFormOpen(false);
-      await fetchCredentials();
 
-      // After saving, fetch latest credentials and update metadata for dashboard
-      if (data.portalType === "NVC") {
-        try {
-          const res = await fetch("/api/portal-wallet");
-          const wallet = await res.json();
-          const nvcCreds = wallet.credentials?.find(
-            (c: any) => c.portal_type?.toUpperCase() === "NVC",
-          );
-          if (nvcCreds) {
-            if (nvcCreds.nvc_case_number) {
-              actions.updateMetadata({ nvcCaseNum: nvcCreds.nvc_case_number });
-            }
-            if (nvcCreds.nvc_invoice_id) {
-              actions.updateMetadata({ nvcInvoice: nvcCreds.nvc_invoice_id });
-            }
-            // Always set portalType in metadata for dashboard API
-            actions.updateMetadata({ portalType: "NVC" });
-            // Force dashboard to reload wizard state
-            window.location.reload();
-          }
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to sync NVC credentials to metadata", err);
-        }
-        if (sId === "step_2_1" && !isCompleted)
-          actions.toggleComplete("step_2_1");
-      }
-      if (data.portalType === "USCIS" && sId === "step_1_6") {
-        if (!isCompleted) actions.toggleComplete("step_1_6");
-      }
-    } catch {
-      toast.error("Failed to save credentials. Please try again.");
-    } finally {
-      setIsSubmittingCreds(false);
-    }
-  };
-
-  const handleRevealPassword = async (
-    credentialId: string,
-  ): Promise<string> => {
-    const res = await fetch("/api/portal-wallet/reveal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        credentialId,
-        portalType: walletPortalType,
-        type: "password",
-      }),
-    });
-    const data = await res.json();
-    return data.value || "";
-  };
-
-  const handleRevealAnswer = async (
-    credentialId: string,
-    questionId: string,
-  ): Promise<string> => {
-    const res = await fetch("/api/portal-wallet/reveal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        credentialId,
-        portalType: walletPortalType,
-        type: "answer",
-        questionId,
-      }),
-    });
-    const data = await res.json();
-    return data.value || "";
-  };
-
-  const handleDeleteCredentials = async (portalType: string) => {
-    setIsSubmittingCreds(true);
-    try {
-      const res = await fetch(`/api/portal-wallet/${portalType}/delete`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete");
-      toast.success("Credentials deleted successfully!");
-      if (portalType === "USCIS") setUscisCredentials(null);
-      if (portalType === "NVC") setCeacCredentials(null);
-      if (portalType === "COURIER") setCourierCredentials(null);
-      setIsWalletViewOpen(false);
-    } catch {
-      toast.error("Failed to delete credentials.");
-    } finally {
-      setIsSubmittingCreds(false);
-    }
-  };
 
   const handleSaveNvcFee = (newData: any) => {
     actions.updateMetadata({ nvcFeeStatus: newData });
@@ -1146,221 +965,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     }
   };
 
-  const computeRecommendation = (
-    answers: Record<string, { value: string; signal: string }>,
-  ) => {
-    const a = answers;
-    if (a["attorney"]?.signal === "discuss")
-      return {
-        type: "discuss",
-        headline: "Check with your representative",
-        body: "Since a representative is managing the filing, the method choice is typically theirs. Ask whether they prefer online via their USCIS account or a mailed paper packet.",
-        factors: [
-          { icon: "User", text: "A representative is handling this case" },
-          {
-            icon: "ClipboardList",
-            text: "Representatives can use either filing method",
-          },
-          {
-            icon: "MessageSquare",
-            text: "Confirm the method directly with your attorney or preparer",
-          },
-        ],
-        emphasize: null,
-      } as FilingQuizResult;
-
-    const hardPaper = Object.values(a).some((ans) => ans.signal === "paper");
-    if (hardPaper || a["preference"]?.signal === "paper")
-      return {
-        type: "paper",
-        headline: "Paper filing looks like the better fit",
-        body: "Based on your answers, mailing a paper packet is the more practical path right now. Paper filing is fully accepted and processed just as thoroughly as online submissions.",
-        factors: buildFactors(a),
-        emphasize: "paper",
-      } as FilingQuizResult;
-
-    const onlineCount = Object.values(a).filter(
-      (ans) => ans.signal === "online",
-    ).length;
-
-    if (onlineCount >= 2)
-      return {
-        type: "online",
-        headline: "Online filing looks like the right choice",
-        body: "You appear ready to file online. It saves $50, gives you an instant receipt number, and keeps everything — notices and evidence requests — in one place.",
-        factors: buildFactors(a),
-        emphasize: "online",
-      } as FilingQuizResult;
-
-    return {
-      type: "lean-online",
-      headline: "Either method works — online has a slight edge",
-      body: "No hard blockers were found for either path. Online saves $50 and gives an instant receipt, but paper filing is equally valid if that feels more comfortable.",
-      factors: buildFactors(a),
-      emphasize: "online",
-    } as FilingQuizResult;
-  };
-
-  const buildFactors = (
-    a: Record<string, { value: string; signal: string }>,
-  ) => {
-    const f: { icon: string; text: string }[] = [];
-    if (a["attorney"]) {
-      const isSelf = a["attorney"].value === "no";
-      f.push({
-        icon: isSelf ? "Check" : "User",
-        text: isSelf
-          ? "Self-filing — the decision is yours"
-          : "Representative involvement noted",
-      });
-    }
-    if (a["online-account"]) {
-      const m: Record<string, string> = {
-        yes: "USCIS online account is manageable",
-        no: "Online account not practical right now",
-        unsure: "Online account readiness is unclear",
-      };
-      f.push({
-        icon:
-          a["online-account"].signal === "online"
-            ? "Check"
-            : a["online-account"].signal === "paper"
-              ? "XCircle"
-              : "HelpCircle",
-        text: m[a["online-account"].value],
-      });
-    }
-    if (a["doc-upload"]) {
-      const m: Record<string, string> = {
-        yes: "Documents are ready or easily scannable",
-        no: "Physical copies only — digitizing is difficult now",
-        unsure: "Document digitization readiness unclear",
-      };
-      f.push({
-        icon:
-          a["doc-upload"].signal === "online"
-            ? "Check"
-            : a["doc-upload"].signal === "paper"
-              ? "XCircle"
-              : "HelpCircle",
-        text: m[a["doc-upload"].value],
-      });
-    }
-    if (a["preference"]) {
-      const m: Record<string, string> = {
-        online: "Petitioner prefers online and the $50 saving",
-        paper: "Petitioner prefers mailing a physical packet",
-        neutral: "No strong preference either way",
-      };
-      f.push({
-        icon: a["preference"].signal === "neutral" ? "ArrowRight" : "Check",
-        text: m[a["preference"].value],
-      });
-    }
-    return f;
-  };
-
-  const handleNextQuiz = () => {
-    const quiz = currentStep.filing_data?.quiz;
-    if (!quiz) return;
-    const screen = quiz.screens[quizScreenIdx];
-
-    if (
-      screen.id === "attorney" &&
-      quizAnswers["attorney"]?.signal === "discuss"
-    ) {
-      setQuizResult(computeRecommendation(quizAnswers));
-      return;
-    }
-
-    if (quizScreenIdx < quiz.screens.length - 1) {
-      setQuizScreenIdx(quizScreenIdx + 1);
-    } else {
-      setQuizResult(computeRecommendation(quizAnswers));
-    }
-  };
-
-  const handleConfirmation = (methodId: string) => {
-    actions.updateMetadata({
-      filingMethod: methodId,
-      filingMethodConfirmed: true,
-    });
-
-    setIsLocked(true);
-    if (!isCompleted) handleToggleComplete();
-    setShowQuiz(false);
-  };
-
-  const handleToggleComplete = () => {
-    const stepKey = currentStep.step_key || sId;
-    // Map step keys to correct metadata fields for milestone tracking
-    const milestoneMetaMap: Record<
-      string,
-      { key: string; value?: () => string }
-    > = {
-      step_1_3: {
-        key: "receiptNum",
-        value: () => new Date().toISOString().slice(0, 10),
-      }, // I-130 submitted to USCIS
-      step_1_6: {
-        key: "uscisPortalSaved",
-        value: () => "true",
-      }, // Portal credentials saved
-      step_1_7: {
-        key: "filingFeeDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      }, // Filing fee paid
-      step_1_8: {
-        key: "submissionDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      }, // Online submission sent
-      step_2_10: {
-        key: "dqDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      }, // Documentarily Qualified
-      step_3_1: {
-        key: "medicalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      }, // Medical exam scheduled
-      step_3_7: {
-        key: "interviewDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      }, // Interview scheduled
-      step_2_1: {
-        key: "nvcCaseNum",
-        value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
-      }, // NVC case number (demo value)
-      step_2_2: {
-        key: "nvcInvoice",
-        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
-      }, // NVC invoice ID (demo value)
-      step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" }, // Embassy (demo value)
-      step_1_17: {
-        key: "approvalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      }, // I-130 approval notice received
-    };
-    actions.toggleComplete(stepKey);
-    // If this step is a milestone, set the metadata field if not already set
-    const metaObj = milestoneMetaMap[stepKey];
-    if (
-      metaObj &&
-      (state.metadata[metaObj.key] === undefined ||
-        state.metadata[metaObj.key] === null ||
-        state.metadata[metaObj.key] === "")
-    ) {
-      const value = metaObj.value
-        ? metaObj.value()
-        : new Date().toISOString().slice(0, 10);
-      // Debug log for tracking metadata update
-      // eslint-disable-next-line no-console
-      console.log(
-        `[Milestone] Setting metadata field '${metaObj.key}' to:`,
-        value,
-      );
-      actions.updateMetadata({ [metaObj.key]: value });
-    }
-  };
 
   const handleMarkDocReviewed = (docId: string) => {
     if (docGuideContext === "gathering") {
@@ -1422,965 +1026,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       }
     }
   };
+
+  const handleSaveApUpdate = (newData: any) => {
+    actions.updateMetadata({ apUpdateStatus: newData });
+    setIsApUpdateModalOpen(false);
+    toast.success("AP status saved!");
+  };
+
   const renderDocActionModal = () => {
-    if (!docActionModal.doc) return null;
-    const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
-
-    const isTranslation =
-      doc.id === "doc_translations" ||
-      doc.guideKey === "doc_translations" ||
-      doc.selectedGuideId === "doc_translations";
-    const isPassportPhoto =
-      doc.id === "doc_passport_photos" ||
-      doc.guideKey === "doc_passport_photos" ||
-      doc.selectedGuideId === "doc_passport_photos";
-
-    const guideFeature = isTranslation
-      ? "document_translation"
-      : isPassportPhoto
-        ? "photo_booth"
-        : "step_guides";
-
-    const canReadGuide = plan.canUse(guideFeature);
-    const canUpload = plan.canUse("document_vault");
-  const guideTierIconClass = (() => {
-    const target = plan.entitlement(guideFeature).upgradeTarget;
-    return target ? `plan-icon--${target}` : "plan-icon--premium";
-  })();
-  const uploadTierIconClass = (() => {
-    const target = plan.entitlement("document_vault").upgradeTarget;
-    return target ? `plan-icon--${target}` : "plan-icon--premium";
-  })();
-
     return (
-      <>
-           { docActionUpgradeFeature && (
-          <UpgradeModal
-            feature={docActionUpgradeFeature}
-            onClose={() => setDocActionUpgradeFeature(null)}
-          />
-        )}
-
-        <Dialog
-          open={docActionModal.isOpen}
-          onOpenChange={(open) =>
-            setDocActionModal({ ...docActionModal, isOpen: open })
-          }
-        >
-          <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
-            <div className="relative overflow-hidden bg-white">
-              {/* Background Decorations */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
-
-              <div className="relative p-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                    {(() => {
-                      switch (doc.icon) {
-                        case "ShieldCheck":
-                          return <ShieldCheck size={24} />;
-                        case "User":
-                          return <User size={24} />;
-                        case "FileText":
-                          return <FileText size={24} />;
-                        case "FileCheck":
-                          return <FileCheck size={24} />;
-                        case "MessageSquare":
-                          return <MessageSquare size={24} />;
-                        case "Scale":
-                          return <Scale size={24} />;
-                        case "Globe":
-                          return <Globe size={24} />;
-                        case "ClipboardList":
-                          return <ClipboardList size={24} />;
-                        case "Lock":
-                          return <Lock size={24} />;
-                        case "Camera":
-                          return <Camera size={24} />;
-                        default:
-                          return <FileText size={24} />;
-                      }
-                    })()}
-                  </div>
-                  <div>
-                    <DialogTitle className="text-xl font-bold text-[#0f1f38]">
-                      {title || doc.name || doc.title}
-                    </DialogTitle>
-                    <p className="text-sm text-[#6b8097]">
-                      {subtitle ||
-                        doc.subtitle ||
-                        doc.sub ||
-                        "Choose an action to proceed with this document"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* ── Read Guide / Launch Tool Card ── */}
-                  <button
-                    onClick={() => {
-                      if (!canReadGuide) {
-                        setDocActionModal({ ...docActionModal, isOpen: false });
-                        setDocActionUpgradeFeature(guideFeature);
-                        return;
-                      }
-                      setDocActionModal({ ...docActionModal, isOpen: false });
-                      if (onReadGuide) onReadGuide();
-                    }}
-                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
-                    ${
-                      canReadGuide
-                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
-                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
-                    }`}
-                >
-                  {/* Tier badge — only when locked */}
-                  {!canReadGuide && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                      <span className={`plan-icon ${guideTierIconClass} scale-110`} aria-hidden="true" />
-                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                        Upgrade
-                      </span>
-                    </div>
-                  )}
-
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
-                      ${
-                        canReadGuide
-                          ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
-                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
-                      }`}
-                    >
-                      {isTranslation ? (
-                        <Sparkles size={20} />
-                      ) : isPassportPhoto ? (
-                        <Camera size={20} />
-                      ) : (
-                        <BookOpen size={20} />
-                      )}
-                    </div>
-
-                    <h4 className="font-bold text-[#0f1f38] mb-1">
-                      {isTranslation || isPassportPhoto
-                        ? "Launch the Tool"
-                        : "Read the Guide"}
-                    </h4>
-                    <p className="text-xs text-[#6b8097] leading-relaxed">
-                      {isTranslation
-                        ? "Use our automated tool to prepare certified translations for your documents."
-                        : isPassportPhoto
-                          ? "Generate and validate your passport photos to meet U.S. specifications."
-                          : "View requirements, pitfalls, and step-by-step instructions."}
-                    </p>
-
-                    {/* Photo booth credits badge — only when unlocked and limited */}
-                    {isPassportPhoto &&
-                      canReadGuide &&
-                      (() => {
-                        const ent = plan.entitlement("photo_booth");
-                        if (ent.state === "limited") {
-                          return (
-                            <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
-                              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
-                                {ent.limit} Credits Included
-                              </span>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-
-                    {/* Locked hint text */}
-                    {!canReadGuide && (
-                      <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
-                        <Lock size={9} strokeWidth={2.5} />
-                        Not included in your current plan
-                      </p>
-                    )}
-                  </button>
-
-                  {/* ── Upload Document Card ── */}
-                  <button
-                    onClick={() => {
-                      if (!canUpload) {
-                        setDocActionModal({ ...docActionModal, isOpen: false });
-                        // Context-specific toast for certain steps
-                        if (sId === "step_1_15") {
-                          toast.info(
-                            "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
-                            { duration: 6000 },
-                          );
-                        } else if (sId === "step_1_17") {
-                          toast.info(
-                            "Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.",
-                            { duration: 6000 },
-                          );
-                        }
-                        setDocActionUpgradeFeature("document_vault");
-                        return;
-                      }
-                      setDocActionModal({ ...docActionModal, isOpen: false });
-                      if (onUpload) onUpload();
-                    }}
-                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
-                    ${
-                      canUpload
-                        ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
-                        : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
-                    }`}>
-{/* Tier badge — only when locked */}
-                  {!canUpload && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                      <span className={`plan-icon ${uploadTierIconClass} scale-110`} aria-hidden="true" />
-                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                        Upgrade
-                      </span>
-                    </div>
-                  )}
-
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
-                      ${
-                        canUpload
-                          ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
-                          : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
-                      }`}
-                    >
-                      <Upload size={20} />
-                    </div>
-
-                    <h4 className="font-bold text-[#0f1f38] mb-1">
-                      Upload Document
-                    </h4>
-                    <p className="text-xs text-[#6b8097] leading-relaxed">
-                      Attach and submit your document for processing.
-                    </p>
-
-                    {/* Locked hint text */}
-                    {!canUpload && (
-                      <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
-                        <Lock size={9} strokeWidth={2.5} />
-                        Not included in your current plan
-                      </p>
-                    )}
-                  </button>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
-                  <button
-                    onClick={() =>
-                      setDocActionModal({ ...docActionModal, isOpen: false })
-                    }
-                    className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </>
-    );
-  };
-
-  const getHhDocItems = (count: number, rels: Record<number, string>) => {
-    const items: any[] = [];
-    for (let i = 1; i <= count; i++) {
-      const relationship = rels[i] || "spouse";
-      const label = `Household Member ${i}`;
-
-      switch (relationship) {
-        case "spouse":
-          items.push({
-            id: `hh${i}-marriage`,
-            icon: "marriage",
-            title: `Marriage Certificate — ${label}`,
-            sub: "Proves the spousal relationship to the petitioner",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-rel", label: "Relationship Proof" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "marriage-cert-hh",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-residence`,
-            icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
-            sub: "Confirms both spouses share the same household address",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-res", label: "Shared Residence" },
-            ],
-            guideKey: "shared-residence",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-id`,
-            icon: "id",
-            title: `Identity Document — ${label}`,
-            sub: "Government-issued ID confirming the household member's identity",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-id", label: "Identity" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "id-doc-hh",
-            group: "required",
-          });
-          break;
-
-        case "child":
-          items.push({
-            id: `hh${i}-birth-hh`,
-            icon: "birth",
-            title: `Birth Certificate — ${label}`,
-            sub: "Proves the parent–child relationship to the petitioner",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-rel", label: "Relationship Proof" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "birth-cert-hh",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-residence`,
-            icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
-            sub: "Confirms child lives in the same household",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-res", label: "Shared Residence" },
-            ],
-            guideKey: "shared-residence",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-id`,
-            icon: "id",
-            title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for the household member",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-id", label: "Identity" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "id-doc-hh",
-            group: "conditional",
-          });
-          break;
-
-        case "parent":
-          items.push({
-            id: `hh${i}-birth-sponsor`,
-            icon: "birth",
-            title: `Birth Certificate of Petitioner`,
-            sub: `Shows ${label} (parent) is listed — establishes the parent–child link`,
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-rel", label: "Relationship Proof" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "birth-cert-sponsor",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-id`,
-            icon: "id",
-            title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for the household member",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-id", label: "Identity" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "id-doc-hh",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-residence`,
-            icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
-            sub: "Confirms parent and petitioner share the same household",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-res", label: "Shared Residence" },
-            ],
-            guideKey: "shared-residence",
-            group: "conditional",
-          });
-          break;
-
-        case "sibling":
-          items.push({
-            id: `hh${i}-birth-sponsor`,
-            icon: "birth",
-            title: "Birth Certificate of Petitioner",
-            sub: "Shows shared parentage with the sibling household member",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-rel", label: "Relationship Proof" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "birth-cert-sponsor",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-birth-hh`,
-            icon: "birth",
-            title: `Birth Certificate — ${label}`,
-            sub: "Combined with petitioner's birth cert to show shared parentage",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-rel", label: "Relationship Proof" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "birth-cert-hh",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-id`,
-            icon: "id",
-            title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for the household member",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-id", label: "Identity" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "id-doc-hh",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-residence`,
-            icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
-            sub: "Confirms sibling and petitioner share the same household",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-res", label: "Shared Residence" },
-            ],
-            guideKey: "shared-residence",
-            group: "conditional",
-          });
-          break;
-
-        case "other-relative":
-        case "other-hh":
-        default:
-          items.push({
-            id: `hh${i}-residence`,
-            icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
-            sub: "Demonstrates the shared-household basis for including their income",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-res", label: "Shared Residence" },
-            ],
-            guideKey: "shared-residence",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-family-link`,
-            icon: "link",
-            title: `Supporting Family-Link Evidence — ${label}`,
-            sub: "Civil records or affidavit establishing the household connection",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-rel", label: "Relationship Proof" },
-            ],
-            guideKey: "family-link",
-            group: "required",
-          });
-          items.push({
-            id: `hh${i}-id`,
-            icon: "id",
-            title: `Identity Document — ${label}`,
-            sub: "Government-issued ID for the household member",
-            tags: [
-              { cls: "tag-hh", label: "Household Member" },
-              { cls: "tag-id", label: "Identity" },
-              { cls: "tag-gov", label: "Govt Record" },
-            ],
-            guideKey: "id-doc-hh",
-            group: "conditional",
-          });
-          break;
-      }
-    }
-    return items;
-  };
-
-  const renderHouseholdBuilder = () => {
-    const allItems = getHhDocItems(hhCount, hhRelationships);
-    const total = allItems.length;
-    const reviewed = allItems.filter(
-      (item) => hhDocsStatus[item.id] === "reviewed",
-    ).length;
-    const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
-
-    return (
-      <div className="flex flex-col mt-4">
-        <div className="flex gap-[7px] flex-wrap mb-7">
-          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
-            CEAC Portal
-          </span>
-          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#fff7ed] text-[#b45309] border border-[#fed7aa]">
-            Financial Sponsorship
-          </span>
-          <span className="text-[11px] font-semibold tracking-wider uppercase px-3 py-[2px] rounded-full bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be]">
-            Interactive Checklist
-          </span>
-        </div>
-
-        {/* DISTINCTION CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-7">
-          <div className="bg-[#e8f1fb] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5">
-            <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-1.5">
-              Joint Sponsor
-            </div>
-            <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
-              Added in CEAC, no proof checklist
-            </div>
-            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-              A joint sponsor is an independent U.S. citizen or LPR who sponsors
-              separately. Added through the CEAC sponsorship flow —{" "}
-              <strong>no relationship-proof documents</strong> are typically
-              required from them.
-            </div>
-          </div>
-          <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
-            <div className="text-[10px] font-bold tracking-widest uppercase text-[#15744f] mb-1.5">
-              Household Member
-            </div>
-            <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
-              Added in CEAC + relationship proof required
-            </div>
-            <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-              A household member&apos;s income is used alongside the
-              petitioner&apos;s. Added through CEAC — and also requires{" "}
-              <strong>relationship-proof documentation</strong> showing their
-              connection to the sponsoring household.
-            </div>
-          </div>
-        </div>
-
-        {/* PRIMARY LAUNCH MODULE */}
-        <div className="bg-[var(--rv-ch2-module-bg)] rounded-[16px] border border-[var(--rv-ch2)]/30 shadow-[0_20px_60px_rgba(12,27,51,0.18)] overflow-hidden mb-6 relative">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[var(--rv-ch2)] via-[var(--rv-ch2-feature-bg)] to-transparent opacity-70" />
-          <div className="p-8 md:p-[32px_34px_28px]">
-            <div className="flex items-start gap-4 mb-[22px]">
-              <div className="w-[46px] h-[46px] rounded-[11px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
-                <Users className="text-white" size={22} />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold tracking-widest uppercase text-[var(--rv-ch2-text)]/60 mb-1">
-                  CEAC Guidance
-                </div>
-                <div className="text-[clamp(19px,2.8vw,23px)] text-[var(--rv-ch2-text)] leading-tight">
-                  Add sponsorship participants in CEAC
-                </div>
-              </div>
-            </div>
-            <div className="h-px bg-[var(--rv-ch2)]/20 mb-5" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
-              {[
-                "Access the affidavit support section",
-                "Add a household member or joint sponsor",
-                "Review what information CEAC needs",
-                "Return here to prepare relationship proof",
-              ].map((cue, idx) => (
-                <div
-                  key={idx}
-                  className="bg-[var(--rv-ch2-feature-bg)] border border-[var(--rv-ch2)]/30 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
-                >
-                  <div className="w-[5px] h-[5px] rounded-full bg-[var(--rv-ch2)] shrink-0 mt-[5px]" />
-                  <div className="text-[13px] text-[var(--rv-ch2-text)] leading-tight">
-                    {cue}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => {
-                if (!stepEntitlement.guard()) return;
-                setUseCeacGuideData(true);
-                setTutorialIdx(0);
-                setIsTutorialOpen(true);
-              }}
-              className="w-full py-4 px-7 text-white rounded-[12px] text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)] hover:-translate-y-0.5 active:translate-y-0"
-              style={{
-                backgroundColor: "var(--rv-ch2)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--rv-ch2-dark)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--rv-ch2)";
-              }}
-            >
-              Start CEAC Guide
-            </button>
-          </div>
-        </div>
-
-        {/* GUIDE CARDS - Flex Layout */}
-        {(() => {
-          const tool = currentStep.tool_data as any;
-          const guideCards = tool?.guide_cards;
-
-          if (guideCards && guideCards.length > 0 && tool?.tutorial_steps) {
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7">
-                {guideCards.map((card: any) => (
-                  <button
-                    key={card.id}
-                    onClick={() => {
-                      if (!stepEntitlement.guard()) return;
-                      const pathMap: Record<
-                        string,
-                        "household_member" | "joint_sponsor"
-                      > = {
-                        "add-household-member": "household_member",
-                        "add-joint-sponsor": "joint_sponsor",
-                      };
-                      setTutorialPath(
-                        pathMap[card.id] ||
-                          (card.id as "household_member" | "joint_sponsor"),
-                      );
-                      setTutorialIdx(0);
-                      setIsTutorialOpen(true);
-                    }}
-                    className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
-                  >
-                    <div className="flex items-center gap-[10px] mb-[12px]">
-                      <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                        <Book
-                          size={18}
-                          className="text-[#4a2d8a]"
-                          strokeWidth={1.7}
-                        />
-                      </div>
-                    </div>
-                    <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                      {card.title}
-                    </h3>
-                    <p className="text-[12px] text-[#6b8097] leading-normal mb-3">
-                      {card.subtitle}
-                    </p>
-                    <div className="flex items-center gap-1 mt-auto text-[12px] font-semibold text-primary">
-                      <span>View guide</span>
-                      <ArrowRight size={11} strokeWidth={2} />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            );
-          }
-          return null;
-        })()}
-
-        {/* SCENARIO BUILDER */}
-        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
-          <div className="text-[14px] font-semibold text-[#0c1b33] mb-4">
-            Define your scenario — who is involved in the sponsorship?
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
-                Number of joint sponsors
-              </label>
-              <select
-                value={jsCount}
-                onChange={(e) => setJsCount(parseInt(e.target.value))}
-                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-position-[right_10px_center] bg-no-repeat pr-[30px]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                }}
-              >
-                <option value="0">0 — not using a joint sponsor</option>
-                <option value="1">1 joint sponsor</option>
-                <option value="2">2 joint sponsors</option>
-              </select>
-            </div>
-            <div className="flex flex-col">
-              <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
-                Number of household members
-              </label>
-              <select
-                value={hhCount}
-                onChange={(e) => setHhCount(parseInt(e.target.value))}
-                className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                }}
-              >
-                <option value="0">0 — no household members</option>
-                <option value="1">1 household member</option>
-                <option value="2">2 household members</option>
-                <option value="3">3 household members</option>
-              </select>
-            </div>
-          </div>
-
-          {hhCount > 0 && (
-            <div className="mt-4 pt-4 border-t border-[#d0e4f7]">
-              <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-widest mb-3 ml-0.5">
-                Household member relationship to the petitioner
-              </div>
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: hhCount }).map((_, idx) => {
-                  const num = idx + 1;
-                  return (
-                    <div
-                      key={num}
-                      className="flex flex-col sm:flex-row sm:items-center gap-2"
-                    >
-                      <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
-                        Household Member {num}
-                      </span>
-                      <select
-                        value={hhRelationships[num] || "other-hh"}
-                        onChange={(e) =>
-                          setHhRelationships((prev) => ({
-                            ...prev,
-                            [num]: e.target.value,
-                          }))
-                        }
-                        className="flex-1 p-[8px_10px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_8px_center] bg-no-repeat pr-[26px]"
-                        style={{
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                        }}
-                      >
-                        <option value="spouse">Spouse of petitioner</option>
-                        <option value="child">Child of petitioner</option>
-                        <option value="parent">Parent of petitioner</option>
-                        <option value="sibling">Sibling of petitioner</option>
-                        <option value="other-relative">Other relative</option>
-                        <option value="other-hh">Other household member</option>
-                      </select>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* SUMMARY BANNER */}
-        {(jsCount > 0 || hhCount > 0) && (
-          <div className="bg-[#0c1b33] rounded-[16px] p-[16px_20px] mb-5 flex flex-wrap gap-x-8 gap-y-4">
-            <div className="flex flex-col">
-              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
-                Joint Sponsors
-              </div>
-              <div className="text-[14px] font-semibold text-white/90">
-                {jsCount === 0
-                  ? "None"
-                  : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
-              </div>
-              {jsCount > 0 && (
-                <div className="text-[11px] text-white/50 mt-0.5">
-                  No relationship-proof checklist required
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col">
-              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-0.5">
-                Household Members
-              </div>
-              <div className="text-[14px] font-semibold text-white/90">
-                {hhCount === 0
-                  ? "None"
-                  : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
-              </div>
-              {hhCount > 0 && (
-                <div className="text-[11px] text-white/50 mt-0.5">
-                  Relationship-proof checklist generated below
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* PROGRESS AND CHECKLIST */}
-        {hhCount > 0 ? (
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-7">
-              <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500 rounded-[10px]"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-              <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
-                {reviewed} of {total} reviewed
-              </div>
-            </div>
-
-            {(() => {
-              const req = allItems.filter((i) => i.group === "required");
-              const cond = allItems.filter((i) => i.group === "conditional");
-
-              return (
-                <div className="flex flex-col gap-7">
-                  {req.length > 0 && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-[10px]">
-                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
-                          Required
-                        </span>
-                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#ffeaea] text-[#a01c1c] border border-[#f5bebe]">
-                          Required
-                        </span>
-                        <div className="flex-1 h-px bg-[#d0e4f7]" />
-                      </div>
-                      {req.map((item) => renderHhDocCard(item))}
-                    </div>
-                  )}
-                  {cond.length > 0 && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-[10px]">
-                        <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
-                          Required if Applicable
-                        </span>
-                        <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a]">
-                          Required if Applicable
-                        </span>
-                        <div className="flex-1 h-px bg-[#d0e4f7]" />
-                      </div>
-                      {cond.map((item) => renderHhDocCard(item))}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-        ) : jsCount > 0 ? (
-          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
-            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
-              No relationship-proof checklist needed
-            </div>
-            <div className="text-[13px] text-[#6b8097]">
-              Joint sponsors do not require relationship documentation. Your
-              I-864 forms are the primary requirement — see Step 5 for those.
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white border-[1.5px] border-dashed border-[#d0e4f7] rounded-[16px] p-[32px_24px] text-center mb-5">
-            <div className="text-[14px] font-semibold text-[#6b8097] mb-1.5">
-              Set your scenario above
-            </div>
-            <div className="text-[13px] text-[#6b8097]">
-              Select the number of joint sponsors and household members to see
-              the relevant checklist.
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderHhDocCard = (item: any) => {
-    const st = hhDocsStatus[item.id] || "not-started";
-    const stLabel =
-      st === "reviewed"
-        ? "✓ Reviewed"
-        : st === "in-progress"
-          ? "In progress"
-          : "Open guide";
-
-    return (
-      <div
-        key={item.id}
-        onClick={() => {
-          if (!stepEntitlement.guard()) return;
-          if (hhDocsStatus[item.id] === "not-started") {
-            const next = { ...hhDocsStatus, [item.id]: "in-progress" };
-            setHhDocsStatus(next);
-            actions.updateMetadata({ hhDocsStatus: next });
-          }
-          setActiveHhDoc(item);
-          setIsHhDocGuideOpen(true);
-        }}
-        className={`w-full group bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[17px_20px] flex items-center gap-[15px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 cursor-pointer ${
-          st === "reviewed"
-            ? "bg-[#e8f5ef] border-[#a8d9be]"
-            : st === "in-progress"
-              ? "bg-[#fef8e8] border-[#f0d98a]"
-              : ""
-        }`}
-      >
-        <div
-          className={`w-[38px] h-[38px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0 text-[16px] transition-all group-hover:bg-primary/10 group-hover:border-primary/30 ${
-            st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : ""
-          }`}
-        >
-          {getStepIcon(item.icon)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
-            {item.title}
-          </div>
-          <div className="text-[12px] text-[#6b8097] leading-tight">
-            {item.sub}
-          </div>
-          <div className="flex gap-[5px] mt-[6px] flex-wrap">
-            {item.tags.map((tag: any, idx: number) => {
-              const tagMap: Record<string, string> = {
-                "tag-hh": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
-                "tag-js": "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]",
-                "tag-rel": "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]",
-                "tag-res": "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]",
-                "tag-id": "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]",
-                "tag-gov": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
-              };
-              return (
-                <span
-                  key={idx}
-                  className={`text-[10px] font-semibold px-2 py-[2px] rounded-full tracking-wider border ${
-                    tagMap[tag.cls] || "bg-[#f4f7fb] text-[#6b8097]"
-                  }`}
-                >
-                  {tag.label}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const defId = mapDocumentNameToId(item.title);
-              setActiveUploadId(item.id);
-              setActiveUploadType("hh");
-              openUploadModal(defId);
-            }}
-            className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-          >
-            <Upload size={14} strokeWidth={2.5} />
-            <span>Vault</span>
-          </button>
-          <div
-            className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 transition-all border ${
-              st === "reviewed"
-                ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                : st === "in-progress"
-                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                  : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-            }`}
-          >
-            {stLabel}
-          </div>
-        </div>
-      </div>
+      <DocActionModal
+        isOpen={docActionModal.isOpen}
+        onClose={() => setDocActionModal({ ...docActionModal, isOpen: false })}
+        docActionModal={docActionModal}
+        setDocActionModal={setDocActionModal}
+        plan={plan}
+        docActionUpgradeFeature={upgradeModalFeature}
+        setDocActionUpgradeFeature={setUpgradeModalFeature}
+        sId={sId}
+      />
     );
   };
 
@@ -2563,10 +1227,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* DQ RECORDING TOOL RENDERING */}
           {tool.type === "dq_recording" && (
             <DqRecordingTool
-              tool={tool}
-              state={state}
               actions={actions}
-              metadata={state.metadata}
               dqState={{
                 dqSaved,
                 setDqSaved,
@@ -2585,382 +1246,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* INTERVIEW SCHEDULING (Step 2.11 SPECIFIC) */}
           {tool.type === "interview_scheduling" && (
-            <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
-              {/* Queue status card */}
-              <div className="relative bg-[#1a0a18] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-[0.85]" />
-                <div className="text-[10px] font-bold tracking-widest uppercase text-white/38 mb-[8px]">
-                  Post-DQ Queue Status
-                </div>
-                <div
-                  className="text-[20px] font-serif text-white/92 mb-[18px] flex items-center gap-[10px]"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
-                >
-                  <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#973680] animate-pulse shadow-[0_0_8px_rgba(106,168,240,0.6)]" />
-                  In queue — awaiting interview letter
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
-                  <div>
-                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
-                      DQ Date
-                    </div>
-                    <div className="text-[13px] font-semibold text-[#f0d98a]">
-                      {state.metadata.dqDate
-                        ? new Date(
-                            state.metadata.dqDate + "T00:00:00",
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "—"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
-                      Post
-                    </div>
-                    <div className="text-[13px] font-semibold text-white/88">
-                      {state.metadata.post || state.metadata.dqPost || "—"}
-                    </div>
-                  </div>
-                  <div className="col-span-2 md:col-span-1">
-                    <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
-                      Current stage
-                    </div>
-                    <div className="text-[13px] font-semibold text-white/88">
-                      Awaiting interview letter
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Scheduling grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
-                {/* Official Card - IV Tool Auto-Sync */}
-                {(() => {
-                  // Using ivLoading and ivError from component state (not creating duplicate hooks)
-                  const savedMonth = state.metadata
-                    ?.currentSchedulingMonthYear as string | undefined;
-                  const savedUpdated = state.metadata
-                    ?.schedulingDataLastUpdated as string | undefined;
-                  const postName = (state.metadata?.dqPost ||
-                    state.metadata?.post ||
-                    "") as string;
-
-                  const handleFetch = async () => {
-                    if (!stepEntitlement.guard()) return;
-                    if (!postName) {
-                      setIvError(
-                        "No embassy/post found. Please complete Step 2.10 first.",
-                      );
-                      return;
-                    }
-                    setIvLoading(true);
-                    setIvError(null);
-                    try {
-                      const res = await fetch("/api/iv-status", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          city: postName,
-                          visaCategory: "immediate-relative",
-                        }),
-                        cache: "no-store", // Always get fresh data, bypass 24hr API cache
-                      });
-                      const data = await res.json();
-                      const results: Array<{
-                        Post: string;
-                        "Visa Category": string;
-                        "Case Documentarily Complete": string;
-                      }> = data.data || [];
-                      const match =
-                        results.find((r) =>
-                          r.Post.toLowerCase().includes(postName.toLowerCase()),
-                        ) || results[0];
-                      if (!match) {
-                        setIvError(
-                          `No scheduling data found for "${postName}". Try checking travel.state.gov manually.`,
-                        );
-                        return;
-                      }
-
-                      // ── Robust date parser ──────────────────────────────
-                      // Handles: "Sep-2025", "Sep 2025", "September 2025", "September-2025"
-                      const MONTH_MAP: Record<string, string> = {
-                        jan: "01",
-                        feb: "02",
-                        mar: "03",
-                        apr: "04",
-                        may: "05",
-                        jun: "06",
-                        jul: "07",
-                        aug: "08",
-                        sep: "09",
-                        oct: "10",
-                        nov: "11",
-                        dec: "12",
-                      };
-                      const raw = match["Case Documentarily Complete"].trim();
-                      // Split by space or dash: ["Sep", "2025"] or ["September", "2025"]
-                      const parts = raw.split(/[\s-]+/);
-                      const monthPart = parts.find((p) => isNaN(Number(p)));
-                      const yearPart = parts.find((p) => /^\d{4}$/.test(p));
-                      const monthNum = monthPart
-                        ? MONTH_MAP[monthPart.toLowerCase().slice(0, 3)]
-                        : null;
-
-                      if (!monthNum || !yearPart) {
-                        setIvError(
-                          `Could not parse date: "${raw}". Try syncing again or check travel.state.gov.`,
-                        );
-                        return;
-                      }
-                      const isoMonth = `${yearPart}-${monthNum}`;
-                      actions.updateMetadata({
-                        currentSchedulingMonthYear: isoMonth,
-                        schedulingDataLastUpdated: new Date()
-                          .toISOString()
-                          .split("T")[0],
-                      });
-                    } catch {
-                      setIvError(
-                        "Failed to fetch. Check your connection or try again.",
-                      );
-                    } finally {
-                      setIvLoading(false);
-                    }
-                  };
-
-                  return (
-                    <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                      <div className="text-[10px] font-bold tracking-widest uppercase text-[#2d4a6e] mb-[6px]">
-                        Official IV Scheduling Status
-                      </div>
-                      <div className="text-[13px] font-semibold text-[#0c1b33] mb-[4px]">
-                        Embassy currently scheduling DQ month:
-                      </div>
-
-                      {savedMonth ? (
-                        <div className="mb-3">
-                          <div
-                            className="text-[22px] font-serif font-bold text-[#0c1b33] mb-1"
-                            style={{ fontFamily: "'DM Serif Display', serif" }}
-                          >
-                            {/* UTC-safe display: parse YYYY-MM manually to avoid timezone offset shift */}
-                            {(() => {
-                              const [y, m] = savedMonth.split("-").map(Number);
-                              return new Date(y, m - 1, 1).toLocaleDateString(
-                                "en-US",
-                                { month: "long", year: "numeric" },
-                              );
-                            })()}
-                          </div>
-                          {savedUpdated && (
-                            <div className="text-[10px] text-[#6b8097]">
-                              Last synced: {savedUpdated}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-[12.5px] text-[#6b8097] mb-3 leading-relaxed">
-                          Sync from the official IV Scheduling Status Tool to
-                          see what DQ month the embassy is currently processing.
-                        </div>
-                      )}
-
-                      {ivError && (
-                        <div className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 mb-3">
-                          {ivError}
-                        </div>
-                      )}
-
-                      <button
-                        onClick={handleFetch}
-                        disabled={ivLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-[var(--rv-ch2)] text-white rounded-lg text-[12px] font-bold hover:bg-[var(--rv-ch2-dark)] disabled:opacity-60 transition-all shadow-[0_4px_14px_rgba(82,10,80,0.18)] hover:shadow-[0_6px_18px_rgba(82,10,80,0.24)]"
-                      >
-                        {ivLoading ? (
-                          <>
-                            <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                            Fetching...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw size={12} />
-                            {savedMonth
-                              ? "Re-sync from IV Tool"
-                              : "Sync from IV Tool"}
-                          </>
-                        )}
-                      </button>
-
-                      <div className="inline-flex items-center gap-[4px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#2d4a6e] mt-[10px]">
-                        <Info size={9} strokeWidth={2.5} />
-                        U.S. State Department · Official
-                      </div>
-                    </div>
-                  );
-                })()}
-                {/* Estimate Card - Dynamic from user-entered scheduling month */}
-                <div className="bg-[#fafcff] border-[1.5px] border-[#e8d47a] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#b38600] mb-[6px]">
-                    Rahvana Estimate
-                  </div>
-                  {(() => {
-                    const ivMonth = state.metadata
-                      ?.currentSchedulingMonthYear as string;
-                    const dqDateStr = state.metadata?.dqDate as string;
-                    if (!ivMonth || !dqDateStr) {
-                      return (
-                        <div className="text-[13px] text-[#6b8097] leading-relaxed">
-                          Enter the current scheduling month above from the
-                          official IV Tool to see your personal estimate.
-                        </div>
-                      );
-                    }
-                    const [ivY, ivM] = ivMonth.split("-").map(Number);
-                    const dqDate = new Date(dqDateStr + "T00:00:00");
-                    const ivDate = new Date(ivY, ivM - 1, 1);
-                    const raw =
-                      (dqDate.getFullYear() - ivDate.getFullYear()) * 12 +
-                      (dqDate.getMonth() - ivDate.getMonth());
-                    const waitMonths = Math.max(0, raw);
-                    const low = new Date();
-                    low.setMonth(low.getMonth() + waitMonths);
-                    const high = new Date(low);
-                    high.setMonth(high.getMonth() + 2);
-                    const fmt = (d: Date) =>
-                      d.toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
-                      });
-                    return (
-                      <>
-                        <div className="text-[13px] font-semibold text-[#0c1b33] mb-[2px]">
-                          Estimated interview window:
-                        </div>
-                        <div
-                          className="text-[20px] font-serif text-[#b38600] mb-[4px]"
-                          style={{ fontFamily: "'DM Serif Display', serif" }}
-                        >
-                          {waitMonths === 0
-                            ? "Approaching now"
-                            : `${fmt(low)} – ${fmt(high)}`}
-                        </div>
-                        <div className="text-[12px] text-[#6b8097] leading-[1.5]">
-                          Embassy is approx {waitMonths} month
-                          {waitMonths !== 1 ? "s" : ""} away from your DQ date.
-                          Keep documents ready.
-                        </div>
-                      </>
-                    );
-                  })()}
-                  <div className="inline-flex items-center gap-[4px] bg-[#fffbec] border border-[#e8d47a] rounded-full px-[10px] py-[3px] text-[10px] font-semibold text-[#b38600] mt-[8px]">
-                    <Activity size={9} strokeWidth={2.5} />
-                    Rahvana Estimate · Not guaranteed
-                  </div>
-                  <div className="text-[11px] text-[#6b8097] mt-[6px] italic leading-[1.5]">
-                    Estimates are trend-based projections. Actual scheduling
-                    depends on post capacity and priority.
-                  </div>
-                </div>
-              </div>
-
-              {/* While you wait + milestone line */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
-                {/* While you wait */}
-                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                  <div className="flex items-center gap-[9px] mb-[12px]">
-                    <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f5ef] border border-[#a8d9be] flex items-center justify-center shrink-0">
-                      <Clock
-                        size={16}
-                        className="text-[#15744f]"
-                        strokeWidth={1.8}
-                      />
-                    </div>
-                    <div className="text-[14px] font-semibold text-[#0c1b33]">
-                      While you wait
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-[7px]">
-                    {INTERVIEW_SCHEDULING_DATA.whileYouWait.map((item, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
-                      >
-                        <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Milestone progress line */}
-                <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                  <div className="text-[13px] font-semibold text-[#0c1b33] mb-[14px]">
-                    Your progress in Chapter 2
-                  </div>
-                  <div className="flex flex-col relative pl-[22px]">
-                    <div className="absolute left-[7px] top-[6px] bottom-[6px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
-                    {INTERVIEW_SCHEDULING_DATA.milestones.map((ms, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-[10px] mb-[12px] last:mb-0"
-                      >
-                        <div
-                          className={`w-[14px] h-[14px] rounded-full shrink-0 z-[1] ml-[-22px] ${
-                            ms.status === "done"
-                              ? "bg-[#15744f]"
-                              : ms.status === "active"
-                                ? "bg-[#2f6fd4] animate-pulse"
-                                : "bg-[#d0e4f7]"
-                          }`}
-                        />
-                        <span
-                          className={`text-[13px] ${
-                            ms.status === "done"
-                              ? "text-[#0e5c3c] font-medium"
-                              : ms.status === "active"
-                                ? "text-[#2f6fd4] font-bold"
-                                : "text-[#6b8097] font-medium"
-                          }`}
-                        >
-                          {ms.label} {ms.status === "active" && "← here"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* How it works info card */}
-              <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] mb-[14px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                <div className="flex items-center gap-[9px] mb-[12px]">
-                  <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
-                    <Info
-                      size={16}
-                      className="text-[#2f6fd4]"
-                      strokeWidth={1.8}
-                    />
-                  </div>
-                  <div className="text-[14px] font-semibold text-[#0c1b33]">
-                    How interview scheduling works at this stage
-                  </div>
-                </div>
-                <div className="flex flex-col gap-[7px]">
-                  {INTERVIEW_SCHEDULING_DATA.howItWorks.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-[8px] text-[13px] color-[#3a4f63] leading-[1.5]"
-                    >
-                      <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <InterviewSchedulingTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
           )}
 
           {tool.type === "approval_notice" && (
@@ -2985,7 +1276,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {tool.type === "appointment_received" && (
             <AppointmentReceivedTool
-              state={state}
               actions={actions}
               interviewState={{
                 interviewSaved,
@@ -2997,6 +1287,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 consulateLocation,
                 setConsulateLocation,
               }}
+              state={state}
               guard={stepEntitlement.guard}
             />
           )}
@@ -3004,7 +1295,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {tool.type === "medical_exam" && (
             <StepLockedContent stepKey={sId} mode="overlay">
               <MedicalExamTool
-                state={state}
                 actions={actions}
                 medState={{
                   medSaved,
@@ -3022,6 +1312,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   medWizardMode,
                   setMedWizardMode,
                 }}
+                state={state}
                 guard={stepEntitlement.guard}
               />
             </StepLockedContent>
@@ -3030,7 +1321,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {tool.type === "polio_certificate" && (
             <StepLockedContent stepKey={sId} mode="overlay">
               <PolioCertificateTool
-                state={state}
                 actions={actions}
                 polioState={{
                   polioLaunched,
@@ -3042,6 +1332,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   polioChecks,
                   setPolioChecks,
                 }}
+                state={state}
                 guard={stepEntitlement.guard}
               />
             </StepLockedContent>
@@ -3049,7 +1340,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {tool.type === "police_clearance" && (
             <PoliceClearanceTool
-              state={state}
               actions={actions}
               pccState={{
                 pccSaved,
@@ -3069,6 +1359,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               uploadedDocuments={uploadedDocuments}
+              state={state}
               guard={stepEntitlement.guard}
             />
           )}
@@ -3095,24 +1386,31 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             // </StepLockedContent>
           )}
 
-          {/* Step 2.7 Household Member Builder Rendering */}
-          {/* {tool.type === "household_member" && (
-            <HouseholdMemberTool
+          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
+          {tool.type === "household_member" && (
+            <HouseholdSponsorshipTool
               hhCount={hhCount}
+              jsCount={jsCount}
               hhRelationships={hhRelationships}
               hhDocsStatus={hhDocsStatus}
+              setHhCount={setHhCount}
+              setJsCount={setJsCount}
+              setHhRelationships={setHhRelationships}
               setHhDocsStatus={setHhDocsStatus}
               updateMetadata={actions.updateMetadata}
+              guard={stepEntitlement.guard}
+              setUseCeacGuideData={setUseCeacGuideData}
+              setTutorialIdx={setTutorialIdx}
+              setIsTutorialOpen={setIsTutorialOpen}
+              setTutorialPath={setTutorialPath}
+              currentStep={currentStep}
               openUploadModal={openUploadModal}
               setActiveUploadId={setActiveUploadId}
               setActiveUploadType={setActiveUploadType}
               setActiveHhDoc={setActiveHhDoc}
               setIsHhDocGuideOpen={setIsHhDocGuideOpen}
             />
-          )} */}
-
-          {/* HOUSEHOLD MEMBER BUILDER (Step 2.7 SPECIFIC) */}
-          {tool.type === "household_member" && renderHouseholdBuilder()}
+          )}
 
           {tool.type === "submission_review" && (
             <div className="relative">
@@ -3158,48 +1456,21 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" && (
-            <DocListSection
-              groups={tool.doc_gathering?.groups || []}
-              docsStatus={gatheringDocsStatus}
-              uploadedDocuments={uploadedDocuments}
-              isDeletingIds={isDeletingIds}
-              isReloadingDocs={isReloadingDocs}
-              getVaultId={(item) =>
-                GATHERING_VAULT_IDS[item.id] || mapDocumentNameToId(item.title)
-              }
-              onItemClick={(item) => {
-                setDocActionModal({
-                  isOpen: true,
-                  doc: item,
-                  title: item.title,
-                  subtitle: item.sub,
-                  onReadGuide: () => {
-                    if (!stepEntitlement.guard()) return;
-                    actions.updateMetadata({
-                      gatheringDocsStatus: {
-                        ...gatheringDocsStatus,
-                        [item.id]: "in-progress",
-                      },
-                    });
-                    setDocGuideContext("gathering");
-                    setActiveCivilDoc(item);
-                    setIsCivilDocGuideOpen(true);
-                  },
-                  onUpload: () => {
-                    const vaultId =
-                      GATHERING_VAULT_IDS[item.id] || mapDocumentNameToId(item.title);
-                    setActiveUploadId(item.id);
-                    setActiveUploadType("doc");
-                    if (!stepEntitlement.guard()) return;
-                    openUploadModal(vaultId);
-                  },
-                });
+            <GatheringChecklistTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              gatheringState={{
+                gatheringStatus,
+                setGatheringStatus,
+                selectedGatheringItem,
+                setSelectedGatheringItem,
+                isGatheringGuideOpen,
+                setIsGatheringGuideOpen,
+                gatheringGuideStep,
+                setGatheringGuideStep,
               }}
-              onPreview={(uploadedDocId) => {
-                window.open(`/api/documents/${uploadedDocId}/download`, "_blank");
-              }}
-              onDelete={(id, name) => setDocumentToDelete({ id, name })}
-              progressLabel="packed"
+              guard={stepEntitlement.guard}
             />
           )}
 
@@ -3292,440 +1563,35 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* ADMINISTRATIVE PROCESSING CONTENT (Step 3.9 SPECIFIC) */}
           {tool.type === "adm_processing" && (
-            <div className="flex flex-col mt-4">
-              {/* Explainer Banner */}
-              <div className="relative bg-[#0e1e38] rounded-[16px] p-6 mb-4 overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-85" />
-                <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">
-                  {tool.explainer.eyebrow}
-                </div>
-                <div className="text-[20px]  text-white/95 mb-2.5 leading-tight">
-                  {tool.explainer.title}
-                </div>
-                <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">
-                  {tool.explainer.body}
-                </div>
-              </div>
+            <AdministrativeProcessingTool
+              tool={tool}
+              state={state}
+              actions={actions}
+              guard={stepEntitlement.guard}
+            />
+          )}
 
-              {/* AP Status Recorder Card */}
-              {!isApSaved ? (
-                <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] transition-all">
-                  <div className="flex items-center gap-2.5 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-[#fef8e8] border border-[#f0d98a] flex items-center justify-center shrink-0">
-                      <Calendar
-                        size={18}
-                        className="text-[#8a6200]"
-                        strokeWidth={1.8}
-                      />
-                    </div>
-                    <div>
-                      <div className="text-[14px] font-bold text-[#0c1b33]">
-                        {tool.recorder.title}
-                      </div>
-                      <div className="text-[12px] text-[#6b8097]">
-                        {tool.recorder.subtitle}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                        Did you receive a 221(g) or AP notice?
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            setApDetails({ ...apDetails, received: true })
-                          }
-                          className={`flex-1 p-2.5 rounded-lg border-[1.5px] text-[13px] font-bold transition-all ${
-                            apDetails.received === true
-                              ? "bg-[#fef8e8] border-[#8a6200] text-[#8a6200]"
-                              : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
-                          }`}
-                        >
-                          Yes — AP received
-                        </button>
-                        <button
-                          onClick={() =>
-                            setApDetails({ ...apDetails, received: false })
-                          }
-                          className={`flex-1 p-2.5 rounded-lg border-[1.5px] text-[13px] font-bold transition-all ${
-                            apDetails.received === false
-                              ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"
-                              : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
-                          }`}
-                        >
-                          No — awaiting outcome
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                          Date of Interview (when AP was placed)
-                        </label>
-                        <input
-                          type="date"
-                          value={apDetails.interviewDate}
-                          max={new Date().toISOString().split("T")[0]}
-                          onChange={(e) =>
-                            setApDetails({
-                              ...apDetails,
-                              interviewDate: e.target.value,
-                            })
-                          }
-                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                          CEAC Status
-                        </label>
-                        <select
-                          value={apDetails.ceacStatus}
-                          onChange={(e) =>
-                            setApDetails({
-                              ...apDetails,
-                              ceacStatus: e.target.value,
-                            })
-                          }
-                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-                        >
-                          <option value="">Select current status...</option>
-                          {tool.recorder.ceac_options.map((opt: string) => (
-                            <option key={opt} value={opt}>
-                              {opt}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                          Date of Last Check
-                        </label>
-                        <input
-                          type="date"
-                          value={apDetails.lastCheck}
-                          max={new Date().toISOString().split("T")[0]}
-                          onChange={(e) =>
-                            setApDetails({
-                              ...apDetails,
-                              lastCheck: e.target.value,
-                            })
-                          }
-                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                          Additional Docs Requested?
-                        </label>
-                        <select
-                          value={apDetails.docsRequested}
-                          onChange={(e) =>
-                            setApDetails({
-                              ...apDetails,
-                              docsRequested: e.target.value,
-                            })
-                          }
-                          className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-                        >
-                          {tool.recorder.docs_requested_options.map(
-                            (opt: any) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                        Notes (optional)
-                      </label>
-                      <textarea
-                        value={apDetails.notes}
-                        onChange={(e) =>
-                          setApDetails({ ...apDetails, notes: e.target.value })
-                        }
-                        placeholder="e.g. 221(g) sheet received..."
-                        className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all min-height-[80px]"
-                      />
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setIsApSaved(true);
-                        actions.updateMetadata({
-                          apDetails: apDetails,
-                          apSaved: "true",
-                          ...(apDetails.ceacStatus === "Issued" &&
-                          !state.metadata?.ceacIssuedAt
-                            ? { ceacIssuedAt: new Date().toISOString() }
-                            : {}),
-                        });
-                        // Trigger CEAC notification system
-                        if (apDetails.ceacStatus === "Refused") {
-                          // Show sub-type prompt first (Rule 8: never auto-assume)
-                          triggerCeacStatusUpdate("Refused");
-                          setRefusedPromptOpen(true);
-                        } else {
-                          triggerCeacStatusUpdate(apDetails.ceacStatus);
-                        }
-                      }}
-                      disabled={!apDetails.interviewDate || ceacApiLoading}
-                      className="w-full p-4 bg-primary text-white rounded-xl font-bold transition-all shadow-[0_4px_16px_rgba(47,111,212,0.3)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
-                    >
-                      {ceacApiLoading
-                        ? "Saving..."
-                        : "Save AP Status & Activate Tracking"}
-                    </button>
-
-                    {/* Refused sub-type prompt — shown after save if status = Refused */}
-                    {refusedPromptOpen && (
-                      <div className="mt-4 bg-[#fff7ed] border border-[#f0d98a] rounded-xl p-5 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="text-[12px] font-bold uppercase tracking-wide text-[#8a6200] mb-2">
-                          One more question
-                        </div>
-                        <p className="text-[13.5px] text-[#3a4f63] leading-relaxed mb-4">
-                          Your CEAC status is <strong>Refused</strong>. This can
-                          mean two very different things. Which one applies to
-                          your case?
-                        </p>
-                        <div className="flex flex-col gap-2">
-                          <button
-                            onClick={() =>
-                              clarifyRefusedSubType("refusal_221g")
-                            }
-                            className="w-full p-3.5 rounded-lg border-[1.5px] border-[#f0d98a] bg-white text-[13px] font-semibold text-[#8a6200] text-left hover:bg-[#fef8e8] transition-all"
-                          >
-                            <span className="font-black">221(g)</span> — Officer
-                            requested more documents or info. Case is still
-                            active.
-                          </button>
-                          <button
-                            onClick={() =>
-                              clarifyRefusedSubType("refusal_final")
-                            }
-                            className="w-full p-3.5 rounded-lg border-[1.5px] border-[#fecdd3] bg-white text-[13px] font-semibold text-[#9f1239] text-left hover:bg-[#fff1f2] transition-all"
-                          >
-                            <span className="font-black">Final Denial</span> —
-                            Officer denied under a specific ground (INA §212
-                            etc.)
-                          </button>
-                          <button
-                            onClick={() => setRefusedPromptOpen(false)}
-                            className="text-[12px] text-[#6b8097] hover:text-[#1c2b3a] mt-1 text-center"
-                          >
-                            Not sure yet — I&apos;ll check my notice
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-white border-[1.5px] border-[#f0d98a] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-[#8a6200]">
-                      AP Details Recorded — Tracking Active
-                    </div>
-                    <button
-                      onClick={() => setIsApSaved(false)}
-                      className="text-[12px] font-bold text-primary hover:underline"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-                    <div>
-                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
-                        Interview Date
-                      </div>
-                      <div className="text-[13px] font-bold text-[#0c1b33]">
-                        {apDetails.interviewDate
-                          ? new Date(
-                              apDetails.interviewDate + "T00:00:00",
-                            ).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })
-                          : "—"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
-                        221(g) / AP Received
-                      </div>
-                      <div className="text-[13px] font-bold text-[#0c1b33]">
-                        {apDetails.received === true
-                          ? "Yes — 221(g) received"
-                          : apDetails.received === false
-                            ? "No — awaiting outcome"
-                            : "—"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
-                        CEAC Status
-                      </div>
-                      <div className="text-[13px] font-bold text-[#0c1b33]">
-                        {apDetails.ceacStatus || "—"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
-                        Last CEAC Check
-                      </div>
-                      <div className="text-[13px] font-bold text-[#0c1b33]">
-                        {apDetails.lastCheck
-                          ? new Date(
-                              apDetails.lastCheck + "T00:00:00",
-                            ).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })
-                          : "—"}
-                      </div>
-                    </div>
-                  </div>
-                  {apDetails.notes && (
-                    <div className="mt-4 pt-4 border-t border-[#f0d98a]">
-                      <div className="text-[11px] text-[#6b8097] font-medium mb-1">
-                        Notes
-                      </div>
-                      <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-                        {apDetails.notes}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Docs Requested Alert */}
-              {apDetails.docsRequested === "yes" && isApSaved && (
-                <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-5 mb-4 shadow-[0_4px_12px_rgba(12,27,51,0.04)] animate-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[18px]">📎</span>
-                    <div className="text-[14px] font-bold text-[#8a6200]">
-                      Additional documents were requested
-                    </div>
-                  </div>
-                  <div className="text-[13px] text-[#8a6200] leading-relaxed mb-4">
-                    The consulate has requested additional documents as part of
-                    your 221(g) or AP process. Review the request carefully,
-                    provide exactly what was asked, and submit via the method
-                    specified.
-                  </div>
-                  <a
-                    href="https://www.rahvana.com/document-vault"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#8a6200] text-white rounded-lg text-[13px] font-bold transition-all hover:opacity-90"
-                  >
-                    <Upload size={14} />
-                    <span>Save documents to Document Vault</span>
-                  </a>
-                </div>
-              )}
-
-              {/* Update Log Card */}
-              <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-[14px] font-bold text-[#0c1b33]">
-                    Case Update Log
-                  </div>
-                  <button
-                    onClick={() => setIsApUpdateModalOpen(true)}
-                    className="text-[12px] font-bold text-primary hover:underline cursor-pointer"
-                  >
-                    + Add update
-                  </button>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {apUpdateLog.length === 0 ? (
-                    <div className="text-[13px] text-[#6b8097] italic py-2">
-                      No updates logged yet. Add updates each time you check
-                      CEAC or receive new information.
-                    </div>
-                  ) : (
-                    apUpdateLog.map((entry: any, i: number) => (
-                      <div
-                        key={i}
-                        className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-xl p-3"
-                      >
-                        <div className="text-[11px] font-bold text-[#6b8097] mb-1">
-                          {new Date(
-                            entry.date + "T00:00:00",
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                          {entry.ceac && ` · CEAC: ${entry.ceac}`}
-                        </div>
-                        <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-                          {entry.note || "Status checked — no change noted."}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Info Sections */}
-              <div className="flex flex-col gap-3.5 mb-2">
-                {tool.info_sections.map((section: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-5 shadow-[0_4px_20px_rgba(12,27,51,0.06)]"
-                  >
-                    <div className="flex items-center gap-2.5 mb-4">
-                      <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
-                          section.type === "sky"
-                            ? "bg-[#e8f1fb] border-[#d0e4f7]"
-                            : "bg-[#e8f6f6] border-[#9fd6d6]"
-                        }`}
-                      >
-                        {section.icon === "info" ? (
-                          <Info
-                            size={16}
-                            className="text-[#2f6fd4]"
-                            strokeWidth={2}
-                          />
-                        ) : (
-                          <Check
-                            size={16}
-                            className="text-[#0d6b6b]"
-                            strokeWidth={2.5}
-                          />
-                        )}
-                      </div>
-                      <div className="text-[14px] font-bold text-[#0c1b33]">
-                        {section.title}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2.5">
-                      {section.items.map((item: string, i: number) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
-                          <span className="text-[13px] text-[#3a4f63] leading-relaxed">
-                            {item}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {/* FALLBACK FOR DOC LISTS (Step 2.4) */}
+          {tool.doc_list && (
+            <DocListSection
+              groups={tool.doc_list.groups}
+              docsStatus={civilDocsStatus}
+              uploadedDocuments={uploadedDocuments}
+              isDeletingIds={isDeletingIds}
+              isReloadingDocs={isReloadingDocs}
+              getVaultId={(item) => mapDocumentNameToId(item.title)}
+              onItemClick={(item) => {
+                if (!stepEntitlement.guard()) return;
+                setActiveCivilDoc(item);
+                setDocGuideContext("civil");
+                setIsCivilDocGuideOpen(true);
+              }}
+              onPreview={(uploadedDocId) =>
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+              }
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
+              showTags={true}
+            />
           )}
 
           {/* PRIMARY LAUNCH MODULE */}
@@ -3781,12 +1647,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       <div
                         className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
                       >
-                        {tool.launch_module.eyebrow}
+                        {tool.launch_module.eyebrow || tool.launch_module.label}
                       </div>
                       <h2
                         className={`text-[clamp(20px,3vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
                       >
-                        {tool.launch_module.heading}
+                        {tool.launch_module.heading || tool.launch_module.title}
                       </h2>
                     </div>
                   </div>
@@ -3923,7 +1789,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     )}
 
                   {/* CTA Area — only rendered when a button_label is defined */}
-                  {tool.launch_module.button_label && (
+                  {(tool.launch_module.button_label || tool.launch_module.buttonText) && (
                     <div className="flex flex-col gap-[11px]">
                       <button
                         onClick={() => {
@@ -3965,391 +1831,46 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       >
                         {isLaunched && tool.launch_module.return_note ? (
                           <>
-                            <span>✓</span>
-                            <span>
-                              {tool.launch_module.button_launched_label ||
-                                "Opened"}
-                            </span>
+                            <span>{tool.launch_module.button_label || tool.launch_module.buttonText}</span>
+                            <ArrowUpRight
+                              size={18}
+                              className="opacity-60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                            />
                           </>
                         ) : (
                           <>
-                            <span>{tool.launch_module.button_label}</span>
-                            <div className="transition-transform duration-200 group-hover:translate-x-[2px]">
-                              <ArrowRight size={16} strokeWidth={2} />
-                            </div>
+                            <span>{tool.launch_module.button_label || tool.launch_module.buttonText}</span>
+                            <ArrowRight
+                              size={18}
+                              className="opacity-60 transition-transform group-hover:translate-x-0.5"
+                            />
                           </>
                         )}
                       </button>
 
-                      <div
-                        className={`flex items-center justify-center gap-[5px] text-[12px] text-center leading-[1.4] transition-colors duration-200 ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-launch-note)]/90" : "text-white/35"}`}
-                      >
-                        <ExternalLink size={11} strokeWidth={1.8} />
-                        <span>
-                          {isLaunched && tool.launch_module.launched_note
-                            ? tool.launch_module.launched_note
-                            : tool.launch_module.note ||
-                              "Opens in a new browser tab — you can return to the roadmap anytime"}
-                        </span>
-                      </div>
+                      {isLaunched && tool.launch_module.return_note && (
+                        <div className="flex items-center justify-center gap-[6px] px-[12px] py-[10px] bg-white/5 border border-white/10 rounded-[10px] animate-in fade-in slide-in-from-top-1 duration-300">
+                          <Info
+                            size={14}
+                            className="text-white/40"
+                            strokeWidth={2}
+                          />
+                          <p className="text-[12px] text-white/50 font-medium text-center">
+                            {tool.launch_module.return_note}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-          {/* PROGRESS BAR (Step 2.4 SPECIFIC — CIVIL DOCS) */}
-          {tool.doc_list && (
-            <div className="flex flex-col mb-[24px]">
-              <div className="flex items-center gap-[12px] mb-[8px]">
-                <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-                  <div
-                    className="h-full bg-linear-to-r from-primary to-primary/70 rounded-[10px] transition-all duration-500"
-                    style={{
-                      width: `${Math.round(
-                        (Object.values(civilDocsStatus).filter(
-                          (s) => s === "reviewed",
-                        ).length /
-                          tool.doc_list.groups.reduce(
-                            (acc: number, g: any) => acc + g.items.length,
-                            0,
-                          )) *
-                          100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-                <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-                  {
-                    Object.values(civilDocsStatus).filter(
-                      (s) => s === "reviewed",
-                    ).length
-                  }{" "}
-                  of{" "}
-                  {tool.doc_list.groups.reduce(
-                    (acc: number, g: any) => acc + g.items.length,
-                    0,
-                  )}{" "}
-                  reviewed
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* DOCUMENT LIST (Step 2.4 SPECIFIC) */}
-          {tool.doc_list && (
-            <div className="flex flex-col gap-[32px]">
-              {tool.doc_list.groups.map((group: any) => (
-                <div key={group.id} className="flex flex-col">
-                  <div className="flex items-center gap-[10px] mb-[14px]">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
-                      {group.label}
-                    </span>
-                    <span
-                      className={`text-[10px] font-semibold px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
-                        group.badge === "req"
-                          ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
-                          : group.badge === "cond"
-                            ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                            : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                      }`}
-                    >
-                      {group.badge === "req"
-                        ? "Required"
-                        : group.badge === "cond"
-                          ? "Required if Applicable"
-                          : "Recommended to Improve Case Strength"}
-                    </span>
-                    <div className="flex-1 h-px bg-[#d0e4f7]" />
-                  </div>
-                  <div className="flex flex-col gap-[10px]">
-                    {group.items.map((item: any) => {
-                      const st = civilDocsStatus[item.id] || "not-started";
-                      return (
-                        <div
-                          key={item.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => {
-                            setDocActionModal({
-                              isOpen: true,
-                              doc: item,
-                              title: item.title,
-                              subtitle: item.sub,
-                              onReadGuide: () => {
-                                if (!stepEntitlement.guard()) return;
-                                if (item.external_href) {
-                                  window.open(
-                                    item.external_href,
-                                    "_blank",
-                                    "noopener,noreferrer",
-                                  );
-                                  actions.updateMetadata({
-                                    civilDocsStatus: {
-                                      ...civilDocsStatus,
-                                      [item.id]: "reviewed",
-                                    },
-                                  });
-                                } else {
-                                  // Mark inline guides as in-progress when opened
-                                  actions.updateMetadata({
-                                    civilDocsStatus: {
-                                      ...civilDocsStatus,
-                                      [item.id]: "in-progress",
-                                    },
-                                  });
-                                  setDocGuideContext("civil");
-                                  setActiveCivilDoc(item);
-                                  setIsCivilDocGuideOpen(true);
-                                }
-                              },
-                              onUpload: () => {
-                                const defId = mapDocumentNameToId(item.title);
-                                setActiveUploadId(item.id);
-                                setActiveUploadType("doc");
-                                if (!stepEntitlement.guard()) return;
-
-                                if (item.id === "doc_citizenship") {
-                                  setMultipleUploadModalState({
-                                    isOpen: true,
-                                    categoryId: defId,
-                                    documentName: item.title,
-                                    options: [
-                                      "U.S. passport",
-                                      "U.S. birth certificate",
-                                      "Certificate of Naturalization (Form N-550)",
-                                      "Certificate of Citizenship (Form N-560)",
-                                      "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
-                                    ],
-                                  });
-                                } else if (item.id === "doc_relationship") {
-                                  setMultipleUploadModalState({
-                                    isOpen: true,
-                                    categoryId: defId,
-                                    documentName: item.title,
-                                    options: [
-                                      "Communication history",
-                                      "Photos together",
-                                      "Travel history",
-                                      "Shared finances",
-                                      "Shared residence",
-                                      "Family evidence",
-                                      "Affidavits",
-                                    ],
-                                  });
-                                } else if (item.id === "doc_translations") {
-                                  setMultipleUploadModalState({
-                                    isOpen: true,
-                                    categoryId: defId,
-                                    documentName: item.title,
-                                    options: [
-                                      "Translated Nikah Nama",
-                                      "Translated NADRA MRC",
-                                      "Translated Birth Certificate",
-                                      "Translated Divorce Decree",
-                                    ],
-                                  });
-                                } else {
-                                  openUploadModal(defId);
-                                }
-                              },
-                            });
-                          }}
-                          className={`bg-white border-[1.5px] rounded-[16px] p-[18px_20px] flex items-center gap-[16px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 text-left w-full
-                            ${st === "reviewed" ? "border-[#a8d9be] bg-[#e8f5ef]" : st === "in-progress" ? "border-[#f0d98a] bg-[#fef8e8]" : "border-[#d0e4f7]"}
-                          `}
-                        >
-                          <div
-                            className={`w-[40px] h-[40px] rounded-[10px] border flex items-center justify-center shrink-0 text-[17px] transition-colors
-                            ${st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#e8f1fb] border-[#d0e4f7] group-hover:bg-[rgba(47,111,212,0.12)] group-hover:border-[rgba(47,111,212,0.3)]"}
-                          `}
-                          >
-                            <div className="text-primary/70">
-                              {getStepIcon(item.icon)}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px] leading-[1.3]">
-                              {item.title}
-                            </div>
-                            <div className="text-[13px] text-[#6b8097] leading-[1.4]">
-                              {item.sub}
-                            </div>
-                            <div className="flex gap-[6px] mt-[7px] flex-wrap">
-                              {item.tags.map((t: string) => {
-                                const map: any = {
-                                  bene: {
-                                    label: "Beneficiary",
-                                    cls: "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]",
-                                  },
-                                  pet: {
-                                    label: "Petitioner",
-                                    cls: "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]",
-                                  },
-                                  both: {
-                                    label: "Both",
-                                    cls: "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]",
-                                  },
-                                  govt: {
-                                    label: "Govt Record",
-                                    cls: "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
-                                  },
-                                  "3p": {
-                                    label: "Third Party",
-                                    cls: "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]",
-                                  },
-                                };
-                                const tag = map[t];
-                                if (!tag) return null;
-                                return (
-                                  <span
-                                    key={t}
-                                    className={`text-[11px] font-semibold px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${tag.cls}`}
-                                  >
-                                    {tag.label}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          <div className="shrink-0 flex items-center gap-2">
-                            {(() => {
-                              const defId = mapDocumentNameToId(item.title);
-                              const isUploadedInVault = uploadedDocuments.some(
-                                (ud) => ud.documentDefId === defId,
-                              );
-                              const uploadedDoc = uploadedDocuments.find(
-                                (ud) => ud.documentDefId === defId,
-                              );
-                              const isDeleting = uploadedDoc
-                                ? isDeletingIds.includes(uploadedDoc.id)
-                                : false;
-
-                              if (isDeleting) return null; // Badge hidden while deleting
-
-                              const displayStatus = isUploadedInVault
-                                ? "Uploaded"
-                                : isReloadingDocs
-                                  ? "Checking..."
-                                  : st === "reviewed"
-                                    ? "✓ Reviewed"
-                                    : st === "in-progress"
-                                      ? "In progress"
-                                      : "Open guide";
-
-                              const statusClasses = isUploadedInVault
-                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                : isReloadingDocs
-                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                  : st === "reviewed"
-                                    ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                                    : st === "in-progress"
-                                      ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
-
-                              return (
-                                <div
-                                  className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
-                                >
-                                  {displayStatus}
-                                </div>
-                              );
-                            })()}
-
-                            {(() => {
-                              const defId = mapDocumentNameToId(item.title);
-                              const uploadedDoc = uploadedDocuments.find(
-                                (ud) => ud.documentDefId === defId,
-                              );
-                              const isDeleting = uploadedDoc
-                                ? isDeletingIds.includes(uploadedDoc.id)
-                                : false;
-
-                              if (isReloadingDocs && !uploadedDoc) {
-                                return (
-                                  <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
-                                    <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                    Checking...
-                                  </div>
-                                );
-                              }
-
-                              if (isDeleting) {
-                                return (
-                                  <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
-                                    <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
-                                    Deleting...
-                                  </div>
-                                );
-                              }
-
-                              if (uploadedDoc) {
-                                return (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <button
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
-                                      >
-                                        <MoreVertical size={18} />
-                                      </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                      side="top"
-                                      align="end"
-                                      className="w-[140px] rounded-xl shadow-xl border-muted/20"
-                                    >
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          window.open(
-                                            `/api/documents/${uploadedDoc.id}/download`,
-                                            "_blank",
-                                          );
-                                        }}
-                                        className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
-                                      >
-                                        <Eye
-                                          size={16}
-                                          className="text-primary"
-                                        />
-                                        Preview
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setDocumentToDelete({
-                                            id: uploadedDoc.id,
-                                            name: item.title,
-                                          });
-                                        }}
-                                        className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
-                                      >
-                                        <Trash2 size={16} />
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                );
-                              }
-
-                              return null;
-                            })()}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* SUPPORT CARDS */}
           {tool.support_cards &&
             tool.support_cards.length > 0 &&
             sId !== "step_2_1" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[10px] mb-[32px]">
+              <div className="flex flex-col gap-[12px] mt-[12px]">
                 {tool.support_cards.map((card: any, i: number) => (
                   <div
                     key={i}
@@ -4586,147 +2107,92 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
 
           {/* Guide / Wallet Cards Row */}
-{(tool.guide_card || tool.wallet_card) && (
-  <div
-    className={`grid grid-cols-1 ${
-      tool.guide_card && tool.wallet_card ? "sm:grid-cols-2" : ""
-    } gap-[12px] mb-[28px]`}
-  >
-    {tool.guide_card && (() => {
-      const guideFeatureKey = "step_guides";
-      const isGuideLocked = !plan.canUse(guideFeatureKey);
-      const guideCardTierIconClass = (() => {
-        const target = plan.entitlement(guideFeatureKey).upgradeTarget;
-        return target ? `plan-icon--${target}` : "plan-icon--premium";
-      })();
+          {(tool.guide_card || tool.wallet_card) && (
+            <div
+              className={`grid grid-cols-1 ${
+                (tool.guide_card) && tool.wallet_card ? "md:grid-cols-2" : ""
+              } gap-[12px] mb-[28px]`}
+            >
+              {(tool.guide_card) &&
+                (() => {
+                  const cards = Array.isArray(tool.guide_card)
+                    ? (tool.guide_card)
+                    : [tool.guide_card];
 
-      return (
-        <button
-          onClick={() => {
-            if (isGuideLocked) {
-              setUpgradeModalFeature(guideFeatureKey);
-            } else {
-              setTutorialIdx(0);
-              setIsTutorialOpen(true);
-            }
-          }}
-          className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative ${
-            tool.wallet_card
-              ? `p-[20px] flex-col bg-[#fafcff] border-[#d0e4f7] ${
-                  isGuideLocked
-                    ? "hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
-                    : "hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
-                } hover:-translate-y-px`
-              : `p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
-                  isGuideLocked
-                    ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
-                    : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
-                }`
-          }`}
-        >
-          {/* Tier lock badge — shown only when locked */}
-          
-          {tool.wallet_card ? (
-            /* Vertical Design (Original - Shared) */
-            <>
-              <div className="flex items-center gap-[10px] mb-[12px]">
-                <div
-                  className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 transition-opacity ${
-                    isGuideLocked
-                      ? "bg-[#f3f0fb] border-[#c9bef2] opacity-50"
-                      : "bg-[#f3f0fb] border-[#c9bef2]"
-                  }`}
-                >
-                  <Monitor
-                    size={18}
-                    className="text-[#4a2d8a]"
-                    strokeWidth={1.7}
-                  />
-                </div>
-              </div>
-              <h3
-                className={`text-[14px] font-semibold mb-1 ${
-                  isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
-                }`}
-              >
-                {tool.guide_card.title}
-              </h3>
-              <p
-                className={`text-[12px] leading-normal ${
-                  isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
-                }`}
-              >
-                {tool.guide_card.subtitle}
-              </p>
-              <div
-                className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
-                  isGuideLocked ? "text-[#a06000]" : "text-primary"
-                }`}
-              >
-                {isGuideLocked ? (
-  <>
-    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
-    <span>View guide</span>
-    <ArrowRight size={11} strokeWidth={2} />
-  </>
-) : (
-  <>
-    <span>View guide</span>
-    <ArrowRight size={11} strokeWidth={2} />
-  </>
-)}
-              </div>
-            </>
-          ) : (
-            /* Horizontal Design (New Reference - Solo) */
-            <>
-              <div
-                className={`w-[52px] h-[52px] rounded-[14px] border flex items-center justify-center shrink-0 transition-opacity ${
-                  isGuideLocked
-                    ? "bg-[#f3f0fb] border-[#c9bef2]/60 opacity-50"
-                    : "bg-[#f3f0fb] border-[#c9bef2]/60"
-                }`}
-              >
-                <Monitor
-                  size={22}
-                  className="text-[#4a2d8a]"
-                  strokeWidth={1.7}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3
-                  className={`text-[15px] font-bold mb-1 sm:mb-1.5 truncate ${
-                    isGuideLocked ? "text-[#6b8097]" : "text-[#0c1b33]"
-                  }`}
-                >
-                  {tool.guide_card.title}
-                </h3>
-                <p
-                  className={`text-[13px] leading-relaxed sm:leading-normal line-clamp-2 ${
-                    isGuideLocked ? "text-[#9aabb8]" : "text-[#6b8097]"
-                  }`}
-                >
-                  {tool.guide_card.subtitle}
-                </p>
-              </div>
-              <div
-  className={`w-[32px] h-[32px] rounded-full flex items-center justify-center transition-colors shrink-0 ${
-    isGuideLocked
-      ? "bg-[#fef3d8] text-[#a06000] group-hover:bg-[#f0c878] group-hover:text-[#6b3a00]"
-      : "bg-[#f4f7fb] text-[#6b8097] group-hover:bg-primary group-hover:text-white"
-  }`}
->
-  {isGuideLocked ? (
-    <span className={`plan-icon ${guideCardTierIconClass} scale-110`} aria-hidden="true" />
-  ) : (
-    <ArrowRight size={14} strokeWidth={2.5} />
-  )}
-</div>
-            </>
-          )}
-        </button>
-      );
-    })()}
+                  return cards.map((card: any, idx: number) => {
+                    const guideFeatureKey = "step_guides";
+                    const isGuideLocked = !plan.canUse(guideFeatureKey);
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          if (isGuideLocked) {
+                            setUpgradeModalFeature(guideFeatureKey);
+                          } else {
+                            if (card.id === "add-household-member") {
+                              setTutorialPath("household_member");
+                            } else if (card.id === "add-joint-sponsor") {
+                              setTutorialPath("joint_sponsor");
+                            }
+                            setTutorialIdx(0);
+                            setIsTutorialOpen(true);
+                          }
+                        }}
+                        className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
+                          isGuideLocked
+                            ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
+                            : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
+                        }`}
+                      >
+                        <div
+                          className={`w-[44px] h-[44px] rounded-[12px] border flex items-center justify-center shrink-0 transition-opacity ${
+                            isGuideLocked
+                              ? "bg-[#f3f0fb] border-[#c9bef2] opacity-50"
+                              : "bg-[#f3f0fb] border-[#c9bef2]"
+                          }`}
+                        >
+                          <Monitor
+                            size={20}
+                            className="text-[#4a2d8a]"
+                            strokeWidth={1.7}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h3
+                            className={`text-[15px] font-bold mb-0.5 ${
+                              isGuideLocked
+                                ? "text-[#6b8097]"
+                                : "text-[#0c1b33]"
+                            }`}
+                          >
+                            {card.title}
+                          </h3>
+                          <p
+                            className={`text-[13px] leading-tight ${
+                              isGuideLocked
+                                ? "text-[#9aabb8]"
+                                : "text-[#6b8097]"
+                            }`}
+                          >
+                            {card.subtitle}
+                          </p>
+                        </div>
+                        <div
+                          className={`flex items-center gap-1 text-[13px] font-bold ${
+                            isGuideLocked ? "text-[#a06000]" : "text-primary"
+                          }`}
+                        >
+                          {isGuideLocked ? (
+                            <Lock size={15} strokeWidth={2.5} />
+                          ) : (
+                            <ArrowRight size={18} strokeWidth={2.5} />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
 
               {tool.wallet_card &&
                 (() => {
@@ -4747,39 +2213,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         }
                       }}
                       className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col relative
-        ${
-          isWalletLocked
-            ? "border-[#d0e4f7] hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
-            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-                (tool.wallet_card?.type === "nvc_fee" &&
-                  state.metadata.nvcFeeStatus)
-              ? "border-[#a8d9be] bg-[#e8f5ef]"
-              : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
-        }
-      `}
->
-      {/* Tier lock badge */}
-     
-      <div className="flex items-center gap-[10px] mb-[12px]">
-        <div
-          className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
-            isWalletLocked
-              ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
-              : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-                (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
-                ? "bg-[#e8f5ef] border-[#a8d9be]"
-                : tool.wallet_card?.type === "ceac_creds"
-                  ? "bg-[#e8f5ef] border-[#a8d9be]"
-                  : "bg-[#e6f6f6] border-[#9fd8d8]"
-          }`}
-        >
-          {tool.wallet_card?.type === "ceac_creds" ? (
-            <Lock size={18} className="text-[#15744f]" strokeWidth={1.7} />
-          ) : (
-            <CreditCard size={18} className={isWalletLocked ? "text-[#0f7373]" : "text-[#0f7373]"} strokeWidth={1.7} />
-          )}
-        </div>
-      </div>
+                        ${
+                          isWalletLocked
+                            ? "border-[#d0e4f7] hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
+                            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" &&
+                                  state.metadata.nvcFeeStatus)
+                              ? "border-[#a8d9be] bg-[#e8f5ef]"
+                              : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-[10px] mb-[12px]">
+                        <div
+                          className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
+                            isWalletLocked
+                              ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
+                              : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+                                (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+                                ? "bg-[#e8f5ef] border-[#a8d9be]"
+                                : tool.wallet_card?.type === "ceac_creds"
+                                  ? "bg-[#e8f5ef] border-[#a8d9be]"
+                                  : "bg-[#e6f6f6] border-[#9fd8d8]"
+                          }`}
+                        >
+                          {tool.wallet_card?.type === "ceac_creds" ? (
+                            <Lock size={18} className="text-[#15744f]" strokeWidth={1.7} />
+                          ) : (
+                            <CreditCard size={18} className={isWalletLocked ? "text-[#0f7373]" : "text-[#0f7373]"} strokeWidth={1.7} />
+                          )}
+                        </div>
+                      </div>
 
                       <h3
                         className={`text-[14px] font-semibold mb-1 ${
@@ -6321,7 +3785,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         isOpen={isSponsorshipCalcOpen}
         onClose={() => setIsSponsorshipCalcOpen(false)}
         initialData={sponsorshipResult?.raw}
-        onSave={(result) => {
+        onSave={(result: any) => {
           actions.updateMetadata({ sponsorshipResult: result });
           setIsSponsorshipCalcOpen(false);
           if (!isCompleted) actions.toggleComplete("step_2_5");
@@ -6676,7 +4140,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         <ApUpdateModal
           isOpen={isApUpdateModalOpen}
           onClose={() => setIsApUpdateModalOpen(false)}
-          onSave={handleSaveApUpdate}
+          onSave={(entry: any) => handleSaveApUpdate(entry)}
           ceacOptions={(currentStep.tool_data as any).recorder.ceac_options}
         />
       )}
@@ -6921,10 +4385,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           "video" ? (
                             <TutorialVideo
                               key={
-                                (currentTutStep as TutorialStepData).media?.src!
+                                (currentTutStep as TutorialStepData).media!.src
                               }
                               src={
-                                (currentTutStep as TutorialStepData).media?.src!
+                                (currentTutStep as TutorialStepData).media!.src!
                               }
                               poster={
                                 (currentTutStep as TutorialStepData).videoMeta
@@ -6937,10 +4401,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ) : (
                             <Image
                               key={
-                                (currentTutStep as TutorialStepData).media?.src!
+                                (currentTutStep as TutorialStepData).media!.src || tutorialIdx
                               }
                               src={
-                                (currentTutStep as TutorialStepData).media?.src!
+                                (currentTutStep as TutorialStepData).media!.src!
                               }
                               alt={
                                 (currentTutStep as TutorialStepData).screenTitle
@@ -6966,7 +4430,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ) : (currentTutStep as TutorialStepData).screenshot ? (
                           <Image
                             src={
-                              (currentTutStep as TutorialStepData).screenshot!
+                              ((currentTutStep as TutorialStepData).screenshot as string) || ""
                             }
                             alt={
                               (currentTutStep as TutorialStepData).screenTitle

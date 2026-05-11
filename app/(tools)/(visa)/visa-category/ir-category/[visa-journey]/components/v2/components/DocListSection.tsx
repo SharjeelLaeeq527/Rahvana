@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getStepIcon } from "./StepIcon";
+import { getStepIcon } from "../StepIcon";
 
 interface UploadedDoc {
   id: string;
@@ -47,11 +47,23 @@ interface DocListSectionProps {
 }
 
 const TAG_MAP: Record<string, { label: string; cls: string }> = {
-  bene: { label: "Beneficiary", cls: "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]" },
-  pet: { label: "Petitioner", cls: "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]" },
+  bene: {
+    label: "Beneficiary",
+    cls: "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]",
+  },
+  pet: {
+    label: "Petitioner",
+    cls: "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]",
+  },
   both: { label: "Both", cls: "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]" },
-  govt: { label: "Govt Record", cls: "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]" },
-  "3p": { label: "Third Party", cls: "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]" },
+  govt: {
+    label: "Govt Record",
+    cls: "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
+  },
+  "3p": {
+    label: "Third Party",
+    cls: "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]",
+  },
 };
 
 export function DocListSection({
@@ -68,7 +80,9 @@ export function DocListSection({
   showTags = false,
 }: DocListSectionProps) {
   const totalItems = groups.reduce((acc, g) => acc + g.items.length, 0);
-  const reviewedCount = Object.values(docsStatus).filter((s) => s === "reviewed").length;
+  const reviewedCount = Object.values(docsStatus).filter(
+    (s) => s === "reviewed",
+  ).length;
 
   return (
     <div className="flex flex-col">
@@ -77,7 +91,12 @@ export function DocListSection({
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
           <div
             className="h-full bg-linear-to-r from-primary to-primary/70 rounded-[10px] transition-all duration-500"
-            style={{ width: totalItems > 0 ? `${Math.round((reviewedCount / totalItems) * 100)}%` : "0%" }}
+            style={{
+              width:
+                totalItems > 0
+                  ? `${Math.round((reviewedCount / totalItems) * 100)}%`
+                  : "0%",
+            }}
           />
         </div>
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
@@ -98,7 +117,8 @@ export function DocListSection({
                 className={`text-[10px] font-semibold px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
                   group.badge === "req" || group.badge === "Required"
                     ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
-                    : group.badge === "cond" || group.badge === "Required if applicable"
+                    : group.badge === "cond" ||
+                        group.badge === "Required if applicable"
                       ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
                       : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
                 }`}
@@ -117,9 +137,13 @@ export function DocListSection({
               {group.items.map((item) => {
                 const st = docsStatus[item.id] || "not-started";
                 const vaultId = getVaultId(item);
-                const uploadedDoc = uploadedDocuments.find((ud) => ud.documentDefId === vaultId);
+                const uploadedDoc = uploadedDocuments.find(
+                  (ud) => ud.documentDefId === vaultId,
+                );
                 const isUploadedInVault = !!uploadedDoc;
-                const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
+                const isDeleting = uploadedDoc
+                  ? isDeletingIds.includes(uploadedDoc.id)
+                  : false;
 
                 const displayStatus = isUploadedInVault
                   ? "Uploaded"
@@ -142,7 +166,11 @@ export function DocListSection({
                         : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
                 const rowClasses = `bg-white border-[1.5px] rounded-[16px] p-[18px_20px] flex items-center gap-[16px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 text-left w-full ${
-                  st === "reviewed" ? "border-[#a8d9be] bg-[#e8f5ef]" : st === "in-progress" ? "border-[#f0d98a] bg-[#fef8e8]" : "border-[#d0e4f7]"
+                  st === "reviewed"
+                    ? "border-[#a8d9be] bg-[#e8f5ef]"
+                    : st === "in-progress"
+                      ? "border-[#f0d98a] bg-[#fef8e8]"
+                      : "border-[#d0e4f7]"
                 }`;
 
                 return (
@@ -156,10 +184,14 @@ export function DocListSection({
                     {/* Icon */}
                     <div
                       className={`w-[40px] h-[40px] rounded-[10px] border flex items-center justify-center shrink-0 text-[17px] transition-colors ${
-                        st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#e8f1fb] border-[#d0e4f7]"
+                        st === "reviewed"
+                          ? "bg-[#e8f5ef] border-[#a8d9be]"
+                          : "bg-[#e8f1fb] border-[#d0e4f7]"
                       }`}
                     >
-                      <div className="text-primary/70">{getStepIcon(item.icon || "")}</div>
+                      <div className="text-primary/70">
+                        {getStepIcon(item.icon || "")}
+                      </div>
                     </div>
 
                     {/* Content */}
@@ -168,7 +200,9 @@ export function DocListSection({
                         {item.title}
                       </div>
                       {item.sub && (
-                        <div className="text-[13px] text-[#6b8097] leading-[1.4]">{item.sub}</div>
+                        <div className="text-[13px] text-[#6b8097] leading-[1.4]">
+                          {item.sub}
+                        </div>
                       )}
                       {showTags && item.tags && item.tags.length > 0 && (
                         <div className="flex gap-[6px] mt-[7px] flex-wrap">

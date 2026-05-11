@@ -1,8 +1,8 @@
 "use client";
  
 import React, { useRef, useState } from "react";
-import { X, Info, Check, RefreshCw, Upload, Lock } from "lucide-react";
-import { APPROVAL_NOTICE_DATA as data } from "./ApprovalNoticeData";
+import { X, Info, RefreshCw, Upload, Lock } from "lucide-react";
+import { APPROVAL_NOTICE_DATA as data } from "../ApprovalNoticeData";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";

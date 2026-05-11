@@ -2,7 +2,7 @@
 
 import React from "react";
 import { CheckCircle2, Lock } from "lucide-react";
-import { getStepIcon } from "./StepIcon";
+import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
 export const SCENARIOS: Record<string, any> = {
@@ -181,22 +181,22 @@ export const getFinancialDocs = (scKey: string) => {
         ],
       },
     });
-    
+
     docs.recommended.push({
-        id: `packet-${sp}`,
-        icon: "folder",
-        title: `Organized Income Packet — ${sp}`,
-        sub: "All documents grouped cleanly by sponsor for upload readiness",
-        tags: [{ cls: isPet ? "tag-pet" : "tag-js", label: sp }],
-        guide: {
-          intro: `Each sponsor's financial documents should be grouped clearly and separately. This improves upload readiness and makes review cleaner.`,
-          sections: [
-            {
-              title: "How to organize",
-              body: `Group tax returns, W-2s, transcripts, pay stubs, and any asset evidence for ${sp} into a single clearly labeled folder or file set.`,
-            },
-          ],
-        },
+      id: `packet-${sp}`,
+      icon: "folder",
+      title: `Organized Income Packet — ${sp}`,
+      sub: "All documents grouped cleanly by sponsor for upload readiness",
+      tags: [{ cls: isPet ? "tag-pet" : "tag-js", label: sp }],
+      guide: {
+        intro: `Each sponsor's financial documents should be grouped clearly and separately. This improves upload readiness and makes review cleaner.`,
+        sections: [
+          {
+            title: "How to organize",
+            body: `Group tax returns, W-2s, transcripts, pay stubs, and any asset evidence for ${sp} into a single clearly labeled folder or file set.`,
+          },
+        ],
+      },
     });
   });
 
