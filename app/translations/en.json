@@ -191,7 +191,7 @@
             },
             "s5": {
               "title": "5. Security Questions",
-              "desc": "Select three distinct security questions from the dropdowns and provide answers. You MUST remember these for future logins. We are providing facility to remember your security questions.",
+              "desc": "Select three distinct security questions from the dropdown menus and provide your answers. You MUST remember these for future logins. Rahvana provides a feature to help you securely save your security questions. After closing this guide (top-left 'X'), you will find the 'Save Courier Credentials' option located to the right of the Guide card.",
               "link": "Go to Security Questions tab"
             },
             "s6": {
@@ -208,9 +208,7 @@
               "username": "Username:",
               "usernameDesc": "Your pre-filled username will appear here otherwise fill your username.",
               "q1": "Security Question 1:",
-              "q1Desc": "Answer to the security question 1. If you do not remember your security questions then go to",
-              "q1Link": "Security Questions tab",
-              "q1End": "and view your security questions.",
+              "q1Desc": "Answer to the security question 1.",
               "q2": "Security Question 2:",
               "q2Desc": "Answer to the security question 2.",
               "continue": "Click on Continue button to proceed."
@@ -703,7 +701,12 @@
         "categories": {
           "civil": {
             "title": "Civil Documents",
-            "items": ["Birth Certificates", "Nikah Nama", "Passports", "CNIC"]
+            "items": [
+              "Birth Certificates",
+              "Nikah Nama",
+              "Passports",
+              "CNIC"
+            ]
           },
           "financial": {
             "title": "Financial Support",
@@ -733,11 +736,17 @@
           },
           "medical": {
             "title": "Medical & Health",
-            "items": ["Medical Exam (DS-2019)", "Vaccination Records"]
+            "items": [
+              "Medical Exam (DS-2019)",
+              "Vaccination Records"
+            ]
           },
           "photos": {
             "title": "Visa Photos",
-            "items": ["2x2 Inch Validated Photos", "Digital Copies"]
+            "items": [
+              "2x2 Inch Validated Photos",
+              "Digital Copies"
+            ]
           }
         }
       },
@@ -1644,7 +1653,10 @@
           "step1": {
             "title": "Get FBR Tax Returns",
             "description": "Download your tax returns from FBR portal.",
-            "tips": ["Last 3 years recommended", "NTN certificate also helpful"]
+            "tips": [
+              "Last 3 years recommended",
+              "NTN certificate also helpful"
+            ]
           }
         }
       },
@@ -2590,7 +2602,11 @@
     "heroTitle1": "Your Immigration Journey, ",
     "heroTitle2": "Simplified",
     "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
-    "heroFeatures": ["Secure Vault", "AI Insights", "Step-by-Step Guidance"],
+    "heroFeatures": [
+      "Secure Vault",
+      "AI Insights",
+      "Step-by-Step Guidance"
+    ],
     "resumeJourney": "Resume My Journey",
     "exploreJourneys": "Explore Journeys",
     "journeysBadge": "Find Your Path",

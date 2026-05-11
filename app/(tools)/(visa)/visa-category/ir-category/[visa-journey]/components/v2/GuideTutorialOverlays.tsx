@@ -4,29 +4,65 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
   const s = props.tutorial[props.index];
   return (
     <TutorialShell {...props} title={props.title || s.heading}>
-      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">{props.title || s.label}</div>
-      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">{s.heading}</h2>
-      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]" dangerouslySetInnerHTML={{ __html: s.instruction }} />
+      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
+        {props.title || s.label}
+      </div>
+      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
+        {s.heading}
+      </h2>
+      <p
+        className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]"
+        dangerouslySetInnerHTML={{ __html: s.instruction }}
+      />
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
         <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
-          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
-          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.url}</div>
+          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+          <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+          <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+            {s.url}
+          </div>
         </div>
         <div className="p-[18px] leading-relaxed">
-          <div className="text-[10px] font-bold uppercase text-[#2f6fd4] mb-1">{s.ssLabel || s.kicker}</div>
-          <div className="text-[15px] font-bold text-[#0c1b33] mb-1">{s.ssHeadline || s.head}</div>
-          <div className="text-[13px] text-[#3a4f63] mb-2">{s.ssDesc || s.copy}</div>
-          {(s.ssHighlight || s.highlight) && <div className="text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg mb-2">{s.ssHighlight || s.highlight}</div>}
-          <div className="flex gap-2 flex-wrap mb-2">{s.pills && s.pills.map((p:string, i:number) => <span key={i} className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[11px] font-bold uppercase tracking-wide whitespace-nowrap">{p}</span>)}</div>
+          <div className="text-[10px] font-bold uppercase text-[#2f6fd4] mb-1">
+            {s.ssLabel || s.kicker}
+          </div>
+          <div className="text-[15px] font-bold text-[#0c1b33] mb-1">
+            {s.ssHeadline || s.head}
+          </div>
+          <div className="text-[13px] text-[#3a4f63] mb-2">
+            {s.ssDesc || s.copy}
+          </div>
+          {(s.ssHighlight || s.highlight) && (
+            <div className="text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg mb-2">
+              {s.ssHighlight || s.highlight}
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mb-2">
+            {s.pills &&
+              s.pills.map((p: string, i: number) => (
+                <span
+                  key={i}
+                  className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[11px] font-bold uppercase tracking-wide whitespace-nowrap"
+                >
+                  {p}
+                </span>
+              ))}
+          </div>
         </div>
       </div>
-      {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
+      {s.note && (
+        <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+          {s.note}
+        </div>
+      )}
     </TutorialShell>
   );
 };
 
 import React, { useEffect } from "react";
-import { X, ChevronLeft, ArrowRight } from "lucide-react";
+import { X, UserPlus, User, ExternalLink } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface TutorialOverlayProps {
   isOpen: boolean;
@@ -37,19 +73,15 @@ interface TutorialOverlayProps {
   title?: string;
 }
 
-const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode }> = ({
-  isOpen,
-  onClose,
-  tutorial,
-  index,
-  setIndex,
-  title,
-  children,
-}) => {
+const TutorialShell: React.FC<
+  TutorialOverlayProps & { children: React.ReactNode }
+> = ({ isOpen, onClose, tutorial, index, setIndex, title, children }) => {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   if (!isOpen || !tutorial) return null;
@@ -62,11 +94,17 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
   return (
     <div className="fixed inset-0 z-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans bg-white">
       <div className="flex items-center px-4 sm:px-6 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
-        <button onClick={onClose} className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0">
+        <button
+          onClick={onClose}
+          className="w-9 h-9 rounded-full border-none bg-[#f4f7fb] cursor-pointer flex items-center justify-center hover:bg-[#e8f1fb] transition-colors shrink-0"
+        >
           <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
         </button>
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out" style={{ width: `${progress}%` }} />
+          <div
+            className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
+            style={{ width: `${progress}%` }}
+          />
         </div>
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
           {index + 1} / {total}
@@ -78,13 +116,16 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
           {children}
           <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-2.5">
             {!isFirst && (
-              <button onClick={() => setIndex(index - 1)} className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63]">
+              <button
+                onClick={() => setIndex(index - 1)}
+                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63]"
+              >
                 ← Back
               </button>
             )}
             <button
-              onClick={() => isLast ? onClose() : setIndex(index + 1)}
-              className={`flex-1 p-[12px_20px] rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
+              onClick={() => (isLast ? onClose() : setIndex(index + 1))}
+              className={`flex-1 p-[12px_20px] mb-5 rounded-[10px] text-[14px] font-semibold cursor-pointer transition-all hover:-translate-y-px active:translate-y-0
                 ${isLast ? "bg-[#15744f] text-white hover:bg-[#0e5c3c]" : "bg-primary text-white hover:bg-primary/80 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"}
               `}
             >
@@ -101,21 +142,39 @@ export const MedicalTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
   const s = props.tutorial[props.index];
   return (
     <TutorialShell {...props} title="Medical Exam Guide">
-      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">Medical Exam Guide · {s.label}</div>
-      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">{s.heading}</h2>
-      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">{s.instruction}</p>
+      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
+        Medical Exam Guide · {s.label}
+      </div>
+      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
+        {s.heading}
+      </h2>
+      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+        {s.instruction}
+      </p>
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
         <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
-          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
-          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.vlabel}</div>
+          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+          <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+          <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+            {s.vlabel}
+          </div>
         </div>
-        <div className="p-[18px] leading-relaxed" dangerouslySetInnerHTML={{ __html: s.visual }} />
+        <div
+          className="p-[18px] leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: s.visual }}
+        />
       </div>
-      {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
+      {s.note && (
+        <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+          {s.note}
+        </div>
+      )}
     </TutorialShell>
   );
 };
 
+/*
 export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
   const s = props.tutorial[props.index];
   return (
@@ -134,22 +193,491 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
     </TutorialShell>
   );
 };
+*/
 
-export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
+export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
+  const { t } = useLanguage();
+  const guideStage = props.index + 1;
+
+  const stages = [
+    {
+      id: 1,
+      title: t("pages.courierRegistration.sidebar.signup"),
+      label: t("pages.courierRegistration.guide.titles.signup"),
+      desc: t("pages.courierRegistration.guide.descriptions.signup"),
+      steps: [
+        {
+          id: "s1",
+          title: t("pages.courierRegistration.guide.steps.signup.s1.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s1.desc"),
+          link: "https://www.usvisascheduling.com/",
+        },
+        {
+          id: "s2",
+          title: t("pages.courierRegistration.guide.steps.signup.s2.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s2.desc"),
+        },
+        {
+          id: "s3",
+          title: t("pages.courierRegistration.guide.steps.signup.s3.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s3.desc"),
+          note: "Check your inbox (and spam folder) for a 6-digit code. Enter it into the portal and click `Verify Code` to proceed.",
+        },
+        {
+          id: "s4",
+          title: t("pages.courierRegistration.guide.steps.signup.s4.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s4.desc"),
+        },
+        {
+          id: "s5",
+          title: t("pages.courierRegistration.guide.steps.signup.s5.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s5.desc"),
+        },
+        {
+          id: "s6",
+          title: t("pages.courierRegistration.guide.steps.signup.s6.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s6.desc"),
+        },
+        {
+          id: "s7",
+          title: t("pages.courierRegistration.guide.steps.signup.s7.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s7.desc"),
+        },
+        {
+          id: "s8",
+          title: t("pages.courierRegistration.guide.steps.signup.s8.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s8.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.signup.s8.username",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.signup.s8.usernameDesc",
+              ),
+            },
+            {
+              label: t("pages.courierRegistration.guide.steps.signup.s8.q1"),
+              value: `${t("pages.courierRegistration.guide.steps.signup.s8.q1Desc")}`,
+            },
+            {
+              label: t("pages.courierRegistration.guide.steps.signup.s8.q2"),
+              value: t(
+                "pages.courierRegistration.guide.steps.signup.s8.q2Desc",
+              ),
+            },
+          ],
+        },
+        {
+          id: "s9",
+          title: t("pages.courierRegistration.guide.steps.signup.s9.title"),
+          desc: t("pages.courierRegistration.guide.steps.signup.s9.desc"),
+        },
+      ],
+    },
+    {
+      id: 2,
+      title: t("pages.courierRegistration.sidebar.profile"),
+      label: t("pages.courierRegistration.guide.titles.profile"),
+      desc: t("pages.courierRegistration.guide.descriptions.profile"),
+      steps: [
+        {
+          id: "p1",
+          title: t("pages.courierRegistration.guide.steps.profile.s1.title"),
+          desc: t("pages.courierRegistration.guide.steps.profile.s1.desc"),
+        },
+        {
+          id: "p2",
+          title: t("pages.courierRegistration.guide.steps.profile.s2.title"),
+          desc: t("pages.courierRegistration.guide.steps.profile.s2.desc"),
+        },
+        {
+          id: "p3",
+          title: t("pages.courierRegistration.guide.steps.profile.s3.title"),
+          desc: t("pages.courierRegistration.guide.steps.profile.s3.desc"),
+        },
+        {
+          id: "p4",
+          title: t("pages.courierRegistration.guide.steps.profile.s4.title"),
+          desc: t("pages.courierRegistration.guide.steps.profile.s4.desc"),
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: t("pages.courierRegistration.sidebar.application"),
+      label: t("pages.courierRegistration.guide.titles.application"),
+      desc: t("pages.courierRegistration.guide.descriptions.application"),
+      steps: [
+        {
+          id: "a1",
+          title: t(
+            "pages.courierRegistration.guide.steps.application.s1.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.application.s1.desc"),
+        },
+        {
+          id: "a2",
+          title: t(
+            "pages.courierRegistration.guide.steps.application.s2.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.application.s2.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s2.country",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s2.countryDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s2.name",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s2.nameDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s2.birth",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s2.birthDesc",
+              ),
+            },
+          ],
+        },
+        {
+          id: "a3",
+          title: t(
+            "pages.courierRegistration.guide.steps.application.s3.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.application.s3.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s3.phone",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s3.phoneDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s3.email",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s3.emailDesc",
+              ),
+            },
+          ],
+        },
+        {
+          id: "a4",
+          title: t(
+            "pages.courierRegistration.guide.steps.application.s4.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.application.s4.desc"),
+        },
+        {
+          id: "a5",
+          title: t(
+            "pages.courierRegistration.guide.steps.application.s5.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.application.s5.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s5.pasport",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s5.pasportDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s5.dates",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s5.datesDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s5.place",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s5.placeDesc",
+              ),
+            },
+          ],
+        },
+        {
+          id: "a6",
+          title: t(
+            "pages.courierRegistration.guide.steps.application.s6.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.application.s6.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.application.s6.id",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s6.idDesc",
+              ),
+            },
+            {
+              label: "",
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s6.review",
+              ),
+            },
+            {
+              label: "",
+              value: t(
+                "pages.courierRegistration.guide.steps.application.s6.submit",
+              ),
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 4,
+      title: t("pages.courierRegistration.sidebar.groupRequest"),
+      label: t("pages.courierRegistration.guide.titles.groupRequest"),
+      desc: t("pages.courierRegistration.guide.descriptions.groupRequest"),
+      steps: [
+        {
+          id: "g1",
+          title: t(
+            "pages.courierRegistration.guide.steps.groupRequest.s1.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.groupRequest.s1.desc"),
+        },
+        {
+          id: "g2",
+          title: t(
+            "pages.courierRegistration.guide.steps.groupRequest.s2.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.groupRequest.s2.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s2.name",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s2.nameDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s2.date",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s2.dateDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s2.reason",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s2.reasonDesc",
+              ),
+            },
+          ],
+        },
+        {
+          id: "g3",
+          title: t(
+            "pages.courierRegistration.guide.steps.groupRequest.s3.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.groupRequest.s3.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s3.local",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s3.localDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s3.us",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s3.usDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s3.address",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s3.addressDesc",
+              ),
+            },
+          ],
+        },
+        {
+          id: "g4",
+          title: t(
+            "pages.courierRegistration.guide.steps.groupRequest.s4.title",
+          ),
+          desc: t("pages.courierRegistration.guide.steps.groupRequest.s4.desc"),
+          bullets: [
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s4.embassy",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s4.embassyDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s4.attach",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s4.attachDesc",
+              ),
+            },
+            {
+              label: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s4.submit",
+              ),
+              value: t(
+                "pages.courierRegistration.guide.steps.groupRequest.s4.submitDesc",
+              ),
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  const currentStage = stages[props.index] || stages[0];
+
+  return (
+    <TutorialShell
+      {...props}
+      tutorial={stages}
+      title={t("pages.courierRegistration.title.main")}
+    >
+      <div className="w-full flex flex-col">
+        {/* Kicker & Title */}
+        <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
+          Step 3.6 · {currentStage.title}
+        </div>
+        <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-2 leading-tight">
+          {currentStage.label}
+        </h2>
+        <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-8 max-w-[600px]">
+          {currentStage.desc}
+        </p>
+
+        {/* Steps Grid/List using Image-style Cards */}
+        <div className="flex flex-col gap-5">
+          {currentStage.steps.map((step, idx) => (
+            <div
+              key={step.id}
+              className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] transition-all"
+            >
+              <div className="text-[12px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[10px] flex items-center justify-end">
+                {/* <span>WHAT THIS IS — {idx + 1}</span> */}
+                {step.link && (
+                  <a
+                    href={step.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-primary lowercase tracking-normal"
+                  >
+                    visit portal <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
+              <div className="space-y-3">
+                <div className="text-[15px] font-bold text-[#0c1b33]">
+                  {step.title}
+                </div>
+                <div className="text-sm text-[#3a4f63] leading-[1.7]">
+                  {step.desc}
+                </div>
+                {step.bullets && (
+                  <ul className="mt-3 space-y-2.5">
+                    {step.bullets.map((b, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-2.5 text-[13px] text-[#4a5f73] leading-relaxed"
+                      >
+                        <span className="text-primary/60 font-bold shrink-0">
+                          •
+                        </span>
+                        <div>
+                          {b.label && (
+                            <span className="font-bold text-[#0c1b33] mr-1">
+                              {b.label}
+                            </span>
+                          )}
+                          <span>{b.value}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {step.note && (
+                  <div className="mt-4 bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed">
+                    {step.note}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </TutorialShell>
+  );
+};
+
+export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (
+  props,
+) => {
   const s = props.tutorial[props.index];
   return (
     <TutorialShell {...props} title="Interview Day Guide">
-      <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-3.5">Interview Day Guide · {s.label}</div>
-      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">{s.heading}</h2>
-      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">{s.instruction}</p>
+      <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-3.5">
+        Interview Day Guide · {s.label}
+      </div>
+      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
+        {s.heading}
+      </h2>
+      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+        {s.instruction}
+      </p>
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
         <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
-          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
-          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.vlabel}</div>
+          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
+          <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
+          <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+            {s.vlabel}
+          </div>
         </div>
-        <div className="p-[18px] leading-relaxed courier-mock-visual" dangerouslySetInnerHTML={{ __html: s.visual }} />
+        <div
+          className="p-[18px] leading-relaxed courier-mock-visual"
+          dangerouslySetInnerHTML={{ __html: s.visual }}
+        />
       </div>
-      {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
+      {s.note && (
+        <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+          {s.note}
+        </div>
+      )}
     </TutorialShell>
   );
 };
