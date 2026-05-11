@@ -87,7 +87,7 @@ export function DocListSection({
   return (
     <div className="flex flex-col">
       {/* Progress bar */}
-      <div className="flex items-center gap-[12px] mb-[24px]">
+      <div className="flex items-center gap-[10px] sm:gap-[12px] mb-[20px] sm:mb-[24px]">
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
           <div
             className="h-full bg-linear-to-r from-primary to-primary/70 rounded-[10px] transition-all duration-500"
@@ -99,22 +99,22 @@ export function DocListSection({
             }}
           />
         </div>
-        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
+        <div className="text-[11px] sm:text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
           {reviewedCount} of {totalItems} {progressLabel}
         </div>
       </div>
 
       {/* Groups */}
-      <div className="flex flex-col gap-[32px]">
+      <div className="flex flex-col gap-[24px] sm:gap-[32px]">
         {groups.map((group) => (
           <div key={group.id} className="flex flex-col">
             {/* Group header */}
-            <div className="flex items-center gap-[10px] mb-[14px]">
+            <div className="flex items-center gap-[8px] sm:gap-[10px] mb-[12px] sm:mb-[14px]">
               <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
                 {group.label}
               </span>
               <span
-                className={`text-[10px] font-semibold px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
+                className={`text-[9px] sm:text-[10px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
                   group.badge === "req" || group.badge === "Required"
                     ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
                     : group.badge === "cond" ||
@@ -133,7 +133,7 @@ export function DocListSection({
             </div>
 
             {/* Items */}
-            <div className="flex flex-col gap-[10px]">
+            <div className="flex flex-col gap-[9px] sm:gap-[10px]">
               {group.items.map((item) => {
                 const st = docsStatus[item.id] || "not-started";
                 const vaultId = getVaultId(item);
@@ -165,7 +165,7 @@ export function DocListSection({
                         ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
                         : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
 
-                const rowClasses = `bg-white border-[1.5px] rounded-[16px] p-[18px_20px] flex items-center gap-[16px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 text-left w-full ${
+                const rowClasses = `bg-white border-[1.5px] rounded-[14px] sm:rounded-[16px] p-[14px] sm:p-[18px_20px] flex flex-col sm:flex-row items-start sm:items-center gap-[12px] sm:gap-[16px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 text-left w-full ${
                   st === "reviewed"
                     ? "border-[#a8d9be] bg-[#e8f5ef]"
                     : st === "in-progress"
@@ -183,7 +183,7 @@ export function DocListSection({
                   >
                     {/* Icon */}
                     <div
-                      className={`w-[40px] h-[40px] rounded-[10px] border flex items-center justify-center shrink-0 text-[17px] transition-colors ${
+                      className={`w-[36px] h-[36px] sm:w-[40px] sm:h-[40px] rounded-[10px] border flex items-center justify-center shrink-0 text-[16px] sm:text-[17px] transition-colors ${
                         st === "reviewed"
                           ? "bg-[#e8f5ef] border-[#a8d9be]"
                           : "bg-[#e8f1fb] border-[#d0e4f7]"
@@ -195,12 +195,12 @@ export function DocListSection({
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px] leading-[1.3]">
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className="text-[14px] sm:text-[15px] font-semibold text-[#0c1b33] mb-[4px] leading-[1.3] break-words">
                         {item.title}
                       </div>
                       {item.sub && (
-                        <div className="text-[13px] text-[#6b8097] leading-[1.4]">
+                        <div className="text-[12px] sm:text-[13px] text-[#6b8097] leading-[1.4] break-words">
                           {item.sub}
                         </div>
                       )}
@@ -212,7 +212,7 @@ export function DocListSection({
                             return (
                               <span
                                 key={t}
-                                className={`text-[11px] font-semibold px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${tag.cls}`}
+                                className={`text-[10px] sm:text-[11px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${tag.cls}`}
                               >
                                 {tag.label}
                               </span>
@@ -223,20 +223,20 @@ export function DocListSection({
                     </div>
 
                     {/* Right: status badge + dropdown */}
-                    <div className="shrink-0 flex items-center gap-2">
+                    <div className="shrink-0 flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
                       {isReloadingDocs && !uploadedDoc ? (
-                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
+                        <div className="flex items-center gap-1.5 px-[10px] sm:px-[11px] py-[5px] text-[11px] sm:text-[12px] text-muted-foreground font-medium animate-pulse">
                           <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
                           Checking...
                         </div>
                       ) : isDeleting ? (
-                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
+                        <div className="flex items-center gap-1.5 px-[10px] sm:px-[11px] py-[5px] text-[11px] sm:text-[12px] text-red-500 font-medium animate-pulse">
                           <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
                           Deleting...
                         </div>
                       ) : (
                         <div
-                          className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                          className={`px-[10px] sm:px-[11px] py-[5px] rounded-full border text-[11px] sm:text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
                         >
                           {displayStatus}
                         </div>
