@@ -3290,13 +3290,6 @@ function InteractiveClockWidget() {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showHint, setShowHint] = useState(true);
-  const [selectedSlot, setSelectedSlot] = useState<number>(2); // Thu - 4:00 PM selected by default
-
-  const timeSlots = [
-    { day: "Tue", time: "2:30 PM" },
-    { day: "Wed", time: "11:00 AM" },
-    { day: "Thu", time: "4:00 PM" },
-  ];
 
   const springAngle = useSpring(60, { stiffness: 30, damping: 15, mass: 1 });
 

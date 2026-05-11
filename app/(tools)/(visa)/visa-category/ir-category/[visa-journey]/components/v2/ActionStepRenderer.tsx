@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   CheckCircle,
   Package,
@@ -15,8 +16,8 @@ import {
   Lock,
   Crown,
 } from "lucide-react";
-import { InterviewOutcomeTool } from "./InterviewOutcomeTool";
-import { Input221gTool } from "./Input221gTool";
+import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
+import { Input221gTool } from "./components/Input221gTool";
 import { useStepEntitlement } from "./useStepEntitlement";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -2239,7 +2240,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       </div>
 
       {/* Full-Screen Guide Modal */}
-      {showGuide && filteredSteps && filteredSteps.length > 0 && (
+      {showGuide && filteredSteps && filteredSteps.length > 0 && createPortal(
         <div
           style={{
             display: "flex",
@@ -2616,11 +2617,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Guide Choice Modal for Step 1.11 */}
-      {showGuideChoice && (
+      {showGuideChoice && createPortal(
         <div
           style={{
             position: "fixed",
@@ -2802,7 +2804,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {previewConfig.isOpen &&

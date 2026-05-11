@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Upload } from "lucide-react";
-import { getStepIcon } from "./StepIcon";
+import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
 interface HouseholdMemberToolProps {
@@ -265,13 +265,21 @@ export const HouseholdMemberTool: React.FC<HouseholdMemberToolProps> = ({
   const renderHhDocCard = (item: any) => {
     const st = hhDocsStatus[item.id] || "not-started";
     const stLabel =
-      st === "reviewed" ? "✓ Reviewed" : st === "in-progress" ? "In progress" : "Open guide";
+      st === "reviewed"
+        ? "✓ Reviewed"
+        : st === "in-progress"
+          ? "In progress"
+          : "Open guide";
 
     return (
       <div
         key={item.id}
         className={`w-full group bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[17px_20px] flex items-center gap-[15px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] ${
-          st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : st === "in-progress" ? "bg-[#fef8e8] border-[#f0d98a]" : ""
+          st === "reviewed"
+            ? "bg-[#e8f5ef] border-[#a8d9be]"
+            : st === "in-progress"
+              ? "bg-[#fef8e8] border-[#f0d98a]"
+              : ""
         }`}
       >
         <div
@@ -285,7 +293,9 @@ export const HouseholdMemberTool: React.FC<HouseholdMemberToolProps> = ({
           <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
             {item.title}
           </div>
-          <div className="text-[12px] text-[#6b8097] leading-tight">{item.sub}</div>
+          <div className="text-[12px] text-[#6b8097] leading-tight">
+            {item.sub}
+          </div>
           <div className="flex gap-[5px] mt-[6px] flex-wrap">
             {item.tags.map((tag: any, idx: number) => {
               const tagMap: Record<string, string> = {
@@ -354,5 +364,9 @@ export const HouseholdMemberTool: React.FC<HouseholdMemberToolProps> = ({
     );
   };
 
-  return <div className="flex flex-col gap-3">{items.map((item) => renderHhDocCard(item))}</div>;
+  return (
+    <div className="flex flex-col gap-3">
+      {items.map((item) => renderHhDocCard(item))}
+    </div>
+  );
 };
