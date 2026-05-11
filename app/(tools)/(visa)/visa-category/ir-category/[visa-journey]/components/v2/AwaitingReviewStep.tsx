@@ -75,7 +75,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
         </div>
 
         {/* Status Card (Navy) */}
-        <div className="relative  bg-[#1a0a18] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[160ms]">
+        <div className="relative  bg-[var(--rv-ch2-module-bg)] rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] animate-in fade-in slide-in-from-top-2 duration-300 delay-[160ms]">
           {/* Top Accent Stripe */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
 

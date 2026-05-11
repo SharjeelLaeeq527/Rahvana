@@ -580,16 +580,16 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
           </div>
 
           {/* Launch module */}
-          <div className="rounded-2xl mb-5 relative overflow-hidden w-full" style={{ background: "#251f32" }}>
+          <div className="rounded-2xl mb-5 relative overflow-hidden w-full" style={{ background: "var(--rv-ch1-module-bg)", border: "1px solid var(--rv-ch1)" }}>
             <div className="absolute top-0 left-0 right-0 h-[2px]"
-              style={{ background: "linear-gradient(to right, #8284bf, #4e518c, transparent)", opacity: 0.8 }} />
+              style={{ background: "linear-gradient(to right, var(--rv-ch1), var(--rv-ch1-module-bg), transparent)", opacity: 0.8 }} />
             <div className="p-5 sm:p-8 md:p-[32px_34px_28px]">
               <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
-                <div className="w-[46px] h-[46px] rounded-[11px] flex items-center justify-center shrink-0" style={{ background: "#8284bf" }}>
+                <div className="w-[46px] h-[46px] rounded-[11px] flex items-center justify-center shrink-0" style={{ background: "var(--rv-ch1)" }}>
                   <Globe className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#8284bf" }}>
+                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--rv-ch1)" }}>
                     Post-Filing Checkpoint · Receipt Registration
                   </div>
                   <div className="text-[clamp(19px,2.8vw,23px)] leading-tight" style={{ color: "#fff" }}>
@@ -597,20 +597,20 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="h-px mb-5" style={{ background: "#8284bf33" }} />
+              <div className="h-px mb-5" style={{ background: "rgba(130,132,191,0.20)" }} />
               {tool.phases?.map((p: any, i: number) => (
                 <div key={i} className="flex gap-2 items-start rounded-[10px] px-4 py-3 mb-2"
-                  style={{ background: "rgba(130,132,191,0.18)", border: "1px solid #8284bf55" }}>
+                  style={{ background: "var(--rv-ch1-feature-bg)", border: "1px solid rgba(130,132,191,0.28)" }}>
                   <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full whitespace-nowrap"
-                    style={{ background: "#8284bf", color: "#fff" }}>{p.badge}</span>
+                    style={{ background: "var(--rv-ch1)", color: "#fff" }}>{p.badge}</span>
                   <span className="text-[13px] leading-snug" style={{ color: "rgba(255,255,255,0.75)" }}>{p.copy}</span>
                 </div>
               ))}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 mb-2">
                 {tool.launch_cues?.map((cue: string, i: number) => (
                   <div key={i} className="flex gap-3 items-center rounded-xl px-5 py-4"
-                    style={{ background: "#4e518c", border: "1.5px solid #8284bf55", minHeight: "60px" }}>
-                    <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ background: "#8284bf" }} />
+                    style={{ background: "var(--rv-ch1-feature-bg)", border: "1.5px solid rgba(130,132,191,0.24)", minHeight: "60px" }}>
+                    <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ background: "var(--rv-ch1)" }} />
                     <span className="text-[14px] font-normal leading-snug" style={{ color: "rgba(255,255,255,0.8)" }}>{cue}</span>
                   </div>
                 ))}

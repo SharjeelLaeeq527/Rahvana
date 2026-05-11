@@ -73,8 +73,8 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
     });
   };
 
-  // Chapter-based accent colors for launch module
-  const launchAccentColor = isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738";
+  // Chapter 1 accent (this component is for Chapter 1)
+  const launchAccentColor = "var(--rv-ch1)";
 
   // Tutorial steps (copied from StepView)
   const USCIS_STATUS_TUTORIAL_STEPS = [
@@ -161,22 +161,22 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
       {/* Launch Module with tracking buttons */}
       {tool.launch_module && (
         <div className="rounded-2xl border mb-2 relative overflow-hidden launch-module step-modal-spacing" style={{
-          backgroundColor: isChapter1 ? "#251f32" : isChapter2 ? "#1a0a18" : "#051738",
+          backgroundColor: "var(--rv-ch1-module-bg)",
           borderColor: launchAccentColor
         }}>
           <div className="absolute top-0 left-0 right-0 h-[2px] opacity-80" style={{
-            background: `linear-gradient(90deg, ${launchAccentColor} 0%, rgba(255,255,255,0) 100%)`
+            background: "linear-gradient(90deg, var(--rv-ch1), var(--rv-ch1-module-bg), transparent)"
           }} />
           {/* CHANGE 2: p-5 on mobile, md:p-8, lg:p-[32px_34px_28px] */}
           <div className="launch-inner p-5 md:p-8 lg:p-[32px_34px_28px]">
             {/* CHANGE 3: flex-wrap added so badge wraps on small screens */}
             <div className="launch-top flex items-start gap-4 mb-6 flex-wrap">
               <div className="launch-header flex gap-4 items-start">
-                <div className="launch-icon w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border-white" style={{ backgroundColor: launchAccentColor }}>
+                <div className="launch-icon w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--rv-ch1)", border: '1px solid var(--rv-ch1-dark)', boxShadow: '0 8px 30px rgba(130,132,191,0.06)' }}>
                   <Shield className="w-7 h-7 text-[#ffffff]" />
                 </div>
                 <div>
-                  <div className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3", borderLeft: `5px solid ${launchAccentColor}`, paddingLeft: 10 }}>Pending with USCIS · Active Monitoring</div>
+                  <div className="launch-eyebrow text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "var(--rv-ch1-text)", borderLeft: `5px solid ${launchAccentColor}`, paddingLeft: 10 }}>Pending with USCIS · Active Monitoring</div>
                   <div className="text-[clamp(21px,3vw,26px)] leading-tight text-white">{tool.launch_module.status?.hero}</div>
                   <div className="launch-copy text-[13.5px] text-[#f7f8ff] leading-snug max-w-[470px]">{tool.launch_module.status?.copy}</div>
                 </div>
@@ -184,72 +184,87 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
               {/* CHANGE 4: self-start shrink-0 prevents badge from stretching/squishing */}
               <span className={`status-badge ml-auto self-start shrink-0 text-[#b668b8]`}>{tool.launch_module.status?.badge}</span>
             </div>
-            <div className="launch-divider h-px mb-5" style={{ backgroundColor: `${launchAccentColor}33` }} />
+            <div className="launch-divider h-px mb-5" style={{ backgroundColor: "rgba(130,132,191,0.20)" }} />
             {/* Metrics */}
             {/* CHANGE 5: grid-cols-2 on mobile (was grid-cols-1), md:grid-cols-4 */}
             <div className="metrics grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"> 
                {/* Status */}
-  <div className="metric bg-white rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor }}>
-    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1 accent-brown">
+  <div className="metric rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor, backgroundColor: "var(--rv-ch1-feature-bg)" }}>
+    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: launchAccentColor }}>
       Status
     </div>
-    <div className="metric-value text-[14px] font-semibold accent-brown">
+    <div className="metric-value text-[14px] font-semibold" style={{ color: 'var(--rv-ch1-text)' }}>
       {receiptInfo?.lastKnownStatus || "—"}
     </div>
-    <div className="metric-sub text-[11px] mt-1 accent-brown">
+    <div className="metric-sub text-[11px] mt-1 text-white">
       Current USCIS case status
     </div>
   </div>
 
   {/* Last Checked */}
-  <div className="metric bg-white rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor }}>
-    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1 accent-brown">
+  <div className="metric rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor, backgroundColor: "var(--rv-ch1-feature-bg)" }}>
+    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: launchAccentColor }}>
       Last Checked
     </div>
-    <div className="metric-value text-[14px] font-semibold accent-brown">
+    <div className="metric-value text-[14px] font-semibold" style={{ color: 'var(--rv-ch1-text)' }}>
       {receiptInfo?.lastCheckedAt
         ? fmtDateTime(receiptInfo.lastCheckedAt)
         : "—"}
     </div>
-    <div className="metric-sub text-[11px] mt-1 accent-brown">
+    <div className="metric-sub text-[11px] mt-1 text-white">
       Latest system refresh
     </div>
   </div>
 
   {/* Notice Date */}
-  <div className="metric bg-white rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor }}>
-    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1 accent-brown">
+  <div className="metric rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor, backgroundColor: "var(--rv-ch1-feature-bg)" }}>
+    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: launchAccentColor }}>
       Notice Date
     </div>
-    <div className="metric-value text-[14px] font-semibold accent-brown">
+    <div className="metric-value text-[14px] font-semibold" style={{ color: 'var(--rv-ch1-text)' }}>
       {receiptInfo?.noticeDate ? fmtDate(receiptInfo.noticeDate) : "—"}
     </div>
-    <div className="metric-sub text-[11px] mt-1 accent-brown">
+    <div className="metric-sub text-[11px] mt-1 text-white">
       USCIS receipt notice
     </div>
   </div>
 
   {/* Priority Date */}
-  <div className="metric bg-white rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor }}>
-    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1 accent-brown">
+  <div className="metric rounded-[12px] px-4 py-3 flex flex-col" style={{ borderColor: launchAccentColor, backgroundColor: "var(--rv-ch1-feature-bg)" }}>
+    <div className="metric-label text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: launchAccentColor }}>
       Priority Date
     </div>
-    <div className="metric-value text-[14px] font-semibold accent-brown">
+    <div className="metric-value text-[14px] font-semibold" style={{ color: 'var(--rv-ch1-text)' }}>
       {receiptInfo?.priorityDate ? fmtDate(receiptInfo.priorityDate) : "—"}
     </div>
-    <div className="metric-sub text-[11px] mt-1 accent-brown">
+    <div className="metric-sub text-[11px] mt-1 text-white">
       Filing priority reference
     </div>
   </div>
 </div>
             {/* Tracking Action Buttons */}
             <div className="launch-actions grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-              <Button className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition text-white" style={{
-                backgroundColor: launchAccentColor,
-                '--hover-bg': isChapter1 ? '#6a6a9f' : isChapter2 ? '#3a073a' : '#031020'
+              <Button className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition" style={{
+                backgroundColor: isChapter1 ? 'var(--rv-ch1)' : launchAccentColor,
+                color: '#fff',
+                '--hover-bg': isChapter1 ? 'rgba(186, 169, 218, 0.86)' : isChapter2 ? 'var(--rv-ch2-feature-bg)' : '#031020'
               } as any}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isChapter1 ? '#6a6a9f' : isChapter2 ? '#3a073a' : '#031020')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = launchAccentColor)}
+              onMouseEnter={(e) => {
+                if (isChapter1) {
+                  e.currentTarget.style.backgroundColor = 'rgba(123, 127, 243, 0.88)';
+                  e.currentTarget.style.color = 'var(--rv-ch1-text)';
+                } else {
+                  e.currentTarget.style.backgroundColor = isChapter2 ? 'var(--rv-ch2-feature-bg)' : '#031020';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (isChapter1) {
+                  e.currentTarget.style.backgroundColor = 'var(--rv-ch1)';
+                  e.currentTarget.style.color = '#fff';
+                } else {
+                  e.currentTarget.style.backgroundColor = launchAccentColor;
+                }
+              }}
               onClick={() => { /* TODO: implement refresh logic */ }}>
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><polyline points="21 3 21 9 15 9" /></svg>
                 Refresh tracking status
@@ -275,7 +290,7 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
             <div className="text-[13px] text-[#3a4f63] leading-[1.7] max-w-[560px]">Use this waiting period to stay organized, build stronger records, and prepare for the steps that usually come after USCIS review.</div>
           </div>
           <span className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0" style={{
-            backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3",
+            backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "var(--rv-ch2-feature-bg)" : "#e8ecf3",
             borderWidth: "1px",
             borderColor: launchAccentColor
           }}>High-value now</span>
@@ -292,14 +307,14 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
             <Button variant="outline" size="sm" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-[12px] font-semibold text-[#0c1b33] mb-2" style={{
               borderColor: launchAccentColor,
               borderWidth: "1px"
-            }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = isChapter1 ? "#6a6a9f" : isChapter2 ? "#3a073a" : "#031020")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)} onClick={() => setShowProcessingModal(true)} type="button">
+            }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = isChapter1 ? "#6a6a9f" : isChapter2 ? "var(--rv-ch2)" : "#031020")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)} onClick={() => setShowProcessingModal(true)} type="button">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18" /><path d="M12 3v18" /></svg>
               Check processing-time context
             </Button>
             <Button variant="outline" size="sm" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-[12px] font-semibold text-[#0c1b33]" style={{
               borderColor: launchAccentColor,
               borderWidth: "1px"
-            }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = isChapter1 ? "#6a6a9f" : isChapter2 ? "#3a073a" : "#031020")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)} onClick={() => setShowMilestonesModal(true)} type="button">
+            }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = isChapter1 ? "#6a6a9f" : isChapter2 ? "var(--rv-ch2)" : "#031020")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)} onClick={() => setShowMilestonesModal(true)} type="button">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
               See common next milestones
             </Button>
@@ -409,8 +424,8 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
               <h2 className="text-[28px] md:text-[32px] text-[#0c1b33] leading-tight mb-1">Useful Right Now</h2>
               <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">These are focused, case-relevant resources you can use while USCIS is still processing your petition.</div>
             </div>
-            <span className="ml-auto mt-2 md:mt-0 px-4 py-2 rounded-full text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm" style={{
-              backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3",
+            <span className="ml-auto mt-2 md:mt-0 px-4 py-2 rounded-full text-[var(--rv-navy)] text-[13px] font-bold uppercase tracking-wide shadow-sm" style={{
+              backgroundColor: isChapter1 ? "var(--rv-purple-bg)" : isChapter2 ? "var(--rv-launch-note)" : "var(--rv-sky)",
               borderWidth: "1px",
               borderColor: launchAccentColor
             }}>Education + Updates</span>
@@ -427,10 +442,10 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
                   <div className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-4 border ${iconColor}`}><Icon className="w-[20px] h-[20px]" /></div>
                   <div className="font-semibold text-[16px] text-[#0c1b33] mb-1 leading-tight">{u.title}</div>
                   <div className="text-[13.5px] text-[#3a4f63] mb-4 leading-[1.6] flex-1">{u.copy}</div>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-semibold text-[#0c1b33] mt-auto" style={{
+                  <Button variant="outline" size="sm" className="flex items-center gap-2 px-4 py-2 rounded-lg text-[12px] font-semibold text-[var(--rv-navy)] mt-auto" style={{
                     borderWidth: "1px",
                     borderColor: launchAccentColor,
-                    backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3"
+                    backgroundColor: isChapter1 ? "var(--rv-purple-bg)" : isChapter2 ? "var(--rv-launch-note)" : "var(--rv-sky)"
                   }} onClick={() => {
                     if (u.action?.toLowerCase().includes("preview")) setShowAfterI130Modal(true);
                     else if (u.action?.toLowerCase().includes("evidence guide")) setShowRelationshipEvidenceModal(true);
@@ -460,9 +475,9 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
           </div>
           <div className="update-list flex flex-col gap-3">
             {tool.relevant_updates.map((u: any, i: number) => (
-              <div key={i} className="update-card p-4 rounded-lg border border-[#d0e4f7] bg-[#f8fbff]">
-                <div className="update-top flex justify-between gap-2 mb-1 items-start"><div className="update-title font-semibold text-[#0c1b33]">{u.title}</div><div className="update-source text-[11px] font-bold uppercase text-[#6b8097]">{u.source}</div></div>
-                <div className="update-copy text-[13px] text-[#3a4f63]">{u.copy}</div>
+              <div key={i} className="update-card p-4 rounded-lg" style={{ border: `1px solid var(--rv-line)`, backgroundColor: `var(--rv-sky)` }}>
+                <div className="update-top flex justify-between gap-2 mb-1 items-start"><div className="update-title font-semibold text-[var(--rv-navy)]">{u.title}</div><div className="update-source text-[11px] font-bold uppercase text-[var(--rv-muted)]">{u.source}</div></div>
+                <div className="update-copy text-[13px]" style={{ color: `var(--rv-soft)` }}>{u.copy}</div>
               </div>
             ))}
           </div>
@@ -476,10 +491,10 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
           }}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
             <div>
-              <h2 className="text-[24px] md:text-[28px] text-[#0c1b33] leading-tight mb-1">Keep Building Your Case</h2>
-              <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">Even while the case is pending, you can strengthen readiness by continuing to collect relationship evidence and organizing what may matter later.</div>
+              <h2 className="text-[24px] md:text-[28px] text-[var(--rv-navy)] leading-tight mb-1">Keep Building Your Case</h2>
+              <div className="text-[15px]" style={{ color: 'var(--rv-soft)', lineHeight: '1.7', maxWidth: '620px', marginTop: '0.25rem' }}>Even while the case is pending, you can strengthen readiness by continuing to collect relationship evidence and organizing what may matter later.</div>
             </div>
-            <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[13px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">Ongoing Prep</span>
+            <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full text-[var(--rv-navy)] text-[13px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0" style={{ backgroundColor: 'var(--rv-sky)', border: '1px solid var(--rv-line)' }}>Ongoing Prep</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             {tool.build_case.map((b: any, i: number) => {

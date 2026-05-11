@@ -72,7 +72,7 @@ export const AwaitingReviewStep: React.FC<{
           </span>
         ))}
       </div>
-      <div className="relative bg-[#0c1b33] border border-white/5 rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-xl">
+      <div className="relative bg-[#1a0a18] border border-white/5 rounded-[16px] p-[24px_26px] mb-[16px] overflow-hidden shadow-xl">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#2f6fd4] via-[#6aa8f0] to-transparent opacity-80" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[8px]">
           {data.statusCard.label}
@@ -780,7 +780,7 @@ export const PolioCertificateTool: React.FC<{
             setPolioGuideStep(0);
             setIsPolioGuideOpen(true);
           }}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+          className="w-full bg-[#3b7dd8] hover:bg-[#3b7dd8]  text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
         >
           {polioLaunched
             ? data.launchModule.buttonLabels.completed

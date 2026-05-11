@@ -93,13 +93,6 @@ export default function AboutPage() {
             variants={containerVariants}
             className="flex flex-col gap-4 md:gap-6 mb-8 2xl:mb-12"
           >
-            <motion.div
-              variants={itemVariants}
-              className="inline-flex items-center gap-2 px-4 py-2 border-[1.5px] border-[#b5451b] rounded-full text-xs font-semibold tracking-wider text-[#b5451b] w-fit"
-            >
-              <Heart size={14} className="fill-current" />
-              OUR STORY
-            </motion.div>
             <motion.h1
               variants={itemVariants}
               className="font-bold text-center font-serif text-4xl sm:text-5xl lg:text-6xl 2xl:text-7xl leading-[1.1] text-[#121e2e]"
@@ -118,6 +111,13 @@ export default function AboutPage() {
               variants={containerVariants}
               className="flex flex-col gap-8 md:gap-10"
             >
+              <motion.div
+                variants={itemVariants}
+                className="inline-flex items-center gap-2 px-4 py-2 border-[1.5px] border-[#b5451b] rounded-full text-xs font-semibold tracking-wider text-[#b5451b] w-fit"
+              >
+                <Heart size={14} className="fill-current" />
+                OUR STORY
+              </motion.div>
               <motion.p
                 variants={itemVariants}
                 className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600"
