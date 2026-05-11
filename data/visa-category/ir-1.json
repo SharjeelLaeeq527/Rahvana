@@ -2400,31 +2400,23 @@
                 "title": "Confirm the current USCIS filing address",
                 "text": "Before mailing, verify the current USCIS filing address for your paper submission so the packet goes to the correct location.",
                 "url": "uscis.gov/forms/filing-guidance",
-                "visual": "<div class=\"mt\">Current filing address check</div><div class=\"mb\"><div class=\"small\">Review the official USCIS filing guidance and mailing location before you send the packet.</div></div>",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step1.jpg\" alt=\"Confirm USCIS filing address\" style=\"width:100%;\" />",
                 "note": "Do not mail to an old address saved from a previous screenshot or conversation."
               },
               {
                 "label": "Mailing guide · Step 2",
-                "title": "Use a secure, trackable mailing method",
-                "text": "Choose a carrier and service that gives you a tracking number and lets you confirm when the packet is delivered.",
-                "url": "carrier checkout",
-                "visual": "<div class=\"mt\">Shipment setup</div><div class=\"mb\"><div class=\"small\">Carrier selected</div></div><div class=\"mb\"><div class=\"small\">Tracking number issued</div></div>",
-                "note": "A trackable method gives you the proof you need before USCIS issues the receipt notice."
-              },
-              {
-                "label": "Mailing guide · Step 3",
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
                 "url": "rahvana paper filing path",
-                "visual": "<div class=\"mt\">Mailing details</div><div class=\"mb\"><div class=\"small\">Carrier</div></div><div class=\"mb\"><div class=\"small\">Tracking number</div></div><div class=\"mbtn\">Save details</div>",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step2.jpg\" alt=\"Mail packet and save tracking details\" style=\"width:100%;\" />",
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
               {
-                "label": "Mailing guide · Step 4",
+                "label": "Mailing guide · Step 3",
                 "title": "Watch for delivery, then wait for the USCIS receipt notice",
                 "text": "Once the carrier shows delivered, keep the proof and then watch for USCIS acceptance and the receipt notice.",
                 "url": "delivery confirmation",
-                "visual": "<div class=\"mt\">Delivery confirmed</div><div class=\"mb\"><div class=\"small\">Shipment delivered</div></div><div class=\"mbtn\">Continue to receipt notice</div>",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step3.jpg\" alt=\"Watch for delivery and receipt notice\" style=\"width:100%;\" />",
                 "note": "After delivery, the paper path rejoins the same receipt-notice and case-tracking flow used in the online branch."
               }
             ]
