@@ -4,6 +4,7 @@ import React from "react";
 import { X, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { MEDICAL_EXAM_DATA } from "../MedicalExamData";
+import Link from "next/link";
 
 interface MedicalExamToolProps {
   state: any;
@@ -52,39 +53,25 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
   const [medErrors, setMedErrors] = React.useState<Record<string, string>>({});
   const data = MEDICAL_EXAM_DATA;
 
-  const handleMedTimeChange = (input: string) => {
-    const upper = input.toUpperCase();
-    const digits = upper.replace(/\D/g, "").slice(0, 4);
+  const to12h = (t24: string) => {
+    if (!t24) return "";
+    const [h, m] = t24.split(":");
+    const hours = parseInt(h);
+    const suffix = hours >= 12 ? "PM" : "AM";
+    const h12 = hours % 12 || 12;
+    return `${h12.toString().padStart(2, "0")}:${m} ${suffix}`;
+  };
 
-    // Extract letters specifically after the numbers/colon
-    const rawSuffix = upper.slice(
-      digits.length > 2 ? digits.length + 1 : digits.length,
-    );
-    let suffix = rawSuffix.replace(/[^APM]/g, "");
-
-    // Logic: Suffix must start with A or P
-    if (suffix.length > 0 && !["A", "P"].includes(suffix[0])) {
-      suffix = "";
-    }
-    // Cap at 2 chars
-    if (suffix.length > 2) suffix = suffix.slice(0, 2);
-
-    let formatted = "";
-    if (digits.length > 0) {
-      formatted = digits.slice(0, 2);
-      if (parseInt(formatted) > 12) formatted = "12";
-      if (digits.length >= 3) {
-        let mins = digits.slice(2, 4);
-        if (parseInt(mins) > 59) mins = "59";
-        formatted += ":" + mins;
-      }
-    }
-
-    if (digits.length === 4) {
-      formatted += " " + suffix;
-    }
-
-    setMedTime(formatted);
+  const to24h = (t12: string) => {
+    if (!t12) return "";
+    const match = t12.match(/(\d{1,2}):(\d{2})\s(AM|PM)/i);
+    if (!match) return "";
+    let h = parseInt(match[1]);
+    const m = match[2];
+    const ampm = match[3].toUpperCase();
+    if (ampm === "PM" && h < 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    return `${h.toString().padStart(2, "0")}:${m}`;
   };
 
   const currentSteps =
@@ -204,13 +191,18 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
                   <div className="text-sm text-slate-500 mb-6">
                     {(s as any).card.description}
                   </div>
-                  <button className="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 group">
+                  <Link
+                    href={(s as any).card.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 group cursor-pointer"
+                  >
                     {(s as any).card.buttonLabel}{" "}
                     <ExternalLink
                       size={16}
                       className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
                     />
-                  </button>
+                  </Link>
                 </div>
               )}
 
@@ -241,15 +233,13 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
                       Time
                     </label>
                     <input
-                      type="text"
-                      value={medTime}
+                      type="time"
+                      value={to24h(medTime)}
                       onChange={(e) => {
-                        handleMedTimeChange(e.target.value);
+                        setMedTime(to12h(e.target.value));
                         setMedErrors((prev) => ({ ...prev, medTime: "" }));
                       }}
-                      placeholder="hh:mm AM"
-                      maxLength={8}
-                      className={`p-3 border rounded-xl font-mono ${medErrors.medTime ? "border-red-500 bg-red-50/30" : ""}`}
+                      className={`p-3 border rounded-xl font-mono appearance-none ${medErrors.medTime ? "border-red-500 bg-red-50/30" : ""}`}
                     />
                     {medErrors.medTime && (
                       <span className="text-[9px] font-bold text-red-500 uppercase px-1">
