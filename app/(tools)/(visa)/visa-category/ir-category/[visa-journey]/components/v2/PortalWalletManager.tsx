@@ -302,7 +302,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
 
             <button
               onClick={() => onSave(localData)}
-              className="w-full p-[14px_24px] bg-[#3b7dd8] text-white rounded-[10px] font-semibold text-[15px] hover:bg-[#3b7dd8]/70 hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+              className="w-full p-[14px_24px] bg-[#0d7377] text-white rounded-[10px] font-semibold text-[15px] hover:bg-[#0d7377]/90 hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
             >
               Save Payment Status
             </button>
