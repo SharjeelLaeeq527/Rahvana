@@ -3,11 +3,7 @@
     "label": "Step 1 of 4 — Watch for USCIS acceptance",
     "heading": "Look for the first accepted-filing notice",
     "instruction": "After USCIS accepts the filing, watch your <strong>USCIS online account</strong>, any available <strong>e-notification</strong>, and the <strong>physical notice by mail</strong>. The goal is to bring back the receipt number once it appears.",
-    "url": "my.uscis.gov",
-    "ssLabel": "USCIS Notice Sources",
-    "ssHeadline": "USCIS Account · Email/Text · Mail Notice",
-    "ssDesc": "Any of these may be the first place you notice the case has been accepted.",
-    "ssHighlight": null,
+    "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step1.png\" alt=\"Find the receipt number\" style=\"width:100%; \" />",
     "caption": "Return to Rahvana once you have the receipt number or the notice itself.",
     "note": null
   },
@@ -15,13 +11,8 @@
     "label": "Step 2 of 4 — Find the receipt number",
     "heading": "Find the 13-character receipt number",
     "instruction": "The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.",
-    "url": "egov.uscis.gov",
-    "ssLabel": "Receipt Number Pattern",
-    "ssHeadline": "3 letters + 10 numbers",
-    "ssDesc": "Common prefixes include IOE, EAC, WAC, LIN, SRC, NBC, or MSC.",
-    "ssHighlight": "Example: IOE1234567890",
-    "caption": "This is the number Rahvana should save to enable case monitoring.",
-    "note": "If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing."
+    "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step2.png\" alt=\"Find the receipt number\" style=\"width:100%; \" />",
+    "caption": "This is the number Rahvana should save to enable case monitoring."
   },
   {
     "label": "Step 3 of 4 — Decide how to register it",

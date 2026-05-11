@@ -173,12 +173,6 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
           ))}
         </div>
       </div>
-
-      {tool.disclaimer && (
-        <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center mb-6">
-          {tool.disclaimer}
-        </p>
-      )}
     </div>
   );
 };

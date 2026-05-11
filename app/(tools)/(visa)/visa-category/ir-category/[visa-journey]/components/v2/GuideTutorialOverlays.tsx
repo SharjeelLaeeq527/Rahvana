@@ -1,23 +1,36 @@
 "use client";
 // Generic tutorial overlay for status guides (used for 'What does this status mean?')
 export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
-  const s = props.tutorial[props.index];
+  const s: TutorialStep = props.tutorial[props.index] ?? {};
+  const showBrowserHeader = Boolean(s?.url);
+  const hasImageVisual = Boolean(s?.visual && /<img\b/i.test(s.visual));
   return (
     <TutorialShell {...props} title={props.title || s.heading}>
       <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">{props.title || s.label}</div>
       <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">{s.heading}</h2>
-      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]" dangerouslySetInnerHTML={{ __html: s.instruction }} />
+      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]" dangerouslySetInnerHTML={{ __html: s.instruction || "" }} />
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
-        <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
-          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
-          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.url}</div>
-        </div>
+        {showBrowserHeader && (
+          <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+            <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
+            <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.url}</div>
+          </div>
+        )}
         <div className="p-[18px] leading-relaxed">
-          <div className="text-[10px] font-bold uppercase text-[#2f6fd4] mb-1">{s.ssLabel || s.kicker}</div>
-          <div className="text-[15px] font-bold text-[#0c1b33] mb-1">{s.ssHeadline || s.head}</div>
-          <div className="text-[13px] text-[#3a4f63] mb-2">{s.ssDesc || s.copy}</div>
+          {(s.ssLabel || s.kicker) && <div className="text-[10px] font-bold uppercase text-[#2f6fd4] mb-1">{s.ssLabel || s.kicker}</div>}
+          {(s.ssHeadline || s.head) && <div className="text-[15px] font-bold text-[#0c1b33] mb-1">{s.ssHeadline || s.head}</div>}
+          {(s.ssDesc || s.copy) && <div className="text-[13px] text-[#3a4f63] mb-2">{s.ssDesc || s.copy}</div>}
+          {s.visual && (
+            <div
+              className={hasImageVisual
+                ? "-mx-[18px] -mb-[18px] [&_img]:block [&_img]:w-full [&_img]:h-auto [&_img]:object-contain [&_img]:object-top"
+                : "mb-3"
+              }
+              dangerouslySetInnerHTML={{ __html: s.visual || "" }}
+            />
+          )}
           {(s.ssHighlight || s.highlight) && <div className="text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg mb-2">{s.ssHighlight || s.highlight}</div>}
-          <div className="flex gap-2 flex-wrap mb-2">{s.pills && s.pills.map((p:string, i:number) => <span key={i} className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[11px] font-bold uppercase tracking-wide whitespace-nowrap">{p}</span>)}</div>
+          {s.pills && <div className="flex gap-2 flex-wrap mb-2">{s.pills.map((p:string, i:number) => <span key={i} className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[11px] font-bold uppercase tracking-wide whitespace-nowrap">{p}</span>)}</div>}
         </div>
       </div>
       {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
@@ -26,12 +39,32 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
 };
 
 import React, { useEffect } from "react";
-import { X, ChevronLeft, ArrowRight } from "lucide-react";
+import { X } from "lucide-react";
+
+type TutorialStep = {
+  label?: string;
+  heading?: string;
+  instruction?: string;
+  url?: string;
+  visual?: string;
+  note?: string;
+  caption?: string;
+  ssLabel?: string;
+  kicker?: string;
+  ssHeadline?: string;
+  head?: string;
+  ssDesc?: string;
+  copy?: string;
+  ssHighlight?: string;
+  highlight?: string;
+  pills?: string[];
+  vlabel?: string;
+};
 
 interface TutorialOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  tutorial: any[];
+  tutorial: TutorialStep[];
   index: number;
   setIndex: (idx: number) => void;
   title?: string;
@@ -43,7 +76,6 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
   tutorial,
   index,
   setIndex,
-  title,
   children,
 }) => {
   useEffect(() => {
@@ -109,7 +141,7 @@ export const MedicalTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
           <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
           <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.vlabel}</div>
         </div>
-        <div className="p-[18px] leading-relaxed" dangerouslySetInnerHTML={{ __html: s.visual }} />
+        <div className="p-[18px] leading-relaxed" dangerouslySetInnerHTML={{ __html: s.visual || "" }} />
       </div>
       {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
     </TutorialShell>
@@ -128,7 +160,7 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
           <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
           <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.vlabel}</div>
         </div>
-        <div className="p-[18px] leading-relaxed courier-mock-visual" dangerouslySetInnerHTML={{ __html: s.visual }} />
+        <div className="p-[18px] leading-relaxed courier-mock-visual" dangerouslySetInnerHTML={{ __html: s.visual || "" }} />
       </div>
       {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
     </TutorialShell>
@@ -147,7 +179,7 @@ export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (props) =>
           <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" /><div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" /><div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
           <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">{s.vlabel}</div>
         </div>
-        <div className="p-[18px] leading-relaxed courier-mock-visual" dangerouslySetInnerHTML={{ __html: s.visual }} />
+        <div className="p-[18px] leading-relaxed courier-mock-visual" dangerouslySetInnerHTML={{ __html: s.visual || "" }} />
       </div>
       {s.note && <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">{s.note}</div>}
     </TutorialShell>
