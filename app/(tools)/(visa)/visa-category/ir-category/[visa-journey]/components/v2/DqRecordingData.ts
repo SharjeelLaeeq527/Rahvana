@@ -1,8 +1,8 @@
 export const DQ_RECORDING_DATA = {
-  eyebrow: {
-    chapter: "Chapter 2 · NVC / CEAC Processing",
-    step: "Step 11 — Documentary Qualification"
-  },
+  // eyebrow: {
+  //   chapter: "Chapter 2 · NVC / CEAC Processing",
+  //   step: "Step 11 — Documentary Qualification"
+  // },
   title: "Record Documentary Qualification",
   description: "Your case has been documentarily qualified — NVC has accepted your package. Record your DQ date to activate scheduling tracking and sync your dashboard.",
   chips: [
