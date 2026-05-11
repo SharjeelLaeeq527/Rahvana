@@ -1,8 +1,8 @@
 export const APPOINTMENT_RECEIVED_DATA = {
-  eyebrow: {
-    chapter: "Chapter 2 · NVC / CEAC Processing",
-    step: "Step 13 — Interview Appointment"
-  },
+  // eyebrow: {
+  //   chapter: "Chapter 2 · NVC / CEAC Processing",
+  //   step: "Step 13 — Interview Appointment"
+  // },
   title: "Interview Appointment Received",
   description: "Your consular interview has been scheduled. Record your appointment details to update your dashboard and unlock interview preparation.",
   chips: [

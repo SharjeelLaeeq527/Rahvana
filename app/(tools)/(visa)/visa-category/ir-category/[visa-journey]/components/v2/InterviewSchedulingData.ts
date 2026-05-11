@@ -1,8 +1,8 @@
 export const INTERVIEW_SCHEDULING_DATA = {
-  eyebrow: {
-    chapter: "Chapter 2 · NVC / CEAC Processing",
-    step: "Step 12 — Interview Scheduling Queue"
-  },
+  // eyebrow: {
+  //   chapter: "Chapter 2 · NVC / CEAC Processing",
+  //   step: "Step 12 — Interview Scheduling Queue"
+  // },
   title: "Waiting for Interview Scheduling",
   description: "Your case is documentarily qualified and in the queue for interview scheduling at your post. This step tracks your position and monitors scheduling progress.",
   chips: [

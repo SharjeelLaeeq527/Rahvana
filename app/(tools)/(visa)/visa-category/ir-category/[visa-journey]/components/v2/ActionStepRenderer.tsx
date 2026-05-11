@@ -1308,7 +1308,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {/* Main Content */}
       <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-1 sm:pt-10 md:pt-3 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
-        {(step.step_key === "step_1_11" || 
+        {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
           step.step_key === "step_1_13" || 
           step.step_key === "step_1_14") && (
@@ -1323,7 +1323,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <span className="text-[#BDD7F1] mx-2">&gt;</span>
             <span className="text-[#3B7DD8]">{step.step_name}</span>
           </div>
-        )}
+        )} */}
         {/* Title */}
         <h1
           className={`page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}

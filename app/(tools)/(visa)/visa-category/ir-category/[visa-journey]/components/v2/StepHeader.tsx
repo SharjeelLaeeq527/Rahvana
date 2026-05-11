@@ -22,7 +22,7 @@ export const StepHeader: React.FC<StepHeaderProps> = ({
   return (
     <div className="flex flex-col mb-8 mt-2 pt-6 md:pt-0 animate-in fade-in slide-in-from-top-4 duration-500">
       {/* Breadcrumbs */}
-      <div className="flex items-center gap-2 mb-4">
+      {/* <div className="flex items-center gap-2 mb-4">
         <span className="text-[11px] font-bold uppercase tracking-widest text-[#636b97]">
           Chapter {chapterNumber} · {chapterName}
         </span>
@@ -34,7 +34,7 @@ export const StepHeader: React.FC<StepHeaderProps> = ({
         >
           {stepName}
         </span>
-      </div>
+      </div> */}
 
       {/* Main Title */}
       <h1 className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-tight tracking-tight mb-2">
