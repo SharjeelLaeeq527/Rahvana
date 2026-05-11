@@ -438,9 +438,9 @@ function HomePageContent() {
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,22,0)_34%,rgba(5,12,22,0.22)_64%,rgba(5,12,22,0.88)_100%)]" />
 
               {/* 2xl:hidden */}
-              <div className="hidden lg:flex h-full flex-col relative z-10 px-[5vw] xl:px-[10vw] 2xl:px-[13vw] pt-[45px] 2xl:pt-[60px]">
+              <div className="hidden lg:flex h-full flex-col relative z-10 px-[5vw] xl:px-[10vw] 2xl:px-[13vw] pt-[45px]">
                 {/* Header Section */}
-                <div className="py-[1vh] xl:py-[3vh] 2xl:py-[5vh]">
+                <div className="py-[3vh] xl:py-[5vh] 2xl:py-[9vh]">
                   <h1 className="relative z-10 w-full text-center text-[clamp(24px,2.8vw,42px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
                     <span className="inline-block pb-2">
                       Navigate your IR-1 journey with clarity.
@@ -450,27 +450,53 @@ function HomePageContent() {
 
                 {/* Middle Content - Centered vertically between header and CTA */}
                 <div className="relative flex-1 flex items-center justify-between w-full">
-                  {/* Annotation Card */}
-                  <div className="z-20 w-[300px] shrink-0 rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] xl:w-[350px] xl:px-8 xl:py-[30px] 2xl:w-[390px]">
-                    <AnimatePresence mode="wait">
-                      <motion.p
-                        key={heroScene}
-                        initial={{ opacity: 0, y: 18 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -14 }}
-                        transition={{
-                          duration: 0.42,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                        className={`${heroAnnotationFont.className} text-[28px] leading-[1.44] text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)] xl:text-[31px] xl:leading-[1.46]`}
+                  {/* Left Column Stack: Annotation Card, Description, and CTA */}
+                  <div className="z-20 flex flex-col gap-8 w-[300px] xl:w-[350px] 2xl:w-[390px] shrink-0">
+                    {/* Annotation Card */}
+                    <div className="w-full rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] xl:px-8 xl:py-[30px]">
+                      <AnimatePresence mode="wait">
+                        <motion.p
+                          key={heroScene}
+                          initial={{ opacity: 0, y: 18 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -14 }}
+                          transition={{
+                            duration: 0.42,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          className={`${heroAnnotationFont.className} text-[28px] leading-[1.44] text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)] xl:text-[31px] xl:leading-[1.46]`}
+                        >
+                          {heroAnnotations[heroScene]}
+                        </motion.p>
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Description Text - Moved from bottom */}
+                    <div className="px-1">
+                      <p className="text-left text-[14px] 2xl:text-[16px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[18px]">
+                        <span className="">
+                          Rahvana gives you a structured step-by-step IR-1
+                          roadmap from petition filing to interview readiness
+                          with guided steps, document organization, progress
+                          tracking, and focused tools when you need them.
+                        </span>
+                      </p>
+                    </div>
+
+                    {/* CTA Button - Moved from bottom */}
+                    <div className="flex">
+                      <Link
+                        href={journeyHref}
+                        className="inline-flex min-h-[57px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.38)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(13,115,119,0.46)]"
                       >
-                        {heroAnnotations[heroScene]}
-                      </motion.p>
-                    </AnimatePresence>
+                        Start IR-1 Journey
+                        <Icons.ArrowRight className="size-5" />
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Connector Area - Bridges the gap between Card and Dashboard */}
-                  <div className="flex-1 relative h-[140px] z-10 mx-[-2px]">
+                  <div className="flex-1 relative h-[140px] z-10 mx-[-2px] -translate-y-24 xl:-translate-y-28 2xl:-translate-y-32">
                     <svg
                       className="absolute inset-0 w-full h-full overflow-visible"
                       viewBox="0 0 1000 140"
@@ -522,28 +548,8 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* Bottom CTA Section */}
-                <div className="pb-[8px] xl:pb-[12px] 2xl:pb-[14vh] z-20 flex flex-col gap-5">
-                  <div className="flex">
-                    <Link
-                      href={journeyHref}
-                      className="inline-flex min-h-[57px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.38)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(13,115,119,0.46)]"
-                    >
-                      Start IR-1 Journey
-                      <Icons.ArrowRight className="size-5" />
-                    </Link>
-                  </div>
-                  <div className="">
-                    <p className="text-center text-[12px] 2xl:text-[15px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
-                      <span className="">
-                        Rahvana gives you a structured step-by-step IR-1 roadmap
-                        from petition filing to interview readiness with guided
-                        steps, document organization, progress tracking, and
-                        focused tools when you need them.
-                      </span>
-                    </p>
-                  </div>
-                </div>
+                {/* Bottom section spacing */}
+                <div className="pb-[4vh] xl:pb-[6vh] 2xl:pb-[8vh] z-20" />
               </div>
 
               {/* Desktop Layout (xl and up, >1280px) */}
