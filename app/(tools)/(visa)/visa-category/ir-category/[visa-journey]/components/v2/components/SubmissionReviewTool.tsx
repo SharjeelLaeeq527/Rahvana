@@ -42,6 +42,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
     submissionSaved ? true : null,
   );
   const [localDate, setLocalDate] = useState(submissionDate);
+  const [justSaved, setJustSaved] = useState(false);
 
   const handleToggleSubmissionCheck = (index: number) => {
     setSubmissionChecklistStatus({
@@ -56,6 +57,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
       saved: localIsSubmitted === true,
       date: localDate,
     });
+    setJustSaved(true);
   };
 
   return (
@@ -99,7 +101,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
             }}
             className="inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] bg-[var(--rv-ch2)] text-white border-none rounded-[12px] font-sans text-[15px] font-semibold cursor-pointer transition-all shadow-[0_4px_20px_rgba(82,10,80,0.25)] hover:bg-[var(--rv-ch2-dark)] hover:text-white hover:shadow-[0_8px_32px_rgba(82,10,80,0.35)]"
           >
-            <span>{tool.launch_module.buttonText}</span>
+            <span>Start Submission Guide</span>
             <ChevronRight size={15} />
           </button>
         </div>
@@ -110,7 +112,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
         {/* Final Review Checklist */}
         <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px_22px]">
           <div className="text-[13px] font-bold tracking-wide uppercase text-[#6b8097] mb-[14px] flex items-center gap-[8px]">
-            <span className="w-[8px] h-[8px] rounded-full bg-[#15744f]" />
+            <span className="w-[8px] h-[8px] rounded-full bg-primary" />
             Final Review Checklist
           </div>
           <div className="flex flex-col gap-[8px]">
@@ -127,14 +129,14 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
                 onClick={() => handleToggleSubmissionCheck(i)}
                 className={`flex items-start gap-[10px] p-[9px_12px] rounded-[10px] cursor-pointer transition-all border-[1.5px] ${
                   submissionChecklistStatus[i]
-                    ? "bg-[#e8f5ef] border-[#a8d9be]"
+                    ? "bg-primary/10 border-primary/40"
                     : "border-transparent hover:bg-[#eef3fa]"
                 }`}
               >
                 <div
                   className={`w-[18px] h-[18px] rounded-[5px] border-[1.5px] flex items-center justify-center shrink-0 mt-[1px] ${
                     submissionChecklistStatus[i]
-                      ? "bg-[#15744f] border-[#15744f]"
+                      ? "bg-primary border-primary"
                       : "bg-white border-[#d0e4f7]"
                   }`}
                 >
@@ -145,7 +147,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
                 <span
                   className={`text-[13px] leading-[1.45] ${
                     submissionChecklistStatus[i]
-                      ? "text-[#0e5c3c]"
+                      ? "text-primary"
                       : "text-[#3a4f63]"
                   }`}
                 >
@@ -233,10 +235,10 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
           <div className="flex flex-col gap-[18px]">
             <div className="grid grid-cols-2 gap-[10px]">
               <button
-                onClick={() => setLocalIsSubmitted(true)}
+                onClick={() => { setLocalIsSubmitted(true); setJustSaved(false); }}
                 className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
                   localIsSubmitted === true
-                    ? "bg-[#e8f5ef] border-[#15744f] text-[#15744f]"
+                    ? "bg-primary/10 border-primary text-primary"
                     : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:bg-[#f8fafc]"
                 }`}
               >
@@ -247,6 +249,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
                 onClick={() => {
                   setLocalIsSubmitted(false);
                   setLocalDate("");
+                  setJustSaved(false);
                 }}
                 className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
                   localIsSubmitted === false
@@ -296,9 +299,9 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
               </button>
             </div>
 
-            {submissionSaved && (
-              <div className="text-center text-[11px] text-[#15744f] font-medium bg-[#e8f5ef] py-1.5 rounded-full border border-[#a8d9be]/50">
-                Submission recorded successfully
+            {justSaved && (
+              <div className="text-center text-[11px] text-primary font-medium bg-primary/10 py-1.5 rounded-full border border-primary/30">
+                Status saved successfully
               </div>
             )}
           </div>
