@@ -6,9 +6,26 @@ import {
   TIER_PRICES,
 } from "@/lib/entitlements/config";
 
+/**
+ * Resolves the effective entitlement for a feature, taking purchased add-ons
+ * into account. If the tier would lock the feature as `locked_buy` but the
+ * user has already purchased that add-on, returns `{ state: 'full' }`.
+ */
+export function getEffectiveEntitlement(
+  feature: string,
+  tier: PlanTier,
+  purchasedAddons: string[] = [],
+): FeatureEntitlement {
+  const e = getEntitlement(feature, tier);
+  if (e.state === 'locked_buy' && e.addon && purchasedAddons.includes(e.addon.id)) {
+    return { state: 'full' };
+  }
+  return e;
+}
+
 /** True when the user can take the primary action on a feature. */
-export function canUse(feature: string, tier: PlanTier): boolean {
-  const { state } = getEntitlement(feature, tier);
+export function canUse(feature: string, tier: PlanTier, purchasedAddons: string[] = []): boolean {
+  const { state } = getEffectiveEntitlement(feature, tier, purchasedAddons);
   return state === 'full' || state === 'limited' || state === 'save_only' || state === 'list_only';
 }
 
@@ -18,8 +35,8 @@ export function isPreview(feature: string, tier: PlanTier): boolean {
 }
 
 /** True when the feature is locked (upgrade or buy required). */
-export function isLocked(feature: string, tier: PlanTier): boolean {
-  const { state } = getEntitlement(feature, tier);
+export function isLocked(feature: string, tier: PlanTier, purchasedAddons: string[] = []): boolean {
+  const { state } = getEffectiveEntitlement(feature, tier, purchasedAddons);
   return (
     state === 'locked_upgrade' ||
     state === 'locked_buy' ||
@@ -36,8 +53,8 @@ export function isHidden(_feature: string, _tier: PlanTier): boolean {
  * Returns a short human-readable hint for why a feature is locked.
  * Suitable for tooltip text, badge labels, or banner subtitles.
  */
-export function lockHint(feature: string, tier: PlanTier): string {
-  const e = getEntitlement(feature, tier);
+export function lockHint(feature: string, tier: PlanTier, purchasedAddons: string[] = []): string {
+  const e = getEffectiveEntitlement(feature, tier, purchasedAddons);
   if (e.hint) return e.hint;
 
   switch (e.state) {
@@ -77,8 +94,8 @@ export function lockHint(feature: string, tier: PlanTier): string {
  * Upgrade CTA label for locked features.
  * Returns null when the feature is not locked.
  */
-export function upgradeCTA(feature: string, tier: PlanTier): string | null {
-  const e = getEntitlement(feature, tier);
+export function upgradeCTA(feature: string, tier: PlanTier, purchasedAddons: string[] = []): string | null {
+  const e = getEffectiveEntitlement(feature, tier, purchasedAddons);
   switch (e.state) {
     case 'locked_buy':
       return e.addon ? `Add ${e.addon.name}` : 'Unlock';
