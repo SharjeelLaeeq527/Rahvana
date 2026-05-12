@@ -16,7 +16,9 @@ interface HouseholdSponsorshipToolProps {
   // Setters
   setHhCount: (val: number) => void;
   setJsCount: (val: number) => void;
-  setHhRelationships: React.Dispatch<React.SetStateAction<Record<number, string>>>;
+  setHhRelationships: React.Dispatch<
+    React.SetStateAction<Record<number, string>>
+  >;
   setHhDocsStatus: (val: Record<string, string>) => void;
 
   // Actions
@@ -40,7 +42,9 @@ interface HouseholdSponsorshipToolProps {
   setIsHhDocGuideOpen: (open: boolean) => void;
 }
 
-export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> = ({
+export const HouseholdSponsorshipTool: React.FC<
+  HouseholdSponsorshipToolProps
+> = ({
   hhCount,
   jsCount,
   hhRelationships,
@@ -516,8 +520,8 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             No relationship-proof checklist needed
           </div>
           <div className="text-[13px] text-[#6b8097]">
-            Joint sponsors do not require relationship documentation. Your
-            I-864 forms are the primary requirement — see Step 5 for those.
+            Joint sponsors do not require relationship documentation. Your I-864
+            forms are the primary requirement — see Step 5 for those.
           </div>
         </div>
       ) : (
@@ -526,8 +530,8 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             Set your scenario above
           </div>
           <div className="text-[13px] text-[#6b8097]">
-            Select the number of joint sponsors and household members to see
-            the relevant checklist.
+            Select the number of joint sponsors and household members to see the
+            relevant checklist.
           </div>
         </div>
       )}
