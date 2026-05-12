@@ -1464,12 +1464,26 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               getVaultId={(item) => mapDocumentNameToId(item.title)}
               progressLabel="packed"
               onItemClick={(item) => {
-                if (!stepEntitlement.guard()) return;
-                setSelectedGatheringItem(item as unknown as DocumentGatheringItem);
-                setIsGatheringGuideOpen(true);
-                if (!gatheringStatus[item.id] || gatheringStatus[item.id] === "not-started") {
-                  setGatheringStatus((prev: any) => ({ ...prev, [item.id]: "in-progress" }));
-                }
+                setDocActionModal({
+                  isOpen: true,
+                  doc: { ...item, name: item.title },
+                  title: item.title,
+                  subtitle: item.sub,
+                  onReadGuide: () => {
+                    setSelectedGatheringItem(item as unknown as DocumentGatheringItem);
+                    setIsGatheringGuideOpen(true);
+                    if (!gatheringStatus[item.id] || gatheringStatus[item.id] === "not-started") {
+                      setGatheringStatus((prev: any) => ({ ...prev, [item.id]: "in-progress" }));
+                    }
+                  },
+                  onUpload: () => {
+                    if (!stepEntitlement.guard()) return;
+                    const defId = mapDocumentNameToId(item.title);
+                    setActiveUploadId(item.id);
+                    setActiveUploadType("doc");
+                    openUploadModal(defId);
+                  },
+                });
               }}
               onPreview={(uploadedDocId) =>
                 window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
@@ -1584,17 +1598,32 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               isDeletingIds={isDeletingIds}
               isReloadingDocs={isReloadingDocs}
               getVaultId={(item) => mapDocumentNameToId(item.title)}
+              showTags={true}
               onItemClick={(item) => {
-                if (!stepEntitlement.guard()) return;
-                setActiveCivilDoc(item);
-                setDocGuideContext("civil");
-                setIsCivilDocGuideOpen(true);
+                setDocActionModal({
+                  isOpen: true,
+                  doc: { ...item, name: item.title },
+                  title: item.title,
+                  subtitle: item.sub,
+                  onReadGuide: () => {
+                    if (!stepEntitlement.guard()) return;
+                    setActiveCivilDoc(item);
+                    setDocGuideContext("civil");
+                    setIsCivilDocGuideOpen(true);
+                  },
+                  onUpload: () => {
+                    if (!stepEntitlement.guard()) return;
+                    const defId = mapDocumentNameToId(item.title);
+                    setActiveUploadId(item.id);
+                    setActiveUploadType("doc");
+                    openUploadModal(defId);
+                  },
+                });
               }}
               onPreview={(uploadedDocId) =>
                 window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
               }
               onDelete={(id, name) => setDocumentToDelete({ id, name })}
-              showTags={true}
             />
           )}
 
