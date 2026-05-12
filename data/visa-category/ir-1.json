@@ -4733,7 +4733,7 @@
                 "heading": "What to bring to the exam",
                 "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
                 "vlabel": "Required Items",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2–4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
               },
               {
                 "label": "Step 2 of 6",
@@ -4741,14 +4741,14 @@
                 "instruction": "Arrive at least 15–20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
                 "vlabel": "Arrival Timing",
                 "note": "If your appointment is in the morning, account for morning traffic — especially in major cities like Islamabad or Karachi.",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read — exams often involve waiting periods.</div></div>"
               },
               {
                 "label": "Step 3 of 6",
                 "heading": "How the exam typically proceeds",
                 "instruction": "The panel physician will conduct a physical exam, review vaccination records, check medical history, and may order blood or other tests as required by the embassy.",
                 "vlabel": "Exam Flow",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Typical exam sequence</div><div class=\"mock-row\">Registration and document review</div><div class=\"mock-row\">Physical examination</div><div class=\"mock-row\">Vaccination review and administration if needed</div><div class=\"mock-row\">Blood / lab tests if required</div><div class=\"mock-row\">Results sealed and sent to embassy</div></div>"
               },
               {
                 "label": "Step 4 of 6",
@@ -4756,21 +4756,21 @@
                 "instruction": "The physician may administer required vaccinations during the exam. Required vaccines vary by immigration category and age. The polio certificate you bring will be reviewed here.",
                 "vlabel": "Vaccinations",
                 "note": "Bring your polio vaccination certificate — the physician needs to confirm and document it as part of the medical packet.",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination at the exam</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Required vaccinations are administered by the physician if not already received. The physician documents all vaccinations as part of the sealed medical packet sent to the embassy.</div></div>"
               },
               {
                 "label": "Step 5 of 6",
                 "heading": "The fee — confirm in advance",
                 "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with your physician before the exam day.",
                 "vlabel": "Fee Payment",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Fee guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Fees vary by physician and exam complexity. Confirm the current fee and payment method (cash vs card) directly with the physician's office before your appointment.</div></div>"
               },
               {
                 "label": "Step 6 of 6",
                 "heading": "After the exam — confirm results will be sent",
                 "instruction": "Before leaving, confirm with the physician's office that the sealed medical results will be forwarded to the embassy before your interview date. Do not assume this happens automatically.",
                 "vlabel": "Post-Exam",
-                "visual": ""
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm the physician's office will transmit the sealed results to the embassy before your interview date. Follow up if you have not received confirmation.</div></div>"
               }
             ]
           }
@@ -4805,7 +4805,7 @@
                 "heading": "Open the courier registration portal",
                 "instruction": "Click 'Open Courier Registration' on the main page to open the USVisaScheduling sign-up portal. This is the official courier service for U.S. visa delivery in Pakistan.",
                 "vlabel": "Courier Portal",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">usvisascheduling.com</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Create a new account or sign in to register your courier delivery preferences for your visa packet.</div></div>"
               },
               {
                 "label": "Step 2 of 5",
@@ -4813,28 +4813,28 @@
                 "instruction": "Select 'Create Account' or 'Sign Up'. Enter your email address and create a secure password. Verify your email address when prompted.",
                 "vlabel": "Account Creation",
                 "note": "Use an email address you actively monitor — all courier notifications will be sent there.",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Create Account</div><div class=\"mock-field\"><div class=\"mock-field-label\">Email Address</div><div class=\"mock-field-input\">your@email.com</div></div><div class=\"mock-field\"><div class=\"mock-field-label\">Password</div><div class=\"mock-field-input\">••••••••••</div></div><div class=\"mock-btn\">Create Account</div></div>"
               },
               {
                 "label": "Step 3 of 5",
                 "heading": "Select Pakistan courier delivery",
                 "instruction": "After creating your account, select your country and configure courier delivery preferences for Pakistan. Choose the city or region matching your preferred delivery address.",
                 "vlabel": "Courier Configuration",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Delivery Preferences</div><div class=\"hl-box\">Pakistan · Select delivery region</div><div style=\"margin-top:10px;font-size:13px;color:var(--ink-soft)\">Choose the city / region closest to your preferred delivery address for the visa packet.</div></div>"
               },
               {
                 "label": "Step 4 of 5",
                 "heading": "Complete registration and save confirmation",
                 "instruction": "Complete the registration flow and save or print the confirmation page. This confirmation record should be stored in your Document Vault.",
                 "vlabel": "Registration Confirmed",
-                "visual": ""
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Registration complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Save the confirmation page or email to your Document Vault.</div></div>"
               },
               {
                 "label": "Step 5 of 5",
                 "heading": "Return here and save your credentials",
                 "instruction": "Return to this step and use the credential vault card to save your courier account email and password in the Portal Wallet.",
                 "vlabel": "Save Credentials",
-                "visual": ""
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Save to Portal Wallet</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px\">Save your courier account email and password so you can access it later when your visa is ready for delivery.</div></div>"
               }
             ]
           }
@@ -5230,8 +5230,7 @@
                 "heading": "Prepare the night before",
                 "instruction": "The night before your interview, lay out your complete document packet, confirm your appointment letter is printed, and ensure your transport to the embassy is planned. Do not leave anything to the morning.",
                 "vlabel": "Pre-Interview Checklist",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step1.png" }
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Night-before checklist</div>\n      <div class=\"mock-row\">Appointment letter printed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Document packet organized <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Transport arranged <span class=\"mock-badge-green\">Confirmed</span></div>\n      <div class=\"mock-row\">Passport photos packed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Originals and copies separated <span class=\"mock-badge-green\">Done</span></div>\n    </div>"
               },
               {
                 "label": "Step 2 of 8",
@@ -5239,24 +5238,21 @@
                 "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
                 "vlabel": "Arrival Timing",
                 "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step2.png" }
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in traffic, parking, and security queue length — especially at high-volume posts like Islamabad or Karachi.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
               },
               {
                 "label": "Step 3 of 8",
                 "heading": "Security screening and document intake",
                 "instruction": "At entry, your appointment letter and passport will be checked. You will pass through security screening. Some items — including certain electronics — may need to be left outside or checked in.",
                 "vlabel": "Security & Entry",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step3.png" }
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Entry sequence</div>\n      <div class=\"mock-row\">Appointment letter check at gate</div>\n      <div class=\"mock-row\">Security screening (bag + personal)</div>\n      <div class=\"mock-row\">Document receipt / number assignment</div>\n      <div class=\"mock-row\">Wait in designated area</div>\n    </div>"
               },
               {
                 "label": "Step 4 of 8",
                 "heading": "Biometrics — fingerprints and photo",
                 "instruction": "Before your consular interview, you will be called to provide biometrics — fingerprints and a digital photograph. This is routine and applies to almost all immigrant visa applicants.",
                 "vlabel": "Biometrics",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step4.png" }
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Biometric collection</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Fingerprints are scanned digitally. You will also be photographed. This takes only a few minutes. Follow the staff instructions exactly.\n      </div>\n    </div>"
               },
               {
                 "label": "Step 5 of 8",
@@ -5264,32 +5260,28 @@
                 "instruction": "You will be called to a consular window. The officer will review your documents, ask questions about your relationship, background, and immigration history. Answer concisely and truthfully. Do not volunteer information beyond what is asked.",
                 "vlabel": "Interview at the Window",
                 "note": "Consistency is critical. Your answers must align with your DS-260 responses and the documents you submitted during NVC processing.",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step5.png" }
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Common interview questions</div>\n      <div class=\"mock-row\">How did you meet your spouse?</div>\n      <div class=\"mock-row\">When and where was your marriage?</div>\n      <div class=\"mock-row\">What does your petitioner do for work?</div>\n      <div class=\"mock-row\">Have you visited the United States before?</div>\n      <div class=\"mock-row\">Where will you live in the United States?</div>\n    </div>"
               },
               {
                 "label": "Step 6 of 8",
                 "heading": "Document review at the window",
                 "instruction": "The officer may ask you to produce specific original documents. Present them calmly and in the order requested. Having a well-organized packet makes this faster and smoother.",
                 "vlabel": "Document Review",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step6.png" }
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Be ready to produce</div>\n      <div class=\"mock-row\">Original passport(s)</div>\n      <div class=\"mock-row\">Marriage certificate / Nikah Nama</div>\n      <div class=\"mock-row\">Birth certificate</div>\n      <div class=\"mock-row\">Police clearance certificate</div>\n      <div class=\"mock-row\">Affidavit of Support</div>\n      <div class=\"mock-row\">Passport photos</div>\n    </div>"
               },
               {
                 "label": "Step 7 of 8",
                 "heading": "Stay calm — the officer is doing their job",
                 "instruction": "Consular officers ask direct questions. Their tone is professional, not personal. Nervousness is expected and normal. Answer clearly and calmly. If you do not understand a question, politely ask for clarification.",
                 "vlabel": "Interview Mindset",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step7.png" }
+                "visual": "<div class=\"calm-box\">\n      Answer only what is asked. Be honest. Be calm. Be concise. You have prepared for this — trust your preparation.\n    </div>"
               },
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
                 "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
                 "vlabel": "Interview Outcomes",
-                "visual": "",
-                "media": { "type": "img", "src": "/assets/images/ir1-journey/c3_step8/step8.png" }
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }
             ],
             "checklists": [

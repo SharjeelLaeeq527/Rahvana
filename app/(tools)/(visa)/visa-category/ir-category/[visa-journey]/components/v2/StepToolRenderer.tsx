@@ -47,7 +47,7 @@ export const AwaitingReviewStep: React.FC<{
   data: typeof AWAITING_REVIEW_DATA;
 }> = ({ data }) => {
   return (
-    <div className="w-full max-w-[720px] px-[24px] pt-[52px] pb-[96px] flex flex-col mx-auto">
+    <div className="w-full max-w-[720px] px-[24px] pt-4 md:pt-8 pb-[96px] flex flex-col mx-auto">
       {/* <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
         <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
           {data.eyebrow.chapter}
@@ -1355,7 +1355,7 @@ export const PoliceClearanceTool: React.FC<{
                       setIsPccOverlayOpen(false);
                     }
                   }}
-                  className="flex-1 bg-primary text-white p-4 rounded-xl font-bold hover:bg-primary/80 transition-colors"
+                  className="flex-1 bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 transition-colors"
                 >
                   {pccOverlayStep === currentSteps.length - 1
                     ? "Finish Guide"
