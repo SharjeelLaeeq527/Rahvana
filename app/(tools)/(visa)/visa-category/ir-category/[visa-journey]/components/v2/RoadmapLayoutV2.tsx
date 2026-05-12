@@ -196,7 +196,7 @@ export default function RoadmapLayoutV2({
                 {isStepDone ? "Done" : "Complete"}
               </span>
               <span className="complete-label complete-label--short">
-                {isStepDone ? "Done" : "Done?"}
+                {isStepDone ? "Done" : "Complete"}
               </span>
             </button>
           )}
@@ -474,12 +474,11 @@ export default function RoadmapLayoutV2({
         }
 
         @media (max-width: 479px) {
-          .complete-label--short { display: none; }
+          .complete-label--short { display: inline; }
           .complete-btn {
-            width: 26px;
-            height: 26px;
-            padding: 0;
-            border-radius: 50%;
+            width: auto;
+            padding: 0 10px;
+            border-radius: 999px;
           }
         }
 
