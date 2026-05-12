@@ -39,6 +39,12 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const data = APPOINTMENT_RECEIVED_DATA;
 
+  React.useEffect(() => {
+    if (!consulateLocation?.trim()) {
+      setConsulateLocation("Islamabad");
+    }
+  }, []);
+
   const validateAppointmentFields = () => {
     const newErrors: Record<string, string> = {};
     const today = new Date();

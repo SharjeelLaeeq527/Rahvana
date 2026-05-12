@@ -155,7 +155,7 @@ const TrackCaseStatusStep: React.FC<any> = ({ tool, state, actions, isChapter1 =
         <span className="text-[11px] text-[#b8d4f0]">›</span>
         <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">Monitor USCIS Case Status</span>
       </div>
-      <h1 className="page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1">Monitor USCIS Case Status</h1>
+      <h1 className="page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 font-bold">Monitor USCIS Case Status</h1>
       <p className="page-desc text-[15px] accent-brown leading-[1.72] max-w-[620px] mb-3">Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one place, explains what the current status means, and gives you useful next-step prep so the waiting period does not become dead time.</p>
       <MetaChips />
       {/* Launch Module with tracking buttons */}

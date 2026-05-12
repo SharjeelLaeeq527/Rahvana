@@ -127,7 +127,7 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
           {summaryCards.map(({ k, v }) => (
             <div key={k} className="rounded-xl p-3" style={{ background: "#f0f1fb", border: "1px solid #c6c8ea" }}>
               <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#8284bf" }}>{k}</div>
-              <div className="text-[13px] font-semibold text-white">{v}</div>
+              <div className="text-[13px] font-semibold text-black">{v}</div>
             </div>
           ))}
         </div>
@@ -137,8 +137,8 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
             <div key={i} className="flex gap-3 items-start rounded-xl p-3" style={{ background: "#f0f1fb", border: "1px solid #c6c8ea" }}>
               <span className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style={{ background: "#8284bf" }} />
               <div>
-                <div className="text-[13px] font-bold text-white">{item.title}</div>
-                <div className="text-[12px] text-white/60">{item.sub}</div>
+                <div className="text-[13px] font-bold text-black">{item.title}</div>
+                <div className="text-[12px] text-black/60">{item.sub}</div>
               </div>
             </div>
           ))}
@@ -558,15 +558,15 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
         <div className="max-w-[720px] w-full mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col step-modal-spacing">
 
           {/* Eyebrow */}
-          <div className="flex flex-wrap items-center gap-2 mb-1">
+          {/* <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
               Chapter 1 · USCIS Petition Filing
             </span>
             <span className="text-[11px]" style={{ color: "#b8d4f0" }}>›</span>
             <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">{tool.title}</span>
-          </div>
+          </div> */}
 
-          <h1 className="text-[2rem] sm:text-[2.3rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.15] tracking-tight mb-2 accent-brown">{tool.title}</h1>
+          <h1 className="text-[2rem] sm:text-[2.3rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.15] tracking-tight mb-2 accent-brown font-bold">{tool.title}</h1>
           <p className="text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 accent-brown">{tool.subtitle}</p>
 
           {/* Chips */}

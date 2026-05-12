@@ -550,7 +550,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     (state.metadata.letterDate as string) || "",
   );
   const [consulateLocation, setConsulateLocation] = useState(
-    (state.metadata.consulateLocation as string) || "",
+    (state.metadata.consulateLocation as string) || "Islamabad",
   );
 
   // Step 3.7 Interview Prep States
@@ -687,7 +687,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setInterviewSaved(state.metadata.interviewSaved === true);
     setInterviewDate(state.metadata.interviewDate || "");
     setLetterDate(state.metadata.letterDate || "");
-    setConsulateLocation(state.metadata.consulateLocation || "");
+    setConsulateLocation(state.metadata.consulateLocation || "Islamabad");
   }, [
     state.metadata.interviewSaved,
     state.metadata.interviewDate,
@@ -2143,7 +2143,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             setIsTutorialOpen(true);
                           }
                         }}
-                        className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative p-[20px_24px] flex-row items-center gap-[16px] w-full bg-white border-[#d0e4f7] ${
+                        className={`border-[1.5px] rounded-[16px] text-left group transition-all cursor-pointer select-none flex relative mt-[12px] sm:mt-[16px] mb-[20px] sm:mb-[28px] p-[16px_18px] sm:p-[20px_24px] flex-col sm:flex-row sm:items-center gap-[14px] sm:gap-[16px] w-full bg-white border-[#d0e4f7] ${
                           isGuideLocked
                             ? "hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
                             : "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(12,27,51,0.06)]"
@@ -2162,9 +2162,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             strokeWidth={1.7}
                           />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <h3
-                            className={`text-[15px] font-bold mb-0.5 ${
+                            className={`text-[14px] sm:text-[15px] font-bold mb-0.5 ${
                               isGuideLocked
                                 ? "text-[#6b8097]"
                                 : "text-[#0c1b33]"
@@ -2173,7 +2173,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             {card.title}
                           </h3>
                           <p
-                            className={`text-[13px] leading-tight ${
+                            className={`text-[12px] sm:text-[13px] leading-tight ${
                               isGuideLocked
                                 ? "text-[#9aabb8]"
                                 : "text-[#6b8097]"
@@ -2183,7 +2183,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           </p>
                         </div>
                         <div
-                          className={`flex items-center gap-1 text-[13px] font-bold ${
+                          className={`flex items-center gap-1 text-[12px] sm:text-[13px] font-bold self-start sm:self-auto mt-0 sm:mt-0 ${
                             isGuideLocked ? "text-[#a06000]" : "text-primary"
                           }`}
                         >

@@ -27,6 +27,7 @@ import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
 import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
 import { toast } from "sonner";
 import Link from "next/link";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface StepToolRendererProps {
   tool: any;
@@ -47,7 +48,7 @@ export const AwaitingReviewStep: React.FC<{
 }> = ({ data }) => {
   return (
     <div className="w-full max-w-[720px] px-[24px] pt-[52px] pb-[96px] flex flex-col mx-auto">
-      <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
+      {/* <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
         <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
           {data.eyebrow.chapter}
         </span>
@@ -55,7 +56,7 @@ export const AwaitingReviewStep: React.FC<{
         <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
           {data.eyebrow.step}
         </span>
-      </div>
+      </div> */}
       <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] mb-[10px]">
         {data.title}
       </h1>
@@ -115,70 +116,131 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
     dqCountry,
     setDqCountry,
   } = dqState;
+
   const [isSaving, setIsSaving] = React.useState(false);
+  const [showErrors, setShowErrors] = React.useState(false);
+
+  // -----------------------------
+  // OPTIONS
+  // -----------------------------
+  const categoryOptions = [
+    { value: "IR-1", label: "IR-1" },
+  ];
+
+  const postOptions = [
+    { value: "Islamabad", label: "Islamabad" },
+    { value: "Karachi", label: "Karachi" },
+  ];
+
+  // -----------------------------
+  // VALIDATION
+  // -----------------------------
+  const isValid =
+    dqDate &&
+    dqCategory &&
+    dqPost;
+  const errorBorder = "border-red-500 focus:ring-red-500";
+  const normalBorder = "border-slate-300 focus:ring-blue-500";
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
+
+      {/* HEADER */}
       <div className="flex gap-[7px] flex-wrap mb-[32px]">
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#fffbec] text-[#b38600] border border-[#e8d47a]">
+        <span className="text-[11px] font-semibold uppercase px-[12px] py-[3px] rounded-full bg-[#fffbec] text-[#b38600] border border-[#e8d47a]">
           Major Milestone
         </span>
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+        <span className="text-[11px] font-semibold uppercase px-[12px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
           Tracking Active
         </span>
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+        <span className="text-[11px] font-semibold uppercase px-[12px] py-[3px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
           Dashboard Update
         </span>
       </div>
 
+      {/* INFO CARD */}
       <div className="relative bg-[#1a0a18] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
+
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
           NVC — Documentary Qualification Received
         </div>
+
         <div className="text-[22px] text-white/92 mb-[6px]">
           Your documents have been accepted by NVC
         </div>
-        <div className="text-[13px] text-white/55 leading-[1.55]">
-          This is a significant milestone. Case is now documentarily complete.
+
+        <div className="text-[13px] text-white/55">
+          Case is now documentarily complete.
         </div>
       </div>
 
+      {/* FORM */}
       {!dqSaved ? (
-        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[16px]">
-            <input
-              type="date"
-              value={dqDate}
-              max={new Date().toISOString().split("T")[0]}
-              onChange={(e) => setDqDate(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            />
-            <select
-              value={dqCategory}
-              onChange={(e) => setDqCategory(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Category</option>
-              <option value="IR-1">IR-1</option>
-              <option value="F2A">F2A</option>
-            </select>
-            <select
-              value={dqPost}
-              onChange={(e) => setDqPost(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Post</option>
-              <option value="Islamabad">Islamabad</option>
-              <option value="Karachi">Karachi</option>
-            </select>
+        <div className="bg-white border border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px]">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[12px]">
+
+            {/* DATE */}
+            <div>
+              <input
+                type="date"
+                value={dqDate}
+                max={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setDqDate(e.target.value)}
+                className={`w-full p-2.5 border rounded-lg ${
+                  showErrors && !dqDate ? errorBorder : normalBorder
+                }`}
+              />
+              {showErrors && !dqDate && (
+                <p className="text-xs text-red-500 mt-1">Date is required</p>
+              )}
+            </div>
+
+            {/* CATEGORY */}
+            <div>
+              <div className={showErrors && !dqCategory ? "border border-red-500 rounded-lg" : ""}>
+                <CustomDropdown
+                  value={dqCategory}
+                  onChange={(val) => setDqCategory(val)}
+                  options={categoryOptions}
+                  placeholder="Select Category"
+                />
+              </div>
+              {showErrors && !dqCategory && (
+                <p className="text-xs text-red-500 mt-1">Category is required</p>
+              )}
+            </div>
+
+            {/* POST */}
+            <div>
+              <div className={showErrors && !dqPost ? "border border-red-500 rounded-lg" : ""}>
+                <CustomDropdown
+                  value={dqPost}
+                  onChange={(val) => setDqPost(val)}
+                  options={postOptions}
+                  placeholder="Select Post"
+                />
+              </div>
+              {showErrors && !dqPost && (
+                <p className="text-xs text-red-500 mt-1">Post is required</p>
+              )}
+            </div>
           </div>
+
+          {/* SAVE BUTTON */}
           <button
             onClick={async () => {
+              setShowErrors(true);
+
+              if (!isValid) return;
               if (guard && !guard()) return;
+
               setIsSaving(true);
+
               try {
                 setDqSaved(true);
+
                 await actions.updateMetadata({
                   dqSaved: true,
                   dqDate,
@@ -191,8 +253,8 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
                 setIsSaving(false);
               }
             }}
-            disabled={isSaving}
-            className="w-full bg-primary text-white py-3 rounded-lg font-bold disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isSaving || !isValid}
+            className="w-full bg-primary text-white py-3 rounded-lg font-bold disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isSaving ? "Saving..." : "Save DQ & Activate Tracking"}
           </button>
@@ -287,7 +349,8 @@ export const AppointmentReceivedTool: React.FC<{
     } else if (loc.length < 2) {
       newErrors.consulateLocation = "Must be at least 2 characters.";
     } else if (!/^[a-zA-Z\s\-,\.]+$/.test(loc)) {
-      newErrors.consulateLocation = "Only letters, spaces, dashes, and commas allowed.";
+      newErrors.consulateLocation =
+        "Only letters, spaces, dashes, and commas allowed.";
     }
 
     return newErrors;
@@ -324,7 +387,9 @@ export const AppointmentReceivedTool: React.FC<{
                 className={`p-2.5 border rounded-lg focus:ring-2 focus:ring-primary/20 ${errors.interviewDate ? "border-red-500 bg-red-50/30" : ""}`}
               />
               {errors.interviewDate && (
-                <span className="text-[9px] font-bold text-red-500 uppercase px-1">{errors.interviewDate}</span>
+                <span className="text-[9px] font-bold text-red-500 uppercase px-1">
+                  {errors.interviewDate}
+                </span>
               )}
             </div>
             <div className="flex flex-col gap-1">
@@ -332,7 +397,9 @@ export const AppointmentReceivedTool: React.FC<{
                 <label className="text-[11px] font-bold text-slate-500 uppercase">
                   Location
                 </label>
-                <span className={`text-[9px] font-medium ${consulateLocation.length >= 50 ? "text-red-500" : "text-slate-400"}`}>
+                <span
+                  className={`text-[9px] font-medium ${consulateLocation.length >= 50 ? "text-red-500" : "text-slate-400"}`}
+                >
                   {consulateLocation.length}/50
                 </span>
               </div>
@@ -342,14 +409,18 @@ export const AppointmentReceivedTool: React.FC<{
                 maxLength={50}
                 placeholder="e.g. Islamabad"
                 onChange={(e) => {
-                  const val = e.target.value.replace(/[^a-zA-Z\s\-,\.]/g, "").slice(0, 50);
+                  const val = e.target.value
+                    .replace(/[^a-zA-Z\s\-,\.]/g, "")
+                    .slice(0, 50);
                   setConsulateLocation(val);
                   setErrors((prev) => ({ ...prev, consulateLocation: "" }));
                 }}
                 className={`p-2.5 border rounded-lg focus:ring-2 focus:ring-primary/20 ${errors.consulateLocation ? "border-red-500 bg-red-50/30" : ""}`}
               />
               {errors.consulateLocation && (
-                <span className="text-[9px] font-bold text-red-500 uppercase px-1">{errors.consulateLocation}</span>
+                <span className="text-[9px] font-bold text-red-500 uppercase px-1">
+                  {errors.consulateLocation}
+                </span>
               )}
             </div>
           </div>
@@ -435,7 +506,9 @@ export const MedicalExamTool: React.FC<{
     const digits = upper.replace(/\D/g, "").slice(0, 4);
 
     // Extract letters specifically after the numbers/colon
-    const rawSuffix = upper.slice(digits.length > 2 ? digits.length + 1 : digits.length);
+    const rawSuffix = upper.slice(
+      digits.length > 2 ? digits.length + 1 : digits.length,
+    );
     let suffix = rawSuffix.replace(/[^APM]/g, "");
 
     // Logic: Suffix must start with A or P
@@ -607,7 +680,9 @@ export const MedicalExamTool: React.FC<{
                       className={`p-3 border rounded-xl ${medErrors.medDate ? "border-red-500 bg-red-50/30" : ""}`}
                     />
                     {medErrors.medDate && (
-                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">{medErrors.medDate}</span>
+                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">
+                        {medErrors.medDate}
+                      </span>
                     )}
                   </div>
                   <div className="flex flex-col gap-1">
@@ -626,7 +701,9 @@ export const MedicalExamTool: React.FC<{
                       className={`p-3 border rounded-xl font-mono ${medErrors.medTime ? "border-red-500 bg-red-50/30" : ""}`}
                     />
                     {medErrors.medTime && (
-                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">{medErrors.medTime}</span>
+                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">
+                        {medErrors.medTime}
+                      </span>
                     )}
                   </div>
                   <div className="col-span-2 flex flex-col gap-1">
@@ -634,7 +711,9 @@ export const MedicalExamTool: React.FC<{
                       <label className="text-[10px] font-bold text-slate-500 uppercase">
                         Clinic / Physician Name
                       </label>
-                      <span className={`text-[9px] font-medium ${medClinic.length >= 80 ? "text-red-500" : "text-slate-400"}`}>
+                      <span
+                        className={`text-[9px] font-medium ${medClinic.length >= 80 ? "text-red-500" : "text-slate-400"}`}
+                      >
                         {medClinic.length}/80
                       </span>
                     </div>
@@ -644,14 +723,18 @@ export const MedicalExamTool: React.FC<{
                       maxLength={80}
                       placeholder="e.g. IOM Islamabad"
                       onChange={(e) => {
-                        const val = e.target.value.replace(/[^a-zA-Z0-9\s\-\.,\/]/g, "").slice(0, 80);
+                        const val = e.target.value
+                          .replace(/[^a-zA-Z0-9\s\-\.,\/]/g, "")
+                          .slice(0, 80);
                         setMedClinic(val);
                         setMedErrors((prev) => ({ ...prev, medClinic: "" }));
                       }}
                       className={`p-3 border rounded-xl ${medErrors.medClinic ? "border-red-500 bg-red-50/30" : ""}`}
                     />
                     {medErrors.medClinic && (
-                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">{medErrors.medClinic}</span>
+                      <span className="text-[9px] font-bold text-red-500 uppercase px-1">
+                        {medErrors.medClinic}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -676,12 +759,14 @@ export const MedicalExamTool: React.FC<{
                       if (!medDate) {
                         saveErrors.medDate = "Date is required.";
                       } else if (new Date(medDate) < today) {
-                        saveErrors.medDate = "Appointment date cannot be in the past.";
+                        saveErrors.medDate =
+                          "Appointment date cannot be in the past.";
                       }
 
                       const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
                       if (!medTime || !timeRegex.test(medTime)) {
-                        saveErrors.medTime = "Enter a valid time (e.g. 09:30 AM).";
+                        saveErrors.medTime =
+                          "Enter a valid time (e.g. 09:30 AM).";
                       }
 
                       const clinic = medClinic.trim();
@@ -690,7 +775,8 @@ export const MedicalExamTool: React.FC<{
                       } else if (clinic.length < 2) {
                         saveErrors.medClinic = "Must be at least 2 characters.";
                       } else if (!/^[a-zA-Z0-9\s\-\.,\/]+$/.test(clinic)) {
-                        saveErrors.medClinic = "Only letters, numbers, spaces, and basic punctuation allowed.";
+                        saveErrors.medClinic =
+                          "Only letters, numbers, spaces, and basic punctuation allowed.";
                       }
 
                       if (Object.keys(saveErrors).length > 0) {
@@ -798,31 +884,40 @@ export const PolioCertificateTool: React.FC<{
           {data.completionCard.title}
         </div>
         <div className="flex flex-col gap-3">
-          {data.completionCard.items.map((item: string, i: number) => (
-            <label
-              key={i}
-              className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${polioChecks[i] ? "bg-emerald-50 border-emerald-100" : "hover:bg-slate-50 border-transparent"}`}
-            >
-              <input
-                type="checkbox"
-                checked={polioChecks[i]}
-                onChange={async () => {
-                  if (guard && !guard()) return;
-                  const next = [...polioChecks];
-                  next[i] = !next[i];
-                  setPolioChecks(next);
-                  await actions.updateMetadata({ polio_checks: next });
-                }}
-                className="mt-1"
-              />
-              <span
-                className={`text-xs leading-tight ${polioChecks[i] ? "text-emerald-800 font-bold" : "text-slate-600"}`}
-              >
-                {item}
-              </span>
-            </label>
-          ))}
-        </div>
+  {data.completionCard.items.map((item: string, i: number) => (
+    <label
+      key={i}
+      className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+        polioChecks[i]
+          ? "bg-[#0d7377]/10 border-[#0d7377]/30"
+          : "hover:bg-slate-50 border-transparent"
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={polioChecks[i]}
+        onChange={async () => {
+          if (guard && !guard()) return;
+          const next = [...polioChecks];
+          next[i] = !next[i];
+          setPolioChecks(next);
+          await actions.updateMetadata({ polio_checks: next });
+        }}
+        className="mt-1 accent-[#0d7377]"
+      />
+
+      <span
+        className={`text-xs leading-tight ${
+          polioChecks[i]
+            ? "text-[#0d7377] font-bold"
+            : "text-slate-600"
+        }`}
+      >
+        {item}
+      </span>
+    </label>
+  ))}
+</div>
       </div>
 
       {isPolioGuideOpen && (
@@ -941,7 +1036,7 @@ export const PoliceClearanceTool: React.FC<{
 
   const validatePccField = (id: string, value: string) => {
     if (!value) return "";
-    
+
     // Allow alphanumeric, spaces, dashes, slashes
     const regex = /^[a-zA-Z0-9\s\-\/]+$/;
     if (!regex.test(value)) {
@@ -1023,7 +1118,9 @@ export const PoliceClearanceTool: React.FC<{
                     {f.label}
                   </label>
                   {!isDate && (
-                    <span className={`text-[9px] font-medium ${currentVal.length >= MAX_LEN ? "text-red-500" : "text-slate-400"}`}>
+                    <span
+                      className={`text-[9px] font-medium ${currentVal.length >= MAX_LEN ? "text-red-500" : "text-slate-400"}`}
+                    >
                       {currentVal.length}/{MAX_LEN}
                     </span>
                   )}
@@ -1033,11 +1130,19 @@ export const PoliceClearanceTool: React.FC<{
                   value={currentVal}
                   max={isDate ? todayStr : undefined}
                   maxLength={!isDate ? MAX_LEN : undefined}
-                  placeholder={!isDate ? f.id === "receipt" ? "e.g. PCC-2024-001234" : "Optional" : undefined}
+                  placeholder={
+                    !isDate
+                      ? f.id === "receipt"
+                        ? "e.g. PCC-2024-001234"
+                        : "Optional"
+                      : undefined
+                  }
                   onChange={(e) => {
                     let val = e.target.value;
                     if (!isDate) {
-                      val = val.replace(/[^a-zA-Z0-9\-\/\s]/g, "").toUpperCase();
+                      val = val
+                        .replace(/[^a-zA-Z0-9\-\/\s]/g, "")
+                        .toUpperCase();
                       if (val.length > MAX_LEN) val = val.slice(0, MAX_LEN);
                       const err = validatePccField(f.id, val);
                       setErrors((prev) => ({ ...prev, [f.id]: err }));
@@ -1045,7 +1150,9 @@ export const PoliceClearanceTool: React.FC<{
                     setPccData({ ...pccData, [f.id]: val });
                   }}
                   className={`p-3 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm ${
-                    errors[f.id] ? "border-red-500 bg-red-50/30" : "border-slate-200"
+                    errors[f.id]
+                      ? "border-red-500 bg-red-50/30"
+                      : "border-slate-200"
                   }`}
                 />
                 {errors[f.id] && (
@@ -1137,7 +1244,8 @@ export const PoliceClearanceTool: React.FC<{
         <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex flex-col gap-4">
           <div>
             <div className="text-sm font-bold text-emerald-900 mb-1 flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-emerald-600" /> {data.receivedCard.title}
+              <CheckCircle2 size={18} className="text-emerald-600" />{" "}
+              {data.receivedCard.title}
             </div>
             <div className="text-xs text-emerald-800 leading-relaxed">
               {data.receivedCard.body}

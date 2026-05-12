@@ -187,7 +187,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
       <div className="max-w-[760px] mx-auto px-4 py-8 md:px-6 md:py-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Title & Desc */}
-        <div className="flex items-center gap-2 mb-2">
+        {/* <div className="flex items-center gap-2 mb-2">
           <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
             Chapter 1 · USCIS Petition Filing
           </span>
@@ -195,7 +195,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
           <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
             Monitor USCIS Case Status
           </span>
-        </div>
+        </div> */}
         <h1 className="page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1">
           Monitor USCIS Case Status
         </h1>

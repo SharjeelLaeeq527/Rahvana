@@ -128,10 +128,10 @@ export default function RoadmapLayoutV2({
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500 pt-[70px]"
+      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500 pt-10"
     >
       {/* Top Navigation */}
-      <nav className="sticky top-[70px] h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40 pt-2">
+      <nav className="sticky top-15 h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40">
         {/* Dynamic Back / Logo */}
         <div className="flex items-center gap-3">
           {view !== "dashboard" && (

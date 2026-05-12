@@ -257,7 +257,7 @@ export function UpgradeModal({
     return null;
   }
 
-  const canBuyAddon = e.state === "locked_buy" && !!e.addon;
+  const canBuyAddon = (e.state === "locked_buy" || e.state === "limited") && !!e.addon;
   const showInclusionSection = fullUpgradeTiers.length > 0;
 
   // ─── Shared card wrapper ──────────────────────────────────────────────────

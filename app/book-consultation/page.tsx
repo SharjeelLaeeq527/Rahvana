@@ -15,9 +15,13 @@ import {
   ChevronRight,
   ChevronLeft,
   X as CloseIcon,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 
 interface Booking {
   id: string;
@@ -184,6 +188,15 @@ const ConsultationBookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [referenceId, setReferenceId] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showConsultationUpgradeModal, setShowConsultationUpgradeModal] =
+    useState(false);
+  const [remainingConsultations, setRemainingConsultations] = useState<
+    number | null
+  >(null);
+  const [consultationCreditsLoading, setConsultationCreditsLoading] =
+    useState(true);
+  const { tier } = usePlan();
+  const { checkAccess, consumeAccess } = useFeatureAccess();
 
   // Mock data for dropdowns
   const issueCategories = [
@@ -519,6 +532,34 @@ const ConsultationBookingPage = () => {
     }
   }, [activeView, searchQuery]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadConsultationCredits = async () => {
+      setConsultationCreditsLoading(true);
+      const access = await checkAccess("expert_consultation");
+      if (!isMounted) return;
+
+      const usage = access.data?.data?.usage;
+      if (access.allowed && usage?.remaining !== undefined) {
+        setRemainingConsultations(usage.remaining);
+      } else if (access.allowed && usage?.limit !== undefined) {
+        setRemainingConsultations(usage.limit);
+      } else {
+        setRemainingConsultations(null);
+      }
+
+      setConsultationCreditsLoading(false);
+    };
+
+    void loadConsultationCredits();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [checkAccess]);
+
+
   const handleAcceptAlternative = async (bookingId: string, slot: Date) => {
     setLoading(true);
     try {
@@ -662,6 +703,25 @@ const ConsultationBookingPage = () => {
       return;
     }
 
+    if (remainingConsultations !== null && remainingConsultations <= 0) {
+      setShowConsultationUpgradeModal(true);
+      setLoading(false);
+      return;
+    }
+
+    const reservation = await consumeAccess("expert_consultation");
+
+    if (!reservation.allowed) {
+      // Show upgrade modal - UpgradeModal fetches entitlement data itself
+      setShowConsultationUpgradeModal(true);
+      setLoading(false);
+      return;
+    }
+
+    if (reservation.data?.remaining !== undefined) {
+      setRemainingConsultations(reservation.data.remaining);
+    }
+
     console.log("Submitting form...", formData);
     setLoading(true);
 
@@ -724,6 +784,9 @@ const ConsultationBookingPage = () => {
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error("Submission failed:", errorData);
+        // if (response.status === 403) {
+          setShowConsultationUpgradeModal(true);
+        // }
         alert(
           `Failed to submit: ${errorData.error || "Check console for details"}`,
         );
@@ -1578,17 +1641,44 @@ const ConsultationBookingPage = () => {
               <p className="text-xl text-teal-50 max-w-2xl font-light">
                 Personalized guidance for your U.S. immigration journey.
               </p>
+              {tier === "executive" && (
+                <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm">
+                  <Crown className="h-4 w-4 text-amber-200" />
+                  {consultationCreditsLoading ? (
+                    <span>Loading consultation credits...</span>
+                  ) : remainingConsultations !== null ? (
+                    <span>
+                      Remaining consultation credits: {remainingConsultations}/2
+                    </span>
+                  ) : (
+                    <span>Consultation credits unavailable</span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex gap-3">
               <Button
-                onClick={() => setActiveView("booking")}
+                onClick={() => {
+                  if (tier !== "executive") {
+                    setShowConsultationUpgradeModal(true);
+                  } else {
+                    setActiveView("booking");
+                  }
+                }}
+                disabled={tier !== "executive"}
                 className={cn(
-                  "px-6 py-2 rounded-full text-sm font-bold transition-all",
-                  activeView === ("booking" as "booking" | "requests")
+                  "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
+                  activeView === ("booking" as "booking" | "requests") &&
+                    tier === "executive"
                     ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+                    : tier !== "executive"
+                      ? "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
+                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
                 )}
               >
+                {tier !== "executive" && (
+                  <Crown className="h-4 w-4" />
+                )}
                 Book New
               </Button>
               <Button
@@ -1609,6 +1699,7 @@ const ConsultationBookingPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-20">
+        {activeView === "booking" && tier === "executive" && (
         <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
           {/* Improved Progress Tracker */}
           <div className="bg-gray-50/50 border-b border-gray-100 p-8">
@@ -1695,7 +1786,21 @@ const ConsultationBookingPage = () => {
             </div>
           </form>
         </div>
+        )}
       </div>
+
+      {/* UpgradeModal for expert_consultation */}
+      {showConsultationUpgradeModal && (
+        <UpgradeModal
+          feature={"expert_consultation"}
+          onClose={() => setShowConsultationUpgradeModal(false)}
+          onConfirm={(action: "upgrade" | "addon", target?: string) => {
+            // Redirect to pricing page with the selected plan pre-selected
+            const plan = typeof target === "string" ? target : "executive";
+            window.location.href = `/pricing?plan=${plan}`;
+          }}
+        />
+      )}
     </div>
   );
 };

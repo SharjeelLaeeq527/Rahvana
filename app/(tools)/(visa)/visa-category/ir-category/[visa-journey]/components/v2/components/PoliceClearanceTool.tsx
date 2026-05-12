@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
-import { Search, X, CheckCircle2, Upload } from "lucide-react";
+import { Search, X, CheckCircle2, Upload, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { POLICE_CLEARANCE_DATA } from "../PoliceClearanceData";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 interface PoliceClearanceToolProps {
   state: any;
@@ -58,6 +60,8 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
   } = pccState;
   const [isSaving, setIsSaving] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const { tier } = usePlan();
+  const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
 
   const validatePccField = (id: string, value: string) => {
     if (!value) return "";
@@ -165,7 +169,9 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                   onChange={(e) => {
                     let val = e.target.value;
                     if (!isDate) {
-                      val = val.replace(/[^a-zA-Z0-9\-\/\s]/g, "").toUpperCase();
+                      val = val
+                        .replace(/[^a-zA-Z0-9\-\/\s]/g, "")
+                        .toUpperCase();
                       if (val.length > MAX_LEN) val = val.slice(0, MAX_LEN);
                       const err = validatePccField(f.id, val);
                       setErrors((prev) => ({ ...prev, [f.id]: err }));
@@ -227,7 +233,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
             }
           }}
           disabled={isSaving}
-          className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-white py-3.5 rounded-xl font-bold disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
         >
           {isSaving ? "Saving..." : data.trackingCard.buttonLabel}
         </button>
@@ -348,7 +354,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-w-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {pccOverlayStep + 1} — {currentSteps[pccOverlayStep].label}
+                {currentSteps[pccOverlayStep].label}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
                 {currentSteps[pccOverlayStep].heading}
@@ -356,6 +362,31 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
               <p className="text-sm text-slate-600 leading-relaxed mb-8">
                 {currentSteps[pccOverlayStep].instruction}
               </p>
+
+              {pccOverlayStep === 0 && (
+                <div className="flex justify-center items-center">
+                  <button
+                    onClick={() => {
+                      if (tier !== "executive") {
+                        setShowUpgradeModal(true);
+                      } else {
+                        window.open(
+                          "/police-verification/apply?province=Sindh",
+                          "_blank",
+                        );
+                      }
+                    }}
+                    className="relative w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary/90 transition-colors mb-4"
+                  >
+                    {tier !== "executive" && (
+                      <div className="absolute top-2 left-2 bg-white/20 p-1 rounded-md">
+                        <Lock size={12} className="text-white" />
+                      </div>
+                    )}
+                    Apply for PCC
+                  </button>
+                </div>
+              )}
 
               <div className="flex gap-3">
                 {pccOverlayStep > 0 && (
@@ -384,6 +415,12 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
             </div>
           </div>
         </div>
+      )}
+      {showUpgradeModal && (
+        <UpgradeModal
+          feature="Executive PCC Filing"
+          onClose={() => setShowUpgradeModal(false)}
+        />
       )}
     </div>
   );

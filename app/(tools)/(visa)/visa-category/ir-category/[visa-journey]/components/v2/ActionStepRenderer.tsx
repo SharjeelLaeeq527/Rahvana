@@ -1308,7 +1308,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {/* Main Content */}
       <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-1 sm:pt-10 md:pt-3 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
-        {(step.step_key === "step_1_11" || 
+        {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
           step.step_key === "step_1_13" || 
           step.step_key === "step_1_14") && (
@@ -1323,10 +1323,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <span className="text-[#BDD7F1] mx-2">&gt;</span>
             <span className="text-[#3B7DD8]">{step.step_name}</span>
           </div>
-        )}
+        )} */}
         {/* Title */}
         <h1
-          className={`page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
+          className={`page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 font-bold ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
         >
           {step.step_name}
         </h1>
@@ -1725,16 +1725,20 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     if (!value) return;
                     if (!stepEntitlement.guard()) return;
 
-                    if (!actions?.savePaymentMethod) {
-                      console.error(
-                        "[ActionStepRenderer] savePaymentMethod not available in actions",
-                      );
-                      return;
-                    }
-
                     setIsSavingPayment(true);
                     try {
-                      await actions.savePaymentMethod(value);
+                      if (actions?.savePaymentMethod) {
+                        await actions.savePaymentMethod(value);
+                      } else if (actions?.updateMetadata) {
+                        // Fallback path for flows where StepView does not provide savePaymentMethod.
+                        await actions.updateMetadata({
+                          paper_payment_method: value,
+                        });
+                      } else {
+                        throw new Error(
+                          "[ActionStepRenderer] Neither savePaymentMethod nor updateMetadata is available in actions",
+                        );
+                      }
                       setSelectedDropdown(value);
                       setStatusSaved(true);
                     } catch (error) {
@@ -2390,67 +2394,70 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       marginBottom: "18px",
                     }}
                   >
-                    <div
-                      style={{
-                        height: "34px",
-                        background: "#eef3fa",
-                        borderBottom: `1px solid ${COLORS.line}`,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "7px",
-                        paddingLeft: "12px",
-                        overflow: "hidden",
-                      }}
-                    >
+                    {/* Header with three dots and URL - only show if url exists */}
+                    {filteredSteps[guideStep]?.url && (
                       <div
                         style={{
-                          width: "9px",
-                          height: "9px",
-                          borderRadius: "50%",
-                          background: "#f26b6b",
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div
-                        style={{
-                          width: "9px",
-                          height: "9px",
-                          borderRadius: "50%",
-                          background: "#f5c56a",
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div
-                        style={{
-                          width: "9px",
-                          height: "9px",
-                          borderRadius: "50%",
-                          background: "#63c48f",
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div
-                        style={{
-                          marginLeft: "8px",
-                          height: "20px",
+                          height: "34px",
+                          background: "#eef3fa",
+                          borderBottom: `1px solid ${COLORS.line}`,
                           display: "flex",
                           alignItems: "center",
-                          paddingLeft: "10px",
-                          paddingRight: "10px",
-                          background: "#fff",
-                          borderRadius: "8px",
-                          fontSize: "10px",
-                          color: COLORS.muted,
-                          fontFamily: "monospace",
+                          gap: "7px",
+                          paddingLeft: "12px",
                           overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: isMobile ? "160px" : "none",
                         }}
                       >
-                        {filteredSteps[guideStep]?.url}
+                        <div
+                          style={{
+                            width: "9px",
+                            height: "9px",
+                            borderRadius: "50%",
+                            background: "#f26b6b",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: "9px",
+                            height: "9px",
+                            borderRadius: "50%",
+                            background: "#f5c56a",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: "9px",
+                            height: "9px",
+                            borderRadius: "50%",
+                            background: "#63c48f",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div
+                          style={{
+                            marginLeft: "8px",
+                            height: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            paddingLeft: "10px",
+                            paddingRight: "10px",
+                            background: "#fff",
+                            borderRadius: "8px",
+                            fontSize: "10px",
+                            color: COLORS.muted,
+                            fontFamily: "monospace",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: isMobile ? "160px" : "none",
+                          }}
+                        >
+                          {filteredSteps[guideStep]?.url}
+                        </div>
                       </div>
-                    </div>
+                    )}
                     <div
                       style={{
                         minHeight: isMobile ? "200px" : "280px",

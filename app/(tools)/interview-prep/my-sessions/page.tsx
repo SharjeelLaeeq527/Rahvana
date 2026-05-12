@@ -356,7 +356,7 @@ export default function MyInterviewSessions() {
 
   return (
     <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-py site-main-px">
-      <div className="">
+      <div className="mt-12">
         <header className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             My Interview Sessions
