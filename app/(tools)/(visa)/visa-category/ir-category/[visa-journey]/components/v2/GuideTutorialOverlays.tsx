@@ -1,4 +1,6 @@
 "use client";
+import Image from "next/image";
+
 // Generic tutorial overlay for status guides (used for 'What does this status mean?')
 export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
   const s: TutorialStep = props.tutorial[props.index] ?? {};
@@ -64,6 +66,7 @@ type TutorialStep = {
   highlight?: string;
   pills?: string[];
   vlabel?: string;
+  media?: { type: "img" | "video"; src?: string };
 };
 
 interface TutorialOverlayProps {
@@ -119,21 +122,34 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
 
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 sm:px-6 md:px-8 py-8 sm:py-12">
         <div className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[650px] flex flex-col min-h-full">
+          {children}
           <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-2.5">
             {!isFirst && (
               <button
                 onClick={() => setIndex(index - 1)}
-                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63]"
+                className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
               >
                 ← Back
               </button>
             )}
-            <button
-              onClick={() => setIndex(index + 1)}
-              className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63]"
-            >
-              {isLast ? "Done — return to step" : "Next →"}
-            </button>
+            {isLast ? (
+              <button
+                onClick={() => {
+                  setIndex(0);
+                  onClose();
+                }}
+                className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
+              >
+                Done — return to step
+              </button>
+            ) : (
+              <button
+                onClick={() => setIndex(index + 1)}
+                className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
+              >
+                Next →
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -165,9 +181,44 @@ export const MedicalTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
         </div>
         <div
           className="p-[18px] leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: s.visual }}
+          dangerouslySetInnerHTML={{ __html: s.visual || "" }}
         />
       </div>
+      {s.note && (
+        <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+          {s.note}
+        </div>
+      )}
+    </TutorialShell>
+  );
+};
+
+export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
+  const s = props.tutorial[props.index];
+  return (
+    <TutorialShell {...props} title="Interview Day Guide">
+      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
+        Interview Day Guide · {s.label}
+      </div>
+      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
+        {s.heading}
+      </h2>
+      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
+        {s.instruction}
+      </p>
+      {s.media?.type === "img" && s.media.src ? (
+        <Image
+          src={s.media.src}
+          alt={s.heading || "Interview day guide image"}
+          width={1200}
+          height={900}
+          className="mb-[18px] w-full h-auto object-contain"
+          sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
+          quality={95}
+        />
+      ) : (
+        <div className="mb-[18px] leading-relaxed" dangerouslySetInnerHTML={{ __html: s.visual || "" }} />
+      )}
       {s.note && (
         <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
           {s.note}
@@ -643,44 +694,6 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
           ))}
         </div>
       </div>
-    </TutorialShell>
-  );
-};
-
-export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (
-  props,
-) => {
-  const s = props.tutorial[props.index];
-  return (
-    <TutorialShell {...props} title="Interview Day Guide">
-      <div className="text-[11px] font-bold tracking-widest uppercase text-primary mb-3.5">
-        Interview Day Guide · {s.label}
-      </div>
-      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
-        {s.heading}
-      </h2>
-      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
-        {s.instruction}
-      </p>
-      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
-        <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
-          <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
-          <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
-          <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
-          <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
-            {s.vlabel}
-          </div>
-        </div>
-        <div
-          className="p-[18px] leading-relaxed courier-mock-visual"
-          dangerouslySetInnerHTML={{ __html: s.visual }}
-        />
-      </div>
-      {s.note && (
-        <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
-          {s.note}
-        </div>
-      )}
     </TutorialShell>
   );
 };

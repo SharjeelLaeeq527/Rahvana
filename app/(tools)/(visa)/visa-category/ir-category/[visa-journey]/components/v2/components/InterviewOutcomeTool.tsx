@@ -122,7 +122,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                     ? "bg-[var(--rv-green)]/10 text-[var(--rv-green)]"
                     : outcome.id === "221g"
                       ? "bg-[var(--rv-amber)]/10 text-[var(--rv-amber)]"
-                      : "bg-[var(--rv-blue)]/10 text-[var(--rv-blue)]"
+                      : "bg-[#0d7377]/10 text-[#0d7377]"
                 }`}
               >
                 {outcome.icon === "check-circle" && <CheckCircle2 size={20} />}
@@ -141,7 +141,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                           ? "bg-[var(--rv-green-bg)] text-[var(--rv-green)]"
                           : outcome.badgeType === "amber"
                             ? "bg-[var(--rv-amber-bg)] text-[var(--rv-amber)]"
-                            : "bg-[var(--rv-sky)] text-[var(--rv-blue)]"
+                            : "bg-[var(--rv-sky)] text-[#0d7377]"
                       }`}
                     >
                       {outcome.badge}
@@ -161,15 +161,15 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
         <div className="bg-[var(--rv-sky)] border-[1.5px] border-[var(--rv-line)] rounded-[16px] p-[24px] shadow-[0_4px_24px_rgba(47,111,212,0.08)] mb-4 animate-in slide-in-from-top-2">
           {/* Progress Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="text-[12px] font-bold text-[var(--rv-blue)] flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-[var(--rv-blue)] text-white flex items-center justify-center text-[10px]">
+            <div className="text-[12px] font-bold text-[#0d7377] flex items-center gap-1.5">
+              <span className="w-5 h-5 rounded-full bg-[#0d7377] text-white flex items-center justify-center text-[10px]">
                 {currentQuestionIdx + 1}
               </span>
               Question {currentQuestionIdx + 1} of {tool.clarification_questions.length}
             </div>
             <div className="w-32 h-1.5 bg-white rounded-full overflow-hidden">
               <div 
-                className="h-full bg-[var(--rv-blue)] transition-all duration-500" 
+                className="h-full bg-[#0d7377] transition-all duration-500" 
                 style={{ width: `${progress}%` }} 
               />
             </div>
@@ -188,8 +188,8 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                     onClick={() => handleQuestionAnswer(currentQuestion.id, opt.value)}
                     className={`p-4 rounded-xl text-[13.5px] font-bold border transition-all text-left flex items-center gap-3 ${
                       questionAnswers[currentQuestion.id] === opt.value
-                        ? "bg-[var(--rv-blue)] text-white border-[var(--rv-blue)] shadow-md"
-                        : "bg-white text-[var(--rv-soft)] border-[var(--rv-line)] hover:border-[var(--rv-blue)]/50"
+                        ? "bg-[#0d7377] text-white border-[#0d7377] shadow-md"
+                        : "bg-white text-[var(--rv-soft)] border-[var(--rv-line)] hover:border-[#0d7377]/50"
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center ${
@@ -217,7 +217,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
             <button
               onClick={nextQuestion}
               disabled={!questionAnswers[currentQuestion.id]}
-              className={`p-3.5 bg-[var(--rv-blue)] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[var(--rv-blue)]/90 transition-all disabled:opacity-50 ${currentQuestionIdx === 0 ? 'w-full' : 'flex-1'}`}
+              className={`p-3.5 bg-[#0d7377] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#0d7377]/90 transition-all disabled:opacity-50 ${currentQuestionIdx === 0 ? 'w-full' : 'flex-1'}`}
             >
               <span>{currentQuestionIdx === (tool.clarification_questions?.length || 0) - 1 ? 'See Recommendation' : 'Next Question'}</span>
               <ArrowRight size={18} />
@@ -229,7 +229,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
       {selectedOutcome === "not_sure" && showRecommendation && (
         <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[24px] shadow-[0_4px_24px_rgba(12,27,51,0.08)] mb-4 animate-in zoom-in-95 duration-300">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-[var(--rv-sky)] text-[var(--rv-blue)] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[var(--rv-sky)] text-[#0d7377] rounded-full flex items-center justify-center">
               <Sparkles size={20} />
             </div>
             <div>

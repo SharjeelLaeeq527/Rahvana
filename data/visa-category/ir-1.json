@@ -2048,14 +2048,6 @@
               },
               {
                 "label": "Print guide · Step 5",
-                "title": "Enable collate option for proper sequencing",
-                "text": "In the advanced print options, make sure to check the <strong>Collate</strong> checkbox. This ensures all your pages are printed in the correct sequence so your final packet is properly organized.",
-                "url": "print-collate",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/enable-collate.png\" alt=\"Check collate option\" style=\"width:100%; \" />",
-                "note": "Collating prevents pages from being mixed up if you're printing multiple copies."
-              },
-              {
-                "label": "Print guide · Step 6",
                 "title": "Click Print and wait for completion",
                 "text": "Click the <strong>Print</strong> button and wait for your printer to complete the print job. Don't close the preview or dialog until printing is finished.",
                 "url": "final-print",
@@ -2615,17 +2607,16 @@
                 "label": "Step 3 of 4 — Decide how to register it",
                 "heading": "Choose the easiest intake path",
                 "instruction": "If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.",
-                "url": "rahvana.com",
-                "visual": "<div class=\"space-y-3\"><div class=\"text-[10px] font-bold uppercase tracking-[0.08em] text-[#2f6fd4]\">Rahvana intake options</div><div class=\"grid gap-2 sm:grid-cols-2\"><div class=\"rounded-lg border border-[#d0e4f7] bg-[#fff] px-3 py-3\"><div class=\"text-[12px] font-bold text-[#0c1b33] mb-1\">Upload notice</div><div class=\"text-[13px] text-[#3a4f63] leading-relaxed\">Useful when you have the notice file and want to preserve the document.</div></div><div class=\"rounded-lg border border-[#d0e4f7] bg-[#fff] px-3 py-3\"><div class=\"text-[12px] font-bold text-[#0c1b33] mb-1\">Manual entry</div><div class=\"text-[13px] text-[#3a4f63] leading-relaxed\">Useful when speed matters more and you already have the receipt number.</div></div></div><div class=\"text-[13px] text-[#3a4f63]\">Both paths end in the same confirmation and tracked-case state.</div></div>",
+                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step3.png\" alt=\"Decide the path\" style=\"width:100%; \" />",
                 "caption": "Upload is useful for preserving the notice. Manual entry is useful when speed matters more."
               },
               {
                 "label": "Step 4 of 4 — Save and turn on monitoring",
                 "heading": "Confirm the details and enable tracking",
                 "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
-                "url": "rahvana.com",
-                "visual": "<div class=\"space-y-3\"><div class=\"text-[10px] font-bold uppercase tracking-[0.08em] text-[#2f6fd4]\">Tracked case state</div><div class=\"rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] px-3 py-3\"><div class=\"text-[13px] font-bold text-[#0c1b33] mb-1\">Receipt registered · Tracking enabled</div><div class=\"text-[13px] text-[#3a4f63] leading-relaxed\">Status history and notifications should begin from the saved baseline.</div></div><div class=\"text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg\">Store receipt number → Save baseline status</div></div>",
-                "caption": "For IR-1, saving the priority date is useful for records, but it should not dominate this step.",
+                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step4.png\" alt=\"Save\" style=\"width:100%; \" />",
                 "note": "This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API."
               }
             ]
