@@ -91,13 +91,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     supabase
       .from('user_profiles')
-      .select('subscription_tier, metadata')
+      .select('subscription_tier, profile_details')
       .eq('id', user.id)
       .single()
-      .then(({ data }: { data: { subscription_tier?: string; metadata?: any } | null }) => {
+      .then(({ data }: { data: { subscription_tier?: string; profile_details?: any } | null }) => {
         if (cancelled) return;
         setRealTier(normalizeTier(data?.subscription_tier));
-        const addons = data?.metadata?.purchased_addons;
+        const addons = data?.profile_details?.purchased_addons;
         setPurchasedAddons(Array.isArray(addons) ? addons : []);
       })
       .catch(() => {

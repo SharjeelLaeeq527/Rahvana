@@ -160,12 +160,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         await supabase
           .from('user_profiles')
           .update({
-            metadata: {
+            profile_details: {
               active_plan: productId,
               plan_visa_category: session.metadata.visa_category,
               plan_purchase_date: new Date().toISOString(),
               purchased_addons: selectedAddons,
-              stripe_subscription_id: session.subscription, // save for cancellation
+              stripe_subscription_id: session.subscription,
             }
           })
           .eq('id', userId);
@@ -198,18 +198,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         // Fetch current profile to get existing addons
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('metadata')
+          .select('profile_details')
           .eq('id', userId)
           .single();
 
-        const existingAddons = profile?.metadata?.purchased_addons || [];
+        const existingAddons = profile?.profile_details?.purchased_addons || [];
         const mergedAddons = [...new Set([...existingAddons, ...selectedAddons])];
 
         await supabase
           .from('user_profiles')
           .update({
-            metadata: {
-              ...(profile?.metadata || {}),
+            profile_details: {
+              ...(profile?.profile_details || {}),
               purchased_addons: mergedAddons,
             }
           })
