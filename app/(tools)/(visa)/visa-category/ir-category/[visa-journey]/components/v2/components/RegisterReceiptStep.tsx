@@ -1,5 +1,5 @@
 // components/RegisterReceiptStep.tsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Globe, Lock } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
@@ -206,7 +206,12 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({
               >
                 {k}
               </div>
-              <div className="text-[13px] font-semibold text-white">{v}</div>
+              <div
+                className="text-[13px] font-semibold"
+                style={{ color: "#28151c" }}
+              >
+                {v}
+              </div>
             </div>
           ))}
         </div>
@@ -223,10 +228,15 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({
                 style={{ background: "#8284bf" }}
               />
               <div>
-                <div className="text-[13px] font-bold text-white">
+                <div
+                  className="text-[13px] font-bold"
+                  style={{ color: "#28151c" }}
+                >
                   {item.title}
                 </div>
-                <div className="text-[12px] text-white/60">{item.sub}</div>
+                <div className="text-[12px]" style={{ color: "#5c6570" }}>
+                  {item.sub}
+                </div>
               </div>
             </div>
           ))}
@@ -574,6 +584,10 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrError, setOcrError] = useState("");
+  const [ocrRawResponse, setOcrRawResponse] = useState<any>(null);
+  const [isDropActive, setIsDropActive] = useState(false);
   const set =
     (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
       setFields((f) => ({ ...f, [k]: e.target.value }));
@@ -581,6 +595,67 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
     (e.target.style.borderColor = "#8284bf");
   const blurBorder = (e: React.FocusEvent<HTMLInputElement>) =>
     (e.target.style.borderColor = "#d0e4f7");
+
+  const ocrRequestIdRef = useRef(0);
+
+  async function runOCR(file: File) {
+    const currentRequestId = Date.now();
+  
+    ocrRequestIdRef.current = currentRequestId;
+  
+    setOcrLoading(true);
+    setOcrError("");
+  
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      const res = await fetch("/api/receipt/ocr", {
+        method: "POST",
+        body: formData,
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        throw new Error(data?.error || "OCR failed");
+      }
+  
+      // Ignore stale responses
+      if (currentRequestId !== ocrRequestIdRef.current) {
+        return;
+      }
+  
+      setOcrRawResponse(data);
+  
+      // Prefer fresh OCR values on each run; keep previous only when API returns null.
+      setFields((prev) => ({
+        ...prev,
+        receiptNumber: data.receiptNumber ?? prev.receiptNumber,
+        noticeDate: data.noticeDate ?? prev.noticeDate,
+        priorityDate: data.priorityDate ?? prev.priorityDate,
+      }));
+    } catch (err: any) {
+      if (currentRequestId === ocrRequestIdRef.current) {
+        setOcrError(err?.message || "OCR request failed");
+      }
+    } finally {
+      if (currentRequestId === ocrRequestIdRef.current) {
+        setOcrLoading(false);
+      }
+    }
+  }
+
+  async function applySelectedFiles(files: FileList | null) {
+    const file = files?.[0] ?? null;
+    setUploadFile(file);
+    if (files && files.length > 0) {
+      onFileVault(RECEIPT_NOTICE_DOC_ID, files);
+    }
+    if (file) {
+      await runOCR(file);
+    }
+  }
 
   async function handleSubmit() {
     if (guard && !guard()) return;
@@ -654,34 +729,109 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       >
         Receipt Notice File
       </label>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="mb-4">
         <input
           type="file"
           accept=".pdf,.png,.jpg,.jpeg"
           id="receipt-upload-input"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0] ?? null;
-            setUploadFile(file);
-            if (e.target.files && e.target.files.length > 0)
-              onFileVault(RECEIPT_NOTICE_DOC_ID, e.target.files);
+          className="sr-only"
+          onChange={async (e) => {
+            await applySelectedFiles(e.target.files);
+            e.target.value = "";
           }}
         />
         <label
           htmlFor="receipt-upload-input"
-          className="px-4 py-2 rounded-lg text-[14px] font-semibold cursor-pointer"
+          className="flex flex-col items-center justify-center rounded-xl px-6 py-10 cursor-pointer transition-colors"
           style={{
-            background: "#f0f1fb",
-            border: "1px solid rgba(130,132,191,0.4)",
-            color: "#8284bf",
+            background: isDropActive ? "#e8eafd" : "#f8f9fd",
+            border: `2px dashed ${
+              isDropActive ? "rgba(130,132,191,0.85)" : "rgba(130,132,191,0.45)"
+            }`,
+          }}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDropActive(true);
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDropActive(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              setIsDropActive(false);
+            }
+          }}
+          onDrop={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDropActive(false);
+            const dropped = e.dataTransfer.files?.[0];
+            if (!dropped) return;
+            const lower = dropped.name.toLowerCase();
+            const ok =
+              lower.endsWith(".pdf") ||
+              lower.endsWith(".png") ||
+              lower.endsWith(".jpg") ||
+              lower.endsWith(".jpeg");
+            if (!ok) {
+              setError("Please drop a PDF, PNG, or JPG file.");
+              return;
+            }
+            setError("");
+            const dt = new DataTransfer();
+            dt.items.add(dropped);
+            await applySelectedFiles(dt.files);
           }}
         >
-          Choose File
+          <span
+            className="text-[15px] font-semibold mb-1 text-center"
+            style={{ color: "#28151c" }}
+          >
+            Drag & drop your receipt notice here
+          </span>
+          <span className="text-[13px] mb-4 text-center" style={{ color: "#6b8097" }}>
+            or click anywhere in this area to choose a file
+          </span>
+          <span
+            className="px-4 py-2 rounded-lg text-[14px] font-semibold pointer-events-none"
+            style={{
+              background: "#f0f1fb",
+              border: "1px solid rgba(130,132,191,0.4)",
+              color: "#8284bf",
+            }}
+          >
+            Choose File
+          </span>
+          <span
+            className="text-[13px] mt-4 text-center truncate max-w-full px-2"
+            style={{ color: "#6b8097" }}
+          >
+            {uploadFile ? uploadFile.name : "No file chosen"}
+          </span>
         </label>
-        <span className="text-[13px]" style={{ color: "#6b8097" }}>
-          {uploadFile ? uploadFile.name : "No file chosen"}
-        </span>
       </div>
+      {ocrLoading && (
+        <div className="text-[13px] mt-2" style={{ color: "#8284bf" }}>
+          Extracting receipt details...
+        </div>
+      )}
+      {ocrError && (
+        <div
+          className="rounded-lg p-3 text-[13px] mb-4 mt-3"
+          style={{
+            background: "#fff1f2",
+            border: "1px solid #fecdd3",
+            color: "#9f1239",
+          }}
+        >
+          {ocrError}
+        </div>
+      )}
       <div
         className="rounded-lg p-3 mb-5 text-[13px]"
         style={{
@@ -782,7 +932,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
           className="px-5 py-2 rounded-full text-[14px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
           style={{ background: "#8284bf" }}
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={loading || ocrLoading}
           onMouseEnter={(e) =>
             !loading && (e.currentTarget.style.background = "#6d5fb0")
           }
@@ -844,10 +994,15 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
   const [showTrackingNudge, setShowTrackingNudge] = useState(false);
 
   useEffect(() => {
+    const fromTool = tool?.tutorial_steps;
+    if (Array.isArray(fromTool) && fromTool.length > 0) {
+      setGuideSteps(fromTool);
+      return;
+    }
     import("@/data/receipt-guide-steps.json").then((mod) =>
       setGuideSteps(mod.default),
     );
-  });
+  }, [tool]);
 
   useEffect(() => {
     if (!journeyId) return;
@@ -901,7 +1056,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
     //<div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       <div className="bg-cover bg-center w-full min-h-screen relative">
-        <div className="max-w-[720px] w-full mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col step-modal-spacing">
+        <div className="max-w-[720px] w-full mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-8 2xl:py-12 flex flex-col step-modal-spacing">
           {/* Eyebrow */}
           {/* <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">

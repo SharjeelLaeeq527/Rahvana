@@ -52,10 +52,7 @@ import {
   DocumentGatheringItem,
 } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import {
-  getAllActiveSteps,
-  getStageProgress,
-} from "./journeyHelpers";
+import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
@@ -66,9 +63,7 @@ import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  HOUSEHOLD_TUTORIAL_STEPS,
-} from "./HouseholdTutorialData";
+import { HOUSEHOLD_TUTORIAL_STEPS } from "./HouseholdTutorialData";
 import {
   SUBMISSION_TUTORIAL_STEPS,
   SubmissionTutorialOverlay,
@@ -97,10 +92,7 @@ import type {
   ConditionalDocument,
 } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
-import {
-  CeacCredsModal,
-  NvcFeeModal,
-} from "./PortalWalletManager";
+import { CeacCredsModal, NvcFeeModal } from "./PortalWalletManager";
 import { SponsorshipModule } from "./components/SponsorshipModule";
 import {
   CivilDocGuideOverlay,
@@ -187,9 +179,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const plan = usePlan();
   const stepEntitlement = useStepEntitlement(sId);
 
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<
-    string | null
-  >(null);
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
+    null,
+  );
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
   // Add Evidence Note modal state
 
@@ -390,12 +382,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setIsLocked,
     handleNextQuiz,
     handleConfirmation,
-  } = useFilingQuiz({ 
-    currentStep, 
-    isCompleted, 
-    actions, 
-    handleToggleComplete, 
-    metadata: state.metadata 
+  } = useFilingQuiz({
+    currentStep,
+    isCompleted,
+    actions,
+    handleToggleComplete,
+    metadata: state.metadata,
   });
 
   const {
@@ -424,7 +416,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     [stepEntitlement, openUploadModal],
   );
 
-
   // NVC Fee States
   const [isNvcFeeModalOpen, setIsNvcFeeModalOpen] = useState(false);
   const nvcFeeData = state.metadata.nvcFeeStatus || {
@@ -437,7 +428,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   // Civil Documents States
   const [activeCivilDoc, setActiveCivilDoc] = useState<any>(null);
   const [isCivilDocGuideOpen, setIsCivilDocGuideOpen] = useState(false);
-  const [docGuideContext, setDocGuideContext] = useState<"civil" | "gathering">("civil");
+  const [docGuideContext, setDocGuideContext] = useState<"civil" | "gathering">(
+    "civil",
+  );
   const civilDocsStatus =
     (state.metadata.civilDocsStatus as Record<string, string>) || {};
   const gatheringDocsStatus =
@@ -582,7 +575,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const [isApprovalSaved, setIsApprovalSaved] = useState(
     state.metadata.approvalSaved === "true",
   );
-
 
   // --- STEP 3.4 (DOCUMENT GATHERING) STATE ---
   const [gatheringStatus, setGatheringStatus] = useState<
@@ -807,7 +799,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         setRcptUiState("tracked");
       }
     }
-  }, [state.metadata.uscis_notice_date, state.metadata.uscis_priority_date, state.metadata.uscis_receipt_number, state.metadata.uscis_tracking_enabled]);
+  }, [
+    state.metadata.uscis_notice_date,
+    state.metadata.uscis_priority_date,
+    state.metadata.uscis_receipt_number,
+    state.metadata.uscis_tracking_enabled,
+  ]);
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
@@ -899,7 +896,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     setIsLocked(state.metadata.filingMethodConfirmed || false);
   }, [state.metadata.filingMethodConfirmed]);
 
-
   // Initialize Document Vault Config — runs on mount, no user.id dependency
   // The API uses the session cookie to get real user_id, so userId here is just a local label
   useEffect(() => {
@@ -952,8 +948,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     isSubmissionGuideOpen,
   ]);
 
-
-
   const handleSaveNvcFee = (newData: any) => {
     actions.updateMetadata({ nvcFeeStatus: newData });
     setIsNvcFeeModalOpen(false);
@@ -963,7 +957,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       if (!isCompleted) handleToggleComplete();
     }
   };
-
 
   const handleMarkDocReviewed = (docId: string) => {
     if (docGuideContext === "gathering") {
@@ -976,7 +969,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             (acc: number, g: any) => acc + g.items.length,
             0,
           );
-          const reviewedCount = Object.values(next).filter((s) => s === "reviewed").length;
+          const reviewedCount = Object.values(next).filter(
+            (s) => s === "reviewed",
+          ).length;
           if (reviewedCount >= total && !isCompleted) handleToggleComplete();
         }
       }
@@ -1105,7 +1100,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
         {/* Page Shell */}
-        <div className="w-full max-w-[680px] px-[24px] pb-[96px] flex flex-col">
+        <div className="w-full max-w-[680px] px-[24px] pb-10 flex flex-col">
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -1366,22 +1361,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {/* FINANCIAL CHECKLIST (Step 2.6 SPECIFIC) */}
           {tool.type === "financial_checklist" && (
             // <StepLockedContent stepKey={sId} mode="overlay">
-              <FinancialChecklistTool
-                selectedScenario={selectedScenario}
-                setSelectedScenario={setSelectedScenario}
-                financialDocsStatus={financialDocsStatus}
-                uploadedDocuments={uploadedDocuments}
-                isReloadingDocs={isReloadingDocs}
-                isDeletingIds={isDeletingIds}
-                openUploadModal={guardedOpenUploadModal}
-                setActiveUploadId={setActiveUploadId}
-                setActiveUploadType={setActiveUploadType}
-                setDocActionModal={setDocActionModal}
-                updateMetadata={actions.updateMetadata}
-                setActiveFinancialDoc={setActiveFinancialDoc}
-                setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
-                guard={stepEntitlement.guard}
-              />
+            <FinancialChecklistTool
+              selectedScenario={selectedScenario}
+              setSelectedScenario={setSelectedScenario}
+              financialDocsStatus={financialDocsStatus}
+              uploadedDocuments={uploadedDocuments}
+              isReloadingDocs={isReloadingDocs}
+              isDeletingIds={isDeletingIds}
+              openUploadModal={guardedOpenUploadModal}
+              setActiveUploadId={setActiveUploadId}
+              setActiveUploadType={setActiveUploadType}
+              setDocActionModal={setDocActionModal}
+              updateMetadata={actions.updateMetadata}
+              setActiveFinancialDoc={setActiveFinancialDoc}
+              setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
+              guard={stepEntitlement.guard}
+            />
             // </StepLockedContent>
           )}
 
@@ -1470,10 +1465,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   title: item.title,
                   subtitle: item.sub,
                   onReadGuide: () => {
-                    setSelectedGatheringItem(item as unknown as DocumentGatheringItem);
+                    setSelectedGatheringItem(
+                      item as unknown as DocumentGatheringItem,
+                    );
                     setIsGatheringGuideOpen(true);
-                    if (!gatheringStatus[item.id] || gatheringStatus[item.id] === "not-started") {
-                      setGatheringStatus((prev: any) => ({ ...prev, [item.id]: "in-progress" }));
+                    if (
+                      !gatheringStatus[item.id] ||
+                      gatheringStatus[item.id] === "not-started"
+                    ) {
+                      setGatheringStatus((prev: any) => ({
+                        ...prev,
+                        [item.id]: "in-progress",
+                      }));
                     }
                   },
                   onUpload: () => {
@@ -1486,7 +1489,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 });
               }}
               onPreview={(uploadedDocId) =>
-                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+                window.open(
+                  `/api/documents/${uploadedDocId}/download`,
+                  "_blank",
+                )
               }
               onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
@@ -1621,7 +1627,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 });
               }}
               onPreview={(uploadedDocId) =>
-                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+                window.open(
+                  `/api/documents/${uploadedDocId}/download`,
+                  "_blank",
+                )
               }
               onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
@@ -1668,11 +1677,21 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div className="flex items-start gap-[16px] mb-[26px]">
                     <div
                       className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "bg-white/[0.055] border-white/10"}`}
-                      style={isChapter1 ? { backgroundColor: "var(--rv-ch1)" } : isChapter2 ? { backgroundColor: "var(--rv-ch2)" } : undefined}
+                      style={
+                        isChapter1
+                          ? { backgroundColor: "var(--rv-ch1)" }
+                          : isChapter2
+                            ? { backgroundColor: "var(--rv-ch2)" }
+                            : undefined
+                      }
                     >
                       <IconComponent
                         size={22}
-                        className={isChapter1 || isChapter2 ? "text-white" : "text-white/75"}
+                        className={
+                          isChapter1 || isChapter2
+                            ? "text-white"
+                            : "text-white/75"
+                        }
                         strokeWidth={1.6}
                       />
                     </div>
@@ -1822,7 +1841,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     )}
 
                   {/* CTA Area — only rendered when a button_label is defined */}
-                  {(tool.launch_module.button_label || tool.launch_module.buttonText) && (
+                  {(tool.launch_module.button_label ||
+                    tool.launch_module.buttonText) && (
                     <div className="flex flex-col gap-[11px]">
                       <button
                         onClick={() => {
@@ -1864,7 +1884,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       >
                         {isLaunched && tool.launch_module.return_note ? (
                           <>
-                            <span>{tool.launch_module.button_label || tool.launch_module.buttonText}</span>
+                            <span>
+                              {tool.launch_module.button_label ||
+                                tool.launch_module.buttonText}
+                            </span>
                             <ArrowUpRight
                               size={18}
                               className="opacity-60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
@@ -1872,7 +1895,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           </>
                         ) : (
                           <>
-                            <span>{tool.launch_module.button_label || tool.launch_module.buttonText}</span>
+                            <span>
+                              {tool.launch_module.button_label ||
+                                tool.launch_module.buttonText}
+                            </span>
                             <ArrowRight
                               size={18}
                               className="opacity-60 transition-transform group-hover:translate-x-0.5"
@@ -2143,13 +2169,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {(tool.guide_card || tool.wallet_card) && (
             <div
               className={`grid grid-cols-1 ${
-                (tool.guide_card) && tool.wallet_card ? "md:grid-cols-2" : ""
-              } gap-[12px] mb-[28px]`}
+                tool.guide_card && tool.wallet_card ? "md:grid-cols-2" : ""
+              } gap-[12px] mb-3`}
             >
-              {(tool.guide_card) &&
+              {tool.guide_card &&
                 (() => {
                   const cards = Array.isArray(tool.guide_card)
-                    ? (tool.guide_card)
+                    ? tool.guide_card
                     : [tool.guide_card];
 
                   return cards.map((card: any, idx: number) => {
@@ -2249,7 +2275,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ${
                           isWalletLocked
                             ? "border-[#d0e4f7] hover:border-[#f0c878] hover:shadow-[0_4px_20px_rgba(160,96,0,0.08)]"
-                            : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
+                            : (tool.wallet_card?.type === "ceac_creds" &&
+                                  ceacCredentials) ||
                                 (tool.wallet_card?.type === "nvc_fee" &&
                                   state.metadata.nvcFeeStatus)
                               ? "border-[#a8d9be] bg-[#e8f5ef]"
@@ -2262,8 +2289,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 ${
                             isWalletLocked
                               ? "bg-[#e6f6f6] border-[#9fd8d8] opacity-50"
-                              : (tool.wallet_card?.type === "ceac_creds" && ceacCredentials) ||
-                                (tool.wallet_card?.type === "nvc_fee" && state.metadata.nvcFeeStatus)
+                              : (tool.wallet_card?.type === "ceac_creds" &&
+                                    ceacCredentials) ||
+                                  (tool.wallet_card?.type === "nvc_fee" &&
+                                    state.metadata.nvcFeeStatus)
                                 ? "bg-[#e8f5ef] border-[#a8d9be]"
                                 : tool.wallet_card?.type === "ceac_creds"
                                   ? "bg-[#e8f5ef] border-[#a8d9be]"
@@ -2271,9 +2300,21 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           }`}
                         >
                           {tool.wallet_card?.type === "ceac_creds" ? (
-                            <Lock size={18} className="text-[#15744f]" strokeWidth={1.7} />
+                            <Lock
+                              size={18}
+                              className="text-[#15744f]"
+                              strokeWidth={1.7}
+                            />
                           ) : (
-                            <CreditCard size={18} className={isWalletLocked ? "text-[#0f7373]" : "text-[#0f7373]"} strokeWidth={1.7} />
+                            <CreditCard
+                              size={18}
+                              className={
+                                isWalletLocked
+                                  ? "text-[#0f7373]"
+                                  : "text-[#0f7373]"
+                              }
+                              strokeWidth={1.7}
+                            />
                           )}
                         </div>
                       </div>
@@ -2348,7 +2389,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[28px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-4">
               {tool.action_cards.map((card: ActionCard) => (
                 <button
                   key={card.id}
@@ -2401,7 +2442,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-10" : "mt-0"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
+            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."}
@@ -2857,188 +2898,190 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {/* )} */}
 
                 {/* Document Cards — rendered by DocListSection below */}
-                {false && (() => {
-                  const effectiveDocItems =
-                    sId === "step_1_2" && questionnaireDocItems
-                      ? questionnaireDocItems
-                      : (currentStep as any).document_items ||
-                        currentStep.document_items;
-                  return (
-                    <>
-                      <div className="w-full max-w-[740px] px-0">
-                        <div className="w-full">
-                          {(() => {
-                            const docItems = effectiveDocItems;
-                            if (!docItems) return [];
-                            const uniqueGroups = Array.from(
-                              new Set(
-                                docItems.map(
-                                  (d: any) => d.group || "Required Now",
+                {false &&
+                  (() => {
+                    const effectiveDocItems =
+                      sId === "step_1_2" && questionnaireDocItems
+                        ? questionnaireDocItems
+                        : (currentStep as any).document_items ||
+                          currentStep.document_items;
+                    return (
+                      <>
+                        <div className="w-full max-w-[740px] px-0">
+                          <div className="w-full">
+                            {(() => {
+                              const docItems = effectiveDocItems;
+                              if (!docItems) return [];
+                              const uniqueGroups = Array.from(
+                                new Set(
+                                  docItems.map(
+                                    (d: any) => d.group || "Required Now",
+                                  ),
                                 ),
-                              ),
-                            );
-                            const defaultOrder = [
-                              "Required Now",
-                              "Required if Applicable",
-                              "USCIS Intake Order",
-                              "Supporting Evidence",
-                              "Gather Now for Later",
-                            ];
-                            return (uniqueGroups as string[]).sort((a, b) => {
-                              const idxA = defaultOrder.indexOf(a);
-                              const idxB = defaultOrder.indexOf(b);
-                              if (idxA !== -1 && idxB !== -1)
-                                return idxA - idxB;
-                              if (idxA !== -1) return -1;
-                              if (idxB !== -1) return 1;
-                              return a.localeCompare(b);
-                            });
-                          })().map((groupName) => {
-                            const docItems = effectiveDocItems;
-                            const groupItems = docItems?.filter(
-                              (d: any) =>
-                                (d.group || "Required Now") === groupName,
-                            );
+                              );
+                              const defaultOrder = [
+                                "Required Now",
+                                "Required if Applicable",
+                                "USCIS Intake Order",
+                                "Supporting Evidence",
+                                "Gather Now for Later",
+                              ];
+                              return (uniqueGroups as string[]).sort((a, b) => {
+                                const idxA = defaultOrder.indexOf(a);
+                                const idxB = defaultOrder.indexOf(b);
+                                if (idxA !== -1 && idxB !== -1)
+                                  return idxA - idxB;
+                                if (idxA !== -1) return -1;
+                                if (idxB !== -1) return 1;
+                                return a.localeCompare(b);
+                              });
+                            })().map((groupName) => {
+                              const docItems = effectiveDocItems;
+                              const groupItems = docItems?.filter(
+                                (d: any) =>
+                                  (d.group || "Required Now") === groupName,
+                              );
 
-                            if (!groupItems || groupItems.length === 0)
-                              return null;
+                              if (!groupItems || groupItems.length === 0)
+                                return null;
 
-                            return (
-                              <div
-                                key={groupName}
-                                className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-6 sm:mb-8"
-                              >
-                                {/* Group Header */}
-                                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                                  <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap shrink-0">
-                                    {groupName}
-                                  </span>
-                                  <div className="h-px flex-1 bg-primary/30 min-w-0" />
-                                </div>
+                              return (
+                                <div
+                                  key={groupName}
+                                  className="animate-in fade-in slide-in-from-bottom-4 duration-700 mb-6 sm:mb-8"
+                                >
+                                  {/* Group Header */}
+                                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                                    <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.09em] uppercase text-[#6b8097] whitespace-nowrap shrink-0">
+                                      {groupName}
+                                    </span>
+                                    <div className="h-px flex-1 bg-primary/30 min-w-0" />
+                                  </div>
 
-                                <div className="flex flex-col gap-2 sm:gap-2.5">
-                                  {groupItems.map((doc: any, idx: number) => {
-                                    const docReviewStatus =
-                                      state.metadata?.docReviewStatus?.[doc.id];
-                                    const isReviewed =
-                                      docReviewStatus === "reviewed" ||
-                                      state.documentChecklist[doc.name];
-                                    const hasAttachment =
-                                      state.docUploads[doc.name] ||
-                                      state.notes[doc.name];
-                                    const isInProgress =
-                                      (hasAttachment && !isReviewed) ||
-                                      docReviewStatus === "in-progress";
-                                    const isPetitioner =
-                                      doc.tag === "petitioner";
-                                    const isBeneficiary =
-                                      doc.tag === "beneficiary";
+                                  <div className="flex flex-col gap-2 sm:gap-2.5">
+                                    {groupItems.map((doc: any, idx: number) => {
+                                      const docReviewStatus =
+                                        state.metadata?.docReviewStatus?.[
+                                          doc.id
+                                        ];
+                                      const isReviewed =
+                                        docReviewStatus === "reviewed" ||
+                                        state.documentChecklist[doc.name];
+                                      const hasAttachment =
+                                        state.docUploads[doc.name] ||
+                                        state.notes[doc.name];
+                                      const isInProgress =
+                                        (hasAttachment && !isReviewed) ||
+                                        docReviewStatus === "in-progress";
+                                      const isPetitioner =
+                                        doc.tag === "petitioner";
+                                      const isBeneficiary =
+                                        doc.tag === "beneficiary";
 
-                                    return (
-                                      <div
-                                        key={doc.id || idx}
-                                        onClick={() => {
-                                          setDocActionModal({
-                                            isOpen: true,
-                                            doc,
-                                            title: doc.name,
-                                            subtitle: doc.subtitle,
-                                            onReadGuide: () => {
-                                              if (
-                                                doc.guideUrl &&
-                                                doc.guideUrl !== "/guides"
-                                              ) {
-                                                window.open(
-                                                  doc.guideUrl,
-                                                  "_blank",
-                                                );
+                                      return (
+                                        <div
+                                          key={doc.id || idx}
+                                          onClick={() => {
+                                            setDocActionModal({
+                                              isOpen: true,
+                                              doc,
+                                              title: doc.name,
+                                              subtitle: doc.subtitle,
+                                              onReadGuide: () => {
                                                 if (
-                                                  actions.updateDocumentStatus &&
-                                                  doc.id
+                                                  doc.guideUrl &&
+                                                  doc.guideUrl !== "/guides"
                                                 ) {
-                                                  actions.updateDocumentStatus(
-                                                    doc.id,
-                                                    "reviewed",
+                                                  window.open(
+                                                    doc.guideUrl,
+                                                    "_blank",
                                                   );
+                                                  if (
+                                                    actions.updateDocumentStatus &&
+                                                    doc.id
+                                                  ) {
+                                                    actions.updateDocumentStatus(
+                                                      doc.id,
+                                                      "reviewed",
+                                                    );
+                                                  }
+                                                } else {
+                                                  setSelectedGuideId(
+                                                    doc.id || null,
+                                                  );
+                                                  if (
+                                                    actions.updateDocumentStatus &&
+                                                    doc.id
+                                                  ) {
+                                                    actions.updateDocumentStatus(
+                                                      doc.id,
+                                                      "in-progress",
+                                                    );
+                                                  }
                                                 }
-                                              } else {
-                                                setSelectedGuideId(
-                                                  doc.id || null,
-                                                );
+                                              },
+                                              onUpload: () => {
+                                                const defId =
+                                                  mapDocumentNameToId(doc.name);
+                                                setActiveUploadId(doc.id);
+                                                setActiveUploadType("doc");
+
+                                                if (!stepEntitlement.guard())
+                                                  return;
+
                                                 if (
-                                                  actions.updateDocumentStatus &&
-                                                  doc.id
+                                                  doc.id === "doc_citizenship"
                                                 ) {
-                                                  actions.updateDocumentStatus(
-                                                    doc.id,
-                                                    "in-progress",
-                                                  );
+                                                  setMultipleUploadModalState({
+                                                    isOpen: true,
+                                                    categoryId: defId,
+                                                    documentName: doc.name,
+                                                    options: [
+                                                      "U.S. passport",
+                                                      "U.S. birth certificate",
+                                                      "Certificate of Naturalization (Form N-550)",
+                                                      "Certificate of Citizenship (Form N-560)",
+                                                      "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                                    ],
+                                                  });
+                                                } else if (
+                                                  doc.id === "doc_relationship"
+                                                ) {
+                                                  setMultipleUploadModalState({
+                                                    isOpen: true,
+                                                    categoryId: defId,
+                                                    documentName: doc.name,
+                                                    options: [
+                                                      "Communication history",
+                                                      "Photos together",
+                                                      "Travel history",
+                                                      "Shared finances",
+                                                      "Shared residence",
+                                                      "Family evidence",
+                                                      "Affidavits",
+                                                    ],
+                                                  });
+                                                } else if (
+                                                  doc.id === "doc_translations"
+                                                ) {
+                                                  setMultipleUploadModalState({
+                                                    isOpen: true,
+                                                    categoryId: defId,
+                                                    documentName: doc.name,
+                                                    options: [
+                                                      "Translated Nikah Nama",
+                                                      "Translated NADRA MRC",
+                                                      "Translated Birth Certificate",
+                                                      "Translated Divorce Decree",
+                                                    ],
+                                                  });
+                                                } else {
+                                                  openUploadModal(defId);
                                                 }
-                                              }
-                                            },
-                                            onUpload: () => {
-                                              const defId = mapDocumentNameToId(
-                                                doc.name,
-                                              );
-                                              setActiveUploadId(doc.id);
-                                              setActiveUploadType("doc");
-
-                                              if (!stepEntitlement.guard())
-                                                return;
-
-                                              if (
-                                                doc.id === "doc_citizenship"
-                                              ) {
-                                                setMultipleUploadModalState({
-                                                  isOpen: true,
-                                                  categoryId: defId,
-                                                  documentName: doc.name,
-                                                  options: [
-                                                    "U.S. passport",
-                                                    "U.S. birth certificate",
-                                                    "Certificate of Naturalization (Form N-550)",
-                                                    "Certificate of Citizenship (Form N-560)",
-                                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
-                                                  ],
-                                                });
-                                              } else if (
-                                                doc.id === "doc_relationship"
-                                              ) {
-                                                setMultipleUploadModalState({
-                                                  isOpen: true,
-                                                  categoryId: defId,
-                                                  documentName: doc.name,
-                                                  options: [
-                                                    "Communication history",
-                                                    "Photos together",
-                                                    "Travel history",
-                                                    "Shared finances",
-                                                    "Shared residence",
-                                                    "Family evidence",
-                                                    "Affidavits",
-                                                  ],
-                                                });
-                                              } else if (
-                                                doc.id === "doc_translations"
-                                              ) {
-                                                setMultipleUploadModalState({
-                                                  isOpen: true,
-                                                  categoryId: defId,
-                                                  documentName: doc.name,
-                                                  options: [
-                                                    "Translated Nikah Nama",
-                                                    "Translated NADRA MRC",
-                                                    "Translated Birth Certificate",
-                                                    "Translated Divorce Decree",
-                                                  ],
-                                                });
-                                              } else {
-                                                openUploadModal(defId);
-                                              }
-                                            },
-                                          });
-                                        }}
-                                        className={`group flex items-start sm:items-center gap-3 sm:gap-4 
+                                              },
+                                            });
+                                          }}
+                                          className={`group flex items-start sm:items-center gap-3 sm:gap-4 
                                           px-3 sm:px-5 py-3.5 sm:py-5 
                                           rounded-xl sm:rounded-2xl border-[1.5px] 
                                           transition-all cursor-pointer relative 
@@ -3053,10 +3096,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                                 ? "bg-[#fff9e6] border-[#fde68a]/50"
                                                 : "bg-white border-[#d0e4f7]"
                                           }`}
-                                      >
-                                        {/* Icon */}
-                                        <div
-                                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 border
+                                        >
+                                          {/* Icon */}
+                                          <div
+                                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 border
                                             ${
                                               isReviewed
                                                 ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
@@ -3064,86 +3107,90 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                                   ? "bg-white border-[#fde68a] text-[#d97706]"
                                                   : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
                                             }`}
-                                        >
-                                          {isReviewed ? (
-                                            <CheckCircle2
-                                              size={16}
-                                              strokeWidth={2.5}
-                                              className="sm:w-[18px] sm:h-[18px]"
-                                            />
-                                          ) : (
-                                            (() => {
-                                              const iconSize = 16;
-                                              switch (doc.icon) {
-                                                case "ShieldCheck":
-                                                  return (
-                                                    <ShieldCheck
-                                                      size={iconSize}
-                                                    />
-                                                  );
-                                                case "User":
-                                                  return (
-                                                    <User size={iconSize} />
-                                                  );
-                                                case "FileText":
-                                                  return (
-                                                    <FileText size={iconSize} />
-                                                  );
-                                                case "FileCheck":
-                                                  return (
-                                                    <FileCheck
-                                                      size={iconSize}
-                                                    />
-                                                  );
-                                                case "MessageSquare":
-                                                  return (
-                                                    <MessageSquare
-                                                      size={iconSize}
-                                                    />
-                                                  );
-                                                case "Scale":
-                                                  return (
-                                                    <Scale size={iconSize} />
-                                                  );
-                                                case "Globe":
-                                                  return (
-                                                    <Globe size={iconSize} />
-                                                  );
-                                                case "ClipboardList":
-                                                  return (
-                                                    <ClipboardList
-                                                      size={iconSize}
-                                                    />
-                                                  );
-                                                case "Lock":
-                                                  return (
-                                                    <Lock size={iconSize} />
-                                                  );
-                                                case "Camera":
-                                                  return (
-                                                    <Camera size={iconSize} />
-                                                  );
-                                                default:
-                                                  return (
-                                                    <FileText size={iconSize} />
-                                                  );
-                                              }
-                                            })()
-                                          )}
-                                        </div>
+                                          >
+                                            {isReviewed ? (
+                                              <CheckCircle2
+                                                size={16}
+                                                strokeWidth={2.5}
+                                                className="sm:w-[18px] sm:h-[18px]"
+                                              />
+                                            ) : (
+                                              (() => {
+                                                const iconSize = 16;
+                                                switch (doc.icon) {
+                                                  case "ShieldCheck":
+                                                    return (
+                                                      <ShieldCheck
+                                                        size={iconSize}
+                                                      />
+                                                    );
+                                                  case "User":
+                                                    return (
+                                                      <User size={iconSize} />
+                                                    );
+                                                  case "FileText":
+                                                    return (
+                                                      <FileText
+                                                        size={iconSize}
+                                                      />
+                                                    );
+                                                  case "FileCheck":
+                                                    return (
+                                                      <FileCheck
+                                                        size={iconSize}
+                                                      />
+                                                    );
+                                                  case "MessageSquare":
+                                                    return (
+                                                      <MessageSquare
+                                                        size={iconSize}
+                                                      />
+                                                    );
+                                                  case "Scale":
+                                                    return (
+                                                      <Scale size={iconSize} />
+                                                    );
+                                                  case "Globe":
+                                                    return (
+                                                      <Globe size={iconSize} />
+                                                    );
+                                                  case "ClipboardList":
+                                                    return (
+                                                      <ClipboardList
+                                                        size={iconSize}
+                                                      />
+                                                    );
+                                                  case "Lock":
+                                                    return (
+                                                      <Lock size={iconSize} />
+                                                    );
+                                                  case "Camera":
+                                                    return (
+                                                      <Camera size={iconSize} />
+                                                    );
+                                                  default:
+                                                    return (
+                                                      <FileText
+                                                        size={iconSize}
+                                                      />
+                                                    );
+                                                }
+                                              })()
+                                            )}
+                                          </div>
 
-                                        {/* Content */}
-                                        <div className="flex-1 min-w-0">
-                                          <h3 className="text-[13px] sm:text-[15px] font-semibold text-[#0f1f38] mb-0.5 leading-snug truncate">
-                                            {doc.name}
-                                          </h3>
-                                          <p className="text-[11px] sm:text-[13px] text-[#6b8097] leading-relaxed mb-1.5 sm:mb-2 line-clamp-2 sm:truncate">
-                                            {doc.subtitle}
-                                          </p>
-                                          <div className="flex flex-wrap gap-1 sm:gap-1.5">
-                                            {doc.tag && (
-                                              <span
-                                                className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em]
+                                          {/* Content */}
+                                          <div className="flex-1 min-w-0">
+                                            <h3 className="text-[13px] sm:text-[15px] font-semibold text-[#0f1f38] mb-0.5 leading-snug truncate">
+                                              {doc.name}
+                                            </h3>
+                                            <p className="text-[11px] sm:text-[13px] text-[#6b8097] leading-relaxed mb-1.5 sm:mb-2 line-clamp-2 sm:truncate">
+                                              {doc.subtitle}
+                                            </p>
+                                            <div className="flex flex-wrap gap-1 sm:gap-1.5">
+                                              {doc.tag && (
+                                                <span
+                                                  className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em]
                                                   ${
                                                     isPetitioner
                                                       ? "bg-[#e8f1fb] text-primary/80"
@@ -3151,201 +3198,203 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                                         ? "bg-[#eaf7f2] text-[#1a7a5e]"
                                                         : "bg-[#f3f0fb] text-[#4a2d80]"
                                                   }`}
-                                              >
-                                                {doc.tag
-                                                  .charAt(0)
-                                                  .toUpperCase() +
-                                                  doc.tag.slice(1)}
-                                              </span>
-                                            )}
-                                            {isBeneficiary && (
-                                              <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
-                                                Rahvana Guide
-                                              </span>
-                                            )}
+                                                >
+                                                  {doc.tag
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    doc.tag.slice(1)}
+                                                </span>
+                                              )}
+                                              {isBeneficiary && (
+                                                <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-[0.04em] bg-[#f3f0fb] text-[#4a2d80]">
+                                                  Rahvana Guide
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          {/* Status + Actions */}
+                                          <div className="shrink-0 flex items-center gap-1.5 self-start sm:self-center mt-0.5 sm:mt-0">
+                                            {/* Status Badge */}
+                                            {(() => {
+                                              const defId = mapDocumentNameToId(
+                                                doc.name,
+                                              );
+                                              const isUploadedInVault =
+                                                uploadedDocuments.some(
+                                                  (ud) =>
+                                                    ud.documentDefId === defId,
+                                                );
+                                              const uploadedDoc =
+                                                uploadedDocuments.find(
+                                                  (ud) =>
+                                                    ud.documentDefId === defId,
+                                                );
+                                              const isDeleting = uploadedDoc
+                                                ? isDeletingIds.includes(
+                                                    uploadedDoc.id,
+                                                  )
+                                                : false;
+
+                                              if (isDeleting) return null;
+
+                                              const displayStatus =
+                                                isUploadedInVault
+                                                  ? "Uploaded"
+                                                  : isReloadingDocs
+                                                    ? "Checking..."
+                                                    : isReviewed
+                                                      ? "Reviewed"
+                                                      : isInProgress
+                                                        ? "In progress"
+                                                        : "Not started";
+
+                                              const statusClasses =
+                                                isUploadedInVault
+                                                  ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
+                                                  : isReloadingDocs
+                                                    ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
+                                                    : isReviewed
+                                                      ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
+                                                      : isInProgress
+                                                        ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
+                                                        : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
+
+                                              return (
+                                                <div
+                                                  className={`hidden xs:flex px-2 sm:px-3 py-1 rounded-full border text-[10px] sm:text-[12px] font-medium tracking-normal transition-all whitespace-nowrap ${statusClasses}`}
+                                                >
+                                                  {displayStatus}
+                                                </div>
+                                              );
+                                            })()}
+
+                                            {/* Upload State / Dropdown */}
+                                            {(() => {
+                                              const defId = mapDocumentNameToId(
+                                                doc.name,
+                                              );
+                                              const uploadedDoc =
+                                                uploadedDocuments.find(
+                                                  (ud) =>
+                                                    ud.documentDefId === defId,
+                                                );
+                                              const isDeleting = uploadedDoc
+                                                ? isDeletingIds.includes(
+                                                    uploadedDoc.id,
+                                                  )
+                                                : false;
+
+                                              if (
+                                                isReloadingDocs &&
+                                                !uploadedDoc
+                                              ) {
+                                                return (
+                                                  <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground font-medium animate-pulse">
+                                                    <div className="h-2.5 w-2.5 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                                                    <span className="hidden sm:inline">
+                                                      Checking...
+                                                    </span>
+                                                  </div>
+                                                );
+                                              }
+
+                                              if (isDeleting) {
+                                                return (
+                                                  <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-red-500 font-medium animate-pulse">
+                                                    <div className="h-2.5 w-2.5 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                                                    <span className="hidden sm:inline">
+                                                      Deleting...
+                                                    </span>
+                                                  </div>
+                                                );
+                                              }
+
+                                              if (uploadedDoc) {
+                                                return (
+                                                  <DropdownMenu>
+                                                    <DropdownMenuTrigger
+                                                      asChild
+                                                    >
+                                                      <button
+                                                        onClick={(e) =>
+                                                          e.stopPropagation()
+                                                        }
+                                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
+                                                      >
+                                                        <MoreVertical
+                                                          size={15}
+                                                          className="sm:w-[18px] sm:h-[18px]"
+                                                        />
+                                                      </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent
+                                                      side="top"
+                                                      align="end"
+                                                      className="w-[130px] sm:w-[140px] rounded-xl shadow-xl border-muted/20"
+                                                    >
+                                                      <DropdownMenuItem
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          window.open(
+                                                            `/api/documents/${uploadedDoc.id}/download`,
+                                                            "_blank",
+                                                          );
+                                                        }}
+                                                        className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5"
+                                                      >
+                                                        <Eye
+                                                          size={14}
+                                                          className="text-primary sm:w-4 sm:h-4"
+                                                        />
+                                                        Preview
+                                                      </DropdownMenuItem>
+                                                      <DropdownMenuItem
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          setDocumentToDelete({
+                                                            id: uploadedDoc.id,
+                                                            name: doc.name,
+                                                          });
+                                                        }}
+                                                        className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                                                      >
+                                                        <Trash2
+                                                          size={14}
+                                                          className="sm:w-4 sm:h-4"
+                                                        />
+                                                        Delete
+                                                      </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                  </DropdownMenu>
+                                                );
+                                              }
+
+                                              return null;
+                                            })()}
                                           </div>
                                         </div>
-
-                                        {/* Status + Actions */}
-                                        <div className="shrink-0 flex items-center gap-1.5 self-start sm:self-center mt-0.5 sm:mt-0">
-                                          {/* Status Badge */}
-                                          {(() => {
-                                            const defId = mapDocumentNameToId(
-                                              doc.name,
-                                            );
-                                            const isUploadedInVault =
-                                              uploadedDocuments.some(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
-                                            const uploadedDoc =
-                                              uploadedDocuments.find(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
-                                            const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(
-                                                  uploadedDoc.id,
-                                                )
-                                              : false;
-
-                                            if (isDeleting) return null;
-
-                                            const displayStatus =
-                                              isUploadedInVault
-                                                ? "Uploaded"
-                                                : isReloadingDocs
-                                                  ? "Checking..."
-                                                  : isReviewed
-                                                    ? "Reviewed"
-                                                    : isInProgress
-                                                      ? "In progress"
-                                                      : "Not started";
-
-                                            const statusClasses =
-                                              isUploadedInVault
-                                                ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                                                : isReloadingDocs
-                                                  ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                                  : isReviewed
-                                                    ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                                    : isInProgress
-                                                      ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                                      : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
-
-                                            return (
-                                              <div
-                                                className={`hidden xs:flex px-2 sm:px-3 py-1 rounded-full border text-[10px] sm:text-[12px] font-medium tracking-normal transition-all whitespace-nowrap ${statusClasses}`}
-                                              >
-                                                {displayStatus}
-                                              </div>
-                                            );
-                                          })()}
-
-                                          {/* Upload State / Dropdown */}
-                                          {(() => {
-                                            const defId = mapDocumentNameToId(
-                                              doc.name,
-                                            );
-                                            const uploadedDoc =
-                                              uploadedDocuments.find(
-                                                (ud) =>
-                                                  ud.documentDefId === defId,
-                                              );
-                                            const isDeleting = uploadedDoc
-                                              ? isDeletingIds.includes(
-                                                  uploadedDoc.id,
-                                                )
-                                              : false;
-
-                                            if (
-                                              isReloadingDocs &&
-                                              !uploadedDoc
-                                            ) {
-                                              return (
-                                                <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground font-medium animate-pulse">
-                                                  <div className="h-2.5 w-2.5 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-                                                  <span className="hidden sm:inline">
-                                                    Checking...
-                                                  </span>
-                                                </div>
-                                              );
-                                            }
-
-                                            if (isDeleting) {
-                                              return (
-                                                <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-red-500 font-medium animate-pulse">
-                                                  <div className="h-2.5 w-2.5 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
-                                                  <span className="hidden sm:inline">
-                                                    Deleting...
-                                                  </span>
-                                                </div>
-                                              );
-                                            }
-
-                                            if (uploadedDoc) {
-                                              return (
-                                                <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild>
-                                                    <button
-                                                      onClick={(e) =>
-                                                        e.stopPropagation()
-                                                      }
-                                                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20"
-                                                    >
-                                                      <MoreVertical
-                                                        size={15}
-                                                        className="sm:w-[18px] sm:h-[18px]"
-                                                      />
-                                                    </button>
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent
-                                                    side="top"
-                                                    align="end"
-                                                    className="w-[130px] sm:w-[140px] rounded-xl shadow-xl border-muted/20"
-                                                  >
-                                                    <DropdownMenuItem
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        window.open(
-                                                          `/api/documents/${uploadedDoc.id}/download`,
-                                                          "_blank",
-                                                        );
-                                                      }}
-                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5"
-                                                    >
-                                                      <Eye
-                                                        size={14}
-                                                        className="text-primary sm:w-4 sm:h-4"
-                                                      />
-                                                      Preview
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDocumentToDelete({
-                                                          id: uploadedDoc.id,
-                                                          name: doc.name,
-                                                        });
-                                                      }}
-                                                      className="flex items-center gap-2 cursor-pointer font-medium text-[12px] sm:text-[13px] py-2 sm:py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
-                                                    >
-                                                      <Trash2
-                                                        size={14}
-                                                        className="sm:w-4 sm:h-4"
-                                                      />
-                                                      Delete
-                                                    </DropdownMenuItem>
-                                                  </DropdownMenuContent>
-                                                </DropdownMenu>
-                                              );
-                                            }
-
-                                            return null;
-                                          })()}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
+                                      );
+                                    })}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Footer Disclaimer */}
-                      <div className="mt-10 sm:mt-12 mx-3 sm:mx-0 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center max-w-[740px] w-full mb-5 sm:mb-6">
-                        <span className="block text-[10px] sm:text-[12px] leading-relaxed">
-                          Rahvana provides structured guidance only. This is not
-                          legal advice. <br className="hidden sm:block" />
-                          Consult a licensed immigration attorney for
-                          case-specific decisions.
-                        </span>
-                      </div>
-                    </>
-                  );
-                })()}
+                        {/* Footer Disclaimer */}
+                        <div className="mt-10 sm:mt-12 mx-3 sm:mx-0 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center max-w-[740px] w-full mb-5 sm:mb-6">
+                          <span className="block text-[10px] sm:text-[12px] leading-relaxed">
+                            Rahvana provides structured guidance only. This is
+                            not legal advice. <br className="hidden sm:block" />
+                            Consult a licensed immigration attorney for
+                            case-specific decisions.
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
 
                 {/* DocListSection — standardised doc-upload UI for step_1_2 */}
                 {(() => {
@@ -3357,26 +3406,45 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   if (!effectiveDocItems) return null;
 
                   const ICON_MAP: Record<string, string> = {
-                    ShieldCheck: "police", User: "user", FileText: "file-text",
-                    FileCheck: "file-text", MessageSquare: "message",
-                    Scale: "prior-marriage", Globe: "translations",
-                    ClipboardList: "clipboard", Lock: "police", Camera: "camera",
+                    ShieldCheck: "police",
+                    User: "user",
+                    FileText: "file-text",
+                    FileCheck: "file-text",
+                    MessageSquare: "message",
+                    Scale: "prior-marriage",
+                    Globe: "translations",
+                    ClipboardList: "clipboard",
+                    Lock: "police",
+                    Camera: "camera",
                   };
                   const BADGE_MAP: Record<string, string> = {
-                    "Required Now": "req", "USCIS Intake Order": "req",
-                    "Required if Applicable": "cond", "Supporting Evidence": "cond",
+                    "Required Now": "req",
+                    "USCIS Intake Order": "req",
+                    "Required if Applicable": "cond",
+                    "Supporting Evidence": "cond",
                     "Gather Now for Later": "Recommended",
                   };
                   const GROUP_ORDER = [
-                    "Required Now", "Required if Applicable", "USCIS Intake Order",
-                    "Supporting Evidence", "Gather Now for Later",
+                    "Required Now",
+                    "Required if Applicable",
+                    "USCIS Intake Order",
+                    "Supporting Evidence",
+                    "Gather Now for Later",
                   ];
 
                   const docReviewStatus =
-                    (state.metadata?.docReviewStatus as Record<string, string>) || {};
-                  const step1_2Status: Record<string, string> = { ...docReviewStatus };
+                    (state.metadata?.docReviewStatus as Record<
+                      string,
+                      string
+                    >) || {};
+                  const step1_2Status: Record<string, string> = {
+                    ...docReviewStatus,
+                  };
                   for (const doc of effectiveDocItems) {
-                    if (!step1_2Status[doc.id] && state.documentChecklist[doc.name]) {
+                    if (
+                      !step1_2Status[doc.id] &&
+                      state.documentChecklist[doc.name]
+                    ) {
                       step1_2Status[doc.id] = "reviewed";
                     }
                   }
@@ -3404,7 +3472,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       guideUrl: doc.guideUrl,
                     });
                   }
-                  const step1_2Groups = GROUP_ORDER.filter((g) => grouped[g]).map((g) => ({
+                  const step1_2Groups = GROUP_ORDER.filter(
+                    (g) => grouped[g],
+                  ).map((g) => ({
                     id: g.replace(/\s+/g, "-").toLowerCase(),
                     label: g,
                     badge: BADGE_MAP[g] || "req",
@@ -3428,14 +3498,23 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             title: item.title,
                             subtitle: item.sub,
                             onReadGuide: () => {
-                              if (item.guideUrl && item.guideUrl !== "/guides") {
+                              if (
+                                item.guideUrl &&
+                                item.guideUrl !== "/guides"
+                              ) {
                                 window.open(item.guideUrl, "_blank");
                                 if (actions.updateDocumentStatus && item.id)
-                                  actions.updateDocumentStatus(item.id, "reviewed");
+                                  actions.updateDocumentStatus(
+                                    item.id,
+                                    "reviewed",
+                                  );
                               } else {
                                 setSelectedGuideId(item.id || null);
                                 if (actions.updateDocumentStatus && item.id)
-                                  actions.updateDocumentStatus(item.id, "in-progress");
+                                  actions.updateDocumentStatus(
+                                    item.id,
+                                    "in-progress",
+                                  );
                               }
                             },
                             onUpload: () => {
@@ -3445,18 +3524,43 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               if (!stepEntitlement.guard()) return;
                               if (item.id === "doc_citizenship") {
                                 setMultipleUploadModalState({
-                                  isOpen: true, categoryId: defId, documentName: item.title,
-                                  options: ["U.S. passport", "U.S. birth certificate", "Certificate of Naturalization (Form N-550)", "Certificate of Citizenship (Form N-560)", "Consular Report of Birth Abroad (Form FS-240 / DS-1350)"],
+                                  isOpen: true,
+                                  categoryId: defId,
+                                  documentName: item.title,
+                                  options: [
+                                    "U.S. passport",
+                                    "U.S. birth certificate",
+                                    "Certificate of Naturalization (Form N-550)",
+                                    "Certificate of Citizenship (Form N-560)",
+                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+                                  ],
                                 });
                               } else if (item.id === "doc_relationship") {
                                 setMultipleUploadModalState({
-                                  isOpen: true, categoryId: defId, documentName: item.title,
-                                  options: ["Communication history", "Photos together", "Travel history", "Shared finances", "Shared residence", "Family evidence", "Affidavits"],
+                                  isOpen: true,
+                                  categoryId: defId,
+                                  documentName: item.title,
+                                  options: [
+                                    "Communication history",
+                                    "Photos together",
+                                    "Travel history",
+                                    "Shared finances",
+                                    "Shared residence",
+                                    "Family evidence",
+                                    "Affidavits",
+                                  ],
                                 });
                               } else if (item.id === "doc_translations") {
                                 setMultipleUploadModalState({
-                                  isOpen: true, categoryId: defId, documentName: item.title,
-                                  options: ["Translated Nikah Nama", "Translated NADRA MRC", "Translated Birth Certificate", "Translated Divorce Decree"],
+                                  isOpen: true,
+                                  categoryId: defId,
+                                  documentName: item.title,
+                                  options: [
+                                    "Translated Nikah Nama",
+                                    "Translated NADRA MRC",
+                                    "Translated Birth Certificate",
+                                    "Translated Divorce Decree",
+                                  ],
                                 });
                               } else {
                                 openUploadModal(defId);
@@ -3465,16 +3569,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           });
                         }}
                         onPreview={(uploadedDocId) =>
-                          window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+                          window.open(
+                            `/api/documents/${uploadedDocId}/download`,
+                            "_blank",
+                          )
                         }
-                        onDelete={(id, name) => setDocumentToDelete({ id, name })}
+                        onDelete={(id, name) =>
+                          setDocumentToDelete({ id, name })
+                        }
                         progressLabel="reviewed"
                       />
                       <div className="mt-10 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center">
                         <span className="block text-[10px] sm:text-[12px] leading-relaxed">
-                          Rahvana provides structured guidance only. This is not legal advice.{" "}
-                          <br className="hidden sm:block" />
-                          Consult a licensed immigration attorney for case-specific decisions.
+                          Rahvana provides structured guidance only. This is not
+                          legal advice. <br className="hidden sm:block" />
+                          Consult a licensed immigration attorney for
+                          case-specific decisions.
                         </span>
                       </div>
                     </div>
@@ -3966,9 +4076,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           onClose={() => setIsCivilDocGuideOpen(false)}
           doc={activeCivilDoc}
           status={
-            (docGuideContext === "gathering" ? gatheringDocsStatus : civilDocsStatus)[
-              activeCivilDoc.id
-            ] || "not-started"
+            (docGuideContext === "gathering"
+              ? gatheringDocsStatus
+              : civilDocsStatus)[activeCivilDoc.id] || "not-started"
           }
           onMarkReviewed={() => handleMarkDocReviewed(activeCivilDoc.id)}
         />
@@ -4253,7 +4363,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         className="relative w-full bg-[#f8f9fb]"
                         style={{ aspectRatio: "4/3" }}
                       >
-                        {currentTutStep.media && currentTutStep.media.type === 'img' ? (
+                        {currentTutStep.media &&
+                        currentTutStep.media.type === "img" ? (
                           <img
                             src={currentTutStep.media.src}
                             alt={currentTutStep.heading}
@@ -4434,7 +4545,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           ) : (
                             <Image
                               key={
-                                (currentTutStep as TutorialStepData).media!.src || tutorialIdx
+                                (currentTutStep as TutorialStepData).media!
+                                  .src || tutorialIdx
                               }
                               src={
                                 (currentTutStep as TutorialStepData).media!.src!
@@ -4463,7 +4575,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         ) : (currentTutStep as TutorialStepData).screenshot ? (
                           <Image
                             src={
-                              ((currentTutStep as TutorialStepData).screenshot as string) || ""
+                              ((currentTutStep as TutorialStepData)
+                                .screenshot as string) || ""
                             }
                             alt={
                               (currentTutStep as TutorialStepData).screenTitle

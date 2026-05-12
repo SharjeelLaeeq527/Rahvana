@@ -185,7 +185,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
     // <div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
-      <div className="max-w-[760px] mx-auto px-4 py-8 md:px-6 md:py-12 flex flex-col gap-3 step step-modal-spacing">
+      <div className="max-w-[760px] mx-auto px-4 py-4 md:px-6 md:py-8 2xl:py-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Title & Desc */}
         {/* <div className="flex items-center gap-2 mb-2">
           <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">

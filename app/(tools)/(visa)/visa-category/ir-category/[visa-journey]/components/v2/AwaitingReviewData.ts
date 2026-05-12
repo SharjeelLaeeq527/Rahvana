@@ -1,8 +1,8 @@
 export const AWAITING_REVIEW_DATA = {
-  // eyebrow: {
-  //   chapter: "Chapter 2 · NVC / CEAC Processing",
-  //   step: "Step 10 — Awaiting NVC Document Review"
-  // },
+  eyebrow: {
+    chapter: "Chapter 2 · NVC / CEAC Processing",
+    step: "Step 9 — Awaiting NVC Document Review"
+  },
   title: "Awaiting NVC Document Review",
   description: "Your documents have been submitted. NVC is now reviewing your package for completeness and consistency before issuing a documentary qualification decision.",
   chips: [

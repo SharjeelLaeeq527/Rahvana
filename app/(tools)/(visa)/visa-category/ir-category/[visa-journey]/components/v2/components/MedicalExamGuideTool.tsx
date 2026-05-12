@@ -158,7 +158,7 @@ export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
       </div>
 
       {tool.disclaimer && (
-        <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px]">
+        <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-1">
           {tool.disclaimer}
         </p>
       )}
