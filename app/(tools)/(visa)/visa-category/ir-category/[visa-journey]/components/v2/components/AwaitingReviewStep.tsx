@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Clock, Scale, BellRing, Save, ExternalLink } from "lucide-react";
+import {
+  Search,
+  Clock,
+  Scale,
+  BellRing,
+  Save,
+  ExternalLink,
+} from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 interface AwaitingReviewStepProps {
@@ -12,7 +19,9 @@ interface AwaitingReviewStepProps {
   };
 }
 
-export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) => {
+export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({
+  data,
+}) => {
   return (
     <div className="flex flex-col items-center w-full min-h-screen">
       <style jsx global>{`
@@ -37,17 +46,19 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
       `}</style>
 
       {/* Page Shell */}
-      <div className="w-full max-w-[720px] px-[24px] pt-[52px] pb-[96px] flex flex-col mx-auto">
+      <div className="w-full max-w-[720px] px-[24px] pt-4 md:pt-8 pb-20 flex flex-col mx-auto">
         {/* Eyebrow */}
-        <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
-            {data.eyebrow.chapter}
-          </span>
-          <span className="text-[11px] text-[#b8d4f0]">›</span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
-            {data.eyebrow.step}
-          </span>
-        </div>
+        {/* {data.eyebrow && (
+          <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
+              {data.eyebrow.chapter}
+            </span>
+            <span className="text-[11px] text-[#b8d4f0]">›</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2f6fd4]">
+              {data.eyebrow.step}
+            </span>
+          </div>
+        )} */}
 
         <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] leading-[1.2] mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]">
           {data.title}
@@ -222,4 +233,3 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
     </div>
   );
 };
-
