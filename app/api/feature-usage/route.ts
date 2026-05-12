@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { checkFeatureUsage } from "@/lib/usage/checkFeatureUsage";
-import { getEntitlement, type PlanTier } from "@/lib/entitlements/config";
+import { type PlanTier } from "@/lib/entitlements/config";
+import { getEffectiveEntitlement } from "@/lib/entitlements/helpers";
 
 // GET /api/feature-usage?feature=xyz - Check feature usage for the authenticated user
 export async function GET(request: Request) {
@@ -33,13 +34,14 @@ export async function GET(request: Request) {
 
     const { data: profile } = await supabase
       .from("user_profiles")
-      .select("subscription_tier")
+      .select("subscription_tier, profile_details")
       .eq("id", user.id)
       .single();
 
     const userTier: PlanTier = profile?.subscription_tier || "free";
+    const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
 
-    const usage = await checkFeatureUsage(user.id, feature, userTier);
+    const usage = await checkFeatureUsage(user.id, feature, userTier, purchasedAddons);
 
     return NextResponse.json(
       {
@@ -90,13 +92,14 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from("user_profiles")
-      .select("subscription_tier")
+      .select("subscription_tier, profile_details")
       .eq("id", user.id)
       .single();
 
     const userTier: PlanTier = profile?.subscription_tier || "free";
+    const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
 
-    const entitlement = getEntitlement(feature, userTier);
+    const entitlement = getEffectiveEntitlement(feature, userTier, purchasedAddons);
 
     // Handle access types
     if (
