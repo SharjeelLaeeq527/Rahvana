@@ -1,14 +1,16 @@
 import { createClient } from "../supabase/server";
-import { getEntitlement, type PlanTier } from "../entitlements/config";
+import { type PlanTier } from "../entitlements/config";
+import { getEffectiveEntitlement } from "../entitlements/helpers";
 
 export async function checkFeatureUsage(
   userId: string,
   feature: string,
   tier: PlanTier,
+  purchasedAddons: string[] = [],
 ) {
   const supabase = await createClient();
 
-  const entitlement = getEntitlement(feature, tier);
+  const entitlement = getEffectiveEntitlement(feature, tier, purchasedAddons);
 
   // Full Access: No limits
   if (entitlement.state === "full") {

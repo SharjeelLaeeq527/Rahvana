@@ -1252,7 +1252,7 @@ export function TwoWaysSection() {
               maxWidth: 1300,
               display: "grid",
               gridTemplateColumns: "minmax(0,380px) minmax(0,1fr)",
-              gap: "clamp(100px,10vw,160px)", 
+              gap: "clamp(100px,10vw,160px)",
               alignItems: "start",
             }}
           >

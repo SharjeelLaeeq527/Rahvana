@@ -1023,7 +1023,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         style={{
                           flex: 1,
                           padding: "12px 20px",
-                          background: theme.heroAccent,
+                          // background: theme.heroAccent,
                           border: "none",
                           borderRadius: "10px",
                           color: "#fff",
@@ -1034,6 +1034,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           fontFamily: "inherit",
                           textAlign: "center",
                         }}
+                        className="bg-primary"
                         onMouseEnter={(e) => { (e.target as HTMLElement).style.opacity = "0.88"; }}
                         onMouseLeave={(e) => { (e.target as HTMLElement).style.opacity = "1"; }}
                       >

@@ -127,17 +127,26 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
             {!isFirst && (
               <button
                 onClick={() => setIndex(index - 1)}
-                className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63]"
+                className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
               >
                 ← Back
               </button>
             )}
-            <button
-              onClick={() => setIndex(index + 1)}
-              className="p-[12px_20px] bg-transparent border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] font-medium text-[#3a4f63] cursor-pointer transition-all hover:border-[#3a4f63]"
-            >
-              {isLast ? "Done — return to step" : "Next →"}
-            </button>
+            {isLast ? (
+              <button
+                onClick={() => setIndex(index + 1)}
+                className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
+              >
+                Done — return to step
+              </button>
+            ) : (
+              <button
+                onClick={() => setIndex(index + 1)}
+                className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
+              >
+                Next →
+              </button>
+            )}
           </div>
         </div>
       </div>
