@@ -369,10 +369,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     };
   }, [showGuide, showGuideChoice]);
 
-  // Reset guideStep when selectedGuideType changes
+  // Reset guideStep when step key changes, or when the guide modal is opened/closed, or when guide type changes
   useEffect(() => {
     setGuideStep(0);
-  }, [selectedGuideType]);
+  }, [step.step_key, showGuide, selectedGuideType]);
+
+  // Close guide modals when moving to a different step
+  useEffect(() => {
+    setShowGuide(false);
+    setShowGuideChoice(false);
+  }, [step.step_key]);
 
   // Load tracking data from metadata on mount
   useEffect(() => {
@@ -625,7 +631,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   };
 
   const filteredSteps = getFilteredGuideSteps();
-  const guideProgress = guideStep / (filteredSteps?.length || 1);
+  const guideProgress = (guideStep + 1) / (filteredSteps?.length || 1);
 
   // Determine if info-cards section should use 2 cols or 1 col
   const hasSecondCard = actionData.dropdown_card || actionData.mailing_card;
