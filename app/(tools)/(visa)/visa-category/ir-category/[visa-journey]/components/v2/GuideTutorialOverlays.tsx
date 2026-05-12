@@ -134,7 +134,10 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
             )}
             {isLast ? (
               <button
-                onClick={() => setIndex(index + 1)}
+                onClick={() => {
+                  setIndex(0);
+                  onClose();
+                }}
                 className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
               >
                 Done — return to step
@@ -694,6 +697,3 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
     </TutorialShell>
   );
 };
-
-
-
