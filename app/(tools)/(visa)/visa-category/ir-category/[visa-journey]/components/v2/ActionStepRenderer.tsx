@@ -62,6 +62,8 @@ const COLORS = {
   accent2: "var(--rv-blue-dark)",
   green: "var(--rv-green)",
   greenbg: "var(--rv-green-bg)",
+  primary: "var(--primary)",
+  primaryDark: "color-mix(in srgb, var(--primary), transparent 20%)",
 };
 
 const CHAPTER1 = {
@@ -152,36 +154,33 @@ const getTrackingStatusDisplay = (status: any) => {
   // ✅ STEP 2: fallback safely
   return statusMap[normalized] ?? statusMap.unknown;
 };
- function PlanTierBadge({ tier }: { tier: PlanTier | null }) {
+function PlanTierBadge({ tier }: { tier: PlanTier | null }) {
   if (!tier || tier === "free") return null;
- 
+
   const styles: Record<
     string,
     { wrapper: string; iconClass: string; label: string }
   > = {
     basic: {
-      wrapper:
-        "border-[#a8d4d4] bg-[#e8f4f4] shadow-sm",
+      wrapper: "border-[#a8d4d4] bg-[#e8f4f4] shadow-sm",
       iconClass: "plan-icon plan-icon--basic",
       label: "Basic",
     },
     premium: {
-      wrapper:
-        "border-[#c0c0cc] bg-[#f0f0f0] shadow-sm",
+      wrapper: "border-[#c0c0cc] bg-[#f0f0f0] shadow-sm",
       iconClass: "plan-icon plan-icon--premium",
       label: "Premium",
     },
     executive: {
-      wrapper:
-        "border-[#e8c96a] bg-[#fdf6e3] shadow-sm",
+      wrapper: "border-[#e8c96a] bg-[#fdf6e3] shadow-sm",
       iconClass: "plan-icon plan-icon--executive",
       label: "Executive",
     },
   };
- 
+
   const s = styles[tier];
   if (!s) return null;
- 
+
   return (
     <span
       className={`inline-flex h-9 w-9 items-center justify-center rounded-full border ${s.wrapper}`}
@@ -192,16 +191,15 @@ const getTrackingStatusDisplay = (status: any) => {
 }
 function useRequiredTier(featureKey: string | null): PlanTier | null {
   const plan = usePlan();
- 
+
   if (!featureKey) return null;
- 
+
   // Walk tiers from lowest to highest; return the first tier that can use the feature
   const tiers: PlanTier[] = ["free", "basic", "premium", "executive"];
   for (const t of tiers) {
-   
     break;
   }
- 
+
   const executiveFeatures = [
     "polio_certificate",
     "action_221g",
@@ -219,11 +217,11 @@ function useRequiredTier(featureKey: string | null): PlanTier | null {
     "checklist_tracking",
   ];
   const basicFeatures = ["checklist_engine", "roadmap_access"];
- 
+
   if (executiveFeatures.includes(featureKey)) return "executive";
   if (premiumFeatures.includes(featureKey)) return "premium";
   if (basicFeatures.includes(featureKey)) return "basic";
- 
+
   // Fallback: if the feature is currently locked for the user, show their
   // required next tier; otherwise null (no badge needed).
   return plan.isLocked(featureKey) ? "premium" : null;
@@ -270,10 +268,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const stepEntitlement = useStepEntitlement(step.step_key);
   // Executive-only (crown) logic
   // const isCrown = stepEntitlement.featureKey === "polio_certificate" || stepEntitlement.featureKey === "action_221g";
- const requiredTier = useRequiredTier(stepEntitlement.featureKey);
+  const requiredTier = useRequiredTier(stepEntitlement.featureKey);
   // Only show the badge when the step is actually locked for this user
   const showTierBadge = stepEntitlement.isLocked && requiredTier !== null;
- 
+
   // Responsive: track viewport width for conditional inline styles
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -371,10 +369,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     };
   }, [showGuide, showGuideChoice]);
 
-  // Reset guideStep when selectedGuideType changes
+  // Reset guideStep when step key changes, or when the guide modal is opened/closed, or when guide type changes
   useEffect(() => {
     setGuideStep(0);
-  }, [selectedGuideType]);
+  }, [step.step_key, showGuide, selectedGuideType]);
+
+  // Close guide modals when moving to a different step
+  useEffect(() => {
+    setShowGuide(false);
+    setShowGuideChoice(false);
+  }, [step.step_key]);
 
   // Load tracking data from metadata on mount
   useEffect(() => {
@@ -627,7 +631,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   };
 
   const filteredSteps = getFilteredGuideSteps();
-  const guideProgress = guideStep / (filteredSteps?.length || 1);
+  const guideProgress = (guideStep + 1) / (filteredSteps?.length || 1);
 
   // Determine if info-cards section should use 2 cols or 1 col
   const hasSecondCard = actionData.dropdown_card || actionData.mailing_card;
@@ -648,7 +652,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       //     : undefined
       // }
     >
-       <style>{`
+      <style>{`
         /* Reset/base */
         .asr-root {
           min-height: 100vh;
@@ -1308,7 +1312,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {/* Main Content */}
       <div className="max-w-3xl w-full mx-auto px-2 sm:px-4 md:px-8 pt-1 sm:pt-10 md:pt-3 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Eyebrow for Paper Filing Path steps */}
-        {(step.step_key === "step_1_11" || 
+        {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
           step.step_key === "step_1_13" || 
           step.step_key === "step_1_14") && (
@@ -1323,7 +1327,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <span className="text-[#BDD7F1] mx-2">&gt;</span>
             <span className="text-[#3B7DD8]">{step.step_name}</span>
           </div>
-        )}
+        )} */}
         {/* Title */}
         <h1
           className={`page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 font-bold ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#27192e]" : "text-navy"}`}
@@ -1352,9 +1356,21 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   borderRadius: "999px",
                   border: "1px solid",
                   whiteSpace: "nowrap",
-                  backgroundColor: isChapter1 ? "#f3f0fb" : isChapter2 ? "#f4e6f3" : "#f0f1fb",
-                  borderColor: isChapter1 ? "#c9bef2" : isChapter2 ? "#d5abd2" : "#d0e4f7",
-                  color: isChapter1 ? "#4a2d8a" : isChapter2 ? "#520a50" : "#2d4a6e",
+                  backgroundColor: isChapter1
+                    ? "#f3f0fb"
+                    : isChapter2
+                      ? "#f4e6f3"
+                      : "#f0f1fb",
+                  borderColor: isChapter1
+                    ? "#c9bef2"
+                    : isChapter2
+                      ? "#d5abd2"
+                      : "#d0e4f7",
+                  color: isChapter1
+                    ? "#4a2d8a"
+                    : isChapter2
+                      ? "#520a50"
+                      : "#2d4a6e",
                 }}
               >
                 {chip.label}
@@ -1366,7 +1382,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         {/* Hero Section */}
         <section
           style={{
-            background: isChapter1 ? CHAPTER1.bg : isChapter2 ? "#1a0a18" : "#051738",
+            background: isChapter1
+              ? CHAPTER1.bg
+              : isChapter2
+                ? "#1a0a18"
+                : "#051738",
             color: "#fff",
             borderRadius: "24px",
             padding: isMobile ? "16px" : "24px",
@@ -1387,8 +1407,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               background: isChapter1
                 ? "linear-gradient(90deg, var(--rv-ch1), var(--rv-ch1-module-bg), transparent)"
                 : isChapter2
-                ? "linear-gradient(90deg, #520a50 0%, rgba(82,10,80,0.3) 100%)"
-                : "linear-gradient(90deg, #051738 0%, rgba(5,23,56,0.3) 100%)",
+                  ? "linear-gradient(90deg, #520a50 0%, rgba(82,10,80,0.3) 100%)"
+                  : "linear-gradient(90deg, #051738 0%, rgba(5,23,56,0.3) 100%)",
             }}
           />
           {/* Heading */}
@@ -1398,7 +1418,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
-              color: isChapter1 ? CHAPTER1.accent : isChapter2 ? "#d99dcf" : "#7ba3d9",
+              color: isChapter1
+                ? CHAPTER1.accent
+                : isChapter2
+                  ? "#d99dcf"
+                  : "#7ba3d9",
               textShadow: "none",
             }}
           >
@@ -1439,7 +1463,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 textTransform: "uppercase",
                 marginTop: "10px",
                 marginBottom: "12px",
-                color: isChapter1 ? CHAPTER1.text : isChapter2 ? "#d99dcf" : "#7ba3d9",
+                color: isChapter1
+                  ? CHAPTER1.text
+                  : isChapter2
+                    ? "#d99dcf"
+                    : "#7ba3d9",
                 backdropFilter: "blur(4px)",
                 border: `1px solid ${isChapter1 ? "rgba(130,132,191,0.28)" : isChapter2 ? "rgba(217,157,207,0.4)" : "rgba(123,163,217,0.4)"}`,
               }}
@@ -1453,7 +1481,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
+                gridTemplateColumns: isMobile
+                  ? "1fr"
+                  : "repeat(2, minmax(0, 1fr))",
                 gap: "10px",
                 margin: "18px 0",
               }}
@@ -1465,8 +1495,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     background: "rgba(255, 255, 255, 0.06)",
                     padding: "12px",
                     borderRadius: "14px",
-                      fontSize: "13px",
-                      lineHeight: 1.5,
+                    fontSize: "13px",
+                    lineHeight: 1.5,
                     color: "rgba(255, 255, 255, 0.82)",
                   }}
                 >
@@ -1496,7 +1526,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background: stepEntitlement.isLocked ? "#4a5568" : isChapter1 ? CHAPTER1.accent : isChapter2 ? "#520a50" : "#051738",
+                  background: stepEntitlement.isLocked
+                    ? "#4a5568"
+                    : isChapter1
+                      ? CHAPTER1.accent
+                      : isChapter2
+                        ? "#520a50"
+                        : "#051738",
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1507,13 +1543,25 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? CHAPTER1.accentDark : isChapter2 ? "#3d0b3d" : "#041028";
+                  if (!stepEntitlement.isLocked)
+                    (e.target as HTMLElement).style.background = isChapter1
+                      ? CHAPTER1.accentDark
+                      : isChapter2
+                        ? "#3d0b3d"
+                        : "#041028";
                 }}
                 onMouseLeave={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? CHAPTER1.accent : isChapter2 ? "#520a50" : "#051738";
+                  if (!stepEntitlement.isLocked)
+                    (e.target as HTMLElement).style.background = isChapter1
+                      ? CHAPTER1.accent
+                      : isChapter2
+                        ? "#520a50"
+                        : "#051738";
                 }}
               >
-                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
+                {stepEntitlement.isLocked && (
+                  <Lock size={18} className="mr-2 opacity-80" />
+                )}
                 Print I-130
               </button>
               <button
@@ -1526,7 +1574,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background: stepEntitlement.isLocked ? "#4a5568" : isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738",
+                  background: stepEntitlement.isLocked
+                    ? "#4a5568"
+                    : isChapter1
+                      ? "#8284bf"
+                      : isChapter2
+                        ? "#520a50"
+                        : "#051738",
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1537,13 +1591,25 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#7a7aaa" : isChapter2 ? "#3d0b3d" : "#041028";
+                  if (!stepEntitlement.isLocked)
+                    (e.target as HTMLElement).style.background = isChapter1
+                      ? "#7a7aaa"
+                      : isChapter2
+                        ? "#3d0b3d"
+                        : "#041028";
                 }}
                 onMouseLeave={(e) => {
-                  if (!stepEntitlement.isLocked) (e.target as HTMLElement).style.background = isChapter1 ? "#8284bf" : isChapter2 ? "#520a50" : "#051738";
+                  if (!stepEntitlement.isLocked)
+                    (e.target as HTMLElement).style.background = isChapter1
+                      ? "#8284bf"
+                      : isChapter2
+                        ? "#520a50"
+                        : "#051738";
                 }}
               >
-                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
+                {stepEntitlement.isLocked && (
+                  <Lock size={18} className="mr-2 opacity-80" />
+                )}
                 Print I-130A
               </button>
             </div>
@@ -1562,8 +1628,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   alignItems: "center",
                   justifyContent: "center",
                   width: "100%",
-                  background:
-                    stepEntitlement.isLocked ? "#4a5568" : (step.step_key === "step_1_11" ? CHAPTER1.accent : COLORS.accent),
+                  background: stepEntitlement.isLocked
+                    ? "#4a5568"
+                    : step.step_key === "step_1_11"
+                      ? CHAPTER1.accent
+                      : COLORS.accent,
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
@@ -1577,17 +1646,23 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 onMouseEnter={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? CHAPTER1.accentDark : COLORS.accent2;
+                      step.step_key === "step_1_11"
+                        ? CHAPTER1.accentDark
+                        : COLORS.accent2;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? CHAPTER1.accent : COLORS.accent;
+                      step.step_key === "step_1_11"
+                        ? CHAPTER1.accent
+                        : COLORS.accent;
                   }
                 }}
               >
-                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
+                {stepEntitlement.isLocked && (
+                  <Lock size={18} className="mr-2 opacity-80" />
+                )}
                 {actionData.cta_button.label}
               </button>
             )
@@ -1616,7 +1691,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             >
               {/* Tier badge — top-right, only when step is locked */}
               {showTierBadge && (
-                <div style={{ position: "absolute", top: 10, right: 12, zIndex: 2 }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 12,
+                    zIndex: 2,
+                  }}
+                >
                   <PlanTierBadge tier={requiredTier} />
                 </div>
               )}
@@ -1688,7 +1770,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 }}
               >
                 {showTierBadge && (
-                  <div style={{ position: "absolute", top: 10, right: 12, zIndex: 2 }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 10,
+                      right: 12,
+                      zIndex: 2,
+                    }}
+                  >
                     <PlanTierBadge tier={requiredTier} />
                   </div>
                 )}
@@ -1766,11 +1855,18 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 }}
               >
                 {showTierBadge && (
-                  <div style={{ position: "absolute", top: 10, right: 12, zIndex: 2 }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 10,
+                      right: 12,
+                      zIndex: 2,
+                    }}
+                  >
                     <PlanTierBadge tier={requiredTier} />
                   </div>
                 )}
-                                <CheckCircle size={18} style={{ flexShrink: 0 }} />
+                <CheckCircle size={18} style={{ flexShrink: 0 }} />
                 <h3
                   style={{
                     fontSize: "16px",
@@ -1803,7 +1899,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   }}
                 >
                   {/* Carrier Input */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                    }}
+                  >
                     <label
                       style={{
                         fontSize: "11px",
@@ -1872,7 +1974,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   </div>
 
                   {/* Tracking Number Input */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                    }}
+                  >
                     <label
                       style={{
                         fontSize: "11px",
@@ -2037,30 +2145,36 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   </span>
 
                   {/* Tracking Status Section - Only for mailing with tracker */}
-{actionData.mailing_card &&
-  state.metadata?.easypost_tracker_id && (
-    <div
-      style={{
-        marginTop: "10px",
-        paddingTop: "10px",
-        borderTop: "1px solid rgba(21, 116, 79, 0.2)",
-      }}
-    >
-      {/* Top Row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "8px",
-          marginBottom: "4px",
-          fontSize: "12px",
-          flexWrap: "wrap",
-        }}
-      >
-        {/* Left: Status */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <strong>Tracking Status:</strong>
+                  {actionData.mailing_card &&
+                    state.metadata?.easypost_tracker_id && (
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          paddingTop: "10px",
+                          borderTop: "1px solid rgba(21, 116, 79, 0.2)",
+                        }}
+                      >
+                        {/* Top Row */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "8px",
+                            marginBottom: "4px",
+                            fontSize: "12px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {/* Left: Status */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <strong>Tracking Status:</strong>
 
                             {isLoadingTracking && (
                               <>
@@ -2143,7 +2257,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                               fontWeight: 500,
                             }}
                           >
-                            Updates from the carrier are checked in every 24 hours.
+                            Updates from the carrier are checked in every 24
+                            hours.
                           </div>
                         )}
 
@@ -2240,573 +2355,580 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       </div>
 
       {/* Full-Screen Guide Modal */}
-      {showGuide && filteredSteps && filteredSteps.length > 0 && createPortal(
-        <div
-          style={{
-            display: "flex",
-            position: "fixed",
-            inset: 0,
-            background: "#fafcff",
-            zIndex: 200,
-            flexDirection: "column",
-            animation: "fadeIn 0.3s ease",
-          }}
-          className="px-1 sm:px-3 md:px-6 pt-2 sm:pt- md:"
-        >
-          {/* Topbar */}
+      {showGuide &&
+        filteredSteps &&
+        filteredSteps.length > 0 &&
+        createPortal(
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              height: "72px",
-              borderBottom: `1px solid ${COLORS.line}`,
-              paddingLeft: isMobile ? "12px" : "20px",
-              paddingRight: isMobile ? "12px" : "20px",
-              gap: "16px",
-              flexShrink: 0,
+              position: "fixed",
+              inset: 0,
               background: "#fafcff",
+              zIndex: 200,
+              flexDirection: "column",
+              animation: "fadeIn 0.3s ease",
             }}
+            className="px-1 sm:px-3 md:px-6 pt-2 sm:pt- md:"
           >
-            <button
-              onClick={() => setShowGuide(false)}
+            {/* Topbar */}
+            <div
               style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: "#f4f7fb",
-                border: "none",
-                cursor: "pointer",
-                color: COLORS.soft,
-                fontSize: "20px",
-                fontWeight: "bold",
-                transition: "background 0.2s",
+                display: "flex",
+                alignItems: "center",
+                height: "72px",
+                borderBottom: `1px solid ${COLORS.line}`,
+                paddingLeft: isMobile ? "12px" : "20px",
+                paddingRight: isMobile ? "12px" : "20px",
+                gap: "16px",
                 flexShrink: 0,
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = "#e8f1fb";
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = "#f4f7fb";
+                background: "#fafcff",
               }}
             >
-              ×
-            </button>
+              <button
+                onClick={() => setShowGuide(false)}
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: "#f4f7fb",
+                  border: "none",
+                  cursor: "pointer",
+                  color: COLORS.soft,
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  transition: "background 0.2s",
+                  flexShrink: 0,
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.background = "#e8f1fb";
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.background = "#f4f7fb";
+                }}
+              >
+                ×
+              </button>
 
+              <div
+                style={{
+                  flex: 1,
+                  height: "6px",
+                  background: "#d0e4f7",
+                  borderRadius: "10px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    background: COLORS.primary,
+                    width: `${guideProgress * 100}%`,
+                    transition: "width 0.4s ease-out",
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: COLORS.muted,
+                  minWidth: "60px",
+                  textAlign: "right",
+                }}
+              >
+                {guideStep + 1} / {filteredSteps?.length || 0}
+              </div>
+            </div>
+
+            {/* Body */}
             <div
               style={{
                 flex: 1,
-                height: "6px",
-                background: "#d0e4f7",
-                borderRadius: "10px",
-                overflow: "hidden",
+                overflowY: "auto",
+                background: "#fafcff",
+                padding: isMobile ? "24px 16px 32px" : "48px 24px 40px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
               <div
                 style={{
-                  height: "100%",
-                  background: `linear-gradient(90deg, ${COLORS.accent}, #69a5ef)`,
-                  width: `${guideProgress * 100}%`,
-                  transition: "width 0.4s ease-out",
+                  maxWidth: "580px",
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-              />
-            </div>
-
-            <div
-              style={{
-                fontSize: "12px",
-                fontWeight: 700,
-                color: COLORS.muted,
-                minWidth: "60px",
-                textAlign: "right",
-              }}
-            >
-              {guideStep + 1} / {filteredSteps?.length || 0}
-            </div>
-          </div>
-
-          {/* Body */}
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              background: "#fafcff",
-              padding: isMobile ? "24px 16px 32px" : "48px 24px 40px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "580px",
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              {filteredSteps[guideStep] && (
-                <>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      letterSpacing: ".1em",
-                      textTransform: "uppercase",
-                      color: COLORS.accent,
-                      marginBottom: "12px",
-                    }}
-                  >
-                    {filteredSteps[guideStep]?.label}
-                  </div>
-
-                  <h2
-                    style={{
-                      fontSize: isMobile ? "20px" : "clamp(20px, 3.2vw, 26px)",
-                      fontWeight: 900,
-                      color: COLORS.navy,
-                      marginBottom: "10px",
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {filteredSteps[guideStep]?.title}
-                  </h2>
-
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      color: COLORS.soft,
-                      lineHeight: 1.7,
-                      marginBottom: "18px",
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: filteredSteps[guideStep]?.text || "",
-                    }}
-                  />
-
-                  {/* Browser mockup */}
-                  <div
-                    style={{
-                      border: `1.5px solid ${COLORS.line}`,
-                      borderRadius: "10px",
-                      overflow: "hidden",
-                      background: "#fff",
-                      boxShadow: "0 14px 32px rgba(12, 27, 51, 0.08)",
-                      marginBottom: "18px",
-                    }}
-                  >
-                    {/* Header with three dots and URL - only show if url exists */}
-                    {filteredSteps[guideStep]?.url && (
-                      <div
-                        style={{
-                          height: "34px",
-                          background: "#eef3fa",
-                          borderBottom: `1px solid ${COLORS.line}`,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "7px",
-                          paddingLeft: "12px",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "9px",
-                            height: "9px",
-                            borderRadius: "50%",
-                            background: "#f26b6b",
-                            flexShrink: 0,
-                          }}
-                        />
-                        <div
-                          style={{
-                            width: "9px",
-                            height: "9px",
-                            borderRadius: "50%",
-                            background: "#f5c56a",
-                            flexShrink: 0,
-                          }}
-                        />
-                        <div
-                          style={{
-                            width: "9px",
-                            height: "9px",
-                            borderRadius: "50%",
-                            background: "#63c48f",
-                            flexShrink: 0,
-                          }}
-                        />
-                        <div
-                          style={{
-                            marginLeft: "8px",
-                            height: "20px",
-                            display: "flex",
-                            alignItems: "center",
-                            paddingLeft: "10px",
-                            paddingRight: "10px",
-                            background: "#fff",
-                            borderRadius: "8px",
-                            fontSize: "10px",
-                            color: COLORS.muted,
-                            fontFamily: "monospace",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: isMobile ? "160px" : "none",
-                          }}
-                        >
-                          {filteredSteps[guideStep]?.url}
-                        </div>
-                      </div>
-                    )}
+              >
+                {filteredSteps[guideStep] && (
+                  <>
                     <div
                       style={{
-                        minHeight: isMobile ? "200px" : "280px",
-                        background:
-                          "linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%)",
-                        color: COLORS.muted,
-                        fontSize: "13px",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                        letterSpacing: ".1em",
+                        textTransform: "uppercase",
+                        color: COLORS.accent,
+                        marginBottom: "12px",
                       }}
                     >
+                      {filteredSteps[guideStep]?.label}
+                    </div>
+
+                    <h2
+                      style={{
+                        fontSize: isMobile
+                          ? "20px"
+                          : "clamp(20px, 3.2vw, 26px)",
+                        fontWeight: 900,
+                        color: COLORS.navy,
+                        marginBottom: "10px",
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {filteredSteps[guideStep]?.title}
+                    </h2>
+
+                    <div
+                      style={{
+                        fontSize: "14px",
+                        color: COLORS.soft,
+                        lineHeight: 1.7,
+                        marginBottom: "18px",
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: filteredSteps[guideStep]?.text || "",
+                      }}
+                    />
+
+                    {/* Browser mockup */}
+                    <div
+                      style={{
+                        border: `1.5px solid ${COLORS.line}`,
+                        borderRadius: "10px",
+                        overflow: "hidden",
+                        background: "#fff",
+                        boxShadow: "0 14px 32px rgba(12, 27, 51, 0.08)",
+                        marginBottom: "18px",
+                      }}
+                    >
+                      {/* Header with three dots and URL - only show if url exists */}
+                      {filteredSteps[guideStep]?.url && (
+                        <div
+                          style={{
+                            height: "34px",
+                            background: "#eef3fa",
+                            borderBottom: `1px solid ${COLORS.line}`,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "7px",
+                            paddingLeft: "12px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "9px",
+                              height: "9px",
+                              borderRadius: "50%",
+                              background: "#f26b6b",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: "9px",
+                              height: "9px",
+                              borderRadius: "50%",
+                              background: "#f5c56a",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: "9px",
+                              height: "9px",
+                              borderRadius: "50%",
+                              background: "#63c48f",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div
+                            style={{
+                              marginLeft: "8px",
+                              height: "20px",
+                              display: "flex",
+                              alignItems: "center",
+                              paddingLeft: "10px",
+                              paddingRight: "10px",
+                              background: "#fff",
+                              borderRadius: "8px",
+                              fontSize: "10px",
+                              color: COLORS.muted,
+                              fontFamily: "monospace",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: isMobile ? "160px" : "none",
+                            }}
+                          >
+                            {filteredSteps[guideStep]?.url}
+                          </div>
+                        </div>
+                      )}
                       <div
                         style={{
-                          width: "100%",
-                          height: "100%",
+                          minHeight: isMobile ? "200px" : "280px",
+                          background:
+                            "linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%)",
+                          color: COLORS.muted,
+                          fontSize: "13px",
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
                         }}
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            filteredSteps[guideStep]?.visual ||
-                            "Step visual here",
-                        }}
-                      />
+                      >
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              filteredSteps[guideStep]?.visual ||
+                              "Step visual here",
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Note */}
-                  {filteredSteps[guideStep]?.note && (
+                    {/* Note */}
+                    {filteredSteps[guideStep]?.note && (
+                      <div
+                        style={{
+                          padding: "12px 14px",
+                          borderRadius: "14px",
+                          background: "#fef8e8",
+                          border: "1px solid #f0d98a",
+                          color: "#8a6200",
+                          fontSize: "13px",
+                          lineHeight: 1.55,
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <strong>Important:</strong>{" "}
+                        {filteredSteps[guideStep]?.note}
+                      </div>
+                    )}
+
+                    {/* Navigation */}
                     <div
                       style={{
-                        padding: "12px 14px",
-                        borderRadius: "14px",
-                        background: "#fef8e8",
-                        border: "1px solid #f0d98a",
-                        color: "#8a6200",
-                        fontSize: "13px",
-                        lineHeight: 1.55,
-                        marginBottom: "20px",
+                        display: "flex",
+                        gap: "10px",
+                        marginTop: "auto",
                       }}
                     >
-                      <strong>Important:</strong>{" "}
-                      {filteredSteps[guideStep]?.note}
+                      {guideStep > 0 && (
+                        <button
+                          onClick={handlePrevGuide}
+                          style={{
+                            padding: "12px 20px",
+                            background: "transparent",
+                            color: COLORS.soft,
+                            border: `1.5px solid ${COLORS.line}`,
+                            borderRadius: "10px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                          }}
+                          onMouseEnter={(e) => {
+                            const ele = e.target as HTMLElement;
+                            ele.style.borderColor = COLORS.soft;
+                            ele.style.color = COLORS.navy;
+                          }}
+                          onMouseLeave={(e) => {
+                            const ele = e.target as HTMLElement;
+                            ele.style.borderColor = COLORS.line;
+                            ele.style.color = COLORS.soft;
+                          }}
+                        >
+                          ← Back
+                        </button>
+                      )}
+                      {guideStep < (filteredSteps?.length || 0) - 1 ? (
+                        <button
+                          onClick={handleNextGuide}
+                          style={{
+                            flex: 1,
+                            padding: "12px 20px",
+                            // background: COLORS.accent,
+                            border: "none",
+                            borderRadius: "10px",
+                            color: "#fff",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                            textAlign: "center",
+                          }}
+                          className="bg-primary"
+                          onMouseEnter={(e) => {
+                            (e.target as HTMLElement).style.background =
+                              COLORS.primaryDark;
+                            (e.target as HTMLElement).style.transform =
+                              "translateY(-2px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.target as HTMLElement).style.background =
+                              COLORS.primary;
+                            (e.target as HTMLElement).style.transform =
+                              "translateY(0)";
+                          }}
+                        >
+                          Next →
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (!stepEntitlement.guard()) return;
+                            onToggleComplete();
+                            setShowGuide(false);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "12px 20px",
+                            background: COLORS.green,
+                            border: "none",
+                            borderRadius: "10px",
+                            color: "#fff",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            transition: "all 0.2s",
+                            fontFamily: "inherit",
+                            textAlign: "center",
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.target as HTMLElement).style.background =
+                              "#0e5c3c";
+                            (e.target as HTMLElement).style.transform =
+                              "translateY(-2px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.target as HTMLElement).style.background =
+                              COLORS.green;
+                            (e.target as HTMLElement).style.transform =
+                              "translateY(0)";
+                          }}
+                        >
+                          Done — return to step
+                        </button>
+                      )}
                     </div>
-                  )}
-
-                  {/* Navigation */}
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      marginTop: "auto",
-                    }}
-                  >
-                    {guideStep > 0 && (
-                      <button
-                        onClick={handlePrevGuide}
-                        style={{
-                          padding: "12px 20px",
-                          background: "transparent",
-                          color: COLORS.soft,
-                          border: `1.5px solid ${COLORS.line}`,
-                          borderRadius: "10px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          transition: "all 0.2s",
-                          fontFamily: "inherit",
-                        }}
-                        onMouseEnter={(e) => {
-                          const ele = e.target as HTMLElement;
-                          ele.style.borderColor = COLORS.soft;
-                          ele.style.color = COLORS.navy;
-                        }}
-                        onMouseLeave={(e) => {
-                          const ele = e.target as HTMLElement;
-                          ele.style.borderColor = COLORS.line;
-                          ele.style.color = COLORS.soft;
-                        }}
-                      >
-                        ← Back
-                      </button>
-                    )}
-                    {guideStep < (filteredSteps?.length || 0) - 1 ? (
-                      <button
-                        onClick={handleNextGuide}
-                        style={{
-                          flex: 1,
-                          padding: "12px 20px",
-                          background: COLORS.accent,
-                          border: "none",
-                          borderRadius: "10px",
-                          color: "#fff",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          transition: "all 0.2s",
-                          fontFamily: "inherit",
-                          textAlign: "center",
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.target as HTMLElement).style.background =
-                            COLORS.accent2;
-                          (e.target as HTMLElement).style.transform =
-                            "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.target as HTMLElement).style.background =
-                            COLORS.accent;
-                          (e.target as HTMLElement).style.transform =
-                            "translateY(0)";
-                        }}
-                      >
-                        Next →
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          if (!stepEntitlement.guard()) return;
-                          onToggleComplete();
-                          setShowGuide(false);
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: "12px 20px",
-                          background: COLORS.green,
-                          border: "none",
-                          borderRadius: "10px",
-                          color: "#fff",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          transition: "all 0.2s",
-                          fontFamily: "inherit",
-                          textAlign: "center",
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.target as HTMLElement).style.background =
-                            "#0e5c3c";
-                          (e.target as HTMLElement).style.transform =
-                            "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.target as HTMLElement).style.background =
-                            COLORS.green;
-                          (e.target as HTMLElement).style.transform =
-                            "translateY(0)";
-                        }}
-                      >
-                        Done — return to step
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
 
       {/* Guide Choice Modal for Step 1.11 */}
-      {showGuideChoice && createPortal(
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 300,
-            padding: isMobile ? "16px" : "0",
-          }}
-          onClick={() => setShowGuideChoice(false)}
-        >
+      {showGuideChoice &&
+        createPortal(
           <div
             style={{
-              background: "#fff",
-              borderRadius: "24px",
-              padding: isMobile ? "24px 20px" : "40px",
-              maxWidth: "500px",
-              width: "90%",
-              boxShadow: "0 20px 60px rgba(12, 27, 51, 0.16)",
-              animation: "slideUp 0.3s ease",
-              position: "relative",
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 300,
+              padding: isMobile ? "16px" : "0",
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => setShowGuideChoice(false)}
           >
-            <div style={{ textAlign: "center", marginBottom: "32px" }}>
-              <h2
-                style={{
-                  fontSize: isMobile ? "22px" : "26px",
-                  fontWeight: 900,
-                  color: COLORS.navy,
-                  marginBottom: "12px",
-                  lineHeight: 1.3,
-                }}
-              >
-                Choose Your Guide
-              </h2>
-              <p
-                style={{
-                  fontSize: "15px",
-                  color: COLORS.soft,
-                  lineHeight: 1.6,
-                }}
-              >
-                Select how you would like to proceed with your forms
-              </p>
-            </div>
-
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "14px",
+                background: "#fff",
+                borderRadius: "24px",
+                padding: isMobile ? "24px 20px" : "40px",
+                maxWidth: "500px",
+                width: "90%",
+                boxShadow: "0 20px 60px rgba(12, 27, 51, 0.16)",
+                animation: "slideUp 0.3s ease",
+                position: "relative",
               }}
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* Print Guide Option */}
-              <button
-                onClick={() => {
-                  setSelectedGuideType("print");
-                  setShowGuideChoice(false);
-                  setShowGuide(true);
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  padding: isMobile ? "14px 16px" : "18px 20px",
-                  background: "#fff",
-                  border: `2px solid ${COLORS.line}`,
-                  borderRadius: "16px",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  textAlign: "left",
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.borderColor = COLORS.accent;
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.borderColor = COLORS.line;
-                }}
-              >
-                <div
+              <div style={{ textAlign: "center", marginBottom: "32px" }}>
+                <h2
                   style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "12px",
-                    background: COLORS.sky,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
+                    fontSize: isMobile ? "22px" : "26px",
+                    fontWeight: 900,
+                    color: COLORS.navy,
+                    marginBottom: "12px",
+                    lineHeight: 1.3,
                   }}
                 >
-                  <Printer size={24} color={COLORS.accent} />
-                </div>
-                <div>
-                  <div
-                    style={{
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      color: COLORS.navy,
-                      marginBottom: "2px",
-                    }}
-                  >
-                    View Print Guide
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "13px",
-                      color: COLORS.muted,
-                    }}
-                  >
-                    Step-by-step guide to print your forms
-                  </div>
-                </div>
-              </button>
+                  Choose Your Guide
+                </h2>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    color: COLORS.soft,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Select how you would like to proceed with your forms
+                </p>
+              </div>
 
-              {/* Download Guide Option */}
-              <button
-                onClick={() => {
-                  setSelectedGuideType("download");
-                  setShowGuideChoice(false);
-                  setShowGuide(true);
-                }}
+              <div
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  padding: isMobile ? "14px 16px" : "18px 20px",
-                  background: "#fff",
-                  border: `2px solid ${COLORS.line}`,
-                  borderRadius: "16px",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  textAlign: "left",
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.borderColor = COLORS.accent;
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.borderColor = COLORS.line;
+                  flexDirection: "column",
+                  gap: "14px",
                 }}
               >
-                <div
+                {/* Print Guide Option */}
+                <button
+                  onClick={() => {
+                    setSelectedGuideType("print");
+                    setShowGuideChoice(false);
+                    setShowGuide(true);
+                  }}
                   style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "12px",
-                    background: COLORS.sky,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
+                    gap: "16px",
+                    padding: isMobile ? "14px 16px" : "18px 20px",
+                    background: "#fff",
+                    border: `2px solid ${COLORS.line}`,
+                    borderRadius: "16px",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    textAlign: "left",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLElement).style.borderColor = COLORS.accent;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLElement).style.borderColor = COLORS.line;
                   }}
                 >
-                  <Download size={24} color={COLORS.accent} />
-                </div>
-                <div>
                   <div
                     style={{
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      color: COLORS.navy,
-                      marginBottom: "2px",
+                      width: "48px",
+                      height: "48px",
+                      borderRadius: "12px",
+                      background: COLORS.sky,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
                     }}
                   >
-                    View Download Guide
+                    <Printer size={24} color={COLORS.accent} />
                   </div>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "15px",
+                        fontWeight: 700,
+                        color: COLORS.navy,
+                        marginBottom: "2px",
+                      }}
+                    >
+                      View Print Guide
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: COLORS.muted,
+                      }}
+                    >
+                      Step-by-step guide to print your forms
+                    </div>
+                  </div>
+                </button>
+
+                {/* Download Guide Option */}
+                <button
+                  onClick={() => {
+                    setSelectedGuideType("download");
+                    setShowGuideChoice(false);
+                    setShowGuide(true);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "16px",
+                    padding: isMobile ? "14px 16px" : "18px 20px",
+                    background: "#fff",
+                    border: `2px solid ${COLORS.line}`,
+                    borderRadius: "16px",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    textAlign: "left",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLElement).style.borderColor = COLORS.accent;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLElement).style.borderColor = COLORS.line;
+                  }}
+                >
                   <div
                     style={{
-                      fontSize: "13px",
-                      color: COLORS.muted,
+                      width: "48px",
+                      height: "48px",
+                      borderRadius: "12px",
+                      background: COLORS.sky,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
                     }}
                   >
-                    Step-by-step guide to download your forms
+                    <Download size={24} color={COLORS.accent} />
                   </div>
-                </div>
-              </button>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "15px",
+                        fontWeight: 700,
+                        color: COLORS.navy,
+                        marginBottom: "2px",
+                      }}
+                    >
+                      View Download Guide
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: COLORS.muted,
+                      }}
+                    >
+                      Step-by-step guide to download your forms
+                    </div>
+                  </div>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body,
+        )}
 
       {previewConfig.isOpen &&
         previewConfig.docDef &&

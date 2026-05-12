@@ -82,7 +82,6 @@ export default function RootLayout({
             attribute="class"
             // un comment if you want bydefault device theme
             // defaultTheme="system"
-            // enableSystem
             disableTransitionOnChange
           > */}
                 <ClientHeader />

@@ -95,7 +95,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
           setDocActionModal({ ...docActionModal, isOpen: open })
         }
       >
-        <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
+        <DialogContent className="max-w-xl w-[95vw] p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
           <div className="relative overflow-hidden bg-white">
             {/* Background Decorations */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />

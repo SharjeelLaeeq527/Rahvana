@@ -1247,12 +1247,12 @@ export function TwoWaysSection() {
 
         {/* Main grid */}
           <div
-            className="relative mx-auto w-full px-8 xl:px-12"
+            className="relative mx-auto w-full px-12 xl:px-16"
             style={{
               maxWidth: 1300,
               display: "grid",
               gridTemplateColumns: "minmax(0,380px) minmax(0,1fr)",
-              gap: "clamp(32px,4vw,72px)",
+              gap: "clamp(100px,10vw,160px)",
               alignItems: "start",
             }}
           >
@@ -1395,7 +1395,10 @@ export function TwoWaysSection() {
             </div>
 
             {/* Right: animated visual */}
-            <div className="min-w-0 flex flex-col gap-3">
+            <div
+              className="min-w-0 flex flex-col gap-8"
+              style={activeIndex === 1 ? { paddingLeft: 48 } : undefined}
+            >
               {reduceMotion ? (
                 <>
                   <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
@@ -1405,7 +1408,7 @@ export function TwoWaysSection() {
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={activeIndex}
-                    className="flex min-w-0 flex-col gap-3"
+                    className="flex min-w-0 flex-col gap-8"
                     initial={{ opacity: 0, y: 18, scale: 0.988 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -12, scale: 0.992 }}
@@ -1434,7 +1437,7 @@ export function TwoWaysSection() {
           style={{ maxWidth: 1360 }}
         >
           {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 items-start">
 
             {/* Left: heading + selectors + CTAs */}
             <div>
@@ -1536,7 +1539,7 @@ export function TwoWaysSection() {
             </div>
 
             {/* Right: text above + visual card below — both left-aligned at x=0 */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-8">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={activeIndex}

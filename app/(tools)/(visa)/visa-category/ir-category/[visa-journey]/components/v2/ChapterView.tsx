@@ -240,7 +240,7 @@ export function ChapterView({
 
 {/* Plan Card */}
 <div
-  className={`rounded-2xl px-5 py-4 mb-4 flex items-center gap-4 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] border-[1.5px] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] hover:scale-[1.01]
+  className={`rounded-2xl px-4 sm:px-5 py-3 sm:py-4 mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] border-[1.5px] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] hover:scale-[1.01]
     ${plan.tier === "free"
       ? "border-[#a8c4e0]"
       : plan.tier === "basic"
@@ -253,12 +253,12 @@ export function ChapterView({
   <div
     className={`rounded-full flex items-center justify-center flex-shrink-0 border-2 shadow-[0_2px_8px_rgba(0,0,0,0.09)] transition-all
       ${plan.tier === "free"
-        ? "w-12 h-12 bg-[#f0f4fb] border-[#8fa8d4]"
+        ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#f0f4fb] border-[#8fa8d4]"
         : plan.tier === "basic"
-          ? "w-12 h-12 bg-[#eef9f8] border-[#bfe5e2]"
+          ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#eef9f8] border-[#bfe5e2]"
           : plan.tier === "premium"
-            ? "w-12 h-12 bg-[#faf7fe] border-[#a088d8]"
-            : "w-12 h-12 bg-[#fef9f0] border-[#c9a855]"
+            ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#faf7fe] border-[#a088d8]"
+            : "w-10 sm:w-12 h-10 sm:h-12 bg-[#fef9f0] border-[#c9a855]"
       }`}
   >
     <span
@@ -281,7 +281,7 @@ export function ChapterView({
   </div>
 
   <p
-    className={`text-[13px] leading-relaxed m-0 flex-1 font-semibold
+    className={`text-[12px] sm:text-[13px] leading-relaxed m-0 flex-1 font-semibold
       ${plan.tier === "free"
         ? "text-[#2e4f72]"
         : plan.tier === "basic"
@@ -303,7 +303,7 @@ export function ChapterView({
   {plan.tier !== "executive" && (
     <button
       onClick={() => setUpgradeModalFeature("checklist_engine")}
-      className={`flex-shrink-0 inline-flex items-center gap-1.5 text-[12.5px] font-bold px-5.5 py-2.75 rounded-xl text-white transition-all active:scale-[0.96] shadow-md hover:shadow-xl hover:-translate-y-0.5 border border-white/15 group relative overflow-hidden
+      className={`flex-shrink-0 inline-flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[12.5px] font-bold px-4 sm:px-5.5 py-2 sm:py-2.75 rounded-xl text-white transition-all active:scale-[0.96] shadow-md hover:shadow-xl hover:-translate-y-0.5 border border-white/15 group relative overflow-hidden whitespace-nowrap
         ${plan.tier === "free"
           ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
           : plan.tier === "basic"
@@ -313,7 +313,7 @@ export function ChapterView({
     >
       <span className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
       <span className="relative">Upgrade Plan</span>
-        <ChevronRight size={16} strokeWidth={3} className="relative" />
+        <ChevronRight size={14} strokeWidth={3} className="relative sm:w-[16px] sm:h-[16px]" />
     </button>
   )}
 </div>

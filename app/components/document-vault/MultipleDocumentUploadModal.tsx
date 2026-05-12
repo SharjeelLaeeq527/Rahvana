@@ -390,9 +390,9 @@ export function MultipleDocumentUploadModal({
       <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden rounded-2xl border-none shadow-2xl bg-white">
         <div className="max-h-[90vh] overflow-y-auto p-5 sm:p-7">
           <DialogHeader className="relative pb-4 mb-2">
-            <DialogTitle className="text-xl sm:text-2xl pr-8 font-black text-[#0f1f38]">
+            <DialogTitle className="text-xl sm:text-2xl font-black text-[#0f1f38]">
               Upload Multiple Documents
-              <span className="block text-[15px] font-medium text-[#6b8097] mt-1 pr-6">
+              <span className="block text-[15px] font-medium text-[#6b8097] mt-1">
                 {documentName}
               </span>
             </DialogTitle>
@@ -526,10 +526,23 @@ export function MultipleDocumentUploadModal({
                   className="p-6 rounded-2xl border-2 border-[#e8f1fb] bg-white shadow-sm flex flex-col gap-6 relative transition-all hover:border-[#d0e4f7]"
                 >
                   {/* Document Type Section */}
-                  <div className="w-full pr-8">
-                    <Label className="text-[13px] font-semibold text-[#3a4f63] mb-2 block">
-                      Document Type
-                    </Label>
+                  <div className="w-full">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-[13px] font-semibold text-[#3a4f63]">
+                        Document Type
+                      </Label>
+                      {pendingUploads.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full shrink-0 transition-all"
+                          onClick={() => removePendingUpload(uploadItem.id)}
+                          disabled={uploading}
+                        >
+                          <Trash2 size={18} />
+                        </Button>
+                      )}
+                    </div>
                     <CustomDropdown
                       value={uploadItem.type}
                       onChange={(val) =>
@@ -554,7 +567,7 @@ export function MultipleDocumentUploadModal({
 
                   {/* Custom Name Section (Only if Other is selected) */}
                   {uploadItem.type === OTHER_OPTION && (
-                    <div className="w-full pr-8 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="w-full animate-in fade-in slide-in-from-top-1 duration-200">
                       <Label className="text-[13px] font-semibold text-[#3a4f63] mb-2 block">
                         Document Name
                       </Label>
@@ -574,7 +587,7 @@ export function MultipleDocumentUploadModal({
                   )}
 
                   {/* File Dropzone Section - Enlarged */}
-                  <div className="w-full pr-8">
+                  <div className="w-full">
                     <Label className="text-[13px] font-semibold text-[#3a4f63] mb-2 block">
                       Select File
                     </Label>
@@ -668,7 +681,7 @@ export function MultipleDocumentUploadModal({
                   </div>
 
                   {/* Notes Section */}
-                  <div className="w-full pr-8">
+                  <div className="w-full">
                     <div className="flex items-center justify-between mb-2">
                       <Label className="text-[13px] font-semibold text-[#3a4f63] block">
                         Notes (Optional)
@@ -693,17 +706,7 @@ export function MultipleDocumentUploadModal({
                     />
                   </div>
 
-                  {pendingUploads.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-4 right-4 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full shrink-0 transition-all"
-                      onClick={() => removePendingUpload(uploadItem.id)}
-                      disabled={uploading}
-                    >
-                      <Trash2 size={20} />
-                    </Button>
-                  )}
+
                 </div>
               );
             })}

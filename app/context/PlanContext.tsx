@@ -15,7 +15,14 @@ import {
   isAccessible,
   FeatureEntitlement,
 } from "@/lib/entitlements/config";
-import { canUse, isHidden, isLocked, lockHint, upgradeCTA } from "@/lib/entitlements/helpers";
+import {
+  canUse,
+  isHidden,
+  isLocked,
+  lockHint,
+  upgradeCTA,
+  getEffectiveEntitlement,
+} from "@/lib/entitlements/helpers";
 
 interface PlanContextValue {
   /** The real tier from DB (unaffected by dev override). */
@@ -26,7 +33,9 @@ interface PlanContextValue {
   /** Dev-only: override the active tier for UI testing. null = use real tier. */
   devOverride: PlanTier | null;
   setDevOverride: (t: PlanTier | null) => void;
-  /** Look up the full entitlement object for a feature at the current tier. */
+  /** Add-on IDs purchased by this user (e.g. ["sponsor", "mock"]). */
+  purchasedAddons: string[];
+  /** Look up the full entitlement object for a feature, respecting purchased add-ons. */
   entitlement: (feature: string) => FeatureEntitlement;
   /** True when the user can take the primary action on a feature. */
   canUse: (feature: string) => boolean;
@@ -62,6 +71,7 @@ function normalizeTier(raw: string | null | undefined): PlanTier {
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [realTier, setRealTier] = useState<PlanTier>('free');
+  const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [devOverride, setDevOverride] = useState<PlanTier | null>(null);
 
@@ -70,6 +80,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user?.id) {
       setRealTier('free');
+      setPurchasedAddons([]);
       setIsLoading(false);
       return;
     }
@@ -80,15 +91,20 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     supabase
       .from('user_profiles')
-      .select('subscription_tier')
+      .select('subscription_tier, profile_details')
       .eq('id', user.id)
       .single()
-      .then(({ data }: { data: { subscription_tier?: string } | null }) => {
+      .then(({ data }: { data: { subscription_tier?: string; profile_details?: any } | null }) => {
         if (cancelled) return;
         setRealTier(normalizeTier(data?.subscription_tier));
+        const addons = data?.profile_details?.purchased_addons;
+        setPurchasedAddons(Array.isArray(addons) ? addons : []);
       })
       .catch(() => {
-        if (!cancelled) setRealTier('free');
+        if (!cancelled) {
+          setRealTier('free');
+          setPurchasedAddons([]);
+        }
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -103,13 +119,14 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     devOverride,
     setDevOverride,
-    entitlement: useCallback((f) => getEntitlement(f, tier), [tier]),
-    canUse:       useCallback((f) => canUse(f, tier), [tier]),
+    purchasedAddons,
+    entitlement: useCallback((f) => getEffectiveEntitlement(f, tier, purchasedAddons), [tier, purchasedAddons]),
+    canUse:       useCallback((f) => canUse(f, tier, purchasedAddons), [tier, purchasedAddons]),
     isHidden:     useCallback((f) => isHidden(f, tier), [tier]),
-    isLocked:     useCallback((f) => isLocked(f, tier), [tier]),
+    isLocked:     useCallback((f) => isLocked(f, tier, purchasedAddons), [tier, purchasedAddons]),
     isAccessible: useCallback((f) => isAccessible(f, tier), [tier]),
-    lockHint:     useCallback((f) => lockHint(f, tier), [tier]),
-    upgradeCTA:   useCallback((f) => upgradeCTA(f, tier), [tier]),
+    lockHint:     useCallback((f) => lockHint(f, tier, purchasedAddons), [tier, purchasedAddons]),
+    upgradeCTA:   useCallback((f) => upgradeCTA(f, tier, purchasedAddons), [tier, purchasedAddons]),
   };
 
   return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>;

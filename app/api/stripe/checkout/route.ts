@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
     const userEmail = userData.user.email!;
 
     // Fetch profile for default visa category and old subscription ID
-    const { data: profile } = await supabase.from('user_profiles').select('metadata').eq('id', userId).single();
-    const dbVisaCategory = profile?.metadata?.plan_visa_category || profile?.metadata?.visa_category;
+    const { data: profile } = await supabase.from('user_profiles').select('profile_details').eq('id', userId).single();
+    const dbVisaCategory = profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || 'IR-1 / CR-1';
-    const oldSubscriptionId = profile?.metadata?.stripe_subscription_id;
+    const oldSubscriptionId = profile?.profile_details?.stripe_subscription_id;
 
     // Get or create Stripe customer
     let stripeCustomerId: string | undefined;

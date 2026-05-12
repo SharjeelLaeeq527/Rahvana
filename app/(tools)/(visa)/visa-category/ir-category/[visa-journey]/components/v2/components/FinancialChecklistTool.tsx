@@ -473,7 +473,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                             },
                           });
                         }}
-                        className={`group flex items-center gap-[16px] px-[20px] py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
+                        className={`group flex flex-col sm:flex-row sm:items-center gap-[16px] px-[16px] py-[14px] sm:px-[20px] sm:py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
                         ${
                           isReviewed
                             ? "bg-[#eaf7ff] border-[#b8daff]"
@@ -501,10 +501,10 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
+                          <div className="text-[15px] sm:text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
                             {doc.title}
                           </div>
-                          <div className="text-[13px] text-[#3a4f63] leading-[1.4]">
+                          <div className="text-[13px] sm:text-[13px] text-[#3a4f63] leading-[1.4]">
                             {doc.sub}
                           </div>
                           <div className="flex gap-[6px] mt-[7px] flex-wrap">
@@ -531,7 +531,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                           </div>
                         </div>
 
-                        <div className="shrink-0 flex items-center gap-2">
+                        <div className="shrink-0 flex items-center gap-2 w-full sm:w-auto">
                           {(() => {
                             const isDeleting = uploadedDoc
                               ? isDeletingIds.includes(uploadedDoc.id)
