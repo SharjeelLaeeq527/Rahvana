@@ -11,6 +11,7 @@ import {
   type DropdownOption,
 } from "@/app/components/shared/CustomDropdown";
 import { US_STATES } from "@/lib/formConfig/constants";
+import { UrduKeyboard } from "@/app/components/shared/UrduKeyboard";
 
 /* ==================== Input Components ==================== */
 
@@ -204,6 +205,9 @@ export function FormStep({
   progressiveSubQuestionIndices = {},
 }: FormStepProps) {
   const [isClient, setIsClient] = useState(false);
+  const [activeKeyboardField, setActiveKeyboardField] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -307,8 +311,15 @@ export function FormStep({
           name={field.key}
           value={formData[field.key] ?? ""}
           onChange={onInputChange}
+          onFocus={() => {
+            if (field.keyboardType === "urdu") {
+              setActiveKeyboardField(field.key);
+            }
+          }}
           placeholder={field.placeholder}
           maxLength={field.maxLength}
+          inputMode={field.inputMode}
+          dir={field.keyboardType === "urdu" ? "rtl" : "ltr"}
         />
       );
     }
@@ -435,6 +446,37 @@ export function FormStep({
           <div>{renderSubQuestions(activeField)}</div>
         </motion.div>
       </AnimatePresence>
+
+      {/* Urdu Virtual Keyboard */}
+      <UrduKeyboard
+        isOpen={activeKeyboardField !== null}
+        onClose={() => setActiveKeyboardField(null)}
+        onKeyPress={(char) => {
+          if (!activeKeyboardField) return;
+          const currentValue = formData[activeKeyboardField] ?? "";
+          const newValue = currentValue + char;
+          const event = {
+            target: {
+              name: activeKeyboardField,
+              value: newValue,
+            },
+          } as React.ChangeEvent<HTMLInputElement>;
+          onInputChange(event);
+        }}
+        onBackspace={() => {
+          if (!activeKeyboardField) return;
+          const currentValue = formData[activeKeyboardField] ?? "";
+          if (currentValue.length === 0) return;
+          const newValue = currentValue.slice(0, -1);
+          const event = {
+            target: {
+              name: activeKeyboardField,
+              value: newValue,
+            },
+          } as React.ChangeEvent<HTMLInputElement>;
+          onInputChange(event);
+        }}
+      />
     </div>
   );
 }
