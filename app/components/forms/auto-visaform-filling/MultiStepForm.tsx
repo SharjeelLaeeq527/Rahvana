@@ -1062,7 +1062,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   /* Sidebar (desktop) */
   const SectionList = useCallback(
-    ({ onPick }: { onPick?: () => void }) => (
+    ({
+      onPick,
+      showLabels = !isSidebarCollapsed,
+    }: {
+      onPick?: () => void;
+      showLabels?: boolean;
+    }) => (
       <div className="space-y-1.5">
         {sections.map((section, idx) => {
           const stepNum = idx + 1;
@@ -1114,7 +1120,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                   )}
                 </div>
 
-                {!isSidebarCollapsed && (
+                {showLabels && (
                   <div className="flex-1 min-w-0">
                     <p
                       className="text-sm font-semibold truncate"
@@ -1130,7 +1136,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                   </div>
                 )}
 
-                {!isSidebarCollapsed && (
+                {showLabels && (
                   <motion.button
                     animate={{
                       rotate: isExpanded ? 180 : 0,
@@ -1324,7 +1330,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {/* Content (Scrollable) */}
               <div className="flex-1 overflow-y-auto px-5 py-4">
-                <SectionList onPick={() => setIsDrawerOpen(false)} />
+                <SectionList
+                  onPick={() => setIsDrawerOpen(false)}
+                  showLabels
+                />
               </div>
             </motion.div>
           </>
