@@ -8,40 +8,40 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
   const hasImageVisual = Boolean(s?.visual && /<img\b/i.test(s.visual));
   return (
     <TutorialShell {...props} title={props.title || s.heading}>
-      <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
+      <div className="text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase text-primary mb-3">
         {props.title || s.label}
       </div>
-      <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
+      <h2 className="text-[clamp(18px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
         {s.heading}
       </h2>
       <p
-        className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]"
+        className="text-[13px] sm:text-[14px] text-[#3a4f63] leading-relaxed mb-4 sm:mb-[18px]"
         dangerouslySetInnerHTML={{ __html: s.instruction || "" }}
       />
-      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+      <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-4 sm:mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
         {showBrowserHeader && (
-          <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
+          <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[8px_10px] sm:p-[10px_14px] flex items-center gap-1.5 min-w-0">
             <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
             <div className="w-[9px] h-[9px] rounded-full bg-[#fbbf24]" />
             <div className="w-[9px] h-[9px] rounded-full bg-[#34d399]" />
-            <div className="text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto">
+            <div className="text-[9px] sm:text-[10px] font-semibold tracking-[0.07em] uppercase text-[#6b8097] ml-auto truncate min-w-0">
               {s.url}
             </div>
           </div>
         )}
-        <div className="p-[18px] leading-relaxed">
+        <div className="p-[14px] sm:p-[18px] leading-relaxed">
           {(s.ssLabel || s.kicker) && (
-            <div className="text-[10px] font-bold uppercase text-[#2f6fd4] mb-1">
+            <div className="text-[9px] sm:text-[10px] font-bold uppercase text-[#2f6fd4] mb-1">
               {s.ssLabel || s.kicker}
             </div>
           )}
           {(s.ssHeadline || s.head) && (
-            <div className="text-[15px] font-bold text-[#0c1b33] mb-1">
+            <div className="text-[14px] sm:text-[15px] font-bold text-[#0c1b33] mb-1">
               {s.ssHeadline || s.head}
             </div>
           )}
           {(s.ssDesc || s.copy) && (
-            <div className="text-[13px] text-[#3a4f63] mb-2">
+            <div className="text-[12px] sm:text-[13px] text-[#3a4f63] mb-2">
               {s.ssDesc || s.copy}
             </div>
           )}
@@ -56,7 +56,7 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
             />
           )}
           {(s.ssHighlight || s.highlight) && (
-            <div className="text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg mb-2">
+            <div className="text-[12px] sm:text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg mb-2">
               {s.ssHighlight || s.highlight}
             </div>
           )}
@@ -65,7 +65,7 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
               {s.pills.map((p: string, i: number) => (
                 <span
                   key={i}
-                  className="inline-block px-3 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[11px] font-bold uppercase tracking-wide whitespace-nowrap"
+                  className="inline-block px-2.5 py-1 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#6b8097] text-[10px] sm:text-[11px] font-bold uppercase tracking-wide whitespace-nowrap"
                 >
                   {p}
                 </span>
@@ -75,7 +75,7 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
         </div>
       </div>
       {s.note && (
-        <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
+        <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] px-3 py-2 sm:px-[14px] sm:py-[11px] text-[12px] sm:text-[13px] text-[#8a6200] leading-relaxed mb-5 sm:mb-[24px]">
           {s.note}
         </div>
       )}
@@ -137,7 +137,7 @@ const TutorialShell: React.FC<
 
   return (
     <div className="fixed inset-0 z-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans bg-white">
-      <div className="flex items-center px-4 sm:px-6 md:px-8 py-[18px] border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
+      <div className="flex items-center px-3 sm:px-6 md:px-8 py-4 sm:py-[18px] border-b border-[#d0e4f7] gap-3 sm:gap-4 shrink-0 bg-white">
         <button onClick={onClose}>
           <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
         </button>
@@ -152,14 +152,14 @@ const TutorialShell: React.FC<
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 sm:px-6 md:px-8 py-8 sm:py-12">
-        <div className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[650px] flex flex-col min-h-full">
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-3 sm:px-6 md:px-8 py-5 sm:py-12">
+        <div className="w-full max-w-full sm:max-w-[600px] md:max-w-[650px] flex flex-col min-h-full">
           {children}
           <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-2.5">
             {!isFirst && (
               <button
                 onClick={() => setIndex(index - 1)}
-                className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
+                className="w-full sm:w-auto p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
               >
                 ← Back
               </button>
@@ -170,14 +170,14 @@ const TutorialShell: React.FC<
                   setIndex(0);
                   onClose();
                 }}
-                className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
+                className="w-full flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
               >
                 Done — return to step
               </button>
             ) : (
               <button
                 onClick={() => setIndex(index + 1)}
-                className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
+                className="w-full flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
               >
                 Next →
               </button>

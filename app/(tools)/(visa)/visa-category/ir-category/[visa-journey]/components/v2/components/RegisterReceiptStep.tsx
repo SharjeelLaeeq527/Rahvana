@@ -1073,10 +1073,10 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
             </span>
           </div> */}
 
-          <h1 className="text-[2rem] sm:text-[2.3rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.15] tracking-tight mb-2 accent-brown">
+          <h1 className="text-[2rem] sm:text-[2.3rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.15] tracking-tight mb-2 text-[#0c1b33] font-bold">
             {tool.title}
           </h1>
-          <p className="text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 accent-brown">
+          <p className="text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 text-[#3a4f63]">
             {tool.subtitle}
           </p>
 
@@ -1121,7 +1121,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 <div>
                   <div
                     className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                    style={{ color: "#8284bf" }}
+                    style={{ color: "#6b8097" }}
                   >
                     Post-Filing Checkpoint · Receipt Registration
                   </div>
@@ -1404,7 +1404,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 <>
                   {/* Tab bar — Upload tab locked for Basic */}
                   <div
-                    className="flex gap-2 mb-4 flex-wrap"
+                    className="flex flex-nowrap gap-2 mb-4 overflow-x-auto"
                     style={{ borderBottom: "1px solid #e5e7eb" }}
                   >
                     {(["manual", "upload"] as const).map((tab) => {
@@ -1412,7 +1412,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                       return (
                         <button
                           key={tab}
-                          className="px-5 py-2 text-[15px] font-semibold transition-colors duration-150 flex items-center gap-1.5"
+                          className="flex-1 min-w-0 whitespace-nowrap px-3 sm:px-5 py-2 text-[13px] sm:text-[15px] font-semibold transition-colors duration-150 flex items-center justify-center gap-1.5"
                           style={{
                             borderBottom:
                               activeTab === tab
@@ -1491,11 +1491,11 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
               >
                 <div
                   className="text-[24px] mb-1 font-semibold"
-                  style={{ color: "#28151c" }}
+                  style={{ color: "#0c1b33" }}
                 >
                   Receipt notice registered
                 </div>
-                <div className="text-[14px]" style={{ color: "#28151c" }}>
+                <div className="text-[14px]" style={{ color: "#3a4f63" }}>
                   Rahvana now has the core case reference needed to monitor
                   status changes.
                 </div>
