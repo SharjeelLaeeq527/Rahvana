@@ -30,6 +30,7 @@ export type Field = {
   subQuestions?: (Omit<Field, 'section'> & { condition?: (data: Record<string, string>) => boolean })[];
   pattern?: string;
   inputMode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
+  keyboardType?: "urdu" | "arabic";
 };
 
 // ✅ Add this: FormConfig type

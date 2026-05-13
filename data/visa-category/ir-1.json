@@ -2384,6 +2384,13 @@
             "guide_steps": [
               {
                 "label": "Mailing guide · Step 1",
+                "title": "Assemble Filing Packet",
+                "text": "Organize the completed paper filing into one final mailing packet before shipment. Place the payment and completed forms at the front, then add supporting evidence and translations behind them in a clean review order. Once everything is stacked, flip through the full packet one more time to confirm nothing is missing and every page is readable before sealing it.",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step4.jpg\" alt=\"Assemble Filing Packet\" style=\"width:100%;\" />",
+                "note": "Order matters. Payment first, forms next, then supporting documents and translations at the back. A quick final flip-through takes one minute and prevents a missing document from causing a rejection."
+              },
+              {
+                "label": "Mailing guide · Step 2",
                 "title": "Confirm the current USCIS filing address",
                 "text": "Before mailing, verify the current USCIS filing address for your paper submission so the packet goes to the correct location.",
                 "url": "uscis.gov/forms/filing-guidance",
@@ -2391,7 +2398,14 @@
                 "note": "Do not mail to an old address saved from a previous screenshot or conversation."
               },
               {
-                "label": "Mailing guide · Step 2",
+                "label": "Mailing guide · Step 3",
+                "title": "Choose a trackable mailing service",
+                "text": "Select a mailing carrier and shipping service that includes tracking and delivery confirmation before sending the packet to USCIS.",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step5.jpg\" alt=\"Choose a trackable mailing service\" style=\"width:100%;\" />",
+                "note": "Tracking and delivery confirmation help prove the packet was successfully delivered to USCIS. Keep the receipt — you may need it later."
+              },
+              {
+                "label": "Mailing guide · Step 4",
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
                 "url": "rahvana paper filing path",
@@ -2399,7 +2413,7 @@
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
               {
-                "label": "Mailing guide · Step 3",
+                "label": "Mailing guide · Step 5",
                 "title": "Watch for delivery, then wait for the USCIS receipt notice",
                 "text": "Once the carrier shows delivered, keep the proof and then watch for USCIS acceptance and the receipt notice.",
                 "url": "delivery confirmation",
@@ -2599,9 +2613,8 @@
                 "label": "Step 2 of 4 — Find the receipt number",
                 "heading": "Find the 13-character receipt number",
                 "instruction": "The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step2.png\" alt=\"Find the receipt number\" style=\"width:100%; \" />",
-                "caption": "This is the number Rahvana should save to enable case monitoring.",
-                "note": "If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing."
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step2.png\" alt=\"Find the receipt number\" style=\"width:100%; height: 400px; \" />",
+                "caption": "This is the number Rahvana should save to enable case monitoring."
               },
               {
                 "label": "Step 3 of 4 — Decide how to register it",
@@ -2616,9 +2629,8 @@
                 "heading": "Confirm the details and enable tracking",
                 "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
                 "url": "rahvana.com/visa-category/ir-category/ir1-journey",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step4.png\" alt=\"Save\" style=\"width:100%; \" />",
-                "note": "This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API."
-              }
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step4.png\" alt=\"Save\" style=\"width:100%; height:500px; -mt-4 \" />"
+            }
             ]
           }
         },

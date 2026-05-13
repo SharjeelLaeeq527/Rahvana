@@ -820,14 +820,14 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   } else if (sId === "step_1_16" && currentStep.tool_data) {
     customRenderer = (
-      //     <StepLockedContent stepKey={sId} mode="overlay">
-      <TrackCaseStatusStep
-        tool={currentStep.tool_data}
-        state={state}
-        actions={actions}
-        journeyId={journeyId}
-      />
-      // </StepLockedContent>
+      <StepLockedContent stepKey={sId} mode="overlay">
+        <TrackCaseStatusStep
+          tool={currentStep.tool_data}
+          state={state}
+          actions={actions}
+          journeyId={journeyId}
+        />
+      </StepLockedContent>
     );
   }
 
@@ -886,6 +886,37 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       nextStepInfo.localIdx,
     );
   }, [nextStep, nextStepInfo, plan.tier]);
+
+  const prevStepInfo = useMemo(() => {
+    if (!prevStep) return null;
+    const psId = prevStep.step_key || (prevStep as any).id;
+    const activeChapters = data.chapters || (data as any).stages;
+    for (let cIdx = 0; cIdx < activeChapters.length; cIdx++) {
+      const activeSteps = getActiveStepsForStage(
+        data,
+        cIdx,
+        state.metadata,
+        state.filingType,
+      );
+      const lIdx = activeSteps.findIndex(
+        (s: any) => (s.step_key || s.id) === psId,
+      );
+      if (lIdx !== -1) return { chapterIdx: cIdx, localIdx: lIdx };
+    }
+    return null;
+  }, [prevStep, data, state.metadata, state.filingType]);
+
+  const prevStepLock = useMemo(() => {
+    if (!prevStep || !prevStepInfo)
+      return { isLocked: false, requiredPlan: null };
+    const psId = prevStep.step_key || (prevStep as any).id;
+    return getStepLockStatus(
+      psId,
+      plan.tier,
+      prevStepInfo.chapterIdx,
+      prevStepInfo.localIdx,
+    );
+  }, [prevStep, prevStepInfo, plan.tier]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
@@ -2452,53 +2483,6 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
     );
   };
 
-  if (customRenderer) {
-    return (
-      <div className="flex-1 flex flex-col h-full bg-slate-50 relative overflow-hidden font-sans">
-        <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
-          {customRenderer}
-        </div>
-        <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-          {/* Prev */}
-          <button
-            onClick={() =>
-              prevStep &&
-              handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-            }
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
-          >
-            <ArrowLeft size={13} strokeWidth={2.5} />
-            Prev
-          </button>
-
-          {/* Progress */}
-          <div className="flex-1 flex items-center gap-2">
-            <div className="flex-1 h-1 bg-[#d0e4f7] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500 ease-out rounded-full"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <span className="text-[11px] font-semibold text-[#6b8097] whitespace-nowrap">
-              {localIdx + 1} / {activeStepsInChapter.length}
-            </span>
-          </div>
-
-          {/* Next */}
-          <button
-            onClick={() =>
-              nextStep &&
-              handleNavigate((nextStep as any).step_key || (nextStep as any).id)
-            }
-            className={`px-[18px] py-[9px] bg-primary rounded-[10px] text-[13px] font-semibold text-white flex items-center gap-[5px] transition-all hover:brightness-110 active:scale-95 shrink-0 shadow-sm shadow-primary/20 ${!nextStep || !isCompleted ? "invisible pointer-events-none" : ""}`}
-          >
-            Next
-            <ArrowRight size={12} strokeWidth={2.5} />
-          </button>
-        </footer>
-      </div>
-    );
-  }
 
   if (!currentStep) return null;
 
@@ -2506,27 +2490,20 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
   return (
     <div
-      // className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${isChapter1 ? "ch1step-bg" : isChapter2 ? "ch2step-bg" : "bg-slate-50"}`}
-      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans`}
-      // style={
-      //   isChapter3
-      //     ? {
-      //         backgroundImage:
-      //           "linear-gradient(rgba(255,255,255,0.72), rgba(255,255,255,0.72)), url(/assets/images/ch3steps-bg.png)",
-      //         backgroundSize: "cover",
-      //         backgroundPosition: "center",
-      //         backgroundRepeat: "no-repeat",
-      //       }
-      //     : undefined
-      // }
+      className={`flex-1 flex flex-col h-full relative overflow-hidden font-sans ${customRenderer ? "bg-slate-50" : ""}`}
     >
-      <div
-        className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
-          currentStep.step_type === "quest"
-            ? ""
-            : "px-2 sm:px-4 md:px-8 lg:px-12 pt-6 sm:pt-10 md:pt-14 pb-6 md:pb-10 lg:pb-12"
-        }`}
-      >
+      {customRenderer ? (
+        <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
+          {customRenderer}
+        </div>
+      ) : (
+        <div
+          className={`flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px] ${
+            currentStep.step_type === "quest"
+              ? ""
+              : "px-2 sm:px-4 md:px-8 lg:px-12 pt-6 sm:pt-10 md:pt-14 pb-6 md:pb-10 lg:pb-12"
+          }`}
+        >
         {/* Quiz Overlay Refinement - Now absolute below headers */}
         {showQuiz && (
           <div className="fixed inset-0 z-[110] bg-[#fafcff] animate-in slide-in-from-bottom-[20px] fade-in duration-[0.28s] ease-[cubic-bezier(0.4,0,0.2,1)] flex flex-col font-sans">
@@ -3873,17 +3850,25 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           )}
         </div>
       </div>
+      )}
 
       {/* Redesigned Bottom Navigation Footer */}
       <footer className="absolute bottom-0 left-0 right-0 h-[58px] bg-[#fafcff] border-t border-[#d0e4f7] flex items-center px-4 gap-3 shrink-0 z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
         {/* Prev */}
         <button
-          onClick={() =>
+          onClick={() => {
+            if (prevStepLock.isLocked) {
+              setUpgradeModalFeature(
+                getModalFeatureForTier(prevStepLock.requiredPlan!),
+              );
+              return;
+            }
             prevStep &&
-            handleNavigate((prevStep as any).step_key || (prevStep as any).id)
-          }
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""}`}
+              handleNavigate((prevStep as any).step_key || (prevStep as any).id);
+          }}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] text-[13px] font-medium text-[#6b8097] transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a] shrink-0 ${!prevStep ? "invisible pointer-events-none" : ""} ${prevStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
         >
+          {prevStepLock.isLocked && <Lock size={12} className="mr-1" />}
           <ArrowLeft size={13} strokeWidth={2.5} />
           Prev
         </button>

@@ -201,7 +201,7 @@ export function SubmissionTutorialOverlay({
             {currentIdx < steps.length - 1 ? (
               <button
                 onClick={() => onSetIdx(currentIdx + 1)}
-                className="flex-1 p-[12px_20px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-bold cursor-pointer transition-all hover:bg-primary/90 hover:-translate-y-px text-center flex items-center justify-center gap-2"
+                className="flex-1 p-[12px_20px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-bold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px text-center flex items-center justify-center gap-2"
               >
                 Next →
               </button>

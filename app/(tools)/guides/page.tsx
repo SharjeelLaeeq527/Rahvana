@@ -51,7 +51,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/passport-guide",
     icon: Globe,
-    entitlementFeature: "civil_doc_guides",
+    entitlementFeature: "guide_passport",
   },
   {
     id: "police-verification",
@@ -62,7 +62,7 @@ const GUIDES: Guide[] = [
       "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
     href: "/guides/police-verification-guide",
     category: "Pakistan Document",
-    entitlementFeature: "civil_doc_guides",
+    entitlementFeature: "guide_police",
   },
   {
     id: "cnic",
@@ -73,7 +73,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/cnic-guide",
     icon: FileText,
-    entitlementFeature: "civil_doc_guides",
+    entitlementFeature: "guide_cnic",
   },
   {
     id: "birth-certificate",
@@ -84,7 +84,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
-    entitlementFeature: "civil_doc_guides",
+    entitlementFeature: "guide_birth_cert",
   },
   {
     id: "frc",
@@ -95,7 +95,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
-    entitlementFeature: "civil_doc_guides",
+    entitlementFeature: "guide_frc",
   },
   {
     id: "marriage-certificate",
@@ -106,7 +106,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/nikah-nama-guide",
     icon: Heart,
-    entitlementFeature: "civil_doc_guides",
+    entitlementFeature: "guide_nikah_nama",
   },
   {
     id: "vaccinations",
