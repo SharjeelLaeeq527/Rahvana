@@ -586,27 +586,41 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
     if (!stepEntitlement.guard()) return;
 
-    if (!actions?.saveMailingDetails) {
-      console.error(
-        "[ActionStepRenderer] saveMailingDetails not available in actions",
-      );
-      return;
-    }
-
     setIsSavingMailing(true);
     try {
-      // Save to database via wizard actions and wait for completion
-      await actions.saveMailingDetails(mailingCarrier, mailingTracking);
-      // Only show saved status after successful API call
+      if (actions?.saveMailingDetails) {
+        await actions.saveMailingDetails(mailingCarrier, mailingTracking);
+      } else if (actions?.updateMetadata) {
+        await actions.updateMetadata({
+          paper_mailing_carrier: mailingCarrier,
+          paper_mailing_tracking: mailingTracking,
+        });
+      } else {
+        throw new Error("No save action available");
+      }
       setStatusSaved(true);
       showToast("Mailing details saved successfully!", "success");
+
+      // Create EasyPost tracker so live carrier tracking appears
+      if (state.backendId && mailingCarrier && mailingTracking) {
+        fetch("/api/easypost/tracker/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId: state.backendId,
+            carrier: mailingCarrier,
+            trackingCode: mailingTracking,
+          }),
+        }).catch((err) =>
+          console.error("[ActionStepRenderer] EasyPost tracker create failed:", err)
+        );
+      }
     } catch (error) {
       console.error("Failed to save mailing details:", error);
       setStatusSaved(false);
       showToast("Failed to save mailing details", "error");
     } finally {
       setIsSavingMailing(false);
-      // Re-enable tracking updates after save completes
       setIsEditingMailing(false);
     }
   };

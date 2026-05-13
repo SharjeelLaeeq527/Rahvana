@@ -600,34 +600,34 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
 
   async function runOCR(file: File) {
     const currentRequestId = Date.now();
-  
+
     ocrRequestIdRef.current = currentRequestId;
-  
+
     setOcrLoading(true);
     setOcrError("");
-  
+
     try {
       const formData = new FormData();
       formData.append("file", file);
-  
+
       const res = await fetch("/api/receipt/ocr", {
         method: "POST",
         body: formData,
       });
-  
+
       const data = await res.json();
-  
+
       if (!res.ok) {
         throw new Error(data?.error || "OCR failed");
       }
-  
+
       // Ignore stale responses
       if (currentRequestId !== ocrRequestIdRef.current) {
         return;
       }
-  
+
       setOcrRawResponse(data);
-  
+
       // Prefer fresh OCR values on each run; keep previous only when API returns null.
       setFields((prev) => ({
         ...prev,
@@ -794,7 +794,10 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
           >
             Drag & drop your receipt notice here
           </span>
-          <span className="text-[13px] mb-4 text-center" style={{ color: "#6b8097" }}>
+          <span
+            className="text-[13px] mb-4 text-center"
+            style={{ color: "#6b8097" }}
+          >
             or click anywhere in this area to choose a file
           </span>
           <span
