@@ -87,7 +87,7 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
           {data.completionCard.items.map((item: string, i: number) => (
             <label
               key={i}
-              className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${polioChecks[i] ? "bg-emerald-50 border-emerald-100" : "hover:bg-slate-50 border-transparent"}`}
+              className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${polioChecks[i] ? "bg-primary/10 border-primary/50" : "hover:bg-slate-50 border-transparent"}`}
             >
               <input
                 type="checkbox"
@@ -99,10 +99,10 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
                   setPolioChecks(next);
                   await actions.updateMetadata({ polio_checks: next });
                 }}
-                className="mt-1"
+                className="mt-1 accent-primary"
               />
               <span
-                className={`text-xs leading-tight ${polioChecks[i] ? "text-emerald-800 font-bold" : "text-slate-600"}`}
+                className={`text-xs leading-tight ${polioChecks[i] ? "text-primary font-bold" : "text-slate-600"}`}
               >
                 {item}
               </span>
@@ -173,7 +173,7 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
                     }
                   }}
                   disabled={isSaving}
-                  className="flex-1 bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-1 bg-primary text-white p-4 rounded-xl font-bold hover:bg-primary/80 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSaving
                     ? "Saving..."
