@@ -173,7 +173,7 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
                     }
                   }}
                   disabled={isSaving}
-                  className="flex-1 bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-1 bg-primary text-white p-4 rounded-xl font-bold hover:bg-teal-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSaving
                     ? "Saving..."

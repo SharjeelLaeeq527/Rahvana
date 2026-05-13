@@ -175,7 +175,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-3 pt-24 sm:items-start sm:px-0 sm:pt-20">
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -186,17 +186,17 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       <div
         ref={modalRef}
         // onClick={(e) => e.stopPropagation()}
-        className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden mx-4 shadow-2xl flex flex-col z-[101]"
+        className="relative bg-white rounded-2xl w-full max-w-md max-h-[calc(100vh-9rem)] sm:max-h-[79vh] overflow-hidden mx-0 sm:mx-4 shadow-2xl flex flex-col z-[101]"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#e0f0f0] px-6 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#e8f6f6] flex items-center justify-center text-[#0d7377]">
+        <div className="sticky top-0 bg-white rounded-t-2xl border-b border-[#e0f0f0] px-4 sm:px-5 py-3.5 flex items-start sm:items-center justify-between gap-3 z-10">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-[#e8f6f6] flex items-center justify-center text-[#0d7377]">
               {icon}
             </div>
-            <div>
+            <div className="min-w-0">
               <h2
-                className="text-[16px] font-bold text-[#0a1128]"
+                className="text-[14px] sm:text-[15px] font-bold text-[#0a1128] leading-tight"
                 // style={{ fontFamily: "Inter, sans-serif" }}
               >
                 {mode === "add" ? "Add" : "Edit"} {portalType} Credentials
@@ -218,13 +218,13 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
         {/* Form Body */}
         <form
           onSubmit={handleSubmit}
-          className="px-6 py-5 space-y-5 overflow-y-auto flex-1"
+          className="px-4 sm:px-5 py-3.5 sm:py-4 space-y-3 sm:space-y-4 overflow-y-auto flex-1"
         >
           {portalType !== "NVC" && (
             <>
               {/* Username */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
                   Username / Email
                 </label>
                 <input
@@ -233,13 +233,13 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter your portal username or email"
-                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                  className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                 />
               </div>
 
               {/* Password */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
                   Password
                 </label>
                 <div className="relative">
@@ -249,7 +249,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={"Enter your portal password"}
-                    className="w-full h-11 px-4 pr-11 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                    className="w-full h-10 px-3.5 pr-11 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                   />
                   <button
                     type="button"
@@ -267,7 +267,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
             <>
               {/* Case Number */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
                   NVC Case Number
                 </label>
                 <input
@@ -281,13 +281,13 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     setNvcCaseNumber(value);
                   }}
                   placeholder="Enter NVC case number"
-                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                  className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                 />
               </div>
 
               {/* Invoice ID */}
               <div>
-                <label className="block text-[12px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
                   Invoice ID Number
                 </label>
                 <input
@@ -301,7 +301,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     setNvcInvoiceId(value);
                   }}
                   placeholder="Enter invoice ID number"
-                  className="w-full h-11 px-4 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[14px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                    className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                 />
               </div>
             </>
@@ -309,9 +309,9 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
 
           {/* Divider */}
           {portalType !== "NVC" && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <div className="flex-1 h-px bg-[#e0f0f0]" />
-              <span className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-wider">
+              <span className="text-[10px] font-semibold text-[#9ca3af] uppercase tracking-wider">
                 Security Questions
               </span>
               <div className="flex-1 h-px bg-[#e0f0f0]" />
@@ -320,13 +320,13 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
 
           {/* Security Questions */}
           {portalType !== "NVC" && (
-            <div className="space-y-4">
+            <div className="space-y-2.5 sm:space-y-3">
               {securityQuestions.map((sq, index) => (
                 <div
                   key={index}
-                  className="space-y-2 p-4 rounded-xl bg-[#f8fafa] border border-[#e0f0f0]"
+                  className="space-y-2 p-2.5 sm:p-3 rounded-xl bg-[#f8fafa] border border-[#e0f0f0]"
                 >
-                  <label className="block text-[11px] font-semibold text-[#67737e] uppercase tracking-wide">
+                  <label className="block text-[10px] font-semibold text-[#67737e] uppercase tracking-wide">
                     Question {index + 1}
                   </label>
 
@@ -334,7 +334,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     value={sq.question}
                     onValueChange={(val) => handleQuestionChange(index, val)}
                   >
-                    <SelectTrigger className="w-full h-10 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[13px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
+                    <SelectTrigger className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
                       <SelectValue placeholder="Select a security question" />
                     </SelectTrigger>
 
@@ -352,7 +352,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     value={sq.answer}
                     onChange={(e) => handleAnswerChange(index, e.target.value)}
                     placeholder="Your answer"
-                    className="w-full h-10 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                    className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                   />
                 </div>
               ))}
@@ -360,11 +360,11 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
           )}
 
           {/* Submit */}
-          <div className="pt-2 pb-1">
+          <div className="pt-1.5 pb-1">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-primary text-white text-[14px] font-semibold hover:bg-teal-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-primary text-white text-[13px] font-semibold hover:bg-teal-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting
                 ? "Saving..."
