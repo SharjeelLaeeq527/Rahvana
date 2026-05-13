@@ -7,6 +7,11 @@ from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)
+
+def is_complex_script(text: str) -> bool:
+    """Detects if text contains Urdu, Arabic or other complex scripts that need font/alignment adjustments."""
+    return bool(re.search(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]', text))
+
 from app.core.form_configs import i130_config 
 from app.core.form_configs import i864_config
 from app.core.form_configs import i130a_config
@@ -101,7 +106,18 @@ class PDFFillerService:
                                 widget.field_value = "Yes" if is_checked else "Off"
                             else:
                                 widget.field_value = str_value
-                            widget.update()
+                                
+                                # Fix for Urdu/Arabic alignment and cutting
+                                if is_complex_script(str_value):
+                                    # Complex scripts (Urdu) often have larger descenders/ascenders.
+                                    # Reducing font size slightly and ensuring it's not too large for the box.
+                                    # We also try to set a neutral font if possible, though PDF viewers usually override this.
+                                    widget.text_fontsize = 8 
+                                    widget.field_text_justification = 1 # Center alignment
+                                    # Set multi-line flag (1 << 12) which sometimes changes vertical alignment behavior
+                                    widget.field_flags |= 4096 
+                                    
+                                widget.update()
                             filled_count += 1
                             field_found = True
                         except Exception as e:
