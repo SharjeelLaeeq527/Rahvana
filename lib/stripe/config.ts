@@ -35,6 +35,12 @@ export const STRIPE_PRICES = {
     "translate": process.env.STRIPE_ADDON_DOCUMENT_TRANSLATION || '',
     "case-manager": process.env.STRIPE_ADDON_CASE_MANAGER || '',
     "civil-guid": process.env.STRIPE_ADDON_CIVIL_GUIDES || '',
+    "guide-passport": process.env.STRIPE_ADDON_GUIDE_PASSPORT || '',
+    "guide-police": process.env.STRIPE_ADDON_GUIDE_POLICE || '',
+    "guide-cnic": process.env.STRIPE_ADDON_GUIDE_CNIC || '',
+    "guide-birth-cert": process.env.STRIPE_ADDON_GUIDE_BIRTH_CERT || '',
+    "guide-frc": process.env.STRIPE_ADDON_GUIDE_FRC || '',
+    "guide-nikah-nama": process.env.STRIPE_ADDON_GUIDE_NIKAH_NAMA || '',
   }
 } as const;
 
@@ -102,6 +108,12 @@ export const PRODUCTS = {
     "translate": { name: 'Document Translation', price: 25, priceId: STRIPE_PRICES.ADDONS["translate"] },
     // "case-manager": { name: 'Dedicated Case Manager', price: 300, priceId: STRIPE_PRICES.ADDONS["case-manager"] },
     "civil-guid": { name: 'Civil Document Guides', price: 5, priceId: STRIPE_PRICES.ADDONS["civil-guid"] },
+    "guide-passport": { name: 'Passport Guide', price: 5, priceId: STRIPE_PRICES.ADDONS["guide-passport"] },
+    "guide-police": { name: 'Police Character Certificate Guide', price: 5, priceId: STRIPE_PRICES.ADDONS["guide-police"] },
+    "guide-cnic": { name: 'CNIC Guide', price: 5, priceId: STRIPE_PRICES.ADDONS["guide-cnic"] },
+    "guide-birth-cert": { name: 'Birth Certificate Guide', price: 5, priceId: STRIPE_PRICES.ADDONS["guide-birth-cert"] },
+    "guide-frc": { name: 'FRC Guide', price: 5, priceId: STRIPE_PRICES.ADDONS["guide-frc"] },
+    "guide-nikah-nama": { name: 'Marriage Registration Guide', price: 5, priceId: STRIPE_PRICES.ADDONS["guide-nikah-nama"] },
   },
 } as const;
 

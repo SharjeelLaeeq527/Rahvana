@@ -168,6 +168,42 @@ export const ADDON: Record<string, AddonInfo> = {
     price: 5,
     unit: "per guide",
   },
+  guidePassport: {
+    id: "guide-passport",
+    name: "Passport Guide",
+    price: 5,
+    unit: "one-time",
+  },
+  guidePolice: {
+    id: "guide-police",
+    name: "Police Character Certificate Guide",
+    price: 5,
+    unit: "one-time",
+  },
+  guideCnic: {
+    id: "guide-cnic",
+    name: "CNIC Guide",
+    price: 5,
+    unit: "one-time",
+  },
+  guideBirthCert: {
+    id: "guide-birth-cert",
+    name: "Birth Certificate Guide",
+    price: 5,
+    unit: "one-time",
+  },
+  guideFrc: {
+    id: "guide-frc",
+    name: "FRC Guide",
+    price: 5,
+    unit: "one-time",
+  },
+  guideNikahNama: {
+    id: "guide-nikah-nama",
+    name: "Marriage Registration Guide",
+    price: 5,
+    unit: "one-time",
+  },
   snapSign: {
     id: "snap-sign",
     name: "Snap & Sign",
@@ -365,6 +401,44 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
   civil_doc_guides: {
     free: lockedBuy(ADDON.civilGuides, "premium"),
     basic: lockedBuy(ADDON.civilGuides, "premium"),
+    premium: full(),
+    executive: full(),
+  },
+
+  /** Per-guide individual purchases — Basic can buy each separately; Premium+ included. */
+  guide_passport: {
+    free: lockedBuy(ADDON.guidePassport, "premium"),
+    basic: lockedBuy(ADDON.guidePassport, "premium"),
+    premium: full(),
+    executive: full(),
+  },
+  guide_police: {
+    free: lockedBuy(ADDON.guidePolice, "premium"),
+    basic: lockedBuy(ADDON.guidePolice, "premium"),
+    premium: full(),
+    executive: full(),
+  },
+  guide_cnic: {
+    free: lockedBuy(ADDON.guideCnic, "premium"),
+    basic: lockedBuy(ADDON.guideCnic, "premium"),
+    premium: full(),
+    executive: full(),
+  },
+  guide_birth_cert: {
+    free: lockedBuy(ADDON.guideBirthCert, "premium"),
+    basic: lockedBuy(ADDON.guideBirthCert, "premium"),
+    premium: full(),
+    executive: full(),
+  },
+  guide_frc: {
+    free: lockedBuy(ADDON.guideFrc, "premium"),
+    basic: lockedBuy(ADDON.guideFrc, "premium"),
+    premium: full(),
+    executive: full(),
+  },
+  guide_nikah_nama: {
+    free: lockedBuy(ADDON.guideNikahNama, "premium"),
+    basic: lockedBuy(ADDON.guideNikahNama, "premium"),
     premium: full(),
     executive: full(),
   },
