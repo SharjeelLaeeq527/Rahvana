@@ -631,9 +631,9 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       // Prefer fresh OCR values on each run; keep previous only when API returns null.
       setFields((prev) => ({
         ...prev,
-        receiptNumber: data.receiptNumber ?? prev.receiptNumber,
-        noticeDate: data.noticeDate ?? prev.noticeDate,
-        priorityDate: data.priorityDate ?? prev.priorityDate,
+        receiptNumber: data.receiptNumber || "",
+        noticeDate: data.noticeDate || "",
+        priorityDate: data.priorityDate || "",
       }));
     } catch (err: any) {
       if (currentRequestId === ocrRequestIdRef.current) {
