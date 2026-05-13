@@ -9,7 +9,7 @@ import {
   Info,
   Shield,
 } from "lucide-react";
-import { GuideTutorialOverlay } from "./GuideTutorialOverlays";
+import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
 import {
   AfterI130ApprovalModal,
   RelationshipEvidenceModal,
@@ -17,7 +17,7 @@ import {
   AddEvidenceNoteModal,
   ProcessingTimeModal,
   MilestonesModal,
-} from "./StatusModals";
+} from "../StatusModals";
 import {
   buildTimelineItems,
   type ReceiptRecord,
