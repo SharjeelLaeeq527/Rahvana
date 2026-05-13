@@ -2613,9 +2613,8 @@
                 "label": "Step 2 of 4 — Find the receipt number",
                 "heading": "Find the 13-character receipt number",
                 "instruction": "The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step2.png\" alt=\"Find the receipt number\" style=\"width:100%; \" />",
-                "caption": "This is the number Rahvana should save to enable case monitoring.",
-                "note": "If the notice contains multiple numbers, prioritize the USCIS receipt number tied to the I-130 filing."
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step2.png\" alt=\"Find the receipt number\" style=\"width:100%; height: 400px; \" />",
+                "caption": "This is the number Rahvana should save to enable case monitoring."
               },
               {
                 "label": "Step 3 of 4 — Decide how to register it",
@@ -2630,9 +2629,8 @@
                 "heading": "Confirm the details and enable tracking",
                 "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
                 "url": "rahvana.com/visa-category/ir-category/ir1-journey",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step4.png\" alt=\"Save\" style=\"width:100%; \" />",
-                "note": "This prototype represents tracking honestly: monitored status checks and notifications, not a promise of an official USCIS developer-grade API."
-              }
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step4.png\" alt=\"Save\" style=\"width:100%; height:500px; -mt-4 \" />"
+            }
             ]
           }
         },
