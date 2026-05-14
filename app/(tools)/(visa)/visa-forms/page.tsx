@@ -874,23 +874,21 @@ export default function VisaFormSelector() {
                             Category
                           </label>
                           <div className="flex flex-col gap-2">
-                            {["Family-based", "Financial"].map(
-                              (category) => (
-                                <button
-                                  key={category}
-                                  onClick={() =>
-                                    toggleFilter("category", category)
-                                  }
-                                  className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
-                                    activeFilters.category.includes(category)
-                                      ? "bg-[#0d7377] text-white border-[#0d7377]"
-                                      : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                  }`}
-                                >
-                                  {category}
-                                </button>
-                              ),
-                            )}
+                            {["Family-based", "Financial"].map((category) => (
+                              <button
+                                key={category}
+                                onClick={() =>
+                                  toggleFilter("category", category)
+                                }
+                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                  activeFilters.category.includes(category)
+                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                }`}
+                              >
+                                {category}
+                              </button>
+                            ))}
                           </div>
                         </div>
                       </div>
@@ -1105,7 +1103,7 @@ export default function VisaFormSelector() {
                         </div>
 
                         {/* Footer (Static) */}
-                        <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between text-xs font-medium text-gray-400 group-hover:opacity-0 transition-opacity duration-200 delay-100">
+                        <div className="mt-4 pt-4 border-t border-gray-50 hidden lg:flex items-center justify-between text-xs font-medium text-gray-400 group-hover:opacity-0 transition-opacity duration-200 delay-100">
                           <span className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
                             {form.stage}
@@ -1116,7 +1114,7 @@ export default function VisaFormSelector() {
                         </div>
 
                         {/* Hover Overlay Actions */}
-                        <div className="absolute inset-x-0 bottom-0 p-6 bg-white/95 backdrop-blur-[2px] border-t border-gray-100 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out flex flex-col gap-3 z-10">
+                        <div className="absolute inset-x-0 bottom-0 p-6 bg-white/95 backdrop-blur-[2px] border-t border-gray-100 translate-y-0 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 ease-out flex flex-col gap-3 z-10">
                           <div className="flex gap-3">
                             <button
                               onClick={() => setSelectedForm(form)}
