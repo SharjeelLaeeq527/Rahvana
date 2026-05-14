@@ -1705,54 +1705,92 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 4 — Complete review and digital signature",
-                "heading": "Review your form and digitally sign",
-                "instruction": "Before payment, USCIS requires you to review a summary of all the information you have entered. After confirming it is correct, you will be prompted to <strong>digitally sign</strong> by entering your full legal name in the space provided.",
+                "label": "Step 1 of 5 — Review your form",
+                "heading": "Review your form",
+                "instruction": "Before payment, USCIS requires you to review a summary of all the information you have entered. Confirm each entry is correct before signing or paying.",
                 "url": "my.uscis.gov",
-                "screenshot": null,
-                "ss_label": "Form Review & Signature",
-                "ss_headline": "Review Summary",
-                "ss_desc": "Check all entries, then enter your full legal name to sign.",
-                "ss_highlight": "Sign — Enter Your Full Legal Name",
-                "caption": "Per USCIS guidance, digital signing involves entering your full name. The system affixes the signature and date automatically.",
-                "note": "Review every entry carefully before signing. Once you proceed to payment and submit, changes require contacting USCIS."
+                "screenTitle": "Filing Review",
+                "media": {
+                  "type": "video",
+                  "src": "/assets/videos/ir1-journey/c1_step10/02-open-the-review-summary.mp4"
+                },
+                "videoMeta": {
+                  "poster": "/assets/images/ir1-journey/c1_step10/02-review-summary.png"
+                },
+                "caption": "Carefully review the summary to avoid errors before signing.",
+                "note": "Review every entry carefully. Changes after signing and payment require contacting USCIS."
               },
               {
-                "label": "Step 2 of 4 — Reach the payment step",
+                "label": "Step 2 of 5 — Digitally sign the form",
+                "heading": "Digitally sign your form",
+                "instruction": "After confirming the review, you will be prompted to digitally sign by entering your full legal name in the space provided. This acts as your electronic signature.",
+                "url": "my.uscis.gov",
+                "screenTitle": "Electronic Signature",
+                "screenDesc": "Sign with your full legal name",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step10/04-enter-full-legal-name.png"
+                },
+                "fields": [
+                  {
+                    "type": "field",
+                    "placeholder": "First Name"
+                  },
+                  {
+                    "type": "field",
+                    "placeholder": "Middle Name (optional)"
+                  },
+                  {
+                    "type": "field",
+                    "placeholder": "Last Name"
+                  },
+                  {
+                    "type": "btn",
+                    "label": "Sign"
+                  }
+                ],
+                "caption": "Digital signing records your name and the date as the official signature.",
+                "note": "Be certain before signing; once signed and payment is submitted, edits are difficult."
+              },
+              {
+                "label": "Step 3 of 5 — Reach the payment step",
                 "heading": "Proceed to the USCIS payment step",
                 "instruction": "After signing, the portal will advance to the payment section. You will see the filing fee amount displayed. Confirm the amount matches the current USCIS fee schedule before proceeding.",
                 "url": "my.uscis.gov",
-                "screenshot": null,
-                "ss_label": "Payment Step",
-                "ss_headline": "Filing Fee",
-                "ss_desc": "The fee is shown before you enter payment details.",
-                "ss_highlight": "$625 — Form I-130 Online Filing",
+                "screenTitle": "USCIS Payment",
+                "screenDesc": "Confirm Payment Amount",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step9(online)/step3of5.png"
+                },
                 "caption": "The online filing fee for I-130 is currently $625 (as of March 2026 per USCIS G-1055). Confirm the amount shown in your portal.",
                 "note": null
               },
               {
-                "label": "Step 3 of 4 — Enter payment details",
+                "label": "Step 4 of 5 — Enter payment details",
                 "heading": "Enter your payment method",
-                "instruction": "USCIS accepts credit cards, debit cards, and ACH bank transfers for online filings. Personal checks and money orders are <strong>not accepted</strong> for online submissions. Enter your payment details in the USCIS payment interface.",
+                "instruction": "USCIS accepts credit cards, debit cards, and ACH bank transfers for online filings. Personal checks and money orders are not accepted for online submissions. Enter your payment details in the USCIS payment interface.",
                 "url": "pay.gov",
-                "screenshot": null,
-                "ss_label": "USCIS Payment Portal",
-                "ss_headline": "Select Payment Method",
-                "ss_desc": "Credit card · Debit card · ACH bank transfer",
-                "ss_highlight": null,
+                 "screenTitle": "USCIS Payment",
+                "screenDesc": "Choose Payment Method",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step9(online)/step4of5.png"
+                },
                 "caption": "USCIS uses Pay.gov for online fee collection. Your payment information is handled by that secure federal payment system.",
                 "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
               },
               {
-                "label": "Step 4 of 4 — Receive your receipt notice",
+                "label": "Step 5 of 5 — Receive your receipt notice",
                 "heading": "Payment complete — receipt issued immediately",
-                "instruction": "After successful payment, USCIS immediately issues a <strong>receipt notice</strong> with your case number (typically beginning with \"IOE\"). Your case is now officially submitted. Download or save this receipt — it is your proof of filing and your case tracking number.",
+                "instruction": "After successful payment, USCIS immediately issues a receipt notice with your case number (typically beginning with \"IOE\"). Download or save this receipt — it is your proof of filing and your case tracking number.",
                 "url": "my.uscis.gov",
-                "screenshot": null,
-                "ss_label": "Submission Complete",
-                "ss_headline": "Receipt Notice Issued",
-                "ss_desc": "Case number issued immediately — save it now.",
-                "ss_highlight": "Download Receipt Notice",
+                 "screenTitle": "USCIS Payment",
+                "screenDesc": "Confirm Payment Amount",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step9(online)/step5of5.jpg"
+                },
                 "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
                 "note": null
               }

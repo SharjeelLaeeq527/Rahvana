@@ -655,18 +655,18 @@ function HomePageContent() {
                 </div>
               </div> */}
 
-              <div className="relative z-10 flex min-h-screen flex-col gap-7 px-5 pb-10 pt-24 sm:px-7 lg:hidden">
+              <div className="relative z-10 flex min-h-screen flex-col gap-6 px-3 pb-8 pt-16 sm:px-4 md:px-4 lg:hidden">
                 <h1 className="text-center text-[clamp(2.2rem,8vw,4.2rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
                   <span className="inline-block pb-2">
                     Navigate your IR-1 journey with clarity.
                   </span>
                 </h1>
 
-                <div className="mx-auto h-[460px] w-full max-w-[760px] sm:h-[520px]">
+                <div className="mx-auto h-[460px] w-full max-w-[760px] md:max-w-[680px] sm:h-[520px]">
                   <RealDashboardScene compact onSceneChange={setHeroScene} />
                 </div>
 
-                <div className="mx-auto w-full max-w-[640px] rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 mt-12 shadow-[0_24px_70px_rgba(15,23,42,0.26),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px]">
+                <div className="mx-auto w-full max-w-[640px] rounded-[22px] border border-white/40 bg-white/[0.18] px-4 py-5 mt-10 shadow-[0_24px_70px_rgba(15,23,42,0.26),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px]">
                   <AnimatePresence mode="wait">
                     <motion.p
                       key={heroScene}
@@ -732,7 +732,7 @@ function HomePageContent() {
                     </h2>
                   </div>
 
-                  <div className="w-full md:w-3/4 mx-auto space-y-4">
+                  <div className="w-full md:w-[90%] lg:w-[88%] mx-auto space-y-4">
                     {FAQS.map((faq, i) => (
                       <motion.div
                         key={i}
@@ -748,9 +748,9 @@ function HomePageContent() {
                       >
                         <HydrationSafeButton
                           onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
-                          className="w-full px-5 md:px-8 py-6 text-left flex items-center justify-between"
+                          className="w-full px-4 sm:px-5 md:px-5 py-4 md:py-5 text-left flex items-center justify-between"
                         >
-                          <span className="text-lg font-bold text-foreground pr-4 md:pr-8">
+                          <span className="text-lg font-bold text-foreground pr-3 md:pr-5">
                             {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
                           </span>
                           <div
@@ -771,7 +771,7 @@ function HomePageContent() {
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div className="px-8 pb-6 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-4">
+                              <div className="px-4 sm:px-5 md:px-5 pb-5 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-3">
                                 {t(`homePage.faqs.q${i + 1}.a`) || faq.a}
                               </div>
                             </motion.div>
