@@ -2409,7 +2409,7 @@
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
                 "url": "rahvana paper filing path",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step2.jpg\" alt=\"Mail packet and save tracking details\" style=\"width:100%;\" />",
+                "visual": "<video src=\"/cursorful-video-1778675907343.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
               {

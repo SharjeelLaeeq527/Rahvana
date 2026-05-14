@@ -249,7 +249,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [selectedGuideType, setSelectedGuideType] = useState<
     "print" | "download" | null
   >(null);
-  const [statusSaved, setStatusSaved] = useState(isCompleted);
+  const [statusSaved, setStatusSaved] = useState(false);
   const [selectedDropdown, setSelectedDropdown] = useState("");
   const [mailingCarrier, setMailingCarrier] = useState("");
   const [mailingTracking, setMailingTracking] = useState("");
@@ -332,12 +332,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     // Only set statusSaved if data came from DB (already saved)
     if (step.action_data?.dropdown_card) {
       const savedMethod = state.metadata?.paper_payment_method;
-      if (savedMethod) {
-        setSelectedDropdown(savedMethod);
-        setStatusSaved(true);
-      } else {
-        setStatusSaved(false);
-      }
+      if (savedMethod) setSelectedDropdown(savedMethod);
     }
 
     if (step.action_data?.mailing_card) {
@@ -345,12 +340,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       const savedTracking = state.metadata?.paper_mailing_tracking;
       if (savedCarrier) setMailingCarrier(savedCarrier);
       if (savedTracking) setMailingTracking(savedTracking);
-      // Only show saved if both exist from database
-      if (savedCarrier && savedTracking) {
-        setStatusSaved(true);
-      } else {
-        setStatusSaved(false);
-      }
+      // statusSaved intentionally NOT set here — banner only shows after a fresh save action
     }
   }, [
     step.action_data?.dropdown_card,
@@ -600,6 +590,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       }
       setStatusSaved(true);
       showToast("Mailing details saved successfully!", "success");
+      setTimeout(() => setStatusSaved(false), 4000);
 
       // Create EasyPost tracker so live carrier tracking appears
       if (state.backendId && mailingCarrier && mailingTracking) {
