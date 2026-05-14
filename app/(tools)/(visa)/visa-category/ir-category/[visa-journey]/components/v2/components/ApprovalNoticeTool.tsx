@@ -155,12 +155,12 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
   );
 
   return (
-    <div className={`flex flex-col gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[var(--rv-ink)] min-h-screen`}>
+    <div className={`flex flex-col gap-[16px] sm:gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[var(--rv-ink)] min-h-screen`}>
  
       {/* LAUNCH MODULE */}
       <section className="rounded-[16px] border shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)] overflow-hidden relative" style={{ backgroundColor: "var(--rv-ch1-module-bg)", borderColor: "var(--rv-ch1)" }}>
         <div className="absolute top-0 left-0 right-0 h-[2px] opacity-80" style={{ background: "linear-gradient(90deg, var(--rv-ch1) 0%, var(--rv-ch1-module-bg) 100%)" }} />
-        <div className="p-[30px_32px_28px]">
+        <div className="p-[20px_4px_22px] sm:p-[30px_16px_28px]">
           <div className="flex flex-col sm:flex-row justify-between gap-4 items-start mb-[18px]">
             <div className="flex gap-[16px] items-start">
               <div className="w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border" style={{ backgroundColor: "var(--rv-ch1)", borderColor: "var(--rv-ch1)" }}>
@@ -193,7 +193,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
                 <div className="text-[14px] font-semibold text-white/95 leading-[1.35]">{m.value}</div>
                 <div className="text-[11px] text-white/60 mt-[4px] leading-[1.4]">{m.sub}</div>
               </div>
-            ))}
+            ))}==
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
             <button
@@ -225,7 +225,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
       </section>
  
       {/* SAVE PANEL */}
-      <section id="save-panel" className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
+      <section id="save-panel" className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_4px] sm:p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
             <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">{data.savePanel.title}</h3>
@@ -322,7 +322,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
       </section>
  
       {/* TIMELINE PHASE */}
-      <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
+      <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_4px] sm:p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
             <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">{data.timeline.title}</h3>
@@ -352,7 +352,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
       </section>
  
       {/* PREP SECTION */}
-      <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
+      <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_4px] sm:p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
             <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">{data.prepCards.title}</h3>
@@ -412,7 +412,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
  
       {/* MODAL: ENTER NOTICE DETAILS */}
       <Dialog open={isApprovalModalOpen} onOpenChange={setIsApprovalModalOpen}>
-        <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-[560px] w-[calc(100%-40px)]">
+        <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-[560px] w-[calc(100%-24px)] sm:w-[calc(100%-40px)]">
           <div className="bg-white rounded-[18px] shadow-[0_24px_80px_rgba(12,27,51,0.24),0_4px_20px_rgba(12,27,51,0.14)] max-h-[88vh] overflow-auto animate-in zoom-in-95 duration-200">
             <div className="flex justify-between gap-[16px] items-start p-[24px_24px_0]">
               <div>
@@ -486,7 +486,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
  
       {/* OVERLAY: GUIDE TUTORIAL */}
       <Dialog open={isApprovalGuideOpen} onOpenChange={setIsApprovalGuideOpen}>
-        <DialogContent className="max-w-[760px] p-0 border-none bg-transparent shadow-none w-[calc(100%-40px)]">
+        <DialogContent className="max-w-[760px] p-0 border-none bg-transparent shadow-none w-[calc(100%-24px)] sm:w-[calc(100%-40px)]">
           <div className="relative bg-white rounded-[18px] w-full max-h-[90vh] overflow-hidden flex flex-col shadow-[0_24px_80px_rgba(12,27,51,0.24),0_4px_20px_rgba(12,27,51,0.14)] animate-in zoom-in-95 slide-in-from-bottom-5 duration-300">
             <div className="flex items-center p-[18px_20px] border-b border-[#d0e4f7] gap-[14px]">
               <button onClick={() => setIsApprovalGuideOpen(false)}
@@ -504,7 +504,7 @@ const UploadButton = ({ replace = false }: { replace?: boolean }) => (
               </div>
             </div>
  
-            <div className="p-[28px_24px_24px] overflow-auto custom-scrollbar">
+            <div className="p-[20px_16px_18px] sm:p-[28px_24px_24px] overflow-auto custom-scrollbar">
               <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[12px]">
                 {data.guideSteps[approvalGuideStep].label}
               </div>

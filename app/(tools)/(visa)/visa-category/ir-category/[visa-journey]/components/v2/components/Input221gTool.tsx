@@ -41,16 +41,16 @@ export const Input221gTool: React.FC<Input221gToolProps> = ({
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300 w-full">
 
       {!isSaved ? (
-        <div className="mb-4">
-          <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200">
-             <Actual221GFormChecker
-              selectedItems={selectedItems}
-              onSelectionChange={handleSelectionChange}
-              onNext={() => {}} 
-              smartModeEnabled={true}
-              consularPost={state.metadata?.interviewLocation || "U.S. Embassy"}
-              visaType="Immigrant"
-            />
+        <div className="mb-2 sm:mb-4">
+          < div className="bg-white rounded-xl overflow-hidden border border-slate-300">
+          <Actual221GFormChecker
+            selectedItems={selectedItems}
+            onSelectionChange={handleSelectionChange}
+            onNext={() => {}} 
+            smartModeEnabled={true}
+            consularPost={state.metadata?.interviewLocation || "U.S. Embassy"}
+            visaType="Immigrant"
+          />
           </div>
           <button
             onClick={handleSave}
@@ -60,7 +60,7 @@ export const Input221gTool: React.FC<Input221gToolProps> = ({
           </button>
         </div>
       ) : (
-        <div className="bg-white border-[1.5px] border-[#4caf50] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in duration-300">
+        <div className="bg-white border-[1.5px] border-[#4caf50] rounded-[16px] p-6 mb-2 sm:mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-[#4caf50]">
               <div className="w-6 h-6 rounded-full bg-[#e8f5e9] flex items-center justify-center">

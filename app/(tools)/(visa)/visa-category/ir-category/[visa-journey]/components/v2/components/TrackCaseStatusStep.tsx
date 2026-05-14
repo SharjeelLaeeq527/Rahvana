@@ -163,7 +163,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
   // MetaChips
   function MetaChips() {
     return (
-      <div className="flex gap-2 flex-wrap mb-6 accent-rose">
+      <div className="flex gap-2 flex-wrap mb-3 sm:mb-4 accent-rose">
         <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
           Petitioner
         </span>
@@ -184,18 +184,18 @@ const TrackCaseStatusStep: React.FC<any> = ({
       <div className="max-w-[760px] mx-auto px-4 py-8 md:px-6 md:py-12 flex flex-col gap-3 step step-modal-spacing">
         {/* Title & Desc */}
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
             Chapter 1 · USCIS Petition Filing
           </span>
           <span className="text-[11px] text-[#b8d4f0]">›</span>
-          <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
             Monitor USCIS Case Status
           </span>
         </div>
-        <h1 className="page-title text-[clamp(30px,4.6vw,40px)] accent-brown leading-[1.12] tracking-tight mb-1 font-bold">
+        <h1 className="page-title text-[clamp(28px,4.5vw,38px)] text-[#0c1b33] leading-[1.12] tracking-tight mb-1 font-bold sm:font-black">
           Monitor USCIS Case Status
         </h1>
-        <p className="page-desc text-[15px] accent-brown leading-[1.72] max-w-[620px] mb-3">
+        <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-3">
           Stay prepared while USCIS reviews your case. Rahvana keeps the
           tracking context in one place, explains what the current status means,
           and gives you useful next-step prep so the waiting period does not
@@ -205,7 +205,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
         {/* Launch Module with tracking buttons */}
         {tool.launch_module && (
           <div
-            className="rounded-2xl border mb-2 relative overflow-hidden launch-module step-modal-spacing"
+            className="rounded-2xl border mb-4 md:mb-2 relative overflow-hidden launch-module step-modal-spacing"
             style={{
               backgroundColor: "var(--rv-ch1-module-bg)",
               borderColor: launchAccentColor,
@@ -221,7 +221,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
             {/* CHANGE 2: p-5 on mobile, md:p-8, lg:p-[32px_34px_28px] */}
             <div className="launch-inner p-5 md:p-8 lg:p-[32px_34px_28px]">
               {/* CHANGE 3: flex-wrap added so badge wraps on small screens */}
-              <div className="launch-top flex items-start gap-4 mb-6 flex-wrap">
+              <div className="launch-top flex items-start gap-4 mb-4 sm:mb-6 flex-wrap">
                 <div className="launch-header flex gap-4 items-start">
                   <div
                     className="launch-icon w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0"
@@ -265,10 +265,10 @@ const TrackCaseStatusStep: React.FC<any> = ({
               />
               {/* Metrics */}
               {/* CHANGE 5: grid-cols-2 on mobile (was grid-cols-1), md:grid-cols-4 */}
-              <div className="metrics grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div className="metrics grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 items-stretch">
                 {/* Status */}
                 <div
-                  className="metric rounded-[12px] px-4 py-3 flex flex-col"
+                  className="metric h-full min-h-[118px] rounded-[12px] px-4 py-3 flex flex-col"
                   style={{
                     borderColor: launchAccentColor,
                     backgroundColor: "var(--rv-ch1-feature-bg)",
@@ -293,7 +293,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
 
                 {/* Last Checked */}
                 <div
-                  className="metric rounded-[12px] px-4 py-3 flex flex-col"
+                  className="metric h-full min-h-[118px] rounded-[12px] px-4 py-3 flex flex-col"
                   style={{
                     borderColor: launchAccentColor,
                     backgroundColor: "var(--rv-ch1-feature-bg)",
@@ -320,7 +320,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
 
                 {/* Notice Date */}
                 <div
-                  className="metric rounded-[12px] px-4 py-3 flex flex-col"
+                  className="metric h-full min-h-[118px] rounded-[12px] px-4 py-3 flex flex-col"
                   style={{
                     borderColor: launchAccentColor,
                     backgroundColor: "var(--rv-ch1-feature-bg)",
@@ -347,7 +347,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
 
                 {/* Priority Date */}
                 <div
-                  className="metric rounded-[12px] px-4 py-3 flex flex-col"
+                  className="metric h-full min-h-[118px] rounded-[12px] px-4 py-3 flex flex-col"
                   style={{
                     borderColor: launchAccentColor,
                     backgroundColor: "var(--rv-ch1-feature-bg)",
@@ -461,7 +461,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
         )}
         {/* Interactive Checklist Panel */}
         <div
-          className="mb-2 rounded-[18px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
+          className="mb-6 md:mb-2 rounded-[18px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
           style={{
             borderWidth: "1px",
             borderColor: launchAccentColor,
@@ -664,7 +664,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
         />
         {tool.future_timeline && (
           <div
-            className="mb-6 rounded-[18px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
+            className="mb-8 md:mb-6 rounded-[18px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
             style={{
               borderWidth: "1px",
               borderColor: launchAccentColor,
@@ -753,7 +753,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
         {/* Useful Right Now Panel */}
         {tool.useful_now && (
           <div
-            className="mb-6 rounded-[22px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
+            className="mb-8 md:mb-6 rounded-[22px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
             style={{
               borderWidth: "1px",
               borderColor: launchAccentColor,
@@ -872,7 +872,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
         {/* Relevant Updates Panel */}
         {tool.relevant_updates && (
           <div
-            className="panel bg-white border-[1.5px] rounded-2xl p-6 mb-2 shadow-sm"
+            className="panel bg-white border-[1.5px] rounded-2xl p-6 mb-6 md:mb-2 shadow-sm"
             style={{
               borderColor: launchAccentColor,
             }}
@@ -930,7 +930,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
         {/* Keep Building Your Case Panel */}
         {tool.build_case && (
           <div
-            className="mb-6 rounded-[18px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
+            className="mb-8 md:mb-6 rounded-[18px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
             style={{
               borderWidth: "1px",
               borderColor: launchAccentColor,
@@ -1046,7 +1046,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
         )}
         {/* Community & Proof Layer Panel */}
         {tool.community && (
-          <div className="mb-6 rounded-[15px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
+          <div className="mb-8 md:mb-6 rounded-[15px] border border-[#d0e4f7] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
               <div>
                 <h2 className="text-[24px] md:text-[22px] text-[#0c1b33] leading-tight mb-1">

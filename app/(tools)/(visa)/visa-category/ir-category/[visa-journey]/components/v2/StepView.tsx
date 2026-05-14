@@ -1703,11 +1703,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   }}
                 />
 
-                <div className="p-[36px_36px_32px]">
+                <div className="p-4 sm:p-6 lg:p-[36px_36px_32px]">
                   {/* Module Header */}
-                  <div className="flex items-start gap-[16px] mb-[26px]">
+                  <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div
-                      className={`w-[48px] h-[48px] rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "bg-white/[0.055] border-white/10"}`}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-[12px] flex items-center justify-center shrink-0 border ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "bg-white/[0.055] border-white/10"}`}
                       style={
                         isChapter1
                           ? { backgroundColor: "var(--rv-ch1)" }
@@ -1717,7 +1717,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       }
                     >
                       <IconComponent
-                        size={22}
+                        size={20}
                         className={
                           isChapter1 || isChapter2
                             ? "text-white"
@@ -1728,12 +1728,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     </div>
                     <div className="flex-1">
                       <div
-                        className={`text-[10px] font-bold uppercase tracking-widest mb-[5px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
+                        className={`text-[10px] font-bold uppercase tracking-widest mb-1 sm:mb-[5px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
                       >
                         {tool.launch_module.eyebrow || tool.launch_module.label}
                       </div>
                       <h2
-                        className={`text-[clamp(20px,3vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
+                        className={`text-[clamp(18px,4vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
                       >
                         {tool.launch_module.heading || tool.launch_module.title}
                       </h2>
@@ -1741,29 +1741,29 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </div>
 
                   <div
-                    className={`h-px mb-[22px] ${isChapter1 ? "bg-[var(--rv-ch1)]/30" : isChapter2 ? "bg-[var(--rv-ch2)]/30" : "bg-white/9"}`}
+                    className={`h-px mb-4 sm:mb-[22px] ${isChapter1 ? "bg-[var(--rv-ch1)]/30" : isChapter2 ? "bg-[var(--rv-ch2)]/30" : "bg-white/9"}`}
                   />
 
                   {/* Fee Block (Step 9 — Pay Filing Fee) */}
                   {tool.fee_block && (
-                    <div className="flex items-center gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-[16px_18px] mb-[16px] flex-wrap">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-[16px] bg-white/[0.05] border border-white/[0.09] rounded-[10px] p-3 sm:p-[16px_18px] mb-3 sm:mb-[16px]">
                       <div className="flex flex-col gap-[2px] shrink-0">
                         <div className="text-[10px] font-bold uppercase tracking-widest text-white/35">
                           {tool.fee_block.label}
                         </div>
-                        <div className="text-[32px] font text-white/90 tracking-[-0.02em] leading-none">
+                        <div className="text-[28px] sm:text-[32px] font text-white/90 tracking-[-0.02em] leading-none">
                           {tool.fee_block.amount}
                         </div>
                         <div className="text-[11px] text-white/35 mt-[2px]">
                           {tool.fee_block.note}
                         </div>
                       </div>
-                      <div className="w-[1px] h-[48px] bg-white/12 shrink-0 hidden sm:block" />
-                      <div className="flex flex-col gap-[6px] flex-1">
+                      <div className="w-full h-px bg-white/12 sm:w-[1px] sm:h-[48px] shrink-0" />
+                      <div className="flex flex-col gap-[6px] flex-1 min-w-0">
                         {tool.fee_block.details.map((d: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-[8px] text-[12px] text-white/55"
+                            className="flex items-start gap-[8px] text-[12px] text-white/55 leading-[1.45]"
                           >
                             <div className="w-[4px] h-[4px] rounded-full bg-[rgba(200,170,100,0.7)] shrink-0 mt-[5px]" />
                             <span>{d}</span>
@@ -1776,12 +1776,12 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {/* Review Checklist (Step 10 — Review & Submit) */}
                   {tool.review_checklist &&
                     tool.review_checklist.length > 0 && (
-                      <div className="flex flex-col gap-[8px] mb-[20px]">
+                      <div className="flex flex-col gap-3 sm:gap-2 mb-[20px]">
                         {tool.review_checklist.map(
                           (item: string, i: number) => (
                             <div
                               key={i}
-                              className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-[12px_14px]"
+                              className="flex items-start gap-[12px] bg-white/[0.06] border border-white/10 rounded-[10px] p-3 sm:p-[12px_14px]"
                             >
                               <div className="w-[20px] h-[20px] rounded-full bg-[rgba(21,116,79,0.25)] border border-[rgba(21,116,79,0.4)] flex items-center justify-center shrink-0 mt-[1px]">
                                 <Check
@@ -1790,7 +1790,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                   className="text-[rgba(100,220,160,0.9)]"
                                 />
                               </div>
-                              <div className="text-[13px] text-white/55 leading-[1.45]">
+                              <div className="text-[12px] sm:text-[13px] text-white/55 leading-[1.45]">
                                 {item}
                               </div>
                             </div>
@@ -1801,13 +1801,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                   {/* Feature Cues Grid */}
                   <div
-                    className={`grid grid-cols-1 sm:grid-cols-2 gap-[10px] ${tool.launch_module.button_label ? "mb-[26px]" : "mb-0"}`}
+                    className={`grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-[10px] ${tool.launch_module.button_label ? "mb-4 sm:mb-[26px]" : "mb-0"}`}
                   >
                     {tool.launch_module.features?.map(
                       (feat: string, i: number) => (
                         <div
                           key={i}
-                          className={`${isChapter1 ? "border" : isChapter2 ? "bg-[var(--rv-ch2-panel)] border border-[var(--rv-ch2)]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-[12px_14px] flex items-start gap-[10px]`}
+                          className={`${isChapter1 ? "border" : isChapter2 ? "bg-[var(--rv-ch2-panel)] border border-[var(--rv-ch2)]/30" : "bg-white/6 border border-white/10"} rounded-[10px] p-3 sm:p-[12px_14px] flex items-start gap-2 sm:gap-[10px]`}
                           style={
                             isChapter1
                               ? {
@@ -1839,7 +1839,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             }`}
                           />
                           <div
-                            className={`text-[13px] leading-[1.4] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/55"}`}
+                            className={`text-[12px] sm:text-[13px] leading-[1.4] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/55"}`}
                           >
                             {feat}
                           </div>
@@ -1851,16 +1851,16 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   {/* Upload Requirements Info Block (Step 8 only) */}
                   {tool.upload_requirements &&
                     tool.upload_requirements.length > 0 && (
-                      <div className="bg-white/5 border border-white/9 rounded-[10px] p-[14px_16px] mb-[26px]">
-                        <div className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-[10px]">
+                      <div className="mt-3 sm:mt-5 bg-white/5 border border-white/9 rounded-[10px] p-3 sm:p-[14px_16px] mb-4 sm:mb-[26px]">
+                        <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/35 mb-2 sm:mb-[10px]">
                           USCIS upload requirements
                         </div>
-                        <div className="flex flex-col gap-[7px]">
+                        <div className="flex flex-col gap-2 sm:gap-[7px]">
                           {tool.upload_requirements?.map(
                             (req: string, i: number) => (
                               <div
                                 key={i}
-                                className="flex items-start gap-[10px] text-[13px] text-white/55 leading-[1.45]"
+                                className="flex items-start gap-2.5 sm:gap-[10px] text-[12px] sm:text-[13px] text-white/55 leading-[1.45]"
                               >
                                 <div className="w-[4px] h-[4px] rounded-full bg-[var(--rv-launch-blue)]/60 shrink-0 mt-[5px]" />
                                 <span>{req}</span>
@@ -1887,7 +1887,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                             setIsLaunched(true);
                           }
                         }}
-                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[16px_28px] rounded-[12px] font-sans text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer
+                        className={`inline-flex items-center justify-center gap-[10px] w-full p-[14px_16px] sm:p-[16px_28px] rounded-[12px] font-sans text-[14px] sm:text-[15px] font-semibold tracking-[0.01em] transition-all duration-200 group cursor-pointer
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1

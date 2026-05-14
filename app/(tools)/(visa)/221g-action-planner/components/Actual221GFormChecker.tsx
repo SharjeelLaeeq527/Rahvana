@@ -92,11 +92,10 @@ export default function Actual221GFormChecker({
           </h4>
         </div>
 
-        <div className="space-y-4">
-          <div className="p-6 bg-card rounded-lg border-2 border-border shadow-sm">
-            <h4 className="font-bold text-lg mb-6 text-foreground">
-              SELECT WHAT WAS REQUESTED
-            </h4>
+        <div className="space-y-4 sm:p-4 sm:bg-card sm:rounded-lg sm:border-2 sm:border-border sm:shadow-sm">
+          <h4 className="font-bold text-lg mb-4 text-foreground">
+            SELECT WHAT WAS REQUESTED
+          </h4>
 
             {/* Administrative processing */}
             <div className="flex items-start space-x-2 mb-3">
@@ -538,13 +537,13 @@ export default function Actual221GFormChecker({
                   // --- PREMIUM SEQUENTIAL LAYOUT (Only for Smart Mode) ---
                   <>
                     {!!selectedItems.i864_affidavit && (
-                      <div className="ml-6 mt-4 space-y-6 rounded-xl border border-emerald-200 bg-emerald-50/40 p-5 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+                      <div className="mt-4 space-y-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500 sm:ml-6 sm:space-y-6 sm:p-5">
                         {/* Submission Method Selection */}
                         <div className="flex flex-col space-y-2 pb-4 border-b border-emerald-100">
                           <Label className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
                             Submission Method *
                           </Label>
-                          <div className="flex items-center space-x-6">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
                             <div className="flex items-center space-x-2 group">
                               <Checkbox
                                 id="i864_courier"
@@ -635,9 +634,9 @@ export default function Actual221GFormChecker({
                             <Label className="text-sm font-semibold text-foreground flex items-center">
                               Sponsor Identification
                             </Label>
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 ml-7">
+                            <div className="grid grid-cols-1 gap-4 sm:ml-7 sm:grid-cols-2">
                               <div className="space-y-1.5 focus-within:ring-0">
-                                <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
+                                <Label className="ml-1 text-[11px] font-medium text-emerald-800/70">
                                   Petitioner Full Name (optional)
                                 </Label>
                                 <Input
@@ -658,7 +657,7 @@ export default function Actual221GFormChecker({
 
                               {showJointSponsorName && (
                                 <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
-                                  <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
+                                  <Label className="ml-1 text-[11px] font-medium text-emerald-800/70">
                                     Joint Sponsor Full Name (optional)
                                   </Label>
                                   <Input
@@ -681,7 +680,7 @@ export default function Actual221GFormChecker({
 
                               {showHouseholdMemberName && (
                                 <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
-                                  <Label className="text-[11px] font-medium text-emerald-800/70 ml-1">
+                                  <Label className="ml-1 text-[11px] font-medium text-emerald-800/70">
                                     Household Member Name (optional)
                                   </Label>
                                   <Input
@@ -710,7 +709,7 @@ export default function Actual221GFormChecker({
                           <Label className="text-sm font-semibold text-foreground flex items-center">
                             Forms Requested
                           </Label>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 ml-7">
+                          <div className="grid grid-cols-1 gap-2 sm:ml-7 sm:grid-cols-2 md:grid-cols-4">
                             {[
                               // { id: "i864_petitioner", label: "I-864" },
                               { id: "i864a", label: "I-864A" },
@@ -752,7 +751,7 @@ export default function Actual221GFormChecker({
                           <Label className="text-sm font-semibold text-foreground flex items-center">
                             Financial Evidence Checklist
                           </Label>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 ml-7">
+                          <div className="grid grid-cols-1 gap-2 sm:ml-7 md:grid-cols-3">
                             {[
                               { id: "tax_1040", label: "Signed Form 1040" },
                               { id: "w2", label: "W-2 Tax Statements" },
@@ -796,7 +795,7 @@ export default function Actual221GFormChecker({
                           <Label className="text-sm font-semibold text-foreground flex items-center">
                             Legal Status Proof
                           </Label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-7">
+                          <div className="grid grid-cols-1 gap-2 sm:ml-7 md:grid-cols-2">
                             {[
                               {
                                 id: "proof_citizenship",
@@ -839,7 +838,7 @@ export default function Actual221GFormChecker({
                           <Label className="text-sm font-semibold text-foreground flex items-center">
                             Tax Year(s) Requested
                           </Label>
-                          <div className="ml-7">
+                          <div className="sm:ml-7">
                             <Input
                               type="text"
                               value={selectedItems.i864_tax_years || ""}
@@ -852,7 +851,7 @@ export default function Actual221GFormChecker({
                               placeholder="e.g., 2024, 2023, 2022"
                               className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500"
                             />
-                            <div className="flex items-start mt-2 ml-1 text-[10px] text-emerald-700/80 font-medium">
+                            <div className="mt-2 ml-1 text-[10px] font-medium text-emerald-700/80">
                               <span className="mr-1.5 flex-shrink-0">⚙️</span>
                               <span>
                                 Only provide years expressly mentioned on your
@@ -867,7 +866,7 @@ export default function Actual221GFormChecker({
                 ) : (
                   // --- ORIGINAL DEFAULT LAYOUT (For non-premium users) ---
                   <>
-                    <div className="ml-6 mt-1 flex items-center space-x-3 text-muted-foreground italic text-xs">
+                    <div className="mt-1 flex flex-col gap-2 text-xs italic text-muted-foreground sm:ml-6 sm:flex-row sm:items-center sm:space-x-3 sm:gap-0">
                       <span>(submit via</span>
                       <div className="flex items-center space-x-1">
                         <Checkbox
@@ -906,7 +905,7 @@ export default function Actual221GFormChecker({
                         </Label>
                       </div>
                     </div>
-                    <div className="ml-6 mt-1 flex flex-wrap items-center gap-3">
+                    <div className="mt-1 flex flex-wrap items-center gap-3 sm:ml-6">
                       {/* <div className="flex items-center space-x-1">
                         <Checkbox
                           id="i864_petitioner"
@@ -944,7 +943,7 @@ export default function Actual221GFormChecker({
                         </Label>
                       </div>
                     </div>
-                    <div className="ml-6 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-6">
                       <div className="flex items-center space-x-1">
                         <Checkbox
                           id="i864a"
@@ -1036,7 +1035,7 @@ export default function Actual221GFormChecker({
                         </Label>
                       </div>
                     </div>
-                    <div className="ml-6 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-6">
                       <div className="flex items-center space-x-1">
                         <Checkbox
                           id="proof_citizenship"
@@ -1133,7 +1132,6 @@ export default function Actual221GFormChecker({
                 </Label>
               </div>
             </div>
-          </div>
         </div>
 
       </CardContent>
