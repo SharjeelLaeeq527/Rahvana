@@ -3981,7 +3981,7 @@ export const formFields: Field[] = [
     keyboardType: "urdu",
     inputMode: "none",
     pdfKey: "Pt4Line55a_FamilyName",
-    placeholder: "Last Name",
+    placeholder: "خاندانی نام / سرنیم",
     subQuestions: [
       {
         key: "beneficiary_nativeLanguageGivenName",
@@ -3991,7 +3991,7 @@ export const formFields: Field[] = [
         keyboardType: "urdu",
         inputMode: "none",
         pdfKey: "Pt4Line55b_GivenName",
-        placeholder: "First Name",
+        placeholder: "ذاتی نام",
       },
       {
         key: "beneficiary_nativeLanguageMiddleName",
@@ -4002,7 +4002,7 @@ export const formFields: Field[] = [
         keyboardType: "urdu",
         inputMode: "none",
         pdfKey: "Pt4Line55c_MiddleName",
-        placeholder: "Middle Name",
+        placeholder: "درمیانی نام",
       },
     ],
   },
