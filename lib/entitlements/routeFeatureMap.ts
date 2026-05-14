@@ -19,7 +19,7 @@ export interface RouteGate {
 export const ROUTE_FEATURE_MAP: Record<string, RouteGate> = {
 
   // ── Basic+ (locked for Free only) ─────────────────────────────────────────
-  '/iv-tool': {
+  '/visa-checker': {
     feature: 'visa_bulletin_monitor',
     title: 'Visa Bulletin Monitor',
     description: 'Track the monthly visa bulletin and interview scheduling updates. Available on Basic and above.',
@@ -80,11 +80,6 @@ export const ROUTE_FEATURE_MAP: Record<string, RouteGate> = {
     feature: 'document_vault',
     title: 'Document Vault',
     description: 'Upload, organize, and securely access your visa documents. Available on Premium and above.',
-  },
-  '/guides': {
-    feature: 'civil_doc_guides',
-    title: 'Document Guides',
-    description: 'Step-by-step guides for every civil document in your visa application. Available on Premium and above.',
   },
 
   // ── Executive only ────────────────────────────────────────────────────────
