@@ -46,6 +46,7 @@ interface DocumentVaultStore {
   hasLoadedDocsInitial: boolean;
   isDeletingIds: string[];
   selectedDocumentDefId: string | null;
+  replaceDocumentId: string | null;
   wizardOpen: boolean;
   uploadModalOpen: boolean;
   notificationCenterOpen: boolean;
@@ -77,7 +78,7 @@ interface DocumentVaultStore {
   setSelectedDocument: (documentDefId: string | null) => void;
   openWizard: (documentDefId: string) => void;
   closeWizard: () => void;
-  openUploadModal: (documentDefId: string) => void;
+  openUploadModal: (documentDefId: string, replaceDocumentId?: string) => void;
   closeUploadModal: () => void;
   toggleNotificationCenter: () => void;
 
@@ -140,6 +141,7 @@ const initialState = {
   hasLoadedDocsInitial: false,
   isDeletingIds: [],
   selectedDocumentDefId: null,
+  replaceDocumentId: null,
   wizardOpen: false,
   uploadModalOpen: false,
   notificationCenterOpen: false,
@@ -536,9 +538,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       });
     },
 
-    openUploadModal: (documentDefId: string) => {
+    openUploadModal: (documentDefId: string, replaceDocumentId?: string) => {
       set({
         selectedDocumentDefId: documentDefId,
+        replaceDocumentId: replaceDocumentId || null,
         uploadModalOpen: true,
       });
     },
@@ -546,6 +549,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     closeUploadModal: () => {
       set({
         uploadModalOpen: false,
+        replaceDocumentId: null,
       });
     },
 

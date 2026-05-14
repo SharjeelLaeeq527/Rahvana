@@ -858,7 +858,7 @@
         "fileTypeError": "Only PDF, JPG, PNG, and GIF files are allowed",
         "uploading": "Uploading document...",
         "uploadFailed": "Upload failed",
-        "uploadSuccess": "✅ Document uploaded successfully!",
+        "uploadSuccess": "Document uploaded successfully!",
         "titlePrefix": "Upload Document: ",
         "close": "Close",
         "selectFile": "Select File",

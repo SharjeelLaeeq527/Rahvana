@@ -794,7 +794,7 @@ export default function DocumentVaultPage() {
                                   key={doc.id}
                                   documentDef={doc}
                                   uploadedDoc={uploadedDoc}
-                                  onUpload={() => openUploadModal(doc.id)}
+                                  onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
                                   onPreview={
                                     uploadedDoc
                                       ? () => handlePreview(uploadedDoc)
@@ -911,7 +911,7 @@ export default function DocumentVaultPage() {
                                     key={doc.id}
                                     documentDef={doc}
                                     uploadedDoc={uploadedDoc}
-                                    onUpload={() => openUploadModal(doc.id)}
+                                    onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
                                     onPreview={
                                       uploadedDoc
                                         ? () => handlePreview(uploadedDoc)
@@ -975,7 +975,7 @@ export default function DocumentVaultPage() {
                                 key={doc.id}
                                 documentDef={doc}
                                 uploadedDoc={uploadedDoc}
-                                onUpload={() => openUploadModal(doc.id)}
+                                onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
                                 onPreview={
                                   uploadedDoc
                                     ? () => handlePreview(uploadedDoc)

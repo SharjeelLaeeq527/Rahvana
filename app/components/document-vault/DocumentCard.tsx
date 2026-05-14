@@ -50,7 +50,7 @@ import { Input } from "@/components/ui/input";
 interface DocumentCardProps {
   documentDef: DocumentDefinition;
   uploadedDoc?: UploadedDocument;
-  onUpload: () => void;
+  onUpload: (replaceId?: string) => void;
   onDownload?: () => void;
   onDelete?: () => void;
   onOpenWizard: () => void;
@@ -327,7 +327,7 @@ export function DocumentCard({
           {!uploadedDoc ? (
             <div className="flex gap-2">
               <Button
-                onClick={onUpload}
+                onClick={() => onUpload()}
                 className="flex-1 font-bold h-10 shadow-lg shadow-primary/20 bg-primary hover:bg-primary/95"
               >
                 <Upload className="w-4 h-4 mr-2" />
@@ -375,7 +375,11 @@ export function DocumentCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={onUpload}>
+                    <DropdownMenuItem onClick={() => onUpload()}>
+                      <Plus className="w-4 h-4 mr-2 text-primary" />{" "}
+                      Add New Version
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onUpload(uploadedDoc.id)}>
                       <Upload className="w-4 h-4 mr-2" />{" "}
                       {t("documentVaultPage.components.documentCard.replace")}
                     </DropdownMenuItem>
