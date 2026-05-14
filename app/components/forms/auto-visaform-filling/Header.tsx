@@ -1,13 +1,16 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Menu, BookOpen } from "lucide-react";
+import { Menu, BookOpen, Check } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 
 interface HeaderProps {
   formTitle?: string;
   formSubtitle?: string;
   onOpenMenu?: () => void;
   showMenu?: boolean;
+  isAutoSaving?: boolean;
+  lastSavedAt?: string | null;
 }
 
 export function Header({
@@ -15,6 +18,8 @@ export function Header({
   formSubtitle,
   onOpenMenu,
   showMenu,
+  isAutoSaving,
+  lastSavedAt,
 }: HeaderProps) {
   return (
     <div
@@ -63,6 +68,50 @@ export function Header({
               </p>
             )}
           </div>
+
+          {(isAutoSaving || lastSavedAt) && (
+            <div className="ml-auto flex items-center">
+              {isAutoSaving ? (
+                <div
+                  className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 border"
+                  style={{
+                    background: "#f3f4f6",
+                    borderColor: "#d1d5db",
+                    color: "#4b5563",
+                  }}
+                >
+                  <Loader size="sm" />
+                  <span className="text-xs font-medium tracking-[0.01em]">
+                    Saving
+                  </span>
+                </div>
+              ) : lastSavedAt ? (
+                <div
+                  className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 border"
+                  style={{
+                    background: "rgba(232, 246, 246, 0.65)",
+                    borderColor: "#caeaea",
+                    color: "#0a5a5d",
+                  }}
+                >
+                  <span
+                    className="inline-flex items-center justify-center rounded-full"
+                    style={{
+                      width: 18,
+                      height: 18,
+                      background: "#0d7377",
+                      color: "#fff",
+                    }}
+                  >
+                    <Check className="w-3 h-3" strokeWidth={3} />
+                  </span>
+                  <span className="text-xs font-medium tracking-[0.01em]">
+                    Saved
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
     </div>
