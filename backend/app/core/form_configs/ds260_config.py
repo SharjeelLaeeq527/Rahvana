@@ -4,8 +4,12 @@
 # Generated automatically from ds260.ts
 
 FIELD_MAPPING = {
-    "S01-Q001": "Name Provided (Surnames, Given Names)",
-    "S01-Q002": "Full Name in Native Language",
+    "S01-Q001_FamilyName": "Name Provided (Surnames)",
+    "S01-Q001_GivenName": "Name Provided (Given Names)",
+    "S01-Q001_MiddleName": "Name Provided (Middle Names)",
+    "S01-Q002_FamilyName": "Full Name in Native Language (Surnames)",
+    "S01-Q002_GivenName": "Full Name in Native Language (Given Names)",
+    "S01-Q002_MiddleName": "Full Name in Native Language (Middle Names)",
     "S01-Q003": "Other Names Used",
     "S01-Q004": "Sex",
     "S01-Q005": "Current Marital Status",
@@ -159,8 +163,12 @@ FIELD_MAPPING = {
 
 # Mapping of Form Field Keys to Section Names
 SECTION_MAPPING = {
-    "S01-Q001": "SECTION 1: PERSONAL INFORMATION",
-    "S01-Q002": "SECTION 1: PERSONAL INFORMATION",
+    "S01-Q001_FamilyName": "SECTION 1: PERSONAL INFORMATION",
+    "S01-Q001_GivenName": "SECTION 1: PERSONAL INFORMATION",
+    "S01-Q001_MiddleName": "SECTION 1: PERSONAL INFORMATION",
+    "S01-Q002_FamilyName": "SECTION 1: PERSONAL INFORMATION",
+    "S01-Q002_GivenName": "SECTION 1: PERSONAL INFORMATION",
+    "S01-Q002_MiddleName": "SECTION 1: PERSONAL INFORMATION",
     "S01-Q003": "SECTION 1: PERSONAL INFORMATION",
     "S01-Q004": "SECTION 1: PERSONAL INFORMATION",
     "S01-Q005": "SECTION 1: PERSONAL INFORMATION",

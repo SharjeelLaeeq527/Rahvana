@@ -6,17 +6,35 @@ export const formSubtitle = "Immigrant Visa Electronic Application";
 
 export const formFields: Field[] = [
   {
-    key: "S01-Q001",
-    pdfKey: "S01-Q001",
-    label:
-      "What is your full legal name? (Please enter it as: Last Name, First Name)",
-    originalLabel: "Name Provided (Surnames, Given Names)",
+    key: "S01-Q001_FamilyName",
+    pdfKey: "S01-Q001_FamilyName",
+    label: "What is your family name (last name)?",
+    originalLabel: "Surnames",
     type: "text",
     section: "SECTION 1: Personal Information - Name and Identity",
-    tooltip: `- Enter your name EXACTLY as it appears in your passport - Use the same order as passport: surnames first, then given names - Include all names shown; do not leave out middle names - Common mistake: reversing surname and given name order`,
+    placeholder: "Last Name",
+    tooltip: `- Enter your name EXACTLY as it appears in your passport - Use the same order as passport: surnames first, then given names`,
+    subQuestions: [
+      {
+        key: "S01-Q001_GivenName",
+        pdfKey: "S01-Q001_GivenName",
+        label: "What is your first name?",
+        originalLabel: "Given Names",
+        type: "text",
+        placeholder: "First Name",
+      },
+      {
+        key: "S01-Q001_MiddleName",
+        pdfKey: "S01-Q001_MiddleName",
+        label: "What is your middle name? (Skip if none)",
+        type: "text",
+        placeholder: "Middle Name",
+      },
+    ],
   },
   {
     key: "S01-has_native_name",
+    pdfKey: "",
     label:
       "Is your name normally written in a script other than the standard English alphabet? (For example: Arabic, Chinese, or Russian script)",
     type: "radio",
@@ -27,18 +45,40 @@ export const formFields: Field[] = [
     ],
     subQuestions: [
       {
-        key: "S01-Q002",
-        pdfKey: "S01-Q002",
-        label:
-          "Please type your name exactly as it is written in your native script.",
-        originalLabel: "Full Name in Native Language",
+        key: "S01-Q002_FamilyName",
+        pdfKey: "S01-Q002_FamilyName",
+        label: "What is your last name in native script?",
+        originalLabel: "Surnames in Native Language",
         type: "text",
-        tooltip: `- Only required if your native language uses non-Roman characters (Arabic, Chinese, Russian, etc.) - Type your name in the native script - If your native language uses Roman letters (English, Spanish, French), you may skip this or write 'SAME'`,
+        placeholder: "Last Name",
+        keyboardType: "urdu",
+        inputMode: "none",
+        tooltip: `- Only required if your native language uses non-Roman characters (Arabic, Chinese, Russian, etc.) - Type your name in the native script`,
         condition: (data: Record<string, string>) =>
           data["S01-has_native_name"] === "Yes",
       },
+      {
+        key: "S01-Q002_GivenName",
+        pdfKey: "S01-Q002_GivenName",
+        label: "What is your first name in native script?",
+        type: "text",
+        placeholder: "First Name",
+        keyboardType: "urdu",
+        inputMode: "none",
+      },
+      {
+        key: "S01-Q002_MiddleName",
+        pdfKey: "S01-Q002_MiddleName",
+        label: "What is your middle name in native script?",
+        type: "text",
+        placeholder: "Middle Name",
+        keyboardType: "urdu",
+        inputMode: "none",
+      },
     ],
   },
+  // ],
+  // },
   {
     key: "S01-Q003",
     pdfKey: "S01-Q003",
@@ -53,11 +93,11 @@ export const formFields: Field[] = [
     key: "S01-Q004",
     pdfKey: "S01-Q004",
     label:
-      "What is your gender? (Please select the gender shown on your official passport.)",
+      "What is your Sex? (Please select the sex shown on your official passport.)",
     originalLabel: "Sex",
     type: "radio",
     section: "SECTION 1: Birth Information",
-    tooltip: `- Select Male or Female as shown on your passport - Must match your passport exactly - If passport shows different gender from birth certificate, use passport`,
+    tooltip: `- Select Male or Female as shown on your passport - Must match your passport exactly - If passport shows different sex from birth certificate, use passport`,
     options: [
       { label: "Male", value: "Male", pdfKey: "S01-Q004_Male" },
       { label: "Female", value: "Female", pdfKey: "S01-Q004_Female" },
@@ -1834,7 +1874,8 @@ export const formFields: Field[] = [
   {
     key: "S06-Q043",
     pdfKey: "S06-Q043",
-    label: "Have you ever voted in a U.S. election in a way that broke the law?",
+    label:
+      "Have you ever voted in a U.S. election in a way that broke the law?",
     originalLabel:
       "Have you voted in the United States in violation of any law or regulation?",
     type: "radio",
@@ -2038,7 +2079,8 @@ export const formFields: Field[] = [
   {
     key: "S07-Q001",
     pdfKey: "S07-Q001",
-    label: "Have you ever applied for a U.S. Social Security Number (SSN) before?",
+    label:
+      "Have you ever applied for a U.S. Social Security Number (SSN) before?",
     originalLabel: "Have you ever applied for a Social Security number?",
     type: "radio",
     section: "SECTION 7: Social Security Number",
@@ -2213,119 +2255,148 @@ export const getInitialFormData = () => {
 export const sectionIntroMessages = {
   "SECTION 1: Personal Information - Name and Identity": {
     greeting: "Let's start with your personal details",
-    message: "First, we will collect your full legal name and identity details as they appear on your official documents. This ensures your application is correctly linked to your passport.",
+    message:
+      "First, we will collect your full legal name and identity details as they appear on your official documents. This ensures your application is correctly linked to your passport.",
   },
   "SECTION 1: Birth Information": {
     greeting: "Now, let's talk about your birth information",
-    message: "We need your birth date, place of birth, and gender as recorded in your birth certificate and passport.",
+    message:
+      "We need your birth date, place of birth, and gender as recorded in your birth certificate and passport.",
   },
   "SECTION 1: Address and Phone Information": {
     greeting: "Tell us where you live",
-    message: "USCIS needs a record of your current and past addresses from the last five years. We'll also collect your phone numbers so we can reach you.",
+    message:
+      "USCIS needs a record of your current and past addresses from the last five years. We'll also collect your phone numbers so we can reach you.",
   },
   "SECTION 1: Email and Social Media": {
     greeting: "Social media and email history",
-    message: "As part of modern security screening, please provide any email addresses and social media handles (your usernames on sites like Facebook, Instagram, or Twitter/X) that you have used in the last five years.",
+    message:
+      "As part of modern security screening, please provide any email addresses and social media handles (your usernames on sites like Facebook, Instagram, or Twitter/X) that you have used in the last five years.",
   },
   "SECTION 1: U.S. Address Information": {
     greeting: "Planning your arrival in the U.S.",
-    message: "We need to know where you plan to live in the United States and where you would like your green card to be mailed after you arrive.",
+    message:
+      "We need to know where you plan to live in the United States and where you would like your green card to be mailed after you arrive.",
   },
   "SECTION 2: Father's Information": {
     greeting: "Tell us about your father",
-    message: "Please provide basic details about your father, such as his name and birth information. This is standard for family-based immigration forms.",
+    message:
+      "Please provide basic details about your father, such as his name and birth information. This is standard for family-based immigration forms.",
   },
   "SECTION 2: Mother's Information": {
     greeting: "Tell us about your mother",
-    message: "Similarly, we will need some information about your mother for your official records.",
+    message:
+      "Similarly, we will need some information about your mother for your official records.",
   },
   "SECTION 2: Previous Marriages": {
     greeting: "Your marital history",
-    message: "If you have been married before, we will need to record those details here to verify your current legal status.",
+    message:
+      "If you have been married before, we will need to record those details here to verify your current legal status.",
   },
   "SECTION 2: Children - Basic Information": {
     greeting: "Let's record your children's details",
-    message: "We will collect basic information about all your children, regardless of whether they are immigrating with you or not.",
+    message:
+      "We will collect basic information about all your children, regardless of whether they are immigrating with you or not.",
   },
   "SECTION 2: Children - Location": {
     greeting: "Where do your children live?",
-    message: "We need to know the current location of each of your children for immigration records.",
+    message:
+      "We need to know the current location of each of your children for immigration records.",
   },
   "SECTION 2: Children - Immigration Plans": {
     greeting: "Will your children be joining you?",
-    message: "Finally for this section, we will ask if each child plans to immigrate to the United States with you or at a later date.",
+    message:
+      "Finally for this section, we will ask if each child plans to immigrate to the United States with you or at a later date.",
   },
   "SECTION 3: Previous U.S. Travel": {
     greeting: "Your past visits to the U.S.",
-    message: "If you have visited the United States before, please provide the dates and details of your most recent trips.",
+    message:
+      "If you have visited the United States before, please provide the dates and details of your most recent trips.",
   },
   "SECTION 3: U.S. Visa History": {
     greeting: "Your U.S. visa records",
-    message: "We will ask about any U.S. visas you have held in the past and if you have ever had a visa application denied or cancelled.",
+    message:
+      "We will ask about any U.S. visas you have held in the past and if you have ever had a visa application denied or cancelled.",
   },
   "SECTION 4: Employment Information": {
     greeting: "Let's talk about your work history",
-    message: "Tell us about your current and previous jobs from the last ten years. This helps show your professional background and work experience.",
+    message:
+      "Tell us about your current and previous jobs from the last ten years. This helps show your professional background and work experience.",
   },
   "SECTION 4: Education and Travel": {
     greeting: "Your schooling and travel history",
-    message: "We will collect information about your education and any countries you have visited in the last five years.",
+    message:
+      "We will collect information about your education and any countries you have visited in the last five years.",
   },
   "SECTION 4: Military, Organizations, and Skills": {
     greeting: "Additional background and skills",
-    message: "This section covers any military service, professional organizations you belong to, or specialized skills you may have.",
+    message:
+      "This section covers any military service, professional organizations you belong to, or specialized skills you may have.",
   },
   "SECTION 5: Petitioner Information": {
     greeting: "Details about your sponsor",
-    message: "Now we will record information about the person who is sponsoring your visa (your petitioner).",
+    message:
+      "Now we will record information about the person who is sponsoring your visa (your petitioner).",
   },
   "SECTION 6: Health and Medical": {
     greeting: "Health and medical history",
-    message: "These questions are about your health. They are standard questions asked during the immigration health screening process.",
+    message:
+      "These questions are about your health. They are standard questions asked during the immigration health screening process.",
   },
   "SECTION 6: Criminal History and Drug Violations": {
     greeting: "Legal background check",
-    message: "We need to ask about any past legal issues or drug-related violations. Please answer these questions as honestly as possible.",
+    message:
+      "We need to ask about any past legal issues or drug-related violations. Please answer these questions as honestly as possible.",
   },
   "SECTION 6: Human Trafficking": {
     greeting: "Security screening",
-    message: "These are standard security questions regarding serious international crimes. Most applicants will answer 'No' to these.",
+    message:
+      "These are standard security questions regarding serious international crimes. Most applicants will answer 'No' to these.",
   },
   "SECTION 6: Terrorism and Security": {
     greeting: "National security questions",
-    message: "This section contains mandatory questions about national security and any potential involvement in harmful activities.",
+    message:
+      "This section contains mandatory questions about national security and any potential involvement in harmful activities.",
   },
   "SECTION 6: Genocide, Torture, and Violence": {
     greeting: "Important human rights questions",
-    message: "These questions relate to international human rights and are a required part of the U.S. security screening process.",
+    message:
+      "These questions relate to international human rights and are a required part of the U.S. security screening process.",
   },
   "SECTION 6: Political Affiliations and Property": {
     greeting: "Political and property history",
-    message: "We will ask about any specific political memberships or involvement in property-related legal issues.",
+    message:
+      "We will ask about any specific political memberships or involvement in property-related legal issues.",
   },
   "SECTION 6: Fraud and Deportation": {
     greeting: "Immigration history and honesty",
-    message: "This section covers any past immigration violations, like deportation or being untruthful on previous applications.",
+    message:
+      "This section covers any past immigration violations, like deportation or being untruthful on previous applications.",
   },
   "SECTION 6: Custody and Voting Violations": {
     greeting: "Additional legal questions",
-    message: "These questions cover specific legal issues like child custody and U.S. voting laws.",
+    message:
+      "These questions cover specific legal issues like child custody and U.S. voting laws.",
   },
   "SECTION 6: Professional and Military Requirements": {
     greeting: "Work and military status",
-    message: "We will check if you have certain professional certifications or have left the U.S. to avoid military service.",
+    message:
+      "We will check if you have certain professional certifications or have left the U.S. to avoid military service.",
   },
   "SECTION 6: Other Inadmissibility Grounds": {
     greeting: "Final security questions",
-    message: "This section covers any remaining legal grounds that might affect your eligibility to enter the United States.",
+    message:
+      "This section covers any remaining legal grounds that might affect your eligibility to enter the United States.",
   },
   "SECTION 7: Social Security Number": {
     greeting: "Getting your Social Security Number",
-    message: "Finally, we will ask if you would like to automatically receive a Social Security Number when you arrive in the U.S.",
+    message:
+      "Finally, we will ask if you would like to automatically receive a Social Security Number when you arrive in the U.S.",
   },
   "SECTION 8: Preparer Information": {
     greeting: "Almost there - helper details",
-    message: "If someone helped you fill out this form, please provide their information here. You're almost done!",
+    message:
+      "If someone helped you fill out this form, please provide their information here. You're almost done!",
   },
 };
 
