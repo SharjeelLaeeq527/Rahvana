@@ -188,45 +188,43 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                   className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                  CEAC Status
-                </label>
-                <select
-                  value={apDetails.ceacStatus}
-                  onChange={(e) =>
-                    setApDetails({
-                      ...apDetails,
-                      ceacStatus: e.target.value,
-                    })
-                  }
-                  className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-                >
-                  <option value="">Select current status...</option>
-                  {tool.recorder.ceac_options.map((opt: string) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                  Date of Last Check
-                </label>
-                <input
-                  type="date"
-                  value={apDetails.lastCheck}
-                  max={new Date().toISOString().split("T")[0]}
-                  onChange={(e) =>
-                    setApDetails({
-                      ...apDetails,
-                      lastCheck: e.target.value,
-                    })
-                  }
-                  className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-                />
-              </div>
+              {/* Live status tracking card */}
+              {(() => {
+                const liveStatus = state.metadata?.admin_case_status as string | undefined;
+                const lastChecked = state.metadata?.admin_last_check_date as string | undefined;
+                const statusDotColor =
+                  liveStatus === "Issued" || liveStatus === "Approved" ? "#15744f" :
+                  liveStatus === "Refused" ? "#dc2626" :
+                  liveStatus === "Administrative Processing" || liveStatus === "221(g)" ? "#d97706" :
+                  liveStatus === "Ready" ? "#2563eb" :
+                  "#6b8097";
+                return (
+                  <div className="rounded-xl border border-[#d0e4f7] bg-[#f8fafc] overflow-hidden">
+                    <div className="flex items-center gap-2 px-4 py-2 border-b border-[#e8f1fb] bg-white">
+                      <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: liveStatus ? statusDotColor : "#d0e4f7" }} />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#6b8097]">
+                        Live CEAC Status
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 divide-x divide-[#e8f1fb]">
+                      <div className="px-4 py-3">
+                        <div className="text-[10px] font-semibold text-[#6b8097] mb-1">Current Status</div>
+                        <div className="text-[14px] font-bold text-[#0c1b33]">
+                          {liveStatus || <span className="text-[#9ab0c8] font-normal italic text-[13px]">Awaiting update</span>}
+                        </div>
+                      </div>
+                      <div className="px-4 py-3">
+                        <div className="text-[10px] font-semibold text-[#6b8097] mb-1">Last Checked</div>
+                        <div className="text-[14px] font-bold text-[#0c1b33]">
+                          {lastChecked
+                            ? new Date(lastChecked).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                            : <span className="text-[#9ab0c8] font-normal italic text-[13px]">—</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
                   Additional Docs Requested?
@@ -381,23 +379,19 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                 CEAC Status
               </div>
               <div className="text-[13px] font-bold text-[#0c1b33]">
-                {apDetails.ceacStatus || "—"}
+                {state.metadata?.admin_case_status || apDetails.ceacStatus || "—"}
               </div>
             </div>
             <div>
               <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">
-                Last CEAC Check
+                Last Checked
               </div>
               <div className="text-[13px] font-bold text-[#0c1b33]">
-                {apDetails.lastCheck
-                  ? new Date(
-                      apDetails.lastCheck + "T00:00:00",
-                    ).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })
-                  : "—"}
+                {state.metadata?.admin_last_check_date
+                  ? new Date(state.metadata.admin_last_check_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                  : apDetails.lastCheck
+                    ? new Date(apDetails.lastCheck + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                    : "—"}
               </div>
             </div>
           </div>
