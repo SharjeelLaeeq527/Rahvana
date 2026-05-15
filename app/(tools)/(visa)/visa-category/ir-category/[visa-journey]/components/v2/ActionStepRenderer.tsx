@@ -1835,9 +1835,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       }
                       setSelectedDropdown(value);
                       setStatusSaved(true);
+                      showToast("Payment method saved successfully!", "success");
+                      setTimeout(() => setStatusSaved(false), 4000);
                     } catch (error) {
                       console.error("Failed to save payment method:", error);
                       setStatusSaved(false);
+                      showToast("Failed to save payment method", "error");
                     } finally {
                       setIsSavingPayment(false);
                     }
