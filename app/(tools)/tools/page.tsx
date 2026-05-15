@@ -546,16 +546,18 @@ function ToolCard({
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Ribbon bookmark for Locked/Premium cards */}
-<div className="absolute -top-21 -right-3 z-20 pointer-events-none">
-  <Image
-    src="/icons/ribbon.png"
-    alt="Premium ribbon"
-    width={160}
-    height={220}
-    priority={false}
-    className="block w-40 h-56 object-contain"
-  />
-</div>
+      {featureLocked && (
+        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
+          <Image
+            src="/icons/ribbon.png"
+            alt="Premium ribbon"
+            width={160}
+            height={220}
+            priority={false}
+            className="block w-40 h-56 object-contain"
+          />
+        </div>
+      )}
       {/* Hover overlay: pastel fill on hover, sits under ribbon (applies to locked + unlocked) */}
       <div
         className={`absolute inset-0 rounded-[30px] transition-colors duration-400 pointer-events-none z-0 bg-transparent ${styles.hoverBg}`}

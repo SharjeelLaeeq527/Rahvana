@@ -7,6 +7,7 @@ interface TutorialVideoProps {
   poster?: string;
   alt?: string;
   className?: string;
+  fit?: "contain" | "cover";
 }
 
 /**
@@ -26,11 +27,12 @@ export const TutorialVideo: React.FC<TutorialVideoProps> = ({
   poster,
   alt,
   className = "",
+  fit = "contain",
 }) => {
   return (
     <video
       key={src}
-      className={`w-full h-full object-cover ${className}`}
+      className={`w-full h-full ${fit === "contain" ? "object-contain" : "object-cover"} ${className}`}
       autoPlay
       muted
       loop

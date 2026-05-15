@@ -29,7 +29,8 @@ export function ConfirmationModal({
   confirmText = "Delete",
   onConfirm,
   loading = false,
-  confirmVariant = "danger", 
+  onCancel,
+  confirmVariant = "danger",
 }: ConfirmationModalProps) {
   const variantStyles = {
     danger:
@@ -65,7 +66,13 @@ export function ConfirmationModal({
             {/* Buttons */}
             <div className="flex justify-between gap-4 pt-4">
               <button
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  if (onCancel) {
+                    onCancel();
+                  } else {
+                    onOpenChange(false);
+                  }
+                }}
                 className="px-6 py-3 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition cursor-pointer"
                 disabled={loading}
               >

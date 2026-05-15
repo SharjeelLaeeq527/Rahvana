@@ -71,7 +71,7 @@ const nextConfig = {
           // Block camera, microphone, geolocation access from this origin
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'camera=(), geolocation=()',
           },
           // Force HTTPS for 1 year (only active in production with real HTTPS)
           {
@@ -108,4 +108,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default nextConfig

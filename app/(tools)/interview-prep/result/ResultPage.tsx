@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,10 +13,11 @@ import {
   Check,
   X,
   Loader2,
-  Crown,
+  Mic,
 } from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
+import { MockInterviewModePage } from "../mock/MockInterviewModePage";
 import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { useToast } from "@/app/components/shared/ToastProvider";
@@ -44,9 +45,10 @@ export const ResultPage = ({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [showRapidFirePage, setShowRapidFirePage] = useState(false);
+  const [showMockInterviewPage, setShowMockInterviewPage] = useState(false);
 
   const [questionsList, setQuestionsList] = useState<GeneratedQuestion[]>([]);
-  const [mode, setMode] = useState<"prep" | "rapid">("prep");
+  const [mode, setMode] = useState<"prep" | "rapid" | "mock">("prep");
 
   // NEW: Answer management state
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
@@ -66,20 +68,18 @@ export const ResultPage = ({
   const [showSampleAnswerInFlashcard, setShowSampleAnswerInFlashcard] =
     useState<Record<string, boolean>>({});
 
-  // NEW: Confirmation modal state
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<"restore-session" | null>(
-    null,
-  );
-
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-
-  const RAPID_FIRE_TIER_REQUIREMENT = "premium"; // Only premium+ can access
+  const [showMockUpgradeModal, setShowMockUpgradeModal] = useState(false);
 
   const plan = usePlan();
 
   const canAccessRapidFire = (): boolean => {
     const entitlement = getEntitlement("interview_rapid_fire", plan.tier);
+    return entitlement.state === "full";
+  };
+
+  const canAccessMockInterview = (): boolean => {
+    const entitlement = getEntitlement("mock_interview", plan.tier);
     return entitlement.state === "full";
   };
 
@@ -105,12 +105,15 @@ export const ResultPage = ({
     }
   };
 
-  const handleRapidFirePageStart = () => {
+  const handleRapidFireModeClick = () => {
     if (!canAccessRapidFire()) {
       setShowUpgradeModal(true);
       return;
     }
     setMode("rapid");
+  };
+
+  const handleRapidFirePageStart = () => {
     setShowRapidFirePage(true);
   };
 
@@ -119,10 +122,50 @@ export const ResultPage = ({
     setShowRapidFirePage(false);
   };
 
+  const handleMockInterviewPageStart = () => {
+    if (!canAccessMockInterview()) {
+      setShowMockUpgradeModal(true);
+      return;
+    }
+    setMode("mock");
+    setShowMockInterviewPage(true);
+  };
+
+  const handleMockInterviewPageExit = () => {
+    setMode("prep");
+    setShowMockInterviewPage(false);
+  };
+
   const handleSwitchToPrep = () => {
     setMode("prep");
     setShowRapidFirePage(false);
+    setShowMockInterviewPage(false);
   };
+
+  const loadAnswers = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `/api/interview-prep/user-answers?sessionId=${sessionId}`,
+      );
+      const data = await response.json();
+
+      if (data.success && data.answers) {
+        const answersMap: Record<string, string> = {};
+        data.answers.forEach(
+          (answer: {
+            question_id: string;
+            user_answer_text?: string | null;
+          }) => {
+            answersMap[answer.question_id] = answer.user_answer_text || "";
+          },
+        );
+        setSavedAnswers(answersMap);
+        setUserAnswers(answersMap);
+      }
+    } catch (error: unknown) {
+      console.error("Error loading answers:", error);
+    }
+  }, [sessionId]);
 
   useEffect(() => {
     if (results === undefined || results === null) {
@@ -139,29 +182,7 @@ export const ResultPage = ({
         loadAnswers();
       }
     }
-  }, [results, sessionId]);
-
-  // NEW: Load answers from database
-  const loadAnswers = async () => {
-    try {
-      const response = await fetch(
-        `/api/interview-prep/user-answers?sessionId=${sessionId}`,
-      );
-      const data = await response.json();
-
-      if (data.success && data.answers) {
-        const answersMap: Record<string, string> = {};
-        data.answers.forEach((answer: any) => {
-          answersMap[answer.question_id] = answer.user_answer_text || "";
-        });
-        setSavedAnswers(answersMap);
-        // Also populate userAnswers with saved answers for modal editing
-        setUserAnswers(answersMap);
-      }
-    } catch (error) {
-      console.error("Error loading answers:", error);
-    }
-  };
+  }, [results, sessionId, loadAnswers]);
 
   // NEW: Save answer to database
   const handleSaveAnswer = async (questionId: string) => {
@@ -194,8 +215,11 @@ export const ResultPage = ({
       }));
 
       showToast("Answer saved successfully!", "success");
-    } catch (error: any) {
-      showToast(error.message || "Failed to save answer", "error");
+    } catch (error: unknown) {
+      showToast(
+        error instanceof Error ? error.message : "Failed to save answer",
+        "error",
+      );
     } finally {
       setSavingAnswers((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -237,8 +261,11 @@ export const ResultPage = ({
         [questionId]: data.improvedAnswer,
       }));
       showToast("Answer improved successfully!", "success");
-    } catch (error: any) {
-      showToast(error.message || "Failed to improve answer", "error");
+    } catch (error: unknown) {
+      showToast(
+        error instanceof Error ? error.message : "Failed to improve answer",
+        "error",
+      );
     } finally {
       setAiImproving((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -291,6 +318,16 @@ export const ResultPage = ({
     );
   }
 
+  if (mode === "mock" && showMockInterviewPage) {
+    return (
+      <MockInterviewModePage
+        sessionId={sessionId}
+        questions={questionsList}
+        onExit={handleMockInterviewPageExit}
+      />
+    );
+  }
+
   if (mode === "rapid" && showRapidFirePage) {
     return (
       <RapidFireModePage
@@ -309,7 +346,7 @@ export const ResultPage = ({
         <div className="">
           {/* removed  mx-auto from above div */}
           <div className="text-center mb-8">
-            <div className="flex justify-center gap-4 mb-4">
+            <div className="flex-col space-y-2 md:space-y-0 md:flex justify-center gap-4 mb-4">
               <Button
                 onClick={() => setMode("prep")}
                 variant={mode === "prep" ? "default" : "outline"}
@@ -320,32 +357,76 @@ export const ResultPage = ({
                 <BookOpen className="h-4 w-4 mr-2" />
                 Prep Mode
               </Button>
-              <Button
-                onClick={() => setMode("rapid")}
-                variant={mode === "rapid" ? "default" : "outline"}
-                className={
-                  mode === "rapid" ? "bg-orange-600 hover:bg-orange-700" : ""
-                }
-                title={
-                  !canAccessRapidFire()
-                    ? "Upgrade to Premium to unlock Rapid Fire Mode"
-                    : ""
-                }
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                Rapid Fire Mode
-              </Button>
+              <div className="relative">
+                <Button
+                  onClick={handleRapidFireModeClick}
+                  variant={mode === "rapid" ? "default" : "outline"}
+                  className={
+                    mode === "rapid" ? "bg-[#0d7377] hover:bg-[#0a5a5d]" : ""
+                  }
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Rapid Fire Mode
+                </Button>
+                {(plan.tier === "free" || plan.tier === "basic") && (
+                  <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
+                    <Image
+                      src="/icons/ribbon.png"
+                      alt="Premium feature ribbon"
+                      width={52}
+                      height={52}
+                      priority={false}
+                      className="object-contain drop-shadow-lg"
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <Button
+                  onClick={handleMockInterviewPageStart}
+                  variant={mode === "mock" ? "default" : "outline"}
+                  className={
+                    mode === "mock" ? "bg-slate-900 hover:bg-slate-800" : ""
+                  }
+                  title={
+                    !canAccessMockInterview()
+                      ? "Upgrade to Executive to unlock Mock Interview Mode"
+                      : ""
+                  }
+                >
+                  <Mic className="h-4 w-4 mr-2" />
+                  Mock Interview Mode
+                </Button>
+                {(plan.tier === "free" ||
+                  plan.tier === "basic" ||
+                  plan.tier === "premium") && (
+                  <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
+                    <Image
+                      src="/icons/ribbon.png"
+                      alt="Executive feature ribbon"
+                      width={52}
+                      height={52}
+                      priority={false}
+                      className="object-contain drop-shadow-lg"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <h2 className="text-3xl font-bold text-slate-900 mb-2">
               {mode === "prep"
                 ? "Interview Preparation Flashcards"
-                : "Rapid Fire Practice"}
+                : mode === "rapid"
+                  ? "Rapid Fire Practice"
+                  : "Mock Interview Mode"}
             </h2>
             <p className="text-slate-600">
               {mode === "prep"
                 ? "Click any question to view answers and guidance"
-                : "Practice under time pressure with 10-second questions"}
+                : mode === "rapid"
+                  ? "Practice under time pressure with 10-second questions"
+                  : "Fullscreen voice interview simulation with a 15-minute timer"}
             </p>
           </div>
 
@@ -471,7 +552,7 @@ export const ResultPage = ({
                   sidebarCollapsed ? "lg:flex-1" : "lg:w-2/3"
                 } px-4 lg:px-0 flex flex-col`}
               >
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden h-[350px] sm:h-[400px] lg:h-[450px]">
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden h-87.5 sm:h-100 lg:h-112.5">
                   {selectedQuestion ? (
                     <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
                       <div
@@ -642,15 +723,19 @@ export const ResultPage = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center text-slate-500">
-                      <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-xl font-medium mb-2">
-                        Select a Question
-                      </h3>
-                      <p>
-                        Choose any question from the sidebar to view detailed
-                        answers and guidance
-                      </p>
+                    <div className="flex h-full items-center justify-center">
+                      <div className="text-center text-slate-500">
+                        <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
+
+                        <h3 className="text-xl font-medium mb-2">
+                          Select a Question
+                        </h3>
+
+                        <p>
+                          Choose any question from the sidebar to view detailed
+                          answers and guidance
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -660,11 +745,13 @@ export const ResultPage = ({
             {/* Rapid Fire Mode */}
             {mode === "rapid" && (
               <div className="w-full">
-                <div className="bg-white rounded-xl shadow-lg site-main-px">
+                <div className="bg-linear-to-br from-[#e8f6f6] via-[#f0faf9] to-[#e8f6f6] rounded-2xl shadow-lg site-main-px border border-[#0d7377]/20">
                   <div className="text-center site-main-py">
-                    <Zap className="w-16 h-16 text-orange-500 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                      Rapid Fire Mode
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0d7377]/10 mb-4">
+                      <Zap className="w-8 h-8 text-[#0d7377]" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                      Rapid Fire Practice
                     </h3>
                     <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
                       Test your interview readiness under time pressure.
@@ -675,20 +762,9 @@ export const ResultPage = ({
                     <div className="flex gap-4 justify-center">
                       <Button
                         onClick={handleRapidFirePageStart}
-                        className="relative group bg-orange-600 hover:bg-orange-700 px-8 py-3 text-lg flex items-center gap-2"
+                        className="bg-[#0d7377] hover:bg-[#0a5a5d] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
                       >
                         Start Rapid Fire Session
-                        {!canAccessRapidFire() && (
-                          <Crown
-                            className="
-        w-6 h-6
-        text-yellow-300
-        stroke-[2.8]
-        transition-transform duration-200
-        group-hover:scale-110
-      "
-                          />
-                        )}
                       </Button>
                     </div>
                   </div>
@@ -713,7 +789,7 @@ export const ResultPage = ({
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 {/* Modal Header */}
-                <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white flex justify-between items-start flex-shrink-0">
+                <div className="bg-linear-to-r from-teal-600 to-teal-700 p-6 text-white flex justify-between items-start shrink-0">
                   <div className="flex-1">
                     <h3 className="text-2xl font-bold">
                       {selectedQuestion.question}
@@ -724,7 +800,7 @@ export const ResultPage = ({
                   </div>
                   <button
                     onClick={() => setShowAnswerModal(false)}
-                    className="text-white hover:text-teal-100 transition-colors ml-4 flex-shrink-0"
+                    className="text-white hover:text-teal-100 transition-colors ml-4 shrink-0"
                     aria-label="Close modal"
                   >
                     <X size={24} />
@@ -735,7 +811,7 @@ export const ResultPage = ({
                 <div className="overflow-y-auto flex-1 scrollbar-premium">
                   <div className="p-6 space-y-6">
                     {/* Sample Answer Reference - Premium Style */}
-                    <div className="bg-gradient-to-br from-[#e8f6f6] to-white p-5 rounded-xl border border-[#14a0a6]/20 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-linear-to-br from-[#e8f6f6] to-white p-5 rounded-xl border border-[#14a0a6]/20 shadow-sm hover:shadow-md transition-shadow">
                       <h4 className="font-semibold text-sm text-[#0d7377] mb-3 flex items-center gap-2">
                         Sample Answer
                       </h4>
@@ -772,7 +848,7 @@ export const ResultPage = ({
                               )
                             }
                             disabled={aiImproving[selectedQuestion.id]}
-                            className="absolute top-3 right-3 transition-opacity hover:opacity-80 disabled:opacity-60 cursor-pointer flex-shrink-0"
+                            className="absolute top-3 right-3 transition-opacity hover:opacity-80 disabled:opacity-60 cursor-pointer shrink-0"
                             title="Improve with AI"
                             aria-label="Improve answer with AI"
                           >
@@ -802,7 +878,7 @@ export const ResultPage = ({
 
                     {/* AI Improvements - Minimal Design */}
                     {improvedAnswers[selectedQuestion.id] && (
-                      <div className="bg-gradient-to-br from-[#e8f6f6] to-white rounded-xl border border-[#14a0a6]/20 p-5 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="bg-linear-to-br from-[#e8f6f6] to-white rounded-xl border border-[#14a0a6]/20 p-5 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between mb-3">
                           <h4 className="font-semibold text-sm text-[#0d7377] flex items-center gap-2">
                             AI-Improved Version
@@ -812,7 +888,7 @@ export const ResultPage = ({
                           </span>
                         </div>
                         <p className="text-sm text-[#0d7377] leading-relaxed mb-4 italic">
-                          "{improvedAnswers[selectedQuestion.id]}"
+                          {improvedAnswers[selectedQuestion.id]}
                         </p>
                         <Button
                           onClick={() => acceptImprovement(selectedQuestion.id)}
@@ -851,6 +927,12 @@ export const ResultPage = ({
           <UpgradeModal
             feature="interview_rapid_fire"
             onClose={() => setShowUpgradeModal(false)}
+          />
+        )}
+        {showMockUpgradeModal && (
+          <UpgradeModal
+            feature="mock_interview"
+            onClose={() => setShowMockUpgradeModal(false)}
           />
         )}
       </div>

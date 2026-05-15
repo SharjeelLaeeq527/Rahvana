@@ -37,7 +37,7 @@ export const StepHeader: React.FC<StepHeaderProps> = ({
       </div> */}
 
       {/* Main Title */}
-      <h1 className="text-[clamp(28px,4.5vw,38px)] font-black text-[#0c1b33] leading-tight tracking-tight mb-2">
+      <h1 className="text-[clamp(28px,4.5vw,38px)] font-semibold sm:font-black text-[#0c1b33] leading-tight tracking-tight mb-2">
         {stepName}
       </h1>
 
