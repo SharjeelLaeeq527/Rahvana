@@ -102,7 +102,7 @@ export default function DocumentVaultPage() {
   // Filter documents based on search query
   const filteredDocumentsByCategory = useMemo(() => {
     if (!config) return {};
-    const uploadedIds = uploadedDocuments.map(d => d.documentDefId);
+    const uploadedIds = uploadedDocuments.map((d) => d.documentDefId);
     const baseDocs = getDocumentsByCategory(config, true, uploadedIds);
     if (!searchQuery.trim()) return baseDocs;
 
@@ -160,13 +160,10 @@ export default function DocumentVaultPage() {
       percentComplete: total > 0 ? Math.round((uploaded / total) * 100) : 0,
     };
   }, [uploadedDocuments, requiredDocuments]);
-  const documentsByCategory = useMemo(
-    () => {
-      const uploadedIds = uploadedDocuments.map(d => d.documentDefId);
-      return config ? getDocumentsByCategory(config, true, uploadedIds) : {};
-    },
-    [config, uploadedDocuments],
-  );
+  const documentsByCategory = useMemo(() => {
+    const uploadedIds = uploadedDocuments.map((d) => d.documentDefId);
+    return config ? getDocumentsByCategory(config, true, uploadedIds) : {};
+  }, [config, uploadedDocuments]);
 
   // Get documents for special filters (required/optional)
   const getFilteredDocumentsForSpecialFilter = useMemo(() => {
@@ -183,11 +180,11 @@ export default function DocumentVaultPage() {
 
   const selectedDoc = useMemo(() => {
     if (!selectedDocumentDefId) return undefined;
-    
+
     // First check master static list
     const staticDoc = ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId);
     if (staticDoc) return staticDoc;
-    
+
     // Then check dynamic required documents from store
     return requiredDocuments.find((d) => d.id === selectedDocumentDefId);
   }, [selectedDocumentDefId, requiredDocuments]);
@@ -267,7 +264,6 @@ export default function DocumentVaultPage() {
       />
     );
   }
-
 
   const handleDownload = async (documentId: string) => {
     try {
@@ -468,38 +464,38 @@ export default function DocumentVaultPage() {
 
   return (
     <TooltipProvider>
-      <div className="bg-slate-50/50 dark:bg-slate-950/50">
-      {/* Top Professional Header */}
-      <div className="bg-white dark:bg-slate-900 border-b shadow-sm sticky top-0 z-30">
-        <div className="site-main-px py-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
-                <ShieldCheck className="w-7 h-7" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  {t("documentVaultPage.page.title")}
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge
-                    variant="secondary"
-                    className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5"
-                  >
-                    {config?.visaCategory &&
-                      t(
-                        `documentVaultPage.visaCategories.${config.visaCategory}`,
-                      )}
-                  </Badge>
-                  <span className="text-xs text-slate-500 font-medium">
-                    {t("documentVaultPage.page.subtitle")}
-                  </span>
+      <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px]">
+        {/* Top Professional Header */}
+        <div className="bg-white dark:bg-slate-900 border-b shadow-sm sticky top-0 z-30">
+          <div className="site-main-px py-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+                  <ShieldCheck className="w-7 h-7" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    {t("documentVaultPage.page.title")}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5"
+                    >
+                      {config?.visaCategory &&
+                        t(
+                          `documentVaultPage.visaCategories.${config.visaCategory}`,
+                        )}
+                    </Badge>
+                    <span className="text-xs text-slate-500 font-medium">
+                      {t("documentVaultPage.page.subtitle")}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              {/* <Link href="/document-vault/guide" className="hidden sm:flex">
+              <div className="flex items-center gap-2">
+                {/* <Link href="/document-vault/guide" className="hidden sm:flex">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -510,399 +506,290 @@ export default function DocumentVaultPage() {
                 </Button>
               </Link> */}
 
-              <NotificationBell />
+                <NotificationBell />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto p-6 max-w-450">
-        {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Side: Stats & Configuration */}
-          <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
-            {/* Professional Stats Card */}
-            <Card className="overflow-hidden border-none shadow-xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-white p-0">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
-                      <Zap className="w-4 h-4" />
+        <div className="container mx-auto p-6 max-w-450">
+          {/* Main Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Side: Stats & Configuration */}
+            <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
+              {/* Professional Stats Card */}
+              <Card className="overflow-hidden border-none shadow-xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-white p-0">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+                        <Zap className="w-4 h-4" />
+                      </div>
+                      <span className="font-bold tracking-tight uppercase text-xs opacity-80">
+                        {t("documentVaultPage.page.syncProgress")}
+                      </span>
                     </div>
-                    <span className="font-bold tracking-tight uppercase text-xs opacity-80">
-                      {t("documentVaultPage.page.syncProgress")}
+                    <Badge
+                      variant="outline"
+                      className="text-white border-white/30 font-bold bg-white/10 backdrop-blur-sm"
+                    >
+                      {stats.percentComplete}%
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-2xl font-black mb-1">
+                        <span>
+                          {stats.uploaded} / {stats.total}
+                        </span>
+                        <span className="text-white/60 text-sm font-medium self-end mb-1">
+                          {t("documentVaultPage.page.itemsReady")}
+                        </span>
+                      </div>
+                      <Progress
+                        value={stats.percentComplete}
+                        className="h-3 bg-white/20"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                        <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
+                          {t("documentVaultPage.page.criticalMissing")}
+                        </p>
+                        <p
+                          className={`text-xl font-black ${stats.missing > 0 ? "text-white" : "text-emerald-300"}`}
+                        >
+                          {stats.missing}
+                        </p>
+                      </div>
+                      <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+                        <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
+                          {t("documentVaultPage.page.alertsExpiring")}
+                        </p>
+                        <p
+                          className={`text-xl font-black ${stats.expiring > 0 ? "text-amber-300" : "text-white"}`}
+                        >
+                          {stats.expiring + stats.expired}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-black/10 px-6 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-300" />
+                    <span className="text-[11px] font-semibold opacity-90">
+                      {t("documentVaultPage.page.bankGradeEncryption")}
                     </span>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="text-white border-white/30 font-bold bg-white/10 backdrop-blur-sm"
-                  >
-                    {stats.percentComplete}%
-                  </Badge>
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
                 </div>
+              </Card>
 
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-2xl font-black mb-1">
-                      <span>
-                        {stats.uploaded} / {stats.total}
-                      </span>
-                      <span className="text-white/60 text-sm font-medium self-end mb-1">
-                        {t("documentVaultPage.page.itemsReady")}
-                      </span>
-                    </div>
-                    <Progress
-                      value={stats.percentComplete}
-                      className="h-3 bg-white/20"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
-                      <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
-                        {t("documentVaultPage.page.criticalMissing")}
-                      </p>
-                      <p
-                        className={`text-xl font-black ${stats.missing > 0 ? "text-white" : "text-emerald-300"}`}
-                      >
-                        {stats.missing}
-                      </p>
-                    </div>
-                    <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
-                      <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
-                        {t("documentVaultPage.page.alertsExpiring")}
-                      </p>
-                      <p
-                        className={`text-xl font-black ${stats.expiring > 0 ? "text-amber-300" : "text-white"}`}
-                      >
-                        {stats.expiring + stats.expired}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-black/10 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-300" />
-                  <span className="text-[11px] font-semibold opacity-90">
-                    {t("documentVaultPage.page.bankGradeEncryption")}
-                  </span>
-                </div>
-                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
-              </div>
-            </Card>
-
-            {/* Config Panel */}
-            <div className="mb-4">
+              {/* Config Panel */}
+              {/* <div className="mb-4">
               <LiveConfigPanel />
+            </div> */}
+
+              {/* Mini Tips Card */}
+              <Card className="p-4 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 shadow-sm">
+                <div className="flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">
+                      {t("documentVaultPage.page.nvcTipTitle")}
+                    </h4>
+                    <p className="text-xs text-amber-800 dark:text-amber-200 mt-1 leading-relaxed">
+                      {t("documentVaultPage.page.nvcTipDesc")}
+                    </p>
+                  </div>
+                </div>
+              </Card>
             </div>
 
-            {/* Mini Tips Card */}
-            <Card className="p-4 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 shadow-sm">
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">
-                    {t("documentVaultPage.page.nvcTipTitle")}
-                  </h4>
-                  <p className="text-xs text-amber-800 dark:text-amber-200 mt-1 leading-relaxed">
-                    {t("documentVaultPage.page.nvcTipDesc")}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
+            {/* Right Side: Document Management Tabs */}
+            <div className="lg:col-span-9">
+              <Tabs
+                defaultValue="required"
+                className="w-full"
+                onValueChange={setActiveTab}
+              >
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 xl:mb-8 gap-4 xl:gap-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto overflow-hidden">
+                    <div className="w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0 -mb-2 sm:mb-0">
+                      <TabsList className="bg-white dark:bg-slate-900 border shadow-sm h-11 p-1 rounded-xl shrink-0 inline-flex min-w-max">
+                        {categories.slice(0, 5).map((cat) => (
+                          <TabsTrigger
+                            key={cat}
+                            value={cat}
+                            className="px-4 sm:px-6 rounded-lg font-bold text-xs data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300"
+                          >
+                            {cat === "all"
+                              ? t("documentVaultPage.page.allMasterChecklist")
+                              : cat === "required"
+                                ? "Required"
+                                : cat === "optional"
+                                  ? "Optional"
+                                  : t(
+                                      `documentVaultPage.categories.${cat}`,
+                                    ).split(" ")[0]}
+                          </TabsTrigger>
+                        ))}
+                        {categories.length > 5 && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 px-3 rounded-lg font-bold text-xs gap-1"
+                              >
+                                {t("documentVaultPage.page.more")}{" "}
+                                <ChevronDown className="w-3 h-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {categories.slice(5).map((cat) => (
+                                <DropdownMenuItem
+                                  key={cat}
+                                  onClick={() => setActiveTab(cat)}
+                                >
+                                  {cat === "optional"
+                                    ? "Optional"
+                                    : t(`documentVaultPage.categories.${cat}`)}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </TabsList>
+                    </div>
 
-          {/* Right Side: Document Management Tabs */}
-          <div className="lg:col-span-9">
-            <Tabs
-              defaultValue="required"
-              className="w-full"
-              onValueChange={setActiveTab}
-            >
-              <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 xl:mb-8 gap-4 xl:gap-6">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto overflow-hidden">
-                  <div className="w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0 -mb-2 sm:mb-0">
-                    <TabsList className="bg-white dark:bg-slate-900 border shadow-sm h-11 p-1 rounded-xl shrink-0 inline-flex min-w-max">
-                      {categories.slice(0, 5).map((cat) => (
-                        <TabsTrigger
-                          key={cat}
-                          value={cat}
-                          className="px-4 sm:px-6 rounded-lg font-bold text-xs data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300"
+                    {/* Move View Switcher here next to tabs */}
+                    <div className="flex bg-white dark:bg-slate-900 border shadow-sm p-1 rounded-xl h-11 shrink-0 self-start sm:self-auto">
+                      <Button
+                        variant={viewMode === "table" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("table")}
+                        className={`h-9 px-3 rounded-lg ${viewMode === "table" ? "bg-slate-100 dark:bg-slate-800 shadow-inner" : ""}`}
+                      >
+                        <List className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === "grid" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("grid")}
+                        className={`h-9 px-3 rounded-lg ${viewMode === "grid" ? "bg-slate-100 dark:bg-slate-800 shadow-inner" : ""}`}
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex w-full xl:max-w-md ml-0 xl:ml-auto">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        placeholder={t(
+                          "documentVaultPage.page.searchPlaceholder",
+                        )}
+                        className="pl-10 h-11 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:ring-primary/20 w-full"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
                         >
-                          {cat === "all"
-                            ? t("documentVaultPage.page.allMasterChecklist")
-                            : cat === "required"
-                              ? "Required"
-                              : cat === "optional"
-                                ? "Optional"
-                                : t(
-                                    `documentVaultPage.categories.${cat}`,
-                                  ).split(" ")[0]}
-                        </TabsTrigger>
-                      ))}
-                      {categories.length > 5 && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <CloseIcon className="w-3 h-3 text-slate-400" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6 xl:mb-8">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex flex-wrap items-center gap-2 sm:gap-3">
+                    {activeTab === "all"
+                      ? t("documentVaultPage.page.comprehensiveMasterChecklist")
+                      : activeTab === "required"
+                        ? "Required Documents"
+                        : activeTab === "optional"
+                          ? "Optional Documents"
+                          : t(`documentVaultPage.categories.${activeTab}`)}
+                    {searchQuery && (
+                      <Badge
+                        variant="outline"
+                        className="font-bold text-primary border-primary/20 bg-primary/5"
+                      >
+                        {t("documentVaultPage.page.foundPrefix")}{" "}
+                        {flatFilteredDocuments.length}{" "}
+                        {t("documentVaultPage.page.matchingDocuments")}
+                      </Badge>
+                    )}
+                    {DYNAMIC_CATEGORIES.includes(activeTab) && (
+                      <div className="flex items-center gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-9 px-3 rounded-lg font-bold text-xs gap-1"
+                              className="h-8 w-8 p-0 text-slate-400 hover:text-primary"
                             >
-                              {t("documentVaultPage.page.more")}{" "}
-                              <ChevronDown className="w-3 h-3" />
+                              <Info className="w-4 h-4" />
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {categories.slice(5).map((cat) => (
-                              <DropdownMenuItem
-                                key={cat}
-                                onClick={() => setActiveTab(cat)}
-                              >
-                                {cat === "optional"
-                                  ? "Optional"
-                                  : t(`documentVaultPage.categories.${cat}`)}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </TabsList>
-                  </div>
-
-                  {/* Move View Switcher here next to tabs */}
-                  <div className="flex bg-white dark:bg-slate-900 border shadow-sm p-1 rounded-xl h-11 shrink-0 self-start sm:self-auto">
-                    <Button
-                      variant={viewMode === "table" ? "secondary" : "ghost"}
-                      size="sm"
-                      onClick={() => setViewMode("table")}
-                      className={`h-9 px-3 rounded-lg ${viewMode === "table" ? "bg-slate-100 dark:bg-slate-800 shadow-inner" : ""}`}
-                    >
-                      <List className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === "grid" ? "secondary" : "ghost"}
-                      size="sm"
-                      onClick={() => setViewMode("grid")}
-                      className={`h-9 px-3 rounded-lg ${viewMode === "grid" ? "bg-slate-100 dark:bg-slate-800 shadow-inner" : ""}`}
-                    >
-                      <LayoutGrid className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex w-full xl:max-w-md ml-0 xl:ml-auto">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder={t(
-                        "documentVaultPage.page.searchPlaceholder",
-                      )}
-                      className="pl-10 h-11 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:ring-primary/20 w-full"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-                      >
-                        <CloseIcon className="w-3 h-3 text-slate-400" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-6 xl:mb-8">
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex flex-wrap items-center gap-2 sm:gap-3">
-                  {activeTab === "all"
-                    ? t("documentVaultPage.page.comprehensiveMasterChecklist")
-                    : activeTab === "required"
-                      ? "Required Documents"
-                      : activeTab === "optional"
-                        ? "Optional Documents"
-                        : t(`documentVaultPage.categories.${activeTab}`)}
-                  {searchQuery && (
-                    <Badge
-                      variant="outline"
-                      className="font-bold text-primary border-primary/20 bg-primary/5"
-                    >
-                      {t("documentVaultPage.page.foundPrefix")}{" "}
-                      {flatFilteredDocuments.length}{" "}
-                      {t("documentVaultPage.page.matchingDocuments")}
-                    </Badge>
-                  )}
-                  {DYNAMIC_CATEGORIES.includes(activeTab) && (
-                    <div className="flex items-center gap-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-primary">
-                            <Info className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="max-w-xs p-3">
-                          <p className="font-bold mb-2">Suggested Documents:</p>
-                          <ul className="list-disc pl-4 space-y-1 text-xs">
-                            {CATEGORY_SUGGESTIONS[activeTab]?.map((suggestion, i) => (
-                              <li key={i}>{suggestion}</li>
-                            ))}
-                          </ul>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => addDynamicSlot(activeTab)}
-                        className="h-8 px-2 gap-1 text-primary hover:bg-primary/10 font-bold"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add New
-                      </Button>
-                    </div>
-                  )}
-                </h2>
-              </div>
-
-              <TabsContent
-                value={activeTab}
-                className="mt-0 ring-offset-0 focus-visible:ring-0"
-              >
-                <div className="space-y-6 sm:space-y-10">
-                  {searchQuery ? (
-                    // Show flat list of search results when searching
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3">
-                        <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
-                        <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                          {t("documentVaultPage.page.foundPrefix")}{" "}
-                          {flatFilteredDocuments.length}{" "}
-                          {t("documentVaultPage.page.matchingDocuments")}
-                        </h3>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-xs p-3">
+                            <p className="font-bold mb-2">
+                              Suggested Documents:
+                            </p>
+                            <ul className="list-disc pl-4 space-y-1 text-xs">
+                              {CATEGORY_SUGGESTIONS[activeTab]?.map(
+                                (suggestion, i) => (
+                                  <li key={i}>{suggestion}</li>
+                                ),
+                              )}
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => addDynamicSlot(activeTab)}
+                          className="h-8 px-2 gap-1 text-primary hover:bg-primary/10 font-bold"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Add New
+                        </Button>
                       </div>
+                    )}
+                  </h2>
+                </div>
 
-                      {flatFilteredDocuments.length > 0 ? (
-                        viewMode === "grid" ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-                            {flatFilteredDocuments.map((doc) => {
-                              const uploadedDoc = uploadedDocuments.find(
-                                (ud) => ud.documentDefId === doc.id,
-                              );
-                              return (
-                                <DocumentCard
-                                  key={doc.id}
-                                  documentDef={doc}
-                                  uploadedDoc={uploadedDoc}
-                                  onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
-                                  onPreview={
-                                    uploadedDoc
-                                      ? () => handlePreview(uploadedDoc)
-                                      : undefined
-                                  }
-                                  onDownload={
-                                    uploadedDoc
-                                      ? () => handleDownload(uploadedDoc.id)
-                                      : undefined
-                                  }
-                                  onDelete={
-                                    uploadedDoc
-                                      ? () => handleDelete(uploadedDoc.id)
-                                      : undefined
-                                  }
-                                  onExport={
-                                    uploadedDoc
-                                      ? () =>
-                                          handleExportSingle(
-                                            uploadedDoc.id,
-                                            uploadedDoc.hasCompressedVersion ||
-                                              false,
-                                          )
-                                      : undefined
-                                  }
-                                  onOpenWizard={() => openWizard(doc.id)}
-                                  onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
-                                />
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <DocumentTableView
-                            documents={flatFilteredDocuments}
-                            uploadedDocuments={uploadedDocuments}
-                            onUpload={openUploadModal}
-                            onPreview={handlePreview}
-                            onDownload={handleDownload}
-                            onDelete={handleDelete}
-                            onExport={handleExportSingle}
-                            onOpenWizard={openWizard}
-                            onRename={renameDynamicSlot}
-                          />
-                        )
-                      ) : (
-                        <div className="text-center py-12 sm:py-20 px-4 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-                          <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                            {t("documentVaultPage.page.noDocumentsFound")}
+                <TabsContent
+                  value={activeTab}
+                  className="mt-0 ring-offset-0 focus-visible:ring-0"
+                >
+                  <div className="space-y-6 sm:space-y-10">
+                    {searchQuery ? (
+                      // Show flat list of search results when searching
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                          <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
+                          <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
+                            {t("documentVaultPage.page.foundPrefix")}{" "}
+                            {flatFilteredDocuments.length}{" "}
+                            {t("documentVaultPage.page.matchingDocuments")}
                           </h3>
-                          <p className="text-slate-500 max-w-xs mx-auto mt-2">
-                            {t("documentVaultPage.page.noDocumentsDescPrefix")}
-                            {searchQuery}
-                            {t("documentVaultPage.page.noDocumentsDescSuffix")}
-                          </p>
-                          <Button
-                            variant="link"
-                            className="mt-4 text-primary font-bold"
-                            onClick={() => setSearchQuery("")}
-                          >
-                            {t("documentVaultPage.page.clearSearch")}
-                          </Button>
                         </div>
-                      )}
-                    </div>
-                  ) : activeTab === "all" ? (
-                    // Show all categories in 'all' tab when NOT searching
-                    Object.entries(documentsByCategory).map(
-                      ([category, docs]) => (
-                        <div key={category} className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
-                             <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                               {getCategoryDisplayName(category, t)}
-                             </h3>
-                             {DYNAMIC_CATEGORIES.includes(category) && (
-                               <div className="flex items-center gap-2">
-                                 <Tooltip>
-                                   <TooltipTrigger asChild>
-                                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-400 hover:text-primary">
-                                       <Info className="w-3.5 h-3.5" />
-                                     </Button>
-                                   </TooltipTrigger>
-                                   <TooltipContent side="right" className="max-w-xs p-3">
-                                     <p className="font-bold mb-2 text-[11px]">Suggested Documents:</p>
-                                     <ul className="list-disc pl-4 space-y-1 text-[10px]">
-                                       {CATEGORY_SUGGESTIONS[category]?.map((suggestion, i) => (
-                                         <li key={i}>{suggestion}</li>
-                                       ))}
-                                     </ul>
-                                   </TooltipContent>
-                                 </Tooltip>
-                                 <Button 
-                                   size="sm" 
-                                   variant="ghost" 
-                                   onClick={() => addDynamicSlot(category)}
-                                   className="h-7 px-2 gap-1 text-primary hover:bg-primary/10 font-bold text-[10px]"
-                                 >
-                                   <Plus className="w-3.5 h-3.5" />
-                                   Add
-                                 </Button>
-                               </div>
-                             )}
-                           </div>
 
-                          {viewMode === "grid" ? (
+                        {flatFilteredDocuments.length > 0 ? (
+                          viewMode === "grid" ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-                              {docs.map((doc) => {
+                              {flatFilteredDocuments.map((doc) => {
                                 const uploadedDoc = uploadedDocuments.find(
                                   (ud) => ud.documentDefId === doc.id,
                                 );
@@ -911,7 +798,9 @@ export default function DocumentVaultPage() {
                                     key={doc.id}
                                     documentDef={doc}
                                     uploadedDoc={uploadedDoc}
-                                    onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
+                                    onUpload={(replaceId) =>
+                                      openUploadModal(doc.id, replaceId)
+                                    }
                                     onPreview={
                                       uploadedDoc
                                         ? () => handlePreview(uploadedDoc)
@@ -938,14 +827,20 @@ export default function DocumentVaultPage() {
                                         : undefined
                                     }
                                     onOpenWizard={() => openWizard(doc.id)}
-                                    onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
+                                    onRename={(newName) =>
+                                      renameDynamicSlot(
+                                        doc.category,
+                                        doc.id,
+                                        newName,
+                                      )
+                                    }
                                   />
                                 );
                               })}
                             </div>
                           ) : (
                             <DocumentTableView
-                              documents={docs}
+                              documents={flatFilteredDocuments}
                               uploadedDocuments={uploadedDocuments}
                               onUpload={openUploadModal}
                               onPreview={handlePreview}
@@ -955,201 +850,355 @@ export default function DocumentVaultPage() {
                               onOpenWizard={openWizard}
                               onRename={renameDynamicSlot}
                             />
-                          )}
-                        </div>
-                      ),
-                    )
-                  ) : activeTab === "required" || activeTab === "optional" ? (
-                    // Show required or optional documents when NOT searching
-                    <div className="space-y-4">
-                      {viewMode === "grid" ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-                          {getFilteredDocumentsForSpecialFilter[
-                            activeTab as "required" | "optional"
-                          ]?.map((doc) => {
-                            const uploadedDoc = uploadedDocuments.find(
-                              (ud) => ud.documentDefId === doc.id,
-                            );
-                            return (
-                              <DocumentCard
-                                key={doc.id}
-                                documentDef={doc}
-                                uploadedDoc={uploadedDoc}
-                                onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
-                                onPreview={
-                                  uploadedDoc
-                                    ? () => handlePreview(uploadedDoc)
-                                    : undefined
-                                }
-                                onDownload={
-                                  uploadedDoc
-                                    ? () => handleDownload(uploadedDoc.id)
-                                    : undefined
-                                }
-                                onDelete={
-                                  uploadedDoc
-                                    ? () => handleDelete(uploadedDoc.id)
-                                    : undefined
-                                }
-                                onExport={
-                                  uploadedDoc
-                                    ? () =>
-                                        handleExportSingle(
-                                          uploadedDoc.id,
-                                          uploadedDoc.hasCompressedVersion ||
-                                            false,
+                          )
+                        ) : (
+                          <div className="text-center py-12 sm:py-20 px-4 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                            <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                              {t("documentVaultPage.page.noDocumentsFound")}
+                            </h3>
+                            <p className="text-slate-500 max-w-xs mx-auto mt-2">
+                              {t(
+                                "documentVaultPage.page.noDocumentsDescPrefix",
+                              )}
+                              {searchQuery}
+                              {t(
+                                "documentVaultPage.page.noDocumentsDescSuffix",
+                              )}
+                            </p>
+                            <Button
+                              variant="link"
+                              className="mt-4 text-primary font-bold"
+                              onClick={() => setSearchQuery("")}
+                            >
+                              {t("documentVaultPage.page.clearSearch")}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ) : activeTab === "all" ? (
+                      // Show all categories in 'all' tab when NOT searching
+                      Object.entries(documentsByCategory).map(
+                        ([category, docs]) => (
+                          <div key={category} className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
+                              <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
+                                {getCategoryDisplayName(category, t)}
+                              </h3>
+                              {DYNAMIC_CATEGORIES.includes(category) && (
+                                <div className="flex items-center gap-2">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
+                                      >
+                                        <Info className="w-3.5 h-3.5" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                      side="right"
+                                      className="max-w-xs p-3"
+                                    >
+                                      <p className="font-bold mb-2 text-[11px]">
+                                        Suggested Documents:
+                                      </p>
+                                      <ul className="list-disc pl-4 space-y-1 text-[10px]">
+                                        {CATEGORY_SUGGESTIONS[category]?.map(
+                                          (suggestion, i) => (
+                                            <li key={i}>{suggestion}</li>
+                                          ),
+                                        )}
+                                      </ul>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => addDynamicSlot(category)}
+                                    className="h-7 px-2 gap-1 text-primary hover:bg-primary/10 font-bold text-[10px]"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    Add
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+
+                            {viewMode === "grid" ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                                {docs.map((doc) => {
+                                  const uploadedDoc = uploadedDocuments.find(
+                                    (ud) => ud.documentDefId === doc.id,
+                                  );
+                                  return (
+                                    <DocumentCard
+                                      key={doc.id}
+                                      documentDef={doc}
+                                      uploadedDoc={uploadedDoc}
+                                      onUpload={(replaceId) =>
+                                        openUploadModal(doc.id, replaceId)
+                                      }
+                                      onPreview={
+                                        uploadedDoc
+                                          ? () => handlePreview(uploadedDoc)
+                                          : undefined
+                                      }
+                                      onDownload={
+                                        uploadedDoc
+                                          ? () => handleDownload(uploadedDoc.id)
+                                          : undefined
+                                      }
+                                      onDelete={
+                                        uploadedDoc
+                                          ? () => handleDelete(uploadedDoc.id)
+                                          : undefined
+                                      }
+                                      onExport={
+                                        uploadedDoc
+                                          ? () =>
+                                              handleExportSingle(
+                                                uploadedDoc.id,
+                                                uploadedDoc.hasCompressedVersion ||
+                                                  false,
+                                              )
+                                          : undefined
+                                      }
+                                      onOpenWizard={() => openWizard(doc.id)}
+                                      onRename={(newName) =>
+                                        renameDynamicSlot(
+                                          doc.category,
+                                          doc.id,
+                                          newName,
                                         )
-                                    : undefined
-                                }
-                                onOpenWizard={() => openWizard(doc.id)}
-                                onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
+                                      }
+                                    />
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <DocumentTableView
+                                documents={docs}
+                                uploadedDocuments={uploadedDocuments}
+                                onUpload={openUploadModal}
+                                onPreview={handlePreview}
+                                onDownload={handleDownload}
+                                onDelete={handleDelete}
+                                onExport={handleExportSingle}
+                                onOpenWizard={openWizard}
+                                onRename={renameDynamicSlot}
                               />
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <DocumentTableView
-                          documents={
-                            getFilteredDocumentsForSpecialFilter[
+                            )}
+                          </div>
+                        ),
+                      )
+                    ) : activeTab === "required" || activeTab === "optional" ? (
+                      // Show required or optional documents when NOT searching
+                      <div className="space-y-4">
+                        {viewMode === "grid" ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                            {getFilteredDocumentsForSpecialFilter[
                               activeTab as "required" | "optional"
-                            ] || []
-                          }
-                          uploadedDocuments={uploadedDocuments}
-                          onUpload={openUploadModal}
-                          onPreview={handlePreview}
-                          onDownload={handleDownload}
-                          onDelete={handleDelete}
-                          onExport={handleExportSingle}
-                          onOpenWizard={openWizard}
-                          onRename={renameDynamicSlot}
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    // Show specific category when NOT searching
-                    <div className="space-y-4">
-                      {viewMode === "grid" ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-                          {documentsByCategory[activeTab]?.map((doc) => {
-                            const uploadedDoc = uploadedDocuments.find(
-                              (ud) => ud.documentDefId === doc.id,
-                            );
-                            return (
-                              <DocumentCard
-                                key={doc.id}
-                                documentDef={doc}
-                                uploadedDoc={uploadedDoc}
-                                onUpload={() => openUploadModal(doc.id)}
-                                onPreview={
-                                  uploadedDoc
-                                    ? () => handlePreview(uploadedDoc)
-                                    : undefined
-                                }
-                                onDownload={
-                                  uploadedDoc
-                                    ? () => handleDownload(uploadedDoc.id)
-                                    : undefined
-                                }
-                                onDelete={
-                                  uploadedDoc
-                                    ? () => handleDelete(uploadedDoc.id)
-                                    : undefined
-                                }
-                                onExport={
-                                  uploadedDoc
-                                    ? () =>
-                                        handleExportSingle(
-                                          uploadedDoc.id,
-                                          uploadedDoc.hasCompressedVersion ||
-                                            false,
-                                        )
-                                    : undefined
-                                }
-                                onOpenWizard={() => openWizard(doc.id)}
-                                onRename={(newName) => renameDynamicSlot(doc.category, doc.id, newName)}
-                              />
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <DocumentTableView
-                          documents={documentsByCategory[activeTab] || []}
-                          uploadedDocuments={uploadedDocuments}
-                          onUpload={openUploadModal}
-                          onPreview={handlePreview}
-                          onDownload={handleDownload}
-                          onDelete={handleDelete}
-                          onExport={handleExportSingle}
-                          onOpenWizard={openWizard}
-                          onRename={renameDynamicSlot}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
+                            ]?.map((doc) => {
+                              const uploadedDoc = uploadedDocuments.find(
+                                (ud) => ud.documentDefId === doc.id,
+                              );
+                              return (
+                                <DocumentCard
+                                  key={doc.id}
+                                  documentDef={doc}
+                                  uploadedDoc={uploadedDoc}
+                                  onUpload={(replaceId) =>
+                                    openUploadModal(doc.id, replaceId)
+                                  }
+                                  onPreview={
+                                    uploadedDoc
+                                      ? () => handlePreview(uploadedDoc)
+                                      : undefined
+                                  }
+                                  onDownload={
+                                    uploadedDoc
+                                      ? () => handleDownload(uploadedDoc.id)
+                                      : undefined
+                                  }
+                                  onDelete={
+                                    uploadedDoc
+                                      ? () => handleDelete(uploadedDoc.id)
+                                      : undefined
+                                  }
+                                  onExport={
+                                    uploadedDoc
+                                      ? () =>
+                                          handleExportSingle(
+                                            uploadedDoc.id,
+                                            uploadedDoc.hasCompressedVersion ||
+                                              false,
+                                          )
+                                      : undefined
+                                  }
+                                  onOpenWizard={() => openWizard(doc.id)}
+                                  onRename={(newName) =>
+                                    renameDynamicSlot(
+                                      doc.category,
+                                      doc.id,
+                                      newName,
+                                    )
+                                  }
+                                />
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <DocumentTableView
+                            documents={
+                              getFilteredDocumentsForSpecialFilter[
+                                activeTab as "required" | "optional"
+                              ] || []
+                            }
+                            uploadedDocuments={uploadedDocuments}
+                            onUpload={openUploadModal}
+                            onPreview={handlePreview}
+                            onDownload={handleDownload}
+                            onDelete={handleDelete}
+                            onExport={handleExportSingle}
+                            onOpenWizard={openWizard}
+                            onRename={renameDynamicSlot}
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      // Show specific category when NOT searching
+                      <div className="space-y-4">
+                        {viewMode === "grid" ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                            {documentsByCategory[activeTab]?.map((doc) => {
+                              const uploadedDoc = uploadedDocuments.find(
+                                (ud) => ud.documentDefId === doc.id,
+                              );
+                              return (
+                                <DocumentCard
+                                  key={doc.id}
+                                  documentDef={doc}
+                                  uploadedDoc={uploadedDoc}
+                                  onUpload={() => openUploadModal(doc.id)}
+                                  onPreview={
+                                    uploadedDoc
+                                      ? () => handlePreview(uploadedDoc)
+                                      : undefined
+                                  }
+                                  onDownload={
+                                    uploadedDoc
+                                      ? () => handleDownload(uploadedDoc.id)
+                                      : undefined
+                                  }
+                                  onDelete={
+                                    uploadedDoc
+                                      ? () => handleDelete(uploadedDoc.id)
+                                      : undefined
+                                  }
+                                  onExport={
+                                    uploadedDoc
+                                      ? () =>
+                                          handleExportSingle(
+                                            uploadedDoc.id,
+                                            uploadedDoc.hasCompressedVersion ||
+                                              false,
+                                          )
+                                      : undefined
+                                  }
+                                  onOpenWizard={() => openWizard(doc.id)}
+                                  onRename={(newName) =>
+                                    renameDynamicSlot(
+                                      doc.category,
+                                      doc.id,
+                                      newName,
+                                    )
+                                  }
+                                />
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <DocumentTableView
+                            documents={documentsByCategory[activeTab] || []}
+                            uploadedDocuments={uploadedDocuments}
+                            onUpload={openUploadModal}
+                            onPreview={handlePreview}
+                            onDownload={handleDownload}
+                            onDelete={handleDelete}
+                            onExport={handleExportSingle}
+                            onOpenWizard={openWizard}
+                            onRename={renameDynamicSlot}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Modals */}
-      {selectedDoc && (
-        <>
-          <DocumentUploadModal
-            open={uploadModalOpen}
-            onClose={closeUploadModal}
-            documentDef={selectedDoc}
-            onUploadComplete={async () => {
-              // Reload documents in the store instantly — no full re-init needed
-              await reloadDocuments();
-              refreshNotifications(t);
+        {/* Modals */}
+        {selectedDoc && (
+          <>
+            <DocumentUploadModal
+              open={uploadModalOpen}
+              onClose={closeUploadModal}
+              documentDef={selectedDoc}
+              onUploadComplete={async () => {
+                // Reload documents in the store instantly — no full re-init needed
+                await reloadDocuments();
+                refreshNotifications(t);
+              }}
+            />
+
+            <DocumentWizard
+              open={wizardOpen}
+              onClose={closeWizard}
+              documentDef={selectedDoc}
+            />
+
+            {/* Testing Panel - only shows in development */}
+            {/* <NotificationTestPanel /> */}
+          </>
+        )}
+
+        {/* Preview Modal */}
+        {previewDoc && (
+          <DocumentPreviewModal
+            open={previewOpen}
+            onClose={() => {
+              setPreviewOpen(false);
+              setPreviewDoc(null);
             }}
+            documentDef={
+              selectedDoc ||
+              ALL_DOCUMENTS.find((d) => d.id === previewDoc.documentDefId) ||
+              requiredDocuments.find((d) => d.id === previewDoc.documentDefId)!
+            }
+            uploadedDoc={previewDoc}
           />
+        )}
 
-          <DocumentWizard
-            open={wizardOpen}
-            onClose={closeWizard}
-            documentDef={selectedDoc}
-          />
-
-          {/* Testing Panel - only shows in development */}
-          <NotificationTestPanel />
-        </>
-      )}
-
-      {/* Preview Modal */}
-      {previewDoc && (
-        <DocumentPreviewModal
-          open={previewOpen}
-          onClose={() => {
-            setPreviewOpen(false);
-            setPreviewDoc(null);
-          }}
-          documentDef={
-            selectedDoc ||
-            ALL_DOCUMENTS.find((d) => d.id === previewDoc.documentDefId) ||
-            requiredDocuments.find((d) => d.id === previewDoc.documentDefId)!
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          open={deleteModalOpen}
+          onOpenChange={setDeleteModalOpen}
+          title="Delete Document?"
+          description={
+            "Are you sure you want to delete this document? This cannot be undone."
           }
-          uploadedDoc={previewDoc}
+          confirmText="Delete"
+          cancelText="Cancel"
+          confirmVariant="danger"
+          loading={deleteLoading}
+          onConfirm={confirmDelete}
         />
-      )}
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        open={deleteModalOpen}
-        onOpenChange={setDeleteModalOpen}
-        title="Delete Document?"
-        description={
-          "Are you sure you want to delete this document? This cannot be undone."
-        }
-        confirmText="Delete"
-        cancelText="Cancel"
-        confirmVariant="danger"
-        loading={deleteLoading}
-        onConfirm={confirmDelete}
-      />
-    </div>
+      </div>
     </TooltipProvider>
   );
 }
