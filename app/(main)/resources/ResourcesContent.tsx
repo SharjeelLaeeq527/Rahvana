@@ -48,7 +48,7 @@ export default function ResourcesContent({
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative px-6 py-2.5 flex items-center gap-2 rounded-full font-medium text-sm transition-colors duration-300 z-10 ${
+                className={`relative px-2.5 sm:px-6 py-2.5 flex items-center gap-2 rounded-full font-medium text-sm transition-colors duration-300 z-10 ${
                   isActive
                     ? "text-slate-900 dark:text-white"
                     : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
