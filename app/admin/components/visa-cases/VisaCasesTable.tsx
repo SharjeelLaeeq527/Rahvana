@@ -77,6 +77,10 @@ export default function VisaCasesTable() {
   const [openStep, setOpenStep] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [checkDate, setCheckDate] = useState("");
+  const [checkDateError, setCheckDateError] = useState("");
+  const [caseStatus, setCaseStatus] = useState("");
+  const [checkNotes, setCheckNotes] = useState("");
 
   const fetchJourneys = async (showRefreshIndicator = false) => {
     try {
@@ -108,7 +112,52 @@ export default function VisaCasesTable() {
     setSelectedJourney(journey);
     setAdminNotes(journey.admin_notes || "");
     setTrackingStatus(journey.tracking_status || {});
+    setCheckDate(new Date().toISOString().split("T")[0]);
+    setCheckDateError("");
+    setCaseStatus(journey.tracking_status?.admin_case_status || "");
+    setCheckNotes("");
     setIsDialogOpen(true);
+  };
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const validateCheckDate = (val: string): string => {
+    if (!val) return "Date is required";
+    if (val > today) return "Cannot log a future check date";
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    if (new Date(val) < thirtyDaysAgo) return "Date cannot be more than 30 days in the past";
+    return "";
+  };
+
+  const handleLogCheckNow = async () => {
+    if (!selectedJourney) return;
+    const err = validateCheckDate(checkDate);
+    if (err) { setCheckDateError(err); return; }
+    setCheckDateError("");
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/admin/visa-cases", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedJourney.id,
+          tracking_status: { ...trackingStatus, admin_case_status: caseStatus },
+          admin_notes: adminNotes,
+          check_date: new Date(checkDate).toISOString(),
+          case_status: caseStatus,
+          check_notes: checkNotes,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to log check");
+      await fetchJourneys(true);
+      setIsDialogOpen(false);
+      setSelectedJourney(null);
+    } catch (err: any) {
+      console.error("Error logging check:", err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSaveNotes = async () => {
@@ -123,6 +172,7 @@ export default function VisaCasesTable() {
           id: selectedJourney.id,
           tracking_status: trackingStatus,
           admin_notes: adminNotes,
+          check_date: new Date(checkDate || today).toISOString(),
         }),
       });
 
@@ -759,6 +809,85 @@ export default function VisaCasesTable() {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Log Status Check */}
+              <div className="border border-indigo-200 rounded-xl overflow-hidden bg-indigo-50/40">
+                <div className="flex items-center gap-3 p-4 border-b border-indigo-100">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                    <Clock size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#0c1b33]">Log Status Check</p>
+                    <p className="text-[11px] text-slate-500">
+                      {selectedJourney?.admin_last_checked_at
+                        ? `Last logged: ${new Date(selectedJourney.admin_last_checked_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}`
+                        : "Never checked"}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 space-y-3">
+                  {/* Case Status Dropdown */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wider font-bold">Case Status</Label>
+                    <select
+                      value={caseStatus}
+                      onChange={(e) => setCaseStatus(e.target.value)}
+                      className="w-full h-9 rounded-md border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    >
+                      <option value="">— Select Status —</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Ready">Ready</option>
+                      <option value="In Transit">In Transit</option>
+                      <option value="Administrative Processing">Administrative Processing (AP)</option>
+                      <option value="221(g)">221(g)</option>
+                      <option value="Refused">Refused</option>
+                      <option value="Issued">Issued</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Not Available">Not Available</option>
+                    </select>
+                  </div>
+                  {/* Last Checked Date */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wider font-bold">Last Checked Date</Label>
+                    <input
+                      type="date"
+                      value={checkDate}
+                      max={today}
+                      onChange={(e) => {
+                        setCheckDate(e.target.value);
+                        setCheckDateError(validateCheckDate(e.target.value));
+                      }}
+                      className={`w-full h-9 rounded-md border px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 ${checkDateError ? "border-red-400" : "border-slate-200"}`}
+                    />
+                    {checkDateError && (
+                      <p className="text-[11px] text-red-600 font-medium flex items-center gap-1">
+                        <AlertCircle size={11} /> {checkDateError}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-slate-400">Auto-set to today. Max 30 days past. No future dates.</p>
+                  </div>
+                  {/* Notes (optional) */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wider font-bold">Notes <span className="font-normal text-slate-400">(optional)</span></Label>
+                    <textarea
+                      value={checkNotes}
+                      onChange={(e) => setCheckNotes(e.target.value)}
+                      placeholder="e.g. Checked CEAC — status unchanged, case still in AP..."
+                      rows={2}
+                      className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                    onClick={handleLogCheckNow}
+                    disabled={isSaving || !!checkDateError}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    {isSaving ? "Saving..." : "Log Check & Save"}
+                  </Button>
                 </div>
               </div>
 

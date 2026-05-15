@@ -12,7 +12,8 @@ import {
   Shield,
   Calendar,
   History,
-  ArrowRight
+  ArrowRight,
+  ShieldCheck
 } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
@@ -151,10 +152,10 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
   }
 
   const ceacStatusRaw = apDetails.ceacStatus as string || "Administrative Processing";
-  // Transitional statuses (Ready/In Transit/Pending) → use lastCheck date
-  // because interviewDate = when interview happened (not when status changed)
   const isTransitionalStatus = ["Ready", "In Transit", "Pending", "Not Available"].includes(ceacStatusRaw);
-  const dateField = isTransitionalStatus ? apDetails.lastCheck : apDetails.interviewDate;
+  // Admin-set last check date (from admin panel) — user cannot edit this
+  const adminLastCheckDate = state.metadata?.admin_last_check_date as string | undefined;
+  const dateField = isTransitionalStatus ? apDetails.interviewDate : apDetails.interviewDate;
   const startDate = dateField ? new Date(dateField) : null;
   const isDateInFuture = startDate ? startDate.getTime() > Date.now() : false;
   const daysInAP = (startDate && !isDateInFuture)
@@ -228,8 +229,11 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
                   {statusUI.counterLabel(daysInAP)}
                 </span>
               )}
-              {apDetails.lastCheck && (
-                <span className="text-[11px] text-slate-500">Checked: {new Date(apDetails.lastCheck).toLocaleDateString()}</span>
+              {adminLastCheckDate && (
+                <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-semibold">
+                  <ShieldCheck size={11} />
+                  Verified {new Date(adminLastCheckDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </span>
               )}
             </div>
           </div>
