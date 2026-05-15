@@ -67,7 +67,7 @@ interface DocumentVaultStore {
   refreshDocumentStatuses: () => void;
   reloadDocuments: () => Promise<void>;
   addDynamicSlot: (category: string) => void;
-  addNamedDynamicSlot: (category: string, name: string) => string;
+  addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
   renameDynamicSlot: (
     categoryId: string,
     slotId: string,
@@ -473,14 +473,18 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       get().setConfig(updatedConfig);
     },
 
-    addNamedDynamicSlot: (category: string, name: string) => {
+    addNamedDynamicSlot: async (category: string, name: string) => {
       const { config } = get();
       if (!config) return "";
 
       const dynamicDocs = config.dynamicDocuments || {};
       const slots = dynamicDocs[category] || [];
       
-      const newId = `dynamic-${category}-${Date.now()}`;
+      // Check if a slot with this name already exists to avoid duplicates
+      const existingSlot = slots.find(s => s.name === name);
+      if (existingSlot) return existingSlot.id;
+
+      const newId = `dynamic-${category}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const updatedSlots = [...slots, { id: newId, name }];
 
       const updatedDynamicDocs = {
@@ -493,7 +497,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         dynamicDocuments: updatedDynamicDocs,
       };
 
-      get().setConfig(updatedConfig);
+      await get().setConfig(updatedConfig);
       return newId;
     },
 

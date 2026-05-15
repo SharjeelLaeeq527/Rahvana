@@ -18,7 +18,7 @@ import { DocumentTableView } from "@/app/components/document-vault/DocumentTable
 import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { DocumentWizard } from "@/app/components/document-vault/DocumentWizard";
-import { ConfigurationWizard } from "@/app/components/document-vault/ConfigurationWizard";
+// import { ConfigurationWizard } from "@/app/components/document-vault/ConfigurationWizard";
 import { LiveConfigPanel } from "@/app/components/document-vault/LiveConfigPanel";
 import { NotificationBell } from "@/app/components/document-vault/NotificationCenter";
 import { NotificationTestPanel } from "@/app/components/document-vault/NotificationTestPanel";
@@ -253,17 +253,17 @@ export default function DocumentVaultPage() {
 
   if (!user) return null;
 
-  if ((!config && initialized) || showConfigWizard) {
-    return (
-      <ConfigurationWizard
-        userId={user.id}
-        onComplete={() => {
-          setShowConfigWizard(false);
-          setInitialized(false); // Reset to trigger re-initialization
-        }}
-      />
-    );
-  }
+  // if ((!config && initialized) || showConfigWizard) {
+  //   return (
+  //     <ConfigurationWizard
+  //       userId={user.id}
+  //       onComplete={() => {
+  //         setShowConfigWizard(false);
+  //         setInitialized(false); // Reset to trigger re-initialization
+  //       }}
+  //     />
+  //   );
+  // }
 
   const handleDownload = async (documentId: string) => {
     try {
@@ -633,9 +633,7 @@ export default function DocumentVaultPage() {
                                 ? "Required"
                                 : cat === "optional"
                                   ? "Optional"
-                                  : t(
-                                      `documentVaultPage.categories.${cat}`,
-                                    ).split(" ")[0]}
+                                  : getCategoryDisplayName(cat, t)}
                           </TabsTrigger>
                         ))}
                         {categories.length > 5 && (
@@ -658,7 +656,7 @@ export default function DocumentVaultPage() {
                                 >
                                   {cat === "optional"
                                     ? "Optional"
-                                    : t(`documentVaultPage.categories.${cat}`)}
+                                    : getCategoryDisplayName(cat, t)}
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuContent>
@@ -719,7 +717,7 @@ export default function DocumentVaultPage() {
                         ? "Required Documents"
                         : activeTab === "optional"
                           ? "Optional Documents"
-                          : t(`documentVaultPage.categories.${activeTab}`)}
+                          : getCategoryDisplayName(activeTab, t)}
                     {searchQuery && (
                       <Badge
                         variant="outline"

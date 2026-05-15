@@ -44,6 +44,9 @@ export type DocumentCategory =
   | "HEALTH_INSURANCE" // Health insurance documents
   | "SOCIAL_MEDIA" // Social media handles history
   | "ADDRESS_PROOF" // Utility bills, rent agreements
+  | "CITIZENSHIP_PROOF" // Dynamic category for U.S. citizenship docs
+  | "RELATIONSHIP_EVIDENCE_DYNAMIC" // Dynamic category for relationship evidence
+  | "TRANSLATIONS_SET" // Dynamic category for translated documents
   | "OTHER";
 
 export type ValidityType =
@@ -110,6 +113,10 @@ export interface DocumentDefinition {
   };
   hideUntilUploaded?: boolean;
   translationOf?: string; // ID of the original document this is a translation for
+
+  // Dynamic Category Support
+  isDynamicCategory?: boolean; // If true, this document acts as a container for multiple sub-documents
+  suggestions?: string[]; // List of suggested document types/names for this dynamic category
 }
 
 export interface DocumentWizardStep {

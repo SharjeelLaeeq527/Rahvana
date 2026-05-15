@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Upload,
   X,
@@ -20,6 +21,9 @@ import {
   FileText,
   CheckCircle2,
   Eye,
+  ChevronDown,
+  // ChevronUp,
+  History,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
@@ -63,6 +67,9 @@ export function MultipleDocumentUploadModal({
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [dragActiveId, setDragActiveId] = useState<string | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {},
+  );
   const {
     config,
     uploadedDocuments: vaultDocuments,
@@ -99,17 +106,14 @@ export function MultipleDocumentUploadModal({
       if (d.documentDefId.startsWith("dynamic-")) {
         const docCategory = d.documentDefId.split("-")[1];
 
-        // If we are in translations modal, only show dynamic translations
-        if (currentCategory === "TRANSLATIONS") {
-          return docCategory === "TRANSLATIONS";
-        }
-
-        // For other modals (CIVIL, RELATIONSHIP, etc.), show dynamic docs from its own category
-        // OR from the OTHER (Other Documents) category where "Other" uploads go
+        // Match current category OR generic categories
         return (
           docCategory === currentCategory ||
           docCategory === "OTHER" ||
-          docCategory === "MISC"
+          docCategory === "MISC" ||
+          // Special case: translations set can contain translations
+          (currentCategory === "TRANSLATIONS_SET" &&
+            docCategory === "TRANSLATIONS")
         );
       }
 
@@ -128,6 +132,56 @@ export function MultipleDocumentUploadModal({
       })
       .filter(Boolean);
   }, [uploadedDocuments]);
+
+  const groupedDocuments = useMemo(() => {
+    const groups: Record<string, UploadedDocument[]> = {};
+    
+    uploadedDocuments.forEach((doc) => {
+      // Calculate the same type label as used in the UI
+      let typeLabel = doc.notes?.startsWith("Type: ")
+        ? doc.notes.split("\n")[0].replace("Type: ", "").trim()
+        : "Document";
+
+      // Fallback for dynamic documents without explicit type in notes
+      if (
+        (typeLabel === OTHER_OPTION || !typeLabel || typeLabel === "Document") &&
+        doc.documentDefId.startsWith("dynamic-")
+      ) {
+        const category = doc.documentDefId.split("-")[1];
+        const dynamicDoc = config?.dynamicDocuments?.[category]?.find(
+          (d) => d.id === doc.documentDefId,
+        );
+        if (dynamicDoc) {
+          typeLabel = dynamicDoc.name;
+        }
+      }
+
+      if (!groups[typeLabel]) {
+        groups[typeLabel] = [];
+      }
+      groups[typeLabel].push(doc);
+    });
+
+    // Sort each group by version descending (latest first)
+    // If versions are same, sort by upload date
+    Object.keys(groups).forEach((key) => {
+      groups[key].sort((a, b) => {
+        if (b.version !== a.version) {
+          return b.version - a.version;
+        }
+        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+      });
+    });
+
+    return groups;
+  }, [uploadedDocuments, config]);
+
+  const toggleGroup = (typeLabel: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [typeLabel]: !prev[typeLabel],
+    }));
+  };
 
   // Make sure there is always at least one empty slot if there are available options
   useEffect(() => {
@@ -237,9 +291,8 @@ export function MultipleDocumentUploadModal({
       )
       .map((p) => p.type);
 
-    return options.filter(
-      (opt) => !uploadedTypes.includes(opt) && !usedPendingTypes.includes(opt),
-    );
+    // Per user request: don't filter out uploaded types, just filter out types used in other rows
+    return options.filter((opt) => !usedPendingTypes.includes(opt));
   };
 
   const handleUploadAll = async () => {
@@ -256,6 +309,51 @@ export function MultipleDocumentUploadModal({
     });
 
     try {
+      // Step 1: Create all necessary dynamic slots SEQUENTIALLY first
+      // This prevents race conditions where multiple uploads try to create slots at the same time
+      const uploadItemToDefId: Record<string, string> = {};
+
+      for (const uploadItem of validUploads) {
+        let specificDefId: string;
+
+        if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
+          // Determine target category for "Other" docs
+          let targetCategory =
+            (documentDef as any).category || categoryId || "CIVIL";
+
+          if (targetCategory !== "TRANSLATIONS") {
+            targetCategory = "OTHER";
+          }
+
+          specificDefId = await addNamedDynamicSlot(
+            targetCategory,
+            uploadItem.customName,
+          );
+        } else {
+          // Check if a slot with this name already exists in the category
+          const currentCategory =
+            (documentDef as any).category || categoryId || "CIVIL";
+          const existingSlot = config.dynamicDocuments?.[
+            currentCategory
+          ]?.find((s) => s.name === uploadItem.type);
+
+          if (existingSlot) {
+            specificDefId = existingSlot.id;
+          } else {
+            // For dynamic categories, create a named slot
+            if (documentDef.isDynamicCategory) {
+              specificDefId = await addNamedDynamicSlot(
+                currentCategory,
+                uploadItem.type,
+              );
+            } else {
+              specificDefId = mapDocumentNameToId(uploadItem.type);
+            }
+          }
+        }
+        uploadItemToDefId[uploadItem.id] = specificDefId;
+      }
+
       // Need a role, if we can deduce from definition or default to BENEFICIARY
       const parentRole = documentDef.roles?.[0] || "BENEFICIARY";
       let personName = "Unknown";
@@ -267,32 +365,15 @@ export function MultipleDocumentUploadModal({
         personName = config.jointSponsorName;
       }
 
+      // Step 2: Perform file uploads in parallel now that all slots exist
       await Promise.all(
         validUploads.map(async (uploadItem) => {
           const formData = new FormData();
           formData.append("file", uploadItem.file!);
 
-          let specificDefId: string;
-          if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
-            // Determine target category for "Other" docs
-            let targetCategory =
-              (documentDef as any).category || categoryId || "CIVIL";
-
-            // User request: "Other" should go to OTHER (Other Documents),
-            // but "Other Translation" should stay in TRANSLATIONS
-            if (targetCategory !== "TRANSLATIONS") {
-              targetCategory = "OTHER";
-            }
-
-            specificDefId = addNamedDynamicSlot(
-              targetCategory,
-              uploadItem.customName,
-            );
-          } else {
-            specificDefId = mapDocumentNameToId(uploadItem.type);
-          }
-
+          const specificDefId = uploadItemToDefId[uploadItem.id];
           formData.append("documentDefId", specificDefId);
+          
           if (specificDefId.startsWith("dynamic-")) {
             const docCategory = specificDefId.split("-")[1];
             formData.append(
@@ -304,8 +385,8 @@ export function MultipleDocumentUploadModal({
           formData.append("role", parentRole);
           formData.append("caseId", config.caseId || "CASE");
           formData.append("personName", personName);
+          
           // Special storage: Save the selected document type inside the notes
-          // format: Type: [type]\nNotes: [notes]
           const storedType =
             uploadItem.type === OTHER_OPTION && uploadItem.customName
               ? uploadItem.customName
@@ -413,73 +494,141 @@ export function MultipleDocumentUploadModal({
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#3a4f63] mb-3">
                 Already Uploaded
               </h4>
-              <div className="space-y-3">
-                {uploadedDocuments.map((doc) => {
-                  let typeLabel = doc.notes?.startsWith("Type: ")
-                    ? doc.notes.split("\n")[0].replace("Type: ", "").trim()
-                    : "Document";
+              <div className="space-y-4">
+                {Object.entries(groupedDocuments).map(([typeLabel, docs]) => {
+                  const latestDoc = docs[0];
+                  const historicalDocs = docs.slice(1);
+                  const isExpanded = expandedGroups[typeLabel];
 
-                  // Fallback for "Other" dynamic documents if type is not specifically set in notes
-                  if (
-                    (typeLabel === OTHER_OPTION || !typeLabel) &&
-                    doc.documentDefId.startsWith("dynamic-")
-                  ) {
-                    const category = doc.documentDefId.split("-")[1];
-                    const dynamicDoc = config?.dynamicDocuments?.[
-                      category
-                    ]?.find((d) => d.id === doc.documentDefId);
-                    if (dynamicDoc) {
-                      typeLabel = dynamicDoc.name;
-                    }
-                  }
                   return (
                     <div
-                      key={doc.id}
-                      className="flex items-center gap-4 p-4 rounded-xl border border-[#d0e4f7] bg-[#f8fbff]"
+                      key={typeLabel}
+                      className="rounded-2xl border-2 border-[#e8f1fb] bg-white overflow-hidden shadow-sm transition-all hover:border-[#d0e4f7]"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-[#eaf7f2] border border-[#b5e0d0] text-[#1a7a5e] flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={20} strokeWidth={2.5} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-[#0f1f38] text-sm">
-                          {typeLabel}
-                        </h4>
-                        <p className="text-xs text-[#6b8097] truncate mb-1">
-                          {doc.originalFilename} •{" "}
-                          {(doc.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                        {doc.notes?.includes("\nNotes: ") && (
-                          <p className="text-[11px] font-medium text-[#3a4f63] bg-slate-100/50 p-1.5 rounded inline-block">
-                            <span className="text-[#6b8097] font-bold">
-                              Note:
-                            </span>{" "}
-                            {doc.notes.split("\nNotes: ")[1]}
+                      {/* Accordion Header - Latest Document */}
+                      <div className="flex items-center gap-4 p-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#eaf7f2] border border-[#b5e0d0] text-[#1a7a5e] flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={20} strokeWidth={2.5} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h4 className="font-bold text-[#0f1f38] text-[15px]">
+                              {typeLabel}
+                            </h4>
+                            <Badge className="h-4 px-1.5 text-[9px] bg-primary text-white border-none hover:bg-primary/70 font-black tracking-wider">
+                              Latest
+                            </Badge>
+                            {historicalDocs.length > 0 && (
+                              <Badge
+                                variant="outline"
+                                className="h-4 px-1.5 text-[9px] border-primary/30 text-primary bg-primary/5 font-black tracking-wider"
+                              >
+                                {historicalDocs.length} Variants
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#6b8097] truncate">
+                            {latestDoc.originalFilename} •{" "}
+                            {(latestDoc.fileSize / 1024 / 1024).toFixed(2)} MB
                           </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg text-primary hover:text-primary hover:bg-primary/5 transition-all"
-                          onClick={() => handlePreview(doc)}
-                        >
-                          <Eye size={18} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg text-red-500 hover:text-red-500 hover:bg-red-50 transition-all"
-                          onClick={() => handleDelete(doc.id)}
-                          disabled={isDeletingIds.includes(doc.id)}
-                        >
-                          {isDeletingIds.includes(doc.id) ? (
-                            <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <Trash2 size={18} />
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg text-primary hover:bg-primary/5 transition-all"
+                            onClick={() => handlePreview(latestDoc)}
+                          >
+                            <Eye size={18} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg text-red-500 hover:text-red-500 hover:bg-red-50 transition-all"
+                            onClick={() => handleDelete(latestDoc.id)}
+                            disabled={isDeletingIds.includes(latestDoc.id)}
+                          >
+                            {isDeletingIds.includes(latestDoc.id) ? (
+                              <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Trash2 size={18} />
+                            )}
+                          </Button>
+                          {historicalDocs.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600 transition-all ${isExpanded ? "bg-slate-50 rotate-180" : ""}`}
+                              onClick={() => toggleGroup(typeLabel)}
+                            >
+                              <ChevronDown size={20} />
+                            </Button>
                           )}
-                        </Button>
+                        </div>
                       </div>
+
+                      {/* Accordion Content - Historical Variants */}
+                      {isExpanded && historicalDocs.length > 0 && (
+                        <div className="border-t border-[#e8f1fb] bg-slate-50/50 p-4 pt-0">
+                          <div className="flex items-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest text-[#6b8097]">
+                            <History size={12} />
+                            Previous Versions
+                          </div>
+                          <div className="space-y-2">
+                            {historicalDocs.map((doc) => (
+                              <div
+                                key={doc.id}
+                                className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#e8f1fb] shadow-xs group/variant"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <Badge
+                                    variant="outline"
+                                    className="h-5 px-2 text-[10px] font-bold bg-slate-50 text-slate-500 border-slate-200"
+                                  >
+                                    v{doc.version}
+                                  </Badge>
+                                  <div className="min-w-0">
+                                    <p className="text-[13px] font-semibold text-[#3a4f63] truncate max-w-[200px]">
+                                      {doc.originalFilename}
+                                    </p>
+                                    <p className="text-[10px] text-[#6b8097] font-medium">
+                                      {(doc.fileSize / 1024 / 1024).toFixed(2)}{" "}
+                                      MB •{" "}
+                                      {new Date(
+                                        doc.uploadedAt,
+                                      ).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-lg text-[#6b8097] hover:text-primary hover:bg-primary/5"
+                                    onClick={() => handlePreview(doc)}
+                                  >
+                                    <Eye size={14} />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-lg text-red-500 hover:text-red-500 hover:bg-red-50"
+                                    onClick={() => handleDelete(doc.id)}
+                                    disabled={isDeletingIds.includes(doc.id)}
+                                  >
+                                    {isDeletingIds.includes(doc.id) ? (
+                                      <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                      <Trash2 size={14} />
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -535,7 +684,7 @@ export function MultipleDocumentUploadModal({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full shrink-0 transition-all"
+                          className="h-8 w-8 text-red-500 hover:text-red-500 hover:bg-red-50 rounded-full shrink-0 transition-all"
                           onClick={() => removePendingUpload(uploadItem.id)}
                           disabled={uploading}
                         >
@@ -558,7 +707,13 @@ export function MultipleDocumentUploadModal({
                             ? [OTHER_OPTION]
                             : []),
                         ]),
-                      ).map((opt) => ({ label: opt, value: opt }))}
+                      ).map((opt) => ({
+                        label: opt,
+                        value: opt,
+                        status: uploadedTypes.includes(opt)
+                          ? "uploaded"
+                          : "none",
+                      }))}
                       placeholder="Select type..."
                       className="rounded-xl border-2 border-[#e8f1fb] focus:ring-4 focus:ring-primary/10 focus:border-primary bg-slate-50/50"
                       disabled={uploading}
@@ -705,8 +860,6 @@ export function MultipleDocumentUploadModal({
                       disabled={uploading}
                     />
                   </div>
-
-
                 </div>
               );
             })}

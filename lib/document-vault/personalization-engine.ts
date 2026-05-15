@@ -19,6 +19,9 @@ export const DYNAMIC_CATEGORIES = [
   "CIVIL",
   "MISC",
   "TRANSLATIONS",
+  "CITIZENSHIP_PROOF",
+  "RELATIONSHIP_EVIDENCE_DYNAMIC",
+  "TRANSLATIONS_SET",
   "OTHER",
 ];
 
@@ -117,8 +120,18 @@ export function generateRequiredDocuments(
   let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
     // Some categories are dynamic BUT should still keep their static definitions
     // (e.g., CIVIL has Nikah Nama, MISC has generic docs, etc.)
-    const keepStatic = ["CIVIL", "MISC", "TRANSLATIONS"];
-    if (DYNAMIC_CATEGORIES.includes(doc.category) && !keepStatic.includes(doc.category)) {
+    const keepStatic = [
+      "CIVIL",
+      "MISC",
+      "TRANSLATIONS",
+      "CITIZENSHIP_PROOF",
+      "RELATIONSHIP_EVIDENCE_DYNAMIC",
+      "TRANSLATIONS_SET",
+    ];
+    if (
+      DYNAMIC_CATEGORIES.includes(doc.category) &&
+      !keepStatic.includes(doc.category)
+    ) {
       return false;
     }
     return isDocumentRequired(doc, visaCategory, scenarioFlags);
@@ -164,6 +177,36 @@ export function generateRequiredDocuments(
           validityType: "none",
         });
       });
+    }
+  });
+
+  // SAFETY NET: Check for documents that have been uploaded to dynamic slots
+  // but are somehow missing from the config (e.g. due to race conditions during multi-upload)
+  uploadedDocIds.forEach((uploadedId) => {
+    if (uploadedId.startsWith("dynamic-")) {
+      // Check if this ID is already in our required list
+      const exists = requiredDocs.some((d) => d.id === uploadedId);
+      if (!exists) {
+        // Recover the slot info from the ID pattern: dynamic-CATEGORY-TIMESTAMP
+        const parts = uploadedId.split("-");
+        if (parts.length >= 3) {
+          const category = parts[1];
+          // We don't have the original name here, so we use a generic one or "Recovered Document"
+          // In the future, we could look up the document metadata if we had it here
+          requiredDocs.push({
+            id: uploadedId,
+            key: `${uploadedId.replace(/-/g, "_")}`,
+            name: `${getCategoryDisplayName(category).replace(/ (Documents|Evidence)$/, "")}`,
+            description: `${category.toLowerCase()}`,
+            category: category as any,
+            roles: ["BENEFICIARY"],
+            stages: ["NVC", "INTERVIEW"],
+            required: false,
+            multipleFilesAllowed: true,
+            validityType: "none",
+          });
+        }
+      }
     }
   });
 
@@ -374,6 +417,9 @@ export function getCategoryDisplayName(
     HEALTH_INSURANCE: "Health Insurance",
     SOCIAL_MEDIA: "Social Media",
     ADDRESS_PROOF: "Address Proof",
+    CITIZENSHIP_PROOF: "Proof of U.S. Citizenship",
+    RELATIONSHIP_EVIDENCE_DYNAMIC: "Relationship Evidence Documents",
+    TRANSLATIONS_SET: "Translated Documents",
     OTHER: "Other Documents",
   };
 

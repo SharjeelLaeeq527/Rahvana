@@ -8,11 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, CheckCircle2 } from "lucide-react";
 
 export interface DropdownOption {
   value: string;
   label: string;
+  status?: "uploaded" | "none";
 }
 
 interface CustomDropdownProps {
@@ -96,7 +97,17 @@ export const CustomDropdown = ({
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  <div className="flex items-center justify-between w-full pr-6">
+                    <span className={option.status === "uploaded" ? "text-primary font-bold" : ""}>
+                      {option.label}
+                    </span>
+                    {option.status === "uploaded" && (
+                      <div className="ml-2 px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                        <CheckCircle2 size={10} strokeWidth={3} />
+                        Uploaded
+                      </div>
+                    )}
+                  </div>
                 </SelectItem>
               ))
             ) : (
