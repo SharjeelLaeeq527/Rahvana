@@ -346,7 +346,7 @@ export const ResultPage = ({
         <div className="">
           {/* removed  mx-auto from above div */}
           <div className="text-center mb-8">
-            <div className="flex-col md:flex justify-center gap-4 mb-4">
+            <div className="flex-col space-y-2 md:space-y-0 md:flex justify-center gap-4 mb-4">
               <Button
                 onClick={() => setMode("prep")}
                 variant={mode === "prep" ? "default" : "outline"}
