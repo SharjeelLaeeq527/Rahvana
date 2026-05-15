@@ -2205,9 +2205,9 @@
               {
                 "label": "Payment guide · Step 5",
                 "title": "Save your payment method in Rahvana and continue",
-                "text": "Once the fee is confirmed and the payment item is prepared, save your chosen payment method in Rahvana using the dropdown below. This keeps the packet checklist consistent and confirms this step is complete before you move to packet assembly.",
-                "url": "rahvana paper filing path",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;\"><div style=\"font-weight:600;color:#15803d;margin-bottom:6px;\">Ready for packet assembly</div><div style=\"font-size:13px;color:#166534;\">Payment confirmed and method saved. Move to the next step to assemble the final mailing packet in the correct order.</div></div></div>",
+                "text": "Once your payment item is ready, go back to the step card and select your payment method from the dropdown shown in the video above. Saving your selection in Rahvana confirms this step is complete and unlocks the next stage of packet assembly.",
+                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "visual": "<video src=\"/assets/videos/ir1-journey/c1_step7(mailing)/guide_laststep.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Payment preparation must be complete before you build the final paper packet. Do not skip this — the packet checklist step depends on it."
               }
             ]
