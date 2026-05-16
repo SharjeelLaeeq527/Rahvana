@@ -36,6 +36,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+import {
   Search,
   X as CloseIcon,
   ShieldCheck,
@@ -60,7 +64,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Plus, Info } from "lucide-react";
+import { Plus, Info, LayoutTemplate } from "lucide-react";
+import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
+import Link from "next/link";
 
 export default function DocumentVaultPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -98,6 +104,10 @@ export default function DocumentVaultPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
+
+  const wizard = useWizard({ userId: user?.id });
 
   // Filter documents based on search query
   const filteredDocumentsByCategory = useMemo(() => {
@@ -209,6 +219,25 @@ export default function DocumentVaultPage() {
         });
     }
   }, [user, authLoading, router, initialized, initialize, t]);
+
+  useEffect(() => {
+    if (initialized && wizard.isLoaded && !hasShownWelcome) {
+      const isEligibilityDone = wizard.state.completedSteps.has("step_1_1");
+      const isPersonalizationDone =
+        wizard.state.metadata?.docQuestionnaireCompleted === true;
+
+      if (!isEligibilityDone || !isPersonalizationDone) {
+        setWelcomeModalOpen(true);
+        setHasShownWelcome(true);
+      }
+    }
+  }, [
+    initialized,
+    wizard.isLoaded,
+    wizard.state.completedSteps,
+    wizard.state.metadata,
+    hasShownWelcome,
+  ]);
 
   useEffect(() => {
     // Check if config exists after initialization
@@ -1181,6 +1210,52 @@ export default function DocumentVaultPage() {
             uploadedDoc={previewDoc}
           />
         )}
+
+        {/* Welcome / Incomplete Progress Modal */}
+        <Dialog open={welcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
+          <DialogContent className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden">
+            <div className="relative p-8 flex flex-col items-center text-center">
+              {/* Decorative Background */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+              </div>
+
+              {/* Icon */}
+              <div className="relative z-10 w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 shadow-inner transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                <LayoutTemplate className="w-10 h-10 text-primary" />
+              </div>
+
+              {/* Text */}
+              <h3 className="relative z-10 text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+                Personalize Your Vault
+              </h3>
+              <p className="relative z-10 text-slate-600 dark:text-slate-400 leading-relaxed mb-8 text-[15px]">
+                Your document checklist is currently using a generic template. To see the exact documents required for your specific situation, please complete{" "}
+                <span className="font-bold text-primary">Chapter 1: Step 1 (Eligibility Check)</span>{" "}
+                and{" "}
+                <span className="font-bold text-primary">Chapter 1: Step 2 (Checklist Personalization)</span>{" "}
+                in your Journey roadmap.
+              </p>
+
+              {/* Actions */}
+              <div className="relative z-10 w-full space-y-3">
+               <Link href="/visa-category/ir-category/ir-1"> <Button
+                  // onClick={() => router.push("/visa-category/ir-category/ir-1")}
+                  className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+                >
+                  Go to Journey Roadmap
+                </Button></Link>
+                <button
+                  onClick={() => setWelcomeModalOpen(false)}
+                  className="w-full h-12 rounded-2xl text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold text-sm transition-colors cursor-pointer"
+                >
+                  Continue with Generic List
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Confirmation Modal */}
         <ConfirmationModal
