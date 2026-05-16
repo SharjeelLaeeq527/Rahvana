@@ -110,10 +110,7 @@ export function MultipleDocumentUploadModal({
         return (
           docCategory === currentCategory ||
           docCategory === "OTHER" ||
-          docCategory === "MISC" ||
-          // Special case: translations set can contain translations
-          (currentCategory === "TRANSLATIONS_SET" &&
-            docCategory === "TRANSLATIONS")
+          docCategory === "MISC"
         );
       }
 

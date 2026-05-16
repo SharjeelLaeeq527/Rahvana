@@ -45,8 +45,6 @@ export type DocumentCategory =
   | "SOCIAL_MEDIA" // Social media handles history
   | "ADDRESS_PROOF" // Utility bills, rent agreements
   | "CITIZENSHIP_PROOF" // Dynamic category for U.S. citizenship docs
-  | "RELATIONSHIP_EVIDENCE_DYNAMIC" // Dynamic category for relationship evidence
-  | "TRANSLATIONS_SET" // Dynamic category for translated documents
   | "OTHER";
 
 export type ValidityType =

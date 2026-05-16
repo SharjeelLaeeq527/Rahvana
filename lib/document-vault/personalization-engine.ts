@@ -20,8 +20,6 @@ export const DYNAMIC_CATEGORIES = [
   "MISC",
   "TRANSLATIONS",
   "CITIZENSHIP_PROOF",
-  "RELATIONSHIP_EVIDENCE_DYNAMIC",
-  "TRANSLATIONS_SET",
   "OTHER",
 ];
 
@@ -125,8 +123,6 @@ export function generateRequiredDocuments(
       "MISC",
       "TRANSLATIONS",
       "CITIZENSHIP_PROOF",
-      "RELATIONSHIP_EVIDENCE_DYNAMIC",
-      "TRANSLATIONS_SET",
     ];
     if (
       DYNAMIC_CATEGORIES.includes(doc.category) &&
@@ -418,8 +414,6 @@ export function getCategoryDisplayName(
     SOCIAL_MEDIA: "Social Media",
     ADDRESS_PROOF: "Address Proof",
     CITIZENSHIP_PROOF: "Proof of U.S. Citizenship",
-    RELATIONSHIP_EVIDENCE_DYNAMIC: "Relationship Evidence Documents",
-    TRANSLATIONS_SET: "Translated Documents",
     OTHER: "Other Documents",
   };
 
