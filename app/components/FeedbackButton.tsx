@@ -59,7 +59,9 @@ export default function FeedbackButton({
       Math.round(viewportHeight * 0.45),
     ];
     const candidates = Array.from(
-      new Set(baseCandidates.map((candidate) => Math.min(candidate, maxBottom))),
+      new Set(
+        baseCandidates.map((candidate) => Math.min(candidate, maxBottom)),
+      ),
     ).filter((candidate) => candidate >= edgeOffset);
 
     const right = viewportWidth - edgeOffset;
@@ -153,7 +155,9 @@ export default function FeedbackButton({
     };
 
     schedulePositionUpdate();
-    window.addEventListener("scroll", schedulePositionUpdate, { passive: true });
+    window.addEventListener("scroll", schedulePositionUpdate, {
+      passive: true,
+    });
     window.addEventListener("resize", schedulePositionUpdate);
 
     return () => {
@@ -275,24 +279,64 @@ export default function FeedbackButton({
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(true)}
-        className="group fixed right-3 z-40 inline-flex h-12 w-12 max-w-[calc(100vw-24px)] items-center justify-center overflow-hidden rounded-full text-white shadow-lg transition-[bottom,width,background-color,box-shadow,transform,padding] duration-200 ease-out hover:w-[190px] hover:gap-2 hover:px-4 hover:scale-[1.03] focus:w-[190px] focus:gap-2 focus:px-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:w-[190px] active:gap-2 active:px-4 sm:right-6"
+        className="
+    group fixed right-3 sm:right-6 z-40
+
+    inline-flex h-12 w-12
+    items-center justify-center overflow-hidden rounded-full
+
+    text-white shadow-lg
+
+    transition-[background-color,box-shadow]
+    duration-200 ease-out
+
+    md:hover:w-[190px]
+    md:hover:gap-2
+    md:hover:px-4
+    md:hover:scale-[1.03]
+
+    md:focus:w-[190px]
+    md:focus:gap-2
+    md:focus:px-4
+
+    md:active:w-[190px]
+    md:active:gap-2
+    md:active:px-4
+
+    [contain:layout]
+    [will-change:transform]
+    [backface-visibility:hidden]
+  "
         style={{
-          bottom: bottomOffset,
+          bottom: "calc(16px + env(safe-area-inset-bottom))",
           backgroundColor: inHero
             ? "var(--feedback-button-hero, #71a1a1)"
             : "var(--feedback-button-bg, #0d7377)",
           boxShadow:
             "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
+          transform: "translate3d(0,0,0)",
         }}
-        aria-label="Provide feedback"
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        title="Provide feedback"
       >
         <span className="pointer-events-none flex shrink-0 items-center justify-center">
           <MessageSquareWarning className="h-5 w-5" />
         </span>
-        <span className="pointer-events-none max-w-0 whitespace-nowrap text-sm font-semibold opacity-0 transition-all duration-200 group-hover:max-w-[136px] group-hover:opacity-100 group-focus:max-w-[136px] group-focus:opacity-100 group-active:max-w-[136px] group-active:opacity-100">
+
+        <span
+          className="
+      pointer-events-none max-w-0 whitespace-nowrap
+      text-sm font-semibold opacity-0
+      transition-all duration-200
+
+      sm:group-hover:max-w-[136px]
+      sm:group-hover:opacity-100
+
+      sm:group-focus:max-w-[136px]
+      sm:group-focus:opacity-100
+
+      sm:group-active:max-w-[136px]
+      sm:group-active:opacity-100
+    "
+        >
           Provide Feedback
         </span>
       </button>

@@ -10,7 +10,7 @@ import { ToastProvider } from "./components/shared/ToastProvider";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
-// import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
+import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
 
 export const metadata: Metadata = {
@@ -90,7 +90,7 @@ export default function RootLayout({
                 <Footer />
                 {/* </ThemeProvider> */}
               </LanguageProvider>
-              {/* <PlanTierDevToggle /> */}
+          
               {/* DEV ONLY — uncomment for local testing */}
             </PlanProvider>
           </AuthProvider>

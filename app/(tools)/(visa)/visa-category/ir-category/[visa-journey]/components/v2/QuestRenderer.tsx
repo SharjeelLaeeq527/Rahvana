@@ -235,7 +235,7 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 pt-16 sm:pt-16 pb-8 animate-in fade-in duration-500">
+      <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 pt-12 sm:pt-14 pb-8 animate-in fade-in duration-500">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1
@@ -376,7 +376,7 @@ export function QuestRenderer({
     const meta = getStatusMeta(activeQuest.id, 36);
 
     return (
-      <div className="w-full max-w-[600px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-10 animate-in zoom-in-95 fade-in duration-500 flex flex-col items-center justify-center min-h-[500px]">
+      <div className="w-full max-w-[600px] mx-auto px-4 sm:px-6 pt-12 sm:pt-14 pb-10 animate-in zoom-in-95 fade-in duration-500 flex flex-col items-center justify-center min-h-[500px]">
         <div className="text-center w-full">
           <div
             className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full ${meta.bg} ${meta.color} flex items-center justify-center mx-auto mb-6 sm:mb-8 text-3xl border border-current/10`}
@@ -439,7 +439,7 @@ export function QuestRenderer({
       : { bar: "bg-[#051738]", barBg: "bg-[#e8ecf3]", border: "border-[#051738]", closeBg: "bg-[#e8ecf3] hover:bg-[#051738]/10", closeStroke: "stroke-[#051738]", label: "text-[#051738]", btn: "bg-[#051738] text-white shadow-[#051738]/20 hover:bg-[#020a1a]" };
 
     return (
-      <div className="w-full flex flex-col animate-in slide-in-from-right-4 pt-15 fade-in duration-500">
+      <div className="w-full flex flex-col animate-in slide-in-from-right-4 pt-6 fade-in duration-500">
         {/* Topbar */}
         <div
           className={`flex items-center gap-2 sm:gap-3 shrink-0 border-b px-3 sm:px-4 h-10 ${accentColor.border}`}

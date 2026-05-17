@@ -175,6 +175,40 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Write admin fields to case_data so they appear in user's wizard state
+    const checkDate = body.check_date || new Date().toISOString();
+    const upsertOps: any[] = [
+      {
+        journey_id: id,
+        data_key: 'admin_last_check_date',
+        data_value: checkDate,
+        label: 'Admin Last Check Date',
+        source: 'admin',
+        source_reference: 'visa_cases_panel',
+      },
+    ];
+    if (body.case_status) {
+      upsertOps.push({
+        journey_id: id,
+        data_key: 'admin_case_status',
+        data_value: body.case_status,
+        label: 'Admin Case Status',
+        source: 'admin',
+        source_reference: 'visa_cases_panel',
+      });
+    }
+    if (body.check_notes) {
+      upsertOps.push({
+        journey_id: id,
+        data_key: 'admin_check_notes',
+        data_value: body.check_notes,
+        label: 'Admin Check Notes',
+        source: 'admin',
+        source_reference: 'visa_cases_panel',
+      });
+    }
+    await supabase.from('case_data').upsert(upsertOps, { onConflict: 'journey_id,data_key' });
+
     // TODO: Trigger notification to user if important status changed
     // This will be implemented in Phase C
     // Important triggers:
