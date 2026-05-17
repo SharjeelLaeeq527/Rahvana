@@ -2133,7 +2133,7 @@
           "display_number_override": 7,
           "step_description": "Get the filing fee ready before assembling the packet. This step helps you prepare the payment correctly and place it where it belongs in the mailing packet.",
           "who": "Petitioner",
-          "where": "uscis.gov/i-130",
+          "where": "uscis.gov/g-1055?form=i-130",
           "timeline": "1-2 hours",
           "dependencies": [
             "step_1_11"
@@ -2198,8 +2198,8 @@
                   "label": "Card with Form G-1450"
                 },
                 {
-                  "value": "Check or money order",
-                  "label": "Check or money order"
+                  "value": "ACH with Form G-1650",
+                  "label": "ACH with Form G-1650"
                 },
                 {
                   "value": "Other verified method",
@@ -2210,35 +2210,43 @@
             "guide_steps": [
               {
                 "label": "Payment guide · Step 1",
-                "title": "Confirm the current filing fee first",
-                "text": "Before preparing payment, confirm the current Form I-130 fee from official USCIS guidance so you do not mail an outdated amount.",
-                "url": "uscis.gov/i-130",
-                "visual": "<div class=\"mt\">Official USCIS fee check</div><div class=\"mb\"><div class=\"small\">Review the current fee and accepted paper-filing payment instructions before you finalize the packet.</div></div>",
-                "note": "Do not rely on an old screenshot or memory for the amount. USCIS fee amounts can change."
+                "title": "Go to the official USCIS fee schedule page",
+                "text": "Open the official USCIS fee schedule at <strong>uscis.gov/g-1055</strong> and select <strong>I-130, Petition for Alien Relative</strong> from the form dropdown to see the current filing fees. This is the only place you should confirm the fee amount — do not rely on any saved screenshot or old amount.",
+                "url": "uscis.gov/g-1055?form=i-130",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/Screenshot 2026-05-15 003134.jpg\" alt=\"USCIS G-1055 fee schedule page with I-130 selected\" style=\"width:100%;\" />",
+                "note": "Type 'I-13' in the search field and select 'I-130, Petition for Alien Relative' from the dropdown that appears."
               },
               {
                 "label": "Payment guide · Step 2",
-                "title": "Choose the paper-filing payment method",
-                "text": "Prepare the fee using the paper-filing payment method you plan to use. Keep everything complete and ready before packet assembly.",
-                "url": "uscis.gov/g-1450",
-                "visual": "<div class=\"mt\">Payment preparation</div><div class=\"mb\"><div class=\"small\">Card with Form G-1450</div></div><div class=\"mb\"><div class=\"small\">Check or money order</div></div>",
-                "note": "If you plan to use a card, complete the required payment form carefully. If you use another method, confirm it is currently accepted for your filing."
+                "title": "Check the current I-130 filing fees",
+                "text": "After selecting I-130, the page shows the current filing fees for Form I-130. Review the fee for <strong>Paper Filing</strong> before preparing your payment. Have the exact amount ready before assembling the final mailing packet.",
+                "url": "uscis.gov/g-1055?form=i-130",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/filingfee.png\" alt=\"Current I-130 Filing Fee\" style=\"width:100%; border-radius: 8px; border: 1px solid #e2e8f0;\" />",
+                "note": "You are filing by paper, so the applicable fee is the Paper Filing Fee. Prepare payment for this exact amount before packet assembly."
               },
               {
                 "label": "Payment guide · Step 3",
-                "title": "Keep payment ready with the packet front section",
-                "text": "Your payment item should be easy to place at the front of the packet when you assemble the final mailing order.",
-                "url": "paper packet",
-                "visual": "<div class=\"mt\">Packet front section</div><div class=\"mb\"><div class=\"small\">1. Payment</div></div><div class=\"mb\"><div class=\"small\">2. Forms</div></div><div class=\"mb\"><div class=\"small\">3. Supporting evidence</div></div>",
-                "note": "This keeps packet assembly clear and reduces the chance of forgetting payment when you mail the packet."
+                "title": "Choose your paper-filing payment method",
+                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of two methods:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li></ul>",
+                "url": "uscis.gov/forms/all-forms",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/peyment method.png\" alt=\"Payment Methods\" style=\"width:100%; border-radius: 8px; border: 1px solid #e2e8f0;\" />",
+                "note": "Download and print Form G-1450 or Form G-1650 from uscis.gov and fill it out completely before placing it in the packet."
               },
               {
                 "label": "Payment guide · Step 4",
-                "title": "Save your payment choice and continue",
-                "text": "Once your fee is ready, save the payment method in Rahvana and move to packet assembly.",
-                "url": "rahvana paper filing path",
-                "visual": "<div class=\"mt\">Ready for packet assembly</div><div class=\"mb\"><div class=\"small\">Payment prepared</div></div><div class=\"mbtn\">Continue to packet assembly</div>",
-                "note": "Payment preparation should be complete before you build the final paper packet."
+                "title": "Place payment at the front of the packet",
+                "text": "Once the payment item is ready — whether it is a completed Form G-1450 (card) or Form G-1650 (ACH) — place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
+                "url": "paper packet",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH) — placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
+              },
+              {
+                "label": "Payment guide · Step 5",
+                "title": "Save your payment method in Rahvana and continue",
+                "text": "Once your payment item is ready, go back to the step card and select your payment method from the dropdown shown in the video above. Saving your selection in Rahvana confirms this step is complete and unlocks the next stage of packet assembly.",
+                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "visual": "<video src=\"/assets/videos/ir1-journey/c1_step7(mailing)/guide_laststep.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
+                "note": "Payment preparation must be complete before you build the final paper packet. Do not skip this — the packet checklist step depends on it."
               }
             ]
           }
@@ -2446,15 +2454,15 @@
                 "label": "Mailing guide · Step 4",
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
-                "url": "rahvana paper filing path",
-                "visual": "<video src=\"/cursorful-video-1778675907343.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
+                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "visual": "<video src=\"/step4chp1.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
               {
                 "label": "Mailing guide · Step 5",
                 "title": "Watch for delivery, then wait for the USCIS receipt notice",
                 "text": "Once the carrier shows delivered, keep the proof and then watch for USCIS acceptance and the receipt notice.",
-                "url": "delivery confirmation",
+                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step3.jpg\" alt=\"Watch for delivery and receipt notice\" style=\"width:100%;\" />",
                 "note": "After delivery, the paper path rejoins the same receipt-notice and case-tracking flow used in the online branch."
               }

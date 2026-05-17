@@ -443,36 +443,40 @@ export function useWizard(options: UseWizardOptions = {}) {
       },
 
       updateMetadata: async (metadata: Record<string, any>) => {
-        setState((prev) => {
-          const hasChanges = Object.entries(metadata).some(
-            ([key, val]) => JSON.stringify(prev.metadata[key]) !== JSON.stringify(val)
-          );
-          if (!hasChanges) return prev;
+        const currentState = stateRef.current;
 
-          const mergedMetadata = { ...prev.metadata, ...metadata };
+        const hasChanges = Object.entries(metadata).some(
+          ([key, val]) => JSON.stringify(currentState.metadata[key]) !== JSON.stringify(val)
+        );
+        if (!hasChanges) return;
 
-          if (prev.backendId) {
-            const ops = Object.entries(metadata).map(([key, val]) => ({
-              operation: "set",
-              data_key: key,
-              data_value: val,
-            }));
-            fetch("/api/case_data", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                journey_id: prev.backendId,
-                batch: true,
-                operations: ops,
-              }),
-            }).then(() => {
-              window.dispatchEvent(new CustomEvent("refresh-reminders"));
-              invalidateJourneyCache();
-            }).catch((err) => console.error("[useWizard] Case data sync failed:", err));
+        // Optimistic local update immediately
+        setState((prev) => ({
+          ...prev,
+          metadata: { ...prev.metadata, ...metadata },
+        }));
+
+        if (currentState.backendId) {
+          const ops = Object.entries(metadata).map(([key, val]) => ({
+            operation: "set",
+            data_key: key,
+            data_value: val,
+          }));
+          const res = await fetch("/api/case_data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              journey_id: currentState.backendId,
+              batch: true,
+              operations: ops,
+            }),
+          });
+          if (!res.ok) {
+            throw new Error(`[useWizard] Case data sync failed: HTTP ${res.status}`);
           }
-
-          return { ...prev, metadata: mergedMetadata };
-        });
+          window.dispatchEvent(new CustomEvent("refresh-reminders"));
+          invalidateJourneyCache();
+        }
       },
 
       updateAnswers: (answers: Record<string, any>) => {

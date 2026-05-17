@@ -1815,35 +1815,56 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     actionData.dropdown_card.dropdown_options || []
                   ).filter((opt) => opt.value !== "")}
                   value={selectedDropdown}
-                  onChange={async (value) => {
+                  onChange={(value) => {
                     if (!value) return;
-                    if (!stepEntitlement.guard()) return;
-
-                    setIsSavingPayment(true);
-                    try {
-                      if (actions?.savePaymentMethod) {
-                        await actions.savePaymentMethod(value);
-                      } else if (actions?.updateMetadata) {
-                        // Fallback path for flows where StepView does not provide savePaymentMethod.
-                        await actions.updateMetadata({
-                          paper_payment_method: value,
-                        });
-                      } else {
-                        throw new Error(
-                          "[ActionStepRenderer] Neither savePaymentMethod nor updateMetadata is available in actions",
-                        );
-                      }
-                      setSelectedDropdown(value);
-                      setStatusSaved(true);
-                    } catch (error) {
-                      console.error("Failed to save payment method:", error);
-                      setStatusSaved(false);
-                    } finally {
-                      setIsSavingPayment(false);
-                    }
+                    setSelectedDropdown(value);
+                    setStatusSaved(false);
                   }}
                   placeholder="Select option"
                 />
+
+                <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={async () => {
+                      if (!selectedDropdown) {
+                        showToast("Please select a payment method first.", "error");
+                        return;
+                      }
+                      if (!stepEntitlement.guard()) return;
+
+                      setIsSavingPayment(true);
+                      try {
+                        if (actions?.savePaymentMethod) {
+                          await actions.savePaymentMethod(selectedDropdown);
+                        } else if (actions?.updateMetadata) {
+                          await actions.updateMetadata({
+                            paper_payment_method: selectedDropdown,
+                          });
+                        } else {
+                          throw new Error(
+                            "[ActionStepRenderer] Neither savePaymentMethod nor updateMetadata is available in actions",
+                          );
+                        }
+                        setStatusSaved(true);
+                        showToast("Payment method saved successfully!", "success");
+                        setTimeout(() => setStatusSaved(false), 4000);
+                      } catch (error) {
+                        console.error("Failed to save payment method:", error);
+                        setStatusSaved(false);
+                        showToast("Failed to save payment method", "error");
+                      } finally {
+                        setIsSavingPayment(false);
+                      }
+                    }}
+                    disabled={!selectedDropdown || isSavingPayment}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+                    style={{
+                      backgroundColor: "var(--rv-ch1)", 
+                    }}
+                  >
+                    {isSavingPayment ? "Saving..." : (actionData.action_button_label || "Save payment method")}
+                  </button>
+                </div>
               </div>
             )}
 
