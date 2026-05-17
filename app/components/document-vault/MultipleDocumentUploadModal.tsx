@@ -358,8 +358,14 @@ export function MultipleDocumentUploadModal({
           targetCategory
         ]?.find((s: any) => s.name.trim().toLowerCase() === normalizedType);
 
+        const mappedId = mapDocumentNameToId(uploadItem.type);
+        const staticMatch = mappedId && mappedId !== "misc-document" && 
+                            ALL_DOCUMENTS.find(d => d.id === mappedId)?.category === targetCategory;
+
         if (existingSlot) {
           specificDefId = existingSlot.id;
+        } else if (staticMatch) {
+          specificDefId = mappedId;
         } else {
           // Create new slot
           if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
