@@ -577,6 +577,7 @@ export default function DocumentVaultPage() {
                       <Progress
                         value={stats.percentComplete}
                         className="h-3 bg-white/20"
+                        indicatorClassName="bg-white"
                       />
                     </div>
 
