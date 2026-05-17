@@ -1102,9 +1102,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         personName = vaultConfig.jointSponsorName;
       }
       formDataUpload.append("personName", personName);
+      const isCompleted = currentStep === totalSteps;
       formDataUpload.append(
         "notes",
-        `Automatically generated via ${config?.formTitle || formCode} tool.`,
+        `Automatically generated via ${config?.formTitle || formCode} tool (${isCompleted ? "Completed" : `Progress: ${currentStep}/${totalSteps}`}).`,
       );
 
       const uploadRes = await fetch("/api/documents/upload", {
@@ -1163,7 +1164,30 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           const stepNum = idx + 1;
           const label = section.title.replace(/^\d+\.\s*/, "");
           const isActive = currentStep === stepNum;
-          const isDone = stepNum < currentStep;
+          const visibleSectionFields = section.fields.filter(
+            (field) => !field.condition || field.condition(formData)
+          );
+          
+          const answeredCount = visibleSectionFields.filter((field) => {
+            const value = formData[field.key];
+            return value && value.trim() !== "";
+          }).length;
+          
+          const totalCount = visibleSectionFields.length;
+          
+          const isCompleted =
+            totalCount > 0 && answeredCount === totalCount;
+          
+          const isSkipped =
+            stepNum < currentStep &&
+            answeredCount > 0 &&
+            answeredCount < totalCount;
+          
+          const isUnansweredSkipped =
+            stepNum < currentStep &&
+            answeredCount === 0;
+          
+          const isDone = isCompleted;
           const isExpanded = expandedSections.has(section.title);
 
           return (
@@ -1219,9 +1243,23 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     >
                       {label}
                     </p>
-                    <p className="text-[11px] text-gray-500 truncate">
-                      {isDone ? "✓ Completed" : isActive ? "In progress" : ""}
-                    </p>
+                    <p className="text-[11px] truncate">
+  {isCompleted ? (
+    <span className="text-emerald-600 font-medium">
+      ✓ Completed
+    </span>
+  ) : isSkipped || isUnansweredSkipped ? (
+    <span className="text-amber-600 font-medium">
+      Skipped
+    </span>
+  ) : isActive ? (
+    <span className="text-sky-600 font-medium">
+      In Progress
+    </span>
+  ) : (
+    ""
+  )}
+</p>
                   </div>
                 )}
 

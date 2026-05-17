@@ -8,6 +8,8 @@ import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react";
 
+import { toast } from "sonner";
+
 /** Lazy-load StepView (354 KB source) — only fetched when user navigates to a step */
 const LazyStepView = React.lazy(() =>
   import("./StepView").then((mod) => ({ default: mod.StepView }))
@@ -66,6 +68,19 @@ export default function RoadmapLayoutV2({
   };
 
   const handleSelectStep = (cIdx: number, sIdx: number) => {
+    const chapters = data.chapters || [];
+    const targetStep = chapters[cIdx]?.steps[sIdx];
+    const targetKey = targetStep?.step_key;
+
+    // Sequential navigation guard: Step 1.1 -> Step 1.2
+    if (targetKey === "step_1_2" && !state.completedSteps.has("step_1_1")) {
+      toast.error("Please complete Step 1 (Determine Eligibility) before accessing Step 2.", {
+        description: "Your eligibility answers are used to customize the document checklist for your situation.",
+        duration: 5000,
+      });
+      return;
+    }
+
     setSelectedChapterIdx(cIdx);
     actions.setStage(cIdx);
     actions.setCurrentStep(sIdx);

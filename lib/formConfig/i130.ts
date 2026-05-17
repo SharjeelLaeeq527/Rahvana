@@ -2611,7 +2611,7 @@ export const formFields: Field[] = [
   // },
   {
     key: "has_a_number_1",
-    label: "Do they have an Alien Registration Number (A-Number)?",
+    label: "Does the beneficiary have an Alien Registration Number (A-Number)?",
     type: "radio",
     section: "Information About Beneficiary",
     options: [
@@ -2622,7 +2622,7 @@ export const formFields: Field[] = [
       {
         key: "alienNumber",
         label:
-          "What is the Alien Registration Number (A-Number)? (If they have one)",
+          "What is the Alien Registration Number (A-Number)? (If the beneficiary has one)",
         type: "text",
         section: "Information About Beneficiary",
         pdfKey: "Pt4Line1_AlienNumber", // ← SHORT KEY
@@ -2634,7 +2634,7 @@ export const formFields: Field[] = [
   },
   {
     key: "has_a_uscis_number",
-    label: "Do they have a USCIS Online Account Number?",
+    label: "Does the beneficiary have a USCIS Online Account Number?",
     type: "radio",
     section: "Information About Beneficiary",
     options: [
@@ -2644,7 +2644,7 @@ export const formFields: Field[] = [
     subQuestions: [
       {
         key: "uscisOnlineNumber",
-        label: "What is the USCIS Online Account Number? (If they have one)",
+        label: "What is the USCIS Online Account Number? (If the beneficiary has one)",
         type: "text",
         section: "Information About Beneficiary",
         pdfKey: "Pt4Line2_USCISOnlineActNumber",
@@ -2656,7 +2656,7 @@ export const formFields: Field[] = [
   },
   {
     key: "has_a_ssn_number",
-    label: "Do they have a U.S. Social Security Number?",
+    label: "Does the beneficiary have a U.S. Social Security Number?",
     type: "radio",
     section: "Information About Beneficiary",
     options: [
@@ -2666,7 +2666,7 @@ export const formFields: Field[] = [
     subQuestions: [
       {
         key: "ssn",
-        label: "What is the U.S. Social Security Number? (If they have one)",
+        label: "What is the U.S. Social Security Number? (If the beneficiary has one)",
         type: "text",
         section: "Information About Beneficiary",
         pdfKey: "Pt4Line3_SSN",
@@ -2707,21 +2707,21 @@ export const formFields: Field[] = [
   {
     key: "otherFamilyName",
     label:
-      "Have they used any other Last Name? (For example: Maiden name. Leave blank if none)",
+      "Has the beneficiary used any other Last Name? (For example: Maiden name. Leave blank if none)",
     type: "text",
     section: "Information About Beneficiary",
     pdfKey: "P4Line5a_FamilyName",
   },
   {
     key: "otherGivenName",
-    label: "Have they used any other First Name? (Leave blank if none)",
+    label: "Has the beneficiary used any other First Name? (Leave blank if none)",
     type: "text",
     section: "Information About Beneficiary",
     pdfKey: "Pt4Line5b_GivenName",
   },
   {
     key: "otherMiddleName",
-    label: "Have they used any other Middle Name? (Leave blank if none)",
+    label: "Has the beneficiary used any other Middle Name? (Leave blank if none)",
     type: "text",
     section: "Information About Beneficiary",
     pdfKey: "Pt4Line5c_MiddleName",
@@ -2730,21 +2730,21 @@ export const formFields: Field[] = [
   // Birth Information
   {
     key: "cityOfBirth",
-    label: "What city, town, or village were they born in?",
+    label: "What city, town, or village was the beneficiary born in?",
     type: "text",
     section: "Information About Beneficiary",
     pdfKey: "Pt4Line7_CityTownOfBirth",
   },
   {
     key: "countryOfBirth",
-    label: "What country were they born in?",
+    label: "What country was the beneficiary born in?",
     type: "text",
     section: "Information About Beneficiary",
     pdfKey: "Pt4Line8_CountryOfBirth",
   },
   {
     key: "dateOfBirth",
-    label: "When were they born?",
+    label: "When was the beneficiary born?",
     type: "date",
     section: "Information About Beneficiary",
     pdfKey: "Pt4Line9_DateOfBirth",
@@ -2768,7 +2768,7 @@ export const formFields: Field[] = [
   {
     key: "everInUS",
     pdfKey: "everInUS",
-    label: "Have they ever been in the United States?",
+    label: "Has the beneficiary ever been in the United States?",
     type: "radio",
     section: "Information About Beneficiary",
     options: [
@@ -2808,14 +2808,14 @@ export const formFields: Field[] = [
   },
   {
     key: "currentCity",
-    label: "What city or town do they live in?",
+    label: "What city or town does the beneficiary live in?",
     type: "text",
     section: "Current Physical Address",
     pdfKey: "Pt4Line11_CityOrTown",
   },
   {
     key: "currentState",
-    label: "What U.S. state do they live in? (If applicable)",
+    label: "What U.S. state does the beneficiary live in? (If applicable)",
     type: "dropdown",
     isState: true,
     section: "Current Physical Address",
@@ -2831,7 +2831,7 @@ export const formFields: Field[] = [
   },
   {
     key: "currentProvince",
-    label: "What province do they live in? (If outside the U.S.)",
+    label: "What province does the beneficiary live in? (If outside the U.S.)",
     type: "text",
     section: "Current Physical Address",
     pdfKey: "Pt4Line11_Province",
@@ -2845,7 +2845,7 @@ export const formFields: Field[] = [
   },
   {
     key: "currentCountry",
-    label: "What country do they live in?",
+    label: "What country does the beneficiary live in?",
     type: "text",
     section: "Current Physical Address",
     pdfKey: "Pt4Line11_Country",
@@ -2855,7 +2855,7 @@ export const formFields: Field[] = [
   {
     key: "futureStreet",
     label:
-      "What is the street address where they intend to live in the U.S.? (For example: 123 Main St)",
+      "What is the street address where the beneficiary intends to live in the U.S.? (For example: 123 Main St)",
     type: "text",
     section: "Address Where Your Relative Intends to Live",
     pdfKey: "Pt4Line12a_StreetNumberName",
@@ -2882,14 +2882,14 @@ export const formFields: Field[] = [
   },
   {
     key: "futureCity",
-    label: "What U.S. city or town do they intend to live in?",
+    label: "What U.S. city or town does the beneficiary intend to live in?",
     type: "text",
     section: "Address Where Your Relative Intends to Live",
     pdfKey: "Pt4Line12c_CityOrTown",
   },
   {
     key: "futureState",
-    label: "What U.S. state do they intend to live in?",
+    label: "What U.S. state does the beneficiary intend to live in?",
     type: "dropdown",
     isState: true,
     section: "Address Where Your Relative Intends to Live",
@@ -2907,7 +2907,7 @@ export const formFields: Field[] = [
   // Foreign Address
   {
     key: "foreignStreet",
-    label: "What is the street address abroad? (If they live outside the U.S.)",
+    label: "What is the street address abroad? (If the beneficiary lives outside the U.S.)",
     type: "text",
     section: "Address Abroad (if not immigrating to U.S.)",
     pdfKey: "Pt4Line13_StreetNumberName",
@@ -2963,7 +2963,7 @@ export const formFields: Field[] = [
   // Contact
   {
     key: "daytimePhone",
-    label: "What is their daytime phone number?",
+    label: "What is the beneficiary's daytime phone number?",
     type: "text",
     section: "Contact Information",
     pdfKey: "Pt4Line14_DaytimePhoneNumber",
@@ -2973,14 +2973,14 @@ export const formFields: Field[] = [
 
   {
     key: "mobilePhone",
-    label: "What is their mobile phone number? (If they have one)",
+    label: "What is the beneficiary's mobile phone number? (If the beneficiary has one)",
     type: "text",
     section: "Contact Information",
     pdfKey: "Pt4Line15_MobilePhoneNumber",
   },
   {
     key: "email",
-    label: "What is their email address? (If they have one)",
+    label: "What is the beneficiary's email address? (If the beneficiary has one)",
     type: "text",
     section: "Contact Information",
     pdfKey: "Pt4Line16_EmailAddress",
@@ -2989,7 +2989,7 @@ export const formFields: Field[] = [
   // Marital Status
   {
     key: "numberOfMarriages",
-    label: "How many times have they been married?",
+    label: "How many times has the beneficiary been married?",
     type: "text",
     section: "Marital Information",
     pdfKey: "Pt4Line17_NumberofMarriages",
@@ -3053,7 +3053,7 @@ export const formFields: Field[] = [
   },
   {
     key: "dateOfMarriage",
-    label: "When did they get married?",
+    label: "When did the beneficiary get married?",
     type: "text",
     section: "Current Marriage Information",
     pdfKey: "Pt4Line19_DateOfMarriage",
@@ -3061,7 +3061,7 @@ export const formFields: Field[] = [
   },
   {
     key: "marriageCity",
-    label: "In what city or town did they get married?",
+    label: "In what city or town did the beneficiary get married?",
     type: "text",
     section: "Current Marriage Information",
     pdfKey: "Pt4Line20a_CityTown",
@@ -3069,7 +3069,7 @@ export const formFields: Field[] = [
   },
   {
     key: "marriageState",
-    label: "In what U.S. state did they get married? (If applicable)",
+    label: "In what U.S. state did the beneficiary get married? (If applicable)",
     type: "dropdown",
     isState: true,
     section: "Current Marriage Information",
@@ -3078,7 +3078,7 @@ export const formFields: Field[] = [
   },
   {
     key: "marriageProvince",
-    label: "In what province did they get married? (If outside the U.S.)",
+    label: "In what province did the beneficiary get married? (If outside the U.S.)",
     type: "text",
     section: "Current Marriage Information",
     pdfKey: "Pt4Line20c_Province",
@@ -3086,7 +3086,7 @@ export const formFields: Field[] = [
   },
   {
     key: "marriageCountry",
-    label: "In what country did they get married?",
+    label: "In what country did the beneficiary get married?",
     type: "text",
     section: "Current Marriage Information",
     pdfKey: "Pt4Line20d_Country",
@@ -3097,7 +3097,7 @@ export const formFields: Field[] = [
   {
     key: "note",
     label:
-      "Provide information on their current husband or wife (if they are married) first, and then list all previous ones.",
+      "Provide information on the beneficiary's current husband or wife (if the beneficiary is married) first, and then list all previous ones.",
     type: "hidden",
     section: "Names of Prior Spouses",
   },
@@ -3518,7 +3518,7 @@ export const formFields: Field[] = [
       {
         key: "beneficiary_classOfAdmission",
         label:
-          "When your family member last came to the U.S., what was their status? (Like a visitor or student)",
+          "When your family member last came to the U.S., what was the beneficiary's status? (Like a visitor or student)",
         type: "select",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line21a_ClassOfAdmission",
@@ -3680,7 +3680,7 @@ export const formFields: Field[] = [
       {
         key: "beneficiary_i94Number",
         label:
-          "What is their I-94 Arrival-Departure Record Number? (If they have one)",
+          "What is the beneficiary's I-94 Arrival-Departure Record Number? (If the beneficiary has one)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line21b_ArrivalDeparture",
@@ -3700,7 +3700,7 @@ export const formFields: Field[] = [
       {
         key: "beneficiary_stayExpiredDate",
         label:
-          "How long are they allowed to stay in the U.S.? (Look for the date on their I-94, or 'D/S')",
+          "How long is the beneficiary allowed to stay in the U.S.? (Look for the date on the beneficiary's I-94, or 'D/S')",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line21d_DateExpired",
@@ -3713,7 +3713,7 @@ export const formFields: Field[] = [
   // 47-50: Passport / Travel Document
   {
     key: "beneficiary_passportNumber",
-    label: "What is their passport number?",
+    label: "What is the beneficiary's passport number?",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line22_PassportNumber",
@@ -3721,7 +3721,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_travelDocNumber",
-    label: "What is their travel document number?",
+    label: "What is the beneficiary's travel document number?",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line23_TravelDocNumber",
@@ -3729,7 +3729,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_docCountryOfIssuance",
-    label: "Which country gave them their passport or travel document?",
+    label: "Which country issued the beneficiary's passport or travel document?",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line24_CountryOfIssuance",
@@ -3737,7 +3737,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_docExpirationDate",
-    label: "When does their passport or travel document expire?",
+    label: "When does the beneficiary's passport or travel document expire?",
     type: "date",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line25_ExpDate",
@@ -3747,14 +3747,14 @@ export const formFields: Field[] = [
   // 51: Employment Information
   {
     key: "beneficiary_isEmployed",
-    label: "Do they have a job right now?",
+    label: "Does the beneficiary have a job right now?",
     type: "radio",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "beneficiary_isEmployed",
     options: [
-      { label: "Yes, they have a job", value: "Yes", pdfKey: "dummy_yes" },
+      { label: "Yes, the beneficiary has a job", value: "Yes", pdfKey: "dummy_yes" },
       {
-        label: "No, they are not working (Unemployed)",
+        label: "No, the beneficiary is not working (Unemployed)",
         value: "No",
         pdfKey: "dummy_no",
       },
@@ -3762,7 +3762,7 @@ export const formFields: Field[] = [
     subQuestions: [
       {
         key: "beneficiary_employerName",
-        label: "What is the name of their current company?",
+        label: "What is the name of the beneficiary's current company?",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_NameOfCompany",
@@ -3771,7 +3771,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_employerStreet",
-        label: "What is the street address of their company?",
+        label: "What is the street address of the beneficiary's company?",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_StreetNumberName",
@@ -3808,7 +3808,7 @@ export const formFields: Field[] = [
 
       {
         key: "beneficiary_employerCity",
-        label: "In what city or town is their company located?",
+        label: "In what city or town is the beneficiary's company located?",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_CityOrTown",
@@ -3856,7 +3856,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_employerCountry",
-        label: "In what country is their company located?",
+        label: "In what country is the beneficiary's company located?",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_Country",
@@ -3866,7 +3866,7 @@ export const formFields: Field[] = [
       // 52. Employment Start Date
       {
         key: "beneficiary_employmentStartDate",
-        label: "When did they start working there?",
+        label: "When did the beneficiary start working there?",
         type: "date",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line27_DateEmploymentBegan",
@@ -3879,7 +3879,7 @@ export const formFields: Field[] = [
   // 53. Immigration Proceedings
   {
     key: "beneficiary_inImmigrationProceedings",
-    label: "Have they ever had a case in an immigration court?",
+    label: "Has the beneficiary ever had a case in an immigration court?",
     type: "radio",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "beneficiary_inImmigrationProceedings",
@@ -3892,14 +3892,14 @@ export const formFields: Field[] = [
       {
         key: "note_immigration_type",
         pdfKey: "proceeding_type",
-        label: "Select all the types of court cases that apply to them:",
+        label: "Select all the types of court cases that apply to the beneficiary:",
         type: "radio",
         section: "Information About Beneficiary (Continued)",
         condition: (data) =>
           data.beneficiary_inImmigrationProceedings === "Yes",
         options: [
           {
-            label: "Removal (The government ordered them to leave the U.S.)",
+            label: "Removal (The government ordered the beneficiary to leave the U.S.)",
             value: "Removal",
             pdfKey: "Pt4Line54_Removal",
           },
@@ -3910,7 +3910,7 @@ export const formFields: Field[] = [
           },
           {
             label:
-              "Rescission (The government tried to take back their previous legal status)",
+              "Rescission (The government tried to take back the beneficiary's previous legal status)",
             value: "recission",
             pdfKey: "Pt4Line54_Rescission",
           },
@@ -3975,34 +3975,34 @@ export const formFields: Field[] = [
   {
     key: "beneficiary_nativeLanguageFamilyName",
     label:
-      "What is your relative's last name in their own native language (like Arabic, Chinese, or Hindi)?",
+      "What is the beneficiary's last name in the beneficiary's native language (like Arabic, Chinese, or Hindi)?",
     type: "text",
     section: "Beneficiary's Native Language",
     keyboardType: "urdu",
     inputMode: "none",
     pdfKey: "Pt4Line55a_FamilyName",
-    placeholder: "Last Name",
+    placeholder: "خاندانی نام / سرنیم",
     subQuestions: [
       {
         key: "beneficiary_nativeLanguageGivenName",
-        label: "What is their first name in their native language?",
+        label: "What is the beneficiary's first name in the beneficiary's native language?",
         type: "text",
         section: "Beneficiary's Native Language",
         keyboardType: "urdu",
         inputMode: "none",
         pdfKey: "Pt4Line55b_GivenName",
-        placeholder: "First Name",
+        placeholder: "ذاتی نام",
       },
       {
         key: "beneficiary_nativeLanguageMiddleName",
         label:
-          "What is their middle name in their native language? (Skip if they don't have one)",
+          "What is the beneficiary's middle name in the beneficiary's native language? (Skip if the beneficiary doesn't have one)",
         type: "text",
         section: "Beneficiary's Native Language",
         keyboardType: "urdu",
         inputMode: "none",
         pdfKey: "Pt4Line55c_MiddleName",
-        placeholder: "Middle Name",
+        placeholder: "درمیانی نام",
       },
     ],
   },
@@ -4010,7 +4010,7 @@ export const formFields: Field[] = [
   // 58: Beneficiary's Native Address
   {
     key: "beneficiary_nativeLanguageStreet",
-    label: "What is the street address written in their native language?",
+    label: "What is the street address written in the beneficiary's native language?",
     type: "text",
     section: "Beneficiary's Native Language",
     keyboardType: "urdu",
@@ -4054,7 +4054,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_nativeLanguageProvince",
-    label: "In what province do they live? (In native language)",
+    label: "In what province does the beneficiary live? (In native language)",
     type: "text",
     section: "Beneficiary's Native Language",
     keyboardType: "urdu",
@@ -4086,7 +4086,7 @@ export const formFields: Field[] = [
   // 57: Beneficiary's Current Address in U.S.
   {
     key: "beneficiary_currentUSStreet",
-    label: "What is their current street address in the U.S.?",
+    label: "What is the beneficiary's current street address in the U.S.?",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line57_StreetNumberName",
@@ -4174,7 +4174,7 @@ export const formFields: Field[] = [
   // 58.a-b: Dates of Marriage
   {
     key: "beneficiary_marriageDateFrom",
-    label: "When did their current or most recent marriage start?",
+    label: "When did the beneficiary's current or most recent marriage start?",
     type: "date",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line58a_DateFrom",
@@ -4183,7 +4183,7 @@ export const formFields: Field[] = [
   {
     key: "beneficiary_marriageDateTo",
     label:
-      "On what date did that marriage end? (Leave blank if they are still married)",
+      "On what date did that marriage end? (Leave blank if the beneficiary is still married)",
     type: "date",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line58b_DateTo",
@@ -4193,7 +4193,7 @@ export const formFields: Field[] = [
   // 60.a-b: Beneficiary's Intended Address in U.S.
   {
     key: "beneficiary_intendedCity",
-    label: "In what U.S. city or town do they plan to live?",
+    label: "In what U.S. city or town does the beneficiary plan to live?",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line60a_CityOrTown",
@@ -4201,7 +4201,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_intendedState",
-    label: "In what U.S. state do they intend to live?",
+    label: "In what U.S. state does the beneficiary intend to live?",
     type: "dropdown",
     isState: true,
     section: "Information About Beneficiary (Continued)",
@@ -4218,7 +4218,7 @@ export const formFields: Field[] = [
   {
     key: "beneficiary_abroadCity",
     label:
-      "If they are currently outside the U.S., what city or town do they live in?",
+      "If the beneficiary is currently outside the U.S., what city or town does the beneficiary live in?",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line61a_CityOrTown",
@@ -4226,7 +4226,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_abroadProvince",
-    label: "In what province do they live? (If outside the U.S.)",
+    label: "In what province does the beneficiary live? (If outside the U.S.)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line61b_Province",
@@ -4234,7 +4234,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_abroadCountry",
-    label: "In what country do they live? (If outside the U.S.)",
+    label: "In what country does the beneficiary live? (If outside the U.S.)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line61c_Country",

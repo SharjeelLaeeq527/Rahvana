@@ -283,7 +283,7 @@ export function FormStep({
             transition={{ duration: 0.25 }}
             className="space-y-2"
           >
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900">
               {subQ.label}
             </label>
             {renderInput(subQ as FormField)}
@@ -434,7 +434,7 @@ export function FormStep({
         >
           {/* Question Heading */}
           <div>
-            <h2 className="text-2xl md:text-3xl font-semibold leading-snug text-gray-900 mb-2">
+          <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
               {mainQuestion}
             </h2>
             {hintText && (

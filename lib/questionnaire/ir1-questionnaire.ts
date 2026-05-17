@@ -16,25 +16,24 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
   // ──────────────────────────────────────────────────────────────────
   questions: [
     // Q1 — Petitioner prior marriage
-    // ⚡ DERIVED FROM STEP 1 (q3 → q3s1) — not shown to user.
-    //    Answer is auto-populated by deriveDocAnswersFromEligibility().
-    // {
-    //   id: "prior_marriage_petitioner",
-    //   question:
-    //     "Was the petitioner (U.S. citizen spouse) previously married before the current marriage?",
-    //   helper:
-    //     "If the petitioner was married before, proof of how that marriage ended is legally required by USCIS.",
-    //   options: [
-    //     {
-    //       label: "Yes — the petitioner was previously married",
-    //       value: "yes",
-    //     },
-    //     {
-    //       label: "No — this is the petitioner's first marriage",
-    //       value: "no",
-    //     },
-    //   ],
-    // },
+    // ⚡ DERIVED FROM STEP 1 (q3 → q3s1) — not shown to user if already answered.
+    {
+      id: "prior_marriage_petitioner",
+      question:
+        "Was the petitioner (U.S. citizen spouse) previously married before the current marriage?",
+      helper:
+        "If the petitioner was married before, proof of how that marriage ended is legally required by USCIS.",
+      options: [
+        {
+          label: "Yes — the petitioner was previously married",
+          value: "yes",
+        },
+        {
+          label: "No — this is the petitioner's first marriage",
+          value: "no",
+        },
+      ],
+    },
 
     // Q2 — How petitioner's prior marriage ended (conditional on Q1=yes)
     {
@@ -58,25 +57,24 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     },
 
     // Q3 — Beneficiary prior marriage
-    // ⚡ DERIVED FROM STEP 1 (q3 → q3s1) — not shown to user.
-    //    Answer is auto-populated by deriveDocAnswersFromEligibility().
-    // {
-    //   id: "prior_marriage_beneficiary",
-    //   question:
-    //     "Was the beneficiary (Pakistani spouse) previously married before the current marriage?",
-    //   helper:
-    //     "If the beneficiary had a prior marriage, proof of termination is required for visa processing.",
-    //   options: [
-    //     {
-    //       label: "Yes — the beneficiary was previously married",
-    //       value: "yes",
-    //     },
-    //     {
-    //       label: "No — this is the beneficiary's first marriage",
-    //       value: "no",
-    //     },
-    //   ],
-    // },
+    // ⚡ DERIVED FROM STEP 1 (q3 → q3s1) — not shown to user if already answered.
+    {
+      id: "prior_marriage_beneficiary",
+      question:
+        "Was the beneficiary (Pakistani spouse) previously married before the current marriage?",
+      helper:
+        "If the beneficiary had a prior marriage, proof of termination is required for visa processing.",
+      options: [
+        {
+          label: "Yes — the beneficiary was previously married",
+          value: "yes",
+        },
+        {
+          label: "No — this is the beneficiary's first marriage",
+          value: "no",
+        },
+      ],
+    },
 
     // Q4 — How beneficiary's prior marriage ended (conditional on Q3=yes)
     {
@@ -182,27 +180,24 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     },
 
     // Q9 — Criminal history
-    // ⚡ DERIVED FROM STEP 1 (q5 → q5s2) — not shown to user.
-    //    Answer is auto-populated by deriveDocAnswersFromEligibility().
-    //    If Step 1 answer was "unsure", this question will still be asked
-    //    (the derivation function skips unsure values).
-    // {
-    //   id: "criminal_history",
-    //   question:
-    //     "Has the beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
-    //   helper:
-    //     "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
-    //   options: [
-    //     {
-    //       label: "Yes — there is at least one arrest, charge, or conviction",
-    //       value: "yes",
-    //     },
-    //     {
-    //       label: "No — no criminal history at all",
-    //       value: "no",
-    //     },
-    //   ],
-    // },
+    // ⚡ DERIVED FROM STEP 1 (q5 → q5s2) — not shown to user if already answered.
+    {
+      id: "criminal_history",
+      question:
+        "Has the beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
+      helper:
+        "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
+      options: [
+        {
+          label: "Yes — there is at least one arrest, charge, or conviction",
+          value: "yes",
+        },
+        {
+          label: "No — no criminal history at all",
+          value: "no",
+        },
+      ],
+    },
   ],
 
   // ──────────────────────────────────────────────────────────────────

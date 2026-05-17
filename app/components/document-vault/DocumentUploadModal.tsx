@@ -37,7 +37,7 @@ export function DocumentUploadModal({
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { config } = useDocumentVaultStore();
+  const { config, replaceDocumentId, deleteDocument } = useDocumentVaultStore();
   const { t } = useLanguage();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,11 +178,25 @@ export function DocumentUploadModal({
       }
 
       toast.success(
-        t("documentVaultPage.components.uploadModal.uploadSuccess"),
+        replaceDocumentId
+          ? "Document replaced successfully"
+          : t("documentVaultPage.components.uploadModal.uploadSuccess"),
         {
           id: "upload-progress",
         },
       );
+
+      // If this was a replacement, delete the old document
+      if (replaceDocumentId) {
+        try {
+          console.log("[DocumentUploadModal] Deleting old version:", replaceDocumentId);
+          await deleteDocument(replaceDocumentId);
+        } catch (delError) {
+          console.error("Failed to delete replaced document:", delError);
+          // Don't fail the whole upload if just the deletion fails, 
+          // but maybe warn the user
+        }
+      }
 
       // Call completion handler to refresh the list
       await onUploadComplete();
@@ -489,12 +503,12 @@ export function DocumentUploadModal({
                 {uploading ? (
                   <div className="flex items-center gap-2 text-white">
                     <div className="w-4 h-4 border-2 border-white border-t-white rounded-full animate-spin" />
-                    Uploading...
+                    {replaceDocumentId ? "Replacing..." : "Uploading..."}
                   </div>
                 ) : !config ? (
                   "Initializing..."
                 ) : (
-                  "Upload Document"
+                  replaceDocumentId ? "Replace Version" : "Upload Document"
                 )}
               </Button>
             </div>

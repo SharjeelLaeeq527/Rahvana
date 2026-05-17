@@ -21,6 +21,7 @@ import {
   isQuestionnaireComplete,
   buildQuestionnaireResult,
   computeDocumentList,
+  getNextUnansweredIndex,
 } from "@/lib/questionnaire/engine";
 
 // ────────────────────────────────────────────────────────────────────
@@ -47,10 +48,17 @@ export function DocumentQuestionnaire({
   onDismiss,
 }: DocumentQuestionnaireProps) {
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(
-    () => initialAnswers ? { ...initialAnswers } : {},
+    () => (initialAnswers ? { ...initialAnswers } : {}),
   );
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [showSummary, setShowSummary] = useState(false);
+  const [currentIdx, setCurrentIdx] = useState(() => {
+    const idx = getNextUnansweredIndex(config, initialAnswers || {});
+    return idx === -1 ? 0 : idx;
+  });
+  const [showSummary, setShowSummary] = useState(() => {
+    return initialAnswers
+      ? isQuestionnaireComplete(config, initialAnswers)
+      : false;
+  });
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
 
   // Visible questions based on current answers

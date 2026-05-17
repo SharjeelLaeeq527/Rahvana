@@ -23,7 +23,7 @@ export function mapDocumentNameToId(name: string): string {
     'sealed medical envelope': 'medical-results-envelope',
 
     // Exact matches from IR-1 journey JSON (lowercased for matching)
-    'proof of u.s. citizenship': 'passport-petitioner',
+    'proof of u.s. citizenship': 'citizenship-proof-petitioner',
     'beneficiary passport': 'passport-beneficiary',
     'nikah nama (original)': 'nikah-nama',
     'nadra marriage certificate': 'nadra-mrc',
