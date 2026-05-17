@@ -39,20 +39,18 @@ export const CustomDropdown = ({
     onChange(selectedValue);
   };
 
-  const selectedLabel = value ? options.find((opt) => opt.value === value)?.label : null;
+  const selectedLabel = value
+    ? options.find((opt) => opt.value === value)?.label
+    : null;
 
   const filteredOptions = options.filter((opt) =>
-    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-
   return (
-    <div
-      onClick={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      <Select 
-        value={value || ""} 
-        onValueChange={handleSelect} 
+    <div>
+      <Select
+        value={value || ""}
+        onValueChange={handleSelect}
         disabled={disabled}
         onOpenChange={(open) => {
           if (!open) {
@@ -78,8 +76,8 @@ export const CustomDropdown = ({
             <SelectValue placeholder={placeholder} />
           )}
         </SelectTrigger>
-        <SelectContent onClick={(e) => e.stopPropagation()}>
-          <div 
+        <SelectContent>
+          <div
             className="flex items-center px-3 py-2 sticky top-0 bg-white z-10 border-b border-slate-100 mb-1"
             onPointerDown={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
@@ -98,7 +96,13 @@ export const CustomDropdown = ({
               filteredOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   <div className="flex items-center justify-between w-full pr-6">
-                    <span className={option.status === "uploaded" ? "text-primary font-bold" : ""}>
+                    <span
+                      className={
+                        option.status === "uploaded"
+                          ? "text-primary font-bold"
+                          : ""
+                      }
+                    >
                       {option.label}
                     </span>
                     {option.status === "uploaded" && (

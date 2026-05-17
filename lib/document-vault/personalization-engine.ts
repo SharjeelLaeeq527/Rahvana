@@ -110,9 +110,10 @@ function isDocumentRequired(
 export function generateRequiredDocuments(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
-  uploadedDocIds: string[] = [],
+  uploadedDocuments: UploadedDocument[] = [],
 ): DocumentDefinition[] {
   const { visaCategory, scenarioFlags } = config;
+  const uploadedDocIds = uploadedDocuments.map(d => d.documentDefId);
 
   // Filter documents based on requirements
   let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
@@ -159,7 +160,12 @@ export function generateRequiredDocuments(
         validityType: "none",
       });
     } else {
+      const seenNames = new Set<string>();
       slots.forEach((slot, index) => {
+        const normalizedName = slot.name.trim().toLowerCase();
+        if (seenNames.has(normalizedName)) return; // Skip duplicates
+        seenNames.add(normalizedName);
+
         requiredDocs.push({
           id: slot.id,
           key: `DYNAMIC_${category}_${index + 1}`,
@@ -176,33 +182,58 @@ export function generateRequiredDocuments(
     }
   });
 
-  // SAFETY NET: Check for documents that have been uploaded to dynamic slots
-  // but are somehow missing from the config (e.g. due to race conditions during multi-upload)
-  uploadedDocIds.forEach((uploadedId) => {
-    if (uploadedId.startsWith("dynamic-")) {
-      // Check if this ID is already in our required list
-      const exists = requiredDocs.some((d) => d.id === uploadedId);
-      if (!exists) {
-        // Recover the slot info from the ID pattern: dynamic-CATEGORY-TIMESTAMP
-        const parts = uploadedId.split("-");
-        if (parts.length >= 3) {
-          const category = parts[1];
-          // We don't have the original name here, so we use a generic one or "Recovered Document"
-          // In the future, we could look up the document metadata if we had it here
-          requiredDocs.push({
-            id: uploadedId,
-            key: `${uploadedId.replace(/-/g, "_")}`,
-            name: `${getCategoryDisplayName(category).replace(/ (Documents|Evidence)$/, "")}`,
-            description: `${category.toLowerCase()}`,
-            category: category as any,
-            roles: ["BENEFICIARY"],
-            stages: ["NVC", "INTERVIEW"],
-            required: false,
-            multipleFilesAllowed: true,
-            validityType: "none",
-          });
+  // SAFETY NET: Recover missing rows from orphans (ANY doc uploaded but missing from the requirement list)
+  const seenSafetyNetNames = new Set<string>();
+  
+  uploadedDocuments.forEach((doc) => {
+    if (!doc || !doc.documentDefId) return;
+
+    // Check if this document's definition ID is already represented in our required list
+    const exists = requiredDocs.some((d) => d.id === doc.documentDefId);
+    
+    if (!exists) {
+      // Try to get a clean name from the notes
+      let recoveredName = "";
+      if (doc.notes?.startsWith("Type: ")) {
+        recoveredName = doc.notes.split("\n")[0].replace("Type: ", "").trim();
+      }
+
+      // If no specific name, use the definition name or category
+      if (!recoveredName) {
+        const def = ALL_DOCUMENTS.find(d => d.id === doc.documentDefId);
+        if (def) {
+          recoveredName = def.name;
+        } else {
+          const parts = doc.documentDefId.split("-");
+          const category = parts.length >= 2 ? parts[1] : "MISC";
+          recoveredName = getCategoryDisplayName(category).replace(/ (Documents|Evidence)$/, "");
         }
       }
+
+      // DEDUPLICATION: Only add one row per name in the safety net
+      const normalizedName = recoveredName.toLowerCase().trim();
+      if (seenSafetyNetNames.has(normalizedName)) return;
+      seenSafetyNetNames.add(normalizedName);
+
+      // Check if a requirement with this name already exists (perhaps under a different ID)
+      const nameExists = requiredDocs.some(d => d.name.toLowerCase().trim() === normalizedName);
+      if (nameExists) return;
+
+      const parts = doc.documentDefId.split("-");
+      const category = parts.length >= 2 ? parts[1] : "MISC";
+
+      requiredDocs.push({
+        id: doc.documentDefId,
+        key: `RECOVERED_${normalizedName.replace(/[^a-z0-9]/g, "_")}`,
+        name: recoveredName,
+        description: `Previously uploaded document`,
+        category: category as any,
+        roles: ["BENEFICIARY"],
+        stages: ["NVC", "INTERVIEW"],
+        required: false,
+        multipleFilesAllowed: true,
+        validityType: "none",
+      });
     }
   });
 
@@ -271,6 +302,49 @@ export function generateRequiredDocuments(
     return true;
   });
 
+  // FINAL CLEANUP: If we have a named row and a generic placeholder for the same type,
+  // remove the generic placeholder (e.g., "Proof of U.S. Citizenship Document (1)" is redundant if we have "Certificate of Naturalization")
+  const namedRequirementCategories = new Set<string>();
+  finalDocs.forEach(d => {
+    if (!d.name.includes(" Document (") && !d.name.includes(" Evidence (")) {
+       namedRequirementCategories.add(`${d.category}-${d.name.toLowerCase().trim()}`);
+    }
+  });
+
+  // Also look at uploaded docs to see what names we have
+  uploadedDocuments.forEach(ud => {
+    if (ud.notes?.startsWith("Type: ")) {
+      const type = ud.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
+      // Use the logic from the engine to determine which category it belongs to
+      const parts = ud.documentDefId.split("-");
+      const category = parts.length >= 2 ? parts[1] : "MISC";
+      namedRequirementCategories.add(`${category}-${type}`);
+    }
+  });
+
+  finalDocs = finalDocs.filter(d => {
+    const isGeneric = d.name.includes(" Document (") || d.name.includes(" Evidence (");
+    if (!isGeneric) return true;
+
+    // Check if there's any named version of this category's docs uploaded
+    const baseName = d.name.split(" Document (")[0].split(" Evidence (")[0].toLowerCase().trim();
+    
+    const hasNamedMatch = Array.from(namedRequirementCategories).some(nc => 
+      nc.startsWith(d.category) && nc.includes(baseName)
+    );
+    
+    return !hasNamedMatch;
+  });
+
+  // FINAL DEDUPLICATION: Ensure no two rows share the same name in the same category
+  const seenFinalNames = new Set<string>();
+  finalDocs = finalDocs.filter((doc) => {
+    const key = `${doc.category}-${doc.name.trim().toLowerCase()}`;
+    if (seenFinalNames.has(key)) return false;
+    seenFinalNames.add(key);
+    return true;
+  });
+
   // Sort by category and then by name
   return finalDocs.sort((a, b) => {
     if (a.category !== b.category) {
@@ -301,9 +375,9 @@ export function generateRequiredDocuments(
 export function getDocumentsByCategory(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
-  uploadedDocIds: string[] = [],
+  uploadedDocuments: UploadedDocument[] = [],
 ) {
-  const requiredDocs = generateRequiredDocuments(config, includeOptional, uploadedDocIds);
+  const requiredDocs = generateRequiredDocuments(config, includeOptional, uploadedDocuments);
 
   const byCategory: Record<string, DocumentDefinition[]> = {};
 

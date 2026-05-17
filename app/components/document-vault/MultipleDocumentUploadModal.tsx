@@ -132,7 +132,7 @@ export function MultipleDocumentUploadModal({
 
   const groupedDocuments = useMemo(() => {
     const groups: Record<string, UploadedDocument[]> = {};
-    
+
     uploadedDocuments.forEach((doc) => {
       // Calculate the same type label as used in the UI
       let typeLabel = doc.notes?.startsWith("Type: ")
@@ -141,8 +141,10 @@ export function MultipleDocumentUploadModal({
 
       // Fallback for dynamic documents without explicit type in notes
       if (
-        (typeLabel === OTHER_OPTION || !typeLabel || typeLabel === "Document") &&
-        doc.documentDefId.startsWith("dynamic-")
+        (typeLabel === OTHER_OPTION ||
+          !typeLabel ||
+          typeLabel === "Document") &&
+        doc.documentDefId?.startsWith("dynamic-")
       ) {
         const category = doc.documentDefId.split("-")[1];
         const dynamicDoc = config?.dynamicDocuments?.[category]?.find(
@@ -159,18 +161,26 @@ export function MultipleDocumentUploadModal({
       groups[typeLabel].push(doc);
     });
 
-    // Sort each group by version descending (latest first)
-    // If versions are same, sort by upload date
-    Object.keys(groups).forEach((key) => {
-      groups[key].sort((a, b) => {
-        if (b.version !== a.version) {
-          return b.version - a.version;
-        }
-        return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
-      });
+    // Apply Virtual Versioning to each group
+    Object.keys(groups).forEach(typeLabel => {
+       const rawDocs = groups[typeLabel].sort((a, b) => 
+         new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
+       );
+       
+       const hasDuplicateVersions = rawDocs.some((v, i) => 
+         rawDocs.some((v2, i2) => i !== i2 && v.version === v2.version)
+       );
+
+       groups[typeLabel] = rawDocs.map((v, idx) => ({
+          ...v,
+          displayVersion: hasDuplicateVersions ? idx + 1 : v.version
+       })) as any;
+
+       // Sort by displayVersion descending for the UI
+       groups[typeLabel].sort((a: any, b: any) => (b.displayVersion || 0) - (a.displayVersion || 0));
     });
 
-    return groups;
+    return groups as Record<string, (UploadedDocument & { displayVersion: number })[]>;
   }, [uploadedDocuments, config]);
 
   const toggleGroup = (typeLabel: string) => {
@@ -309,46 +319,66 @@ export function MultipleDocumentUploadModal({
       // Step 1: Create all necessary dynamic slots SEQUENTIALLY first
       // This prevents race conditions where multiple uploads try to create slots at the same time
       const uploadItemToDefId: Record<string, string> = {};
+      const batchSpecificDefIds: Record<string, string> = {};
 
       for (const uploadItem of validUploads) {
         let specificDefId: string;
+        const currentCategory =
+          (documentDef as any).category || categoryId || "CIVIL";
+        const normalizedType =
+          (uploadItem.type === OTHER_OPTION
+            ? uploadItem.customName
+            : uploadItem.type
+          )
+            ?.trim()
+            .toLowerCase() || "";
 
-        if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
-          // Determine target category for "Other" docs
-          let targetCategory =
-            (documentDef as any).category || categoryId || "CIVIL";
+        // Check our local batch cache first to ensure consistency within this upload session
+        if (batchSpecificDefIds[normalizedType]) {
+          uploadItemToDefId[uploadItem.id] =
+            batchSpecificDefIds[normalizedType];
+          continue;
+        }
 
-          if (targetCategory !== "TRANSLATIONS") {
-            targetCategory = "OTHER";
-          }
+        // Determine target category
+        let targetCategory = currentCategory;
+        if (
+          uploadItem.type === OTHER_OPTION &&
+          uploadItem.customName &&
+          targetCategory !== "TRANSLATIONS"
+        ) {
+          targetCategory = "OTHER";
+        }
 
-          specificDefId = await addNamedDynamicSlot(
-            targetCategory,
-            uploadItem.customName,
-          );
+        // CRITICAL: Get FRESH config from store
+        const latestConfig = useDocumentVaultStore.getState().config;
+
+        // Check if we already have a slot for this name in the target category (Case-insensitive)
+        const existingSlot = latestConfig?.dynamicDocuments?.[
+          targetCategory
+        ]?.find((s: any) => s.name.trim().toLowerCase() === normalizedType);
+
+        if (existingSlot) {
+          specificDefId = existingSlot.id;
         } else {
-          // Check if a slot with this name already exists in the category
-          const currentCategory =
-            (documentDef as any).category || categoryId || "CIVIL";
-          const existingSlot = config.dynamicDocuments?.[
-            currentCategory
-          ]?.find((s) => s.name === uploadItem.type);
-
-          if (existingSlot) {
-            specificDefId = existingSlot.id;
+          // Create new slot
+          if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
+            specificDefId = await addNamedDynamicSlot(
+              targetCategory,
+              uploadItem.customName,
+            );
+          } else if ((documentDef as any).isDynamicCategory) {
+            specificDefId = await addNamedDynamicSlot(
+              targetCategory,
+              uploadItem.type,
+            );
           } else {
-            // For dynamic categories, create a named slot
-            if (documentDef.isDynamicCategory) {
-              specificDefId = await addNamedDynamicSlot(
-                currentCategory,
-                uploadItem.type,
-              );
-            } else {
-              specificDefId = mapDocumentNameToId(uploadItem.type);
-            }
+            specificDefId = mapDocumentNameToId(uploadItem.type);
           }
         }
+
         uploadItemToDefId[uploadItem.id] = specificDefId;
+        batchSpecificDefIds[normalizedType] = specificDefId;
       }
 
       // Need a role, if we can deduce from definition or default to BENEFICIARY
@@ -362,50 +392,49 @@ export function MultipleDocumentUploadModal({
         personName = config.jointSponsorName;
       }
 
-      // Step 2: Perform file uploads in parallel now that all slots exist
-      await Promise.all(
-        validUploads.map(async (uploadItem) => {
-          const formData = new FormData();
-          formData.append("file", uploadItem.file!);
+      // Step 2: Perform file uploads SEQUENTIALLY now that all slots exist
+      // Sequential upload is necessary to prevent versioning race conditions on the server
+      for (const uploadItem of validUploads) {
+        const formData = new FormData();
+        formData.append("file", uploadItem.file!);
 
-          const specificDefId = uploadItemToDefId[uploadItem.id];
-          formData.append("documentDefId", specificDefId);
-          
-          if (specificDefId.startsWith("dynamic-")) {
-            const docCategory = specificDefId.split("-")[1];
-            formData.append(
-              "dynamicName",
-              uploadItem.customName || uploadItem.type,
-            );
-            formData.append("dynamicCategory", docCategory);
-          }
-          formData.append("role", parentRole);
-          formData.append("caseId", config.caseId || "CASE");
-          formData.append("personName", personName);
-          
-          // Special storage: Save the selected document type inside the notes
-          const storedType =
-            uploadItem.type === OTHER_OPTION && uploadItem.customName
-              ? uploadItem.customName
-              : uploadItem.type;
+        const specificDefId = uploadItemToDefId[uploadItem.id];
+        formData.append("documentDefId", specificDefId);
 
-          let notesPayload = `Type: ${storedType}`;
-          if (uploadItem.notes.trim()) {
-            notesPayload += `\nNotes: ${uploadItem.notes.trim()}`;
-          }
-          formData.append("notes", notesPayload);
+        if (specificDefId.startsWith("dynamic-")) {
+          const docCategory = specificDefId.split("-")[1];
+          formData.append(
+            "dynamicName",
+            uploadItem.customName || uploadItem.type,
+          );
+          formData.append("dynamicCategory", docCategory);
+        }
+        formData.append("role", parentRole);
+        formData.append("caseId", config.caseId || "CASE");
+        formData.append("personName", personName);
 
-          const response = await fetch("/api/documents/upload", {
-            method: "POST",
-            body: formData,
-          });
+        // Special storage: Save the selected document type inside the notes
+        const storedType =
+          uploadItem.type === OTHER_OPTION && uploadItem.customName
+            ? uploadItem.customName
+            : uploadItem.type;
 
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.error || "Upload failed");
-          }
-        }),
-      );
+        let notesPayload = `Type: ${storedType}`;
+        if (uploadItem.notes.trim()) {
+          notesPayload += `\nNotes: ${uploadItem.notes.trim()}`;
+        }
+        formData.append("notes", notesPayload);
+
+        const response = await fetch("/api/documents/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Upload failed");
+        }
+      }
 
       toast.success(
         `Successfully uploaded ${validUploads.length} document(s)`,
@@ -583,7 +612,7 @@ export function MultipleDocumentUploadModal({
                                     variant="outline"
                                     className="h-5 px-2 text-[10px] font-bold bg-slate-50 text-slate-500 border-slate-200"
                                   >
-                                    v{doc.version}
+                                    v{doc.displayVersion}
                                   </Badge>
                                   <div className="min-w-0">
                                     <p className="text-[13px] font-semibold text-[#3a4f63] truncate max-w-[200px]">

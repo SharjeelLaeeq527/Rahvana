@@ -206,11 +206,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         const documents = docsData.documents || [];
 
         if (config) {
-          const uploadedDocIds = documents.map((d: any) => d.documentDefId);
           const requiredDocs = generateRequiredDocuments(
             config,
             true,
-            uploadedDocIds,
+            documents,
           ); // Include optional documents
 
           // Create document definitions map
@@ -250,16 +249,39 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     },
 
     setConfig: async (config: DocumentVaultConfig) => {
+      // Automatic Consolidation: Merge any duplicate slots with the same name/category
+      if (config.dynamicDocuments) {
+        const cleanedDynamicDocs: Record<string, any[]> = {};
+        
+        Object.entries(config.dynamicDocuments).forEach(([category, slots]) => {
+          const seenNames = new Map<string, string>(); // name -> id
+          const uniqueSlots: any[] = [];
+          
+          slots.forEach(slot => {
+            const normalized = slot.name.trim().toLowerCase();
+            if (seenNames.has(normalized)) {
+              // Duplicate found! Skip adding the duplicate slot
+              return;
+            }
+            seenNames.set(normalized, slot.id);
+            uniqueSlots.push(slot);
+          });
+          
+          cleanedDynamicDocs[category] = uniqueSlots;
+        });
+        
+        config.dynamicDocuments = cleanedDynamicDocs;
+      }
+
       const { uploadedDocuments } = get();
       const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
       const requiredDocs = generateRequiredDocuments(
         config,
         true,
-        uploadedDocIds,
+        uploadedDocuments,
       ); // Include optional documents
 
       // Set config in store IMMEDIATELY — don't wait for DB
-      // This ensures the upload modal always has a non-null config
       set({
         config,
         requiredDocuments: requiredDocs,
@@ -480,8 +502,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       const dynamicDocs = config.dynamicDocuments || {};
       const slots = dynamicDocs[category] || [];
       
+      const normalizedName = name.trim().toLowerCase();
+      
       // Check if a slot with this name already exists to avoid duplicates
-      const existingSlot = slots.find(s => s.name === name);
+      const existingSlot = slots.find(s => s.name.trim().toLowerCase() === normalizedName);
       if (existingSlot) return existingSlot.id;
 
       const newId = `dynamic-${category}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;

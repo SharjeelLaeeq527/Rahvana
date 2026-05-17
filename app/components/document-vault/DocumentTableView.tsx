@@ -166,9 +166,34 @@ export function DocumentTableView({
         </TableHeader>
         <TableBody>
           {documents.map((doc) => {
-            const docVariants = uploadedDocuments
-              .filter((ud) => ud.documentDefId === doc.id)
-              .sort((a, b) => b.version - a.version); // Sort by version descending
+            const rawVariants = uploadedDocuments
+              .filter((ud) => {
+                // Exact ID match
+                if (ud.documentDefId === doc.id) return true;
+                
+                // Content-based match for dynamic/recovered documents
+                // If this is a dynamic row and the document has a matching "Type" in notes, group it here
+                if (doc.id?.startsWith("dynamic-") || doc.id?.startsWith("RECOVERED_")) {
+                  if (ud.notes?.startsWith("Type: ")) {
+                    const typeLabel = ud.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
+                    return typeLabel === doc.name?.trim().toLowerCase();
+                  }
+                }
+                
+                return false;
+              })
+              .sort((a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()); // Sort by date ascending for virtual versioning
+
+            // VIRTUAL VERSIONING: If we have multiple docs with the same version number,
+            // we re-assign sequential versions for display based on upload date.
+            const hasDuplicateVersions = rawVariants.some((v, i) => 
+              rawVariants.some((v2, i2) => i !== i2 && v.version === v2.version)
+            );
+
+            const docVariants = rawVariants.map((v, idx) => ({
+               ...v,
+               displayVersion: hasDuplicateVersions ? idx + 1 : v.version
+            })).sort((a, b) => b.displayVersion - a.displayVersion); // Show latest version first
 
             const latestDoc = docVariants[0];
             const hasVariants = docVariants.length > 1;
@@ -311,7 +336,7 @@ export function DocumentTableView({
                           <span>{formatFileSize(latestDoc.fileSize, t)}</span>
                           <span>•</span>
                           <span className="font-bold text-primary">
-                            v{latestDoc.version} (Latest)
+                            v{latestDoc.displayVersion} (Latest)
                           </span>
                           {latestDoc.hasCompressedVersion && (
                             <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
@@ -509,7 +534,7 @@ export function DocumentTableView({
                                   variant="secondary"
                                   className={`text-[10px] font-bold ${idx === 0 ? "bg-primary/10 text-primary" : ""}`}
                                 >
-                                  v{variant.version}
+                                  v{variant.displayVersion}
                                 </Badge>
                                 <div>
                                   <div className="text-sm font-medium flex items-center gap-2">
