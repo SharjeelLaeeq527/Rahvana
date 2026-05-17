@@ -441,7 +441,7 @@ function HomePageContent() {
               <div className="hidden lg:flex h-full flex-col relative z-10 px-[5vw] xl:px-[10vw] 2xl:px-[13vw] pt-[45px]">
                 {/* Header Section */}
                 <div className="py-[3vh] xl:py-[5vh] 2xl:py-[9vh]">
-                  <h1 className="relative z-10 w-full text-center text-[clamp(24px,2.8vw,42px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
+                  <h1 className="page-heading relative z-10 w-full text-center text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
                     <span className="inline-block pb-2">
                       Navigate your IR-1 journey with clarity.
                     </span>
@@ -464,7 +464,7 @@ function HomePageContent() {
                             duration: 0.42,
                             ease: [0.22, 1, 0.36, 1],
                           }}
-                          className={`${heroAnnotationFont.className} text-[28px] leading-[1.44] text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)] xl:text-[31px] xl:leading-[1.46]`}
+                          className={`${heroAnnotationFont.className} page-description text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)]`}
                         >
                           {heroAnnotations[heroScene]}
                         </motion.p>
@@ -473,7 +473,7 @@ function HomePageContent() {
 
                     {/* Description Text - Moved from bottom */}
                     <div className="px-1">
-                      <p className="text-left text-[14px] 2xl:text-[16px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[18px]">
+                      <p className="page-description text-left text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)]">
                         <span className="">
                           Rahvana gives you a structured step-by-step IR-1
                           roadmap from petition filing to interview readiness
@@ -554,7 +554,7 @@ function HomePageContent() {
 
               {/* Desktop Layout (xl and up, >1280px) */}
               {/* <div className="hidden 2xl:flex absolute inset-0 z-10 w-full max-w-[1600px] mx-auto px-[5vw] 2xl:px-[8vw] pt-[120px] pb-[40px] flex-col pointer-events-none">
-                <h1 className="absolute left-1/2 top-[60px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-[clamp(28px,3.2vw,48px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
+                <h1 className="page-heading absolute left-1/2 top-[60px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
                   <span className="inline-block pb-2">
                     Navigate your IR-1 journey with clarity.
                   </span>
@@ -574,7 +574,7 @@ function HomePageContent() {
                           duration: 0.42,
                           ease: [0.22, 1, 0.36, 1],
                         }}
-                        className={`${heroAnnotationFont.className} text-[30px] leading-[1.46] text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)]`}
+                        className={`${heroAnnotationFont.className} page-description text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.34)]`}
                       >
                         {heroAnnotations[heroScene]}
                       </motion.p>
