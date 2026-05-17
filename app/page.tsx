@@ -715,6 +715,67 @@ function HomePageContent() {
                 onConsultationClick={handleConsultationClick}
               />
 
+              {/* TESTIMONIALS (moved from About page) */}
+              <section className="py-24 px-8 md:px-20 text-center">
+                <div className="flex justify-center mb-5">
+                  <span className="inline-flex items-center gap-2 px-4 py-1.5 border-[1.5px] border-[#b5451b] rounded-full text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
+                    Voices From The Journey
+                  </span>
+                </div>
+                <h2 className="font-serif font-bold text-3xl md:text-5xl text-[#121e2e] mb-14 max-w-4xl mx-auto leading-tight">
+                  Words from people{" "}
+                  <em className="italic text-[#0d7a75] font-normal">
+                    who&apos;ve been there.
+                  </em>
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                  {[
+                    {
+                      bg: "bg-[#fde8ec]",
+                      iconBg: "bg-[#fbc8d2]",
+                      author: "Fatima A.",
+                      role: "IR-1 applicant · Islamabad",
+                      text: "For the first time, I felt like someone had actually thought about what this process feels like to go through — not just the steps, but the weight of it.",
+                    },
+                    {
+                      bg: "bg-[#e3edf9]",
+                      iconBg: "bg-[#c4d9f5]",
+                      author: "Omar K.",
+                      role: "US Citizen sponsor · Houston",
+                      text: "Three years of waiting. Rahvana helped me understand where I was in the process without the constant anxiety of not knowing what comes next.",
+                    },
+                    {
+                      bg: "bg-[#fef9e3]",
+                      iconBg: "bg-[#faedb8]",
+                      author: "Sara M.",
+                      role: "Beneficiary spouse · Lahore",
+                      text: "The form filler saved me hours. But more than that — reading the guides felt like being understood by people who knew what this was really like.",
+                    },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className={`${item.bg} rounded-[20px] p-9 text-left flex flex-col gap-6 shadow-sm`}
+                    >
+                      <div
+                        className={`${item.iconBg} w-9 h-9 rounded-lg flex items-center justify-center text-[#0d7a75]`}
+                      >
+                        <Icons.Quote size={20} fill="currentColor" />
+                      </div>
+                      <blockquote className="text-sm italic text-gray-600 leading-relaxed grow">
+                        &quot;{item.text}&quot;
+                      </blockquote>
+                      <div className="text-sm">
+                        <strong className="block text-[#121e2e] font-semibold">
+                          {item.author}
+                        </strong>
+                        <span className="text-xs text-gray-500">{item.role}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
               <section className="py-8 md:py-12" id="faq">
                 <div className="w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
                   <div className="text-center w-full md:w-3/4 mx-auto mb-5">
