@@ -473,6 +473,7 @@ function PricingContent() {
   const searchParams = useSearchParams();
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [userActiveTier, setUserActiveTier] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] =
     useState(false);
@@ -594,13 +595,22 @@ function PricingContent() {
   ]);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    createClient()
-      .auth.getUser()
-      .then(({ data }: any) => {
-        setUserId(data.user?.id || null);
-        setIsLoadingUser(false);
-      });
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }: any) => {
+      const uid = data.user?.id || null;
+      setUserId(uid);
+      if (uid) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('subscription_tier, subscription_status')
+          .eq('id', uid)
+          .single();
+        if (profile?.subscription_status === 'active' && profile?.subscription_tier) {
+          setUserActiveTier(profile.subscription_tier);
+        }
+      }
+      setIsLoadingUser(false);
+    });
   }, []);
 
   // Layout tokens
@@ -757,29 +767,40 @@ function PricingContent() {
 
           {/* Plan cards — full width, no sidebar */}
           <div className={`${W}`}>
+            {(() => {
+              const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+              const activeTierRank = TIER_RANK[userActiveTier ?? 'free'] ?? 0;
+              return (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {paidPlans.map((plan) => {
                 const tc = TIER[plan.id as TierKey];
                 const isSelected = selectedPlan === plan.id;
+                const planRank = TIER_RANK[plan.id] ?? 0;
+                const isCurrentPlan = userActiveTier && plan.id === userActiveTier;
+                const isDowngrade = !!userActiveTier && planRank < activeTierRank;
                 return (
                   <article
                     key={plan.id}
-                    className={`${tc.cardBg} border rounded-[24px] p-6 flex flex-col relative transition-all duration-200 cursor-pointer ${
-                      isSelected
-                        ? `${tc.selBorder} ${tc.ring} ${tc.glow}`
-                        : `${tc.border} hover:shadow-lg hover:-translate-y-0.5`
+                    className={`${tc.cardBg} border rounded-[24px] p-6 flex flex-col relative transition-all duration-200 ${
+                      isDowngrade
+                        ? 'opacity-50 cursor-not-allowed'
+                        : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:shadow-lg hover:-translate-y-0.5`}`
                     }`}
-                    onClick={() => setSelectedPlan(plan.id)}
+                    onClick={() => { if (!isDowngrade) setSelectedPlan(plan.id); }}
                   >
-                    
-                    {plan.recommended && (
+                    {isCurrentPlan && (
+                      <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase bg-green-100 text-green-700 border border-green-300">
+                        Current Plan
+                      </div>
+                    )}
+                    {!isCurrentPlan && plan.recommended && !isDowngrade && (
                       <div
                         className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
                       >
                         Most Popular
                       </div>
                     )}
-                    {isSelected && !plan.recommended && (
+                    {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
                       <div
                         className={`absolute top-4 right-4 w-6 h-6 rounded-full ${tc.btn} flex items-center justify-center`}
                       >
@@ -844,22 +865,28 @@ function PricingContent() {
                     )}
 
                     <button
-                      className={`mt-4 w-full py-[10px] px-4 rounded-full text-[13.5px] font-semibold transition-all duration-150 cursor-pointer ${
-                        isSelected ? tc.btn : `${tc.btnOut} border`
+                      disabled={isDowngrade || !!isCurrentPlan}
+                      className={`mt-4 w-full py-[10px] px-4 rounded-full text-[13.5px] font-semibold transition-all duration-150 ${
+                        isDowngrade || isCurrentPlan
+                          ? 'cursor-not-allowed opacity-60 bg-muted text-muted-foreground border border-border'
+                          : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (isDowngrade || isCurrentPlan) return;
                         setSelectedPlan(plan.id);
                         setPurchaseStep("review");
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
                     >
-                      {isSelected ? "Continue to Checkout →" : plan.cta}
+                      {isCurrentPlan ? "Your Current Plan" : isDowngrade ? "Not Available" : isSelected ? "Continue to Checkout →" : plan.cta}
                     </button>
                   </article>
                 );
               })}
             </div>
+              );
+            })()}
 
             {/* Free plan strip */}
             <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/30 border border-border rounded-[18px] px-5 py-4">

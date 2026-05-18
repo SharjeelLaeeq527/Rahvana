@@ -46,11 +46,35 @@ export async function POST(request: NextRequest) {
 
     const userEmail = userData.user.email!;
 
-    // Fetch profile for default visa category and old subscription ID
-    const { data: profile } = await supabase.from('user_profiles').select('profile_details').eq('id', userId).single();
+    // Fetch profile for default visa category, old subscription ID, and current tier
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('subscription_tier, subscription_status, profile_details')
+      .eq('id', userId)
+      .single();
+
     const dbVisaCategory = profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || 'IR-1 / CR-1';
     const oldSubscriptionId = profile?.profile_details?.stripe_subscription_id;
+
+    // ── Server-side downgrade guard ──────────────────────────────────────────
+    // Prevent purchasing a lower plan than the user currently has (active only).
+    // We derive this from DB — never trust the client's `currentTier` field.
+    if (productTier) {
+      const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+      const dbTier = (profile?.subscription_tier ?? 'free').toLowerCase();
+      const dbStatus = profile?.subscription_status ?? 'inactive';
+      const targetRank  = TIER_RANK[productTier.toLowerCase()] ?? 0;
+      const currentRank = TIER_RANK[dbTier] ?? 0;
+
+      if (dbStatus === 'active' && targetRank <= currentRank) {
+        return NextResponse.json(
+          { error: `You already have the ${dbTier} plan or higher. Downgrades are not allowed.` },
+          { status: 400 }
+        );
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     // Get or create Stripe customer
     let stripeCustomerId: string | undefined;
