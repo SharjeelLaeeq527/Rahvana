@@ -84,6 +84,7 @@ class DynamicQuestionSelectionEngine {
           tooltip: questionEntry.tooltip,
           applicable: true,
           priority,
+          mockInterviewOrder: questionEntry.mockInterviewOrder,
           variations: questionEntry.variations,
           reason,
         });
