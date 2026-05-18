@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// Dynamic refactoring in progress
 "use client";
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
@@ -235,6 +236,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   const isDocQuestionnaireCompleted =
     state.metadata?.docQuestionnaireCompleted === true;
   const [showDocQuestionnaire, setShowDocQuestionnaire] = useState(false);
+  const [showPrerequisiteModal, setShowPrerequisiteModal] = useState(false);
 
   // Derive document-questionnaire answers from Step 1 eligibility quest answers
   // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
@@ -1051,6 +1053,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
   }, [sId, isApprovalSaved]);
 
   const handleNavigate = (stepId: string) => {
+    // Sequential navigation guard: Step 1.1 -> Step 1.2
+    if (stepId === "step_1_2" && !state.completedSteps.has("step_1_1")) {
+      setShowPrerequisiteModal(true);
+      return;
+    }
     const activeChapters = data.chapters || (data as any).stages;
     for (let sIdx = 0; sIdx < activeChapters.length; sIdx++) {
       const spIdx = activeChapters[sIdx].steps.findIndex(
@@ -3083,55 +3090,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                                                 if (!stepEntitlement.guard())
                                                   return;
 
-                                                if (
-                                                  doc.id === "doc_citizenship"
-                                                ) {
-                                                  setMultipleUploadModalState({
-                                                    isOpen: true,
-                                                    categoryId: defId,
-                                                    documentName: doc.name,
-                                                    options: [
-                                                      "U.S. passport",
-                                                      "U.S. birth certificate",
-                                                      "Certificate of Naturalization (Form N-550)",
-                                                      "Certificate of Citizenship (Form N-560)",
-                                                      "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
-                                                    ],
-                                                  });
-                                                } else if (
-                                                  doc.id === "doc_relationship"
-                                                ) {
-                                                  setMultipleUploadModalState({
-                                                    isOpen: true,
-                                                    categoryId: defId,
-                                                    documentName: doc.name,
-                                                    options: [
-                                                      "Communication history",
-                                                      "Photos together",
-                                                      "Travel history",
-                                                      "Shared finances",
-                                                      "Shared residence",
-                                                      "Family evidence",
-                                                      "Affidavits",
-                                                    ],
-                                                  });
-                                                } else if (
-                                                  doc.id === "doc_translations"
-                                                ) {
-                                                  setMultipleUploadModalState({
-                                                    isOpen: true,
-                                                    categoryId: defId,
-                                                    documentName: doc.name,
-                                                    options: [
-                                                      "Translated Nikah Nama",
-                                                      "Translated NADRA MRC",
-                                                      "Translated Birth Certificate",
-                                                      "Translated Divorce Decree",
-                                                    ],
-                                                  });
-                                                } else {
-                                                  openUploadModal(defId);
-                                                }
+                                                const documentDef = ALL_DOCUMENTS.find((d) => d.id === defId);
+                                  if (documentDef?.isDynamicCategory) {
+                                    setMultipleUploadModalState({
+                                      isOpen: true,
+                                      categoryId: defId,
+                                      documentName: doc.name,
+                                      options: documentDef.suggestions || [],
+                                    });
+                                  } else {
+                                    openUploadModal(defId);
+                                  }
                                               },
                                             });
                                           }}
@@ -3576,49 +3545,24 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                               setActiveUploadId(item.id);
                               setActiveUploadType("doc");
                               if (!stepEntitlement.guard()) return;
-                              if (item.id === "doc_citizenship") {
-                                setMultipleUploadModalState({
-                                  isOpen: true,
-                                  categoryId: defId,
-                                  documentName: item.title,
-                                  options: [
-                                    "U.S. passport",
-                                    "U.S. birth certificate",
-                                    "Certificate of Naturalization (Form N-550)",
-                                    "Certificate of Citizenship (Form N-560)",
-                                    "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
-                                  ],
-                                });
-                              } else if (item.id === "doc_relationship") {
-                                setMultipleUploadModalState({
-                                  isOpen: true,
-                                  categoryId: defId,
-                                  documentName: item.title,
-                                  options: [
-                                    "Communication history",
-                                    "Photos together",
-                                    "Travel history",
-                                    "Shared finances",
-                                    "Shared residence",
-                                    "Family evidence",
-                                    "Affidavits",
-                                  ],
-                                });
-                              } else if (item.id === "doc_translations") {
-                                setMultipleUploadModalState({
-                                  isOpen: true,
-                                  categoryId: defId,
-                                  documentName: item.title,
-                                  options: [
-                                    "Translated Nikah Nama",
-                                    "Translated NADRA MRC",
-                                    "Translated Birth Certificate",
-                                    "Translated Divorce Decree",
-                                  ],
-                                });
-                              } else {
-                                openUploadModal(defId);
-                              }
+                              const documentDef = ALL_DOCUMENTS.find(
+                                                  (d) => d.id === defId,
+                                                );
+
+                                                if (
+                                                  documentDef?.isDynamicCategory
+                                                ) {
+                                                  setMultipleUploadModalState({
+                                                    isOpen: true,
+                                                    categoryId: defId,
+                                                    documentName: item.title,
+                                                    options:
+                                                      documentDef.suggestions ||
+                                                      [],
+                                                  });
+                                                } else {
+                                                  openUploadModal(defId);
+                                                }
                             },
                           });
                         }}
@@ -4078,6 +4022,18 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       )}
 
       {renderDocActionModal()}
+
+      <ConfirmationModal
+        open={showPrerequisiteModal}
+        onOpenChange={setShowPrerequisiteModal}
+        title="Incomplete Prerequisite"
+        description="Please complete Step 1 (Determine Eligibility) before accessing Step 2. Your eligibility answers are needed to customize your document checklist."
+        confirmText="Go to Step 1"
+        onConfirm={() => {
+          setShowPrerequisiteModal(false);
+          handleNavigate("step_1_1");
+        }}
+      />
 
       <ConfirmationModal
         open={showDeleteConfirmation}

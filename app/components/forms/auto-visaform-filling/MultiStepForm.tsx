@@ -1102,9 +1102,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         personName = vaultConfig.jointSponsorName;
       }
       formDataUpload.append("personName", personName);
+      const isCompleted = currentStep === totalSteps;
       formDataUpload.append(
         "notes",
-        `Automatically generated via ${config?.formTitle || formCode} tool.`,
+        `Automatically generated via ${config?.formTitle || formCode} tool (${isCompleted ? "Completed" : `Progress: ${currentStep}/${totalSteps}`}).`,
       );
 
       const uploadRes = await fetch("/api/documents/upload", {

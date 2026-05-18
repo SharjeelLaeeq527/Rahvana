@@ -559,7 +559,6 @@ const ConsultationBookingPage = () => {
     };
   }, [checkAccess]);
 
-
   const handleAcceptAlternative = async (bookingId: string, slot: Date) => {
     setLoading(true);
     try {
@@ -785,7 +784,7 @@ const ConsultationBookingPage = () => {
         const errorData = await response.json().catch(() => ({}));
         console.error("Submission failed:", errorData);
         // if (response.status === 403) {
-          setShowConsultationUpgradeModal(true);
+        setShowConsultationUpgradeModal(true);
         // }
         alert(
           `Failed to submit: ${errorData.error || "Check console for details"}`,
@@ -922,7 +921,7 @@ const ConsultationBookingPage = () => {
                   </p>
                 )}
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Visa Category *
                 </label>
@@ -964,7 +963,7 @@ const ConsultationBookingPage = () => {
                     {errors.visa_category}
                   </p>
                 )}
-              </div>
+              </div> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -1676,9 +1675,7 @@ const ConsultationBookingPage = () => {
                       : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
                 )}
               >
-                {tier !== "executive" && (
-                  <Crown className="h-4 w-4" />
-                )}
+                {tier !== "executive" && <Crown className="h-4 w-4" />}
                 Book New
               </Button>
               <Button
@@ -1700,92 +1697,92 @@ const ConsultationBookingPage = () => {
 
       <div className="max-w-7xl mx-auto px-4 relative z-20">
         {activeView === "booking" && tier === "executive" && (
-        <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
-          {/* Improved Progress Tracker */}
-          <div className="bg-gray-50/50 border-b border-gray-100 p-8">
-            <div className="flex justify-between items-center max-w-2xl mx-auto relative">
-              {/* Connecting Lines */}
-              <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200 -z-10">
-                <div
-                  className="h-full bg-teal-600 transition-all duration-500"
-                  style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
-                />
-              </div>
-
-              {[
-                { step: 1, label: "Case Details", icon: FileText },
-                { step: 2, label: "Contact Info", icon: User },
-                { step: 3, label: "Select Time", icon: Clock },
-              ].map((item) => (
-                <div
-                  key={item.step}
-                  className="flex flex-col items-center gap-2"
-                >
+          <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
+            {/* Improved Progress Tracker */}
+            <div className="bg-gray-50/50 border-b border-gray-100 p-8">
+              <div className="flex justify-between items-center max-w-2xl mx-auto relative">
+                {/* Connecting Lines */}
+                <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200 -z-10">
                   <div
-                    className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
-                      currentStep >= item.step
-                        ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-200"
-                        : "bg-white border-gray-200 text-gray-400",
-                    )}
-                  >
-                    {currentStep > item.step ? (
-                      <CheckCircle className="h-5 w-5" />
-                    ) : (
-                      <item.icon className="h-5 w-5" />
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-xs font-bold tracking-tight uppercase",
-                      currentStep >= item.step
-                        ? "text-teal-900"
-                        : "text-gray-400",
-                    )}
-                  >
-                    {item.label}
-                  </span>
+                    className="h-full bg-teal-600 transition-all duration-500"
+                    style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <form onSubmit={handleSubmit} className="p-4 sm:p-8 md:p-12">
-            <div>{renderStepContent()}</div>
-            <div className="mt-4 px-4 py-3 sm:px-8 sm:py-5 bg-gray-50 border-t flex justify-between items-center gap-4">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 text-white"
-              >
-                <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
-              </Button>
-              {currentStep < 3 ? (
+                {[
+                  { step: 1, label: "Case Details", icon: FileText },
+                  { step: 2, label: "Contact Info", icon: User },
+                  { step: 3, label: "Select Time", icon: Clock },
+                ].map((item) => (
+                  <div
+                    key={item.step}
+                    className="flex flex-col items-center gap-2"
+                  >
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
+                        currentStep >= item.step
+                          ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-200"
+                          : "bg-white border-gray-200 text-gray-400",
+                      )}
+                    >
+                      {currentStep > item.step ? (
+                        <CheckCircle className="h-5 w-5" />
+                      ) : (
+                        <item.icon className="h-5 w-5" />
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        "text-xs font-bold tracking-tight uppercase",
+                        currentStep >= item.step
+                          ? "text-teal-900"
+                          : "text-gray-400",
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-4 sm:p-8 md:p-12">
+              <div>{renderStepContent()}</div>
+              <div className="mt-4 px-4 py-3 sm:px-8 sm:py-5 bg-gray-50 border-t flex justify-between items-center gap-4">
                 <Button
                   type="button"
-                  onClick={handleNext}
-                  className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-4 sm:px-8"
+                  variant="ghost"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 text-white"
                 >
-                  Next <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
                 </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={!formData.selected_slot || loading}
-                  className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
-                >
-                  {loading ? (
-                    <Loader size="sm" text="Processing..." />
-                  ) : (
-                    "Request Appointment"
-                  )}
-                </Button>
-              )}
-            </div>
-          </form>
-        </div>
+                {currentStep < 3 ? (
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-4 sm:px-8"
+                  >
+                    Next <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={!formData.selected_slot || loading}
+                    className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
+                  >
+                    {loading ? (
+                      <Loader size="sm" text="Processing..." />
+                    ) : (
+                      "Request Appointment"
+                    )}
+                  </Button>
+                )}
+              </div>
+            </form>
+          </div>
         )}
       </div>
 

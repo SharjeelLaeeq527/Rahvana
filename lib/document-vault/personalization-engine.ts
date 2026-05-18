@@ -19,6 +19,7 @@ export const DYNAMIC_CATEGORIES = [
   "CIVIL",
   "MISC",
   "TRANSLATIONS",
+  "CITIZENSHIP_PROOF",
   "OTHER",
 ];
 
@@ -109,16 +110,43 @@ function isDocumentRequired(
 export function generateRequiredDocuments(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
-  uploadedDocIds: string[] = [],
+  uploadedDocuments: UploadedDocument[] = [],
 ): DocumentDefinition[] {
   const { visaCategory, scenarioFlags } = config;
+  const uploadedDocIds = uploadedDocuments.map(d => d.documentDefId);
+
+  // Helper to dynamically determine the appropriate roles for a category based on the static templates
+  const getCategoryRoles = (cat: string): DocumentRole[] => {
+    if (cat === "CITIZENSHIP_PROOF") {
+      return ["PETITIONER"];
+    }
+    const catDocs = ALL_DOCUMENTS.filter(d => d.category === cat);
+    if (catDocs.length > 0) {
+      const petitionerCount = catDocs.filter(d => d.roles?.includes("PETITIONER")).length;
+      const beneficiaryCount = catDocs.filter(d => d.roles?.includes("BENEFICIARY")).length;
+      if (petitionerCount > beneficiaryCount) {
+        return ["PETITIONER"];
+      } else if (petitionerCount > 0 && beneficiaryCount > 0) {
+        return ["BENEFICIARY", "PETITIONER"];
+      }
+    }
+    return ["BENEFICIARY"];
+  };
 
   // Filter documents based on requirements
   let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
     // Some categories are dynamic BUT should still keep their static definitions
     // (e.g., CIVIL has Nikah Nama, MISC has generic docs, etc.)
-    const keepStatic = ["CIVIL", "MISC", "TRANSLATIONS"];
-    if (DYNAMIC_CATEGORIES.includes(doc.category) && !keepStatic.includes(doc.category)) {
+    const keepStatic = [
+      "CIVIL",
+      "MISC",
+      "TRANSLATIONS",
+      "CITIZENSHIP_PROOF",
+    ];
+    if (
+      DYNAMIC_CATEGORIES.includes(doc.category) &&
+      !keepStatic.includes(doc.category)
+    ) {
       return false;
     }
     return isDocumentRequired(doc, visaCategory, scenarioFlags);
@@ -127,6 +155,7 @@ export function generateRequiredDocuments(
   // Add dynamic documents from config
   DYNAMIC_CATEGORIES.forEach((category) => {
     const slots = config.dynamicDocuments?.[category] || [];
+    const rolesForCategory = getCategoryRoles(category);
 
     if (slots.length === 0) {
       // Don't show default slot for these categories to keep it clean
@@ -143,26 +172,91 @@ export function generateRequiredDocuments(
         name: `${baseName} Document (1)`,
         description: `User-added ${category.toLowerCase()} document`,
         category: category as any,
-        roles: ["BENEFICIARY"],
+        roles: rolesForCategory,
         stages: ["NVC", "INTERVIEW"],
         required: false, // Per user feedback: not required
         multipleFilesAllowed: true,
         validityType: "none",
       });
     } else {
+      const seenNames = new Set<string>();
       slots.forEach((slot, index) => {
+        const normalizedName = slot.name.trim().toLowerCase();
+        if (seenNames.has(normalizedName)) return; // Skip duplicates
+        seenNames.add(normalizedName);
+
         requiredDocs.push({
           id: slot.id,
           key: `DYNAMIC_${category}_${index + 1}`,
           name: slot.name,
           description: `User-added ${category.toLowerCase()} document`,
           category: category as any,
-          roles: ["BENEFICIARY"],
+          roles: rolesForCategory,
           stages: ["NVC", "INTERVIEW"],
           required: false,
           multipleFilesAllowed: true,
           validityType: "none",
         });
+      });
+    }
+  });
+
+  // SAFETY NET: Recover missing rows from orphans (ANY doc uploaded but missing from the requirement list)
+  const seenSafetyNetNames = new Set<string>();
+  
+  uploadedDocuments.forEach((doc) => {
+    if (!doc || !doc.documentDefId) return;
+
+    // Check if this document's definition ID is already represented in our required list
+    const exists = requiredDocs.some((d) => d.id === doc.documentDefId);
+    
+    if (!exists) {
+      const staticDef = ALL_DOCUMENTS.find(d => d.id === doc.documentDefId);
+      let category = "MISC";
+      if (staticDef) {
+        category = staticDef.category;
+      } else if (doc.documentDefId.startsWith("dynamic-")) {
+        const parts = doc.documentDefId.split("-");
+        category = parts.length >= 2 ? parts[1] : "MISC";
+      }
+
+      // Try to get a clean name from the notes
+      let recoveredName = "";
+      if (doc.notes?.startsWith("Type: ")) {
+        recoveredName = doc.notes.split("\n")[0].replace("Type: ", "").trim();
+      }
+
+      // If no specific name, use the definition name or category
+      if (!recoveredName) {
+        if (staticDef) {
+          recoveredName = staticDef.name;
+        } else {
+          recoveredName = getCategoryDisplayName(category).replace(/ (Documents|Evidence)$/, "");
+        }
+      }
+
+      // DEDUPLICATION: Only add one row per name in the safety net
+      const normalizedName = recoveredName.toLowerCase().trim();
+      if (seenSafetyNetNames.has(normalizedName)) return;
+      seenSafetyNetNames.add(normalizedName);
+
+      // Check if a requirement with this name already exists (perhaps under a different ID)
+      const nameExists = requiredDocs.some(d => d.name.toLowerCase().trim() === normalizedName);
+      if (nameExists) return;
+
+      const rolesForCategory = getCategoryRoles(category);
+
+      requiredDocs.push({
+        id: doc.documentDefId,
+        key: `RECOVERED_${normalizedName.replace(/[^a-z0-9]/g, "_")}`,
+        name: recoveredName,
+        description: `Previously uploaded document`,
+        category: category as any,
+        roles: rolesForCategory,
+        stages: ["NVC", "INTERVIEW"],
+        required: false,
+        multipleFilesAllowed: true,
+        validityType: "none",
       });
     }
   });
@@ -232,6 +326,55 @@ export function generateRequiredDocuments(
     return true;
   });
 
+  // FINAL CLEANUP: If we have a named row and a generic placeholder for the same type,
+  // remove the generic placeholder (e.g., "Proof of U.S. Citizenship Document (1)" is redundant if we have "Certificate of Naturalization")
+  const namedRequirementCategories = new Set<string>();
+  finalDocs.forEach(d => {
+    if (!d.name.includes(" Document (") && !d.name.includes(" Evidence (")) {
+       namedRequirementCategories.add(`${d.category}-${d.name.toLowerCase().trim()}`);
+    }
+  });
+
+  // Also look at uploaded docs to see what names we have
+  uploadedDocuments.forEach(ud => {
+    if (ud.notes?.startsWith("Type: ")) {
+      const type = ud.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
+      // Use the logic from the engine to determine which category it belongs to
+      const staticDef = ALL_DOCUMENTS.find(d => d.id === ud.documentDefId);
+      let category = "MISC";
+      if (staticDef) {
+        category = staticDef.category;
+      } else if (ud.documentDefId.startsWith("dynamic-")) {
+        const parts = ud.documentDefId.split("-");
+        category = parts.length >= 2 ? parts[1] : "MISC";
+      }
+      namedRequirementCategories.add(`${category}-${type}`);
+    }
+  });
+
+  finalDocs = finalDocs.filter(d => {
+    const isGeneric = d.name.includes(" Document (") || d.name.includes(" Evidence (");
+    if (!isGeneric) return true;
+
+    // Check if there's any named version of this category's docs uploaded
+    const baseName = d.name.split(" Document (")[0].split(" Evidence (")[0].toLowerCase().trim();
+    
+    const hasNamedMatch = Array.from(namedRequirementCategories).some(nc => 
+      nc.startsWith(d.category) && nc.includes(baseName)
+    );
+    
+    return !hasNamedMatch;
+  });
+
+  // FINAL DEDUPLICATION: Ensure no two rows share the same name in the same category
+  const seenFinalNames = new Set<string>();
+  finalDocs = finalDocs.filter((doc) => {
+    const key = `${doc.category}-${doc.name.trim().toLowerCase()}`;
+    if (seenFinalNames.has(key)) return false;
+    seenFinalNames.add(key);
+    return true;
+  });
+
   // Sort by category and then by name
   return finalDocs.sort((a, b) => {
     if (a.category !== b.category) {
@@ -262,9 +405,9 @@ export function generateRequiredDocuments(
 export function getDocumentsByCategory(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
-  uploadedDocIds: string[] = [],
+  uploadedDocuments: UploadedDocument[] = [],
 ) {
-  const requiredDocs = generateRequiredDocuments(config, includeOptional, uploadedDocIds);
+  const requiredDocs = generateRequiredDocuments(config, includeOptional, uploadedDocuments);
 
   const byCategory: Record<string, DocumentDefinition[]> = {};
 
@@ -374,6 +517,7 @@ export function getCategoryDisplayName(
     HEALTH_INSURANCE: "Health Insurance",
     SOCIAL_MEDIA: "Social Media",
     ADDRESS_PROOF: "Address Proof",
+    CITIZENSHIP_PROOF: "Proof of U.S. Citizenship",
     OTHER: "Other Documents",
   };
 

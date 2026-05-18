@@ -46,6 +46,7 @@ interface DocumentVaultStore {
   hasLoadedDocsInitial: boolean;
   isDeletingIds: string[];
   selectedDocumentDefId: string | null;
+  replaceDocumentId: string | null;
   wizardOpen: boolean;
   uploadModalOpen: boolean;
   notificationCenterOpen: boolean;
@@ -66,7 +67,7 @@ interface DocumentVaultStore {
   refreshDocumentStatuses: () => void;
   reloadDocuments: () => Promise<void>;
   addDynamicSlot: (category: string) => void;
-  addNamedDynamicSlot: (category: string, name: string) => string;
+  addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
   renameDynamicSlot: (
     categoryId: string,
     slotId: string,
@@ -77,7 +78,7 @@ interface DocumentVaultStore {
   setSelectedDocument: (documentDefId: string | null) => void;
   openWizard: (documentDefId: string) => void;
   closeWizard: () => void;
-  openUploadModal: (documentDefId: string) => void;
+  openUploadModal: (documentDefId: string, replaceDocumentId?: string) => void;
   closeUploadModal: () => void;
   toggleNotificationCenter: () => void;
 
@@ -140,6 +141,7 @@ const initialState = {
   hasLoadedDocsInitial: false,
   isDeletingIds: [],
   selectedDocumentDefId: null,
+  replaceDocumentId: null,
   wizardOpen: false,
   uploadModalOpen: false,
   notificationCenterOpen: false,
@@ -204,11 +206,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         const documents = docsData.documents || [];
 
         if (config) {
-          const uploadedDocIds = documents.map((d: any) => d.documentDefId);
           const requiredDocs = generateRequiredDocuments(
             config,
             true,
-            uploadedDocIds,
+            documents,
           ); // Include optional documents
 
           // Create document definitions map
@@ -248,16 +249,39 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     },
 
     setConfig: async (config: DocumentVaultConfig) => {
+      // Automatic Consolidation: Merge any duplicate slots with the same name/category
+      if (config.dynamicDocuments) {
+        const cleanedDynamicDocs: Record<string, any[]> = {};
+        
+        Object.entries(config.dynamicDocuments).forEach(([category, slots]) => {
+          const seenNames = new Map<string, string>(); // name -> id
+          const uniqueSlots: any[] = [];
+          
+          slots.forEach(slot => {
+            const normalized = slot.name.trim().toLowerCase();
+            if (seenNames.has(normalized)) {
+              // Duplicate found! Skip adding the duplicate slot
+              return;
+            }
+            seenNames.set(normalized, slot.id);
+            uniqueSlots.push(slot);
+          });
+          
+          cleanedDynamicDocs[category] = uniqueSlots;
+        });
+        
+        config.dynamicDocuments = cleanedDynamicDocs;
+      }
+
       const { uploadedDocuments } = get();
       const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
       const requiredDocs = generateRequiredDocuments(
         config,
         true,
-        uploadedDocIds,
+        uploadedDocuments,
       ); // Include optional documents
 
       // Set config in store IMMEDIATELY — don't wait for DB
-      // This ensures the upload modal always has a non-null config
       set({
         config,
         requiredDocuments: requiredDocs,
@@ -401,11 +425,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         // Also regenerate requiredDocuments if config is available
         const { config } = get();
         if (config) {
-          const uploadedIds = updatedDocs.map((d) => d.documentDefId);
           const requiredDocs = generateRequiredDocuments(
             config,
             true,
-            uploadedIds,
+            updatedDocs,
           );
           set({
             uploadedDocuments: updatedDocs,
@@ -471,14 +494,20 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       get().setConfig(updatedConfig);
     },
 
-    addNamedDynamicSlot: (category: string, name: string) => {
+    addNamedDynamicSlot: async (category: string, name: string) => {
       const { config } = get();
       if (!config) return "";
 
       const dynamicDocs = config.dynamicDocuments || {};
       const slots = dynamicDocs[category] || [];
       
-      const newId = `dynamic-${category}-${Date.now()}`;
+      const normalizedName = name.trim().toLowerCase();
+      
+      // Check if a slot with this name already exists to avoid duplicates
+      const existingSlot = slots.find(s => s.name.trim().toLowerCase() === normalizedName);
+      if (existingSlot) return existingSlot.id;
+
+      const newId = `dynamic-${category}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const updatedSlots = [...slots, { id: newId, name }];
 
       const updatedDynamicDocs = {
@@ -491,7 +520,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         dynamicDocuments: updatedDynamicDocs,
       };
 
-      get().setConfig(updatedConfig);
+      await get().setConfig(updatedConfig);
       return newId;
     },
 
@@ -536,9 +565,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
       });
     },
 
-    openUploadModal: (documentDefId: string) => {
+    openUploadModal: (documentDefId: string, replaceDocumentId?: string) => {
       set({
         selectedDocumentDefId: documentDefId,
+        replaceDocumentId: replaceDocumentId || null,
         uploadModalOpen: true,
       });
     },
@@ -546,6 +576,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
     closeUploadModal: () => {
       set({
         uploadModalOpen: false,
+        replaceDocumentId: null,
       });
     },
 
