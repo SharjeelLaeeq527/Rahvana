@@ -94,11 +94,23 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     const supabase = createClient();
-    supabase
-      .from('user_profiles')
-      .select('subscription_tier, profile_details')
-      .eq('id', user.id)
-      .single()
+
+    // 1. Defensive reconciliation: if user has a successful payment that
+    //    hasn't been applied to subscription_tier yet, apply it.
+    //    Fails open — if the endpoint errors, we still load from DB normally.
+    const reconcile = fetch('/api/plan/reconcile', { method: 'POST' })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+
+    // 2. Wait for reconcile to settle, THEN read the (possibly updated) tier.
+    reconcile
+      .then(() =>
+        supabase
+          .from('user_profiles')
+          .select('subscription_tier, profile_details')
+          .eq('id', user.id)
+          .single(),
+      )
       .then(({ data }: { data: { subscription_tier?: string; profile_details?: any } | null }) => {
         if (cancelled) return;
         setRealTier(normalizeTier(data?.subscription_tier));
