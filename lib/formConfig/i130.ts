@@ -168,7 +168,7 @@ export const formFields: Field[] = [
   {
     key: "full_name_group",
     pdfKey: "N/A",
-    label: "What is your full name?",
+    label: "",
     type: "hidden",
     section: "Information About You (Petitioner)",
     subQuestions: [

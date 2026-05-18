@@ -93,6 +93,7 @@ export interface InterviewQuestion {
   guidance: string;
   tooltip: string;
   priority: 'high' | 'medium' | 'low';
+  mockInterviewOrder?: number;
   skipIf?: SkipCondition[];
 }
 
