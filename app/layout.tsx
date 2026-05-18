@@ -91,7 +91,7 @@ export default function RootLayout({
                 <Footer />
                 {/* </ThemeProvider> */}
               </LanguageProvider>
-          
+          <PlanTierDevToggle/>
               {/* DEV ONLY — uncomment for local testing */}
             </PlanProvider>
           </AuthProvider>

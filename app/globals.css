@@ -3,6 +3,21 @@
   --icon-basic: url("/icons/Basic.png");
   --icon-premium: url("/icons/Premium.png");
   --icon-executive: url("/icons/Executive.png");
+
+  --page-heading-size: clamp(2.25rem, 4.5vw, 4rem);
+  --page-heading-weight: 800;
+  --page-heading-line-height: 1.08;
+  --page-heading-tracking: -0.04em;
+  --page-heading-size-sm: clamp(1.6rem, 3.5vw, 2.25rem);
+  --page-heading-size-md: clamp(2rem, 4vw, 3rem);
+  --page-heading-size-lg: clamp(2.25rem, 4.5vw, 4rem);
+  --page-heading-size: var(--page-heading-size-lg);
+  --page-description-size-sm: clamp(0.9rem, 1.2vw, 0.95rem);
+  --page-description-size-md: clamp(1rem, 1.3vw, 1rem);
+  --page-description-size-lg: clamp(1rem, 1.4vw, 1.125rem);
+  --page-description-size: var(--page-description-size-md);
+  --page-description-weight: 400;
+  --page-description-line-height: 1.7;
 }
 
 .plan-icon {
@@ -276,6 +291,42 @@
 }
 
 @layer utilities {
+  .page-heading {
+    font-size: var(--page-heading-size-sm);
+    font-weight: var(--page-heading-weight);
+    line-height: var(--page-heading-line-height);
+    letter-spacing: var(--page-heading-tracking);
+  }
+  @media (min-width: 640px) {
+    .page-heading {
+      font-size: var(--page-heading-size-md);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .page-heading {
+      font-size: var(--page-heading-size-lg);
+    }
+  }
+
+  .page-description {
+    font-size: var(--page-description-size-sm);
+    font-weight: var(--page-description-weight);
+    line-height: var(--page-description-line-height);
+  }
+
+  @media (min-width: 640px) {
+    .page-description {
+      font-size: var(--page-description-size-md);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .page-description {
+      font-size: var(--page-description-size-lg);
+    }
+  }
+
   .site-main-px {
     padding-left: var(--site-px-default);
     padding-right: var(--site-px-default);

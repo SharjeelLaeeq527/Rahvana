@@ -702,15 +702,11 @@ export default function ActionPlanResults({
             </div>
             <div className="space-y-2">
               {[
-                "Submit exactly what was requested — nothing more, nothing less",
-                "Keep a complete copy of everything you send",
-                "Use the method stated in the notice (courier, email, or drop box)",
+                "- Submit exactly what was requested — nothing more, nothing less",
+                "- Keep a complete copy of everything you send",
+                "- Use the method stated in the notice (courier, email, or drop box)",
               ].map((t, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2.5 text-[12px] text-white/75"
-                >
-                  <div className="w-4 h-4 rounded border border-white/20 shrink-0 mt-0.5" />
+                <div key={i} className="text-[12px] text-white/75 leading-tight">
                   {t}
                 </div>
               ))}

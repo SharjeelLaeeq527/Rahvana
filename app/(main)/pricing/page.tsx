@@ -724,10 +724,10 @@ function PricingContent() {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
                 <div className={eyebrow}>Journey Plans</div>
-                <h1 className="text-[clamp(26px,3.8vw,46px)] font-bold leading-[1.06] tracking-tight m-0 whitespace-nowrap">
+                <h1 className="page-heading m-0 whitespace-nowrap">
                   Choose your Rahvana journey plan
                 </h1>
-                <p className="mt-2 text-muted-foreground text-[14.5px]">
+                <p className="page-description mt-2 text-muted-foreground">
                   Pick the level of guidance, tools, and support that fits your
                   case.
                 </p>
