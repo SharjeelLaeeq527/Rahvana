@@ -20,6 +20,7 @@ import {
 } from "./journeyHelpers";
 import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
+import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
@@ -576,6 +577,15 @@ export function DashboardView({
                 </button>
               </div>
             </section>
+
+            {/* Case Strength Insights — risk advisories from eligibility quest + baselines */}
+            <JourneyRiskCard
+              metadata={state.metadata}
+              onOpenEligibility={() => {
+                actions.setStage(0);
+                actions.setCurrentStep(0);
+              }}
+            />
 
             <div
               className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${

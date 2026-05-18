@@ -35,6 +35,8 @@ interface PlanContextValue {
   setDevOverride: (t: PlanTier | null) => void;
   /** Add-on IDs purchased by this user (e.g. ["sponsor", "mock"]). */
   purchasedAddons: string[];
+  /** Re-fetch the user's plan from DB (call after successful payment). */
+  refresh: () => void;
   /** Look up the full entitlement object for a feature, respecting purchased add-ons. */
   entitlement: (feature: string) => FeatureEntitlement;
   /** True when the user can take the primary action on a feature. */
@@ -74,8 +76,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [devOverride, setDevOverride] = useState<PlanTier | null>(null);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   const tier = devOverride ?? realTier;
+
+  const refresh = useCallback(() => setRefreshCounter((n) => n + 1), []);
 
   useEffect(() => {
     if (!user?.id) {
@@ -111,7 +116,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       });
 
     return () => { cancelled = true; };
-  }, [user?.id]);
+  }, [user?.id, refreshCounter]);
 
   const value: PlanContextValue = {
     realTier,
@@ -120,6 +125,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     devOverride,
     setDevOverride,
     purchasedAddons,
+    refresh,
     entitlement: useCallback((f) => getEffectiveEntitlement(f, tier, purchasedAddons), [tier, purchasedAddons]),
     canUse:       useCallback((f) => canUse(f, tier, purchasedAddons), [tier, purchasedAddons]),
     isHidden:     useCallback((f) => isHidden(f, tier), [tier]),

@@ -1,10 +1,42 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Loader } from "@/components/ui/spinner";
+import { usePlan } from '@/app/context/PlanContext';
+
+// Poll /api/stripe/verify-session until the webhook has updated the DB tier,
+// or until we hit maxAttempts. Returns the confirmed tier string.
+async function pollUntilActivated(
+  sessionId: string,
+  onActivated: (tier: string) => void,
+  onTimeout: () => void,
+  intervalMs = 2500,
+  maxAttempts = 16, // 16 × 2.5s = 40s max
+) {
+  let attempts = 0;
+  const run = async () => {
+    attempts++;
+    try {
+      const res  = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`);
+      const data = await res.json();
+      if (data.activated) {
+        onActivated(data.tier);
+        return;
+      }
+    } catch {
+      // network hiccup — keep polling
+    }
+    if (attempts < maxAttempts) {
+      setTimeout(run, intervalMs);
+    } else {
+      onTimeout();
+    }
+  };
+  setTimeout(run, intervalMs);
+}
 
 // ── Animated Credit Card ─────────────────────────────────────────────────────
 function AnimatedCard() {
@@ -208,21 +240,41 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(true);
+  const [verifyStatus, setVerifyStatus] = useState<'checking' | 'confirmed' | 'timeout'>('checking');
   const sessionId = searchParams.get('session_id');
+  const { refresh } = usePlan();
+  const pollingStarted = useRef(false);
 
   useEffect(() => {
     if (!sessionId) {
       router.push('/pricing');
       return;
     }
-    const timer = setTimeout(() => setIsVerifying(false), 2000);
-    return () => clearTimeout(timer);
-  }, [sessionId, router]);
+    if (pollingStarted.current) return;
+    pollingStarted.current = true;
+
+    pollUntilActivated(
+      sessionId,
+      (_tier) => {
+        // Webhook processed — refresh plan context so UI shows new tier immediately
+        refresh();
+        setVerifyStatus('confirmed');
+        setIsVerifying(false);
+      },
+      () => {
+        // 40s passed — webhook might still come, show success anyway
+        // Plan will update on next navigation or manual refresh
+        refresh();
+        setVerifyStatus('timeout');
+        setIsVerifying(false);
+      },
+    );
+  }, [sessionId, router, refresh]);
 
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rahvana-primary-pale to-slate-50">
-        <Loader size="md" text="Verifying your payment..." />
+        <Loader size="md" text="Confirming your plan activation…" />
       </div>
     );
   }
@@ -237,7 +289,9 @@ function PaymentSuccessContent() {
             Payment Successful!
           </h1>
           <p className="text-slate-500 text-[13px] leading-relaxed mb-4">
-            Thank you for your purchase. Your payment has been processed successfully.
+            {verifyStatus === 'confirmed'
+              ? 'Your plan has been activated. Welcome to your new tier!'
+              : 'Your payment was processed. Plan activation may take a few moments — refresh your dashboard if features are not yet unlocked.'}
           </p>
 
           {/* What's Next */}
