@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useRef, useMemo, useEffect } from "react";
-import { DocumentRole } from "@/lib/document-vault/types";
+import {
+  DocumentDefinition,
+  DocumentRole,
+} from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import {
@@ -80,12 +83,19 @@ export function MultipleDocumentUploadModal({
   const { t } = useLanguage();
 
   // Find the base document definition
-  const documentDef = useMemo(() => {
+  const documentDef = useMemo<DocumentDefinition>(() => {
     return (
       ALL_DOCUMENTS.find((d) => d.id === categoryId) || {
         id: categoryId,
         key: categoryId.toUpperCase().replace(/[^A-Z]/g, "_"),
+        name: documentName,
+        description: "",
+        category: categoryId as DocumentDefinition["category"],
         roles: ["BENEFICIARY"] as DocumentRole[],
+        stages: [],
+        required: false,
+        multipleFilesAllowed: true,
+        validityType: "none",
       }
     );
   }, [categoryId]);
@@ -500,26 +510,26 @@ export function MultipleDocumentUploadModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden rounded-2xl border-none shadow-2xl bg-white">
-        <div className="max-h-[90vh] overflow-y-auto p-5 sm:p-7">
-          <DialogHeader className="relative pb-4 mb-2">
-            <DialogTitle className="text-xl sm:text-2xl font-black text-[#0f1f38]">
-              Upload Multiple Documents
-              <span className="block text-[15px] font-medium text-[#6b8097] mt-1">
-                {documentName}
-              </span>
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full absolute top-0 right-0 hover:bg-slate-100 transition-colors"
-              onClick={handleClose}
-              disabled={uploading}
-            >
-              <X className="w-5 h-5 text-slate-500" />
-            </Button>
-          </DialogHeader>
+      <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden rounded-2xl border-none shadow-2xl bg-white flex flex-col max-h-[84vh]">
+        <DialogHeader className="relative px-5 sm:px-7 pt-5 sm:pt-7 pb-4 shrink-0">
+          <DialogTitle className="text-xl sm:text-2xl font-black text-[#0f1f38]">
+            Upload Multiple Documents
+            <span className="block text-[15px] font-medium text-[#6b8097] mt-1">
+              {documentName}
+            </span>
+          </DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full absolute top-5 right-5 sm:top-7 sm:right-7 hover:bg-slate-100 transition-colors"
+            onClick={handleClose}
+            disabled={uploading}
+          >
+            <X className="w-5 h-5 text-slate-500" />
+          </Button>
+        </DialogHeader>
 
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-premium px-5 sm:px-7 pb-5 sm:pb-7">
           {/* Already Uploaded List */}
           {uploadedDocuments.length > 0 && (
             <div className="mb-8">
@@ -699,7 +709,7 @@ export function MultipleDocumentUploadModal({
               </h4>
             </div>
 
-            {pendingUploads.map((uploadItem, index) => {
+            {pendingUploads.map((uploadItem) => {
               const availableOptions = getAvailableOptions(uploadItem.id);
               return (
                 <div
@@ -909,35 +919,35 @@ export function MultipleDocumentUploadModal({
             </Button>
             {/* )} */}
           </div>
+        </div>
 
-          {/* Action Footer */}
-          <div className="flex gap-4 pt-4 border-t border-slate-100">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={uploading}
-              className="flex-1 py-6 rounded-xl border-2 border-[#e8f1fb] text-[#6b8097] font-semibold hover:bg-slate-50 transition-all text-base"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUploadAll}
-              disabled={
-                uploading ||
-                pendingUploads.filter((p) => p.file && p.type).length === 0
-              }
-              className="flex-1 py-6 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all font-semibold disabled:bg-primary/60 text-base"
-            >
-              {uploading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-white/30 rounded-full animate-spin" />
-                  Uploading...
-                </div>
-              ) : (
-                `Upload ${pendingUploads.filter((p) => p.file && p.type).length} Document(s)`
-              )}
-            </Button>
-          </div>
+        {/* Action Footer */}
+        <div className="flex gap-4 px-5 sm:px-7 pb-5 sm:pb-7 pt-4 border-t border-slate-100 shrink-0 bg-white">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={uploading}
+            className="flex-1 py-6 rounded-xl border-2 border-[#e8f1fb] text-[#6b8097] font-semibold hover:bg-slate-50 transition-all text-base"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUploadAll}
+            disabled={
+              uploading ||
+              pendingUploads.filter((p) => p.file && p.type).length === 0
+            }
+            className="flex-1 py-6 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all font-semibold disabled:bg-primary/60 text-base"
+          >
+            {uploading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 border-2 border-white border-t-white/30 rounded-full animate-spin" />
+                Uploading...
+              </div>
+            ) : (
+              `Upload ${pendingUploads.filter((p) => p.file && p.type).length} Document(s)`
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
