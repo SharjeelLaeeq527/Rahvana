@@ -61,6 +61,7 @@ export interface QuestionBankEntry {
   sampleAnswer: string;
   guidance: string;
   tooltip: string;
+  mockInterviewOrder?: number;
 }
 
 export interface QuestionBank {
@@ -80,6 +81,7 @@ export interface GeneratedQuestion {
   tooltip: string;
   applicable: boolean;
   priority: 'high' | 'medium' | 'low';
+  mockInterviewOrder?: number;
   reason?: string;
 }
 

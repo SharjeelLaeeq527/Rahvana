@@ -841,7 +841,7 @@ export function HeroI130StepPanel({
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
             Use Rahvana&apos;s guided Autoform Filler to complete the I-130
-            Petition for Alien Relative — with structured step-by-step support,
+            x for Alien Relative — with structured step-by-step support,
             clear prompts, and a built-in review flow.
           </p>
 

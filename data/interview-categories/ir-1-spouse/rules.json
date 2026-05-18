@@ -29,7 +29,8 @@
           "Basic Case Information",
           "Relationship Origin",
           "Security",
-          "Travel"
+          "Travel",
+          "Spouse Information"
         ],
         "priorityBoost": ["critical"],
         "relevanceScore": 100,
@@ -130,7 +131,8 @@
       "actions": {
         "includeCategories": [
           "Daily Life",
-          "Household Life"
+          "Household Life",
+          "Spouse Information"
         ],
         "priorityBoost": ["high"],
         "relevanceScore": 88,
@@ -154,7 +156,9 @@
       },
       "actions": {
         "includeCategories": [
-          "Relationship"
+          "Relationship",
+          "Communication",
+          "Visits"
         ],
         "priorityBoost": ["high"],
         "relevanceScore": 85,
@@ -304,7 +308,8 @@
       },
       "actions": {
         "includeCategories": [
-          "Relationship"
+          "Relationship",
+          "Communication"
         ],
         "priorityBoost": ["medium"],
         "relevanceScore": 70,

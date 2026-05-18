@@ -434,12 +434,15 @@ export function FormStep({
         >
           {/* Question Heading */}
           <div>
-          <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
-              {mainQuestion}
-            </h2>
-            {hintText && (
-              <p className="text-sm text-gray-600 mt-1">{hintText}</p>
+            {!(activeField.type === "hidden" && activeField.label) && (
+              <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
+                {mainQuestion}
+              </h2>
             )}
+            {!(activeField.type === "hidden" && activeField.label) &&
+              hintText && (
+                <p className="text-sm text-gray-600 mt-1">{hintText}</p>
+              )}
           </div>
 
           {/* Input Section */}

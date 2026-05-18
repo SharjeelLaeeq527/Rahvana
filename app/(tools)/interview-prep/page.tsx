@@ -933,7 +933,7 @@ export default function InterviewPreparation() {
         noDataMessage={noDataMessage || undefined}
       />
 
-      <div className="site-main-px site-main-py">
+      <div className="site-main-px site-main-py mt-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
             Interview Preparation Tool
