@@ -209,10 +209,10 @@ function PricingContent() {
         <section className="pt-10">
           <div className={containerClass}>
             <div className={eyebrowClass}>Simple, transparent pricing</div>
-            <h1 className="text-[clamp(36px,5.5vw,64px)] leading-[1.03] tracking-tight mb-[18px] font-bold">
+            <h1 className="page-heading mb-[18px]">
               Choose the support level<br className="hidden md:block" /> that fits your journey
             </h1>
-            <div className="mt-2 text-[13px] text-muted-foreground max-w-[600px]">
+            <div className="page-description mt-2 text-muted-foreground max-w-[600px]">
               Government filing fees, medical examination fees, embassy fees, and any other applicable charges are paid separately and are not included in any plan.
             </div>
 

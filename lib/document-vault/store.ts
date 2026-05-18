@@ -425,11 +425,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()(
         // Also regenerate requiredDocuments if config is available
         const { config } = get();
         if (config) {
-          const uploadedIds = updatedDocs.map((d) => d.documentDefId);
           const requiredDocs = generateRequiredDocuments(
             config,
             true,
-            uploadedIds,
+            updatedDocs,
           );
           set({
             uploadedDocuments: updatedDocs,

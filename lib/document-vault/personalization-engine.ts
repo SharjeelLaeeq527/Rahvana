@@ -115,6 +115,24 @@ export function generateRequiredDocuments(
   const { visaCategory, scenarioFlags } = config;
   const uploadedDocIds = uploadedDocuments.map(d => d.documentDefId);
 
+  // Helper to dynamically determine the appropriate roles for a category based on the static templates
+  const getCategoryRoles = (cat: string): DocumentRole[] => {
+    if (cat === "CITIZENSHIP_PROOF") {
+      return ["PETITIONER"];
+    }
+    const catDocs = ALL_DOCUMENTS.filter(d => d.category === cat);
+    if (catDocs.length > 0) {
+      const petitionerCount = catDocs.filter(d => d.roles?.includes("PETITIONER")).length;
+      const beneficiaryCount = catDocs.filter(d => d.roles?.includes("BENEFICIARY")).length;
+      if (petitionerCount > beneficiaryCount) {
+        return ["PETITIONER"];
+      } else if (petitionerCount > 0 && beneficiaryCount > 0) {
+        return ["BENEFICIARY", "PETITIONER"];
+      }
+    }
+    return ["BENEFICIARY"];
+  };
+
   // Filter documents based on requirements
   let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
     // Some categories are dynamic BUT should still keep their static definitions
@@ -137,6 +155,7 @@ export function generateRequiredDocuments(
   // Add dynamic documents from config
   DYNAMIC_CATEGORIES.forEach((category) => {
     const slots = config.dynamicDocuments?.[category] || [];
+    const rolesForCategory = getCategoryRoles(category);
 
     if (slots.length === 0) {
       // Don't show default slot for these categories to keep it clean
@@ -153,7 +172,7 @@ export function generateRequiredDocuments(
         name: `${baseName} Document (1)`,
         description: `User-added ${category.toLowerCase()} document`,
         category: category as any,
-        roles: ["BENEFICIARY"],
+        roles: rolesForCategory,
         stages: ["NVC", "INTERVIEW"],
         required: false, // Per user feedback: not required
         multipleFilesAllowed: true,
@@ -172,7 +191,7 @@ export function generateRequiredDocuments(
           name: slot.name,
           description: `User-added ${category.toLowerCase()} document`,
           category: category as any,
-          roles: ["BENEFICIARY"],
+          roles: rolesForCategory,
           stages: ["NVC", "INTERVIEW"],
           required: false,
           multipleFilesAllowed: true,
@@ -192,6 +211,15 @@ export function generateRequiredDocuments(
     const exists = requiredDocs.some((d) => d.id === doc.documentDefId);
     
     if (!exists) {
+      const staticDef = ALL_DOCUMENTS.find(d => d.id === doc.documentDefId);
+      let category = "MISC";
+      if (staticDef) {
+        category = staticDef.category;
+      } else if (doc.documentDefId.startsWith("dynamic-")) {
+        const parts = doc.documentDefId.split("-");
+        category = parts.length >= 2 ? parts[1] : "MISC";
+      }
+
       // Try to get a clean name from the notes
       let recoveredName = "";
       if (doc.notes?.startsWith("Type: ")) {
@@ -200,12 +228,9 @@ export function generateRequiredDocuments(
 
       // If no specific name, use the definition name or category
       if (!recoveredName) {
-        const def = ALL_DOCUMENTS.find(d => d.id === doc.documentDefId);
-        if (def) {
-          recoveredName = def.name;
+        if (staticDef) {
+          recoveredName = staticDef.name;
         } else {
-          const parts = doc.documentDefId.split("-");
-          const category = parts.length >= 2 ? parts[1] : "MISC";
           recoveredName = getCategoryDisplayName(category).replace(/ (Documents|Evidence)$/, "");
         }
       }
@@ -219,8 +244,7 @@ export function generateRequiredDocuments(
       const nameExists = requiredDocs.some(d => d.name.toLowerCase().trim() === normalizedName);
       if (nameExists) return;
 
-      const parts = doc.documentDefId.split("-");
-      const category = parts.length >= 2 ? parts[1] : "MISC";
+      const rolesForCategory = getCategoryRoles(category);
 
       requiredDocs.push({
         id: doc.documentDefId,
@@ -228,7 +252,7 @@ export function generateRequiredDocuments(
         name: recoveredName,
         description: `Previously uploaded document`,
         category: category as any,
-        roles: ["BENEFICIARY"],
+        roles: rolesForCategory,
         stages: ["NVC", "INTERVIEW"],
         required: false,
         multipleFilesAllowed: true,
@@ -316,8 +340,14 @@ export function generateRequiredDocuments(
     if (ud.notes?.startsWith("Type: ")) {
       const type = ud.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
       // Use the logic from the engine to determine which category it belongs to
-      const parts = ud.documentDefId.split("-");
-      const category = parts.length >= 2 ? parts[1] : "MISC";
+      const staticDef = ALL_DOCUMENTS.find(d => d.id === ud.documentDefId);
+      let category = "MISC";
+      if (staticDef) {
+        category = staticDef.category;
+      } else if (ud.documentDefId.startsWith("dynamic-")) {
+        const parts = ud.documentDefId.split("-");
+        category = parts.length >= 2 ? parts[1] : "MISC";
+      }
       namedRequirementCategories.add(`${category}-${type}`);
     }
   });

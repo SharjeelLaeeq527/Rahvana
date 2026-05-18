@@ -112,8 +112,7 @@ export default function DocumentVaultPage() {
   // Filter documents based on search query
   const filteredDocumentsByCategory = useMemo(() => {
     if (!config) return {};
-    const uploadedIds = uploadedDocuments.map((d) => d.documentDefId);
-    const baseDocs = getDocumentsByCategory(config, true, uploadedIds);
+    const baseDocs = getDocumentsByCategory(config, true, uploadedDocuments);
     if (!searchQuery.trim()) return baseDocs;
 
     const query = searchQuery.toLowerCase();
@@ -171,8 +170,7 @@ export default function DocumentVaultPage() {
     };
   }, [uploadedDocuments, requiredDocuments]);
   const documentsByCategory = useMemo(() => {
-    const uploadedIds = uploadedDocuments.map((d) => d.documentDefId);
-    return config ? getDocumentsByCategory(config, true, uploadedIds) : {};
+    return config ? getDocumentsByCategory(config, true, uploadedDocuments) : {};
   }, [config, uploadedDocuments]);
 
   // Get documents for special filters (required/optional)
@@ -579,6 +577,7 @@ export default function DocumentVaultPage() {
                       <Progress
                         value={stats.percentComplete}
                         className="h-3 bg-white/20"
+                        indicatorClassName="bg-white"
                       />
                     </div>
 
