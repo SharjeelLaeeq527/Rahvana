@@ -11,6 +11,7 @@ import {
   type RegisterReceiptPayload,
   type RegisterReceiptError,
 } from "@/lib/register-receipt";
+import { ReceiptFormatChip } from "./ReceiptFormatChip";
 
 // ─── Tiny SVG helpers ──────────────────────────────────────────────────────────
 
@@ -427,6 +428,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
             onFocus={focusBorder}
             onBlur={blurBorder}
           />
+          <ReceiptFormatChip value={fields.receiptNumber} />
         </div>
         <div className="flex flex-col gap-1">
           <label
@@ -869,6 +871,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
             onFocus={focusBorder}
             onBlur={blurBorder}
           />
+          <ReceiptFormatChip value={fields.receiptNumber} />
         </div>
         <div className="flex flex-col gap-1">
           <label

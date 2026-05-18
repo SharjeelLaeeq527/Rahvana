@@ -35,6 +35,8 @@ interface PlanContextValue {
   setDevOverride: (t: PlanTier | null) => void;
   /** Add-on IDs purchased by this user (e.g. ["sponsor", "mock"]). */
   purchasedAddons: string[];
+  /** Re-fetch the user's plan from DB (call after successful payment). */
+  refresh: () => void;
   /** Look up the full entitlement object for a feature, respecting purchased add-ons. */
   entitlement: (feature: string) => FeatureEntitlement;
   /** True when the user can take the primary action on a feature. */
@@ -74,8 +76,11 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [devOverride, setDevOverride] = useState<PlanTier | null>(null);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   const tier = devOverride ?? realTier;
+
+  const refresh = useCallback(() => setRefreshCounter((n) => n + 1), []);
 
   useEffect(() => {
     if (!user?.id) {
@@ -89,11 +94,23 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     const supabase = createClient();
-    supabase
-      .from('user_profiles')
-      .select('subscription_tier, profile_details')
-      .eq('id', user.id)
-      .single()
+
+    // 1. Defensive reconciliation: if user has a successful payment that
+    //    hasn't been applied to subscription_tier yet, apply it.
+    //    Fails open — if the endpoint errors, we still load from DB normally.
+    const reconcile = fetch('/api/plan/reconcile', { method: 'POST' })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+
+    // 2. Wait for reconcile to settle, THEN read the (possibly updated) tier.
+    reconcile
+      .then(() =>
+        supabase
+          .from('user_profiles')
+          .select('subscription_tier, profile_details')
+          .eq('id', user.id)
+          .single(),
+      )
       .then(({ data }: { data: { subscription_tier?: string; profile_details?: any } | null }) => {
         if (cancelled) return;
         setRealTier(normalizeTier(data?.subscription_tier));
@@ -111,7 +128,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       });
 
     return () => { cancelled = true; };
-  }, [user?.id]);
+  }, [user?.id, refreshCounter]);
 
   const value: PlanContextValue = {
     realTier,
@@ -120,6 +137,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     devOverride,
     setDevOverride,
     purchasedAddons,
+    refresh,
     entitlement: useCallback((f) => getEffectiveEntitlement(f, tier, purchasedAddons), [tier, purchasedAddons]),
     canUse:       useCallback((f) => canUse(f, tier, purchasedAddons), [tier, purchasedAddons]),
     isHidden:     useCallback((f) => isHidden(f, tier), [tier]),

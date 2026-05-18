@@ -4,6 +4,7 @@ import { paymentService } from '@/lib/services/paymentService';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { VISA_CATEGORIES } from '@/app/(main)/pricing/data/pricing';
+import { reconcileUserPlan } from '@/lib/plan/reconcile';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -46,11 +47,51 @@ export async function POST(request: NextRequest) {
 
     const userEmail = userData.user.email!;
 
-    // Fetch profile for default visa category and old subscription ID
-    const { data: profile } = await supabase.from('user_profiles').select('profile_details').eq('id', userId).single();
+    // ── Reconcile any unapplied payments BEFORE we let user pay again ────────
+    // This prevents double-charging: if a previous payment succeeded but the
+    // webhook failed to update the tier, applying it here means the duplicate-
+    // purchase guard below will catch it and reject the new checkout.
+    await reconcileUserPlan(supabase, userId).catch((e) =>
+      console.error('[checkout] pre-reconcile failed (non-fatal):', e),
+    );
+
+    // Fetch profile AFTER reconcile so we see the up-to-date tier
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('subscription_tier, subscription_status, profile_details')
+      .eq('id', userId)
+      .single();
+
     const dbVisaCategory = profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || 'IR-1 / CR-1';
     const oldSubscriptionId = profile?.profile_details?.stripe_subscription_id;
+
+    // ── Server-side downgrade + duplicate-purchase guard ─────────────────────
+    // Rejects two scenarios:
+    //   (a) target tier <  current tier  → downgrade attempt
+    //   (b) target tier == current tier  → duplicate purchase (already owned)
+    // We derive this from DB — never trust the client's `currentTier` field.
+    if (productTier) {
+      const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+      const dbTier = (profile?.subscription_tier ?? 'free').toLowerCase();
+      const dbStatus = profile?.subscription_status ?? 'inactive';
+      const targetRank  = TIER_RANK[productTier.toLowerCase()] ?? 0;
+      const currentRank = TIER_RANK[dbTier] ?? 0;
+
+      if (dbStatus === 'active' && targetRank < currentRank) {
+        return NextResponse.json(
+          { error: `You already have the ${dbTier} plan. Downgrades are not allowed — manage via billing portal.` },
+          { status: 400 }
+        );
+      }
+      if (dbStatus === 'active' && targetRank === currentRank) {
+        return NextResponse.json(
+          { error: `You already own the ${dbTier} plan. No need to purchase again.`, alreadyOwned: true },
+          { status: 400 }
+        );
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     // Get or create Stripe customer
     let stripeCustomerId: string | undefined;
