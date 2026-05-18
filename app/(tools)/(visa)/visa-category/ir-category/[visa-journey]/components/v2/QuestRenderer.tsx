@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestSuite, QuestData } from "../types";
+import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
 
 interface QuestRendererProps {
   quest: QuestSuite;
@@ -44,13 +45,16 @@ export function QuestRenderer({
 
   const suiteId = (suite as any).id || (suite as any).step_key;
 
+  // Answers key in metadata — used to persist across refreshes
+  const metaAnswersKey = `questAnswers_${suiteId}`;
+
   const [suiteAnswers, setSuiteAnswers] = useState<
     Record<string, Record<string, string | string[]>>
   >(
-    (state.answers?.[suiteId] as Record<
-      string,
-      Record<string, string | string[]>
-    >) || {},
+    // Prefer in-memory answers, fall back to metadata (backend-persisted)
+    (state.answers?.[suiteId] as Record<string, Record<string, string | string[]>>) ||
+    (state.metadata?.[metaAnswersKey] as Record<string, Record<string, string | string[]>>) ||
+    {},
   );
   const [questResults, setQuestResults] = useState<
     Record<string, { state: string; title: string; body: string }>
@@ -71,6 +75,19 @@ export function QuestRenderer({
       setQuestResults((prev) => ({ ...state.metadata.questResults, ...prev }));
     }
   }, [state.metadata?.questResults]);
+
+  // Sync persisted answers into local state once backend data arrives
+  useEffect(() => {
+    const persisted = state.metadata?.[metaAnswersKey] as
+      | Record<string, Record<string, string | string[]>>
+      | undefined;
+    if (persisted && Object.keys(persisted).length > 0) {
+      setSuiteAnswers((prev) =>
+        Object.keys(prev).length === 0 ? persisted : prev,
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.metadata?.[metaAnswersKey]]);
 
   const activeQuest: QuestData | undefined = suite.quests.find(
     (q) => q.id === activeQuestId,
@@ -149,6 +166,8 @@ export function QuestRenderer({
     const finalAnswers = { ...suiteAnswers, [activeQuest.id]: tempAnswers };
     setSuiteAnswers(finalAnswers);
     actions.updateAnswers({ [suite.id]: finalAnswers });
+    // Persist answers to backend so risk flags survive page refresh
+    actions.updateMetadata({ [metaAnswersKey]: finalAnswers });
 
     const logic =
       (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
@@ -353,6 +372,17 @@ export function QuestRenderer({
             );
           })}
         </div>
+
+        {/* Risk advisories — only for eligibility-suite */}
+        {suiteId === "eligibility-suite" && (
+          <EligibilityRiskBanner
+            answers={
+              Object.keys(suiteAnswers).length > 0
+                ? suiteAnswers
+                : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+            }
+          />
+        )}
 
         {/* Disclaimer */}
         <div

@@ -351,12 +351,22 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('id, metadata')
+    .select('id, metadata, profile_details')
     .eq('stripe_customer_id', customerId)
     .single();
 
   if (!profile) {
     console.error('No user found for customer:', customerId);
+    return;
+  }
+
+  // Guard: if the cancelled sub is NOT the user's current active sub, it was
+  // cancelled as part of an upgrade flow — do NOT downgrade.
+  const currentSubId = profile.profile_details?.stripe_subscription_id;
+  if (currentSubId && currentSubId !== subscription.id) {
+    console.log(
+      `Skipping downgrade — cancelled sub ${subscription.id} is not current (${currentSubId}). Upgrade cleanup.`
+    );
     return;
   }
 

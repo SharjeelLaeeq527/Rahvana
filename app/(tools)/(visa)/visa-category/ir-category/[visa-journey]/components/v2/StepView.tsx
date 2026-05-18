@@ -82,6 +82,18 @@ import { useFilingQuiz } from "./hooks/useFilingQuiz";
 import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
 import { HouseholdMemberTool } from "./components/HouseholdMemberTool";
+import { EvidenceStrengthMeter } from "./components/EvidenceStrengthMeter";
+import {
+  ConsistencyBaselineCapture,
+  type ConsistencyBaseline,
+} from "./components/ConsistencyBaselineCapture";
+import {
+  BeneficiaryResidenceCapture,
+  type BeneficiaryBaseline,
+} from "./components/BeneficiaryResidenceCapture";
+import { FileQualityPreCheck } from "./components/FileQualityPreCheck";
+import { PreSubmissionSnapshot } from "./components/PreSubmissionSnapshot";
+import { PacketSectionChecklist } from "./components/PacketSectionChecklist";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
 import {
   computeDocumentList,
@@ -1984,6 +1996,46 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </div>
             )}
 
+          {/* CONSISTENCY BASELINE CAPTURE — step_1_4 (Fill I-130) */}
+          {sId === "step_1_4" && (
+            <ConsistencyBaselineCapture
+              baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
+              onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
+            />
+          )}
+
+          {/* BENEFICIARY RESIDENCE CAPTURE — step_1_5 (Fill I-130A) */}
+          {sId === "step_1_5" && (
+            <BeneficiaryResidenceCapture
+              baseline={state.metadata?.beneficiaryBaseline as BeneficiaryBaseline | undefined}
+              config={(currentStep as any).beneficiary_residence_capture}
+              petitionerCountry={state.metadata?.petitionerCountry as string | undefined}
+              onSave={(next) => actions.updateMetadata({ beneficiaryBaseline: next })}
+            />
+          )}
+
+          {/* FILE QUALITY PRE-CHECK — step_1_8 (Upload, online path) */}
+          {sId === "step_1_8" && (
+            <FileQualityPreCheck uploadedDocuments={uploadedDocuments} />
+          )}
+
+          {/* PRE-SUBMISSION SNAPSHOT — step_1_10 (Review & Submit, online path) */}
+          {sId === "step_1_10" && (
+            <PreSubmissionSnapshot
+              consistencyBaseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
+              beneficiaryBaseline={state.metadata?.beneficiaryBaseline as BeneficiaryBaseline | undefined}
+              filingMethod={state.metadata?.filingMethod as string | undefined}
+              eligibilityAnswers={
+                (state.answers?.["eligibility-suite"] as
+                  | Record<string, Record<string, string | string[]> | undefined>
+                  | undefined) ??
+                (state.metadata?.["questAnswers_eligibility-suite"] as
+                  | Record<string, Record<string, string | string[]> | undefined>
+                  | undefined)
+              }
+            />
+          )}
+
           {/* SECONDARY ACTIONS ROW (Step 6 SPECIFIC) */}
           {(sId === "step_1_6" || sId === "step_2_1") && (
             <div className="flex flex-col mb-[28px]">
@@ -2829,6 +2881,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 isChapter3={isChapter3}
                 guard={stepEntitlement.guard}
               />
+
+              {/* PACKET SECTION CHECKLIST — step_1_13 (Assemble Packet, mailing path) */}
+              {sId === "step_1_13" && (
+                <PacketSectionChecklist
+                  config={(currentStep as any).action_data?.packet_section_checklist}
+                  checked={state.metadata?.packetChecklist as Record<string, boolean> | undefined}
+                  onToggle={(next) => actions.updateMetadata({ packetChecklist: next })}
+                />
+              )}
             </div>
           ) : currentStep.step_type === "docs" ? (
             <>
@@ -2873,6 +2934,22 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   </button>
                 </div>
                 {/* )} */}
+
+                {/* Documents still pending — advisory, only for step_1_2 */}
+                {currentStep.step_key === "step_1_2" && (
+                  <EvidenceStrengthMeter
+                    documentItems={(currentStep as any).document_items}
+                    uploadedDocuments={uploadedDocuments}
+                    documentChecklist={state.documentChecklist}
+                    docReviewStatus={
+                      state.metadata?.docReviewStatus as
+                        | Record<string, string>
+                        | undefined
+                    }
+                    docUploads={state.docUploads}
+                    notes={state.notes}
+                  />
+                )}
 
                 {/* Document Cards — rendered by DocListSection below */}
                 {false &&

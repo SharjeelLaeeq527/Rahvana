@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(node scripts/add-case-strength-fields.mjs)",
+      "Bash(node scripts/add-step-1-5-residence-data.mjs)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=8192\" npx tsc --noEmit)",
+      "Bash(grep -E \"BeneficiaryResidenceCapture|ConsistencyBaselineCapture|EvidenceStrengthMeter|EligibilityRiskBanner|eligibility-quest-detector|case-strength[/\\\\\\\\\\\\\\\\]\\(types|validators|risk-detector|evidence-classifier|index\\)|ReceiptFormatChip|StepView\\\\.tsx|QuestRenderer\\\\.tsx|RegisterReceiptStep\\\\.tsx\")",
+      "Bash(echo \"---exit:$?---\")"
+    ]
+  }
+}
