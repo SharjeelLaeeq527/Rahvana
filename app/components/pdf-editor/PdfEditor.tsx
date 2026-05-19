@@ -205,7 +205,11 @@ export function PDFEditor() {
           {/* CENTER TOOLBAR */}
           <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 mx-auto overflow-x-auto max-w-[calc(100vw-140px)] md:max-w-none scrollbar-hide">
             <button
-              onClick={() => setShowOrganizeModal(true)}
+              onClick={() => {
+                setShowOrganizeModal(true);
+                setActiveTool(null);
+                setShowShapesDropdown(false);
+              }}
               className="p-2 hover:bg-gray-100 rounded transition-colors hidden md:block"
               title={t("pdfProcessing.editor.organize")}
             >
@@ -233,7 +237,13 @@ export function PDFEditor() {
             <div className="relative">
               {/* Signature Icon — NOT MODIFIED */}
               <button
-                onClick={() => setShowShapesDropdown(!showShapesDropdown)}
+                onClick={() => {
+                  const nextShow = !showShapesDropdown;
+                  setShowShapesDropdown(nextShow);
+                  if (nextShow && activeTool === "text") {
+                    setActiveTool(null);
+                  }
+                }}
                 className={`p-2 rounded transition-colors ${
                   activeTool === "shapes" ? "bg-blue-100" : "hover:bg-gray-100"
                 }`}
@@ -288,6 +298,10 @@ export function PDFEditor() {
             {/* SIGNATURE TOOL */}
             <div className="relative">
               <SignatureTool
+                onOpen={() => {
+                  setActiveTool(null);
+                  setShowShapesDropdown(false);
+                }}
                 onSignature={(sig) => {
                   handleSignature(sig);
                 }}
@@ -300,7 +314,7 @@ export function PDFEditor() {
             <Button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="bg-green-600 hover:bg-green-700 text-white text-xs md:text-sm px-3 md:px-4"
+              className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm px-3 md:px-4"
             >
               <Download className="h-4 w-4 mr-1 md:mr-2" />
               {isDownloading ? (

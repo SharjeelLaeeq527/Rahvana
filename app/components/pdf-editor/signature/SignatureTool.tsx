@@ -6,12 +6,14 @@ import SignaturePad from "./SignaturePad";
 import TextSignature from "./TextSignature";
 import UploadImage from "./UploadImage";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 type Props = {
   onSignature: (dataURL: string) => void;
+  onOpen?: () => void;
 };
 
-export default function SignatureTool({ onSignature }: Props) {
+export default function SignatureTool({ onSignature, onOpen }: Props) {
   const { t } = useLanguage();
   const [showModal, setShowModal] = useState(false);
   const [signatureMode, setSignatureMode] = useState<
@@ -25,7 +27,10 @@ export default function SignatureTool({ onSignature }: Props) {
       {/* This is the ONLY button — no parent button allowed! */}
       <button
         type="button"
-        onClick={() => setShowModal(true)}
+        onClick={() => {
+          if (onOpen) onOpen();
+          setShowModal(true);
+        }}
         className="p-2 rounded transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         title={t("pdfProcessing.editor.signature.title")}
         aria-label={t("pdfProcessing.editor.signature.title")}
@@ -42,80 +47,78 @@ export default function SignatureTool({ onSignature }: Props) {
       </button>
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col max-h-full overflow-hidden">
-            {/* Header */}
-            <div className="shrink-0 flex items-center justify-between border-b p-4 sm:px-6 sm:py-4">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {t("pdfProcessing.editor.signature.title")}
-              </h2>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 transition"
-                aria-label="Close modal"
+      <Dialog open={showModal} onOpenChange={(open) => { if (!open) handleCloseModal() }}>
+        <DialogContent className="w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden p-0 gap-0 border-none">
+          {/* Header */}
+          <div className="shrink-0 flex items-center justify-between border-b p-4 sm:px-6 sm:py-4">
+            <DialogTitle className="text-xl font-semibold text-gray-900">
+              {t("pdfProcessing.editor.signature.title")}
+            </DialogTitle>
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="text-gray-400 hover:text-gray-600 transition"
+              aria-label="Close modal"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Tabs */}
-            <div className="shrink-0 flex gap-2 border-b p-4 sm:px-6 sm:py-4 bg-gray-50 overflow-x-auto custom-scrollbar">
-              {(["draw", "type", "upload"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setSignatureMode(mode)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-                    signatureMode === mode
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
-                  }`}
-                >
-                  {mode === "draw" && t("pdfProcessing.editor.signature.draw")}
-                  {mode === "type" && t("pdfProcessing.editor.signature.type")}
-                  {mode === "upload" && t("pdfProcessing.editor.signature.upload")}
-                </button>
-              ))}
-            </div>
-
-            {/* Content */}
-            <div className="p-4 sm:p-6 min-h-[300px] sm:min-h-96 overflow-y-auto custom-scrollbar">
-              {signatureMode === "draw" && (
-                <SignaturePad
-                  onSave={onSignature}
-                  closeModal={handleCloseModal}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
                 />
-              )}
-              {signatureMode === "type" && (
-                <TextSignature
-                  onGenerate={onSignature}
-                  closeModal={handleCloseModal}
-                />
-              )}
-              {signatureMode === "upload" && (
-                <UploadImage
-                  onUpload={onSignature}
-                  closeModal={handleCloseModal}
-                />
-              )}
-            </div>
+              </svg>
+            </button>
           </div>
-        </div>
-      )}
+
+          {/* Tabs */}
+          <div className="shrink-0 flex gap-2 border-b p-4 sm:px-6 sm:py-4 bg-gray-50 overflow-x-auto custom-scrollbar">
+            {(["draw", "type", "upload"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setSignatureMode(mode)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                  signatureMode === mode
+                    ? "bg-primary text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {mode === "draw" && t("pdfProcessing.editor.signature.draw")}
+                {mode === "type" && t("pdfProcessing.editor.signature.type")}
+                {mode === "upload" && t("pdfProcessing.editor.signature.upload")}
+              </button>
+            ))}
+          </div>
+
+          {/* Content */}
+          <div className="p-4 sm:p-6 min-h-[300px] sm:min-h-96 overflow-y-auto custom-scrollbar">
+            {signatureMode === "draw" && (
+              <SignaturePad
+                onSave={onSignature}
+                closeModal={handleCloseModal}
+              />
+            )}
+            {signatureMode === "type" && (
+              <TextSignature
+                onGenerate={onSignature}
+                closeModal={handleCloseModal}
+              />
+            )}
+            {signatureMode === "upload" && (
+              <UploadImage
+                onUpload={onSignature}
+                closeModal={handleCloseModal}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
