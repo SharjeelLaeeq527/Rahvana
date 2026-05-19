@@ -240,23 +240,9 @@ export default function PassportPhotoTool({
   }
 
   return (
-    <div
-      className={`fixed inset-0 mt-12 overflow-y-auto ${className}`}
-      style={{
-        backgroundImage: "url('/assets/images/Photobooth.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed" /* stays put while content scrolls */,
-        backgroundColor: "rgba(255,255,255,0.6)" /* fallback */,
-      }}
-    >
-      <div
-        className="fixed inset-0"
-        style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
-      />
+    <div className={`w-full ${className}`}>
       {/* Page content */}
-      <div className="relative z-10 flex flex-col items-center w-full px-4 py-10">
+      <div className="relative z-10 flex flex-col items-center w-full px-4 py-6">
         {/* Header */}
         {showHeader && (
           <header className="text-center mb-8 md:mb-10 w-full max-w-2xl">
