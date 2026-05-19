@@ -4,6 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { useVoiceEngine } from "@/lib/interview-prep/useVoiceEngine";
+import {
+  generateSessionReport,
+  type InterviewSession,
+  type SessionEndReason,
+  type SessionEvent,
+} from "@/lib/interview-prep/analyticsEngine";
 import {
   AlertTriangle,
   ArrowRight,
@@ -19,42 +26,12 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { GeneratedQuestion } from "@/lib/interview-prep";
+import mockInterviewFlows from "@/data/interview-categories/mock-interview-flows.json";
 
 interface MockInterviewModePageProps {
+  sessionId?: string;
   questions: GeneratedQuestion[];
   onExit: () => void;
-}
-
-interface SpeechRecognitionAlternativeLike {
-  transcript: string;
-}
-
-interface SpeechRecognitionResultLike {
-  isFinal: boolean;
-  length: number;
-  0: SpeechRecognitionAlternativeLike;
-}
-
-interface SpeechRecognitionEventLike {
-  resultIndex: number;
-  results: ArrayLike<SpeechRecognitionResultLike>;
-}
-
-interface SpeechRecognitionLike {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: ((event: { error: string }) => void) | null;
-  onend: (() => void) | null;
-  onstart: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-  abort?: () => void;
-}
-
-interface SpeechRecognitionConstructor {
-  new (): SpeechRecognitionLike;
 }
 
 interface FullscreenElementLike extends HTMLElement {
@@ -78,43 +55,107 @@ const formatTime = (seconds: number) => {
     .padStart(2, "0")}`;
 };
 
-const getBrowserSpeechRecognition = () => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const browserWindow = window as Window &
-    typeof globalThis & {
-      SpeechRecognition?: SpeechRecognitionConstructor;
-      webkitSpeechRecognition?: SpeechRecognitionConstructor;
-    };
-
-  return (
-    browserWindow.SpeechRecognition ||
-    browserWindow.webkitSpeechRecognition ||
-    null
-  );
-};
-
 export function MockInterviewModePage({
   questions,
   onExit,
+  sessionId,
 }: MockInterviewModePageProps) {
-  const interviewQuestions = useMemo(
-    () => questions.filter((question) => question.applicable),
-    [questions],
-  );
+  // reference sessionId to avoid unused-variable compile errors (kept for telemetry/analytics)
+  void sessionId;
+  // Opening/closing flows are loaded from data/interview-categories/mock-interview-flows.json
+  type FlowLine = { type: string; text: string };
+  const mockInterviewOpeningFlow: FlowLine[] = (mockInterviewFlows as unknown as { opening?: FlowLine[] })
+    .opening ?? [];
+  const mockInterviewClosingFlow: FlowLine[] = (mockInterviewFlows as unknown as { closing?: FlowLine[] })
+    .closing ?? [];
+  // keep reference to avoid unused var lint when closing not yet rendered
+  void mockInterviewClosingFlow;
 
-  const [phase, setPhase] = useState<"intro" | "running" | "completed">(
-    "intro",
-  );
+  const [openingIndex, setOpeningIndex] = useState(0);
+  const [closingIndex, setClosingIndex] = useState(0);
+
+  const interviewQuestions = useMemo(() => {
+    // Base: filter applicable and sort by explicit order (fallback 9999)
+    const base = questions
+      .filter((question) => question.applicable)
+      .slice()
+      .sort((a, b) => (a.mockInterviewOrder ?? 9999) - (b.mockInterviewOrder ?? 9999));
+
+    // Helper to remove and return items by id list
+    const extractByIds = (arr: typeof base, ids: string[]) => {
+      const map = new Map<string, typeof arr[0]>();
+      for (const id of ids) {
+        const idx = arr.findIndex((q) => q.id === id);
+        if (idx !== -1) {
+          map.set(id, arr.splice(idx, 1)[0]);
+        }
+      }
+      return map;
+    };
+
+    // Desired timeline sequence (will be moved together)
+    const timelineOrder = [
+      "relationship-timeline-started",
+      "relationship-origin-first-meeting", // meet in person
+      "relationship-timeline-engagement",
+      "basic-case-marriage-timing", // when did you get married
+      "relationship-timeline-walkthrough",
+    ];
+
+    const timelineMap = extractByIds(base, timelineOrder);
+
+    // Insert timeline after the relationship-origin-how question if present
+    const anchorIdx = base.findIndex((q) => q.id === "relationship-origin-how");
+    const insertAt = anchorIdx === -1 ? 0 : anchorIdx + 1;
+    const timelineItems = timelineOrder.map((id) => timelineMap.get(id)).filter(Boolean) as typeof base;
+    base.splice(insertAt, 0, ...timelineItems);
+
+    // Move finance-related questions earlier (after spouse family block)
+    const financeIds = [
+      "employment-spouse",
+      "spouse-education",
+      "petitioner-household",
+      "finances-support",
+      "finances-shared",
+    ];
+    const financeMap = extractByIds(base, financeIds);
+    const financeAnchor = base.findIndex((q) => q.id === "spouse-family-members");
+    const financeInsertAt = financeAnchor === -1 ? 3 : financeAnchor + 1;
+    const financeItems = financeIds.map((id) => financeMap.get(id)).filter(Boolean) as typeof base;
+    base.splice(financeInsertAt, 0, ...financeItems);
+
+    // Promote a set of very-common IR-1 questions if present in the bank
+    const commonPromoteIds = [
+      "spouse-dob",
+      "spouse-current-location",
+      "spouse-live-with",
+      "spouse-address",
+      "last-time-talked",
+      "recent-talk-content",
+      "marriage-type",
+      "who-proposed-first",
+      "why-choose-this-person",
+      "last-visit-date",
+      "last-visit-duration",
+      "spouse-workplace",
+      "spouse-working-hours",
+    ];
+    const commonMap = extractByIds(base, commonPromoteIds);
+    const commonAnchor = base.findIndex((q) => q.id === "spouse-age");
+    const commonInsertAt = commonAnchor === -1 ? 2 : commonAnchor + 1;
+    const commonItems = commonPromoteIds
+      .map((id) => commonMap.get(id))
+      .filter(Boolean) as typeof base;
+    base.splice(commonInsertAt, 0, ...commonItems);
+
+    return base;
+  }, [questions]);
+
+  const [phase, setPhase] = useState<
+    "intro" | "opening" | "running" | "closing" | "completed"
+  >("intro");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [secondsRemaining, setSecondsRemaining] = useState(TOTAL_SECONDS);
-  const [isListening, setIsListening] = useState(false);
-  const [micUnsupported, setMicUnsupported] = useState(false);
-  const [micError, setMicError] = useState<string | null>(null);
-  const [currentTranscript, setCurrentTranscript] = useState("");
-  const [interimTranscript, setInterimTranscript] = useState("");
   const [focusWarnings, setFocusWarnings] = useState(0);
   const [focusWarningMessage, setFocusWarningMessage] = useState<string | null>(
     null,
@@ -123,15 +164,35 @@ export function MockInterviewModePage({
   const [questionRecords, setQuestionRecords] = useState<
     Record<string, QuestionRecord>
   >({});
+  const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null);
 
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const {
+    canvasRef: waveformCanvasRef,
+    voiceState,
+    isListening,
+    micUnsupported,
+    micError,
+    silenceNotice,
+    currentTranscript,
+    interimTranscript,
+    startListening,
+    stopListening,
+    toggleListening,
+    clearTranscript,
+  } = useVoiceEngine({
+    vadConfig: {
+      speechThreshold: 0.06,
+      silenceDelayMs: 1200,
+      minSpeechDurationMs: 300,
+      silenceActionDelayMs: 2500,
+    },
+  });
+
   const recordsRef = useRef<Record<string, QuestionRecord>>({});
   const activeQuestionIdRef = useRef<string>("");
   const questionStartRef = useRef<number>(Date.now());
-  const listeningRef = useRef(false);
   const phaseRef = useRef(phase);
   const warningTimestampRef = useRef(0);
-  const transcriptBufferRef = useRef("");
   const justStartedRef = useRef(false);
   const exitRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -139,15 +200,7 @@ export function MockInterviewModePage({
   const warningHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const micErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const recognitionActiveRef = useRef(false);
   const explicitExitRef = useRef(false);
-  // Web Audio API waveform visualizer refs
-  const waveformCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const animFrameRef = useRef<number | null>(null);
   const showExitModalRef = useRef(false);
   const exitViaConfirmRef = useRef(false);
   const skipFullscreenExitPromptRef = useRef(false);
@@ -174,171 +227,24 @@ export function MockInterviewModePage({
         )
       : 0;
 
-  const completionPercentage =
-    interviewQuestions.length > 0
-      ? Math.round((completedCount / interviewQuestions.length) * 100)
-      : 0;
-
   const timeProgressPercent =
     ((TOTAL_SECONDS - secondsRemaining) / TOTAL_SECONDS) * 100;
 
-  const flashMicError = (message: string) => {
-    setMicError(message);
-    if (micErrorTimerRef.current) {
-      clearTimeout(micErrorTimerRef.current);
-    }
-    micErrorTimerRef.current = setTimeout(() => setMicError(null), 4000);
-  };
-
-  const stopRecognition = () => {
-    listeningRef.current = false;
-    setIsListening(false);
-
-    const recognition = recognitionRef.current;
-    if (!recognition) return;
-
-    try {
-      recognition.stop();
-    } catch {
-      try {
-        recognition.abort?.();
-      } catch {
-        // noop
-      }
-    }
-  };
-
-  const ensureRecognition = () => {
-    if (recognitionRef.current) {
-      return recognitionRef.current;
-    }
-
-    const RecognitionCtor = getBrowserSpeechRecognition();
-    if (!RecognitionCtor) {
-      setMicUnsupported(true);
-      return null;
-    }
-
-    const recognition = new RecognitionCtor();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => {
-      recognitionActiveRef.current = true;
-      justStartedRef.current = true;
-      warningTimestampRef.current = Date.now();
-    };
-
-    recognition.onresult = (event: SpeechRecognitionEventLike) => {
-      let finalTranscript = transcriptBufferRef.current;
-      let interimTranscript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript + " ";
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      transcriptBufferRef.current = finalTranscript.trim();
-      setCurrentTranscript(finalTranscript.trim());
-      setInterimTranscript(interimTranscript.trim());
-    };
-
-    recognition.onerror = (event) => {
-      if (
-        event.error === "not-allowed" ||
-        event.error === "service-not-allowed"
-      ) {
-        flashMicError(
-          "Microphone access was blocked. Please allow mic permission and try again.",
-        );
-        stopRecognition();
-        return;
-      }
-
-      if (event.error === "no-speech") {
-        return;
-      }
-
-      if (event.error === "audio-capture") {
-        flashMicError(
-          "No microphone input detected. Please connect/enable your microphone and retry.",
-        );
-        stopRecognition();
-        return;
-      }
-
-      if (event.error === "aborted") {
-        return;
-      }
-
-      flashMicError(`Microphone error: ${event.error}`);
-    };
-
-    recognition.onend = () => {
-      recognitionActiveRef.current = false;
-
-      if (listeningRef.current && phaseRef.current === "running") {
-        setTimeout(() => {
-          if (
-            !listeningRef.current ||
-            phaseRef.current !== "running" ||
-            recognitionActiveRef.current
-          ) {
-            return;
-          }
-
-          try {
-            recognition.start();
-          } catch {
-            // ignore
-          }
-        }, 1500);
-      }
-    };
-
-    recognitionRef.current = recognition;
-    return recognition;
-  };
-
-  const startListening = async () => {
-    const recognition = ensureRecognition();
-
-    if (!recognition) {
-      flashMicError(
-        "Voice input is not supported in this browser. Try Chrome or Edge.",
-      );
-      return false;
-    }
-
-    listeningRef.current = true;
-    setIsListening(true);
-    setMicError(null);
-
-    if (recognitionActiveRef.current) {
-      return true;
-    }
-
-    try {
-      recognition.start();
-    } catch {
-      // already running
-    }
-
-    return true;
-  };
+  const voiceStatusLabel =
+    voiceState === "speaking"
+      ? "Speaking"
+      : voiceState === "silence"
+      ? "Silence"
+      : voiceState === "listening"
+      ? "Listening"
+      : "Paused";
 
   const finalizeCurrentQuestion = useCallback(() => {
     if (!currentQuestion) {
       return;
     }
 
-    const responseText = transcriptBufferRef.current;
+    const responseText = currentTranscript;
     const durationSeconds = Math.max(
       1,
       Math.round((Date.now() - questionStartRef.current) / 1000),
@@ -357,166 +263,83 @@ export function MockInterviewModePage({
 
     recordsRef.current = nextRecords;
     setQuestionRecords(nextRecords);
-  }, [currentQuestion]);
+  }, [currentQuestion, currentTranscript]);
 
-  const completeInterview = useCallback(() => {
-    if (phaseRef.current !== "running") {
-      return;
-    }
+  const finalizeOpeningLine = useCallback(() => {
+    const responseText = currentTranscript;
+    const durationSeconds = Math.max(
+      1,
+      Math.round((Date.now() - questionStartRef.current) / 1000),
+    );
 
-    stopRecognition();
-    phaseRef.current = "completed";
-    setPhase("completed");
-    setCurrentTranscript("");
-    setInterimTranscript("");
-  }, []);
-
-  // ── Web Audio waveform visualizer
-  useEffect(() => {
-    if (!isListening) {
-      // Tear down audio pipeline and cancel draw loop
-      if (animFrameRef.current !== null) {
-        cancelAnimationFrame(animFrameRef.current);
-        animFrameRef.current = null;
-      }
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-        mediaStreamRef.current = null;
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close().catch(() => undefined);
-        audioContextRef.current = null;
-        analyserRef.current = null;
-      }
-
-      // Draw a flat idle line on the canvas
-      const canvas = waveformCanvasRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      }
-      return;
-    }
-
-    // Start capturing mic audio
-    let cancelled = false;
-
-    const setup = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: false,
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-
-        mediaStreamRef.current = stream;
-
-        const AudioContextCtor =
-          window.AudioContext ||
-          (window as Window & { webkitAudioContext?: typeof AudioContext })
-            .webkitAudioContext;
-        if (!AudioContextCtor) return;
-
-        const audioCtx = new AudioContextCtor();
-        audioContextRef.current = audioCtx;
-
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 128;
-        analyser.smoothingTimeConstant = 0.78;
-        analyserRef.current = analyser;
-
-        const source = audioCtx.createMediaStreamSource(stream);
-        source.connect(analyser);
-
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        const BAR_COUNT = 40;
-        const PRIMARY = "#0d7377";
-        const LIGHT = "#14a0a6";
-        const SECONDARY = "#32e0c4";
-
-        const draw = () => {
-          if (cancelled) return;
-          animFrameRef.current = requestAnimationFrame(draw);
-
-          const canvas = waveformCanvasRef.current;
-          if (!canvas) return;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return;
-
-          analyser.getByteFrequencyData(dataArray);
-
-          const W = canvas.width;
-          const H = canvas.height;
-          ctx.clearRect(0, 0, W, H);
-
-          const barW = (W / BAR_COUNT) * 0.72;
-          const gap = (W / BAR_COUNT) * 0.28;
-
-          for (let i = 0; i < BAR_COUNT; i++) {
-            // Sample from the lower frequency range (voices live there)
-            const dataIndex = Math.floor(
-              (i / BAR_COUNT) * (bufferLength * 0.6),
-            );
-            const value = dataArray[dataIndex] / 255;
-
-            // Minimum idle height so bars are always visible
-            const minH = H * 0.08;
-            const barH = minH + value * (H - minH);
-
-            const x = i * (barW + gap);
-            const y = (H - barH) / 2;
-
-            const grad = ctx.createLinearGradient(x, y + barH, x, y);
-            grad.addColorStop(0, PRIMARY);
-            grad.addColorStop(0.5, LIGHT);
-            grad.addColorStop(1, SECONDARY);
-
-            // Opacity tied to amplitude for lively feel
-            ctx.globalAlpha = 0.55 + value * 0.45;
-            ctx.fillStyle = grad;
-
-            const radius = barW / 2;
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.lineTo(x + barW - radius, y);
-            ctx.quadraticCurveTo(x + barW, y, x + barW, y + radius);
-            ctx.lineTo(x + barW, y + barH - radius);
-            ctx.quadraticCurveTo(
-              x + barW,
-              y + barH,
-              x + barW - radius,
-              y + barH,
-            );
-            ctx.lineTo(x + radius, y + barH);
-            ctx.quadraticCurveTo(x, y + barH, x, y + barH - radius);
-            ctx.lineTo(x, y + radius);
-            ctx.quadraticCurveTo(x, y, x + radius, y);
-            ctx.closePath();
-            ctx.fill();
-          }
-
-          ctx.globalAlpha = 1;
-        };
-
-        draw();
-      } catch {
-        // Mic permission denied or not available — visualizer silently degrades
-      }
+    const key = `opening-${openingIndex}`;
+    const record: QuestionRecord = {
+      transcript: responseText,
+      durationSeconds,
+      skipped: responseText.trim().length === 0,
     };
 
-    setup();
-
-    return () => {
-      cancelled = true;
+    const nextRecords = {
+      ...recordsRef.current,
+      [key]: record,
     };
-  }, [isListening]);
+
+    recordsRef.current = nextRecords;
+    setQuestionRecords(nextRecords);
+    clearTranscript();
+  }, [clearTranscript, currentTranscript, openingIndex]);
+
+  const finalizeClosingLine = useCallback(() => {
+    const responseText = currentTranscript;
+    const durationSeconds = Math.max(
+      1,
+      Math.round((Date.now() - questionStartRef.current) / 1000),
+    );
+
+    const key = `closing-${closingIndex}`;
+    const record: QuestionRecord = {
+      transcript: responseText,
+      durationSeconds,
+      skipped: responseText.trim().length === 0,
+    };
+
+    const nextRecords = {
+      ...recordsRef.current,
+      [key]: record,
+    };
+
+    recordsRef.current = nextRecords;
+    setQuestionRecords(nextRecords);
+    clearTranscript();
+  }, [clearTranscript, closingIndex, currentTranscript]);
+
+  const completeInterview = useCallback(
+    (endReason: SessionEndReason = "completed") => {
+      if (phaseRef.current !== "running") {
+        return;
+      }
+
+      setSessionEndReason(endReason);
+
+      stopListening();
+
+      // If ending due to time or focus, skip closing flow and go straight to completion
+      if (endReason === "aborted_time" || endReason === "aborted_focus") {
+        phaseRef.current = "completed";
+        setPhase("completed");
+        clearTranscript();
+        return;
+      }
+
+      // Normal completion: proceed to closing flow
+      phaseRef.current = "closing";
+      setPhase("closing");
+      setClosingIndex(0);
+      clearTranscript();
+      questionStartRef.current = Date.now();
+    },
+    [clearTranscript, stopListening],
+  );
 
   const requestDocumentFullscreen = async () => {
     try {
@@ -538,33 +361,44 @@ export function MockInterviewModePage({
         .webkitFullscreenElement,
     );
 
+  const proceedToRun = async () => {
+    recordsRef.current = {};
+    activeQuestionIdRef.current = interviewQuestions[0]?.id || "";
+    questionStartRef.current = Date.now();
+    phaseRef.current = "running";
+    setPhase("running");
+    setCurrentQuestionIndex(0);
+    setSecondsRemaining(TOTAL_SECONDS);
+    setQuestionRecords({});
+    setFocusWarnings(0);
+    setFocusWarningMessage(null);
+    warningTimestampRef.current = Date.now() + 1500;
+
+    try {
+      await startListening();
+    } catch {
+      // best-effort
+    }
+  };
+
   const startInterview = async () => {
     if (interviewQuestions.length === 0) {
       setPhase("completed");
       return;
     }
 
-    recordsRef.current = {};
-    activeQuestionIdRef.current = interviewQuestions[0].id;
-    transcriptBufferRef.current = "";
+    // Switch UI immediately so intro screen does not linger during async setup.
+    setSessionEndReason(null);
+    setOpeningIndex(0);
+    phaseRef.current = "opening";
+    setPhase("opening");
     questionStartRef.current = Date.now();
-
-    phaseRef.current = "running";
-    setPhase("running");
-    setCurrentQuestionIndex(0);
-    setSecondsRemaining(TOTAL_SECONDS);
-    setQuestionRecords({});
-    setCurrentTranscript("");
-    setInterimTranscript("");
-    setFocusWarnings(0);
-    setFocusWarningMessage(null);
-    warningTimestampRef.current = Date.now() + 1500;
+    clearTranscript();
 
     skipFullscreenExitPromptRef.current = true;
     try {
-      await startListening();
-
       await requestDocumentFullscreen();
+      await startListening();
     } finally {
       skipFullscreenExitPromptRef.current = false;
     }
@@ -573,7 +407,12 @@ export function MockInterviewModePage({
   const exitInterview = () => {
     exitViaConfirmRef.current = true;
     explicitExitRef.current = true;
-    stopRecognition();
+    stopListening();
+
+    // Mark session as manually exited (unless already marked as focus abort)
+    if (sessionEndReason !== "aborted_focus") {
+      setSessionEndReason("aborted_manual");
+    }
 
     if (document.fullscreenElement) {
       document.exitFullscreen?.().catch(() => undefined);
@@ -583,9 +422,6 @@ export function MockInterviewModePage({
   };
 
   const advanceQuestion = () => {
-    recognitionRef.current?.abort?.();
-    stopRecognition();
-
     if (phaseRef.current !== "running" || !currentQuestion) {
       return;
     }
@@ -601,21 +437,19 @@ export function MockInterviewModePage({
     setCurrentQuestionIndex(nextIndex);
     activeQuestionIdRef.current = interviewQuestions[nextIndex].id;
     questionStartRef.current = Date.now();
-    transcriptBufferRef.current = "";
-    setCurrentTranscript("");
-    setInterimTranscript("");
-
+    clearTranscript();
     void startListening();
   };
 
-  const toggleListening = () => {
+  const handleListeningToggle = useCallback(() => {
     if (isListening) {
-      stopRecognition();
+      stopListening();
       return;
     }
 
-    startListening();
-  };
+    questionStartRef.current = Date.now();
+    void startListening();
+  }, [isListening, startListening, stopListening]);
 
   const registerFocusWarning = useCallback(() => {
     if (phaseRef.current !== "running") {
@@ -632,7 +466,7 @@ export function MockInterviewModePage({
     setFocusWarnings((previous) => {
       const nextWarningCount = previous + 1;
       if (nextWarningCount > 2) {
-        completeInterview();
+        completeInterview("aborted_focus");
       } else {
         setFocusWarningMessage(
           "Please stay focused during the mock interview.",
@@ -656,10 +490,8 @@ export function MockInterviewModePage({
         return;
       }
 
-      // Fullscreen ended (e.g. ESC processed before our listener). Show exit choice and
-      // try to re-enter fullscreen so the session stays immersive until the user confirms exit.
       if (!isDocumentFullscreenActive()) {
-        stopRecognition();
+        stopListening();
         showExitModalRef.current = true;
         setShowExitModal(true);
         void requestDocumentFullscreen();
@@ -676,7 +508,7 @@ export function MockInterviewModePage({
         handleFullscreenChange,
       );
     };
-  }, []);
+  }, [stopListening]);
 
   const resumeInterview = async () => {
     skipFullscreenExitPromptRef.current = true;
@@ -687,7 +519,6 @@ export function MockInterviewModePage({
       exitViaConfirmRef.current = false;
 
       await startListening();
-
       await requestDocumentFullscreen();
     } finally {
       skipFullscreenExitPromptRef.current = false;
@@ -702,18 +533,32 @@ export function MockInterviewModePage({
       }
       exitViaConfirmRef.current = false;
     }
+
     if (open) {
       showExitModalRef.current = true;
     }
+
     setShowExitModal(open);
   };
 
   useEffect(() => {
-    if (phase !== "running") {
+    if (phase === "intro" || phase === "completed") {
       return;
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingTarget =
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+
+      if (event.code === "Space" && !isTypingTarget) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        handleListeningToggle();
+        return;
+      }
+
       const wantsRefresh =
         event.key === "F5" ||
         ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r");
@@ -722,7 +567,7 @@ export function MockInterviewModePage({
         event.preventDefault();
         event.stopPropagation();
 
-        stopRecognition();
+        stopListening();
         showExitModalRef.current = true;
         setShowExitModal(true);
         return;
@@ -739,22 +584,22 @@ export function MockInterviewModePage({
           event.preventDefault();
           event.stopImmediatePropagation();
         }
-        stopRecognition();
+        stopListening();
         showExitModalRef.current = true;
         setShowExitModal(true);
       }
     };
 
-    document.addEventListener("keydown", onKeyDown, {
+    window.addEventListener("keydown", onKeyDown, {
       capture: true,
       passive: false,
     });
 
     return () =>
-      document.removeEventListener("keydown", onKeyDown, {
+      window.removeEventListener("keydown", onKeyDown, {
         capture: true,
       });
-  }, [phase]);
+  }, [handleListeningToggle, phase, stopListening]);
 
   useEffect(() => {
     showExitModalRef.current = showExitModal;
@@ -773,7 +618,7 @@ export function MockInterviewModePage({
       setSecondsRemaining((previous) => {
         if (previous <= 1) {
           finalizeCurrentQuestion();
-          completeInterview();
+          completeInterview("aborted_time");
           return 0;
         }
 
@@ -782,7 +627,7 @@ export function MockInterviewModePage({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [phase, completeInterview, finalizeCurrentQuestion]);
+  }, [completeInterview, finalizeCurrentQuestion, phase]);
 
   useEffect(() => {
     if (phase !== "running") {
@@ -843,19 +688,14 @@ export function MockInterviewModePage({
         clearTimeout(warningHideTimerRef.current);
       }
 
-      if (micErrorTimerRef.current) {
-        clearTimeout(micErrorTimerRef.current);
-      }
-
-      stopRecognition();
-
       if (document.fullscreenElement) {
         document.exitFullscreen?.().catch(() => undefined);
       }
     };
   }, []);
 
-  //  INTRO PHASE
+  // Opening/closing are now rendered inside the main interview UI below
+
   if (phase === "intro") {
     return (
       <div className="guide-grid-bg relative min-h-screen overflow-hidden bg-gradient-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
@@ -944,222 +784,42 @@ export function MockInterviewModePage({
 
   //  COMPLETED PHASE
   if (phase === "completed") {
-    // Analysis Engine
-    const analyzeSession = () => {
-      const records = Object.values(questionRecords);
-      if (records.length === 0) return null;
+    // Build canonical session log from questionRecords
+    const buildSessionLog = (): InterviewSession => {
+      const events: SessionEvent[] = [];
+      let eventId = 0;
 
-      // Transcript stats
-      const answeredRecords = records.filter((r) => !r.skipped);
-      const transcriptLengths = answeredRecords.map(
-        (r) => r.transcript.split(" ").length,
-      );
-      const avgTranscriptLength =
-        transcriptLengths.length > 0
-          ? Math.round(
-              transcriptLengths.reduce((a, b) => a + b, 0) /
-                transcriptLengths.length,
-            )
-          : 0;
-
-      // Long answer threshold: responses that become substantially more verbose
-      const longAnswerThreshold = Math.max(45, avgTranscriptLength * 1.5);
-      const longAnswerCount = answeredRecords.filter(
-        (r) => r.transcript.split(" ").length > longAnswerThreshold,
-      ).length;
-
-      // Duration variance
-      const durations = records
-        .filter((r) => !r.skipped)
-        .map((r) => r.durationSeconds);
-      const avgDuration =
-        durations.length > 0
-          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
-          : 0;
-      const durationVariance =
-        durations.length > 1
-          ? Math.sqrt(
-              durations.reduce(
-                (sum, d) => sum + Math.pow(d - avgDuration, 2),
-                0,
-              ) / durations.length,
-            )
-          : 0;
-
-      // Category breakdown
-      const categoryStats: Record<
-        string,
-        { answered: number; skipped: number }
-      > = {};
-      interviewQuestions.forEach((q) => {
-        const cat = q.category || "Other";
-        if (!categoryStats[cat]) {
-          categoryStats[cat] = { answered: 0, skipped: 0 };
-        }
-        const record = questionRecords[q.id];
+      // Add question events (only those in interviewQuestions)
+      for (const question of interviewQuestions) {
+        const record = questionRecords[question.id];
         if (record) {
-          if (record.skipped) {
-            categoryStats[cat].skipped++;
-          } else {
-            categoryStats[cat].answered++;
-          }
+          events.push({
+            id: `event-${eventId++}`,
+            type: "question",
+            questionId: question.id,
+            transcript: record.transcript,
+            durationSeconds: record.durationSeconds,
+            skipped: record.skipped,
+            timestamp: Date.now(), // approximate
+          });
         }
-      });
-
-      // Identify weak categories
-      const weakCategories = Object.entries(categoryStats)
-        .filter(([, stats]) => stats.skipped > 0 || stats.answered === 0)
-        .map(([cat]) => cat);
+      }
 
       return {
-        answeredCount: completedCount,
-        skippedCount,
-        totalQuestions: interviewQuestions.length,
-        avgTranscriptLength,
-        longAnswerCount,
-        avgDuration,
-        durationVariance,
-        focusWarningsCount: focusWarnings,
-        categoryStats,
-        weakCategories,
+        sessionId: sessionId || "local-session",
+        events,
+        focusWarnings,
+        sessionEndReason: sessionEndReason || "completed",
+        startedAt: Date.now() - TOTAL_SECONDS * 1000, // approximate
+        endedAt: Date.now(),
       };
     };
 
-    const analysis = analyzeSession();
+    // Generate robust report
+    const session = buildSessionLog();
+    const report = generateSessionReport(session, interviewQuestions.length);
 
-    // Generate Insights
-    const generateSessionSnapshot = () => {
-      if (!analysis) return "";
-      const { answeredCount, totalQuestions } = analysis;
-      const completionRate = Math.round((answeredCount / totalQuestions) * 100);
-
-      let snapshot = "";
-      if (completionRate >= 90) {
-        snapshot = `You completed ${answeredCount} of ${totalQuestions} questions with excellent participation. `;
-      } else if (completionRate >= 70) {
-        snapshot = `You completed ${answeredCount} of ${totalQuestions} questions with strong engagement. `;
-      } else {
-        snapshot = `You completed ${answeredCount} of ${totalQuestions} questions. `;
-      }
-
-      if (focusWarnings === 0) {
-        snapshot += "Your focus remained strong throughout the session.";
-      } else if (focusWarnings === 1) {
-        snapshot +=
-          "You stayed focused for most of the session, with one brief attention lapse.";
-      } else {
-        snapshot += `You had ${focusWarnings} focus warnings—concentration dipped at times.`;
-      }
-
-      return snapshot;
-    };
-
-    const generateStrengths = () => {
-      if (!analysis) return [];
-      const strengths: string[] = [];
-
-      if (completedCount / interviewQuestions.length > 0.8) {
-        strengths.push("Consistent participation across most questions");
-      }
-
-      if (focusWarnings === 0) {
-        strengths.push("Strong focus throughout the entire session");
-      }
-
-      if (
-        completedCount > 0 &&
-        analysis.longAnswerCount / completedCount < 0.3
-      ) {
-        strengths.push("Kept answers focused and concise");
-      }
-
-      if (skippedCount === 0) {
-        strengths.push("Answered every question without skipping");
-      }
-
-      if (analysis.durationVariance < 5) {
-        strengths.push("Maintained consistent pacing across responses");
-      }
-
-      return strengths.length > 0
-        ? strengths
-        : ["Session completed successfully"];
-    };
-
-    const generateImprovements = () => {
-      if (!analysis) return [];
-      const improvements: string[] = [];
-
-      if (skippedCount > 0) {
-        improvements.push(
-          `${skippedCount} question(s) were skipped—aim to answer all questions, even if briefly`,
-        );
-      }
-
-      if (completedCount > 0 && analysis.longAnswerCount > completedCount / 2) {
-        improvements.push(
-          `Many responses ran long (${analysis.longAnswerCount} answers were notably verbose)—tighten to the key point and supporting example`,
-        );
-      }
-
-      if (analysis.durationVariance > 10) {
-        improvements.push(
-          "Response pacing varied significantly—aim for more consistent answer lengths",
-        );
-      }
-
-      if (focusWarnings > 1) {
-        improvements.push(
-          "You had multiple focus warnings—minimize distractions and stay present",
-        );
-      }
-
-      if (
-        analysis.weakCategories.length > 0 &&
-        analysis.weakCategories.length <= 2
-      ) {
-        improvements.push(
-          `Focus on ${analysis.weakCategories.join(" and ")} questions—these had gaps`,
-        );
-      }
-
-      return improvements;
-    };
-
-    const generateNextFocus = () => {
-      const focuses: string[] = [];
-
-      if (skippedCount > 0) {
-        focuses.push("Answer all questions in your next session");
-      }
-
-      if (analysis && analysis.longAnswerCount > completedCount / 3) {
-        focuses.push("Practice giving concise but complete answers");
-      }
-
-      if (analysis && analysis.weakCategories.length > 0) {
-        focuses.push(
-          `Deep dive into ${analysis.weakCategories[0]} questions next`,
-        );
-      }
-
-      if (focusWarnings > 0) {
-        focuses.push(
-          "Eliminate distractions and re-take in a focused environment",
-        );
-      }
-
-      if (analysis && averageResponseTime < 30) {
-        focuses.push("Spend more time structuring thoughtful responses");
-      }
-
-      return focuses;
-    };
-
-    const strengths = generateStrengths();
-    const improvements = generateImprovements();
-    const nextFocus = generateNextFocus();
-    const snapshot = generateSessionSnapshot();
+    const { metrics, insights, validity } = report;
 
     return (
       <div className="guide-grid-bg relative min-h-screen overflow-hidden bg-gradient-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
@@ -1175,22 +835,38 @@ export function MockInterviewModePage({
               <h2 className="text-4xl font-semibold text-slate-900 mb-2 tracking-tight">
                 Session Complete
               </h2>
-              <p className="text-slate-500">Your performance analysis</p>
+              <p className="text-slate-500">
+                {report.sessionEndReason === "completed"
+                  ? "Your performance analysis"
+                  : "Session Summary"}
+              </p>
             </div>
 
             {/* Session Snapshot */}
             <div className="rounded-2xl border border-[#0d7377]/15 bg-[#e8f6f6]/50 p-5 mb-6">
               <p className="text-sm leading-relaxed text-slate-800">
-                {snapshot}
+                {insights.snapshot}
               </p>
             </div>
 
             {/* Key Metrics */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               {[
-                { label: "Answered", value: completedCount },
-                { label: "Completion", value: `${completionPercentage}%` },
-                { label: "Avg Response", value: `${averageResponseTime}s` },
+                {
+                  label: "Attempted",
+                  value: metrics.attemptedQuestions,
+                },
+                {
+                  label: "Completion",
+                  value:
+                    report.sessionEndReason === "completed"
+                      ? `${Math.round(metrics.completionRate)}%`
+                      : "Partial",
+                },
+                {
+                  label: "Avg Response",
+                  value: `${metrics.avgResponseTime}s`,
+                },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -1206,14 +882,29 @@ export function MockInterviewModePage({
               ))}
             </div>
 
+            {/* Validity Notice (for partial sessions) */}
+            {!validity.isFullSession && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 mb-6">
+                <p className="text-sm text-amber-900">
+                  <span className="font-semibold">Note:</span> This analysis is based on a
+                  {report.sessionEndReason === "aborted_focus"
+                    ? " focus-limited"
+                    : report.sessionEndReason === "aborted_time"
+                    ? " time-limited"
+                    : " partial"}{" "}
+                  session. Complete future sessions for comprehensive feedback.
+                </p>
+              </div>
+            )}
+
             {/* Strengths */}
-            {strengths.length > 0 && (
+            {insights.strengths.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
                   Your Strengths
                 </h3>
                 <div className="space-y-2">
-                  {strengths.map((strength, idx) => (
+                  {insights.strengths.map((strength, idx) => (
                     <div
                       key={idx}
                       className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-900"
@@ -1226,13 +917,13 @@ export function MockInterviewModePage({
             )}
 
             {/* Needs Improvement */}
-            {improvements.length > 0 && (
+            {insights.improvements.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
                   Areas to Improve
                 </h3>
                 <div className="space-y-2">
-                  {improvements.map((improvement, idx) => (
+                  {insights.improvements.map((improvement, idx) => (
                     <div
                       key={idx}
                       className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-sm text-amber-900"
@@ -1245,13 +936,13 @@ export function MockInterviewModePage({
             )}
 
             {/* Next Practice Focus */}
-            {nextFocus.length > 0 && (
+            {insights.nextFocus.length > 0 && (
               <div className="mb-8">
                 <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
                   Next Practice Focus
                 </h3>
                 <div className="space-y-2">
-                  {nextFocus.map((focus, idx) => (
+                  {insights.nextFocus.map((focus, idx) => (
                     <div
                       key={idx}
                       className="rounded-lg border border-blue-200 bg-blue-50/60 p-3 text-sm text-blue-900 flex items-start gap-2"
@@ -1268,7 +959,10 @@ export function MockInterviewModePage({
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                onClick={() => setPhase("intro")}
+                onClick={() => {
+                  setPhase("intro");
+                  setSessionEndReason(null);
+                }}
                 variant="outline"
                 className="flex-1 h-12 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
               >
@@ -1289,6 +983,15 @@ export function MockInterviewModePage({
   }
 
   //  RUNNING PHASE - fullscreen
+  // Determine if we're showing an interactive opening/closing line
+  const isPhaseOpening = phase === "opening";
+  const isPhaseClosing = phase === "closing";
+  const phaseLine = isPhaseOpening
+    ? mockInterviewOpeningFlow[openingIndex]
+    : isPhaseClosing
+    ? mockInterviewClosingFlow[closingIndex]
+    : null;
+
   const sidebarStats = [
     {
       icon: ListChecks,
@@ -1333,7 +1036,7 @@ export function MockInterviewModePage({
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
-                stopRecognition();
+                stopListening();
                 showExitModalRef.current = true;
                 setShowExitModal(true);
               }}
@@ -1392,12 +1095,13 @@ export function MockInterviewModePage({
       </header>
 
       {/* MAIN */}
-      <main className="relative flex-1 min-h-0 overflow-auto">
+      <main className={`relative flex-1 min-h-0 ${phaseLine ? "overflow-hidden" : "overflow-auto"}`}>
         <div className="mx-auto max-w-6xl w-full px-4 sm:px-8 py-6 sm:py-8">
           {currentQuestion && (
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               {/* LEFT: Stats column */}
-              <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-3 lg:mt-10">
+              {!phaseLine && (
+                <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-3 lg:mt-10">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_-12px_rgba(15,23,42,0.1)]">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#0d7377]">
                     Progress
@@ -1462,23 +1166,23 @@ export function MockInterviewModePage({
                     <p className="text-[11px] text-slate-400">per question</p>
                   </div>
                 </div>
-              </aside>
+                </aside>
+              )}
 
               {/* RIGHT: Question + transcript */}
               <section className="flex-1 min-w-0 w-full flex flex-col">
                 <div className="mb-4 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#e8f6f6] border border-[#0d7377]/15 text-[#0d7377] text-[11px] font-semibold rounded-full uppercase tracking-wider">
-                    {currentQuestion.category}
+                    {phaseLine ? phaseLine.type : currentQuestion.category}
                   </span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-[0_8px_30px_-16px_rgba(13,115,119,0.18)]">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-3">
-                    Current Question
+                    {phaseLine ? (isPhaseOpening ? "Officer" : "Officer") : "Current Question"}
                   </p>
                   <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-snug tracking-tight">
-                    {currentQuestion.selectedQuestion ||
-                      currentQuestion.question}
+                    {phaseLine ? phaseLine.text : (currentQuestion.selectedQuestion || currentQuestion.question)}
                   </h3>
                 </div>
 
@@ -1488,7 +1192,7 @@ export function MockInterviewModePage({
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
                         <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                          {isListening ? "Listening" : "Paused"}
+                          {voiceStatusLabel}
                         </p>
 
                         {/* Live waveform canvas */}
@@ -1525,6 +1229,11 @@ export function MockInterviewModePage({
                           {interimTranscript}
                         </p>
                       )}
+                      {silenceNotice && isListening && (
+                        <p className="text-xs text-slate-500 pt-1">
+                          Still recording. Continue speaking or press Next.
+                        </p>
+                      )}
                     </div>
                   </ScrollArea>
                 </div>
@@ -1554,18 +1263,46 @@ export function MockInterviewModePage({
                   </Button>
 
                   <Button
-                    onClick={advanceQuestion}
+                    onClick={async () => {
+                      if (isListening) return;
+
+                      if (phaseLine) {
+                        // handle phase line next
+                        if (isPhaseOpening) {
+                          finalizeOpeningLine();
+                          if (openingIndex + 1 < mockInterviewOpeningFlow.length) {
+                            setOpeningIndex((i) => i + 1);
+                            // start timer for the next opening line
+                            questionStartRef.current = Date.now();
+                          } else {
+                            await proceedToRun();
+                          }
+                        } else if (isPhaseClosing) {
+                          finalizeClosingLine();
+                          if (closingIndex + 1 < mockInterviewClosingFlow.length) {
+                            setClosingIndex((i) => i + 1);
+                            questionStartRef.current = Date.now();
+                          } else {
+                            phaseRef.current = "completed";
+                            setPhase("completed");
+                            clearTranscript();
+                          }
+                        }
+                        return;
+                      }
+
+                      // default: advance to next question
+                      advanceQuestion();
+                    }}
                     disabled={isListening}
                     className="flex-1 h-12 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={
-                      isListening
-                        ? "Stop listening to advance"
-                        : "Move to the next question"
-                    }
+                    title={isListening ? "Stop listening to advance" : "Move to the next question"}
                   >
-                    {currentQuestionIndex + 1 >= interviewQuestions.length
-                      ? "Finish Interview"
-                      : "Next Question"}
+                    {phaseLine
+                      ? isPhaseOpening
+                        ? (openingIndex + 1 >= mockInterviewOpeningFlow.length ? "Begin Interview" : "Next")
+                        : (closingIndex + 1 >= mockInterviewClosingFlow.length ? "Finish" : "Next")
+                      : (currentQuestionIndex + 1 >= interviewQuestions.length ? "Finish Interview" : "Next Question")}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>

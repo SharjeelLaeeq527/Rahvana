@@ -1,564 +1,60 @@
 {
   "categorySlug": "ir-1-spouse",
-  "version": "2.0.0",
-  "lastUpdated": "2026-03-30",
+  "version": "3.0.0",
+  "lastUpdated": "2026-05-18",
   "description": "Interview question bank - NO placeholders, generic samples only",
   "questions": [
     {
-      "id": "basic-case-marriage-date",
-      "category": "Basic Case Information",
+      "id": "spouse-full-name",
+      "category": "Spouse Information",
       "priority": "high",
-      "question": "What is your date of marriage?",
-      "sampleAnswer": "June 15, 2023.",
-      "guidance": "Provide the exact date from your marriage certificate.",
-      "tooltip": "Officers verify this against submitted marriage certificate",
-      "conditions": {
-        "requireIntake": ["marriage_date"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your marriage date and ceremony context",
-      "minLength": 20,
-      "maxLength": 500,
-      "variations": [
-        "On what date were you married?",
-        "Could you please confirm your wedding date?",
-        "When did your marriage ceremony take place?",
-        "When did the marriage event take place?"
-      ]
-    },
-    {
-      "id": "basic-case-marriage-location",
-      "category": "Basic Case Information",
-      "priority": "high",
-      "question": "Where did the marriage take place (city & country)?",
-      "sampleAnswer": "Lahore, Pakistan.",
-      "guidance": "Provide city and country only.",
-      "tooltip": "Officers verify marriage location against submitted documents",
-      "conditions": {
-        "requireIntake": ["marriage_location"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Enter city and country of marriage",
-      "minLength": 15,
-      "maxLength": 300,
-      "variations": [
-        "In what city and country was your marriage solemnized?",
-        "Please specify the location where you got married.",
-        "Where exactly did you marry your spouse?",
-        "Can you specify the country and city where your marriage occurred?"
-      ]
-    },
-    {
-      "id": "relationship-origin-meeting",
-      "category": "Relationship Origin",
-      "priority": "high",
-      "question": "How and where did you first meet your spouse?",
-      "sampleAnswer": "Through a mutual friend at a university event in 2019. We were in study groups together.",
-      "guidance": "Provide the circumstances and location of first meeting.",
-      "tooltip": "Officers assess if relationship is genuine and natural",
-      "conditions": {
-        "requireIntake": ["relationship_origin_type"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Tell the story of how you met naturally",
-      "minLength": 50,
-      "maxLength": 800,
-      "variations": [
-        "Could you describe how and where you initially connected?",
-        "Please explain the circumstances of your first meeting.",
-        "How did your relationship begin?",
-        "Tell me about how your partnership originated with your spouse."
-      ]
-    },
-    {
-      "id": "relationship-origin-first-meeting",
-      "category": "Relationship Origin",
-      "priority": "high",
-      "question": "When and where did you first meet in person?",
-      "sampleAnswer": "December 2019 at a coffee shop in Karachi after 3 months of online communication.",
-      "guidance": "Provide date, location, and how long you communicated before meeting.",
-      "tooltip": "Officers want to confirm timeline and authenticity of relationship",
-      "conditions": {
-        "requireIntake": ["relationship_origin_type"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your first in-person meeting",
-      "minLength": 40,
-      "maxLength": 600,
-      "variations": [
-        "What was the date and location of your first physical meeting?",
-        "When and where did you first meet face-to-face?",
-        "Please specify your initial in-person encounter details.",
-        "Describe the circumstances of your initial face-to-face encounter."
-      ]
-    },
-    {
-      "id": "relationship-origin-visits",
-      "category": "Relationship Origin",
-      "priority": "high",
-      "question": "How many times have you met in person?",
-      "sampleAnswer": "8 times over 3 years, lasting from several days to several weeks each.",
-      "guidance": "State the number of visits and approximate duration.",
-      "tooltip": "Officers assess commitment through in-person interaction frequency",
-      "conditions": {
-        "requireIntake": ["total_time_spent_together"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "State the number of in-person meetings",
-      "minLength": 20,
-      "maxLength": 400,
-      "variations": [
-        "What is the total number of times you have met face-to-face?",
-        "How many physical visits have you made?",
-        "State the count of your in-person meetings.",
-        "How frequently have you been able to visit each other?"
-      ]
-    },
-    {
-      "id": "relationship-timeline-started",
-      "category": "Relationship Timeline",
-      "priority": "medium",
-      "question": "When did you first start talking?",
-      "sampleAnswer": "September 2019 through social media.",
-      "guidance": "Provide the month and year communication began.",
-      "tooltip": "Officers analyze the progression of relationship over time",
-      "conditions": {
-        "requireIntake": ["relationship_origin_type"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe how your communication began",
-      "minLength": 30,
-      "maxLength": 500,
-      "variations": [
-        "When did your communication first commence?",
-        "Could you tell us when you and your spouse first began communicating?",
-        "When was the earliest point you started conversing?",
-        "When did you first initiate conversation with each other?"
-      ]
-    },
-    {
-      "id": "relationship-timeline-engagement",
-      "category": "Relationship Timeline",
-      "priority": "medium",
-      "question": "When did you get engaged?",
-      "sampleAnswer": "February 14, 2022.",
-      "guidance": "Provide engagement date only.",
-      "tooltip": "Engagement timing helps verify relationship progression",
+      "mockInterviewOrder": 1,
+      "question": "What is your spouse's full name?",
+      "sampleAnswer": "John Ahmed Smith.",
+      "guidance": "Provide full legal name as it appears on official documents.",
+      "tooltip": "Full name verification against spouse's documents",
       "conditions": {
         "requireIntake": [],
         "requireCaseTypes": ["spouse"]
       },
-      "inputPlaceholder": "Describe your engagement details",
-      "minLength": 30,
-      "maxLength": 500,
+      "inputPlaceholder": "Enter your spouse's full legal name",
+      "minLength": 5,
+      "maxLength": 200,
       "variations": [
-        "What is the date of your engagement?",
-        "When did you become engaged to your spouse?",
-        "Could you specify when your engagement took place?",
-        "On what date did you and your spouse get engaged?"
+        "What is your spouse's legal name?",
+        "Please state your spouse's full name.",
+        "Can you provide your spouse's complete name?",
+        "What is your spouse's name as shown on documents?"
       ]
     },
     {
-      "id": "relationship-timeline-walkthrough",
-      "category": "Relationship Timeline",
+      "id": "spouse-age",
+      "category": "Spouse Information",
       "priority": "high",
-      "question": "Walk me through your relationship timeline.",
-      "sampleAnswer": "September 2019: met online. December 2019: first in-person meeting. February 2022: engaged. June 15, 2023: married.",
-      "guidance": "Provide key dates in chronological order.",
-      "tooltip": "Officers assess consistency across all answers",
+      "mockInterviewOrder": 3,
+      "question": "What is your spouse's age?",
+      "sampleAnswer": "30 years old.",
+      "guidance": "Provide current age in years.",
+      "tooltip": "Age verification against marriage and identity documents",
       "conditions": {
         "requireIntake": [],
         "requireCaseTypes": ["spouse"]
       },
-      "inputPlaceholder": "Outline your relationship journey chronologically",
-      "minLength": 80,
-      "maxLength": 1000,
+      "inputPlaceholder": "Enter your spouse's age",
+      "minLength": 1,
+      "maxLength": 100,
       "variations": [
-        "Could you describe the progression of your relationship?",
-        "Please detail the key milestones in your relationship's history.",
-        "How has your relationship developed over time?",
-        "Can you outline the milestones of your relationship?"
-      ]
-    },
-    {
-      "id": "proposal-details",
-      "category": "Proposal",
-      "priority": "high",
-      "question": "How and when did the proposal happen?",
-      "sampleAnswer": "February 14, 2022 at a park. My spouse asked me to marry them with family present.",
-      "guidance": "Provide date and location of proposal.",
-      "tooltip": "Relationship milestones help establish genuineness",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Share the details of your proposal",
-      "minLength": 40,
-      "maxLength": 700,
-      "variations": [
-        "Could you share the details of when and how you became engaged?",
-        "When and where did your spouse propose?",
-        "Please describe the circumstances surrounding your proposal.",
-        "Share your proposal experience and when it happened."
-      ]
-    },
-    {
-      "id": "marriage-decision",
-      "category": "Marriage Decision",
-      "priority": "high",
-      "question": "Why did you decide to get married?",
-      "sampleAnswer": "Mutual trust, shared values, and desire to build a life together.",
-      "guidance": "Cite genuine personal reasons, not immigration benefits.",
-      "tooltip": "Officers ensure marriage intent is genuine",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Explain your reasons for marriage",
-      "minLength": 40,
-      "maxLength": 600,
-      "variations": [
-        "What were your reasons for deciding to marry?",
-        "Could you explain the factors that led to your decision?",
-        "What prompted you to commit to marriage?",
-        "What motivated you to decide on marriage?"
-      ]
-    },
-    {
-      "id": "wedding-details",
-      "category": "Wedding",
-      "priority": "high",
-      "question": "Tell me about your wedding.",
-      "sampleAnswer": "June 15, 2023 with 150 guests including family. Religious ceremony in morning, reception in evening.",
-      "guidance": "Provide date, guest count, and ceremony type.",
-      "tooltip": "Wedding details help verify authenticity",
-      "conditions": {
-        "requireIntake": ["marriage_date"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your wedding ceremony and celebration",
-      "minLength": 40,
-      "maxLength": 700,
-      "variations": [
-        "Could you provide details about your wedding?",
-        "What was your wedding like?",
-        "Can you share information about your marriage ceremony?",
-        "Describe your wedding celebration in detail."
-      ]
-    },
-    {
-      "id": "family-approval",
-      "category": "Family",
-      "priority": "medium",
-      "question": "Did your families approve of this relationship?",
-      "sampleAnswer": "Yes, both families approved and were involved in wedding planning.",
-      "guidance": "State whether families approved and their involvement level.",
-      "tooltip": "Family approval can strengthen relationship credibility",
-      "conditions": {
-        "requireIntake": ["met_spouse_family"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Explain your families' support for the relationship",
-      "minLength": 30,
-      "maxLength": 600,
-      "variations": [
-        "Do your respective families support your marriage?",
-        "Were your families supportive of your decision to marry?",
-        "What was your families' reaction to your relationship?",
-        "What was the families' stance on your relationship?"
-      ]
-    },
-    {
-      "id": "family-met-spouse-family",
-      "category": "Family",
-      "priority": "medium",
-      "question": "Have you met your spouse's family?",
-      "sampleAnswer": "Yes, met parents, siblings, and extended family on multiple occasions.",
-      "guidance": "Specify which family members you've met and how often.",
-      "tooltip": "Family integration shows relationship depth",
-      "conditions": {
-        "requireIntake": ["met_spouse_family"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your interactions with spouse's family",
-      "minLength": 20,
-      "maxLength": 500,
-      "variations": [
-        "Have you had the opportunity to meet your spouse's family?",
-        "Are you acquainted with your spouse's family?",
-        "Do you know your spouse's family members?",
-        "Have you interacted with your spouse's relatives?"
-      ]
-    },
-    {
-      "id": "relationship-language",
-      "category": "Relationship",
-      "priority": "low",
-      "question": "What language do you and your spouse use to communicate?",
-      "sampleAnswer": "English primarily, Urdu occasionally for cultural matters.",
-      "guidance": "List primary language and any secondary languages used.",
-      "tooltip": "Officers ensure effective communication exists",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your common languages of communication",
-      "minLength": 20,
-      "maxLength": 400,
-      "variations": [
-        "In what language do you and your spouse converse?",
-        "Which language do you predominantly use?",
-        "What is the main language of communication between you?",
-        "What are the language(s) of your communication?"
-      ]
-    },
-    {
-      "id": "household-activities",
-      "category": "Household Life",
-      "priority": "high",
-      "question": "What do you do together as a couple?",
-      "sampleAnswer": "Cooking, watching movies, traveling, outdoor walks, supporting each other's work and education.",
-      "guidance": "List shared daily activities and routines.",
-      "tooltip": "Shared lifestyle reflects compatibility",
-      "conditions": {
-        "requireIntake": ["current_living_arrangement"],
-        "requireIntakeValues": { "current_living_arrangement": "Yes" },
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe shared activities and routines",
-      "minLength": 40,
-      "maxLength": 700,
-      "variations": [
-        "How do you typically spend time together?",
-        "What shared activities do you engage in?",
-        "Could you describe your common routines?",
-        "What are your shared pastimes and routines?"
-      ]
-    },
-    {
-      "id": "relationship-hobbies",
-      "category": "Relationship",
-      "priority": "low",
-      "question": "What are your spouse's hobbies and interests?",
-      "sampleAnswer": "Reading novels, photography, and cooking traditional recipes.",
-      "guidance": "List 2-3 main hobbies to demonstrate knowledge of spouse.",
-      "tooltip": "Knowing personal details reflects closeness",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your spouse's hobbies and interests",
-      "minLength": 30,
-      "maxLength": 500,
-      "variations": [
-        "Could you tell me about your spouse's interests?",
-        "What does your spouse enjoy doing in free time?",
-        "What are some of your spouse's favorite pastimes?",
-        "What activities does your spouse enjoy?"
-      ]
-    },
-    {
-      "id": "employment-spouse",
-      "category": "Employment",
-      "priority": "high",
-      "question": "What does your spouse do for a living?",
-      "sampleAnswer": "Project manager at an IT company for 3 years, managing software development projects.",
-      "guidance": "State occupation, employer type, tenure, and main responsibilities.",
-      "tooltip": "Employment stability is reviewed for financial capacity",
-      "conditions": {
-        "requireIntake": ["sponsor_employment"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your spouse's occupation",
-      "minLength": 30,
-      "maxLength": 500,
-      "variations": [
-        "What is your spouse's current occupation?",
-        "Can you describe your spouse's profession?",
-        "What kind of work does your spouse do?",
-        "What is your spouse's professional background?"
-      ]
-    },
-    {
-      "id": "finances-shared",
-      "category": "Finances",
-      "priority": "high",
-      "question": "Do you share finances?",
-      "sampleAnswer": "Yes, joint bank account for household expenses, separate accounts for personal spending.",
-      "guidance": "Describe your financial management arrangement (joint, separate, or combined).",
-      "tooltip": "Financial interdependence indicates seriousness",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your financial arrangement",
-      "minLength": 30,
-      "maxLength": 500,
-      "variations": [
-        "Do you have joint financial arrangements?",
-        "Are your finances managed jointly?",
-        "Do you share bank accounts or combine income?",
-        "Have you combined your financial resources?"
-      ]
-    },
-    {
-      "id": "intent-move-us",
-      "category": "Intent",
-      "priority": "high",
-      "question": "Why do you want to move to the United States?",
-      "sampleAnswer": "To reunite with my spouse and build our life together permanently.",
-      "guidance": "Focus on family integration, not financial or career advancement.",
-      "tooltip": "Primary intent should align with petition purpose",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Explain your motivation for moving to the U.S.",
-      "minLength": 40,
-      "maxLength": 600,
-      "variations": [
-        "What is your primary motivation for relocating to the U.S.?",
-        "Could you explain your reasons for immigration?",
-        "What factors have led you to decide on moving to the U.S.?",
-        "What are your motivations for U.S. relocation?"
-      ]
-    },
-    {
-      "id": "intent-plans",
-      "category": "Intent",
-      "priority": "high",
-      "question": "What are your plans after arriving in the US?",
-      "sampleAnswer": "Settle in California with spouse, seek employment in tech industry, buy a home, start a family.",
-      "guidance": "Provide specific location, employment/education plans, and family goals.",
-      "tooltip": "Officers assess post-arrival intent and stability",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Outline your plans after arrival",
-      "minLength": 50,
-      "maxLength": 700,
-      "variations": [
-        "What are your immediate intentions upon arrival?",
-        "Could you outline your plans for settling in?",
-        "What do you intend to do once you arrive?",
-        "What is your strategy after arrival in America?"
-      ]
-    },
-    {
-      "id": "ties-home-country",
-      "category": "Ties",
-      "priority": "medium",
-      "question": "Who will you leave behind in your home country?",
-      "sampleAnswer": "Parents and two siblings who support my immigration decision.",
-      "guidance": "List family members remaining and their support level.",
-      "tooltip": "Officers assess relocation commitment and ties",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe family and friends left behind",
-      "minLength": 30,
-      "maxLength": 500,
-      "variations": [
-        "Which family members will remain in your home country?",
-        "Who will you be leaving behind?",
-        "Who among your relatives will stay in your home country?",
-        "Which relatives will remain in your homeland?"
-      ]
-    },
-    {
-      "id": "security-arrest",
-      "category": "Security",
-      "priority": "high",
-      "question": "Have you ever been arrested or charged with any crime?",
-      "sampleAnswer": "No.",
-      "guidance": "Answer yes/no directly. If yes, explain circumstances and resolution.",
-      "tooltip": "Security screening is mandatory",
-      "conditions": {
-        "requireIntake": ["criminal_history"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Honestly declare any criminal history",
-      "minLength": 20,
-      "maxLength": 400,
-      "variations": [
-        "Have you faced any criminal charges?",
-        "Do you have any history of arrests?",
-        "Have you been convicted of any crime?",
-        "Have you faced any legal charges?"
-      ]
-    },
-    {
-      "id": "security-military",
-      "category": "Security",
-      "priority": "high",
-      "question": "Have you ever served in the military?",
-      "sampleAnswer": "No.",
-      "guidance": "Answer yes/no directly. If yes, provide dates and service details.",
-      "tooltip": "Military background requires review",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Indicate military service if applicable",
-      "minLength": 15,
-      "maxLength": 300,
-      "variations": [
-        "Have you been a member of any armed forces?",
-        "Do you have military service history?",
-        "Were you ever enlisted in military?",
-        "Did you ever participate in military service?"
-      ]
-    },
-    {
-      "id": "travel-us-history",
-      "category": "Travel",
-      "priority": "high",
-      "question": "Have you ever been to the United States before?",
-      "sampleAnswer": "No.",
-      "guidance": "Answer yes/no. If yes, provide dates and visa types.",
-      "tooltip": "Travel history is verified against records",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Indicate any previous U.S. visits",
-      "minLength": 15,
-      "maxLength": 300,
-      "variations": [
-        "Have you made any previous U.S. visits?",
-        "Is this your first time applying for U.S. entry?",
-        "Have you previously visited the USA?",
-        "Is this your first time coming to the U.S.?"
-      ]
-    },
-    {
-      "id": "travel-international",
-      "category": "Travel",
-      "priority": "medium",
-      "question": "Have you traveled internationally before?",
-      "sampleAnswer": "Yes, to UAE, Thailand, Malaysia for leisure and work. Complied with all visa requirements.",
-      "guidance": "List countries and purposes. Emphasize legal compliance.",
-      "tooltip": "International travel history shows legal compliance",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "List countries visited and travel purposes",
-      "minLength": 30,
-      "maxLength": 500,
-      "variations": [
-        "Have you previously traveled to other countries?",
-        "Do you have a history of international travel?",
-        "Have you visited any foreign nations?",
-        "What is your track record of international travel?"
+        "How old is your spouse?",
+        "What is your spouse's age?",
+        "State your spouse's current age.",
+        "Can you provide your spouse's age?"
       ]
     },
     {
       "id": "basic-case-age",
       "category": "Basic Case Information",
       "priority": "medium",
+      "mockInterviewOrder": 53,
       "question": "What is your age difference with your spouse?",
       "sampleAnswer": "I am 32, spouse is 30, 2 years difference.",
       "guidance": "State both ages and the difference in years.",
@@ -581,6 +77,7 @@
       "id": "basic-case-education",
       "category": "Basic Case Information",
       "priority": "medium",
+      "mockInterviewOrder": 54,
       "question": "What is your educational background?",
       "sampleAnswer": "Bachelor's degree in Computer Science, Project Management certification.",
       "guidance": "List degree, field of study, and any certifications.",
@@ -600,9 +97,56 @@
       ]
     },
     {
+      "id": "basic-case-marriage-date",
+      "category": "Basic Case Information",
+      "priority": "high",
+      "mockInterviewOrder": 25,
+      "question": "What is your date of marriage?",
+      "sampleAnswer": "June 15, 2023.",
+      "guidance": "Provide the exact date from your marriage certificate.",
+      "tooltip": "Officers verify this against submitted marriage certificate",
+      "conditions": {
+        "requireIntake": ["marriage_date"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your marriage date and ceremony context",
+      "minLength": 20,
+      "maxLength": 500,
+      "variations": [
+        "On what date were you married?",
+        "Could you please confirm your wedding date?",
+        "When did your marriage ceremony take place?",
+        "When did the marriage event take place?"
+      ]
+    },
+    {
+      "id": "basic-case-marriage-location",
+      "category": "Basic Case Information",
+      "priority": "high",
+      "mockInterviewOrder": 26,
+      "question": "Where did the marriage take place (city & country)?",
+      "sampleAnswer": "Lahore, Pakistan.",
+      "guidance": "Provide city and country only.",
+      "tooltip": "Officers verify marriage location against submitted documents",
+      "conditions": {
+        "requireIntake": ["marriage_location"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Enter city and country of marriage",
+      "minLength": 15,
+      "maxLength": 300,
+      "variations": [
+        "In what city and country was your marriage solemnized?",
+        "Please specify the location where you got married.",
+        "Where exactly did you marry your spouse?",
+        "Can you specify the country and city where your marriage occurred?"
+      ]
+    },
+    {
       "id": "basic-case-marriage-timing",
       "category": "Basic Case Information",
       "priority": "high",
+      "mockInterviewOrder": 27,
       "question": "When did you get married?",
       "sampleAnswer": "June 15, 2023 after 3.5 years of relationship and 16 months after engagement.",
       "guidance": "Provide marriage date and context of relationship progression.",
@@ -622,141 +166,10 @@
       ]
     },
     {
-      "id": "relationship-origin-how",
-      "category": "Relationship Origin",
-      "priority": "high",
-      "question": "How did you meet your spouse?",
-      "sampleAnswer": "Through social media in September 2019 via mutual friend introduction. Had common interests.",
-      "guidance": "Describe method, date, and how you connected (shared interests, etc.).",
-      "tooltip": "Meeting story is fundamental to relationship verification",
-      "conditions": {
-        "requireIntake": ["relationship_origin_type"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Explain how you met your spouse",
-      "minLength": 40,
-      "maxLength": 700,
-      "variations": [
-        "Could you describe the circumstances of how you met?",
-        "Where and when did you first encounter your spouse?",
-        "Please explain the story of how you met.",
-        "What is the story of how you met?"
-      ]
-    },
-    {
-      "id": "relationship-timeline-duration",
-      "category": "Relationship Timeline",
-      "priority": "high",
-      "question": "How long have you been in a relationship?",
-      "sampleAnswer": "3.5 years from September 2019 to June 2023. 8 in-person visits, several days to weeks each.",
-      "guidance": "State duration and frequency of in-person contact.",
-      "tooltip": "Timeline consistency is crucial for relationship verification",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "State total relationship duration",
-      "minLength": 50,
-      "maxLength": 700,
-      "variations": [
-        "When did your relationship begin?",
-        "For what duration have you been together?",
-        "What is the period of time involved?",
-        "What period of time have you been together?"
-      ]
-    },
-    {
-      "id": "daily-life-communication-pattern",
-      "category": "Daily Life",
-      "priority": "high",
-      "question": "How do you communicate with your spouse when apart?",
-      "sampleAnswer": "Daily video calls (30-60 minutes evenings), messages throughout day, longer calls on weekends.",
-      "guidance": "Specify methods (calls, video, messages) and frequency.",
-      "tooltip": "Communication patterns show genuine ongoing relationship",
-      "conditions": {
-        "requireIntake": ["communication_frequency", "daily_communication"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe communication methods and patterns",
-      "minLength": 40,
-      "maxLength": 600,
-      "variations": [
-        "What methods do you use when not together?",
-        "How often do you communicate while apart?",
-        "Please describe how you maintain contact.",
-        "What is your communication routine?"
-      ]
-    },
-    {
-      "id": "family-reaction",
-      "category": "Family",
-      "priority": "medium",
-      "question": "How did both families react to your marriage?",
-      "sampleAnswer": "Both families delighted and supportive. Collaborated in wedding planning.",
-      "guidance": "Describe reactions and level of family involvement in marriage.",
-      "tooltip": "Family acceptance strengthens relationship credibility",
-      "conditions": {
-        "requireIntake": ["met_spouse_family"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe families' reactions to marriage",
-      "minLength": 40,
-      "maxLength": 600,
-      "variations": [
-        "What was the reaction of your families?",
-        "Could you describe how families received the news?",
-        "How did your families respond to your union?",
-        "What was your families' response?"
-      ]
-    },
-    {
-      "id": "family-wedding",
-      "category": "Family",
-      "priority": "high",
-      "question": "Who attended your wedding?",
-      "sampleAnswer": "~150 guests: parents, siblings, grandparents, aunts, uncles, cousins, close friends from both families.",
-      "guidance": "List approximate guest count and key family/friend categories.",
-      "tooltip": "Wedding attendance shows relationship authenticity",
-      "conditions": {
-        "requireIntake": ["marriage_date"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe wedding guests and family presence",
-      "minLength": 40,
-      "maxLength": 600,
-      "variations": [
-        "Could you list the key attendees?",
-        "Who were the guests present?",
-        "Please describe who was in attendance.",
-        "Who graced your wedding with their presence?"
-      ]
-    },
-    {
-      "id": "family-friends",
-      "category": "Family",
-      "priority": "medium",
-      "question": "Do you have mutual friends?",
-      "sampleAnswer": "Yes, several mutual friends who were at wedding and we spend time with regularly.",
-      "guidance": "Confirm mutual friendships and joint social activities.",
-      "tooltip": "Mutual friends provide additional relationship verification",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe mutual friends and social circle",
-      "minLength": 30,
-      "maxLength": 500,
-      "variations": [
-        "Are there friends you and your spouse share?",
-        "Do you have any friends in common?",
-        "Are there shared acquaintances?",
-        "Are there people you consider mutual friends?"
-      ]
-    },
-    {
       "id": "petitioner-status",
       "category": "Petitioner Information",
       "priority": "high",
+      "mockInterviewOrder": 7,
       "question": "What is your petitioner immigration status?",
       "sampleAnswer": "US Citizen.",
       "guidance": "State petitioner status: US Citizen, Green Card, etc.",
@@ -779,6 +192,7 @@
       "id": "petitioner-household",
       "category": "Petitioner Information",
       "priority": "high",
+      "mockInterviewOrder": 42,
       "question": "What is the household size?",
       "sampleAnswer": "Two: myself and spouse. No dependents.",
       "guidance": "List total number and composition (dependents, etc.).",
@@ -798,9 +212,540 @@
       ]
     },
     {
+      "id": "relationship-origin-how",
+      "category": "Relationship Origin",
+      "priority": "high",
+      "mockInterviewOrder": 12,
+      "question": "How did you meet your spouse?",
+      "sampleAnswer": "Through social media in September 2019 via mutual friend introduction. Had common interests.",
+      "guidance": "Describe method, date, and how you connected (shared interests, etc.).",
+      "tooltip": "Meeting story is fundamental to relationship verification",
+      "conditions": {
+        "requireIntake": ["relationship_origin_type"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Explain how you met your spouse",
+      "minLength": 40,
+      "maxLength": 700,
+      "variations": [
+        "Could you describe the circumstances of how you met?",
+        "Where and when did you first encounter your spouse?",
+        "Please explain the story of how you met.",
+        "What is the story of how you met?"
+      ]
+    },
+    {
+      "id": "relationship-origin-first-meeting",
+      "category": "Relationship Origin",
+      "priority": "high",
+      "mockInterviewOrder": 14,
+      "question": "Where did you first meet in person?",
+      "sampleAnswer": "December 2019 at a coffee shop in Karachi after 3 months of online communication.",
+      "guidance": "Provide date, location, and how long you communicated before meeting.",
+      "tooltip": "Officers want to confirm timeline and authenticity of relationship",
+      "conditions": {
+        "requireIntake": ["relationship_origin_type"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your first in-person meeting",
+      "minLength": 40,
+      "maxLength": 600,
+      "variations": [
+        "What was the date and location of your first physical meeting?",
+        "When and where did you first meet face-to-face?",
+        "Please specify your initial in-person encounter details.",
+        "Describe the circumstances of your initial face-to-face encounter."
+      ]
+    },
+    {
+      "id": "relationship-origin-visits",
+      "category": "Relationship Origin",
+      "priority": "high",
+      "mockInterviewOrder": 15,
+      "question": "How many times have you met in person?",
+      "sampleAnswer": "8 times over 3 years, lasting from several days to several weeks each.",
+      "guidance": "State the number of visits and approximate duration.",
+      "tooltip": "Officers assess commitment through in-person interaction frequency",
+      "conditions": {
+        "requireIntake": ["total_time_spent_together"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "State the number of in-person meetings",
+      "minLength": 20,
+      "maxLength": 400,
+      "variations": [
+        "What is the total number of times you have met face-to-face?",
+        "How many physical visits have you made?",
+        "State the count of your in-person meetings.",
+        "How frequently have you been able to visit each other?"
+      ]
+    },
+    {
+      "id": "relationship-timeline-started",
+      "category": "Relationship Timeline",
+      "priority": "medium",
+      "mockInterviewOrder": 13,
+      "question": "When did you first start talking?",
+      "sampleAnswer": "September 2019 through social media.",
+      "guidance": "Provide the month and year communication began.",
+      "tooltip": "Officers analyze the progression of relationship over time",
+      "conditions": {
+        "requireIntake": ["relationship_origin_type"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe how your communication began",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "When did your communication first commence?",
+        "Could you tell us when you and your spouse first began communicating?",
+        "When was the earliest point you started conversing?",
+        "When did you first initiate conversation with each other?"
+      ]
+    },
+    {
+      "id": "relationship-timeline-duration",
+      "category": "Relationship Timeline",
+      "priority": "high",
+      "mockInterviewOrder": 18,
+      "question": "How long have you been in a relationship?",
+      "sampleAnswer": "3.5 years from September 2019 to June 2023. 8 in-person visits, several days to weeks each.",
+      "guidance": "State duration and frequency of in-person contact.",
+      "tooltip": "Timeline consistency is crucial for relationship verification",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "State total relationship duration",
+      "minLength": 50,
+      "maxLength": 700,
+      "variations": [
+        "When did your relationship begin?",
+        "For what duration have you been together?",
+        "What is the period of time involved?",
+        "What period of time have you been together?"
+      ]
+    },
+    {
+      "id": "relationship-timeline-engagement",
+      "category": "Relationship Timeline",
+      "priority": "medium",
+      "mockInterviewOrder": 21,
+      "question": "When did you get engaged?",
+      "sampleAnswer": "February 14, 2022.",
+      "guidance": "Provide engagement date only.",
+      "tooltip": "Engagement timing helps verify relationship progression",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your engagement details",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "What is the date of your engagement?",
+        "When did you become engaged to your spouse?",
+        "Could you specify when your engagement took place?",
+        "On what date did you and your spouse get engaged?"
+      ]
+    },
+    {
+      "id": "relationship-timeline-walkthrough",
+      "category": "Relationship Timeline",
+      "priority": "high",
+      "mockInterviewOrder": 55,
+      "question": "Walk me through your relationship timeline.",
+      "sampleAnswer": "September 2019: met online. December 2019: first in-person meeting. February 2022: engaged. June 15, 2023: married.",
+      "guidance": "Provide key dates in chronological order.",
+      "tooltip": "Officers assess consistency across all answers",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Outline your relationship journey chronologically",
+      "minLength": 80,
+      "maxLength": 1000,
+      "variations": [
+        "Could you describe the progression of your relationship?",
+        "Please detail the key milestones in your relationship's history.",
+        "How has your relationship developed over time?",
+        "Can you outline the milestones of your relationship?"
+      ]
+    },
+    {
+      "id": "proposal-details",
+      "category": "Proposal",
+      "priority": "high",
+      "mockInterviewOrder": 19,
+      "question": "How and when did the proposal happen?",
+      "sampleAnswer": "February 14, 2022 at a park. My spouse asked me to marry them with family present.",
+      "guidance": "Provide date and location of proposal.",
+      "tooltip": "Relationship milestones help establish genuineness",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Share the details of your proposal",
+      "minLength": 40,
+      "maxLength": 700,
+      "variations": [
+        "Could you share the details of when and how you became engaged?",
+        "When and where did your spouse propose?",
+        "Please describe the circumstances surrounding your proposal.",
+        "Share your proposal experience and when it happened."
+      ]
+    },
+    {
+      "id": "marriage-decision",
+      "category": "Marriage Decision",
+      "priority": "high",
+      "mockInterviewOrder": 22,
+      "question": "Why did you decide to get married?",
+      "sampleAnswer": "Mutual trust, shared values, and desire to build a life together.",
+      "guidance": "Cite genuine personal reasons, not immigration benefits.",
+      "tooltip": "Officers ensure marriage intent is genuine",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Explain your reasons for marriage",
+      "minLength": 40,
+      "maxLength": 600,
+      "variations": [
+        "What were your reasons for deciding to marry?",
+        "Could you explain the factors that led to your decision?",
+        "What prompted you to commit to marriage?",
+        "What motivated you to decide on marriage?"
+      ]
+    },
+    {
+      "id": "wedding-details",
+      "category": "Wedding",
+      "priority": "high",
+      "mockInterviewOrder": 28,
+      "question": "Tell me about your wedding.",
+      "sampleAnswer": "June 15, 2023 with 150 guests including family. Religious ceremony in morning, reception in evening.",
+      "guidance": "Provide date, guest count, and ceremony type.",
+      "tooltip": "Wedding details help verify authenticity",
+      "conditions": {
+        "requireIntake": ["marriage_date"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your wedding ceremony and celebration",
+      "minLength": 40,
+      "maxLength": 700,
+      "variations": [
+        "Could you provide details about your wedding?",
+        "What was your wedding like?",
+        "Can you share information about your marriage ceremony?",
+        "Describe your wedding celebration in detail."
+      ]
+    },
+    {
+      "id": "family-wedding",
+      "category": "Family",
+      "priority": "high",
+      "mockInterviewOrder": 29,
+      "question": "Who attended your wedding?",
+      "sampleAnswer": "~150 guests: parents, siblings, grandparents, aunts, uncles, cousins, close friends from both families.",
+      "guidance": "List approximate guest count and key family/friend categories.",
+      "tooltip": "Wedding attendance shows relationship authenticity",
+      "conditions": {
+        "requireIntake": ["marriage_date"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe wedding guests and family presence",
+      "minLength": 40,
+      "maxLength": 600,
+      "variations": [
+        "Could you list the key attendees?",
+        "Who were the guests present?",
+        "Please describe who was in attendance.",
+        "Who graced your wedding with their presence?"
+      ]
+    },
+    {
+      "id": "family-approval",
+      "category": "Family",
+      "priority": "medium",
+      "mockInterviewOrder": 30,
+      "question": "Did your families approve of this relationship?",
+      "sampleAnswer": "Yes, both families approved and were involved in wedding planning.",
+      "guidance": "State whether families approved and their involvement level.",
+      "tooltip": "Family approval can strengthen relationship credibility",
+      "conditions": {
+        "requireIntake": ["met_spouse_family"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Explain your families' support for the relationship",
+      "minLength": 30,
+      "maxLength": 600,
+      "variations": [
+        "Do your respective families support your marriage?",
+        "Were your families supportive of your decision to marry?",
+        "What was your families' reaction to your relationship?",
+        "What was the families' stance on your relationship?"
+      ]
+    },
+    {
+      "id": "family-reaction",
+      "category": "Family",
+      "priority": "medium",
+      "mockInterviewOrder": 31,
+      "question": "How did both families react to your marriage?",
+      "sampleAnswer": "Both families delighted and supportive. Collaborated in wedding planning.",
+      "guidance": "Describe reactions and level of family involvement in marriage.",
+      "tooltip": "Family acceptance strengthens relationship credibility",
+      "conditions": {
+        "requireIntake": ["met_spouse_family"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe families' reactions to marriage",
+      "minLength": 40,
+      "maxLength": 600,
+      "variations": [
+        "What was the reaction of your families?",
+        "Could you describe how families received the news?",
+        "How did your families respond to your union?",
+        "What was your families' response?"
+      ]
+    },
+    {
+      "id": "family-met-spouse-family",
+      "category": "Family",
+      "priority": "medium",
+      "mockInterviewOrder": 32,
+      "question": "Have you met your spouse's family?",
+      "sampleAnswer": "Yes, met parents, siblings, and extended family on multiple occasions.",
+      "guidance": "Specify which family members you've met and how often.",
+      "tooltip": "Family integration shows relationship depth",
+      "conditions": {
+        "requireIntake": ["met_spouse_family"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your interactions with spouse's family",
+      "minLength": 20,
+      "maxLength": 500,
+      "variations": [
+        "Have you had the opportunity to meet your spouse's family?",
+        "Are you acquainted with your spouse's family?",
+        "Do you know your spouse's family members?",
+        "Have you interacted with your spouse's relatives?"
+      ]
+    },
+    {
+      "id": "family-friends",
+      "category": "Family",
+      "priority": "medium",
+      "mockInterviewOrder": 34,
+      "question": "Do you have mutual friends?",
+      "sampleAnswer": "Yes, several mutual friends who were at wedding and we spend time with regularly.",
+      "guidance": "Confirm mutual friendships and joint social activities.",
+      "tooltip": "Mutual friends provide additional relationship verification",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe mutual friends and social circle",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "Are there friends you and your spouse share?",
+        "Do you have any friends in common?",
+        "Are there shared acquaintances?",
+        "Are there people you consider mutual friends?"
+      ]
+    },
+    {
+      "id": "spouse-family-members",
+      "category": "Spouse Information",
+      "priority": "high",
+      "mockInterviewOrder": 33,
+      "question": "What are the names of your spouse's immediate family members?",
+      "sampleAnswer": "Father: Ahmed Smith, Mother: Fatima Khan, Sister: Aisha Smith, Brother: Hassan Smith.",
+      "guidance": "List parents, siblings, and any dependents. Include relationship and full names.",
+      "tooltip": "Family composition verification against submitted documents",
+      "conditions": {
+        "requireIntake": ["met_spouse_family"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "List immediate family members with relationships",
+      "minLength": 20,
+      "maxLength": 500,
+      "variations": [
+        "Who are your spouse's immediate family members?",
+        "Can you name your spouse's parents and siblings?",
+        "List your spouse's family members.",
+        "What are the names of your spouse's relatives?"
+      ]
+    },
+    {
+      "id": "relationship-hobbies",
+      "category": "Relationship",
+      "priority": "low",
+      "mockInterviewOrder": 40,
+      "question": "What are your spouse's hobbies and interests?",
+      "sampleAnswer": "Reading novels, photography, and cooking traditional recipes.",
+      "guidance": "List 2-3 main hobbies to demonstrate knowledge of spouse.",
+      "tooltip": "Knowing personal details reflects closeness",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your spouse's hobbies and interests",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "Could you tell me about your spouse's interests?",
+        "What does your spouse enjoy doing in free time?",
+        "What are some of your spouse's favorite pastimes?",
+        "What activities does your spouse enjoy?"
+      ]
+    },
+    {
+      "id": "relationship-language",
+      "category": "Relationship",
+      "priority": "low",
+      "mockInterviewOrder": 35,
+      "question": "What language do you and your spouse use to communicate?",
+      "sampleAnswer": "English primarily, Urdu occasionally for cultural matters.",
+      "guidance": "List primary language and any secondary languages used.",
+      "tooltip": "Officers ensure effective communication exists",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your common languages of communication",
+      "minLength": 20,
+      "maxLength": 400,
+      "variations": [
+        "In what language do you and your spouse converse?",
+        "Which language do you predominantly use?",
+        "What is the main language of communication between you?",
+        "What are the language(s) of your communication?"
+      ]
+    },
+    {
+      "id": "daily-life-communication-pattern",
+      "category": "Daily Life",
+      "priority": "high",
+      "mockInterviewOrder": 36,
+      "question": "How do you communicate with your spouse when apart?",
+      "sampleAnswer": "Daily video calls (30-60 minutes evenings), messages throughout day, longer calls on weekends.",
+      "guidance": "Specify methods (calls, video, messages) and frequency.",
+      "tooltip": "Communication patterns show genuine ongoing relationship",
+      "conditions": {
+        "requireIntake": ["communication_frequency", "daily_communication"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe communication methods and patterns",
+      "minLength": 40,
+      "maxLength": 600,
+      "variations": [
+        "What methods do you use when not together?",
+        "How often do you communicate while apart?",
+        "Please describe how you maintain contact.",
+        "What is your communication routine?"
+      ]
+    },
+    {
+      "id": "household-activities",
+      "category": "Household Life",
+      "priority": "high",
+      "mockInterviewOrder": 39,
+      "question": "What do you do together as a couple?",
+      "sampleAnswer": "Cooking, watching movies, traveling, outdoor walks, supporting each other's work and education.",
+      "guidance": "List shared daily activities and routines.",
+      "tooltip": "Shared lifestyle reflects compatibility",
+      "conditions": {
+        "requireIntake": ["current_living_arrangement"],
+        "requireIntakeValues": { "current_living_arrangement": "Yes" },
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe shared activities and routines",
+      "minLength": 40,
+      "maxLength": 700,
+      "variations": [
+        "How do you typically spend time together?",
+        "What shared activities do you engage in?",
+        "Could you describe your common routines?",
+        "What are your shared pastimes and routines?"
+      ]
+    },
+    {
+      "id": "employment-spouse",
+      "category": "Employment",
+      "priority": "high",
+      "mockInterviewOrder": 9,
+      "question": "What does your spouse do for a living?",
+      "sampleAnswer": "Project manager at an IT company for 3 years, managing software development projects.",
+      "guidance": "State occupation, employer type, tenure, and main responsibilities.",
+      "tooltip": "Employment stability is reviewed for financial capacity",
+      "conditions": {
+        "requireIntake": ["sponsor_employment"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your spouse's occupation",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "What is your spouse's current occupation?",
+        "Can you describe your spouse's profession?",
+        "What kind of work does your spouse do?",
+        "What is your spouse's professional background?"
+      ]
+    },
+    {
+      "id": "spouse-education",
+      "category": "Spouse Information",
+      "priority": "medium",
+      "mockInterviewOrder": 11,
+      "question": "What is your spouse's educational background?",
+      "sampleAnswer": "Bachelor's degree in Business Administration, MBA in progress.",
+      "guidance": "List degrees, field of study, institution, and any ongoing education.",
+      "tooltip": "Educational background supports financial stability assessment",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your spouse's education and qualifications",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "What is your spouse's education level?",
+        "Please describe your spouse's academic qualifications.",
+        "What degrees does your spouse hold?",
+        "Tell me about your spouse's educational background."
+      ]
+    },
+    {
+      "id": "finances-shared",
+      "category": "Finances",
+      "priority": "high",
+      "mockInterviewOrder": 41,
+      "question": "Do you share finances?",
+      "sampleAnswer": "Yes, joint bank account for household expenses, separate accounts for personal spending.",
+      "guidance": "Describe your financial management arrangement (joint, separate, or combined).",
+      "tooltip": "Financial interdependence indicates seriousness",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe your financial arrangement",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "Do you have joint financial arrangements?",
+        "Are your finances managed jointly?",
+        "Do you share bank accounts or combine income?",
+        "Have you combined your financial resources?"
+      ]
+    },
+    {
       "id": "finances-support",
       "category": "Finances",
       "priority": "high",
+      "mockInterviewOrder": 43,
       "question": "How will you be financially supported in the US?",
       "sampleAnswer": "By spouse's income as project manager, 150% above federal poverty guidelines.",
       "guidance": "State income amount and expected adequacy for household size.",
@@ -820,9 +765,171 @@
       ]
     },
     {
+      "id": "intent-move-us",
+      "category": "Intent",
+      "priority": "high",
+      "mockInterviewOrder": 44,
+      "question": "Why do you want to move to the United States?",
+      "sampleAnswer": "To reunite with my spouse and build our life together permanently.",
+      "guidance": "Focus on family integration, not financial or career advancement.",
+      "tooltip": "Primary intent should align with petition purpose",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Explain your motivation for moving to the U.S.",
+      "minLength": 40,
+      "maxLength": 600,
+      "variations": [
+        "What is your primary motivation for relocating to the U.S.?",
+        "Could you explain your reasons for immigration?",
+        "What factors have led you to decide on moving to the U.S.?",
+        "What are your motivations for U.S. relocation?"
+      ]
+    },
+    {
+      "id": "intent-plans",
+      "category": "Intent",
+      "priority": "high",
+      "mockInterviewOrder": 45,
+      "question": "What are your plans after arriving in the US?",
+      "sampleAnswer": "Settle in California with spouse, seek employment in tech industry, buy a home, start a family.",
+      "guidance": "Provide specific location, employment/education plans, and family goals.",
+      "tooltip": "Officers assess post-arrival intent and stability",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Outline your plans after arrival",
+      "minLength": 50,
+      "maxLength": 700,
+      "variations": [
+        "What are your immediate intentions upon arrival?",
+        "Could you outline your plans for settling in?",
+        "What do you intend to do once you arrive?",
+        "What is your strategy after arrival in America?"
+      ]
+    },
+    {
+      "id": "ties-home-country",
+      "category": "Ties",
+      "priority": "medium",
+      "mockInterviewOrder": 46,
+      "question": "Who will you leave behind in your home country?",
+      "sampleAnswer": "Parents and two siblings who support my immigration decision.",
+      "guidance": "List family members remaining and their support level.",
+      "tooltip": "Officers assess relocation commitment and ties",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Describe family and friends left behind",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "Which family members will remain in your home country?",
+        "Who will you be leaving behind?",
+        "Who among your relatives will stay in your home country?",
+        "Which relatives will remain in your homeland?"
+      ]
+    },
+    {
+      "id": "security-arrest",
+      "category": "Security",
+      "priority": "high",
+      "mockInterviewOrder": 51,
+      "question": "Have you ever been arrested or charged with any crime?",
+      "sampleAnswer": "No.",
+      "guidance": "Answer yes/no directly. If yes, explain circumstances and resolution.",
+      "tooltip": "Security screening is mandatory",
+      "conditions": {
+        "requireIntake": ["criminal_history"],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Honestly declare any criminal history",
+      "minLength": 20,
+      "maxLength": 400,
+      "variations": [
+        "Have you faced any criminal charges?",
+        "Do you have any history of arrests?",
+        "Have you been convicted of any crime?",
+        "Have you faced any legal charges?"
+      ]
+    },
+    {
+      "id": "security-military",
+      "category": "Security",
+      "priority": "high",
+      "mockInterviewOrder": 52,
+      "question": "Have you ever served in the military?",
+      "sampleAnswer": "No.",
+      "guidance": "Answer yes/no directly. If yes, provide dates and service details.",
+      "tooltip": "Military background requires review",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Indicate military service if applicable",
+      "minLength": 15,
+      "maxLength": 300,
+      "variations": [
+        "Have you been a member of any armed forces?",
+        "Do you have military service history?",
+        "Were you ever enlisted in military?",
+        "Did you ever participate in military service?"
+      ]
+    },
+    {
+      "id": "travel-us-history",
+      "category": "Travel",
+      "priority": "high",
+      "mockInterviewOrder": 47,
+      "question": "Have you ever been to the United States before?",
+      "sampleAnswer": "No.",
+      "guidance": "Answer yes/no. If yes, provide dates and visa types.",
+      "tooltip": "Travel history is verified against records",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "Indicate any previous U.S. visits",
+      "minLength": 15,
+      "maxLength": 300,
+      "variations": [
+        "Have you made any previous U.S. visits?",
+        "Is this your first time applying for U.S. entry?",
+        "Have you previously visited the USA?",
+        "Is this your first time coming to the U.S.?"
+      ]
+    },
+    {
+      "id": "travel-international",
+      "category": "Travel",
+      "priority": "medium",
+      "mockInterviewOrder": 48,
+      "question": "Have you traveled internationally before?",
+      "sampleAnswer": "Yes, to UAE, Thailand, Malaysia for leisure and work. Complied with all visa requirements.",
+      "guidance": "List countries and purposes. Emphasize legal compliance.",
+      "tooltip": "International travel history shows legal compliance",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["spouse"]
+      },
+      "inputPlaceholder": "List countries visited and travel purposes",
+      "minLength": 30,
+      "maxLength": 500,
+      "variations": [
+        "Have you previously traveled to other countries?",
+        "Do you have a history of international travel?",
+        "Have you visited any foreign nations?",
+        "What is your track record of international travel?"
+      ]
+    },
+    {
       "id": "security-visa-refusal",
       "category": "Security",
       "priority": "high",
+      "mockInterviewOrder": 49,
       "question": "Have you ever been refused a US visa?",
       "sampleAnswer": "No.",
       "guidance": "Answer yes/no. If yes, explain reason and changes made since.",
@@ -845,6 +952,7 @@
       "id": "security-overstay",
       "category": "Security",
       "priority": "high",
+      "mockInterviewOrder": 50,
       "question": "Have you ever overstayed a visa in any country?",
       "sampleAnswer": "No.",
       "guidance": "Answer yes/no. If yes, explain circumstances and any consequences.",
@@ -864,91 +972,263 @@
       ]
     },
     {
-      "id": "spouse-full-name",
+      "id": "spouse-dob",
       "category": "Spouse Information",
       "priority": "high",
-      "question": "What is your spouse's full name?",
-      "sampleAnswer": "John Ahmed Smith.",
-      "guidance": "Provide full legal name as it appears on official documents.",
-      "tooltip": "Full name verification against spouse's documents",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Enter your spouse's full legal name",
-      "minLength": 5,
+      "mockInterviewOrder": 2,
+      "question": "What is your spouse's date of birth?",
+      "sampleAnswer": "April 12, 1993.",
+      "guidance": "Provide the full date of birth as on official documents.",
+      "tooltip": "DOB used to verify identity and age",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Enter spouse date of birth",
+      "minLength": 8,
+      "maxLength": 30,
+      "variations": [
+        "When was your spouse born?",
+        "What is your spouse's date of birth?",
+        "Please state your spouse's DOB.",
+        "What is the birth date of your spouse?"
+      ]
+    },
+    {
+      "id": "spouse-current-location",
+      "category": "Spouse Information",
+      "priority": "high",
+      "mockInterviewOrder": 4,
+      "question": "Where does your spouse currently live (city, country)?",
+      "sampleAnswer": "Lahore, Pakistan.",
+      "guidance": "Provide current residential city and country.",
+      "tooltip": "Current residence helps confirm living arrangements",
+      "conditions": { "requireIntake": ["living_arrangement"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "City, Country",
+      "minLength": 10,
       "maxLength": 200,
       "variations": [
-        "What is your spouse's legal name?",
-        "Please state your spouse's full name.",
-        "Can you provide your spouse's complete name?",
-        "What is your spouse's name as shown on documents?"
+        "Where is your spouse currently residing?",
+        "In which city and country does your spouse live?",
+        "What's your spouse's current place of residence?",
+        "Where does your spouse live now?"
       ]
     },
     {
-      "id": "spouse-family-members",
+      "id": "spouse-address",
       "category": "Spouse Information",
       "priority": "high",
-      "question": "What are the names of your spouse's immediate family members?",
-      "sampleAnswer": "Father: Ahmed Smith, Mother: Fatima Khan, Sister: Aisha Smith, Brother: Hassan Smith.",
-      "guidance": "List parents, siblings, and any dependents. Include relationship and full names.",
-      "tooltip": "Family composition verification against submitted documents",
-      "conditions": {
-        "requireIntake": ["met_spouse_family"],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "List immediate family members with relationships",
-      "minLength": 20,
-      "maxLength": 500,
-      "variations": [
-        "Who are your spouse's immediate family members?",
-        "Can you name your spouse's parents and siblings?",
-        "List your spouse's family members.",
-        "What are the names of your spouse's relatives?"
-      ]
-    },
-    {
-      "id": "spouse-age",
-      "category": "Spouse Information",
-      "priority": "high",
-      "question": "What is your spouse's age?",
-      "sampleAnswer": "30 years old.",
-      "guidance": "Provide current age in years.",
-      "tooltip": "Age verification against marriage and identity documents",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Enter your spouse's age",
-      "minLength": 1,
-      "maxLength": 100,
-      "variations": [
-        "How old is your spouse?",
-        "What is your spouse's age?",
-        "State your spouse's current age.",
-        "Can you provide your spouse's age?"
-      ]
-    },
-    {
-      "id": "spouse-education",
-      "category": "Spouse Information",
-      "priority": "medium",
-      "question": "What is your spouse's educational background?",
-      "sampleAnswer": "Bachelor's degree in Business Administration, MBA in progress.",
-      "guidance": "List degrees, field of study, institution, and any ongoing education.",
-      "tooltip": "Educational background supports financial stability assessment",
-      "conditions": {
-        "requireIntake": [],
-        "requireCaseTypes": ["spouse"]
-      },
-      "inputPlaceholder": "Describe your spouse's education and qualifications",
+      "mockInterviewOrder": 5,
+      "question": "What is your spouse's current address?",
+      "sampleAnswer": "House 12, Street 8, Gulberg, Lahore.",
+      "guidance": "Give the full current residential address if known.",
+      "tooltip": "Address verification may be requested",
+      "conditions": { "requireIntake": ["living_arrangement"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Full address",
       "minLength": 10,
       "maxLength": 300,
       "variations": [
-        "What is your spouse's education level?",
-        "Please describe your spouse's academic qualifications.",
-        "What degrees does your spouse hold?",
-        "Tell me about your spouse's educational background."
+        "Can you provide your spouse's address?",
+        "What is the full address where your spouse lives?",
+        "Please state your spouse's residential address.",
+        "Where is your spouse's home located?"
+      ]
+    },
+    {
+      "id": "spouse-live-with",
+      "category": "Spouse Information",
+      "priority": "medium",
+      "mockInterviewOrder": 6,
+      "question": "Who does your spouse live with?",
+      "sampleAnswer": "Lives with parents and younger sister.",
+      "guidance": "List household members at spouse's residence.",
+      "tooltip": "Household composition helps verify living situation",
+      "conditions": { "requireIntake": ["living_arrangement"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "List household members",
+      "minLength": 10,
+      "maxLength": 200,
+      "variations": [
+        "Who shares the household with your spouse?",
+        "Who lives with your spouse at their address?",
+        "Can you name people living with your spouse?",
+        "Who are the household members at your spouse's residence?"
+      ]
+    },
+    {
+      "id": "last-time-talked",
+      "category": "Communication",
+      "priority": "high",
+      "mockInterviewOrder": 37,
+      "question": "When did you last speak with your spouse?",
+      "sampleAnswer": "This morning at 8am via video call.",
+      "guidance": "Provide most recent contact date and method.",
+      "tooltip": "Recent contact demonstrates ongoing relationship",
+      "conditions": { "requireIntake": ["communication_frequency", "daily_communication"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Date and method of last contact",
+      "minLength": 10,
+      "maxLength": 200,
+      "variations": [
+        "When was your most recent conversation?",
+        "When did you last speak to your spouse?",
+        "How recently did you talk with your spouse?",
+        "When was your last contact with your spouse?"
+      ]
+    },
+    {
+      "id": "recent-talk-content",
+      "category": "Communication",
+      "priority": "medium",
+      "mockInterviewOrder": 38,
+      "question": "What did you talk about during your last conversation?",
+      "sampleAnswer": "We discussed travel plans and coordinating documents for the move.",
+      "guidance": "Give a brief summary of the last conversation topic.",
+      "tooltip": "Content of recent conversations shows ongoing coordination",
+      "conditions": { "requireIntake": ["communication_frequency", "daily_communication"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Brief summary of last conversation",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "What did you discuss most recently?",
+        "Can you summarise your last conversation?",
+        "What topics did you cover in your last chat?",
+        "What was discussed during your most recent call or message?"
+      ]
+    },
+    {
+      "id": "marriage-type",
+      "category": "Marriage",
+      "priority": "medium",
+      "mockInterviewOrder": 24,
+      "question": "Was your marriage arranged or love marriage?",
+      "sampleAnswer": "It was a love marriage; we chose to marry after dating for several years.",
+      "guidance": "State whether arranged or love marriage and brief context.",
+      "tooltip": "Helps officer understand cultural context",
+      "conditions": { "requireIntake": ["marriage_type"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Arranged or love marriage",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Was the marriage arranged or by choice?",
+        "Would you describe your marriage as arranged or a love marriage?",
+        "Was your union arranged by family or chosen by you both?",
+        "Can you state whether the marriage was arranged or not?"
+      ]
+    },
+    {
+      "id": "who-proposed-first",
+      "category": "Proposal",
+      "priority": "low",
+      "mockInterviewOrder": 20,
+      "question": "Who proposed first?",
+      "sampleAnswer": "My spouse proposed to me during a trip in February 2022.",
+      "guidance": "Answer briefly who proposed and any short context.",
+      "tooltip": "Small personal detail that couples commonly know",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Who initiated the proposal?",
+      "minLength": 5,
+      "maxLength": 200,
+      "variations": [
+        "Who proposed?",
+        "Who asked whom to marry?",
+        "Which of you proposed first?",
+        "Can you tell me who proposed first?"
+      ]
+    },
+    {
+      "id": "why-choose-this-person",
+      "category": "Marriage Decision",
+      "priority": "low",
+      "mockInterviewOrder": 23,
+      "question": "Why did you choose to marry this person?",
+      "sampleAnswer": "Shared values, mutual respect, and strong emotional connection.",
+      "guidance": "Give a sincere and concise reason for choosing your spouse.",
+      "tooltip": "Personal motivations help contextualize relationship",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Briefly explain why you married",
+      "minLength": 20,
+      "maxLength": 400,
+      "variations": [
+        "What made you decide to marry them?",
+        "Why did you choose your spouse as your partner?",
+        "Can you explain why you married this person?",
+        "What motivated you to enter into marriage with them?"
+      ]
+    },
+    {
+      "id": "last-visit-date",
+      "category": "Visits",
+      "priority": "medium",
+      "mockInterviewOrder": 16,
+      "question": "When was the last time you saw your spouse in person?",
+      "sampleAnswer": "Last visit was December 2023 for two weeks.",
+      "guidance": "Provide the most recent in-person meeting date and duration.",
+      "tooltip": "Visit recency helps evaluate ongoing contact",
+      "conditions": { "requireIntake": ["living_arrangement"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Date of last in-person meeting",
+      "minLength": 10,
+      "maxLength": 200,
+      "variations": [
+        "When did you last meet in person?",
+        "How recently did you see your spouse physically?",
+        "When was your most recent visit together?",
+        "When did you last have an in-person meeting?"
+      ]
+    },
+    {
+      "id": "last-visit-duration",
+      "category": "Visits",
+      "priority": "medium",
+      "mockInterviewOrder": 17,
+      "question": "How long was that visit?",
+      "sampleAnswer": "Two weeks (14 days).",
+      "guidance": "State approximate duration in days or weeks.",
+      "tooltip": "Duration helps confirm visit patterns",
+      "conditions": { "requireIntake": ["living_arrangement"], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Duration of last visit",
+      "minLength": 5,
+      "maxLength": 100,
+      "variations": [
+        "How many days did the visit last?",
+        "What was the duration of your last visit?",
+        "How long did you stay during that meeting?",
+        "Can you state how long the visit lasted?"
+      ]
+    },
+    {
+      "id": "spouse-workplace",
+      "category": "Employment",
+      "priority": "medium",
+      "mockInterviewOrder": 8,
+      "question": "Where does your spouse work (employer)?",
+      "sampleAnswer": "Tech Solutions Pvt Ltd, Lahore office.",
+      "guidance": "Provide employer name and location if known.",
+      "tooltip": "Employer details support employment verification",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Employer name and location",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Who does your spouse work for?",
+        "What is your spouse's employer?",
+        "Where is your spouse employed?",
+        "Can you name your spouse's workplace?"
+      ]
+    },
+    {
+      "id": "spouse-working-hours",
+      "category": "Employment",
+      "priority": "low",
+      "mockInterviewOrder": 10,
+      "question": "What hours does your spouse typically work?",
+      "sampleAnswer": "Typically 9am to 6pm, Monday to Friday.",
+      "guidance": "Provide regular working schedule if known.",
+      "tooltip": "Work schedule helps understand availability and routines",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["spouse"] },
+      "inputPlaceholder": "Typical working hours",
+      "minLength": 5,
+      "maxLength": 200,
+      "variations": [
+        "What is your spouse's usual work schedule?",
+        "What hours does your spouse normally work?",
+        "When does your spouse typically start and finish work?",
+        "Can you describe your spouse's working hours?"
       ]
     }
   ]

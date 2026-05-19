@@ -1,0 +1,15 @@
+{
+  "opening": [
+    { "type": "officer", "text": "Good morning, how are you doing today?" },
+    { "type": "officer", "text": "Please pass me your passport." },
+    { "type": "officer", "text": "Can you state your full name?" },
+    {
+      "type": "officer",
+      "text": "Who filed the petition for you?"
+    }
+  ],
+  "closing": [
+    { "type": "officer", "text": "Thank you. That concludes the interview." },
+    { "type": "officer", "text": "You will receive an update by mail." }
+  ]
+}
