@@ -426,7 +426,10 @@ export default function FeedbackButton({
             </button>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
+          <form
+            onSubmit={handleSubmit}
+            className="flex-1 min-h-0 flex flex-col"
+          >
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-premium px-6 py-4 space-y-5">
               {/* Feedback Type */}
               <div className="mt-1">
@@ -560,7 +563,7 @@ export default function FeedbackButton({
                             e.stopPropagation();
                             handleRemoveFile(idx);
                           }}
-                          className="p-1 hover:bg-slate-200 rounded-full text-slate-500 hover:text-slate-700 transition-colors shrink-0"
+                          className="p-1 hover:bg-red-50 hover:text-red-500 rounded-full text-slate-500 transition-colors shrink-0"
                           title="Remove file"
                         >
                           <X className="w-4 h-4" />
