@@ -14,6 +14,7 @@ import {
   FileCheck,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { Loader } from "@/components/ui/spinner";
 
 interface PDFPage {
@@ -41,6 +42,7 @@ interface MergeResult {
 
 export default function PDFMergeAdvanced() {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [files, setFiles] = useState<PDFFileInfo[]>([]);
   const [allPages, setAllPages] = useState<PDFPage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -289,7 +291,7 @@ export default function PDFMergeAdvanced() {
     setLoading(true);
     for (const file of incomingFiles) {
       if (file.name.endsWith(".ppt") || file.name.endsWith(".pptx")) {
-        alert(`Skipping ${file.name}: PowerPoint not supported.`);
+        showToast(`Skipping ${file.name}: PowerPoint not supported.`, "error");
         continue;
       }
 

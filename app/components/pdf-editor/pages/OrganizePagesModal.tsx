@@ -1,14 +1,14 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
-import NextImage from "next/image";
-import { usePDFStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
-import { Trash2, RotateCw, X, Save, Copy } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useLanguage } from "@/app/context/LanguageContext";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import type React from "react"
+import { useState, useEffect } from "react"
+import NextImage from "next/image"
+import { usePDFStore } from "@/lib/store"
+import { Button } from "@/components/ui/button"
+import { Trash2, RotateCw, X, Save, Copy } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useLanguage } from "@/app/context/LanguageContext"
+import { useToast } from "@/app/components/shared/ToastProvider"
 
 interface PageItem {
   index: number;
@@ -22,16 +22,13 @@ interface OrganizePagesModalProps {
   onClose: () => void;
 }
 
-export function OrganizePagesModal({
-  isOpen,
-  onClose,
-}: OrganizePagesModalProps) {
-  const { pdfFile, pageModifications, setPageModifications, setCurrentPage } =
-    usePDFStore();
-  const { t } = useLanguage();
-  const [pages, setPages] = useState<PageItem[]>([]);
-  const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
-  const [draggedPage, setDraggedPage] = useState<number | null>(null);
+export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps) {
+  const { pdfFile, pageModifications, setPageModifications, setCurrentPage } = usePDFStore()
+  const { t } = useLanguage()
+  const { showToast } = useToast()
+  const [pages, setPages] = useState<PageItem[]>([])
+  const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set())
+  const [draggedPage, setDraggedPage] = useState<number | null>(null)
 
   useEffect(() => {
     if (!isOpen || !pdfFile) return;
@@ -105,8 +102,8 @@ export function OrganizePagesModal({
 
   const handleDeletePage = (index: number) => {
     if (pages.length <= 1) {
-      alert("Cannot delete the last page!");
-      return;
+      showToast("Cannot delete the last page!", "error")
+      return
     }
     if (confirm("Are you sure you want to delete this page?")) {
       const newPages = pages.filter((_, i) => i !== index);
@@ -230,8 +227,8 @@ export function OrganizePagesModal({
   const handleBulkDelete = () => {
     if (selectedPages.size === 0) return;
     if (selectedPages.size >= pages.length) {
-      alert(t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"));
-      return;
+      showToast(t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"), "error")
+      return
     }
     if (
       confirm(
@@ -251,7 +248,20 @@ export function OrganizePagesModal({
       originalIndex: page.originalIndex,
       rotation: page.rotation,
       deleted: false,
-    }));
+    }))
+    
+    // Save to store
+    setPageModifications(newModifications)
+    
+    // Reset to first page
+    setCurrentPage(0)
+    
+    // Close modal
+    onClose()
+    
+    // Show success message
+    showToast(t("pdfProcessing.editor.organizePages.successAlert"), "success")
+  }
 
     // Save to store
     setPageModifications(newModifications);

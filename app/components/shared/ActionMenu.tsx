@@ -35,7 +35,13 @@ export default function ActionMenu({ onView, onDelete }: ActionMenuProps) {
       </Button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-40 bg-white shadow-xl rounded-md border border-slate-200 z-50">
+        <div
+          className="fixed mt-2 w-40 bg-white shadow-xl rounded-md border border-slate-200 z-[9999]"
+          style={{
+            top: menuRef.current?.getBoundingClientRect().bottom ?? 0,
+            left: (menuRef.current?.getBoundingClientRect().right ?? 0) - 160,
+          }}
+        >
           <button
             className="flex items-center gap-2 w-full px-4 py-2 hover:bg-slate-100"
             onClick={() => {

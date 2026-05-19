@@ -33,6 +33,7 @@ import { classifySituation } from "../utils/classifier";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
@@ -307,19 +308,19 @@ const VISA_TYPES = [
 ];
 
 const VISA_CATEGORIES = [
-  { value: "IR-1", label: "IR-1 (Immediate Relative â€“ Spouse)" },
-  { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
-  { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
-  { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
-  { value: "F-1", label: "F-1 (Family 1st Preference)" },
-  { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
-  { value: "F-3", label: "F-3 (Family 3rd Preference)" },
-  { value: "F-4", label: "F-4 (Family 4th Preference)" },
-  { value: "K-1", label: "K-1 (FiancÃ©(e))" },
-  { value: "K-3", label: "K-3 (Spouse of U.S. Citizen)" },
-  { value: "B-1/B-2", label: "B-1/B-2 (Tourist/Business)" },
-  { value: "F-1-student", label: "F-1 (Student)" },
-  { value: "other", label: "Other (specify below)" },
+  { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
+  // { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
+  // { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
+  // { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
+  // { value: "F-1", label: "F-1 (Family 1st Preference)" },
+  // { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
+  // { value: "F-3", label: "F-3 (Family 3rd Preference)" },
+  // { value: "F-4", label: "F-4 (Family 4th Preference)" },
+  // { value: "K-1", label: "K-1 (FiancÃ©(e))" },
+  // { value: "K-3", label: "K-3 (Spouse of U.S. Citizen)" },
+  // { value: "B-1/B-2", label: "B-1/B-2 (Tourist/Business)" },
+  // { value: "F-1-student", label: "F-1 (Student)" },
+  // { value: "other", label: "Other (specify below)" },
 ];
 
 const CEAC_STATUSES = [
@@ -378,6 +379,7 @@ export default function CombinedIntakeForm({
   const embassyRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -1606,7 +1608,7 @@ export default function CombinedIntakeForm({
 
         <div className="flex gap-3 pt-6 border-t font-semibold">
           <Button variant="outline" onClick={goBack}>
-            â† Back to Checklist
+            Back to Checklist
           </Button>
           <Button
             onClick={handleGenerate}
@@ -1630,7 +1632,7 @@ export default function CombinedIntakeForm({
 
     const copyToClipboard = (text: string) => {
       navigator.clipboard.writeText(text);
-      alert("Copied to clipboard!");
+      showToast("Copied to clipboard!", "success");
     };
 
     const generateHtmlContent = (text: string, title: string) => {

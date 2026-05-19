@@ -157,7 +157,7 @@ const WizardInfoPanel = ({
     guideType === "cnic";
 
   return (
-    <aside className="flex shrink-0 flex-col bg-white border-t xl:border-t-0 xl:border-l border-slate-200 rounded-xl mx-4 my-3 xl:w-[350px] xl:h-[550px]">
+    <aside className="flex w-full shrink-0 flex-col bg-white border-t xl:border-t-0 xl:border-l border-slate-200 rounded-xl my-3 xl:h-137.5">
       {/* Tabs for Tips/Pitfalls/Links */}
       <div className="flex border-b border-slate-200 p-2 rounded-t-xl">
         {TAB_CONFIG.map((tab) => {

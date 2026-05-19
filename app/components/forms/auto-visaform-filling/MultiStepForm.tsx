@@ -290,9 +290,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             setCurrentStep(validStep);
             setCurrentQuestionIndex(validQuestionIndex);
             setView((draftData.view_mode || "form") as ViewType);
-            setDraftStatus(
-              draftData.completed ? "completed" : "draft"
-            );
+            setDraftStatus(draftData.completed ? "completed" : "draft");
             setProgressiveSubQuestionIndices(
               draftData.progressive_sub_question_indices || {},
             );
@@ -591,6 +589,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   // ============ DEBOUNCED AUTOSAVE EFFECT ============
   // Separated from saveDraft callback to avoid re-creating effect on data changes
+  const lastSaveTimeRef = useRef<number>(0);
+
   useEffect(() => {
     if (
       !draftLoaded ||
@@ -608,11 +608,18 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     saveTimerRef.current = window.setTimeout(async () => {
       if (!user || !isSessionValid) return;
 
+      // THROTTLE: enforce minimum 5s gap between API calls
+      const now = Date.now();
+      if (now - lastSaveTimeRef.current < 5000) {
+        return;
+      }
+      lastSaveTimeRef.current = now;
+
       setSaveError(null);
       setIsAutoSaving(true);
 
       try {
-        const { controller, timeoutId } = createAbortController(10000); // 10s timeout for autosave
+        const { controller, timeoutId } = createAbortController(10000); // 10s timeout
 
         const res = await fetch(`/api/visa-forms/${formCode}/progress`, {
           method: "POST",
@@ -638,16 +645,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         }
 
         const data = (await res.json()) as FormProgressResponse;
+
         setLastSavedAt(data.draft?.last_saved_at ?? new Date().toISOString());
+
         if (data.draft) {
           writeDraftBackup(formCode, data.draft, draftJourneyKey);
         }
+
         setSaveError(null);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to save progress";
+
         if (error instanceof Error && error.name === "AbortError") {
-          // Timeout retries automatically on next state change; keep UI clean.
           setSaveError(null);
           console.warn("Autosave timeout; will retry on next change");
         } else {
@@ -1165,28 +1175,26 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           const label = section.title.replace(/^\d+\.\s*/, "");
           const isActive = currentStep === stepNum;
           const visibleSectionFields = section.fields.filter(
-            (field) => !field.condition || field.condition(formData)
+            (field) => !field.condition || field.condition(formData),
           );
-          
+
           const answeredCount = visibleSectionFields.filter((field) => {
             const value = formData[field.key];
             return value && value.trim() !== "";
           }).length;
-          
+
           const totalCount = visibleSectionFields.length;
-          
-          const isCompleted =
-            totalCount > 0 && answeredCount === totalCount;
-          
+
+          const isCompleted = totalCount > 0 && answeredCount === totalCount;
+
           const isSkipped =
             stepNum < currentStep &&
             answeredCount > 0 &&
             answeredCount < totalCount;
-          
+
           const isUnansweredSkipped =
-            stepNum < currentStep &&
-            answeredCount === 0;
-          
+            stepNum < currentStep && answeredCount === 0;
+
           const isDone = isCompleted;
           const isExpanded = expandedSections.has(section.title);
 
@@ -1244,22 +1252,22 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                       {label}
                     </p>
                     <p className="text-[11px] truncate">
-  {isCompleted ? (
-    <span className="text-emerald-600 font-medium">
-      ✓ Completed
-    </span>
-  ) : isSkipped || isUnansweredSkipped ? (
-    <span className="text-amber-600 font-medium">
-      Skipped
-    </span>
-  ) : isActive ? (
-    <span className="text-sky-600 font-medium">
-      In Progress
-    </span>
-  ) : (
-    ""
-  )}
-</p>
+                      {isCompleted ? (
+                        <span className="text-emerald-600 font-medium">
+                          ✓ Completed
+                        </span>
+                      ) : isSkipped || isUnansweredSkipped ? (
+                        <span className="text-amber-600 font-medium">
+                          Skipped
+                        </span>
+                      ) : isActive ? (
+                        <span className="text-sky-600 font-medium">
+                          In Progress
+                        </span>
+                      ) : (
+                        ""
+                      )}
+                    </p>
                   </div>
                 )}
 
@@ -1459,10 +1467,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {/* Content (Scrollable) */}
               <div className="flex-1 overflow-y-auto px-5 py-4">
-                <SectionList
-                  onPick={() => setIsDrawerOpen(false)}
-                  showLabels
-                />
+                <SectionList onPick={() => setIsDrawerOpen(false)} showLabels />
               </div>
             </motion.div>
           </>
@@ -1732,7 +1737,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             </div>
           </div>
         </div>
-
       </div>
 
       {saveError && (

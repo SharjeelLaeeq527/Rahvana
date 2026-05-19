@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 let scrollLockCount = 0;
 
@@ -95,6 +96,7 @@ export function LetterModal({
 }) {
   useScrollLock(isOpen);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { showToast } = useToast();
 
   const formatCNIC = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -157,7 +159,7 @@ export function LetterModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
@@ -378,6 +380,7 @@ export function PreviewModal({
   formData: FormData;
 }) {
   useScrollLock(isOpen);
+  const { showToast } = useToast();
 
   const downloadPDF = async () => {
     const apiUrl =
@@ -401,7 +404,7 @@ export function PreviewModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
@@ -613,7 +616,7 @@ export function AuthorityLetterModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
