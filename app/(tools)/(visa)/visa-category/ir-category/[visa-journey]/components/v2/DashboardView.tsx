@@ -21,6 +21,8 @@ import {
 import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
+import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
@@ -51,9 +53,26 @@ export function DashboardView({
   actions,
 }: DashboardViewProps) {
   const plan = usePlan();
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
-    null,
-  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+
+  // Pull uploaded docs from vault for DocCaseStrengthMeter
+  const { uploadedDocuments } = useDocumentVaultStore();
+
+  // Extract step_1_2 document_items from roadmap data
+  const step1_2DocItems = useMemo(() => {
+    const chapters = (data as any).chapters || (data as any).stages || [];
+    const chapter1 = chapters[0];
+    if (!chapter1) return null;
+    const step = (chapter1.steps || []).find((s: any) => s.step_key === "step_1_2");
+    return step?.document_items ?? null;
+  }, [data]);
+
+  const hasPriorMarriage = useMemo(() => {
+    const q3s1 =
+      state.answers?.["eligibility-suite"]?.["q3"]?.["q3s1"] ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any)?.["q3"]?.["q3s1"];
+    return !!q3s1 && q3s1 !== "none";
+  }, [state.answers, state.metadata]);
 
   const trackingStatus = useMemo(
     () => (state.metadata?.tracking_status as any) || {},
@@ -587,6 +606,20 @@ export function DashboardView({
               }}
             />
 
+            {/* Document Readiness — step_1_2, collapsed by default on dashboard */}
+            {step1_2DocItems && (
+              <DocCaseStrengthMeter
+                documentItems={step1_2DocItems}
+                uploadedDocuments={uploadedDocuments}
+                documentChecklist={state.documentChecklist}
+                docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
+                docUploads={state.docUploads}
+                notes={state.notes}
+                hasPriorMarriage={hasPriorMarriage}
+                defaultCollapsed={true}
+              />
+            )}
+
             <div
               className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${
                 showSidebar ? "xl:grid-cols-3" : "lg:grid-cols-3"
@@ -827,7 +860,6 @@ export function DashboardView({
                   <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
                     <div className="flex flex-col gap-1.5 py-1">
                       {milestones.map((m, i) => {
-                        // For milestones with both key and sid, consider either as completion
                         const isDone =
                           m.key && m.sid
                             ? (state.metadata && state.metadata[m.key]) ||

@@ -84,6 +84,7 @@ import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
 import { HouseholdMemberTool } from "./components/HouseholdMemberTool";
 import { EvidenceStrengthMeter } from "./components/EvidenceStrengthMeter";
+import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
 import {
   ConsistencyBaselineCapture,
   type ConsistencyBaseline,
@@ -3022,9 +3023,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
                 {/* )} */}
 
-                {/* Documents still pending — advisory, only for step_1_2 */}
+                {/* Case Strength Tool — step_1_2 (replaces simple pending list) */}
                 {currentStep.step_key === "step_1_2" && (
-                  <EvidenceStrengthMeter
+                  <DocCaseStrengthMeter
                     documentItems={(currentStep as any).document_items}
                     uploadedDocuments={uploadedDocuments}
                     documentChecklist={state.documentChecklist}
@@ -3035,6 +3036,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     }
                     docUploads={state.docUploads}
                     notes={state.notes}
+                    hasPriorMarriage={
+                      !!(
+                        state.answers?.["eligibility-suite"]?.["q3"]?.["q3s1"] &&
+                        state.answers["eligibility-suite"]["q3"]["q3s1"] !== "none"
+                      ) ||
+                      !!(state.metadata?.["questAnswers_eligibility-suite"] as any)?.["q3"]?.["q3s1"]
+                    }
+                    relevantTools={(currentStep as any).relevantTools}
+                    pakistanSpecificText={(currentStep as any).pakistanSpecific}
                   />
                 )}
 
