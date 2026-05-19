@@ -240,23 +240,9 @@ export default function PassportPhotoTool({
   }
 
   return (
-    <div
-      className={`fixed inset-0 mt-12 overflow-y-auto ${className}`}
-      style={{
-        backgroundImage: "url('/assets/images/Photobooth.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed" /* stays put while content scrolls */,
-        backgroundColor: "rgba(255,255,255,0.6)" /* fallback */,
-      }}
-    >
-      <div
-        className="fixed inset-0"
-        style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
-      />
+    <div className={`w-full ${className}`}>
       {/* Page content */}
-      <div className="relative z-10 flex flex-col items-center w-full px-4 py-10">
+      <div className="relative z-10 flex flex-col items-center w-full px-4 py-6">
         {/* Header */}
         {showHeader && (
           <header className="text-center mb-8 md:mb-10 w-full max-w-2xl">
@@ -316,7 +302,11 @@ export default function PassportPhotoTool({
         {/* Credit Status */}
         {tier !== "executive" && (
           <section className="w-full max-w-2xl mb-6">
-            <div className="rounded-xl border border-[#0d7377]/20 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm flex items-center justify-between gap-4">
+            <div
+              onClick={() => setShowUpgradeModal(true)}
+              className="rounded-xl border border-[#0d7377]/20 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 cursor-pointer hover:bg-white hover:border-[#0d7377]/40 hover:shadow-md transition-all active:scale-[0.99]"
+              title="Click to view upgrade options"
+            >
               <div>
                 <p className="text-sm font-semibold text-[#0d7377]">
                   Photo credits
@@ -482,10 +472,7 @@ export default function PassportPhotoTool({
 
         {/* Result */}
         {result && (
-          <section
-          ref={resultRef}
-          className="mt-12 w-full max-w-2xl"
-        >
+          <section ref={resultRef} className="mt-12 w-full max-w-2xl">
             <div
               className="rounded-2xl p-4 sm:p-6"
               style={{

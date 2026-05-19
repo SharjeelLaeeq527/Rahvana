@@ -373,15 +373,45 @@ export function QuestRenderer({
           })}
         </div>
 
-        {/* Risk advisories — only for eligibility-suite */}
+        {/* Risk advisories — eligibility-suite only
+            Fixed right-side panel at xl, inline below xl */}
         {suiteId === "eligibility-suite" && (
-          <EligibilityRiskBanner
-            answers={
-              Object.keys(suiteAnswers).length > 0
-                ? suiteAnswers
-                : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
-            }
-          />
+          <>
+            {/* Fixed right-side panel — stays static while user scrolls */}
+            <aside
+              className="hidden xl:flex flex-col"
+              style={{
+                position: "fixed",
+                top: 100,
+                right: 24,
+                width: 280,
+                maxHeight: "calc(100vh - 140px)",
+                zIndex: 40,
+              }}
+            >
+              <div className="overflow-y-auto scrollbar-hide flex-1">
+                <EligibilityRiskBanner
+                  answers={
+                    Object.keys(suiteAnswers).length > 0
+                      ? suiteAnswers
+                      : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+                  }
+                  compact={true}
+                />
+              </div>
+            </aside>
+
+            {/* Inline below content on smaller screens */}
+            <div className="xl:hidden">
+              <EligibilityRiskBanner
+                answers={
+                  Object.keys(suiteAnswers).length > 0
+                    ? suiteAnswers
+                    : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+                }
+              />
+            </div>
+          </>
         )}
 
         {/* Disclaimer */}

@@ -7,6 +7,8 @@ import type { RiskFlag } from "@/lib/case-strength";
 
 interface EligibilityRiskBannerProps {
   answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined;
+  /** If true, renders as a compact side-panel card (narrower, no disclaimer footer) */
+  compact?: boolean;
 }
 
 const SEV: Record<
@@ -121,7 +123,7 @@ function FlagRow({ flag, defaultOpen }: { flag: RiskFlag; defaultOpen: boolean }
   );
 }
 
-export function EligibilityRiskBanner({ answers }: EligibilityRiskBannerProps) {
+export function EligibilityRiskBanner({ answers, compact = false }: EligibilityRiskBannerProps) {
   const flags = detectRiskFlagsFromEligibilityQuest(answers);
   if (flags.length === 0) return null;
 
@@ -132,64 +134,57 @@ export function EligibilityRiskBanner({ answers }: EligibilityRiskBannerProps) {
   const warningCount  = sorted.filter((f) => f.severity === "warning").length;
   const advisoryCount = sorted.filter((f) => f.severity === "advisory").length;
 
-  const summaryParts: string[] = [];
-  if (criticalCount) summaryParts.push(`${criticalCount} critical`);
-  if (warningCount)  summaryParts.push(`${warningCount} warning`);
-  if (advisoryCount) summaryParts.push(`${advisoryCount} note`);
-
   return (
     <div
-      className="mt-6 rounded-[14px] border-[1.5px] overflow-hidden"
-      style={{ borderColor: "#e7e5e4" }}
+      className={compact ? "rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" : "mt-6 rounded-[14px] border-[1.5px] overflow-hidden"}
+      style={compact ? undefined : { borderColor: "#e7e5e4" }}
       role="region"
       aria-label="Eligibility risk advisories"
     >
-      {/* Compact header strip */}
+      {/* Header strip */}
       <div
-        className="flex items-center gap-3 px-4 py-3"
+        className={`flex items-center gap-2 ${compact ? "px-3 py-2.5" : "px-4 py-3 gap-3"}`}
         style={{ background: "#fafaf9", borderBottom: "1px solid #f0ece8" }}
       >
-        <ShieldAlert size={15} color="#991b1b" className="shrink-0" />
-        <span className="text-[13px] font-semibold text-[#1c1917] flex-1">
-          {flags.length} risk signal{flags.length === 1 ? "" : "s"} detected
+        <ShieldAlert size={compact ? 13 : 15} color="#991b1b" className="shrink-0" />
+        <span className={`font-semibold text-[#1c1917] flex-1 ${compact ? "text-[11.5px]" : "text-[13px]"}`}>
+          {flags.length} risk{flags.length === 1 ? "" : "s"}
+          {!compact && " detected"}
         </span>
-        {/* Dot summary */}
-        <div className="flex items-center gap-1.5">
-          {summaryParts.map((p) => {
-            const sev = p.includes("critical") ? "critical" : p.includes("warning") ? "warning" : "advisory";
-            return (
-              <span
-                key={p}
-                className="flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
-                style={{
-                  background: SEV[sev].chipBg,
-                  color: SEV[sev].chipFg,
-                }}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${SEV[sev].dot}`} />
-                {p}
-              </span>
-            );
-          })}
+        <div className="flex items-center gap-1">
+          {criticalCount > 0 && (
+            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: SEV.critical.chipBg, color: SEV.critical.chipFg }}>
+              {criticalCount}c
+            </span>
+          )}
+          {warningCount > 0 && (
+            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: SEV.warning.chipBg, color: SEV.warning.chipFg }}>
+              {warningCount}w
+            </span>
+          )}
+          {advisoryCount > 0 && (
+            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: SEV.advisory.chipBg, color: SEV.advisory.chipFg }}>
+              {advisoryCount}n
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Flag rows */}
-      <div className="flex flex-col gap-2 p-3" style={{ background: "#fefefe" }}>
+      {/* Flag rows — collapsed by default */}
+      <div className={`flex flex-col ${compact ? "gap-1.5 p-2" : "gap-2 p-3"}`} style={{ background: "#fefefe" }}>
         {sorted.map((flag) => (
           <FlagRow key={flag.id} flag={flag} defaultOpen={false} />
         ))}
       </div>
 
-      {/* Footer */}
-      <div
-        className="px-4 py-2.5 border-t"
-        style={{ borderColor: "#f0ece8", background: "#fafaf9" }}
-      >
-        <p className="text-[10.5px] text-[#a8a29e] leading-snug">
-          Advisory only — not legal advice. Consult a licensed immigration attorney for case-specific guidance.
-        </p>
-      </div>
+      {/* Footer disclaimer — full banner only */}
+      {!compact && (
+        <div className="px-4 py-2.5 border-t" style={{ borderColor: "#f0ece8", background: "#fafaf9" }}>
+          <p className="text-[10.5px] text-[#a8a29e] leading-snug">
+            Advisory only — not legal advice. Consult a licensed immigration attorney for case-specific guidance.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

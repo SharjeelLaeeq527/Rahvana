@@ -3023,29 +3023,59 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
                 {/* )} */}
 
-                {/* Case Strength Tool — step_1_2 (replaces simple pending list) */}
+                {/* Case Strength Tool — fixed right panel at xl; inline below xl */}
                 {currentStep.step_key === "step_1_2" && (
-                  <DocCaseStrengthMeter
-                    documentItems={(currentStep as any).document_items}
-                    uploadedDocuments={uploadedDocuments}
-                    documentChecklist={state.documentChecklist}
-                    docReviewStatus={
-                      state.metadata?.docReviewStatus as
-                        | Record<string, string>
-                        | undefined
-                    }
-                    docUploads={state.docUploads}
-                    notes={state.notes}
-                    hasPriorMarriage={
-                      !!(
-                        state.answers?.["eligibility-suite"]?.["q3"]?.["q3s1"] &&
-                        state.answers["eligibility-suite"]["q3"]["q3s1"] !== "none"
-                      ) ||
-                      !!(state.metadata?.["questAnswers_eligibility-suite"] as any)?.["q3"]?.["q3s1"]
-                    }
-                    relevantTools={(currentStep as any).relevantTools}
-                    pakistanSpecificText={(currentStep as any).pakistanSpecific}
-                  />
+                  <>
+                    {/* Fixed right-side panel — stays static while user scrolls */}
+                    <aside
+                      className="hidden xl:flex flex-col"
+                      style={{
+                        position: "fixed",
+                        top: 100,
+                        right: 24,
+                        width: 280,
+                        maxHeight: "calc(100vh - 140px)",
+                        zIndex: 40,
+                      }}
+                    >
+                      <div className="overflow-y-auto scrollbar-hide flex-1">
+                        <DocCaseStrengthMeter
+                          documentItems={(currentStep as any).document_items}
+                          uploadedDocuments={uploadedDocuments}
+                          documentChecklist={state.documentChecklist}
+                          docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
+                          docUploads={state.docUploads}
+                          notes={state.notes}
+                          eligibilityAnswers={
+                            (state.answers?.["eligibility-suite"] as any) ??
+                            (state.metadata?.["questAnswers_eligibility-suite"] as any)
+                          }
+                          contextLabel="Case Strength"
+                          stepName="Petition Readiness"
+                          defaultCollapsed={false}
+                        />
+                      </div>
+                    </aside>
+
+                    {/* Inline below content on smaller screens */}
+                    <div className="xl:hidden max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pb-4">
+                      <DocCaseStrengthMeter
+                        documentItems={(currentStep as any).document_items}
+                        uploadedDocuments={uploadedDocuments}
+                        documentChecklist={state.documentChecklist}
+                        docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
+                        docUploads={state.docUploads}
+                        notes={state.notes}
+                        eligibilityAnswers={
+                          (state.answers?.["eligibility-suite"] as any) ??
+                          (state.metadata?.["questAnswers_eligibility-suite"] as any)
+                        }
+                        contextLabel="Case Strength"
+                        stepName="Petition Readiness"
+                        defaultCollapsed={true}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* Document Cards — rendered by DocListSection below */}
