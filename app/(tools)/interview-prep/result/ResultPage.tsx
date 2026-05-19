@@ -346,25 +346,25 @@ export const ResultPage = ({
         <div className="">
           {/* removed  mx-auto from above div */}
           <div className="text-center mb-8">
-            <div className="flex-col space-y-2 md:space-y-0 md:flex justify-center gap-4 mb-4">
-              <Button
-                onClick={() => setMode("prep")}
-                variant={mode === "prep" ? "default" : "outline"}
-                className={
-                  mode === "prep" ? "bg-teal-600 hover:bg-teal-700" : ""
-                }
-              >
+          <div className="flex flex-col md:flex-row justify-center gap-4 mb-4">
+          <Button
+  onClick={() => setMode("prep")}
+  variant={mode === "prep" ? "default" : "outline"}
+  className={`w-full md:w-auto ${
+    mode === "prep" ? "bg-teal-600 hover:bg-teal-700" : ""
+  }`}
+>
                 <BookOpen className="h-4 w-4 mr-2" />
                 Prep Mode
               </Button>
-              <div className="relative">
-                <Button
-                  onClick={handleRapidFireModeClick}
-                  variant={mode === "rapid" ? "default" : "outline"}
-                  className={
-                    mode === "rapid" ? "bg-[#0d7377] hover:bg-[#0a5a5d]" : ""
-                  }
-                >
+              <div className="relative w-full md:w-auto">
+              <Button
+  onClick={handleRapidFireModeClick}
+  variant={mode === "rapid" ? "default" : "outline"}
+  className={`w-full md:w-auto ${
+    mode === "rapid" ? "bg-[#0d7377] hover:bg-[#0a5a5d]" : ""
+  }`}
+>
                   <Zap className="h-4 w-4 mr-2" />
                   Rapid Fire Mode
                 </Button>
@@ -381,13 +381,13 @@ export const ResultPage = ({
                   </div>
                 )}
               </div>
-              <div className="relative">
+              <div className="relative w-full md:w-auto">
                 <Button
                   onClick={handleMockInterviewPageStart}
                   variant={mode === "mock" ? "default" : "outline"}
-                  className={
+                  className={`w-full md:w-auto ${
                     mode === "mock" ? "bg-slate-900 hover:bg-slate-800" : ""
-                  }
+                  }`}
                   title={
                     !canAccessMockInterview()
                       ? "Upgrade to Executive to unlock Mock Interview Mode"
