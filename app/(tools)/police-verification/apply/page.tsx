@@ -22,11 +22,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader } from "@/components/ui/spinner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 function PoliceApplyContent() {
   // const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { showToast } = useToast();
   // const province = searchParams.get("province") || "";
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -171,7 +173,7 @@ function PoliceApplyContent() {
       // Photograph and Passport Copy: JPG, PNG
       if (name === "photograph" || name === "passportCopy") {
         if (!["jpg", "jpeg", "png"].includes(ext || "")) {
-          alert("Only JPG and PNG formats are allowed for this field.");
+          showToast("Only JPG and PNG formats are allowed for this field.", "error");
           return;
         }
       }
@@ -179,14 +181,14 @@ function PoliceApplyContent() {
       // Utility Bill and Police Letter: PDF
       if (name === "utilityBill" || name === "policeLetter") {
         if (ext !== "pdf") {
-          alert("Only PDF format is allowed for this field.");
+          showToast("Only PDF format is allowed for this field.", "error");
           return;
         }
       }
 
       // File Size Check (Max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert("File size exceeds 5MB limit.");
+        showToast("File size exceeds 5MB limit.", "error");
         return;
       }
 
@@ -222,7 +224,7 @@ function PoliceApplyContent() {
       if (!formData.passportIssue) isValid = false;
       if (!formData.passportExpiry) isValid = false;
 
-      if (!isValid) alert("Please fill all required fields in Step 1");
+      if (!isValid) showToast("Please fill all required fields in Step 1", "error");
     }
 
     if (step === 2) {
@@ -244,8 +246,7 @@ function PoliceApplyContent() {
       )
         isValid = false;
 
-      if (!isValid)
-        alert("Please fill all details for both witnesses in Step 2");
+      if (!isValid) showToast("Please fill all details for both witnesses in Step 2", "error");
     }
 
     if (step === 3) {
@@ -263,9 +264,10 @@ function PoliceApplyContent() {
       }
 
       if (!isValid)
-        alert(
+        showToast(
           "Please upload all required documents" +
             (formData.arrested === "Yes" ? " including arrest details." : "."),
+          "error",
         );
     }
 
@@ -322,15 +324,14 @@ function PoliceApplyContent() {
 
         await Promise.all(fileUploadPromises);
 
-        alert(
-          `Application Submitted Successfully! Your Request ID is: ${requestId}`,
-        );
+        showToast(`Application Submitted Successfully! Your Request ID is: ${requestId}`, "success");
         router.push("/user-dashboard");
       } catch (error) {
         console.error(error);
-        alert(
+        showToast(
           "Failed to submit application: " +
             (error instanceof Error ? error.message : "Unknown error"),
+          "error",
         );
       } finally {
         setIsSubmitting(false);

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { motion } from "framer-motion";
 import { X, Eye, Download } from "lucide-react";
 
@@ -41,6 +42,7 @@ export function AuthorityLetterModal({
   province,
 }: AuthorityLetterModalProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { showToast } = useToast();
 
   const formatCNIC = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -106,7 +108,7 @@ export function AuthorityLetterModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 

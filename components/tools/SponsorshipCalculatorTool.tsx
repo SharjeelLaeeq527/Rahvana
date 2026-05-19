@@ -349,7 +349,7 @@ export default function SponsorshipCalculatorTool({
                       onClick={() => setData({ ...data, sponsorStatus: "citizen" })}
                       className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "citizen" ? "" : "border-slate-200 hover:bg-slate-50"}`}
                       style={{ 
-                        borderColor: data.sponsorStatus === "citizen" ? COLORS.joint : undefined,
+                        borderColor: data.sponsorStatus === "citizen" ? "#0d7377" : undefined,
                         backgroundColor: data.sponsorStatus === "citizen" ? `${COLORS.joint}10` : undefined,
                       }}
                     >
@@ -360,7 +360,7 @@ export default function SponsorshipCalculatorTool({
                       onClick={() => setData({ ...data, sponsorStatus: "greenCard" })}
                       className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "" : "border-slate-200 hover:bg-slate-50"}`}
                       style={{ 
-                        borderColor: data.sponsorStatus === "greenCard" ? COLORS.joint : undefined,
+                        borderColor: data.sponsorStatus === "greenCard" ? "#0d7377" : undefined,
                         backgroundColor: data.sponsorStatus === "greenCard" ? `${COLORS.joint}10` : undefined,
                       }}
                     >
@@ -375,7 +375,7 @@ export default function SponsorshipCalculatorTool({
                         onClick={() => setData({ ...data, isMilitary: true })}
                         className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === true ? "" : "border-slate-200"}`}
                         style={{ 
-                          borderColor: data.isMilitary === true ? COLORS.joint : undefined,
+                          borderColor: data.isMilitary === true ? "#0d7377" : undefined,
                           backgroundColor: data.isMilitary === true ? `${COLORS.joint}10` : undefined,
                         }}
                       >
@@ -385,7 +385,7 @@ export default function SponsorshipCalculatorTool({
                         onClick={() => setData({ ...data, isMilitary: false })}
                         className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === false ? "" : "border-slate-200"}`}
                         style={{ 
-                          borderColor: data.isMilitary === false ? COLORS.joint : undefined,
+                          borderColor: data.isMilitary === false ? "#0d7377" : undefined,
                           backgroundColor: data.isMilitary === false ? `${COLORS.joint}10` : undefined,
                         }}
                       >
@@ -400,7 +400,7 @@ export default function SponsorshipCalculatorTool({
                     <button 
                       disabled={!data.sponsorStatus || data.isMilitary === null}
                       onClick={() => setStepIdx(2)} 
-                      style={{ backgroundColor: (!data.sponsorStatus || data.isMilitary === null) ? "#e2e8f0" : stepColor }}
+                      style={{ backgroundColor: (!data.sponsorStatus || data.isMilitary === null) ? "#e2e8f0" : "#0d7377" }}
                       className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${(!data.sponsorStatus || data.isMilitary === null) ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
                     >
                       Continue <ArrowRight size={14} />
@@ -494,7 +494,7 @@ export default function SponsorshipCalculatorTool({
                       <div className="flex items-center gap-4">
                         <button onClick={() => setData({...data, numberOfChildren: Math.max(0, data.numberOfChildren - 1)})} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
                         <span className="text-2xl font-bold w-12 text-center">{data.numberOfChildren}</span>
-                        <button onClick={() => setData({...data, numberOfChildren: data.numberOfChildren + 1})} style={{ backgroundColor: COLORS.danger }} className="w-10 h-10 rounded-lg text-white flex items-center justify-center">+</button>
+                        <button onClick={() => setData({...data, numberOfChildren: data.numberOfChildren + 1})} style={{ backgroundColor: "#B85467" }} className="w-10 h-10 rounded-lg text-white flex items-center justify-center">+</button>
                       </div>
                     </div>
                     <div className="p-4 rounded-xl border" style={{ backgroundColor: `${COLORS.danger}05`, borderColor: `${COLORS.danger}30` }}>
@@ -502,7 +502,7 @@ export default function SponsorshipCalculatorTool({
                       <div className="flex items-center gap-4">
                         <button onClick={() => setData({...data, taxDependents: Math.max(0, data.taxDependents - 1)})} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
                         <span className="text-2xl font-bold w-12 text-center">{data.taxDependents}</span>
-                        <button onClick={() => setData({...data, taxDependents: data.taxDependents + 1})} style={{ backgroundColor: COLORS.danger }} className="w-10 h-10 rounded-lg text-white flex items-center justify-center">+</button>
+                        <button onClick={() => setData({...data, taxDependents: data.taxDependents + 1})} style={{ backgroundColor: "#B85467" }} className="w-10 h-10 rounded-lg text-white flex items-center justify-center">+</button>
                       </div>
                     </div>
                   </div>
@@ -510,7 +510,7 @@ export default function SponsorshipCalculatorTool({
                     <button onClick={() => setStepIdx(2)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
                       <ArrowLeft size={14} /> Back
                     </button>
-                    <button onClick={() => setStepIdx(4)} style={{ backgroundColor: stepColor }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                    <button onClick={() => setStepIdx(4)} style={{ backgroundColor: "#B85467" }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
                       Continue <ArrowRight size={14} />
                     </button>
                   </div>
@@ -531,7 +531,7 @@ export default function SponsorshipCalculatorTool({
                       onClick={() => setData({ ...data, hasPreviousSponsorship: true })}
                       className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === true ? "" : "border-slate-200"}`}
                       style={{ 
-                        borderColor: data.hasPreviousSponsorship === true ? COLORS.joint : undefined,
+                        borderColor: data.hasPreviousSponsorship === true ? "#0d7377" : undefined,
                         backgroundColor: data.hasPreviousSponsorship === true ? `${COLORS.joint}10` : undefined,
                       }}
                     >
@@ -541,7 +541,7 @@ export default function SponsorshipCalculatorTool({
                       onClick={() => setData({ ...data, hasPreviousSponsorship: false, previousSponsoredCount: 0 })}
                       className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === false ? "" : "border-slate-200"}`}
                       style={{ 
-                        borderColor: data.hasPreviousSponsorship === false ? COLORS.joint : undefined,
+                        borderColor: data.hasPreviousSponsorship === false ? "#0d7377" : undefined,
                         backgroundColor: data.hasPreviousSponsorship === false ? `${COLORS.joint}10` : undefined,
                       }}
                     >
@@ -554,7 +554,7 @@ export default function SponsorshipCalculatorTool({
                       <div className="flex items-center gap-4 justify-center">
                         <button onClick={() => setData({...data, previousSponsoredCount: Math.max(0, data.previousSponsoredCount - 1)})} className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center">-</button>
                         <span className="text-2xl font-bold w-12 text-center">{data.previousSponsoredCount}</span>
-                        <button onClick={() => setData({...data, previousSponsoredCount: data.previousSponsoredCount + 1})} style={{ backgroundColor: COLORS.joint }} className="w-10 h-10 text-white rounded-lg flex items-center justify-center">+</button>
+                        <button onClick={() => setData({...data, previousSponsoredCount: data.previousSponsoredCount + 1})} style={{ backgroundColor: "#0d7377" }} className="w-10 h-10 text-white rounded-lg flex items-center justify-center">+</button>
                       </div>
                     </div>
                   )}
@@ -565,7 +565,7 @@ export default function SponsorshipCalculatorTool({
                     <button 
                       disabled={data.hasPreviousSponsorship === null}
                       onClick={() => setStepIdx(5)} 
-                      style={{ backgroundColor: data.hasPreviousSponsorship === null ? "#e2e8f0" : stepColor }}
+                      style={{ backgroundColor: data.hasPreviousSponsorship === null ? "#e2e8f0" : "#0d7377" }}
                       className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${data.hasPreviousSponsorship === null ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
                     >
                       Continue <ArrowRight size={14} />
@@ -865,7 +865,7 @@ export default function SponsorshipCalculatorTool({
                     <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
                       <ArrowLeft size={14} /> Back
                     </button>
-                    <button onClick={() => setStepIdx(9)} style={{ backgroundColor: stepColor }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                    <button onClick={() => setStepIdx(9)} style={{ backgroundColor: "stepColor" }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
                       Continue <ArrowRight size={14} />
                     </button>
                   </div>

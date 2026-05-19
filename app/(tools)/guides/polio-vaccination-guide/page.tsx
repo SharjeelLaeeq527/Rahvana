@@ -367,7 +367,7 @@ const PolioVaccinationGuide = () => {
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto flex-col xl:flex-row">
+      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -380,7 +380,7 @@ const PolioVaccinationGuide = () => {
           session={session}
         />
 
-        <main className="flex-1 xl:flex-initial xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
+        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -390,7 +390,7 @@ const PolioVaccinationGuide = () => {
             }}
           />
 
-          <div className="w-full flex flex-col xl:items-start items-center min-h-[550px] xl:min-h-[550px] justify-center">
+          <div className="w-full flex flex-col xl:items-start items-center min-h-137.5 xl:min-h-137.5 justify-center">
             <div className="relative z-10 w-full max-w-full md:max-w-3xl">
               <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
                 <AnimatePresence mode="wait">

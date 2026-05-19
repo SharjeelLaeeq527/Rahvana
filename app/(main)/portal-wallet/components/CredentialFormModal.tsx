@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { X, Eye, EyeOff } from "lucide-react";
 import securityQuestionsData from "../../../../data/portal-wallet-security-questions-questionnaire.json";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -59,6 +60,8 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
   icon,
 }) => {
   const questionLimit = portalQuestionLimit[portalType];
+
+  const { showToast } = useToast();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -140,12 +143,12 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       const invoicePrefix = nvcInvoiceId.slice(0, 5);
 
       if (!/^[A-Z]{3}/.test(casePrefix)) {
-        alert("NVC Case Number must start with 3 capital letters.");
+        showToast("NVC Case Number must start with 3 capital letters.", "error");
         return;
       }
 
       if (invoicePrefix !== "IVSCA") {
-        alert("Invoice ID must start with IVSCA.");
+        showToast("Invoice ID must start with IVSCA.", "error");
         return;
       }
 
