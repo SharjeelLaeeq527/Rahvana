@@ -15,6 +15,11 @@ export function PlanTierDevToggle() {
   const { tier, realTier, devOverride, setDevOverride } = usePlan();
   const [expanded, setExpanded] = useState(false);
 
+  const showToggle =
+  process.env.NEXT_PUBLIC_SHOW_TIER_TOGGLE === "true";
+
+  if (!showToggle) return null;
+
   const colors = TIER_COLORS[tier];
   const isOverriding = devOverride !== null;
 
