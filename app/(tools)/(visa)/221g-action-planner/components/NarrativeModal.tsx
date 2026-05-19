@@ -1122,7 +1122,7 @@ export function NarrativeModal({
           exit={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
           transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
           className={[
-            "fixed inset-0 z-50 flex items-start justify-center overflow-y-auto welcome-thick-scrollbar p-2.5 pt-3 sm:items-start sm:p-4 md:items-center md:p-8",
+            "fixed inset-0 z-[150] flex items-start justify-center overflow-y-auto welcome-thick-scrollbar p-2.5 pt-3 sm:items-start sm:p-4 md:items-center md:p-8",
             isCompactView ? "p-1.5 pt-2" : "",
           ].join(" ")}
           style={{
