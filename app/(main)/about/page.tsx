@@ -497,7 +497,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-
       {/* TEAM */}
       <section className="bg-[#f8f8f8] py-24 px-8 md:px-20 text-center">
         <div className="flex justify-center mb-5">
@@ -562,7 +561,7 @@ export default function AboutPage() {
                 }}
                 className="hidden md:flex bg-white rounded-3xl p-9 shadow-sm border border-black/5 flex-col min-h-[360px] overflow-hidden"
               >
-                <div className="relative w-20 h-20 mx-auto mb-7 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ring-4 ring-[#0d7a75]/10 shadow-lg">
+                <div className="relative w-30 h-30 mx-auto mb-7 overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ring-4 ring-[#0d7a75]/10 shadow-lg">
                   <Image
                     src={member.image}
                     alt={member.name}

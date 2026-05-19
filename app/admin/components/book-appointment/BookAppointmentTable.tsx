@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader } from "@/components/ui/spinner";
@@ -84,6 +85,7 @@ interface Appointment {
 }
 
 export default function BookAppointmentTable() {
+  const { showToast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<
     Appointment[]
@@ -175,7 +177,7 @@ export default function BookAppointmentTable() {
     } catch (err: unknown) {
       console.error("Error updating appointment status:", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      alert(`Failed to update appointment status: ${errorMessage}`);
+      showToast(`Failed to update appointment status: ${errorMessage}`, "error");
     }
   };
 

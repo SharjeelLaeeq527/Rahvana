@@ -148,6 +148,8 @@ def check_status(input: dict):
         # Optional: chart = input.get("chart", "final")  # "final" or "filing"
         chart = "final"  # Currently fixed - change to "filing" if USCIS requires it
 
+        immediate_relative_categories = {"IR-1", "CR-1", "IR-2", "CR-2", "IR-5"}
+
         cutoff_info = get_cutoff(category, country, chart=chart)
         cutoff_raw = cutoff_info["raw"]
 
@@ -158,8 +160,16 @@ def check_status(input: dict):
             bulletin_month, "%Y-%m"
         ).strftime("%B %Y")
 
+        # Immediate relatives are always current and should not fall through
+        # to the bulletin lookup's unavailable branch.
+        if category in immediate_relative_categories:
+            status = "current"
+            cutoff_display = "Current"
+            days_behind = 0
+            wait_estimate = None
+
         # CURRENT
-        if cutoff_raw == "C":
+        elif cutoff_raw == "C":
             status = "current"
             cutoff_display = "Current"
             days_behind = 0
@@ -206,6 +216,11 @@ def check_status(input: dict):
             "status": status,
             "category": category,
             "categoryFull": {
+                "IR-1": "IR-1 (Spouse of U.S. Citizen)",
+                "CR-1": "CR-1 (Spouse of U.S. Citizen - Conditional)",
+                "IR-2": "IR-2 (Child of U.S. Citizen)",
+                "CR-2": "CR-2 (Child of U.S. Citizen - Conditional)",
+                "IR-5": "IR-5 (Parent of U.S. Citizen)",
                 "EB-1": "EB-1 (Priority Workers)",
                 "EB-2": "EB-2 (Advanced Degree)",
                 "EB-3": "EB-3 (Skilled Workers)",

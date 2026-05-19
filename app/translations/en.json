@@ -595,7 +595,7 @@
   "documentVaultPage": {
     "page": {
       "title": "Document Vault",
-      "subtitle": "Compliance-Ready Repository",
+      "subtitle": "Organize and manage your documents",
       "case": "Case",
       "guide": "Guide",
       "actions": "Actions",
@@ -616,7 +616,7 @@
       "allMasterChecklist": "All Documents",
       "more": "More",
       "searchPlaceholder": "Search documents...",
-      "comprehensiveMasterChecklist": "Comprehensive Document Repository",
+      "comprehensiveMasterChecklist": "Your Documents",
       "searchPrefix": "Search: ",
       "foundPrefix": "Found",
       "matchingDocuments": "matching documents",
@@ -881,7 +881,8 @@
         "warning": "⚠️ Warning: Set Case Information in left panel for proper USCIS naming!",
         "cancel": "Cancel",
         "uploadBtnLoading": "Uploading...",
-        "uploadBtn": "Upload Document"
+        "uploadBtn": "Upload Document",
+        "securityNotice": "Your documents are encrypted and securely stored."
       },
       "wizard": {
         "noGuide": "No step-by-step guide available for this document yet.",
@@ -1141,8 +1142,8 @@
             "title": "Locate Original Nikah Nama",
             "description": "Find your original Nikah Nama document issued at the time of marriage.",
             "tips": [
-              "Must be signed by Nikah Registrar",
-              "Should have serial number and registration details"
+              "Must be signed and stamped by the Nikah Registrar",
+              "Should include registration details such as the registrar's information, registration record information, and any official registration/serial reference numbers if issued"
             ]
           },
           "step2": {
@@ -1197,7 +1198,7 @@
         "wizardSteps": {
           "step1": {
             "title": "Obtain Divorce Certificate",
-            "description": "Get certified copy of divorce decree from Family Court or Union Council.",
+            "description": "Get a certified copy of the divorce or khula decree from Family Court, or a divorce certificate issued by the Union Council.",
             "tips": [
               "Court-issued decrees must be certified copies",
               "Union Council certificates should have registration number"
@@ -1336,14 +1337,14 @@
         "wizardSteps": {
           "step1": {
             "title": "Schedule Medical Exam",
-            "description": "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
+            "description": "Schedule a medical exam with a U.S. Embassy-approved panel physician in Pakistan.",
             "tips": [
               "Schedule only after receiving interview date",
-              "Bring passport, photos, and vaccination records",
-              "Exam includes physical, blood tests, and X-ray"
+              "Bring your passport, interview letter, photos, vaccination records, and any relevant medical records",
+              "Exam may include medical history review, physical examination, blood tests, TB screening, and chest X-ray depending on age and requirements"
             ],
-            "estimatedTime": "3-4 hours for exam",
-            "cost": "Approximately PKR 20,000-30,000"
+            "estimatedTime": "Several hours; may take longer if additional tests are needed",
+            "cost": "Varies by clinic and required vaccinations/tests; confirm current fees with the approved panel physician"
           },
           "step2": {
             "title": "Collect Medical Report",
@@ -1429,7 +1430,7 @@
             "title": "Obtain Matric Certificate",
             "description": "Get your original Matriculation certificate from respective board.",
             "tips": [
-              "Must be original or certified copy",
+              "Must be original",
               "Get English translation if in Urdu"
             ]
           }
@@ -4304,12 +4305,12 @@
       "validation": {
         "title": "Certificate Validation",
         "description": "Ensure your certificate meets international standards and immigration requirements.",
-        "uploadSection": {
+        "upload_section": {
           "title": "Review your Document",
           "description": "Upload a scan of your CBRC for automated field verification.",
           "formats": "PDF, JPG, PNG"
         },
-        "checklistTitle": "Field Verification",
+        "checklist_title": "Field Verification",
         "categories": [
           {
             "name": "Mandatory Fields",

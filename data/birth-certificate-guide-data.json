@@ -292,7 +292,7 @@
             "description": "Ensure your certificate meets international standards and immigration requirements.",
             "upload_section": {
                 "title": "Review your Document",
-                "description": "Upload a scan of your CBRC for automated field verification.",
+                "description": "Upload a scan of your CBRC.",
                 "formats": "PDF, JPG, PNG"
             },
             "checklist_title": "Field Verification",

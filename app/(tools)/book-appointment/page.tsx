@@ -483,29 +483,8 @@ const BasicInfoStep = ({
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="B-2">
-                      {t("bookAppointment.basicInfoStep.visaTypes.b2")}
-                    </SelectItem>
-                    <SelectItem value="B-1/B-2">
-                      {t("bookAppointment.basicInfoStep.visaTypes.b1b2")}
-                    </SelectItem>
-                    <SelectItem value="F-1">
-                      {t("bookAppointment.basicInfoStep.visaTypes.f1")}
-                    </SelectItem>
-                    <SelectItem value="H-1B">
-                      {t("bookAppointment.basicInfoStep.visaTypes.h1b")}
-                    </SelectItem>
-                    <SelectItem value="K-1">
-                      {t("bookAppointment.basicInfoStep.visaTypes.k1")}
-                    </SelectItem>
                     <SelectItem value="IR-1">
                       {t("bookAppointment.basicInfoStep.visaTypes.ir1")}
-                    </SelectItem>
-                    <SelectItem value="CR-1">
-                      {t("bookAppointment.basicInfoStep.visaTypes.cr1")}
-                    </SelectItem>
-                    <SelectItem value="Other">
-                      {t("bookAppointment.basicInfoStep.visaTypes.other")}
                     </SelectItem>
                   </SelectContent>
                 </Select>

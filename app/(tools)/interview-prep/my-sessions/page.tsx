@@ -17,6 +17,7 @@ import ActionMenu from "@/app/components/shared/ActionMenu";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { DataTable, Column } from "@/app/components/shared/table";
 import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -126,6 +127,7 @@ export default function MyInterviewSessions() {
   );
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
+  const { showToast } = useToast();
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -237,7 +239,7 @@ export default function MyInterviewSessions() {
       setSelectedSessionId(null);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "Failed to delete session");
+      showToast(err instanceof Error ? err.message : "Failed to delete session", "error");
     } finally {
       setLoadingDelete(false);
     }

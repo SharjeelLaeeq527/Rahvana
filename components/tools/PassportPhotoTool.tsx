@@ -78,6 +78,16 @@ export default function PassportPhotoTool({
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [creditStatusLoading, setCreditStatusLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (result && resultRef.current) {
+      resultRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [result]);
 
   const { checkAccess, consumeAccess } = useFeatureAccess();
 
@@ -472,7 +482,10 @@ export default function PassportPhotoTool({
 
         {/* Result */}
         {result && (
-          <section className="mt-12 w-full max-w-2xl">
+          <section
+          ref={resultRef}
+          className="mt-12 w-full max-w-2xl"
+        >
             <div
               className="rounded-2xl p-4 sm:p-6"
               style={{
@@ -502,7 +515,7 @@ export default function PassportPhotoTool({
               <a
                 href={result}
                 download="passport-photo.jpg"
-                className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:opacity-90"
+                className="mt-6 mx-auto flex w-fit items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:opacity-90"
                 style={{
                   backgroundColor: "#4a8c6e",
                   color: "#ffffff",

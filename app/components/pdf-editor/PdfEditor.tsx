@@ -13,6 +13,7 @@ import { Download, LayoutGrid, Type, Stamp, Check } from "lucide-react";
 import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
 import SignatureTool from "./signature/SignatureTool";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { OrganizePagesModal } from "./pages/OrganizePagesModal";
 import { EditTextModal } from "./text/EditTextModal";
 import { createEditedPDF, downloadPDF } from "@/lib/pdf-utils";
@@ -33,6 +34,7 @@ const PDFThumbnails = dynamic(
 
 export function PDFEditor() {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [activeTool, setActiveTool] = useState<
     "text" | "signature" | "shapes" | null
   >(null);
@@ -166,7 +168,10 @@ export function PDFEditor() {
   };
 
   const handleDownload = async () => {
-    if (!pdfFile) return alert(t("pdfProcessing.editor.noPdf"));
+    if (!pdfFile) {
+      showToast(t("pdfProcessing.editor.noPdf"), "error");
+      return;
+    }
     setIsDownloading(true);
     try {
       const editedPdf = await createEditedPDF(
@@ -176,9 +181,9 @@ export function PDFEditor() {
         signatureAnnotations,
       );
       await downloadPDF(editedPdf, "edited-document.pdf");
-      alert(t("pdfProcessing.editor.downloadSuccess"));
+      showToast(t("pdfProcessing.editor.downloadSuccess"), "success");
     } catch (error) {
-      alert(t("pdfProcessing.editor.downloadFail"));
+      showToast(t("pdfProcessing.editor.downloadFail"), "error");
       console.error(error);
     }
     setIsDownloading(false);
@@ -205,7 +210,11 @@ export function PDFEditor() {
           {/* CENTER TOOLBAR */}
           <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 mx-auto overflow-x-auto max-w-[calc(100vw-140px)] md:max-w-none scrollbar-hide">
             <button
-              onClick={() => setShowOrganizeModal(true)}
+              onClick={() => {
+                setShowOrganizeModal(true);
+                setActiveTool(null);
+                setShowShapesDropdown(false);
+              }}
               className="p-2 hover:bg-gray-100 rounded transition-colors hidden md:block"
               title={t("pdfProcessing.editor.organize")}
             >
@@ -233,7 +242,13 @@ export function PDFEditor() {
             <div className="relative">
               {/* Signature Icon — NOT MODIFIED */}
               <button
-                onClick={() => setShowShapesDropdown(!showShapesDropdown)}
+                onClick={() => {
+                  const nextShow = !showShapesDropdown;
+                  setShowShapesDropdown(nextShow);
+                  if (nextShow && activeTool === "text") {
+                    setActiveTool(null);
+                  }
+                }}
                 className={`p-2 rounded transition-colors ${
                   activeTool === "shapes" ? "bg-blue-100" : "hover:bg-gray-100"
                 }`}
@@ -288,6 +303,10 @@ export function PDFEditor() {
             {/* SIGNATURE TOOL */}
             <div className="relative">
               <SignatureTool
+                onOpen={() => {
+                  setActiveTool(null);
+                  setShowShapesDropdown(false);
+                }}
                 onSignature={(sig) => {
                   handleSignature(sig);
                 }}
@@ -300,7 +319,7 @@ export function PDFEditor() {
             <Button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="bg-green-600 hover:bg-green-700 text-white text-xs md:text-sm px-3 md:px-4"
+              className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm px-3 md:px-4"
             >
               <Download className="h-4 w-4 mr-1 md:mr-2" />
               {isDownloading ? (

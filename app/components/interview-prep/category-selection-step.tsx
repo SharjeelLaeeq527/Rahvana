@@ -117,7 +117,7 @@ export function CategorySelectionStep({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="max-w-[650px] mx-auto gap-6">
         {categories.map((category) => {
           const themeColor = getThemeColor(category.ui.themeColor);
           const isSelected = selectedCategory?.categorySlug === category.categorySlug;
@@ -126,7 +126,7 @@ export function CategorySelectionStep({
             <button
               key={category.categorySlug}
               type="button"
-              className={`p-8 border-2 rounded-xl text-center transition-all cursor-pointer ${
+              className={`w-full p-8 border-2 rounded-xl text-center transition-all cursor-pointer ${
                 isSelected
                   ? `${themeColor.border} bg-teal-50/20 ring-2 ${themeColor.ring}`
                   : `border-border ${themeColor.hover}`
