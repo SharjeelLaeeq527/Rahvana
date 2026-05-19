@@ -292,7 +292,7 @@ const FrcGuide = () => {
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto flex-col xl:flex-row">
+      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -305,7 +305,7 @@ const FrcGuide = () => {
           session={session}
         />
 
-        <main className="flex-1 xl:flex-initial xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
+        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -315,7 +315,7 @@ const FrcGuide = () => {
             }}
           />
 
-          <div className="w-full flex flex-col xl:items-start items-center min-h-[550px] xl:min-h-[550px] justify-center">
+          <div className="w-full flex flex-col xl:items-start items-center min-h-137.5 xl:min-h-137.5 justify-center">
             <div className="relative z-10 w-full max-w-full md:max-w-3xl">
               <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
                 <AnimatePresence mode="wait">
@@ -331,7 +331,8 @@ const FrcGuide = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 pb-6 w-full">
+                {/* Back Button */}
                 {currentStep > 0 ? (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -339,44 +340,50 @@ const FrcGuide = () => {
                     onClick={goBack}
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
                   </motion.button>
                 ) : (
-                  <div />
+                  <div className="hidden sm:block w-20" />
                 )}
 
+                {/* Step Indicator */}
                 <span className="text-sm text-gray-500 font-medium">
                   Step {currentStep + 1} of {STEP_IDS.length}
                 </span>
 
-                {currentStep < STEP_IDS.length - 1 && (
+                {/* Continue Button */}
+                {currentStep < STEP_IDS.length - 1 ? (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={goNext}
                     disabled={!canGoNext()}
-                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
-                    ${
-                      canGoNext()
-                        ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }
-                  `}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer transition
+        ${
+          canGoNext()
+            ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+        }`}
                   >
                     Continue <ArrowRight className="w-4 h-4" />
                   </motion.button>
+                ) : (
+                  <div className="hidden sm:block w-20" />
                 )}
               </div>
             </div>
           </div>
         </main>
 
-        <WizardInfoPanel
-          data={infoPanelData}
-          lastVerified={guideData.wizard.last_verified}
-          guideData={guideData as Record<string, unknown>}
-          guideType="frc"
-        />
+        <div className="xl:sticky xl:top-4 xl:self-start">
+          <WizardInfoPanel
+            data={infoPanelData}
+            lastVerified={guideData.wizard.last_verified}
+            guideData={guideData as Record<string, unknown>}
+            guideType="frc"
+          />
+        </div>
       </div>
 
       <NarrativeModal

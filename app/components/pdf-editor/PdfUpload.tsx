@@ -8,13 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Upload, AlertCircle, FileCheck } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 
-let pdfjsLib: typeof import("pdfjs-dist") | null = null;
+let pdfjsLib: typeof import("pdfjs-dist/build/pdf") | null = null;
 
 async function initPdfJs() {
   if (pdfjsLib) return pdfjsLib;
-  const pdfjs = await import("pdfjs-dist");
+
+  const pdfjs = await import("pdfjs-dist/build/pdf");
+
   pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
   pdfjsLib = pdfjs;
+
   return pdfjs;
 }
 

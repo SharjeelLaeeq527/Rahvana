@@ -7,12 +7,12 @@ import { MasterProfile } from "@/types/profile";
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { Loader } from "@/components/ui/spinner";
+import { CustomDropdown, DropdownOption } from "@/app/components/shared/CustomDropdown";
 
 export default function Form() {
   const { t } = useLanguage();
   const [form, setForm] = useState({
-    category: "EB-2",
+    category: "IR-1",
     priorityDate: "",
     country: "India",
     applicationType: "Consular Processing",
@@ -26,6 +26,23 @@ export default function Form() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
+
+  const visaCategoryOptions: DropdownOption[] = [
+    { value: "IR-1", label: "IR-1 (Spouse)" },
+  ];
+
+  const countryOptions: DropdownOption[] = [
+    { value: "All Other Countries", label: t("visaChecker.form.countries.all") },
+    { value: "China", label: t("visaChecker.form.countries.china") },
+    { value: "India", label: t("visaChecker.form.countries.india") },
+    { value: "Mexico", label: t("visaChecker.form.countries.mexico") },
+    { value: "Philippines", label: t("visaChecker.form.countries.philippines") },
+  ];
+
+  const applicationTypeOptions: DropdownOption[] = [
+    { value: "Consular Processing", label: t("visaChecker.form.appTypes.consular") },
+    { value: "Adjustment of Status", label: t("visaChecker.form.appTypes.aos") },
+  ];
 
   // Auto-fill profile data
   useEffect(() => {
@@ -121,21 +138,12 @@ export default function Form() {
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
             {t("visaChecker.form.categoryLabel")}
           </label>
-          <select
-            suppressHydrationWarning
-            className="w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          <CustomDropdown
             value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-          >
-            <option value="EB-1">{t("visaChecker.form.categories.eb1")}</option>
-            <option value="EB-2">{t("visaChecker.form.categories.eb2")}</option>
-            <option value="EB-3">{t("visaChecker.form.categories.eb3")}</option>
-            <option value="F1">{t("visaChecker.form.categories.f1")}</option>
-            <option value="F2A">{t("visaChecker.form.categories.f2a")}</option>
-            <option value="F2B">{t("visaChecker.form.categories.f2b")}</option>
-            <option value="F3">{t("visaChecker.form.categories.f3")}</option>
-            <option value="F4">{t("visaChecker.form.categories.f4")}</option>
-          </select>
+            onChange={(value) => setForm({ ...form, category: value })}
+            options={visaCategoryOptions}
+            placeholder="Select category"
+          />
         </div>
 
         {/* Priority Date */}
@@ -161,18 +169,12 @@ export default function Form() {
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
             {t("visaChecker.form.countryLabel")}
           </label>
-          <select
-            suppressHydrationWarning
-            className="w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          <CustomDropdown
             value={form.country}
-            onChange={(e) => setForm({ ...form, country: e.target.value })}
-          >
-            <option value="All Other Countries">{t("visaChecker.form.countries.all")}</option>
-            <option value="China">{t("visaChecker.form.countries.china")}</option>
-            <option value="India">{t("visaChecker.form.countries.india")}</option>
-            <option value="Mexico">{t("visaChecker.form.countries.mexico")}</option>
-            <option value="Philippines">{t("visaChecker.form.countries.philippines")}</option>
-          </select>
+            onChange={(value) => setForm({ ...form, country: value })}
+            options={countryOptions}
+            placeholder={t("visaChecker.form.countryLabel")}
+          />
         </div>
 
         {/* Application Type */}
@@ -180,21 +182,14 @@ export default function Form() {
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
             {t("visaChecker.form.appTypeLabel")}
           </label>
-          <select
-            suppressHydrationWarning
-            className="w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          <CustomDropdown
             value={form.applicationType}
-            onChange={(e) =>
-              setForm({ ...form, applicationType: e.target.value })
+            onChange={(value) =>
+              setForm({ ...form, applicationType: value })
             }
-          >
-            <option value="Consular Processing">
-              {t("visaChecker.form.appTypes.consular")}
-            </option>
-            <option value="Adjustment of Status">
-              {t("visaChecker.form.appTypes.aos")}
-            </option>
-          </select>
+            options={applicationTypeOptions}
+            placeholder={t("visaChecker.form.appTypeLabel")}
+          />
         </div>
 
         {/* Submit Button */}

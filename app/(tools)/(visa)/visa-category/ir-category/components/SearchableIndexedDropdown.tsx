@@ -133,7 +133,7 @@ export default function SearchableIndexedDropdown({
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.98 }}
-              className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[450px]"
+              className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[250px]"
             >
               {/* Search Header */}
               <div className="p-3 border-b border-gray-100 flex items-center gap-2 bg-white sticky top-0 z-10 font-sans">

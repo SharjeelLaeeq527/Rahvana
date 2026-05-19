@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react"
 import NextImage from "next/image"
 import { SignatureImageProcessor } from "@/lib/imageProcessor"
 import { useLanguage } from "@/app/context/LanguageContext"
+import { useToast } from "@/app/components/shared/ToastProvider"
 
 type Props = {
   onUpload: (dataURL: string) => void
@@ -13,6 +14,7 @@ type Props = {
 
 export default function UploadImage({ onUpload, closeModal }: Props) {
   const { t } = useLanguage()
+  const { showToast } = useToast()
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -38,7 +40,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert(t("pdfProcessing.errors.invalidFile"))
+      showToast(t("pdfProcessing.errors.invalidFile"), "error")
       return
     }
     const reader = new FileReader()
@@ -67,7 +69,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
       processor.destroy()
     } catch (err) {
       console.error(err)
-      alert(t("pdfProcessing.editor.signature.failed"))
+        showToast(t("pdfProcessing.editor.signature.failed"), "error")
     } finally {
       setIsProcessing(false)
     }

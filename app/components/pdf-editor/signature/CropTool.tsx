@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { Crop, Move, Check } from "lucide-react"
 import { useLanguage } from "@/app/context/LanguageContext"
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 interface CropBox {
   x: number
@@ -25,6 +26,7 @@ export default function CropTool({
   // onExit,
 }: CropToolProps) {
   const { t } = useLanguage()
+  const { showToast } = useToast();
   const [cropBox, setCropBox] = useState<CropBox>({ x: 0, y: 0, width: 100, height: 100 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragType, setDragType] = useState<"move" | "nw" | "ne" | "sw" | "se" | "rotate" | null>(null)
@@ -205,7 +207,7 @@ export default function CropTool({
   useEffect(() => {
     if (isDragging || isRotating) {
       document.addEventListener("mousemove", handleMouseMove)
-      document.addEventListener("mouseup", handleMouseUp)
+            showToast(t("pdfProcessing.editor.signature.failed"), "error")
       return () => {
         document.removeEventListener("mousemove", handleMouseMove)
         document.removeEventListener("mouseup", handleMouseUp)

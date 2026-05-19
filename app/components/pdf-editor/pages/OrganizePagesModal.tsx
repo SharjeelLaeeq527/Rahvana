@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Trash2, RotateCw, X, Save, Copy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/app/context/LanguageContext"
+import { useToast } from "@/app/components/shared/ToastProvider"
 
 interface PageItem {
   index: number
@@ -24,6 +25,7 @@ interface OrganizePagesModalProps {
 export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps) {
   const { pdfFile, pageModifications, setPageModifications, setCurrentPage } = usePDFStore()
   const { t } = useLanguage()
+  const { showToast } = useToast()
   const [pages, setPages] = useState<PageItem[]>([])
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set())
   const [draggedPage, setDraggedPage] = useState<number | null>(null)
@@ -97,7 +99,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
 
   const handleDeletePage = (index: number) => {
     if (pages.length <= 1) {
-      alert("Cannot delete the last page!")
+      showToast("Cannot delete the last page!", "error")
       return
     }
     if (confirm("Are you sure you want to delete this page?")) {
@@ -219,7 +221,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
   const handleBulkDelete = () => {
     if (selectedPages.size === 0) return
     if (selectedPages.size >= pages.length) {
-      alert(t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"))
+      showToast(t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"), "error")
       return
     }
     if (confirm(t("pdfProcessing.editor.organizePages.bulkDeleteConfirm", { count: selectedPages.size }))) {
@@ -246,7 +248,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
     onClose()
     
     // Show success message
-    alert(t("pdfProcessing.editor.organizePages.successAlert"))
+    showToast(t("pdfProcessing.editor.organizePages.successAlert"), "success")
   }
 
   if (!isOpen) return null

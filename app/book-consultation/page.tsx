@@ -19,9 +19,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
+import { CustomDropdown, DropdownOption } from "@/app/components/shared/CustomDropdown";
 import { usePlan } from "@/app/context/PlanContext";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 interface Booking {
   id: string;
@@ -184,6 +187,7 @@ const ConsultationBookingPage = () => {
   });
 
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [isDraggingFiles, setIsDraggingFiles] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [referenceId, setReferenceId] = useState("");
@@ -197,6 +201,8 @@ const ConsultationBookingPage = () => {
     useState(true);
   const { tier } = usePlan();
   const { checkAccess, consumeAccess } = useFeatureAccess();
+  const hasExecutiveAccess = tier === "executive";
+  const { showToast } = useToast();
 
   // Mock data for dropdowns
   const issueCategories = [
@@ -347,51 +353,27 @@ const ConsultationBookingPage = () => {
     },
   ];
 
-  const visaCategories = [
-    {
-      value: "ir1-cr1",
-      label: "IR1/CR1 - Spouse of U.S. Citizen",
-      group: "Immediate Relatives",
-    },
-    {
-      value: "ir2-cr2",
-      label: "IR2/CR2 - Child of U.S. Citizen",
-      group: "Immediate Relatives",
-    },
-    {
-      value: "ir5",
-      label: "IR5 - Parent of U.S. Citizen",
-      group: "Immediate Relatives",
-    },
-    {
-      value: "f1",
-      label: "F1 - Unmarried Adult Child of USC",
-      group: "Family Preference",
-    },
-    {
-      value: "f2a",
-      label: "F2A - Spouse/Child of LPR",
-      group: "Family Preference",
-    },
-    {
-      value: "f2b",
-      label: "F2B - Unmarried Adult Child of LPR",
-      group: "Family Preference",
-    },
-    {
-      value: "f3",
-      label: "F3 - Married Child of USC",
-      group: "Family Preference",
-    },
-    { value: "f4", label: "F4 - Sibling of USC", group: "Family Preference" },
-    { value: "k1", label: "K-1 - Fiance(e) of USC", group: "Fiance/Spousal" },
-    {
-      value: "k2",
-      label: "K-2 - Child of K-1 Holder",
-      group: "Fiance/Spousal",
-    },
-    { value: "dv", label: "DV - Diversity Visa", group: "Other" },
-    { value: "other", label: "Other / Not Sure", group: "Other" },
+  const issueCategoryOptions: DropdownOption[] = issueCategories.map((item) => ({
+    value: item.value,
+    label: `${item.group} - ${item.label}`,
+  }));
+
+  const embassyOptions: DropdownOption[] = [
+    { value: "islamabad", label: "U.S. Embassy Islamabad" },
+    { value: "karachi", label: "U.S. Consulate Karachi" },
+    { value: "other", label: "Other Country" },
+  ];
+
+  const urgencyOptions: DropdownOption[] = [
+    { value: "normal_low", label: "Low - General guidance" },
+    { value: "normal_medium", label: "Medium - Deadline within 30 days" },
+    { value: "urgent_high", label: "High - Deadline within 7 days" },
+    { value: "urgent_immediate", label: "Urgent - Immediate help needed" },
+  ];
+
+  const preferredLanguageOptions: DropdownOption[] = [
+    { value: "English", label: "English" },
+    { value: "Urdu", label: "Urdu" },
   ];
 
   const caseStages = [
@@ -446,6 +428,16 @@ const ConsultationBookingPage = () => {
     { code: "+81", name: "Japan" },
     { code: "+86", name: "China" },
   ].sort((a, b) => a.name.localeCompare(b.name));
+
+  const caseStageOptions: DropdownOption[] = caseStages.map((item) => ({
+    value: item.value,
+    label: `${item.group} - ${item.label}`,
+  }));
+
+  const countryCodeOptions: DropdownOption[] = countryCodes.map((item) => ({
+    value: item.code,
+    label: `${item.code} ${item.name}`,
+  }));
 
   // Load time slots from API
   useEffect(() => {
@@ -607,6 +599,12 @@ const ConsultationBookingPage = () => {
     }
   };
 
+  const handleFileDrop = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const newFiles = Array.from(files);
+    setAttachments((prev) => [...prev, ...newFiles]);
+  };
+
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
@@ -616,6 +614,22 @@ const ConsultationBookingPage = () => {
       ...prev,
       selected_slot: slot.date,
     }));
+  };
+
+  const handleDropZoneDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingFiles(true);
+  };
+
+  const handleDropZoneDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingFiles(false);
+  };
+
+  const handleDropZoneDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingFiles(false);
+    handleFileDrop(e.dataTransfer.files);
   };
 
   const handleAlternateSlotSelect = (slot: TimeSlot) => {
@@ -643,61 +657,58 @@ const ConsultationBookingPage = () => {
 
     // Comprehensive form validation before submission
     if (!formData.issue_category) {
-      alert("Please select an issue category.");
-      setLoading(false);
-      return;
-    }
-
-    if (!formData.visa_category) {
-      alert("Please select a visa category.");
+      showToast("Please select an issue category.", "error");
       setLoading(false);
       return;
     }
 
     if (!formData.case_stage) {
-      alert("Please select a case stage.");
+      showToast("Please select a case stage.", "error");
       setLoading(false);
       return;
     }
 
     if (!formData.full_name || !validateName(formData.full_name)) {
-      alert(
+      showToast(
         "Please enter a valid full name (letters, spaces, hyphens, apostrophes only).",
+        "error",
       );
       setLoading(false);
       return;
     }
 
     if (!formData.email || !validateEmail(formData.email)) {
-      alert("Please enter a valid email address.");
+      showToast("Please enter a valid email address.", "error");
       setLoading(false);
       return;
     }
 
     if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
-      alert(
+      showToast(
         `Please enter a valid phone number for the selected country (${formData.country_code}).`,
+        "error",
       );
       setLoading(false);
       return;
     }
 
     if (!formData.case_summary || !validateCaseSummary(formData.case_summary)) {
-      alert(
+      showToast(
         "Please provide a detailed case summary with at least 20 characters.",
+        "error",
       );
       setLoading(false);
       return;
     }
 
     if (!formData.selected_slot) {
-      alert("Please select a consultation time slot.");
+      showToast("Please select a consultation time slot.", "error");
       setLoading(false);
       return;
     }
 
     if (!formData.consent) {
-      alert("Please agree to the consent terms before submitting.");
+      showToast("Please agree to the consent terms before submitting.", "error");
       setLoading(false);
       return;
     }
@@ -786,13 +797,11 @@ const ConsultationBookingPage = () => {
         // if (response.status === 403) {
         setShowConsultationUpgradeModal(true);
         // }
-        alert(
-          `Failed to submit: ${errorData.error || "Check console for details"}`,
-        );
+        showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
       }
     } catch (error) {
       console.error("Submission error:", error);
-      alert("An error occurred during submission.");
+      showToast("An error occurred during submission.", "error");
     } finally {
       setLoading(false);
     }
@@ -811,9 +820,6 @@ const ConsultationBookingPage = () => {
     if (step === 1) {
       if (!formData.issue_category) {
         newErrors.issue_category = "Issue category is required";
-      }
-      if (!formData.visa_category) {
-        newErrors.visa_category = "Visa category is required";
       }
       if (!formData.case_stage) {
         newErrors.case_stage = "Case stage is required";
@@ -882,12 +888,11 @@ const ConsultationBookingPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Issue Category *
                 </label>
-                <select
+                <CustomDropdown
                   value={formData.issue_category}
-                  onChange={(e) => {
-                    handleInputChange("issue_category", e.target.value);
-                    // Clear error when user selects a value
-                    if (errors.issue_category && e.target.value) {
+                  onChange={(value) => {
+                    handleInputChange("issue_category", value);
+                    if (errors.issue_category && value) {
                       setErrors((prev) => {
                         const newErrors = { ...prev };
                         delete newErrors.issue_category;
@@ -895,26 +900,10 @@ const ConsultationBookingPage = () => {
                       });
                     }
                   }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                    errors.issue_category ? "border-red-500" : "border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">Select an issue category...</option>
-                  {[...new Set(issueCategories.map((c) => c.group))].map(
-                    (group) => (
-                      <optgroup key={group} label={group!}>
-                        {issueCategories
-                          .filter((c) => c.group === group)
-                          .map((c) => (
-                            <option key={c.value} value={c.value}>
-                              {c.label}
-                            </option>
-                          ))}
-                      </optgroup>
-                    ),
-                  )}
-                </select>
+                  options={issueCategoryOptions}
+                  placeholder="Select an issue category..."
+                  className={errors.issue_category ? "border-red-500" : ""}
+                />
                 {errors.issue_category && (
                   <p className="mt-1 text-sm text-red-600">
                     {errors.issue_category}
@@ -970,12 +959,11 @@ const ConsultationBookingPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Case Stage *
                 </label>
-                <select
+                <CustomDropdown
                   value={formData.case_stage}
-                  onChange={(e) => {
-                    handleInputChange("case_stage", e.target.value);
-                    // Clear error when user selects a value
-                    if (errors.case_stage && e.target.value) {
+                  onChange={(value) => {
+                    handleInputChange("case_stage", value);
+                    if (errors.case_stage && value) {
                       setErrors((prev) => {
                         const newErrors = { ...prev };
                         delete newErrors.case_stage;
@@ -983,24 +971,10 @@ const ConsultationBookingPage = () => {
                       });
                     }
                   }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                    errors.case_stage ? "border-red-500" : "border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">Select stage...</option>
-                  {[...new Set(caseStages.map((s) => s.group))].map((group) => (
-                    <optgroup key={group} label={group!}>
-                      {caseStages
-                        .filter((s) => s.group === group)
-                        .map((s) => (
-                          <option key={s.value} value={s.value}>
-                            {s.label}
-                          </option>
-                        ))}
-                    </optgroup>
-                  ))}
-                </select>
+                  options={caseStageOptions}
+                  placeholder="Select stage..."
+                  className={errors.case_stage ? "border-red-500" : ""}
+                />
                 {errors.case_stage && (
                   <p className="mt-1 text-sm text-red-600">
                     {errors.case_stage}
@@ -1011,38 +985,25 @@ const ConsultationBookingPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Embassy / Consulate
                 </label>
-                <select
+                <CustomDropdown
                   value={formData.embassy_consulate}
-                  onChange={(e) =>
-                    handleInputChange("embassy_consulate", e.target.value)
+                  onChange={(value) =>
+                    handleInputChange("embassy_consulate", value)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                >
-                  <option value="">Select embassy...</option>
-                  <option value="islamabad">U.S. Embassy Islamabad</option>
-                  <option value="karachi">U.S. Consulate Karachi</option>
-                  <option value="other">Other Country</option>
-                </select>
+                  options={embassyOptions}
+                  placeholder="Select embassy..."
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Urgency *
                 </label>
-                <select
+                <CustomDropdown
                   value={formData.urgency}
-                  onChange={(e) => handleInputChange("urgency", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                >
-                  <option value="">Select urgency level...</option>
-                  <option value="normal">Low - General guidance</option>
-                  <option value="normal">
-                    Medium - Deadline within 30 days
-                  </option>
-                  <option value="urgent">High - Deadline within 7 days</option>
-                  <option value="urgent">Urgent - Immediate help needed</option>
-                </select>
+                  onChange={(value) => handleInputChange("urgency", value)}
+                  options={urgencyOptions}
+                  placeholder="Select urgency level..."
+                />
               </div>
             </div>
           </div>
@@ -1134,10 +1095,10 @@ const ConsultationBookingPage = () => {
                   WhatsApp Phone *
                 </label>
                 <div className="flex gap-2">
-                  <select
+                  <CustomDropdown
                     value={formData.country_code}
-                    onChange={(e) => {
-                      handleInputChange("country_code", e.target.value);
+                    onChange={(value) => {
+                      handleInputChange("country_code", value);
                       // Clear error when user changes country code
                       if (errors.phone_number) {
                         setErrors((prev) => {
@@ -1147,16 +1108,10 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-32 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition bg-gray-50 font-medium ${
-                      errors.phone_number ? "border-red-500" : "border-gray-300"
-                    }`}
-                  >
-                    {countryCodes.map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {c.code} {c.name.substring(0, 3)}
-                      </option>
-                    ))}
-                  </select>
+                    options={countryCodeOptions}
+                    placeholder="Code"
+                    className={errors.phone_number ? "border-red-500" : ""}
+                  />
                   <div className="relative flex-1">
                     <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                     <input
@@ -1198,40 +1153,49 @@ const ConsultationBookingPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Language *
                 </label>
-                <select
+                <CustomDropdown
                   value={formData.preferred_language}
-                  onChange={(e) =>
-                    handleInputChange("preferred_language", e.target.value)
+                  onChange={(value) =>
+                    handleInputChange("preferred_language", value)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                >
-                  <option value="English">English</option>
-                  <option value="Urdu">Urdu</option>
-                </select>
+                  options={preferredLanguageOptions}
+                  placeholder="Select language..."
+                />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Attachments (Optional)
               </label>
-              <label className="border-2 border-dashed border-gray-200 rounded-2xl p-8 hover:border-teal-400 hover:bg-teal-50/30 transition-all group cursor-pointer text-center block">
+              <div
+                onClick={() => document.getElementById("consultation-file-input")?.click()}
+                onDragOver={handleDropZoneDragOver}
+                onDragLeave={handleDropZoneDragLeave}
+                onDrop={handleDropZoneDrop}
+                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${
+                  isDraggingFiles
+                    ? "border-teal-500 bg-teal-50/60"
+                    : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
+                }`}
+              >
                 <input
+                  id="consultation-file-input"
                   type="file"
                   multiple
                   onChange={handleFileChange}
                   className="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png,.gif"
                 />
                 <div className="bg-gray-100 group-hover:bg-teal-100 transition-colors w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                   <FileText className="h-6 w-6 text-gray-400 group-hover:text-teal-600" />
                 </div>
                 <p className="text-sm font-bold text-gray-700">
-                  Click to add documents
+                  Click to upload or drag and drop
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Notices, letters, or forms relevant to your case
                 </p>
-              </label>
+              </div>
               {attachments.length > 0 && (
                 <div className="mt-4 space-y-2">
                   {attachments.map((file, index) => (
@@ -1625,6 +1589,18 @@ const ConsultationBookingPage = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (!hasExecutiveAccess) {
+    return (
+      <PageGate
+        feature="expert_consultation"
+        title="Expert Consultation Locked"
+        description="Expert consultation booking is available on Premium or Executive plans, or as an add-on for other plans."
+      >
+        <></>
+      </PageGate>
     );
   }
 

@@ -6,7 +6,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 export default function Home() {
   const { t } = useLanguage();
   return (
-    <div className="bg-background site-main-px site-main-py mb-6 sm:mb-10">
+    <div className="bg-background site-main-px mt-10 site-main-py mb-6 sm:mb-10">
       <div className="text-center">
         <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-2 sm:mb-3">
           {t("visaChecker.pageTitle")}
