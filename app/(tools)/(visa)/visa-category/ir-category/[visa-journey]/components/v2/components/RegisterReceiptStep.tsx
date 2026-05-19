@@ -12,6 +12,7 @@ import {
   type RegisterReceiptError,
 } from "@/lib/register-receipt";
 import { ReceiptFormatChip } from "./ReceiptFormatChip";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // ─── Tiny SVG helpers ──────────────────────────────────────────────────────────
 
@@ -577,6 +578,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
   journeyId,
   guard,
 }) => {
+  const { t, isUrdu } = useLanguage();
   const isUpdate = existingRecord !== null;
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [fields, setFields] = useState({
@@ -719,10 +721,16 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       >
         {isUpdate ? "Upload a new notice file" : "Upload receipt notice"}
       </div>
-      <div className="text-[14px] mb-6" style={{ color: "#28151c" }}>
+      <div className="text-[14px] mb-3" style={{ color: "#28151c" }}>
         {isUpdate
           ? "You can replace the notice file on record. The receipt number below is locked."
           : "Upload your notice file, then confirm the key details below before saving."}
+      </div>
+      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-semibold mb-6">
+        <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
+        <span className={isUrdu ? "font-urdu-body" : ""}>
+          {t("documentVaultPage.components.uploadModal.securityNotice")}
+        </span>
       </div>
       <ErrorBanner message={error} />
       <label

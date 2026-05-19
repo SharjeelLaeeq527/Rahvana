@@ -595,7 +595,7 @@
   "documentVaultPage": {
     "page": {
       "title": "Document Vault",
-      "subtitle": "Compliance-Ready Repository",
+      "subtitle": "Organize and manage your documents",
       "case": "Case",
       "guide": "Guide",
       "actions": "Actions",
@@ -616,7 +616,7 @@
       "allMasterChecklist": "All Documents",
       "more": "More",
       "searchPlaceholder": "Search documents...",
-      "comprehensiveMasterChecklist": "Comprehensive Document Repository",
+      "comprehensiveMasterChecklist": "Your Documents",
       "searchPrefix": "Search: ",
       "foundPrefix": "Found",
       "matchingDocuments": "matching documents",
@@ -881,7 +881,8 @@
         "warning": "⚠️ Warning: Set Case Information in left panel for proper USCIS naming!",
         "cancel": "Cancel",
         "uploadBtnLoading": "Uploading...",
-        "uploadBtn": "Upload Document"
+        "uploadBtn": "Upload Document",
+        "securityNotice": "Your documents are encrypted and securely stored."
       },
       "wizard": {
         "noGuide": "No step-by-step guide available for this document yet.",
@@ -4304,12 +4305,12 @@
       "validation": {
         "title": "Certificate Validation",
         "description": "Ensure your certificate meets international standards and immigration requirements.",
-        "uploadSection": {
+        "upload_section": {
           "title": "Review your Document",
           "description": "Upload a scan of your CBRC for automated field verification.",
           "formats": "PDF, JPG, PNG"
         },
-        "checklistTitle": "Field Verification",
+        "checklist_title": "Field Verification",
         "categories": [
           {
             "name": "Mandatory Fields",

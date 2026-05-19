@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface DocumentUploadModalProps {
@@ -479,8 +479,16 @@ export function DocumentUploadModal({
               </div>
             )}
 
+            {/* Security Guarantee */}
+            <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 border border-[#d0e4f7]/40 rounded-xl text-[#3a4f63] text-xs font-semibold shadow-sm">
+              <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>
+                {t("documentVaultPage.components.uploadModal.securityNotice")}
+              </span>
+            </div>
+
             {/* Actions */}
-            <div className="flex gap-3 pt-6 pb-2">
+            <div className="flex gap-3 pt-4 pb-2">
               <Button
                 variant="outline"
                 onClick={handleClose}

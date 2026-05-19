@@ -758,29 +758,31 @@ export default function DocumentVaultPage() {
                     )}
                     {DYNAMIC_CATEGORIES.includes(activeTab) && (
                       <div className="flex items-center gap-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-400 hover:text-primary"
-                            >
-                              <Info className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="max-w-xs p-3">
-                            <p className="font-bold mb-2">
-                              Suggested Documents:
-                            </p>
-                            <ul className="list-disc pl-4 space-y-1 text-xs">
-                              {CATEGORY_SUGGESTIONS[activeTab]?.map(
-                                (suggestion, i) => (
-                                  <li key={i}>{suggestion}</li>
-                                ),
-                              )}
-                            </ul>
-                          </TooltipContent>
-                        </Tooltip>
+                        {CATEGORY_SUGGESTIONS[activeTab] && CATEGORY_SUGGESTIONS[activeTab].length > 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-primary"
+                              >
+                                <Info className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs p-3">
+                              <p className="font-bold mb-2">
+                                Suggested Documents:
+                              </p>
+                              <ul className="list-disc pl-4 space-y-1 text-xs">
+                                {CATEGORY_SUGGESTIONS[activeTab]?.map(
+                                  (suggestion, i) => (
+                                    <li key={i}>{suggestion}</li>
+                                  ),
+                                )}
+                              </ul>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
@@ -914,32 +916,34 @@ export default function DocumentVaultPage() {
                               </h3>
                               {DYNAMIC_CATEGORIES.includes(category) && (
                                 <div className="flex items-center gap-2">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
+                                  {CATEGORY_SUGGESTIONS[category] && CATEGORY_SUGGESTIONS[category].length > 0 && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
+                                        >
+                                          <Info className="w-3.5 h-3.5" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent
+                                        side="right"
+                                        className="max-w-xs p-3"
                                       >
-                                        <Info className="w-3.5 h-3.5" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                      side="right"
-                                      className="max-w-xs p-3"
-                                    >
-                                      <p className="font-bold mb-2 text-[11px]">
-                                        Suggested Documents:
-                                      </p>
-                                      <ul className="list-disc pl-4 space-y-1 text-[10px]">
-                                        {CATEGORY_SUGGESTIONS[category]?.map(
-                                          (suggestion, i) => (
-                                            <li key={i}>{suggestion}</li>
-                                          ),
-                                        )}
-                                      </ul>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                        <p className="font-bold mb-2 text-[11px]">
+                                          Suggested Documents:
+                                        </p>
+                                        <ul className="list-disc pl-4 space-y-1 text-[10px]">
+                                          {CATEGORY_SUGGESTIONS[category]?.map(
+                                            (suggestion, i) => (
+                                              <li key={i}>{suggestion}</li>
+                                            ),
+                                          )}
+                                        </ul>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
                                   <Button
                                     size="sm"
                                     variant="ghost"

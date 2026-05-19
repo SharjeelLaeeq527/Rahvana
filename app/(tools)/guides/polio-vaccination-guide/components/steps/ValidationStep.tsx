@@ -9,9 +9,12 @@ import {
   ArrowLeft,
   ShieldCheck,
   ChevronDown,
+  Lock,
 } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function ValidationStep() {
+  const { t } = useLanguage();
   const { setCurrentStep, resetWizard } = usePolioWizard();
   const [validationChecks, setValidationChecks] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState(false);
@@ -144,6 +147,12 @@ export default function ValidationStep() {
             >
               {uploadedFile ? "✓ Uploaded" : "Upload to Vault"}
             </motion.button>
+
+            {/* Security Notice */}
+            <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 font-semibold mt-1">
+              <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
+            </div>
           </div>
         </div>
 

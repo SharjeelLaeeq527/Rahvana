@@ -28,7 +28,9 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
   initialData,
   isSubmitting,
 }) => {
-  const [caseNumber, setCaseNumber] = useState(initialData?.nvc_case_number || "");
+  const [caseNumber, setCaseNumber] = useState(
+    initialData?.nvc_case_number || "",
+  );
   const [invoiceId, setInvoiceId] = useState(initialData?.nvc_invoice_id || "");
   const [email, setEmail] = useState(initialData?.username || "");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
@@ -138,7 +140,7 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-3 mb-[18px] flex gap-2.5">
+          {/* <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-3 mb-[18px] flex gap-2.5">
             <ShieldCheck
               size={14}
               className="text-[#8a6200] shrink-0 mt-0.5"
@@ -148,12 +150,12 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
               Your details are stored locally on your device for this session.
               To manage or update them permanently, use your full Portal Wallet.
             </p>
-          </div>
+          </div> */}
 
           <button
             onClick={handleSave}
             disabled={isSubmitting}
-            className="w-full p-[14px_24px] bg-[#3b7dd8] text-white border-none rounded-[10px] text-[15px] font-semibold hover:bg-[#3b7dd8]/70 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50 disabled:pointer-events-none"
+            className="w-full p-[14px_24px] bg-primary text-white border-none rounded-[10px] text-[15px] font-semibold hover:bg-primary/90 hover:-translate-y-px active:translate-y-0 transition-all disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? "Saving..." : "Save Details"}
           </button>
@@ -292,13 +294,13 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
               </div>
             </div>
 
-            <div className="flex items-start gap-[13px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_13px] mt-[18px] mb-[18px]">
+            {/* <div className="flex items-start gap-[13px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_13px] mt-[18px] mb-[18px]">
               <ShieldCheck size={13} className="text-[#8a6200] mt-1 shrink-0" />
               <span className="text-[12px] text-[#8a6200] leading-normal">
                 Details are stored locally for this session. Manage or update
                 them in your Portal Wallet.
               </span>
-            </div>
+            </div> */}
 
             <button
               onClick={() => onSave(localData)}

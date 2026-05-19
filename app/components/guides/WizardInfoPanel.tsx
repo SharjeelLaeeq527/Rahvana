@@ -26,6 +26,10 @@ interface FeeStructure {
     title: string;
     description: string;
   };
+  specialNote?: {
+    title: string;
+    description: string;
+  };
   tiers: FeeStructureTier[];
 }
 
@@ -53,7 +57,9 @@ export interface InfoPanelData {
 
 export interface GuideDataInfo {
   fee_structure?: FeeStructure;
+  feeStructure?: FeeStructure;
   office_finder?: OfficeLocation;
+  officeFinder?: OfficeLocation;
   [key: string]: unknown;
 }
 
@@ -129,11 +135,19 @@ const WizardInfoPanel = ({
 
   const feeStructure =
     // data.fee_structure ||
-    guideData?.fee_structure || guideData?.wizard?.fee_structure || null;
+    guideData?.fee_structure ||
+    guideData?.feeStructure ||
+    guideData?.wizard?.fee_structure ||
+    guideData?.wizard?.feeStructure ||
+    null;
 
   const officeLocation =
     // data.office_location ||
-    guideData?.office_finder || guideData?.wizard?.office_finder || null;
+    guideData?.office_finder ||
+    guideData?.officeFinder ||
+    guideData?.wizard?.office_finder ||
+    guideData?.wizard?.officeFinder ||
+    null;
 
   // Show office section based on availability of dynamic data or guide type
   const showOfficeSection =
@@ -265,23 +279,27 @@ const WizardInfoPanel = ({
                 </h2>
               </div>
 
-              {feeStructure?.special_note && (
-                <div className="bg-linear-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-white/20 p-2 rounded-full shrink-0">
-                      <CreditCard className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold mb-1 leading-none font-urdu-body">
-                        {feeStructure.special_note.title}
-                      </h3>
-                      <p className="text-white/90 leading-relaxed text-[0.8rem] font-urdu-body">
-                        {feeStructure.special_note.description}
-                      </p>
+              {(() => {
+                const specialNote = feeStructure?.special_note || (feeStructure as any)?.specialNote;
+                if (!specialNote) return null;
+                return (
+                  <div className="bg-linear-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-white/20 p-2 rounded-full shrink-0">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold mb-1 leading-none font-urdu-body">
+                          {specialNote.title}
+                        </h3>
+                        <p className="text-white/90 leading-relaxed text-[0.8rem] font-urdu-body">
+                          {specialNote.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               <div className="mb-8">
                 <h3 className="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">

@@ -102,7 +102,6 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
               if (guard && !guard()) return;
               setIsSaving(true);
               try {
-                setDqSaved(true);
                 await actions.updateMetadata({
                   dqSaved: true,
                   dqDate,
@@ -111,6 +110,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
                   dqCountry,
                   post: dqPost,
                 });
+                setDqSaved(true);
               } finally {
                 setIsSaving(false);
               }
@@ -127,7 +127,10 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
             ✓ DQ Recorded ({dqDate})
           </div>
           <button
-            onClick={() => setDqSaved(false)}
+            onClick={() => {
+              setIsSaving(false);
+              setDqSaved(false);
+            }}
             className="text-primary text-xs font-semibold hover:underline"
           >
             Edit
