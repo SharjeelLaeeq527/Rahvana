@@ -42,15 +42,15 @@ export default function Result({ data }: { data: VisaData }) {
   const hasWaitEstimate = waitEstimate && waitEstimate.formatted;
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-xl max-w-2xl xl:max-w-4xl mx-auto font-sans">
+    <div className="bg-white p-8 rounded-xl shadow-xl max-w-2xl xl:max-w-4xl mx-auto font-sans mt-12">
       {/* Header */}
       <div
         className={`p-4 rounded-t-xl text-white font-bold text-xl ${
           status === "current"
-            ? "bg-green-600"
+            ? "bg-teal-600"
             : status === "waiting"
-              ? "bg-blue-600"
-              : "bg-orange-600"
+              ? "bg-teal-700"
+              : "bg-teal-800"
         }`}
       >
         {status === "current" && t("visaChecker.result.statusCurrent")}
@@ -101,8 +101,8 @@ export default function Result({ data }: { data: VisaData }) {
 
         {/* Waiting Status */}
         {status === "waiting" && daysBehind > 0 && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-gray-800">
+          <div className="bg-teal-50 p-4 rounded-lg border border-teal-100">
+            <p className="text-teal-900">
               {t("visaChecker.result.waitingDesc", {
                 date: priorityDate,
                 cutoff: cutoffDate,
@@ -110,7 +110,7 @@ export default function Result({ data }: { data: VisaData }) {
             </p>
             <p className="mt-2 font-bold text-lg">
               {t("visaChecker.result.youAre")}{" "}
-              <span className="text-blue-700">
+              <span className="text-teal-700">
                 {hasWaitEstimate
                   ? waitEstimate.formatted
                   : `${daysBehind} days`}
@@ -159,8 +159,8 @@ export default function Result({ data }: { data: VisaData }) {
 
         {/* Current Status */}
         {status === "current" && (
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <p className="font-bold text-green-800">
+          <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+            <p className="font-bold text-teal-800">
               {t("visaChecker.result.greatNews")}
             </p>
             <p>{t("visaChecker.result.fileNow")}</p>
@@ -180,7 +180,7 @@ export default function Result({ data }: { data: VisaData }) {
         </div>
 
         {/* Email Updates */}
-        <div className="bg-indigo-50 p-4 rounded-lg">
+        {/* <div className="bg-indigo-50 p-4 rounded-lg">
           <p className="font-bold text-indigo-800">
             {t("visaChecker.result.wantUpdates")}
           </p>
@@ -193,7 +193,7 @@ export default function Result({ data }: { data: VisaData }) {
           <button className="mt-2 w-full bg-indigo-600 text-white py-2 rounded font-bold">
             {t("visaChecker.result.subscribe")}
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

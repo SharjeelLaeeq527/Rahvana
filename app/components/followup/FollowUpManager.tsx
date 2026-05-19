@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import {
   getUser221gCase,
   update221gStatus,
@@ -21,6 +22,7 @@ export function FollowUpManager() {
   const [caseData, setCaseData] = useState<CaseData | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function checkFollowUp() {
@@ -119,7 +121,7 @@ export function FollowUpManager() {
     } catch (err) {
       console.error("Error updating follow-up status", err);
       const msg = err instanceof Error ? err.message : String(err);
-      alert("Failed to update status in Database. Error: " + msg);
+      showToast("Failed to update status in Database. Error: " + msg, "error");
     }
   };
 

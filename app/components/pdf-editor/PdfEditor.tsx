@@ -13,6 +13,7 @@ import { Download, LayoutGrid, Type, Stamp, Check } from "lucide-react";
 import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
 import SignatureTool from "./signature/SignatureTool";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { OrganizePagesModal } from "./pages/OrganizePagesModal";
 import { EditTextModal } from "./text/EditTextModal";
 import { createEditedPDF, downloadPDF } from "@/lib/pdf-utils";
@@ -33,6 +34,7 @@ const PDFThumbnails = dynamic(
 
 export function PDFEditor() {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [activeTool, setActiveTool] = useState<
     "text" | "signature" | "shapes" | null
   >(null);
@@ -166,7 +168,10 @@ export function PDFEditor() {
   };
 
   const handleDownload = async () => {
-    if (!pdfFile) return alert(t("pdfProcessing.editor.noPdf"));
+    if (!pdfFile) {
+      showToast(t("pdfProcessing.editor.noPdf"), "error");
+      return;
+    }
     setIsDownloading(true);
     try {
       const editedPdf = await createEditedPDF(
@@ -176,9 +181,9 @@ export function PDFEditor() {
         signatureAnnotations,
       );
       await downloadPDF(editedPdf, "edited-document.pdf");
-      alert(t("pdfProcessing.editor.downloadSuccess"));
+      showToast(t("pdfProcessing.editor.downloadSuccess"), "success");
     } catch (error) {
-      alert(t("pdfProcessing.editor.downloadFail"));
+      showToast(t("pdfProcessing.editor.downloadFail"), "error");
       console.error(error);
     }
     setIsDownloading(false);
