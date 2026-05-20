@@ -26,7 +26,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { GeneratedQuestion } from "@/lib/interview-prep";
-import mockInterviewFlows from "@/data/interview-categories/mock-interview-flows.json";
 
 interface MockInterviewModePageProps {
   sessionId?: string;
@@ -62,28 +61,19 @@ export function MockInterviewModePage({
 }: MockInterviewModePageProps) {
   // reference sessionId to avoid unused-variable compile errors (kept for telemetry/analytics)
   void sessionId;
-  // Opening/closing flows are loaded from data/interview-categories/mock-interview-flows.json
-  type FlowLine = { type: string; text: string };
-  const mockInterviewOpeningFlow: FlowLine[] = (mockInterviewFlows as unknown as { opening?: FlowLine[] })
-    .opening ?? [];
-  const mockInterviewClosingFlow: FlowLine[] = (mockInterviewFlows as unknown as { closing?: FlowLine[] })
-    .closing ?? [];
-  // keep reference to avoid unused var lint when closing not yet rendered
-  void mockInterviewClosingFlow;
-
-  const [openingIndex, setOpeningIndex] = useState(0);
-  const [closingIndex, setClosingIndex] = useState(0);
-
   const interviewQuestions = useMemo(() => {
     // Base: filter applicable and sort by explicit order (fallback 9999)
     const base = questions
       .filter((question) => question.applicable)
       .slice()
-      .sort((a, b) => (a.mockInterviewOrder ?? 9999) - (b.mockInterviewOrder ?? 9999));
+      .sort(
+        (a, b) =>
+          (a.mockInterviewOrder ?? 9999) - (b.mockInterviewOrder ?? 9999),
+      );
 
     // Helper to remove and return items by id list
     const extractByIds = (arr: typeof base, ids: string[]) => {
-      const map = new Map<string, typeof arr[0]>();
+      const map = new Map<string, (typeof arr)[0]>();
       for (const id of ids) {
         const idx = arr.findIndex((q) => q.id === id);
         if (idx !== -1) {
@@ -107,7 +97,9 @@ export function MockInterviewModePage({
     // Insert timeline after the relationship-origin-how question if present
     const anchorIdx = base.findIndex((q) => q.id === "relationship-origin-how");
     const insertAt = anchorIdx === -1 ? 0 : anchorIdx + 1;
-    const timelineItems = timelineOrder.map((id) => timelineMap.get(id)).filter(Boolean) as typeof base;
+    const timelineItems = timelineOrder
+      .map((id) => timelineMap.get(id))
+      .filter(Boolean) as typeof base;
     base.splice(insertAt, 0, ...timelineItems);
 
     // Move finance-related questions earlier (after spouse family block)
@@ -119,9 +111,13 @@ export function MockInterviewModePage({
       "finances-shared",
     ];
     const financeMap = extractByIds(base, financeIds);
-    const financeAnchor = base.findIndex((q) => q.id === "spouse-family-members");
+    const financeAnchor = base.findIndex(
+      (q) => q.id === "spouse-family-members",
+    );
     const financeInsertAt = financeAnchor === -1 ? 3 : financeAnchor + 1;
-    const financeItems = financeIds.map((id) => financeMap.get(id)).filter(Boolean) as typeof base;
+    const financeItems = financeIds
+      .map((id) => financeMap.get(id))
+      .filter(Boolean) as typeof base;
     base.splice(financeInsertAt, 0, ...financeItems);
 
     // Promote a set of very-common IR-1 questions if present in the bank
@@ -161,10 +157,15 @@ export function MockInterviewModePage({
     null,
   );
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showAnsweringFlowModal, setShowAnsweringFlowModal] = useState(false);
+  const [answeringFlowMode, setAnsweringFlowMode] = useState<
+    "toggle" | "pushToTalk"
+  >("toggle");
   const [questionRecords, setQuestionRecords] = useState<
     Record<string, QuestionRecord>
   >({});
-  const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null);
+  const [sessionEndReason, setSessionEndReason] =
+    useState<SessionEndReason | null>(null);
 
   const {
     canvasRef: waveformCanvasRef,
@@ -234,10 +235,10 @@ export function MockInterviewModePage({
     voiceState === "speaking"
       ? "Speaking"
       : voiceState === "silence"
-      ? "Silence"
-      : voiceState === "listening"
-      ? "Listening"
-      : "Paused";
+        ? "Silence"
+        : voiceState === "listening"
+          ? "Listening"
+          : "Paused";
 
   const finalizeCurrentQuestion = useCallback(() => {
     if (!currentQuestion) {
@@ -265,54 +266,6 @@ export function MockInterviewModePage({
     setQuestionRecords(nextRecords);
   }, [currentQuestion, currentTranscript]);
 
-  const finalizeOpeningLine = useCallback(() => {
-    const responseText = currentTranscript;
-    const durationSeconds = Math.max(
-      1,
-      Math.round((Date.now() - questionStartRef.current) / 1000),
-    );
-
-    const key = `opening-${openingIndex}`;
-    const record: QuestionRecord = {
-      transcript: responseText,
-      durationSeconds,
-      skipped: responseText.trim().length === 0,
-    };
-
-    const nextRecords = {
-      ...recordsRef.current,
-      [key]: record,
-    };
-
-    recordsRef.current = nextRecords;
-    setQuestionRecords(nextRecords);
-    clearTranscript();
-  }, [clearTranscript, currentTranscript, openingIndex]);
-
-  const finalizeClosingLine = useCallback(() => {
-    const responseText = currentTranscript;
-    const durationSeconds = Math.max(
-      1,
-      Math.round((Date.now() - questionStartRef.current) / 1000),
-    );
-
-    const key = `closing-${closingIndex}`;
-    const record: QuestionRecord = {
-      transcript: responseText,
-      durationSeconds,
-      skipped: responseText.trim().length === 0,
-    };
-
-    const nextRecords = {
-      ...recordsRef.current,
-      [key]: record,
-    };
-
-    recordsRef.current = nextRecords;
-    setQuestionRecords(nextRecords);
-    clearTranscript();
-  }, [clearTranscript, closingIndex, currentTranscript]);
-
   const completeInterview = useCallback(
     (endReason: SessionEndReason = "completed") => {
       if (phaseRef.current !== "running") {
@@ -334,7 +287,6 @@ export function MockInterviewModePage({
       // Normal completion: proceed to closing flow
       phaseRef.current = "closing";
       setPhase("closing");
-      setClosingIndex(0);
       clearTranscript();
       questionStartRef.current = Date.now();
     },
@@ -351,6 +303,21 @@ export function MockInterviewModePage({
       }
     } catch {
       // best-effort
+    }
+  };
+
+  const ensureMicrophonePermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      // immediately release temporary stream
+      stream.getTracks().forEach((track) => track.stop());
+
+      return true;
+    } catch {
+      return false;
     }
   };
 
@@ -374,10 +341,21 @@ export function MockInterviewModePage({
     setFocusWarningMessage(null);
     warningTimestampRef.current = Date.now() + 1500;
 
+    // IMPORTANT:
+    // Pre-request microphone permission BEFORE push-to-talk starts.
+    // Otherwise the first Space press causes fullscreen exit.
+    skipFullscreenExitPromptRef.current = true;
+
     try {
-      await startListening();
+      await ensureMicrophonePermission();
+
+      if (!isDocumentFullscreenActive()) {
+        await requestDocumentFullscreen();
+      }
     } catch {
-      // best-effort
+      // best effort
+    } finally {
+      skipFullscreenExitPromptRef.current = false;
     }
   };
 
@@ -389,7 +367,6 @@ export function MockInterviewModePage({
 
     // Switch UI immediately so intro screen does not linger during async setup.
     setSessionEndReason(null);
-    setOpeningIndex(0);
     phaseRef.current = "opening";
     setPhase("opening");
     questionStartRef.current = Date.now();
@@ -398,10 +375,13 @@ export function MockInterviewModePage({
     skipFullscreenExitPromptRef.current = true;
     try {
       await requestDocumentFullscreen();
-      await startListening();
     } finally {
       skipFullscreenExitPromptRef.current = false;
     }
+  };
+
+  const handleBeginInterviewClick = () => {
+    setShowAnsweringFlowModal(true);
   };
 
   const exitInterview = () => {
@@ -438,7 +418,7 @@ export function MockInterviewModePage({
     activeQuestionIdRef.current = interviewQuestions[nextIndex].id;
     questionStartRef.current = Date.now();
     clearTranscript();
-    void startListening();
+    // Do not auto-start listening for the next question — user must opt in.
   };
 
   const handleListeningToggle = useCallback(() => {
@@ -542,7 +522,7 @@ export function MockInterviewModePage({
   };
 
   useEffect(() => {
-    if (phase === "intro" || phase === "completed") {
+    if (phase !== "running") {
       return;
     }
 
@@ -551,11 +531,26 @@ export function MockInterviewModePage({
       const isTypingTarget =
         target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
 
-      if (event.code === "Space" && !isTypingTarget) {
+      if (
+        event.code === "Space" &&
+        !isTypingTarget &&
+        phaseRef.current === "running"
+      ) {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        handleListeningToggle();
+
+        if (event.repeat && answeringFlowMode === "pushToTalk") {
+          return;
+        }
+
+        if (answeringFlowMode === "pushToTalk") {
+          if (!isListening) {
+            void startListening();
+          }
+        } else {
+          handleListeningToggle();
+        }
         return;
       }
 
@@ -590,16 +585,49 @@ export function MockInterviewModePage({
       }
     };
 
+    const onKeyUp = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingTarget =
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+
+      if (
+        event.code === "Space" &&
+        !isTypingTarget &&
+        phaseRef.current === "running" &&
+        answeringFlowMode === "pushToTalk"
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        stopListening();
+      }
+    };
+
     window.addEventListener("keydown", onKeyDown, {
       capture: true,
       passive: false,
     });
+    window.addEventListener("keyup", onKeyUp, {
+      capture: true,
+      passive: false,
+    });
 
-    return () =>
+    return () => {
       window.removeEventListener("keydown", onKeyDown, {
         capture: true,
       });
-  }, [handleListeningToggle, phase, stopListening]);
+      window.removeEventListener("keyup", onKeyUp, {
+        capture: true,
+      });
+    };
+  }, [
+    answeringFlowMode,
+    handleListeningToggle,
+    isListening,
+    phase,
+    startListening,
+    stopListening,
+  ]);
 
   useEffect(() => {
     showExitModalRef.current = showExitModal;
@@ -769,7 +797,7 @@ export function MockInterviewModePage({
                 Cancel
               </Button>
               <Button
-                onClick={startInterview}
+                onClick={handleBeginInterviewClick}
                 className="flex-1 h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
               >
                 <Play className="h-4 w-4 mr-2" />
@@ -777,6 +805,107 @@ export function MockInterviewModePage({
               </Button>
             </div>
           </div>
+
+          {showAnsweringFlowModal && (
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4">
+              <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-semibold text-slate-900">
+                    Choose your answering flow
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Pick the control style you want before entering fullscreen.
+                  </p>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => setAnsweringFlowMode("toggle")}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${
+                      answeringFlowMode === "toggle"
+                        ? "border-[#0d7377] bg-[#e8f6f6]"
+                        : "border-slate-200 bg-white hover:border-[#0d7377]/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            answeringFlowMode === "toggle"
+                              ? "bg-[#0d7377]"
+                              : "bg-transparent"
+                          }`}
+                        />
+                      </span>
+                      <div>
+                        <div className="font-semibold text-slate-900">
+                          Flow 1: Button or Space Toggle
+                        </div>
+                        <p className="mt-1 text-sm text-slate-600">
+                          Use the answer button or press Space to start and
+                          stop.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAnsweringFlowMode("pushToTalk")}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${
+                      answeringFlowMode === "pushToTalk"
+                        ? "border-[#0d7377] bg-[#e8f6f6]"
+                        : "border-slate-200 bg-white hover:border-[#0d7377]/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            answeringFlowMode === "pushToTalk"
+                              ? "bg-[#0d7377]"
+                              : "bg-transparent"
+                          }`}
+                        />
+                      </span>
+                      <div>
+                        <div className="font-semibold text-slate-900">
+                          Flow 2: Hold Space to Talk
+                        </div>
+                        <p className="mt-1 text-sm text-slate-600">
+                          Hold Space to speak and release to stop, while the
+                          answer button still works.
+                        </p>
+                        <span className="mt-2 inline-flex rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-xs font-medium text-[#0d7377]">
+                          Recommended
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-12 flex-1 border-slate-200 text-slate-700 hover:bg-slate-50"
+                    onClick={() => setShowAnsweringFlowModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="h-12 flex-1 bg-[#0d7377] text-white font-semibold hover:bg-[#14a0a6]"
+                    onClick={() => {
+                      setShowAnsweringFlowModal(false);
+                      void startInterview();
+                    }}
+                  >
+                    Continue to Interview
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -886,12 +1015,13 @@ export function MockInterviewModePage({
             {!validity.isFullSession && (
               <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 mb-6">
                 <p className="text-sm text-amber-900">
-                  <span className="font-semibold">Note:</span> This analysis is based on a
+                  <span className="font-semibold">Note:</span> This analysis is
+                  based on a
                   {report.sessionEndReason === "aborted_focus"
                     ? " focus-limited"
                     : report.sessionEndReason === "aborted_time"
-                    ? " time-limited"
-                    : " partial"}{" "}
+                      ? " time-limited"
+                      : " partial"}{" "}
                   session. Complete future sessions for comprehensive feedback.
                 </p>
               </div>
@@ -983,14 +1113,8 @@ export function MockInterviewModePage({
   }
 
   //  RUNNING PHASE - fullscreen
-  // Determine if we're showing an interactive opening/closing line
   const isPhaseOpening = phase === "opening";
   const isPhaseClosing = phase === "closing";
-  const phaseLine = isPhaseOpening
-    ? mockInterviewOpeningFlow[openingIndex]
-    : isPhaseClosing
-    ? mockInterviewClosingFlow[closingIndex]
-    : null;
 
   const sidebarStats = [
     {
@@ -1095,13 +1219,91 @@ export function MockInterviewModePage({
       </header>
 
       {/* MAIN */}
-      <main className={`relative flex-1 min-h-0 ${phaseLine ? "overflow-hidden" : "overflow-auto"}`}>
+      <main
+        className={`relative flex-1 min-h-0 ${
+          isPhaseOpening || isPhaseClosing ? "overflow-hidden" : "overflow-auto"
+        }`}
+      >
         <div className="mx-auto max-w-6xl w-full px-4 sm:px-8 py-6 sm:py-8">
-          {currentQuestion && (
+          {isPhaseOpening && (
+            <div className="flex items-center justify-center min-h-[70vh] px-4">
+              <div className="w-full max-w-2xl">
+                <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
+                  <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
+                    Mock Interview Intro
+                  </p>
+
+                  <div className="mt-4 space-y-4 text-sm text-gray-700 leading-relaxed font-medium">
+                    <p>
+                      Greetings, and welcome to your mock immigrant visa
+                      interview.
+                    </p>
+                    <p>
+                      My name is Officer Sandro, and I will be conducting your
+                      interview today. Please answer each question clearly and
+                      naturally, as you would during an actual visa interview.
+                    </p>
+                    <p>Let&apos;s begin.</p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      void proceedToRun();
+                    }}
+                    className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+                    }}
+                  >
+                    Continue
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isPhaseClosing && (
+            <div className="flex items-center justify-center min-h-[70vh] px-4">
+              <div className="w-full max-w-2xl">
+                <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
+                  <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
+                    Interview Complete
+                  </p>
+
+                  <div className="mt-4 space-y-4 text-sm text-gray-700 leading-relaxed font-medium">
+                    <p>Thank you. That concludes your interview.</p>
+                    <p>
+                      Your responses have been recorded for performance
+                      evaluation. You may now review your interview summary and
+                      feedback.
+                    </p>
+                    <p>Have a good day.</p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      phaseRef.current = "completed";
+                      setPhase("completed");
+                      clearTranscript();
+                    }}
+                    className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+                    }}
+                  >
+                    Continue to Summary
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {phase === "running" && currentQuestion && (
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               {/* LEFT: Stats column */}
-              {!phaseLine && (
-                <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-3 lg:mt-10">
+              <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-3 lg:mt-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_-12px_rgba(15,23,42,0.1)]">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#0d7377]">
                     Progress
@@ -1166,28 +1368,28 @@ export function MockInterviewModePage({
                     <p className="text-[11px] text-slate-400">per question</p>
                   </div>
                 </div>
-                </aside>
-              )}
+              </aside>
 
               {/* RIGHT: Question + transcript */}
               <section className="flex-1 min-w-0 w-full flex flex-col">
-                <div className="mb-4 flex items-center gap-2">
+                <div className="mb-2 -mt-4 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#e8f6f6] border border-[#0d7377]/15 text-[#0d7377] text-[11px] font-semibold rounded-full uppercase tracking-wider">
-                    {phaseLine ? phaseLine.type : currentQuestion.category}
+                    {currentQuestion.category}
                   </span>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-[0_8px_30px_-16px_rgba(13,115,119,0.18)]">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-3">
-                    {phaseLine ? (isPhaseOpening ? "Officer" : "Officer") : "Current Question"}
+                    Current Question
                   </p>
                   <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-snug tracking-tight">
-                    {phaseLine ? phaseLine.text : (currentQuestion.selectedQuestion || currentQuestion.question)}
+                    {currentQuestion.selectedQuestion ||
+                      currentQuestion.question}
                   </h3>
                 </div>
 
                 {/* Transcript card */}
-                <div className="mt-5 h-[320px] sm:h-[360px] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-[0_12px_40px_-20px_rgba(13,115,119,0.2)] overflow-hidden">
+                <div className="mt-5 h-[320px] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-[0_12px_40px_-20px_rgba(13,115,119,0.2)] overflow-hidden">
                   <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 shrink-0 bg-slate-50/60">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
@@ -1220,8 +1422,12 @@ export function MockInterviewModePage({
                       ) : (
                         <p className="text-sm text-slate-400 italic">
                           {isListening
-                            ? "Speak naturally — your answer will appear here as you talk…"
-                            : "Press Start Listening to begin recording your answer."}
+                            ? answeringFlowMode === "pushToTalk"
+                              ? "Hold Space and speak naturally — your answer will appear here as you talk…"
+                              : "Speak naturally — your answer will appear here as you talk…"
+                            : answeringFlowMode === "pushToTalk"
+                              ? "Hold Space or press Start Answering to begin recording your answer."
+                              : "Press Start Answering to begin recording your answer."}
                         </p>
                       )}
                       {interimTranscript && (
@@ -1241,7 +1447,18 @@ export function MockInterviewModePage({
                 {/* Controls */}
                 <div className="mt-5 flex flex-col sm:flex-row gap-3">
                   <Button
-                    onClick={toggleListening}
+                    onClick={() => {
+                      if (answeringFlowMode === "pushToTalk") {
+                        if (!isListening) {
+                          void startListening();
+                        } else {
+                          stopListening();
+                        }
+                        return;
+                      }
+
+                      handleListeningToggle();
+                    }}
                     disabled={micUnsupported}
                     className={`flex-1 h-12 font-semibold transition-all ${
                       isListening
@@ -1252,64 +1469,41 @@ export function MockInterviewModePage({
                     {isListening ? (
                       <>
                         <MicOff className="h-4 w-4 mr-2" />
-                        Stop Listening
+                        Stop Answering
                       </>
                     ) : (
                       <>
                         <Mic className="h-4 w-4 mr-2" />
-                        Start Listening
+                        Start Answering
                       </>
                     )}
                   </Button>
 
                   <Button
-                    onClick={async () => {
+                    onClick={() => {
                       if (isListening) return;
-
-                      if (phaseLine) {
-                        // handle phase line next
-                        if (isPhaseOpening) {
-                          finalizeOpeningLine();
-                          if (openingIndex + 1 < mockInterviewOpeningFlow.length) {
-                            setOpeningIndex((i) => i + 1);
-                            // start timer for the next opening line
-                            questionStartRef.current = Date.now();
-                          } else {
-                            await proceedToRun();
-                          }
-                        } else if (isPhaseClosing) {
-                          finalizeClosingLine();
-                          if (closingIndex + 1 < mockInterviewClosingFlow.length) {
-                            setClosingIndex((i) => i + 1);
-                            questionStartRef.current = Date.now();
-                          } else {
-                            phaseRef.current = "completed";
-                            setPhase("completed");
-                            clearTranscript();
-                          }
-                        }
-                        return;
-                      }
-
-                      // default: advance to next question
                       advanceQuestion();
                     }}
                     disabled={isListening}
                     className="flex-1 h-12 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={isListening ? "Stop listening to advance" : "Move to the next question"}
+                    title={
+                      isListening
+                        ? "Stop Answering to advance"
+                        : "Move to the next question"
+                    }
                   >
-                    {phaseLine
-                      ? isPhaseOpening
-                        ? (openingIndex + 1 >= mockInterviewOpeningFlow.length ? "Begin Interview" : "Next")
-                        : (closingIndex + 1 >= mockInterviewClosingFlow.length ? "Finish" : "Next")
-                      : (currentQuestionIndex + 1 >= interviewQuestions.length ? "Finish Interview" : "Next Question")}
+                    {currentQuestionIndex + 1 >= interviewQuestions.length
+                      ? "Finish Interview"
+                      : "Next Question"}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
 
                 {isListening && (
                   <p className="mt-2 text-[11px] text-slate-400 text-center sm:text-right">
-                    Stop listening to enable the Next button.
+                    {answeringFlowMode === "pushToTalk"
+                      ? "Release Space or Stop Answering to enable the Next button."
+                      : "Stop Answering to enable the Next button."}
                   </p>
                 )}
               </section>
