@@ -1227,8 +1227,8 @@ export function DashboardView({
           )}
           </div>{/* end center column */}
 
-          {/* ── RIGHT COLUMN — Document Readiness + Sidebar (at xl) ─── */}
-          <div className="hidden xl:flex flex-col gap-3">
+          {/* ── RIGHT COLUMN — Document Readiness + Sidebar (only when content exists) ─── */}
+          <div className={`hidden xl:flex flex-col gap-3 ${!step1_2DocItems && !showSidebar ? "xl:hidden" : ""}`}>
             {step1_2DocItems && (
               <DocCaseStrengthMeter
                 documentItems={step1_2DocItems}

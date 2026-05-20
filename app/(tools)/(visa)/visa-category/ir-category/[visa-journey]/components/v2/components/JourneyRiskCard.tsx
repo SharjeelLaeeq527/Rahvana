@@ -11,7 +11,7 @@
 import React, { useMemo, useState } from "react";
 import {
   ShieldAlert, AlertTriangle, Info, ChevronDown, ArrowRight,
-  ShieldCheck, Sparkles,
+  ShieldCheck, ClipboardList,
 } from "lucide-react";
 import {
   detectRiskFlags,
@@ -131,11 +131,15 @@ export function JourneyRiskCard({
   let StateIcon: React.ComponentType<{ size?: number; color?: string; className?: string }>;
 
   if (!hasAnsweredQuest) {
-    stateLabel = "Not Started";
-    stateColor = "#0284c7";
+    // On dashboard: hide when not started — no point showing empty panel
+    if (defaultCollapsed) return null;
+    stateLabel = "Pending";
+    stateColor = "#64748b";
     stateText  = "Complete eligibility check to surface risks";
-    StateIcon  = Sparkles;
+    StateIcon  = ClipboardList;
   } else if (allFlags.length === 0) {
+    // Dashboard: hide when clean — no risks = no panel needed
+    if (defaultCollapsed) return null;
     stateLabel = "Clean";
     stateColor = "#059669";
     stateText  = "No INA-level risks detected";
