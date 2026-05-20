@@ -6,15 +6,28 @@ interface ColorPickerProps {
   currentColor: string
   onColorChange: (color: string) => void
   buttonClassName?: string
+  isOpen?: boolean
+  onToggle?: (open: boolean) => void
 }
 
 export default function ColorPicker({ 
   currentColor, 
   onColorChange,
-  buttonClassName = "w-8 h-8 rounded-full shadow-sm border-2 border-gray-300 hover:scale-105 transition-transform"
+  buttonClassName = "w-8 h-8 rounded-full shadow-sm border-2 border-gray-300 hover:scale-105 transition-transform",
+  isOpen,
+  onToggle,
 }: ColorPickerProps) {
-  const [showPicker, setShowPicker] = useState(false)
+  const [localShowPicker, setLocalShowPicker] = useState(false)
   const [showCustom, setShowCustom] = useState(false)
+
+  const showPicker = isOpen !== undefined ? isOpen : localShowPicker
+  const setShowPicker = (val: boolean) => {
+    if (onToggle) {
+      onToggle(val)
+    } else {
+      setLocalShowPicker(val)
+    }
+  }
 
   // SmallPDF exact colors (3 rows x 4 columns)
   const colors = [
