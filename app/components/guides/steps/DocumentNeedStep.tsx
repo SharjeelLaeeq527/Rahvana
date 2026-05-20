@@ -378,6 +378,7 @@ const DocumentNeedStep = ({
           const Icon = ICONS[option.icon || option.id] || FileText;
           const styles = GRADIENT_STYLES[option.color] || GRADIENT_STYLES.green;
           const isSelected = selected === option.id;
+          const isThreeCols = options.length % 3 === 0;
 
           const activeBorder = "border-[hsl(168_80%_30%)]";
           const activeBg =
@@ -397,7 +398,7 @@ const DocumentNeedStep = ({
               whileTap={{ scale: 0.97 }}
               onClick={() => onSelect(option.id)}
               className={`
-                p-5 rounded-2xl text-left flex flex-col gap-2
+                p-5 ${isThreeCols ? "md:p-4" : ""} rounded-2xl text-left flex flex-col gap-2
                 border-2 transition-all duration-200
                 ${
                   isSelected
@@ -407,13 +408,15 @@ const DocumentNeedStep = ({
               `}
             >
               {/* Icon and Title Row */}
-              <div className="flex items-center gap-3">
+              <div className={`flex items-center ${isThreeCols ? "gap-3 md:gap-2" : "gap-3"}`}>
                 <div
-                  className={`w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0
+                  className={`rounded-[10px] flex items-center justify-center flex-shrink-0
+                    ${isThreeCols ? "w-10 h-10 md:w-8 md:h-8" : "w-10 h-10"}
                     ${isSelected ? "bg-[hsl(168_60%_88%)]" : styles.iconBg}`}
                 >
                   <Icon
-                    className={`w-5 h-5
+                    className={`
+                      ${isThreeCols ? "w-5 h-5 md:w-4 md:h-4" : "w-5 h-5"}
                       ${
                         isSelected
                           ? "text-[hsl(168_80%_25%)]"
@@ -422,9 +425,9 @@ const DocumentNeedStep = ({
                   />
                 </div>
                 <h3
-                  className="text-[0.95rem] font-bold
-                              text-[hsl(220_20%_10%)]
-                              font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
+                  className={`font-bold text-[hsl(220_20%_10%)]
+                              font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body
+                              ${isThreeCols ? "text-[0.95rem] md:text-sm" : "text-[0.95rem]"}`}
                 >
                   {option.title}
                 </h3>
