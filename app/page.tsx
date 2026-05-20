@@ -729,28 +729,21 @@ function HomePageContent() {
                   </em>
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                   {[
                     {
                       bg: "bg-[#fde8ec]",
                       iconBg: "bg-[#fbc8d2]",
-                      author: "Fatima A.",
+                      author: "Ayesha W.",
                       role: "IR-1 applicant · Islamabad",
                       text: "For the first time, I felt like someone had actually thought about what this process feels like to go through — not just the steps, but the weight of it.",
                     },
                     {
                       bg: "bg-[#e3edf9]",
                       iconBg: "bg-[#c4d9f5]",
-                      author: "Omar K.",
-                      role: "US Citizen sponsor · Houston",
+                      author: "Karim U.",
+                      role: "US Citizen sponsor · Chicago",
                       text: "Three years of waiting. Rahvana helped me understand where I was in the process without the constant anxiety of not knowing what comes next.",
-                    },
-                    {
-                      bg: "bg-[#fef9e3]",
-                      iconBg: "bg-[#faedb8]",
-                      author: "Sara M.",
-                      role: "Beneficiary spouse · Lahore",
-                      text: "The form filler saved me hours. But more than that — reading the guides felt like being understood by people who knew what this was really like.",
                     },
                   ].map((item, i) => (
                     <div
