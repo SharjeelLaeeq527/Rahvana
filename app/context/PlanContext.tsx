@@ -71,7 +71,7 @@ function normalizeTier(raw: string | null | undefined): PlanTier {
 }
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [realTier, setRealTier] = useState<PlanTier>('free');
   const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +83,13 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const refresh = useCallback(() => setRefreshCounter((n) => n + 1), []);
 
   useEffect(() => {
+    // If Auth is still loading, keep plan state loading to prevent intermediate 
+    // mock 'free' tier evaluation and restricted screen flickering.
+    if (authLoading) {
+      setIsLoading(true);
+      return;
+    }
+
     if (!user?.id) {
       setRealTier('free');
       setPurchasedAddons([]);
@@ -111,10 +118,10 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           .eq('id', user.id)
           .single(),
       )
-      .then(({ data }: { data: { subscription_tier?: string; profile_details?: any } | null }) => {
+      .then(({ data }: { data: { subscription_tier?: string; profile_details?: Record<string, unknown> | null } | null }) => {
         if (cancelled) return;
         setRealTier(normalizeTier(data?.subscription_tier));
-        const addons = data?.profile_details?.purchased_addons;
+        const addons = data?.profile_details?.purchased_addons as string[] | undefined;
         setPurchasedAddons(Array.isArray(addons) ? addons : []);
       })
       .catch(() => {
@@ -128,7 +135,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
       });
 
     return () => { cancelled = true; };
-  }, [user?.id, refreshCounter]);
+  }, [user?.id, authLoading, refreshCounter]);
 
   const value: PlanContextValue = {
     realTier,
