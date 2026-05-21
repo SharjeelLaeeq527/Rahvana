@@ -49,6 +49,7 @@ import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep"
 // import { ProgressBar } from "@/app/components/forms/auto-visaform-filling/ProgressBar";
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { PlatformChoiceModal } from "@/app/components/shared/PlatformChoiceModal";
 import {
   chapters,
   caseFields,
@@ -1220,6 +1221,7 @@ export function TwoWaysSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
   const reduceMotion = useReducedMotion();
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
 
   const selectPath = (idx: TwoWaysIndex) => {
     setActiveIndex(idx);
@@ -1385,12 +1387,13 @@ export function TwoWaysSection() {
                   Start the Roadmap
                   <ArrowRight className="size-3.5" />
                 </Link>
-                <Link
-                  href={toolsHref}
-                  className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] no-underline"
+                <button
+                  type="button"
+                  onClick={() => setShowChoiceModal(true)}
+                  className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] cursor-pointer hover:bg-gray-50 transition-colors"
                 >
                   Browse Resources
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -1529,12 +1532,13 @@ export function TwoWaysSection() {
                   Start the Roadmap
                   <ArrowRight className="size-3.5" />
                 </Link>
-                <Link
-                  href={toolsHref}
-                  className="inline-flex min-h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13px] font-bold text-[#162126] no-underline"
+                <button
+                  type="button"
+                  onClick={() => setShowChoiceModal(true)}
+                  className="inline-flex min-h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13px] font-bold text-[#162126] cursor-pointer hover:bg-gray-50 transition-colors"
                 >
                   Browse Resources
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -1569,6 +1573,11 @@ export function TwoWaysSection() {
           </div>
         </div>
       </section>
+
+      <PlatformChoiceModal
+        isOpen={showChoiceModal}
+        onClose={() => setShowChoiceModal(false)}
+      />
     </>
   );
 }
@@ -1626,6 +1635,7 @@ export function TwoWaysMobile({
   onSelect: (index: TwoWaysIndex) => void;
 }) {
   const reduceMotion = useReducedMotion();
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -1747,13 +1757,19 @@ export function TwoWaysMobile({
           Start the Roadmap
           <ArrowRight className="size-4" />
         </Link>
-        <Link
-          href={toolsHref}
-          className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/20"
+        <button
+          type="button"
+          onClick={() => setShowChoiceModal(true)}
+          className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126] cursor-pointer hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/20"
         >
           Browse Resources
-        </Link>
+        </button>
       </div>
+
+      <PlatformChoiceModal
+        isOpen={showChoiceModal}
+        onClose={() => setShowChoiceModal(false)}
+      />
     </div>
   );
 }
