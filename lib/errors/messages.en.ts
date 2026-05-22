@@ -196,7 +196,7 @@ export const en: Record<ErrorId, string> = {
   // ─── VISA JOURNEY ─────────────────────────────────────────────────────────
 
   // 1300 — Register receipt, save failed after upload
-  1300: "Your receipt couldn't be saved. Your upload is still here — tap 'Save' again. If this keeps happening, check your internet connection.",
+  1300: "Your receipt couldn't be saved. Your information is still here — tap 'Save' again. If this keeps happening, check your internet connection.",
 
   // 1301 — Register receipt, fetch failed on load (data not deleted)
   1301: "We couldn't load your saved receipt right now. Refresh the page to try again. Your data has not been deleted.",
@@ -683,7 +683,7 @@ export const en: Record<ErrorId, string> = {
 
   // USCIS
   1977: "Please enter your receipt number so we can check your case status.",
-  1978: "That receipt number looks incorrect. It should be 13 characters: 3 letters followed by 10 digits (for example: MSC2590123456).",
+  1978: "That receipt number looks incorrect. It should be 13 characters: 3 letters followed by 10 digits (for example: IOE2590123456).",
   1979: "We couldn't find a case for that receipt number. Double-check the number and try again.",
   1980: "We couldn't verify the request right now. Please wait a moment and try again.",
   1981: "USCIS is temporarily unavailable. Please try again later.",
