@@ -34,6 +34,71 @@ export interface InterviewResult {
   created_at: string;
 }
 
+export interface InterviewPrepRoundSummary {
+  coveredCount: number;
+  partialCount: number;
+  missedCount: number;
+  skippedCount: number;
+  earnedPoints: number;
+  possiblePoints: number;
+  readinessScore: number;
+  weakQuestionIds: string[];
+}
+
+export interface InterviewPrepQuestionResponse {
+  question: GeneratedQuestion;
+  response: "covered" | "partial" | "missed" | "skipped" | null;
+  index: number;
+}
+
+export type InterviewPrepProgressScreen = "training" | "results" | "completed";
+
+export interface InterviewPrepSessionProgress {
+  id: string;
+  session_id: string;
+  current_round: number;
+  current_question_index: number;
+  round_question_ids: string[];
+  completed_question_ids: string[];
+  retry_question_ids: string[];
+  mastered_question_ids: string[];
+  question_responses: InterviewPrepQuestionResponse[];
+  round_summary: InterviewPrepRoundSummary | null;
+  last_round_score: number;
+  total_rounds_completed: number;
+  score: number;
+  time_left: number;
+  show_answer: boolean;
+  is_flipped: boolean;
+  user_response: InterviewPrepQuestionResponse["response"];
+  skipped_questions: number;
+  screen: InterviewPrepProgressScreen;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InterviewPrepSessionProgressInput {
+  current_round: number;
+  current_question_index: number;
+  round_question_ids: string[];
+  completed_question_ids: string[];
+  retry_question_ids: string[];
+  mastered_question_ids: string[];
+  question_responses: InterviewPrepQuestionResponse[];
+  round_summary: InterviewPrepRoundSummary | null;
+  last_round_score: number;
+  total_rounds_completed: number;
+  score: number;
+  time_left: number;
+  show_answer: boolean;
+  is_flipped: boolean;
+  user_response: InterviewPrepQuestionResponse["response"];
+  skipped_questions: number;
+  screen: InterviewPrepProgressScreen;
+  completed: boolean;
+}
+
 // Interfaces for intake questionnaire and question bank
 export interface IntakeQuestion {
   key: string;

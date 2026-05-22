@@ -2,9 +2,17 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { GeneratedQuestion } from "@/lib/interview-prep";
+import {
+  GeneratedQuestion,
+  InterviewPrepQuestionResponse,
+  InterviewPrepRoundSummary,
+  InterviewPrepSessionProgressInput,
+  InterviewPrepProgressScreen,
+} from "@/lib/interview-prep";
 import confetti from "canvas-confetti";
-import { X, RotateCcw, Zap } from "lucide-react";
+import { X, Zap } from "lucide-react";
+
+const QUESTIONS_PER_ROUND = 12;
 
 interface RapidFireModeProps {
   sessionId: string;
@@ -14,11 +22,158 @@ interface RapidFireModeProps {
   savedAnswers?: Record<string, string>;
 }
 
-interface QuestionResponse {
-  question: GeneratedQuestion;
-  response: "covered" | "partial" | "missed" | "skipped" | null;
-  index: number;
+type QuestionResponse = InterviewPrepQuestionResponse;
+type AdaptiveScreen = InterviewPrepProgressScreen;
+type RoundSummary = InterviewPrepRoundSummary;
+
+interface PersistedAdaptiveTraining {
+  sessionId: string;
+  currentRound: number;
+  completedQuestionIds: string[];
+  retryQuestionIds: string[];
+  masteredQuestionIds: string[];
+  lastRoundScore: number;
+  totalRoundsCompleted: number;
+  completed: boolean;
+  currentQuestionIndex: number;
+  timeLeft: number;
+  score: number;
+  showAnswer: boolean;
+  isFlipped: boolean;
+  userResponse: QuestionResponse["response"];
+  questionResponses: QuestionResponse[];
+  shuffledQuestionIds: string[];
+  screen: AdaptiveScreen;
+  roundSummary: RoundSummary | null;
+  skippedQuestions: number;
 }
+
+const buildProgressEndpoint = (sessionId: string) =>
+  `/api/interview-prep/sessions/${sessionId}/progress`;
+
+const computeRoundSummary = (
+  responses: QuestionResponse[],
+): RoundSummary => {
+  const coveredCount = responses.filter((response) => response.response === "covered").length;
+  const partialCount = responses.filter((response) => response.response === "partial").length;
+  const missedCount = responses.filter((response) => response.response === "missed").length;
+  const skippedCount = responses.filter((response) => response.response === "skipped").length;
+
+  const earnedPoints = coveredCount * 10 + partialCount * 5;
+  const possiblePoints = (coveredCount + partialCount + missedCount) * 10;
+  return {
+    coveredCount,
+    partialCount,
+    missedCount,
+    skippedCount,
+    earnedPoints,
+    possiblePoints,
+    readinessScore:
+      possiblePoints > 0 ? Math.round((earnedPoints / possiblePoints) * 100) : 0,
+    weakQuestionIds: responses
+      .filter((response) => response.response === "missed" || response.response === "skipped")
+      .map((response) => response.question.id),
+  };
+};
+
+// Round-selection and retry/mastered computation moved to server.
+// Client no longer derives retry lists; server endpoint computes next-round payload.
+
+const loadPersistedAdaptiveTraining = async (
+  sessionId: string,
+): Promise<PersistedAdaptiveTraining | null> => {
+  try {
+    const response = await fetch(buildProgressEndpoint(sessionId), {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = await response.json();
+    const progress = payload?.progress;
+
+    if (!progress) {
+      return null;
+    }
+
+    return {
+      sessionId,
+      currentRound: progress.current_round,
+      completedQuestionIds: progress.completed_question_ids || [],
+      retryQuestionIds: progress.retry_question_ids || [],
+      masteredQuestionIds: progress.mastered_question_ids || [],
+      lastRoundScore: progress.last_round_score || 0,
+      totalRoundsCompleted: progress.total_rounds_completed || 0,
+      completed: progress.completed || false,
+      currentQuestionIndex: progress.current_question_index || 0,
+      timeLeft: progress.time_left || 10,
+      score: progress.score || 0,
+      showAnswer: progress.show_answer || false,
+      isFlipped: progress.is_flipped || false,
+      userResponse: progress.user_response || null,
+      questionResponses: progress.question_responses || [],
+      shuffledQuestionIds: progress.round_question_ids || [],
+      screen: progress.screen || "training",
+      roundSummary: progress.round_summary || null,
+      skippedQuestions: progress.skipped_questions || 0,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const savePersistedAdaptiveTraining = async (
+  state: PersistedAdaptiveTraining,
+) => {
+  const payload: InterviewPrepSessionProgressInput = {
+    current_round: state.currentRound,
+    current_question_index: state.currentQuestionIndex,
+    round_question_ids: state.shuffledQuestionIds,
+    completed_question_ids: state.completedQuestionIds,
+    retry_question_ids: state.retryQuestionIds,
+    mastered_question_ids: state.masteredQuestionIds,
+    question_responses: state.questionResponses,
+    round_summary: state.roundSummary,
+    last_round_score: state.lastRoundScore,
+    total_rounds_completed: state.totalRoundsCompleted,
+    score: state.score,
+    time_left: state.timeLeft,
+    show_answer: state.showAnswer,
+    is_flipped: state.isFlipped,
+    user_response: state.userResponse,
+    skipped_questions: state.skippedQuestions,
+    screen: state.screen,
+    completed: state.completed,
+  };
+
+  try {
+    await fetch(buildProgressEndpoint(state.sessionId), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // best-effort persistence
+  }
+};
+
+const clearPersistedAdaptiveTraining = async (sessionId: string) => {
+  try {
+    await fetch(buildProgressEndpoint(sessionId), {
+      method: "DELETE",
+      credentials: "include",
+    });
+  } catch {
+    // best-effort persistence
+  }
+};
 
 type ConfettiLevel = "excellent" | "good";
 
@@ -65,12 +220,18 @@ export const RapidFireModePage = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [score, setScore] = useState(0);
+  const [roundScore, setRoundScore] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [userResponse, setUserResponse] = useState<
     "covered" | "partial" | "missed" | "skipped" | null
   >(null);
   const [totalScore, setTotalScore] = useState<number | null>(null);
+  const [screen, setScreen] = useState<AdaptiveScreen>("training");
+  const [roundSummary, setRoundSummary] = useState<RoundSummary | null>(null);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [resumeProgress, setResumeProgress] = useState<PersistedAdaptiveTraining | null>(null);
+  const [isStorageReady, setIsStorageReady] = useState(false);
   const [skippedQuestions, setSkippedQuestions] = useState<number>(0);
   const [questionResponses, setQuestionResponses] = useState<
     QuestionResponse[]
@@ -78,11 +239,19 @@ export const RapidFireModePage = ({
   const [reviewQuestion, setReviewQuestion] =
     useState<GeneratedQuestion | null>(null);
   const [isReviewFlipped, setIsReviewFlipped] = useState(false);
+
+  // States for retry rounds
+  const [currentRound, setCurrentRound] = useState(1);
+  const [usedQuestionIds, setUsedQuestionIds] = useState<string[]>([]);
+  const [completedQuestionIds, setCompletedQuestionIds] = useState<string[]>([]);
+  const [retryQuestionIds, setRetryQuestionIds] = useState<string[]>([]);
+  const [masteredQuestionIds, setMasteredQuestionIds] = useState<string[]>([]);
+  const [totalRoundsCompleted, setTotalRoundsCompleted] = useState(0);
+  const hasHydratedProgressRef = useRef(false);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   const confettiFiredRef = useRef(false);
 
@@ -107,9 +276,14 @@ export const RapidFireModePage = ({
     return shuffled;
   };
 
+  // NOTE: `buildQuestionRound` moved to server-side; client no longer performs full round computation.
+
   const [shuffledQuestions, setShuffledQuestions] = useState<
     GeneratedQuestion[]
-  >(() => shuffleArray(questions.filter((q) => q.applicable)));
+  >(() => shuffleArray(questions).filter((q) => q.applicable).slice(0, QUESTIONS_PER_ROUND));
+  const roundQuestionCount = QUESTIONS_PER_ROUND;
+  const currentQuestion = shuffledQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / roundQuestionCount) * 100;
 
   const getProgressGradient = (percent: number) => {
     return {
@@ -117,7 +291,124 @@ export const RapidFireModePage = ({
     };
   };
 
+  // Track used questions
   useEffect(() => {
+    const ids = shuffledQuestions.map((q) => q.id);
+
+    setUsedQuestionIds((prev) => [...new Set([...prev, ...ids])]);
+    setCompletedQuestionIds((prev) => [...new Set([...prev, ...ids])]);
+  }, [shuffledQuestions]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const hydrateProgress = async () => {
+      const savedProgress = await loadPersistedAdaptiveTraining(sessionId);
+
+      if (cancelled) return;
+
+      if (savedProgress && !savedProgress.completed) {
+        setResumeProgress(savedProgress);
+        setShowResumePrompt(true);
+        setScreen(savedProgress.screen);
+        setCurrentRound(savedProgress.currentRound);
+        setUsedQuestionIds(savedProgress.completedQuestionIds);
+        setCompletedQuestionIds(savedProgress.completedQuestionIds);
+        setRetryQuestionIds(savedProgress.retryQuestionIds);
+        setMasteredQuestionIds(savedProgress.masteredQuestionIds);
+        setTotalRoundsCompleted(savedProgress.totalRoundsCompleted);
+        setRoundScore(savedProgress.lastRoundScore);
+        setTotalScore(savedProgress.lastRoundScore);
+        setRoundSummary(savedProgress.roundSummary);
+        setSkippedQuestions(savedProgress.skippedQuestions);
+        setCurrentQuestionIndex(savedProgress.currentQuestionIndex);
+        setTimeLeft(savedProgress.timeLeft);
+        setScore(savedProgress.score);
+        setShowAnswer(savedProgress.showAnswer);
+        setIsFlipped(savedProgress.isFlipped);
+        setUserResponse(savedProgress.userResponse);
+        setQuestionResponses(savedProgress.questionResponses);
+
+        const restoredQuestions = savedProgress.shuffledQuestionIds
+          .map((questionId) =>
+            questions.find((question) => question.id === questionId),
+          )
+          .filter(Boolean) as GeneratedQuestion[];
+
+        if (restoredQuestions.length > 0) {
+          setShuffledQuestions(restoredQuestions);
+        }
+      }
+
+      hasHydratedProgressRef.current = true;
+      setIsStorageReady(true);
+    };
+
+    void hydrateProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [questions, sessionId]);
+
+  useEffect(() => {
+    if (!isStorageReady || showResumePrompt || !hasHydratedProgressRef.current) {
+      return;
+    }
+
+    const adaptiveState: PersistedAdaptiveTraining = {
+      sessionId,
+      currentRound,
+      completedQuestionIds,
+      retryQuestionIds,
+      masteredQuestionIds,
+      lastRoundScore: roundScore ?? totalScore ?? 0,
+      totalRoundsCompleted,
+      completed: screen === "completed",
+      currentQuestionIndex,
+      timeLeft,
+      score,
+      showAnswer,
+      isFlipped,
+      userResponse,
+      questionResponses,
+      shuffledQuestionIds: shuffledQuestions.map((question) => question.id),
+      screen,
+      roundSummary,
+      skippedQuestions,
+    };
+
+    void savePersistedAdaptiveTraining(adaptiveState);
+  }, [
+    currentQuestionIndex,
+    currentRound,
+    isFlipped,
+    isStorageReady,
+    masteredQuestionIds,
+    questionResponses,
+    roundScore,
+    roundSummary,
+    retryQuestionIds,
+    screen,
+    score,
+    sessionId,
+    shuffledQuestions,
+    showAnswer,
+    showResumePrompt,
+    skippedQuestions,
+    timeLeft,
+    totalRoundsCompleted,
+    totalScore,
+    userResponse,
+    usedQuestionIds,
+    completedQuestionIds,
+  ]);
+
+  useEffect(() => {
+    if (screen !== "training" || showResumePrompt) {
+      return;
+    }
+
     if (timeLeft > 0 && !showAnswer) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -132,7 +423,7 @@ export const RapidFireModePage = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [timeLeft, showAnswer]);
+  }, [currentQuestion, currentQuestionIndex, screen, showAnswer, showResumePrompt, timeLeft, userResponse]);
 
   const handleResponse = (response: "covered" | "partial" | "missed") => {
     if (timerRef.current) {
@@ -153,6 +444,9 @@ export const RapidFireModePage = ({
       index: currentQuestionIndex,
     };
 
+    const responsePoints =
+      response === "covered" ? 10 : response === "partial" ? 5 : 0;
+
     setQuestionResponses((prev) => {
       const existingIndex = prev.findIndex(
         (r) => r.index === currentQuestionIndex,
@@ -165,20 +459,34 @@ export const RapidFireModePage = ({
       return [...prev, newResponse];
     });
 
-    let points = 0;
-    switch (response) {
-      case "covered":
-        points = 10;
-        break;
-      case "partial":
-        points = 5;
-        break;
-      case "missed":
-        points = 0;
-        break;
+    setUsedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
+    setCompletedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
+
+    if (response === "covered" || response === "partial") {
+      setMasteredQuestionIds((prev) => [
+        ...new Set([...prev, currentQuestion.id]),
+      ]);
+    
+      setRetryQuestionIds((prev) =>
+        prev.filter((id) => id !== currentQuestion.id),
+      );
+    } else if (response === "missed") {
+      setRetryQuestionIds((prev) => [
+        ...new Set([...prev, currentQuestion.id]),
+      ]);
     }
 
-    const newScore = score + points;
+    const previousResponse = questionResponses.find(
+      (item) => item.index === currentQuestionIndex,
+    );
+    const previousPoints =
+      previousResponse?.response === "covered"
+        ? 10
+        : previousResponse?.response === "partial"
+          ? 5
+          : 0;
+
+    const newScore = score - previousPoints + responsePoints;
     setScore(newScore);
   };
 
@@ -189,53 +497,13 @@ export const RapidFireModePage = ({
       setShowAnswer(false);
       setIsFlipped(false);
       setUserResponse(null);
-    } else {
-      // Ensure all questions have responses recorded
-      const allResponses = [...questionResponses];
-
-      // Add any missing questions as 'missed' (in case they timed out without explicit response)
-      // But don't overwrite skipped questions
-      for (let i = 0; i < shuffledQuestions.length; i++) {
-        const existingResponse = allResponses.find((r) => r.index === i);
-        if (!existingResponse) {
-          allResponses.push({
-            question: shuffledQuestions[i],
-            response: "missed",
-            index: i,
-          });
-        } else if (existingResponse.response === "skipped") {
-          // Keep skipped responses as is
-          continue;
-        }
-      }
-
-      // Calculate final score based on actual responses
-      const coveredCount = allResponses.filter(
-        (r) => r.response === "covered",
-      ).length;
-      const partialCount = allResponses.filter(
-        (r) => r.response === "partial",
-      ).length;
-      const skippedCount = allResponses.filter(
-        (r) => r.response === "skipped",
-      ).length;
-
-      const totalPoints = coveredCount * 10 + partialCount * 5;
-      const maxPossiblePoints = (shuffledQuestions.length - skippedCount) * 10;
-
-      const percentageScore =
-        maxPossiblePoints > 0
-          ? Math.round((totalPoints / maxPossiblePoints) * 100)
-          : 0;
-
-      // Update the state with complete response data
-      setQuestionResponses(allResponses);
-      setTotalScore(percentageScore);
-      saveReadinessScore(percentageScore);
+      return;
     }
+
+    finalizeRound();
   };
 
-  const saveReadinessScore = async (score: number) => {
+  const saveReadinessScore = async (scoreToSave: number) => {
     try {
       const userEmail =
         typeof window !== "undefined"
@@ -249,7 +517,7 @@ export const RapidFireModePage = ({
         body: JSON.stringify({
           action: "update-readiness-score",
           userEmail,
-          score,
+          score: scoreToSave,
         }),
       });
     } catch (error) {
@@ -257,10 +525,97 @@ export const RapidFireModePage = ({
     }
   };
 
+  const finalizeRound = () => {
+    const normalizedResponses: QuestionResponse[] = shuffledQuestions.map(
+      (question, index) => {
+        const existingResponse = questionResponses.find(
+          (response) => response.index === index,
+        );
+
+        return (
+          existingResponse ?? {
+            question,
+            response: "missed",
+            index,
+          }
+        ) as QuestionResponse;
+      },
+    );
+
+    const summary = computeRoundSummary(normalizedResponses);
+    const completedIds = [
+      ...new Set([
+        ...completedQuestionIds,
+        ...normalizedResponses.map((response) => response.question.id),
+      ]),
+    ];
+
+    const isTrainingComplete =
+      summary.weakQuestionIds.length === 0 &&
+      questions.filter((q) => q.applicable && !completedIds.includes(q.id)).length === 0;
+
+    setQuestionResponses(normalizedResponses);
+    setRoundSummary(summary);
+    setRoundScore(summary.readinessScore);
+    setTotalScore(summary.readinessScore);
+    setCompletedQuestionIds(completedIds);
+    setSkippedQuestions(summary.skippedCount);
+    setScreen(isTrainingComplete ? "completed" : "results");
+    setTotalRoundsCompleted((prev) => Math.max(prev, currentRound));
+
+    if (isTrainingComplete) {
+      fireConfetti(summary.readinessScore >= 80 ? "excellent" : "good");
+    }
+
+    saveReadinessScore(summary.readinessScore);
+  };
+
+  const startNextRound = async () => {
+    if (screen === "completed") return;
+
+    const resp = await fetch(`/api/interview-prep/sessions/${sessionId}/next-round`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        questionResponses,
+        allQuestions: questions,
+        completedQuestionIds,
+        currentRound,
+      }),
+    });
+
+    if (!resp.ok) {
+      console.error("Failed to fetch next round", await resp.text());
+      return;
+    }
+
+    const data = await resp.json();
+
+    setCurrentRound(data.currentRound ?? currentRound + 1);
+    setShuffledQuestions(data.shuffledQuestions ?? []);
+    setRetryQuestionIds(data.retryQuestionIds ?? []);
+    setMasteredQuestionIds(data.masteredQuestionIds ?? []);
+    setCompletedQuestionIds(data.completedQuestionIds ?? []);
+    setRoundSummary(data.roundSummary ?? null);
+    setTotalScore(data.totalScore ?? totalScore);
+
+    setQuestionResponses([]);
+    setRoundScore(null);
+    setShowAnswer(false);
+    setIsFlipped(false);
+    setUserResponse(null);
+    setSkippedQuestions(0);
+    setCurrentQuestionIndex(0);
+    setShowResumePrompt(false);
+    setResumeProgress(null);
+    setTotalRoundsCompleted((prev) => Math.max(prev, data.currentRound ?? currentRound + 1));
+
+    setScreen(data.isTrainingComplete ? "completed" : "training");
+  };
+
   const skipQuestion = () => {
     setSkippedQuestions((prev) => prev + 1);
 
-    // Store skipped question response
     const newResponse: QuestionResponse = {
       question: currentQuestion,
       response: "skipped",
@@ -279,68 +634,51 @@ export const RapidFireModePage = ({
       return [...prev, newResponse];
     });
 
-    // Reset state and go to next question
     setUserResponse("skipped");
     setShowAnswer(true);
     setIsFlipped(true);
+    setUsedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
+    setCompletedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
+    setRetryQuestionIds((prev) => [
+      ...new Set([...prev, currentQuestion.id]),
+    ]);
+    
+    setMasteredQuestionIds((prev) =>
+      prev.filter((id) => id !== currentQuestion.id),
+    );
   };
 
   const restartRapidFire = () => {
+    void clearPersistedAdaptiveTraining(sessionId);
     setCurrentQuestionIndex(0);
     setTimeLeft(10);
     setScore(0);
+    setRoundScore(null);
     setShowAnswer(false);
     setIsFlipped(false);
     setUserResponse(null);
     setTotalScore(null);
+    setScreen("training");
+    setRoundSummary(null);
+    setShowResumePrompt(false);
+    setResumeProgress(null);
+    setIsStorageReady(false);
     setSkippedQuestions(0);
     setQuestionResponses([]);
     setReviewQuestion(null);
     setIsReviewFlipped(false);
-    setShuffledQuestions(shuffleArray(questions.filter((q) => q.applicable)));
+    setCurrentRound(1);
+    setUsedQuestionIds([]);
+    setRetryQuestionIds([]);
+    setMasteredQuestionIds([]);
+    setTotalRoundsCompleted(0);
+    setShuffledQuestions(shuffleArray(questions).filter((q) => q.applicable).slice(0, QUESTIONS_PER_ROUND));
   };
 
-  // Track timed-out questions properly
-  useEffect(() => {
-    if (timeLeft === 0 && !showAnswer && userResponse === null) {
-      // Check if this question was already recorded as skipped
-      const isAlreadySkipped = questionResponses.some(
-        (r) => r.index === currentQuestionIndex && r.response === "skipped",
-      );
-
-      if (!isAlreadySkipped) {
-        // Auto-mark as missed when time expires (only if not already skipped)
-        const newResponse: QuestionResponse = {
-          question: currentQuestion,
-          response: "missed",
-          index: currentQuestionIndex,
-        };
-
-        setQuestionResponses((prev) => {
-          const existingIndex = prev.findIndex(
-            (r) => r.index === currentQuestionIndex,
-          );
-          if (existingIndex >= 0) {
-            // Don't overwrite skipped responses
-            if (prev[existingIndex].response === "skipped") {
-              return prev;
-            }
-            const updated = [...prev];
-            updated[existingIndex] = newResponse;
-            return updated;
-          }
-          return [...prev, newResponse];
-        });
-      }
-    }
-  }, [
-    timeLeft,
-    showAnswer,
-    userResponse,
-    currentQuestion,
-    currentQuestionIndex,
-    questionResponses,
-  ]);
+  const continueAdaptiveTraining = () => {
+    setShowResumePrompt(false);
+    setResumeProgress(null);
+  };
 
   const handleReviewQuestionClick = (question: GeneratedQuestion) => {
     setReviewQuestion(question);
@@ -368,7 +706,6 @@ export const RapidFireModePage = ({
                 Switch to Prep Mode
               </Button>
               <Button onClick={onExit} variant="outline">
-                Exit Rapid Fire
               </Button>
             </div>
           </div>
@@ -377,16 +714,74 @@ export const RapidFireModePage = ({
     );
   }
 
-  if (totalScore !== null) {
+  if (showResumePrompt && resumeProgress) {
+    const previewRetryCount = resumeProgress.retryQuestionIds.length;
+    const availableFresh = questions.filter(
+      (q) =>
+        q.applicable &&
+        !resumeProgress.completedQuestionIds.includes(q.id) &&
+        !resumeProgress.masteredQuestionIds.includes(q.id) &&
+        !resumeProgress.retryQuestionIds.includes(q.id),
+    ).length;
+    const previewFreshCount = Math.min(QUESTIONS_PER_ROUND - previewRetryCount, Math.max(0, availableFresh));
+
+    return (
+      <div className="fixed inset-0 z-9999 flex items-center justify-center bg-slate-950 px-4 overflow-hidden">
+        <div className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]">
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-[0.24em] text-[#0d7377] font-semibold">
+              Resume Adaptive Training
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold text-slate-900">
+              Continue Adaptive Training?
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Round {resumeProgress.currentRound + 1} Ready
+            </p>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-slate-500">Retry questions</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{previewRetryCount}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-slate-500">New questions</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{previewFreshCount}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              className="h-12 flex-1 border-slate-200 text-slate-700 hover:bg-slate-50"
+              onClick={restartRapidFire}
+            >
+              Restart Training
+            </Button>
+            <Button
+              onClick={continueAdaptiveTraining}
+            >
+              Continue Training
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === "results" || screen === "completed") {
     return (
       <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
         <div className="">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Rapid Fire Completed!
+              {screen === "completed" ? "Training Complete!" : "Round Complete"}
             </h1>
             <p className="text-slate-600">
-              Your interview readiness assessment
+              {screen === "completed"
+                ? "Your final readiness assessment"
+                : `Round ${currentRound} performance summary`}
             </p>
           </div>
 
@@ -396,11 +791,7 @@ export const RapidFireModePage = ({
                 <div className="w-40 h-40 rounded-full border-8 border-teal-200 flex items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
                   <div className="text-center">
                     <span className="text-4xl font-bold text-teal-700">
-                      {Math.round(
-                        (score /
-                          (shuffledQuestions.length - skippedQuestions)) *
-                          10,
-                      )}
+                      {roundScore ?? totalScore ?? 0}
                       %
                     </span>
                     <div className="text-sm text-teal-600 font-medium mt-1">
@@ -411,16 +802,16 @@ export const RapidFireModePage = ({
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                   <div
                     className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                      totalScore >= 80
+                      (roundScore ?? totalScore ?? 0) >= 80
                         ? "bg-green-100 text-green-800"
-                        : totalScore >= 60
+                        : (roundScore ?? totalScore ?? 0) >= 60
                           ? "bg-amber-100 text-amber-800"
                           : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {totalScore >= 80
+                    {(roundScore ?? totalScore ?? 0) >= 80
                       ? "Excellent"
-                      : totalScore >= 60
+                      : (roundScore ?? totalScore ?? 0) >= 60
                         ? "Good"
                         : "Needs Practice"}
                   </div>
@@ -429,18 +820,18 @@ export const RapidFireModePage = ({
 
               <div className="space-y-3">
                 <p className="text-lg text-slate-700 font-medium">
-                  {totalScore >= 80
+                  {(roundScore ?? totalScore ?? 0) >= 80
                     ? "Outstanding interview preparation!"
-                    : totalScore >= 60
+                    : (roundScore ?? totalScore ?? 0) >= 60
                       ? "Solid foundation established!"
                       : "Keep practicing to build confidence"}
                 </p>
                 <p className="text-slate-500">
                   You scored{" "}
-                  <span className="font-semibold text-teal-600">{score}</span>{" "}
+                  <span className="font-semibold text-teal-600">{roundSummary?.earnedPoints ?? score}</span>{" "}
                   points out of{" "}
                   <span className="font-semibold">
-                    {(shuffledQuestions.length - skippedQuestions) * 10}
+                    {roundSummary?.possiblePoints ?? (shuffledQuestions.length - skippedQuestions) * 10}
                   </span>{" "}
                   possible
                 </p>
@@ -458,28 +849,19 @@ export const RapidFireModePage = ({
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
                 <div className="text-2xl font-bold text-emerald-600">
-                  {
-                    questionResponses.filter((r) => r.response === "covered")
-                      .length
-                  }
+                    {roundSummary?.coveredCount ?? questionResponses.filter((r) => r.response === "covered").length}
                 </div>
                 <div className="text-sm text-emerald-700">Covered Well</div>
               </div>
               <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
                 <div className="text-2xl font-bold text-amber-600">
-                  {
-                    questionResponses.filter((r) => r.response === "partial")
-                      .length
-                  }
+                    {roundSummary?.partialCount ?? questionResponses.filter((r) => r.response === "partial").length}
                 </div>
                 <div className="text-sm text-amber-700">Partial Coverage</div>
               </div>
               <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
                 <div className="text-2xl font-bold text-rose-600">
-                  {
-                    questionResponses.filter((r) => r.response === "missed")
-                      .length
-                  }
+                    {roundSummary?.missedCount ?? questionResponses.filter((r) => r.response === "missed").length}
                 </div>
                 <div className="text-sm text-rose-700">Missed</div>
               </div>
@@ -583,7 +965,6 @@ export const RapidFireModePage = ({
                     Close
                   </Button>
                 </div>
-
                 <div
                   className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
                     isReviewFlipped ? "transform rotate-y-180" : ""
@@ -676,18 +1057,27 @@ export const RapidFireModePage = ({
 
             <div className="flex gap-3 justify-center">
               <Button
-                onClick={restartRapidFire}
+                onClick={() => {
+                  setShowResumePrompt(false);
+                  onExit();
+                }}
                 className="bg-teal-600 hover:bg-teal-700 cursor-pointer"
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Try Again
+                Continue Training Later
               </Button>
               <Button
-                onClick={onSwitchToPrep}
+                onClick={startNextRound}
                 className="bg-orange-600 hover:bg-orange-700 cursor-pointer"
+                disabled={screen === "completed"}
               >
-                <Zap className="w-4 h-4 mr-2" />
-                Switch to Prep Mode
+                Start Next Round
+              </Button>
+              <Button
+                onClick={restartRapidFire}
+                variant="outline"
+                className="cursor-pointer"
+              >
+                Restart Training
               </Button>
               <Button
                 onClick={onExit}
@@ -713,7 +1103,8 @@ export const RapidFireModePage = ({
               Rapid Fire Mode
             </h1>
             <p className="text-slate-600">
-              Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
+              Round {currentRound} • Question {currentQuestionIndex + 1} of{" "}
+              {roundQuestionCount}
             </p>
           </div>
 
@@ -747,7 +1138,7 @@ export const RapidFireModePage = ({
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-[350px] sm:h-[400px] lg:h-[450px] mb-8">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-87.5 sm:h-100 lg:h-112.5 mb-8">
           <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
             <div
               className={`relative w-full h-full cursor-pointer transition-transform duration-700 ease-out-cubic ${
@@ -988,7 +1379,11 @@ export const RapidFireModePage = ({
 
         <div className="flex justify-center gap-3 mt-4">
           {!showAnswer ? (
-            <Button onClick={skipQuestion} variant="outline" className="bg-white hover:bg-slate-50">
+            <Button
+              onClick={skipQuestion}
+              variant="outline"
+              className="bg-white hover:bg-slate-50"
+            >
               Skip Question
             </Button>
           ) : (
