@@ -7,6 +7,7 @@
     {
       "id": "spouse-full-name",
       "category": "Spouse Information",
+      "tier": "free",
       "priority": "high",
       "mockInterviewOrder": 1,
       "question": "What is your spouse's full name?",
@@ -99,6 +100,7 @@
     {
       "id": "basic-case-marriage-date",
       "category": "Basic Case Information",
+      "tier": "free",
       "priority": "high",
       "mockInterviewOrder": 25,
       "question": "What is your date of marriage?",
@@ -122,6 +124,7 @@
     {
       "id": "basic-case-marriage-location",
       "category": "Basic Case Information",
+      "tier": "free",
       "priority": "high",
       "mockInterviewOrder": 26,
       "question": "Where did the marriage take place (city & country)?",
@@ -974,6 +977,7 @@
     {
       "id": "spouse-dob",
       "category": "Spouse Information",
+      "tier": "free",
       "priority": "high",
       "mockInterviewOrder": 2,
       "question": "What is your spouse's date of birth?",
@@ -994,6 +998,7 @@
     {
       "id": "spouse-current-location",
       "category": "Spouse Information",
+      "tier": "free",
       "priority": "high",
       "mockInterviewOrder": 4,
       "question": "Where does your spouse currently live (city, country)?",

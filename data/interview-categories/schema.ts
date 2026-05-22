@@ -83,10 +83,15 @@ export interface InterviewQuestion {
   id: string;
   category: string;
   question: string;
-  suggestedAnswer: string;
+  sampleAnswer: string;
   guidance: string;
   tooltip: string;
+<<<<<<< HEAD
   priority: "high" | "medium" | "low";
+=======
+  priority: 'high' | 'medium' | 'low';
+  tier?: 'free' | 'basic' | 'premium' | 'executive';
+>>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
   mockInterviewOrder?: number;
   skipIf?: SkipCondition[];
 }

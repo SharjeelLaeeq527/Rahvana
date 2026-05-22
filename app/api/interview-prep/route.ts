@@ -15,8 +15,8 @@ import { categoryLoader } from "@/lib/interview-prep/category-loader";
  *
  * Body:
  * - category_slug: string (e.g., 'ir-1-spouse')
- * - user_email: string (optional)
- * - user_name: string (optional)
+ * - user_email: string 
+ * - user_name: string 
  */
 export async function POST(request: NextRequest) {
   try {
@@ -40,13 +40,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Create session
-    const session = await createInterviewSession({
+    const result = await createInterviewSession({
       category_slug,
       user_email: user_email,
       user_name: user_name,
     });
 
+<<<<<<< HEAD
     return NextResponse.json({ success: true, session }, { status: 201 });
+=======
+    return NextResponse.json(
+      {
+        success: true,
+        alreadyExists: result.alreadyExists,
+        session: result.session,
+      },
+      {
+        status: result.alreadyExists ? 200 : 201,
+      },
+    );
+>>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
   } catch (error) {
     console.error("Error creating interview session:", error);
     return NextResponse.json({ error: "Failed to create interview session" }, { status: 500 });

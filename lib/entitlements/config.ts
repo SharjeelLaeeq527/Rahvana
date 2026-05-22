@@ -308,7 +308,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Basic Interview Prep (non-mock general practice). */
   basic_interview_prep: {
-    free: lockedUpgrade("basic"),
+    free: full(), // lockedUpgrade('basic'),
     basic: full(),
     premium: full(),
     executive: full(),
