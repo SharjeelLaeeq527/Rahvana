@@ -5,6 +5,8 @@ import {
   InterviewAnswer,
   InterviewResult,
   InterviewSessionInput,
+  InterviewPrepSessionProgress,
+  InterviewPrepSessionProgressInput,
 } from "./types";
 
 async function getSupabaseWithUser() {
@@ -62,6 +64,25 @@ export async function getInterviewSessionDB(
   }
 
   return data as InterviewSession;
+}
+
+export async function getInterviewSessionByCategory(
+  category_slug: string
+): Promise<InterviewSession | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("category_slug", category_slug)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as InterviewSession | null;
 }
 
 // Get latest incomplete session for current user
@@ -224,6 +245,67 @@ export async function getInterviewResultsDB(
   }
 
   return data as InterviewResult;
+}
+
+export async function getInterviewSessionProgressDB(
+  sessionId: string,
+): Promise<InterviewPrepSessionProgress | null> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) return null;
+
+  const { data, error } = await supabase
+    .from("interview_prep_session_progress")
+    .select("*")
+    .eq("session_id", sessionId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  return (data as InterviewPrepSessionProgress) || null;
+}
+
+export async function upsertInterviewSessionProgressDB(
+  sessionId: string,
+  payload: InterviewPrepSessionProgressInput,
+): Promise<InterviewPrepSessionProgress> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const { data, error } = await supabase
+    .from("interview_prep_session_progress")
+    .upsert(
+      {
+        session_id: sessionId,
+        ...payload,
+      },
+      { onConflict: "session_id" },
+    )
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as InterviewPrepSessionProgress;
+}
+
+export async function deleteInterviewSessionProgressDB(
+  sessionId: string,
+): Promise<void> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const { error } = await supabase
+    .from("interview_prep_session_progress")
+    .delete()
+    .eq("session_id", sessionId);
+
+  if (error) throw new Error(error.message);
 }
 
 // STEP 5: Save user answer text for interview question

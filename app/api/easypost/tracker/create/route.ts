@@ -44,7 +44,10 @@ export async function POST(request: NextRequest) {
     // Step 2: Save tracker ID and initial status to case_data
     const now = new Date().toISOString();
 
-    await Promise.all([
+    const eventId = `${trackerData.id}:${trackerData.status}:${trackerData.updated_at}`;
+
+    const writes: Promise<any>[] = [];
+    writes.push(
       db.upsertCaseDataDB(caseId, "easypost_tracker_id", {
         data_key: "easypost_tracker_id",
         data_value: trackerData.id,
@@ -52,6 +55,9 @@ export async function POST(request: NextRequest) {
         source: "easypost_api",
         source_reference: "tracker_creation",
       }),
+    );
+
+    writes.push(
       db.upsertCaseDataDB(caseId, "tracking_status", {
         data_key: "tracking_status",
         data_value: trackerData.status,
@@ -59,13 +65,40 @@ export async function POST(request: NextRequest) {
         source: "easypost_api",
         source_reference: "tracker_creation",
       }),
+    );
+
+    writes.push(
       db.upsertCaseDataDB(caseId, "tracking_last_checked_at", {
         data_key: "tracking_last_checked_at",
         data_value: now,
         source: "easypost_api",
         source_reference: "tracker_creation",
       }),
-    ]);
+    );
+
+    // Save last processed event id for idempotency
+    writes.push(
+      db.upsertCaseDataDB(caseId, "easypost_last_event_id", {
+        data_key: "easypost_last_event_id",
+        data_value: eventId,
+        source: "easypost_api",
+        source_reference: "tracker_creation",
+      }),
+    );
+
+    // If already delivered, record delivered_at
+    if (trackerData.status === "delivered" && trackerData.updated_at) {
+      writes.push(
+        db.upsertCaseDataDB(caseId, "delivered_at", {
+          data_key: "delivered_at",
+          data_value: trackerData.updated_at,
+          source: "easypost_api",
+          source_reference: "tracker_creation",
+        }),
+      );
+    }
+
+    await Promise.all(writes);
 
     console.log(`[EasyPost API] Tracker saved to case: ${trackerData.id}`);
 
