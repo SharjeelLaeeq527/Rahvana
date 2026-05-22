@@ -62,9 +62,7 @@ export const TrackVisaIssuanceTool: React.FC<TrackVisaIssuanceToolProps> = ({
             {tool.checklist.map((item: string, i: number) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#3b7dd8] mt-[7px] shrink-0" />
-                <span className="text-[13.5px] text-[#3a4f63] leading-relaxed">
-                  {item}
-                </span>
+                <span className="text-[13.5px] text-[#3a4f63] leading-relaxed">{item}</span>
               </div>
             ))}
           </div>
@@ -92,17 +90,13 @@ export const TrackVisaIssuanceTool: React.FC<TrackVisaIssuanceToolProps> = ({
                     <Check size={16} className="text-[#0d6b6b]" strokeWidth={2.5} />
                   )}
                 </div>
-                <div className="text-[14px] font-bold text-[#0c1b33]">
-                  {section.title}
-                </div>
+                <div className="text-[14px] font-bold text-[#0c1b33]">{section.title}</div>
               </div>
               <div className="flex flex-col gap-2.5">
                 {section.items.map((item: string, i: number) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-1 h-1 rounded-full bg-[#d0e4f7] mt-[7.5px] shrink-0" />
-                    <span className="text-[13px] text-[#3a4f63] leading-relaxed">
-                      {item}
-                    </span>
+                    <span className="text-[13px] text-[#3a4f63] leading-relaxed">{item}</span>
                   </div>
                 ))}
               </div>
@@ -110,7 +104,6 @@ export const TrackVisaIssuanceTool: React.FC<TrackVisaIssuanceToolProps> = ({
           ))}
         </div>
       )}
-
     </div>
   );
 };

@@ -53,8 +53,7 @@ const cardHoverVariants = {
   initial: { y: 0, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" },
   hover: {
     y: -8,
-    boxShadow:
-      "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+    boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
     transition: { type: "spring" as const, stiffness: 300, damping: 20 },
   },
 };
@@ -67,9 +66,7 @@ export default function DocumentVaultGuidePage() {
     {
       icon: Zap,
       title: t("documentVaultPage.guide.features.personalization.title"),
-      description: t(
-        "documentVaultPage.guide.features.personalization.description",
-      ),
+      description: t("documentVaultPage.guide.features.personalization.description"),
       color: "bg-amber-100 text-amber-600",
     },
     {
@@ -109,9 +106,7 @@ export default function DocumentVaultGuidePage() {
     },
     {
       id: "relationship",
-      title: t(
-        "documentVaultPage.guide.coverage.categories.relationship.title",
-      ),
+      title: t("documentVaultPage.guide.coverage.categories.relationship.title"),
       icon: Heart,
       items:
         (t("documentVaultPage.guide.coverage.categories.relationship.items", {
@@ -205,10 +200,7 @@ export default function DocumentVaultGuidePage() {
           animate="visible"
           className="text-center mb-24 max-w-4xl mx-auto"
         >
-          <motion.div
-            variants={itemVariants}
-            className="flex justify-center mb-6"
-          >
+          <motion.div variants={itemVariants} className="flex justify-center mb-6">
             <Badge
               variant="outline"
               className="px-4 py-2 text-sm bg-white/80 backdrop-blur-md border-blue-200 text-blue-700 shadow-xs rounded-full"
@@ -222,8 +214,7 @@ export default function DocumentVaultGuidePage() {
             variants={itemVariants}
             className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6"
           >
-            {t("documentVaultPage.guide.hero.titleLine1")}{" "}
-            <br className="hidden md:block" />
+            {t("documentVaultPage.guide.hero.titleLine1")} <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-600 via-teal-500 to-cyan-500">
               {t("documentVaultPage.guide.hero.titleHighlight")}
             </span>
@@ -256,9 +247,7 @@ export default function DocumentVaultGuidePage() {
               size="lg"
               className="h-14 px-8 rounded-full text-lg bg-white/80 hover:bg-white border-blue-200 text-slate-700 hover:text-blue-700"
             >
-              <Link href="#features">
-                {t("documentVaultPage.guide.hero.howItWorks")}
-              </Link>
+              <Link href="#features">{t("documentVaultPage.guide.hero.howItWorks")}</Link>
             </Button>
           </motion.div>
         </motion.div>
@@ -282,11 +271,11 @@ export default function DocumentVaultGuidePage() {
                 __html: t("documentVaultPage.guide.about.description")
                   .replace(
                     "secure, intelligent workspace",
-                    `<span class="text-blue-600 font-semibold">secure, intelligent workspace</span>`,
+                    `<span class="text-blue-600 font-semibold">secure, intelligent workspace</span>`
                   )
                   .replace(
                     "محفوظ اور ذہین ورک اسپیس",
-                    `<span class="text-blue-600 font-semibold">محفوظ اور ذہین ورک اسپیس</span>`,
+                    `<span class="text-blue-600 font-semibold">محفوظ اور ذہین ورک اسپیس</span>`
                   ),
               }}
             />
@@ -305,10 +294,7 @@ export default function DocumentVaultGuidePage() {
                       returnObjects: true,
                     }) as string[]) || []
                   ).map((con, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start text-slate-500 text-sm"
-                    >
+                    <li key={i} className="flex items-start text-slate-500 text-sm">
                       <XCircle className="w-5 h-5 text-red-400 mr-3 mt-0.5 shrink-0" />
                       <span>{con}</span>
                     </li>
@@ -329,15 +315,10 @@ export default function DocumentVaultGuidePage() {
                       returnObjects: true,
                     }) as { title: string; desc: string }[]) || []
                   ).map((pro, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start text-slate-700 text-sm"
-                    >
+                    <li key={i} className="flex items-start text-slate-700 text-sm">
                       <CheckCircle2 className="w-5 h-5 text-emerald-500 mr-3 mt-0.5 shrink-0" />
                       <span className="flex-1">
-                        <strong className="block mb-1 text-slate-900">
-                          {pro.title}
-                        </strong>{" "}
+                        <strong className="block mb-1 text-slate-900">{pro.title}</strong>{" "}
                         {pro.desc}
                       </span>
                     </li>
@@ -349,10 +330,7 @@ export default function DocumentVaultGuidePage() {
         </motion.div>
 
         {/* Features Grid */}
-        <div
-          id="features"
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32"
-        >
+        <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
           {features.map((feature, idx) => (
             <motion.div
               key={idx}
@@ -366,12 +344,8 @@ export default function DocumentVaultGuidePage() {
                   <div className={`p-4 rounded-2xl ${feature.color} mb-6`}>
                     <feature.icon className="w-8 h-8" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-slate-600 text-lg leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+                  <p className="text-slate-600 text-lg leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -414,15 +388,10 @@ export default function DocumentVaultGuidePage() {
                     >
                       <cat.icon className="w-6 h-6" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-4">
-                      {cat.title}
-                    </h3>
+                    <h3 className="text-xl font-bold text-slate-900 mb-4">{cat.title}</h3>
                     <ul className="space-y-2">
                       {cat.items.map((item, i) => (
-                        <li
-                          key={i}
-                          className="flex items-center text-slate-600 text-sm"
-                        >
+                        <li key={i} className="flex items-center text-slate-600 text-sm">
                           <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500 shrink-0" />
                           {item}
                         </li>
@@ -472,9 +441,7 @@ export default function DocumentVaultGuidePage() {
             <h2 className="text-3xl font-bold text-slate-900 mb-4">
               {t("documentVaultPage.guide.faqs.title")}
             </h2>
-            <p className="text-slate-600">
-              {t("documentVaultPage.guide.faqs.subtitle")}
-            </p>
+            <p className="text-slate-600">{t("documentVaultPage.guide.faqs.subtitle")}</p>
           </div>
 
           <Accordion type="single" collapsible className="w-full space-y-4">
@@ -519,8 +486,7 @@ export default function DocumentVaultGuidePage() {
               className="h-16 px-10 rounded-full text-lg bg-white text-slate-900 hover:bg-blue-50 transition-colors shadow-lg hover:shadow-white/20"
             >
               <Link href="/document-vault">
-                {t("documentVaultPage.guide.cta.button")}{" "}
-                <ArrowRight className="ml-2 w-5 h-5" />
+                {t("documentVaultPage.guide.cta.button")} <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>
           </div>

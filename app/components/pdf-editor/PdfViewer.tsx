@@ -85,9 +85,10 @@ export function PDFViewer({
     setTotalPages,
   } = usePDFStore();
 
-  const actualTotalPages = pageModifications.length > 0
-    ? pageModifications.filter((mod) => !mod.deleted).length
-    : totalPages;
+  const actualTotalPages =
+    pageModifications.length > 0
+      ? pageModifications.filter((mod) => !mod.deleted).length
+      : totalPages;
 
   const getCurrentPageInfo = () => {
     if (pageModifications.length === 0) return { originalIndex: currentPage, rotation: 0 };
@@ -130,7 +131,7 @@ export function PDFViewer({
         if (cancelled) return;
 
         const viewport = page.getViewport({ scale, rotation: pageInfo.rotation });
-        
+
         // Store original page dimensions
         const originalViewport = page.getViewport({ scale: 1, rotation: pageInfo.rotation });
         setPageWidth(originalViewport.width);
@@ -148,7 +149,7 @@ export function PDFViewer({
             // Ignore cancellation errors
           }
         }
-        
+
         renderTask = page.render({ canvasContext: context, viewport });
         await renderTask.promise;
 
@@ -175,7 +176,7 @@ export function PDFViewer({
         }
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfDoc, currentPage, scale, pageModifications]);
 
   // Move floating signature/shape
@@ -249,7 +250,6 @@ export function PDFViewer({
       });
       onExitAddText?.();
       onSelectAnnotation(id);
-
     } else if (activeTool === "signature" && signature && isSignatureFloating) {
       addSignatureAnnotation({
         id: Date.now().toString(),
@@ -263,7 +263,6 @@ export function PDFViewer({
       });
       setIsSignatureFloating(false);
       onExitAddText?.();
-
     } else if (activeTool === "shapes" && selectedShape && isShapeFloating) {
       const id = Date.now().toString();
       addShapeAnnotation({
@@ -287,25 +286,40 @@ export function PDFViewer({
 
   return (
     <div className="flex flex-col h-full">
-
       {/* Top Toolbar */}
       <div className="flex items-center justify-between bg-white border-b px-4 py-2 shrink-0">
         <div className="flex items-center gap-2">
-          <Button onClick={() => setCurrentPage(Math.max(0, currentPage - 1))} disabled={currentPage === 0} variant="ghost" size="sm">
+          <Button
+            onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+            disabled={currentPage === 0}
+            variant="ghost"
+            size="sm"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-medium">{currentPage + 1} / {actualTotalPages}</span>
-          <Button onClick={() => setCurrentPage(Math.min(actualTotalPages - 1, currentPage + 1))} disabled={currentPage === actualTotalPages - 1} variant="ghost" size="sm">
+          <span className="text-sm font-medium">
+            {currentPage + 1} / {actualTotalPages}
+          </span>
+          <Button
+            onClick={() => setCurrentPage(Math.min(actualTotalPages - 1, currentPage + 1))}
+            disabled={currentPage === actualTotalPages - 1}
+            variant="ghost"
+            size="sm"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={() => setScale((p) => Math.max(0.08, p - 0.2))} variant="ghost" size="sm">
+          <Button
+            onClick={() => setScale((p) => Math.max(0.08, p - 0.2))}
+            variant="ghost"
+            size="sm"
+          >
             <ZoomOut className="h-4 w-4" />
           </Button>
 
-          <Button 
+          <Button
             onClick={() => {
               if (containerRef.current) {
                 if (fitMode === "width" && pageWidth) {
@@ -319,9 +333,13 @@ export function PDFViewer({
                 }
               }
             }}
-            variant="outline" 
+            variant="outline"
             size="sm"
-            title={fitMode === "width" ? t("pdfProcessing.editor.viewer.fitWidthOpt") : t("pdfProcessing.editor.viewer.fitHeightOpt")}
+            title={
+              fitMode === "width"
+                ? t("pdfProcessing.editor.viewer.fitWidthOpt")
+                : t("pdfProcessing.editor.viewer.fitHeightOpt")
+            }
           >
             <Maximize2 className="h-4 w-4" />
           </Button>
@@ -363,8 +381,10 @@ export function PDFViewer({
       </div>
 
       {/* PDF Viewer */}
-      <div ref={containerRef} className="flex-1 flex justify-center items-start overflow-auto bg-gray-100 p-4">
-        
+      <div
+        ref={containerRef}
+        className="flex-1 flex justify-center items-start overflow-auto bg-gray-100 p-4"
+      >
         {isLoading && (
           <div className="absolute top-1/2 left-1/2 text-gray-500 -translate-x-1/2 -translate-y-1/2 z-50">
             {t("pdfProcessing.editor.viewer.loading")}
@@ -381,10 +401,10 @@ export function PDFViewer({
                 activeTool === "text"
                   ? "crosshair"
                   : activeTool === "signature" && isSignatureFloating
-                  ? "crosshair"
-                  : activeTool === "shapes" && isShapeFloating
-                  ? "crosshair"
-                  : "default",
+                    ? "crosshair"
+                    : activeTool === "shapes" && isShapeFloating
+                      ? "crosshair"
+                      : "default",
             }}
             onClick={handleOverlayClick}
           >
@@ -454,10 +474,7 @@ export function PDFViewer({
       {/* Shape Toolbar */}
       {selectedShapeObj && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-9999">
-          <ShapeFormattingToolbar
-            shape={selectedShapeObj}
-            onUpdate={updateShapeAnnotation}
-          />
+          <ShapeFormattingToolbar shape={selectedShapeObj} onUpdate={updateShapeAnnotation} />
         </div>
       )}
     </div>

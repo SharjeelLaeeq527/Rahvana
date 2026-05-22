@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
  * POST /api/easypost/webhook
  * Receives webhook events from EasyPost
  * Signature verification included
- * 
+ *
  * Note: We update the database and Supabase Realtime automatically
  * broadcasts the change to connected clients on Vercel
  */
@@ -20,25 +20,14 @@ export async function POST(request: NextRequest) {
     const webhookSecret = process.env.EASYPOST_WEBHOOK_SECRET;
     if (!webhookSecret) {
       console.error("[EasyPost Webhook] EASYPOST_WEBHOOK_SECRET not configured");
-      return NextResponse.json(
-        { error: "Webhook secret not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
     }
 
-    const expectedSignature = crypto
-      .createHmac("sha256", webhookSecret)
-      .update(body)
-      .digest("hex");
+    const expectedSignature = crypto.createHmac("sha256", webhookSecret).update(body).digest("hex");
 
     if (signature !== expectedSignature) {
-      console.warn(
-        "[EasyPost Webhook] Invalid signature - potential security threat",
-      );
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 401 },
-      );
+      console.warn("[EasyPost Webhook] Invalid signature - potential security threat");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     const data = JSON.parse(body);
@@ -53,10 +42,7 @@ export async function POST(request: NextRequest) {
       const caseData = await findCaseByTrackerId(trackerId);
       if (!caseData) {
         console.log(`[EasyPost Webhook] No case found for tracker ${trackerId}`);
-        return NextResponse.json(
-          { success: true, message: "No associated case" },
-          { status: 200 },
-        );
+        return NextResponse.json({ success: true, message: "No associated case" }, { status: 200 });
       }
 
       const journeyId = caseData.journey_id;
@@ -88,16 +74,11 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      console.log(
-        `[EasyPost Webhook] Updated case ${journeyId} - Status: ${tracker.status}`,
-      );
+      console.log(`[EasyPost Webhook] Updated case ${journeyId} - Status: ${tracker.status}`);
       // Supabase Realtime will automatically broadcast this DB change to all subscribers
     }
 
-    return NextResponse.json(
-      { success: true, message: "Webhook processed" },
-      { status: 200 },
-    );
+    return NextResponse.json({ success: true, message: "Webhook processed" }, { status: 200 });
   } catch (error) {
     console.error("[EasyPost Webhook] Error processing webhook:", error);
     return NextResponse.json(
@@ -105,7 +86,7 @@ export async function POST(request: NextRequest) {
         error: "Failed to process webhook",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

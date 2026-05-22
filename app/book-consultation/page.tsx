@@ -33,11 +33,7 @@ interface Booking {
   email: string;
   visa_category: string;
   issue_category: string;
-  status:
-    | "confirmed"
-    | "pending_approval"
-    | "alternatives_proposed"
-    | "cancelled";
+  status: "confirmed" | "pending_approval" | "alternatives_proposed" | "cancelled";
   selected_slot: string;
   alternate_slots?: string[];
   admin_notes?: string;
@@ -159,9 +155,7 @@ const ConsultationBookingPage = () => {
   };
 
   // View state
-  const [activeView, setActiveView] = useState<"booking" | "requests">(
-    "booking",
-  );
+  const [activeView, setActiveView] = useState<"booking" | "requests">("booking");
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -192,13 +186,9 @@ const ConsultationBookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [referenceId, setReferenceId] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showConsultationUpgradeModal, setShowConsultationUpgradeModal] =
-    useState(false);
-  const [remainingConsultations, setRemainingConsultations] = useState<
-    number | null
-  >(null);
-  const [consultationCreditsLoading, setConsultationCreditsLoading] =
-    useState(true);
+  const [showConsultationUpgradeModal, setShowConsultationUpgradeModal] = useState(false);
+  const [remainingConsultations, setRemainingConsultations] = useState<number | null>(null);
+  const [consultationCreditsLoading, setConsultationCreditsLoading] = useState(true);
   const { tier } = usePlan();
   const { checkAccess, consumeAccess } = useFeatureAccess();
   const hasExecutiveAccess = tier === "executive";
@@ -474,10 +464,7 @@ const ConsultationBookingPage = () => {
             };
 
             const displayTime = slotDate.toLocaleTimeString([], formatOptions);
-            const displayEndTime = slotEndDate.toLocaleTimeString(
-              [],
-              formatOptions,
-            );
+            const displayEndTime = slotEndDate.toLocaleTimeString([], formatOptions);
 
             return {
               id: slot.id,
@@ -572,10 +559,7 @@ const ConsultationBookingPage = () => {
     }
   };
 
-  const handleInputChange = (
-    field: keyof FormData,
-    value: string | boolean | Date | Date[],
-  ) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean | Date | Date[]) => {
     // Validate phone number field to prevent alphabetic characters
     if (field === "phone_number" && typeof value === "string") {
       // Allow only digits, spaces, hyphens, parentheses, plus signs, and periods
@@ -633,14 +617,10 @@ const ConsultationBookingPage = () => {
   };
 
   const handleAlternateSlotSelect = (slot: TimeSlot) => {
-    if (
-      formData.alternate_slots.some((s) => s.getTime() === slot.date.getTime())
-    ) {
+    if (formData.alternate_slots.some((s) => s.getTime() === slot.date.getTime())) {
       setFormData((prev) => ({
         ...prev,
-        alternate_slots: prev.alternate_slots.filter(
-          (s) => s.getTime() !== slot.date.getTime(),
-        ),
+        alternate_slots: prev.alternate_slots.filter((s) => s.getTime() !== slot.date.getTime()),
       }));
     } else {
       if (formData.alternate_slots.length < 2) {
@@ -671,7 +651,7 @@ const ConsultationBookingPage = () => {
     if (!formData.full_name || !validateName(formData.full_name)) {
       showToast(
         "Please enter a valid full name (letters, spaces, hyphens, apostrophes only).",
-        "error",
+        "error"
       );
       setLoading(false);
       return;
@@ -686,17 +666,14 @@ const ConsultationBookingPage = () => {
     if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
       showToast(
         `Please enter a valid phone number for the selected country (${formData.country_code}).`,
-        "error",
+        "error"
       );
       setLoading(false);
       return;
     }
 
     if (!formData.case_summary || !validateCaseSummary(formData.case_summary)) {
-      showToast(
-        "Please provide a detailed case summary with at least 20 characters.",
-        "error",
-      );
+      showToast("Please provide a detailed case summary with at least 20 characters.", "error");
       setLoading(false);
       return;
     }
@@ -766,7 +743,7 @@ const ConsultationBookingPage = () => {
       const finalPhoneStr =
         `${formData.country_code}${cleanPhoneNumber.startsWith("+") ? cleanPhoneNumber.substring(1) : cleanPhoneNumber}`.replace(
           /\s+/g,
-          "",
+          ""
         );
 
       const payload = {
@@ -774,9 +751,7 @@ const ConsultationBookingPage = () => {
         whatsapp_phone: finalPhoneStr,
         attachments: uploadedPaths,
         selected_slot: formData.selected_slot?.toISOString(),
-        alternate_slots: formData.alternate_slots?.map((slot) =>
-          slot.toISOString(),
-        ),
+        alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
       };
 
       console.log("Final Payload:", payload);
@@ -834,10 +809,7 @@ const ConsultationBookingPage = () => {
       if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
         newErrors.phone_number = "Please enter a valid phone number";
       }
-      if (
-        !formData.case_summary ||
-        !validateCaseSummary(formData.case_summary)
-      ) {
+      if (!formData.case_summary || !validateCaseSummary(formData.case_summary)) {
         newErrors.case_summary = "Case summary must be at least 20 characters";
       }
       if (!formData.consent) {
@@ -905,9 +877,7 @@ const ConsultationBookingPage = () => {
                   className={errors.issue_category ? "border-red-500" : ""}
                 />
                 {errors.issue_category && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.issue_category}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.issue_category}</p>
                 )}
               </div>
               {/* <div>
@@ -956,9 +926,7 @@ const ConsultationBookingPage = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Case Stage *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Case Stage *</label>
                 <CustomDropdown
                   value={formData.case_stage}
                   onChange={(value) => {
@@ -976,9 +944,7 @@ const ConsultationBookingPage = () => {
                   className={errors.case_stage ? "border-red-500" : ""}
                 />
                 {errors.case_stage && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.case_stage}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.case_stage}</p>
                 )}
               </div>
               <div>
@@ -987,17 +953,13 @@ const ConsultationBookingPage = () => {
                 </label>
                 <CustomDropdown
                   value={formData.embassy_consulate}
-                  onChange={(value) =>
-                    handleInputChange("embassy_consulate", value)
-                  }
+                  onChange={(value) => handleInputChange("embassy_consulate", value)}
                   options={embassyOptions}
                   placeholder="Select embassy..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Urgency *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Urgency *</label>
                 <CustomDropdown
                   value={formData.urgency}
                   onChange={(value) => handleInputChange("urgency", value)}
@@ -1013,9 +975,7 @@ const ConsultationBookingPage = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                   <input
@@ -1046,9 +1006,7 @@ const ConsultationBookingPage = () => {
                   />
                 </div>
                 {errors.full_name && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.full_name}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.full_name}</p>
                 )}
               </div>
               <div>
@@ -1084,9 +1042,7 @@ const ConsultationBookingPage = () => {
                     required
                   />
                 </div>
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
+                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1119,10 +1075,7 @@ const ConsultationBookingPage = () => {
                       value={formData.phone_number}
                       onChange={(e) => {
                         // Allow only digits, spaces, hyphens, parentheses, plus signs, and periods
-                        const cleanedValue = e.target.value.replace(
-                          /[^\d\s\-\(\)\+.]/g,
-                          "",
-                        );
+                        const cleanedValue = e.target.value.replace(/[^\d\s\-\(\)\+.]/g, "");
                         handleInputChange("phone_number", cleanedValue);
                         // Clear error when user types
                         if (errors.phone_number) {
@@ -1134,9 +1087,7 @@ const ConsultationBookingPage = () => {
                         }
                       }}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                        errors.phone_number
-                          ? "border-red-500"
-                          : "border-gray-300"
+                        errors.phone_number ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder={getPhonePlaceholder(formData.country_code)}
                       required
@@ -1144,20 +1095,14 @@ const ConsultationBookingPage = () => {
                   </div>
                 </div>
                 {errors.phone_number && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.phone_number}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.phone_number}</p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Language *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Language *</label>
                 <CustomDropdown
                   value={formData.preferred_language}
-                  onChange={(value) =>
-                    handleInputChange("preferred_language", value)
-                  }
+                  onChange={(value) => handleInputChange("preferred_language", value)}
                   options={preferredLanguageOptions}
                   placeholder="Select language..."
                 />
@@ -1189,9 +1134,7 @@ const ConsultationBookingPage = () => {
                 <div className="bg-gray-100 group-hover:bg-teal-100 transition-colors w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                   <FileText className="h-6 w-6 text-gray-400 group-hover:text-teal-600" />
                 </div>
-                <p className="text-sm font-bold text-gray-700">
-                  Click to upload or drag and drop
-                </p>
+                <p className="text-sm font-bold text-gray-700">Click to upload or drag and drop</p>
                 <p className="text-xs text-gray-500 mt-1">
                   Notices, letters, or forms relevant to your case
                 </p>
@@ -1227,9 +1170,7 @@ const ConsultationBookingPage = () => {
                   // Validate case summary length
                   if (summaryValue && !validateCaseSummary(summaryValue)) {
                     // Optionally show a character count or warning
-                    console.warn(
-                      "Case summary should be at least 20 characters",
-                    );
+                    console.warn("Case summary should be at least 20 characters");
                   }
                   handleInputChange("case_summary", summaryValue);
                   // Clear error when user types
@@ -1249,9 +1190,7 @@ const ConsultationBookingPage = () => {
                 required
               />
               {errors.case_summary && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.case_summary}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.case_summary}</p>
               )}
             </div>
             <div className="bg-teal-50/50 border border-teal-100 p-5 rounded-2xl">
@@ -1278,14 +1217,11 @@ const ConsultationBookingPage = () => {
                   />
                 </div>
                 <span className="text-xs text-gray-600 leading-relaxed font-medium group-hover:text-teal-900 transition-colors">
-                  I consent to being contacted via email and WhatsApp. I
-                  understand this consultation provides general guidance and
-                  does not constitute legal advice.
+                  I consent to being contacted via email and WhatsApp. I understand this
+                  consultation provides general guidance and does not constitute legal advice.
                 </span>
               </label>
-              {errors.consent && (
-                <p className="mt-1 text-sm text-red-600">{errors.consent}</p>
-              )}
+              {errors.consent && <p className="mt-1 text-sm text-red-600">{errors.consent}</p>}
             </div>
           </div>
         );
@@ -1296,8 +1232,7 @@ const ConsultationBookingPage = () => {
               <div className="flex items-center gap-3">
                 <Info className="h-5 w-5 text-blue-600 mt-0.5" />
                 <p className="text-sm text-blue-700">
-                  Selected slots are held as &#34;Pending Approval&#34; until
-                  confirmed.
+                  Selected slots are held as &#34;Pending Approval&#34; until confirmed.
                 </p>
               </div>
               <div className="flex justify-end">
@@ -1324,7 +1259,7 @@ const ConsultationBookingPage = () => {
                         ? "border-teal-500 bg-teal-50"
                         : slot.available
                           ? "border-gray-200 hover:border-teal-300 hover:bg-teal-50/30"
-                          : "opacity-50 cursor-not-allowed bg-gray-50",
+                          : "opacity-50 cursor-not-allowed bg-gray-50"
                     )}
                   >
                     <div className="flex items-center gap-2 text-sm font-medium">
@@ -1343,9 +1278,7 @@ const ConsultationBookingPage = () => {
               ) : (
                 <div className="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
                   <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">
-                    No consultation slots are currently available.
-                  </p>
+                  <p className="text-gray-500">No consultation slots are currently available.</p>
                   <p className="text-xs text-gray-400 mt-1">
                     Please check back later or contact us for assistance.
                   </p>
@@ -1354,15 +1287,11 @@ const ConsultationBookingPage = () => {
             </div>
             {formData.selected_slot && (
               <div className="space-y-4">
-                <p className="text-sm font-medium">
-                  Alternative Slots (Optional - Max 2)
-                </p>
+                <p className="text-sm font-medium">Alternative Slots (Optional - Max 2)</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {availableSlots
                     .filter(
-                      (s) =>
-                        s.available &&
-                        s.date.getTime() !== formData.selected_slot?.getTime(),
+                      (s) => s.available && s.date.getTime() !== formData.selected_slot?.getTime()
                     )
                     .slice(0, 6)
                     .map((slot) => (
@@ -1371,11 +1300,9 @@ const ConsultationBookingPage = () => {
                         onClick={() => handleAlternateSlotSelect(slot)}
                         className={cn(
                           "border rounded-lg p-3 cursor-pointer transition text-xs",
-                          formData.alternate_slots.some(
-                            (s) => s.getTime() === slot.date.getTime(),
-                          )
+                          formData.alternate_slots.some((s) => s.getTime() === slot.date.getTime())
                             ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:bg-gray-50",
+                            : "border-gray-200 hover:bg-gray-50"
                         )}
                       >
                         {slot.date.toLocaleDateString()} - {slot.formattedTime}
@@ -1424,9 +1351,7 @@ const ConsultationBookingPage = () => {
                   placeholder="Search by name, email or Reference ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && fetchUserBookings(searchQuery)
-                  }
+                  onKeyDown={(e) => e.key === "Enter" && fetchUserBookings(searchQuery)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition text-sm"
                 />
                 <Globe className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -1447,9 +1372,7 @@ const ConsultationBookingPage = () => {
               ) : userBookings.length === 0 ? (
                 <div className="text-center py-20">
                   <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">
-                    No requests found
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900">No requests found</h3>
                   <p className="text-gray-500 mt-1">
                     We couldn&#39;t find any requests matching your criteria.
                   </p>
@@ -1475,34 +1398,27 @@ const ConsultationBookingPage = () => {
                                   ? "bg-yellow-100 text-yellow-700"
                                   : booking.status === "alternatives_proposed"
                                     ? "bg-purple-100 text-purple-700"
-                                    : "bg-gray-100 text-gray-700",
+                                    : "bg-gray-100 text-gray-700"
                             )}
                           >
                             {booking.status?.replace("_", " ")}
                           </span>
                         </div>
-                        <h4 className="font-bold text-gray-900">
-                          {booking.full_name}
-                        </h4>
+                        <h4 className="font-bold text-gray-900">{booking.full_name}</h4>
                         <p className="text-sm text-gray-500">
                           {booking.visa_category} • {booking.issue_category}
                         </p>
                       </div>
                       <div className="text-right flex flex-col items-end gap-2">
                         <div>
-                          <p className="text-xs text-gray-400 mb-1">
-                            Requested Date
-                          </p>
+                          <p className="text-xs text-gray-400 mb-1">Requested Date</p>
                           <p className="text-sm font-medium">
-                            {new Date(booking.selected_slot).toLocaleString(
-                              undefined,
-                              {
-                                month: "short",
-                                day: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit",
-                              },
-                            )}
+                            {new Date(booking.selected_slot).toLocaleString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
                           </p>
                         </div>
 
@@ -1514,31 +1430,26 @@ const ConsultationBookingPage = () => {
                                 Alternative Slots Proposed:
                               </p>
                               <div className="flex flex-wrap gap-2">
-                                {booking.alternate_slots.map(
-                                  (slot: string, idx: number) => (
-                                    <Button
-                                      key={idx}
-                                      onClick={() =>
-                                        handleAcceptAlternative(
-                                          booking.id,
-                                          new Date(slot),
-                                        )
-                                      }
-                                      variant="outline"
-                                      className="text-[10px] py-1 h-auto bg-white hover:bg-teal-600 hover:text-white transition-colors"
-                                    >
-                                      {new Date(slot).toLocaleDateString(
-                                        undefined,
-                                        { month: "short", day: "numeric" },
-                                      )}{" "}
-                                      @{" "}
-                                      {new Date(slot).toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </Button>
-                                  ),
-                                )}
+                                {booking.alternate_slots.map((slot: string, idx: number) => (
+                                  <Button
+                                    key={idx}
+                                    onClick={() =>
+                                      handleAcceptAlternative(booking.id, new Date(slot))
+                                    }
+                                    variant="outline"
+                                    className="text-[10px] py-1 h-auto bg-white hover:bg-teal-600 hover:text-white transition-colors"
+                                  >
+                                    {new Date(slot).toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                    })}{" "}
+                                    @{" "}
+                                    {new Date(slot).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </Button>
+                                ))}
                               </div>
                               {booking.admin_notes && (
                                 <p className="mt-2 text-[10px] text-teal-800 italic">
@@ -1570,19 +1481,13 @@ const ConsultationBookingPage = () => {
             <h2 className="text-2xl font-bold mb-2">Request Received!</h2>
             <p className="text-gray-600 mb-6">
               Your reference ID is:{" "}
-              <span className="font-mono font-bold text-teal-700">
-                {referenceId}
-              </span>
+              <span className="font-mono font-bold text-teal-700">{referenceId}</span>
             </p>
             <div className="space-y-3">
               <Button onClick={resetForm} className="w-full bg-teal-600">
                 Book Another
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push("/")}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={() => router.push("/")} className="w-full">
                 Back to Home
               </Button>
             </div>
@@ -1622,9 +1527,7 @@ const ConsultationBookingPage = () => {
                   {consultationCreditsLoading ? (
                     <span>Loading consultation credits...</span>
                   ) : remainingConsultations !== null ? (
-                    <span>
-                      Remaining consultation credits: {remainingConsultations}/2
-                    </span>
+                    <span>Remaining consultation credits: {remainingConsultations}/2</span>
                   ) : (
                     <span>Consultation credits unavailable</span>
                   )}
@@ -1643,12 +1546,11 @@ const ConsultationBookingPage = () => {
                 disabled={tier !== "executive"}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
-                  activeView === ("booking" as "booking" | "requests") &&
-                    tier === "executive"
+                  activeView === ("booking" as "booking" | "requests") && tier === "executive"
                     ? "bg-white text-teal-800 shadow-lg"
                     : tier !== "executive"
                       ? "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
-                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
                 )}
               >
                 {tier !== "executive" && <Crown className="h-4 w-4" />}
@@ -1660,7 +1562,7 @@ const ConsultationBookingPage = () => {
                   "px-6 py-2 rounded-full text-sm font-bold transition-all",
                   activeView === ("requests" as "booking" | "requests")
                     ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
                 )}
               >
                 My Requests
@@ -1690,16 +1592,13 @@ const ConsultationBookingPage = () => {
                   { step: 2, label: "Contact Info", icon: User },
                   { step: 3, label: "Select Time", icon: Clock },
                 ].map((item) => (
-                  <div
-                    key={item.step}
-                    className="flex flex-col items-center gap-2"
-                  >
+                  <div key={item.step} className="flex flex-col items-center gap-2">
                     <div
                       className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
                         currentStep >= item.step
                           ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-200"
-                          : "bg-white border-gray-200 text-gray-400",
+                          : "bg-white border-gray-200 text-gray-400"
                       )}
                     >
                       {currentStep > item.step ? (
@@ -1711,9 +1610,7 @@ const ConsultationBookingPage = () => {
                     <span
                       className={cn(
                         "text-xs font-bold tracking-tight uppercase",
-                        currentStep >= item.step
-                          ? "text-teal-900"
-                          : "text-gray-400",
+                        currentStep >= item.step ? "text-teal-900" : "text-gray-400"
                       )}
                     >
                       {item.label}
@@ -1749,11 +1646,7 @@ const ConsultationBookingPage = () => {
                     disabled={!formData.selected_slot || loading}
                     className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
                   >
-                    {loading ? (
-                      <Loader size="sm" text="Processing..." />
-                    ) : (
-                      "Request Appointment"
-                    )}
+                    {loading ? <Loader size="sm" text="Processing..." /> : "Request Appointment"}
                   </Button>
                 )}
               </div>
@@ -1781,9 +1674,7 @@ const ConsultationBookingPage = () => {
 export default ConsultationBookingPage;
 
 // Helper components for consistency
-const Info = ({ className }: { className?: string }) => (
-  <AlertCircle className={className} />
-);
+const Info = ({ className }: { className?: string }) => <AlertCircle className={className} />;
 
 type ButtonVariant = "primary" | "outline" | "ghost";
 

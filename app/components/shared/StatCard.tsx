@@ -45,9 +45,7 @@ const StatCard: React.FC<StatCardProps> = ({
           {isLive ? "Live" : "Coming Soon"}
         </div>
         {count !== undefined && isLive && (
-          <span className="text-[22px] font-bold text-[#0a1128] leading-none">
-            {count}
-          </span>
+          <span className="text-[22px] font-bold text-[#0a1128] leading-none">{count}</span>
         )}
       </div>
 
@@ -78,9 +76,7 @@ const StatCard: React.FC<StatCardProps> = ({
 
       {/* Description or count label */}
       {description && (
-        <p className="text-[13px] text-[#67737e] leading-relaxed mb-0">
-          {description}
-        </p>
+        <p className="text-[13px] text-[#67737e] leading-relaxed mb-0">{description}</p>
       )}
       {count !== undefined && isLive && countLabel && (
         <p className="text-[12px] text-[#0d7377] font-medium mt-1">

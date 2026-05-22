@@ -11,7 +11,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating session:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : String(error) || "Failed to create session" },
+      {
+        error: error instanceof Error ? error.message : String(error) || "Failed to create session",
+      },
       { status: 500 }
     );
   }

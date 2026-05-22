@@ -16,9 +16,9 @@ const ReviewStep = ({
     if (type === "boolean") {
       return value === true ? "Yes" : "No";
     }
-    
+
     if (value === undefined || value === null || value === "") return "Not provided";
-    
+
     if (type === "date") {
       try {
         return new Date(value as string).toLocaleDateString();
@@ -26,11 +26,11 @@ const ReviewStep = ({
         return String(value);
       }
     }
-    
+
     if (type === "number") {
       return Number(value).toLocaleString();
     }
-    
+
     return String(value);
   };
 
@@ -39,7 +39,8 @@ const ReviewStep = ({
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-slate-900 mb-3">Review Your Information</h2>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Please review all the information you&apos;ve entered for your {questionnaire.title} before submitting.
+          Please review all the information you&apos;ve entered for your {questionnaire.title}{" "}
+          before submitting.
         </p>
       </div>
 
@@ -67,7 +68,12 @@ const ReviewStep = ({
             <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
               <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
                 </svg>
               </div>
               {section.title}
@@ -76,7 +82,9 @@ const ReviewStep = ({
               {section.questions.map((q: Question) => (
                 <div key={q.id}>
                   <p className="text-sm font-medium text-slate-500 mb-1">{q.label}</p>
-                  <p className="text-lg font-semibold text-slate-900">{formatValue(formData[q.id], q.type)}</p>
+                  <p className="text-lg font-semibold text-slate-900">
+                    {formatValue(formData[q.id], q.type)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -87,8 +95,16 @@ const ReviewStep = ({
       {error && (
         <div className="p-4 bg-destructive/10 border-l-4 border-destructive rounded-lg text-destructive">
           <div className="flex items-start">
-            <svg className="h-5 w-5 text-destructive mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            <svg
+              className="h-5 w-5 text-destructive mt-0.5 mr-3"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
             <span>{error}</span>
           </div>

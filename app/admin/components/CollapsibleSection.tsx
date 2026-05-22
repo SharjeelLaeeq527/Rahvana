@@ -45,19 +45,11 @@ export default function CollapsibleSection({
                 </span>
               )}
             </h2>
-            {description && (
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {description}
-              </p>
-            )}
+            {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
           </div>
         </div>
         <div className="text-muted-foreground">
-          {isOpen ? (
-            <ChevronUp className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
-          )}
+          {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
       </button>
 
@@ -70,9 +62,7 @@ export default function CollapsibleSection({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            <div className="border-t border-border p-6 pt-0">
-              {children}
-            </div>
+            <div className="border-t border-border p-6 pt-0">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>

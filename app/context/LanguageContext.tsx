@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 // Define available languages
 export type Language = "en" | "ur";
@@ -21,9 +15,7 @@ interface LanguageContextType {
 }
 
 // Create the context with default values
-const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined,
-);
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 // Static import of translation files
 import enTranslations from "../translations/en.json";
@@ -34,9 +26,7 @@ interface LanguageProviderProps {
   children: ReactNode;
 }
 
-export const LanguageProvider: React.FC<LanguageProviderProps> = ({
-  children,
-}) => {
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguage] = useState<Language>("en");
 
   // Load language preference from localStorage on mount
@@ -90,14 +80,8 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
       let interpolated = value;
       Object.entries(params).forEach(([k, v]) => {
         // Support both {key} and {{key}} patterns
-        interpolated = interpolated.replace(
-          new RegExp(`{${k}}`, "g"),
-          String(v),
-        );
-        interpolated = interpolated.replace(
-          new RegExp(`{{${k}}}`, "g"),
-          String(v),
-        );
+        interpolated = interpolated.replace(new RegExp(`{${k}}`, "g"), String(v));
+        interpolated = interpolated.replace(new RegExp(`{{${k}}}`, "g"), String(v));
       });
       return interpolated;
     }
@@ -130,11 +114,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     tRaw,
   };
 
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  );
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 };
 
 // Custom hook to use the language context

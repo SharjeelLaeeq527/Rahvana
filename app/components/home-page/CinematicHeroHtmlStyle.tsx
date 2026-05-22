@@ -5,14 +5,13 @@ import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-
 export function CinematicHeroHtmlStyle() {
   // Auth/journey state (must be inside component)
   const { user } = useAuth();
   const { t } = useLanguage();
   const [journeys, setJourneys] = useState<null | any[]>(null);
   const [journeysLoading, setJourneysLoading] = useState(false);
-  
+
   useEffect(() => {
     let ignore = false;
     if (!user) {
@@ -96,7 +95,7 @@ export function CinematicHeroHtmlStyle() {
   return (
     <div
       className="relative w-full min-h-screen h-screen flex flex-col justify-center items-center bg-cover bg-center"
-      style={{ backgroundImage: 'url(/assets/images/heroimage.png)' }}
+      style={{ backgroundImage: "url(/assets/images/heroimage.png)" }}
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500&display=swap');
@@ -225,7 +224,10 @@ export function CinematicHeroHtmlStyle() {
       <div className="stage" ref={stageRef}>
         {/* Nav dots for panel navigation */}
         <div className="nav-dots">
-          <div className={`dot${panel === 0 ? " active" : ""}${panel === 1 ? " dark" : ""}`} onClick={() => goTo(0)} />
+          <div
+            className={`dot${panel === 0 ? " active" : ""}${panel === 1 ? " dark" : ""}`}
+            onClick={() => goTo(0)}
+          />
           <div className={`dot${panel === 1 ? " active dark" : ""}`} onClick={() => goTo(1)} />
         </div>
         {/* PANEL 1 */}
@@ -235,15 +237,24 @@ export function CinematicHeroHtmlStyle() {
           <div className="p1-content">
             {/* Eyebrow removed as requested */}
             <h1 className="p1-h1" id="h1">
-              Your IR-1<br />Journey, <em>Simplified</em>
+              Your IR-1
+              <br />
+              Journey, <em>Simplified</em>
             </h1>
             <p className="p1-sub" id="s1">
-            Bringing clarity to each stage, making the process feel more structured and easier to move through from start to finish.
+              Bringing clarity to each stage, making the process feel more structured and easier to
+              move through from start to finish.
             </p>
             <div className="scroll-cta" id="sc" onClick={() => goTo(1)}>
               <div className="scroll-ring">
                 <svg className="chevron-down" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 6l4 4 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M4 6l4 4 4-4"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
               <span className="scroll-label">Discover your path</span>
@@ -255,15 +266,28 @@ export function CinematicHeroHtmlStyle() {
           <div className="p2-left">
             <div className="p2-accent" />
             <p className="p2-eyebrow">Your next chapter</p>
-            <h2 className="p2-h2">Where could your<br />life go <em>next?</em></h2>
-            <p className="p2-sub">Rahvana turns the visa process into a clear, confident journey — with tools and support designed around you.</p>
+            <h2 className="p2-h2">
+              Where could your
+              <br />
+              life go <em>next?</em>
+            </h2>
+            <p className="p2-sub">
+              Rahvana turns the visa process into a clear, confident journey — with tools and
+              support designed around you.
+            </p>
             <div className="btn-row">
               {/* Robust CTA logic, now using Next.js Link and translation for resume journey */}
               {(!user || journeysLoading) && (
                 <Link href="/visa-category/ir-category/ir1-journey" className="btn-dark">
                   Start your journey
                   <svg className="btn-arrow" viewBox="0 0 14 14" fill="none">
-                    <path d="M1 7h12M8 3l5 4-5 4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M1 7h12M8 3l5 4-5 4"
+                      stroke="white"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </Link>
               )}
@@ -280,7 +304,13 @@ export function CinematicHeroHtmlStyle() {
                 <Link href="/visa-category/ir-category/ir1-journey" className="btn-dark">
                   Start my journey
                   <svg className="btn-arrow" viewBox="0 0 14 14" fill="none">
-                    <path d="M1 7h12M8 3l5 4-5 4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M1 7h12M8 3l5 4-5 4"
+                      stroke="white"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </Link>
               )}

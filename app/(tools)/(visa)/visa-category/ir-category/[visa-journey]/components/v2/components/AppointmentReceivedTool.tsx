@@ -62,8 +62,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
     } else if (loc.length < 2) {
       newErrors.consulateLocation = "Must be at least 2 characters.";
     } else if (!/^[a-zA-Z\s\-,\.]+$/.test(loc)) {
-      newErrors.consulateLocation =
-        "Only letters, spaces, dashes, and commas allowed.";
+      newErrors.consulateLocation = "Only letters, spaces, dashes, and commas allowed.";
     }
 
     return newErrors;
@@ -107,9 +106,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex justify-between items-center">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">
-                  Location
-                </label>
+                <label className="text-[11px] font-bold text-slate-500 uppercase">Location</label>
                 <span
                   className={`text-[9px] font-medium ${consulateLocation.length >= 50 ? "text-red-500" : "text-slate-400"}`}
                 >
@@ -122,9 +119,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
                 maxLength={50}
                 placeholder="e.g. Islamabad"
                 onChange={(e) => {
-                  const val = e.target.value
-                    .replace(/[^a-zA-Z\s\-,\.]/g, "")
-                    .slice(0, 50);
+                  const val = e.target.value.replace(/[^a-zA-Z\s\-,\.]/g, "").slice(0, 50);
                   setConsulateLocation(val);
                   setErrors((prev) => ({ ...prev, consulateLocation: "" }));
                 }}

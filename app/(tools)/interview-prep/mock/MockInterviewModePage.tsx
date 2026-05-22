@@ -49,9 +49,7 @@ const formatTime = (seconds: number) => {
   const safeSeconds = Math.max(0, seconds);
   const minutes = Math.floor(safeSeconds / 60);
   const remainder = safeSeconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${remainder
-    .toString()
-    .padStart(2, "0")}`;
+  return `${minutes.toString().padStart(2, "0")}:${remainder.toString().padStart(2, "0")}`;
 };
 
 export function MockInterviewModePage({
@@ -66,10 +64,7 @@ export function MockInterviewModePage({
     const base = questions
       .filter((question) => question.applicable)
       .slice()
-      .sort(
-        (a, b) =>
-          (a.mockInterviewOrder ?? 9999) - (b.mockInterviewOrder ?? 9999),
-      );
+      .sort((a, b) => (a.mockInterviewOrder ?? 9999) - (b.mockInterviewOrder ?? 9999));
 
     // Helper to remove and return items by id list
     const extractByIds = (arr: typeof base, ids: string[]) => {
@@ -111,13 +106,9 @@ export function MockInterviewModePage({
       "finances-shared",
     ];
     const financeMap = extractByIds(base, financeIds);
-    const financeAnchor = base.findIndex(
-      (q) => q.id === "spouse-family-members",
-    );
+    const financeAnchor = base.findIndex((q) => q.id === "spouse-family-members");
     const financeInsertAt = financeAnchor === -1 ? 3 : financeAnchor + 1;
-    const financeItems = financeIds
-      .map((id) => financeMap.get(id))
-      .filter(Boolean) as typeof base;
+    const financeItems = financeIds.map((id) => financeMap.get(id)).filter(Boolean) as typeof base;
     base.splice(financeInsertAt, 0, ...financeItems);
 
     // Promote a set of very-common IR-1 questions if present in the bank
@@ -147,25 +138,18 @@ export function MockInterviewModePage({
     return base;
   }, [questions]);
 
-  const [phase, setPhase] = useState<
-    "intro" | "opening" | "running" | "closing" | "completed"
-  >("intro");
+  const [phase, setPhase] = useState<"intro" | "opening" | "running" | "closing" | "completed">(
+    "intro"
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [secondsRemaining, setSecondsRemaining] = useState(TOTAL_SECONDS);
   const [focusWarnings, setFocusWarnings] = useState(0);
-  const [focusWarningMessage, setFocusWarningMessage] = useState<string | null>(
-    null,
-  );
+  const [focusWarningMessage, setFocusWarningMessage] = useState<string | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showAnsweringFlowModal, setShowAnsweringFlowModal] = useState(false);
-  const [answeringFlowMode, setAnsweringFlowMode] = useState<
-    "toggle" | "pushToTalk"
-  >("toggle");
-  const [questionRecords, setQuestionRecords] = useState<
-    Record<string, QuestionRecord>
-  >({});
-  const [sessionEndReason, setSessionEndReason] =
-    useState<SessionEndReason | null>(null);
+  const [answeringFlowMode, setAnsweringFlowMode] = useState<"toggle" | "pushToTalk">("toggle");
+  const [questionRecords, setQuestionRecords] = useState<Record<string, QuestionRecord>>({});
+  const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null);
 
   const {
     canvasRef: waveformCanvasRef,
@@ -195,12 +179,8 @@ export function MockInterviewModePage({
   const phaseRef = useRef(phase);
   const warningTimestampRef = useRef(0);
   const justStartedRef = useRef(false);
-  const exitRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-  const warningHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const exitRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const explicitExitRef = useRef(false);
   const showExitModalRef = useRef(false);
   const exitViaConfirmRef = useRef(false);
@@ -213,23 +193,18 @@ export function MockInterviewModePage({
       : 0;
 
   const completedCount = Object.values(questionRecords).filter(
-    (record) => record.transcript.trim().length > 0,
+    (record) => record.transcript.trim().length > 0
   ).length;
-  const skippedCount = Object.values(questionRecords).filter(
-    (record) => record.skipped,
-  ).length;
+  const skippedCount = Object.values(questionRecords).filter((record) => record.skipped).length;
   const averageResponseTime =
     Object.values(questionRecords).length > 0
       ? Math.round(
-          Object.values(questionRecords).reduce(
-            (sum, record) => sum + record.durationSeconds,
-            0,
-          ) / Object.values(questionRecords).length,
+          Object.values(questionRecords).reduce((sum, record) => sum + record.durationSeconds, 0) /
+            Object.values(questionRecords).length
         )
       : 0;
 
-  const timeProgressPercent =
-    ((TOTAL_SECONDS - secondsRemaining) / TOTAL_SECONDS) * 100;
+  const timeProgressPercent = ((TOTAL_SECONDS - secondsRemaining) / TOTAL_SECONDS) * 100;
 
   const voiceStatusLabel =
     voiceState === "speaking"
@@ -246,10 +221,7 @@ export function MockInterviewModePage({
     }
 
     const responseText = currentTranscript;
-    const durationSeconds = Math.max(
-      1,
-      Math.round((Date.now() - questionStartRef.current) / 1000),
-    );
+    const durationSeconds = Math.max(1, Math.round((Date.now() - questionStartRef.current) / 1000));
 
     const record: QuestionRecord = {
       transcript: responseText,
@@ -290,7 +262,7 @@ export function MockInterviewModePage({
       clearTranscript();
       questionStartRef.current = Date.now();
     },
-    [clearTranscript, stopListening],
+    [clearTranscript, stopListening]
   );
 
   const requestDocumentFullscreen = async () => {
@@ -324,8 +296,7 @@ export function MockInterviewModePage({
   const isDocumentFullscreenActive = () =>
     Boolean(
       document.fullscreenElement ||
-      (document as Document & { webkitFullscreenElement?: Element | null })
-        .webkitFullscreenElement,
+      (document as Document & { webkitFullscreenElement?: Element | null }).webkitFullscreenElement
     );
 
   const proceedToRun = async () => {
@@ -448,9 +419,7 @@ export function MockInterviewModePage({
       if (nextWarningCount > 2) {
         completeInterview("aborted_focus");
       } else {
-        setFocusWarningMessage(
-          "Please stay focused during the mock interview.",
-        );
+        setFocusWarningMessage("Please stay focused during the mock interview.");
       }
 
       return nextWarningCount;
@@ -483,10 +452,7 @@ export function MockInterviewModePage({
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange,
-      );
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
     };
   }, [stopListening]);
 
@@ -528,14 +494,9 @@ export function MockInterviewModePage({
 
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      const isTypingTarget =
-        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+      const isTypingTarget = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
 
-      if (
-        event.code === "Space" &&
-        !isTypingTarget &&
-        phaseRef.current === "running"
-      ) {
+      if (event.code === "Space" && !isTypingTarget && phaseRef.current === "running") {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
@@ -555,8 +516,7 @@ export function MockInterviewModePage({
       }
 
       const wantsRefresh =
-        event.key === "F5" ||
-        ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r");
+        event.key === "F5" || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r");
 
       if (wantsRefresh) {
         event.preventDefault();
@@ -570,11 +530,7 @@ export function MockInterviewModePage({
 
       const isEscape = event.key === "Escape" || event.code === "Escape";
 
-      if (
-        isEscape &&
-        phaseRef.current === "running" &&
-        !showExitModalRef.current
-      ) {
+      if (isEscape && phaseRef.current === "running" && !showExitModalRef.current) {
         if (isDocumentFullscreenActive()) {
           event.preventDefault();
           event.stopImmediatePropagation();
@@ -587,8 +543,7 @@ export function MockInterviewModePage({
 
     const onKeyUp = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      const isTypingTarget =
-        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+      const isTypingTarget = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
 
       if (
         event.code === "Space" &&
@@ -620,14 +575,7 @@ export function MockInterviewModePage({
         capture: true,
       });
     };
-  }, [
-    answeringFlowMode,
-    handleListeningToggle,
-    isListening,
-    phase,
-    startListening,
-    stopListening,
-  ]);
+  }, [answeringFlowMode, handleListeningToggle, isListening, phase, startListening, stopListening]);
 
   useEffect(() => {
     showExitModalRef.current = showExitModal;
@@ -738,8 +686,8 @@ export function MockInterviewModePage({
                 Mock Interview Mode
               </h2>
               <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-md mx-auto">
-                Step into a focused, distraction-free environment and rehearse
-                with realistic pacing and live voice transcription.
+                Step into a focused, distraction-free environment and rehearse with realistic pacing
+                and live voice transcription.
               </p>
             </div>
 
@@ -768,23 +716,17 @@ export function MockInterviewModePage({
                   <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#e8f6f6] border border-[#0d7377]/15 mb-3 group-hover:bg-[#0d7377] transition">
                     <item.icon className="h-[18px] w-[18px] text-[#0d7377] group-hover:text-white transition" />
                   </div>
-                  <div className="text-sm font-semibold text-slate-900">
-                    {item.title}
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    {item.desc}
-                  </p>
+                  <div className="text-sm font-semibold text-slate-900">{item.title}</div>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
 
             <div className="rounded-xl border border-[#0d7377]/15 bg-[#e8f6f6]/60 p-4 mb-8">
               <p className="text-sm text-slate-700 leading-relaxed">
-                <span className="font-semibold text-[#0d7377]">
-                  Heads up —{" "}
-                </span>
-                this mode uses your existing prepared questions. The session
-                will enter fullscreen and listen for your voice.
+                <span className="font-semibold text-[#0d7377]">Heads up — </span>
+                this mode uses your existing prepared questions. The session will enter fullscreen
+                and listen for your voice.
               </p>
             </div>
 
@@ -832,9 +774,7 @@ export function MockInterviewModePage({
                       <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            answeringFlowMode === "toggle"
-                              ? "bg-[#0d7377]"
-                              : "bg-transparent"
+                            answeringFlowMode === "toggle" ? "bg-[#0d7377]" : "bg-transparent"
                           }`}
                         />
                       </span>
@@ -843,8 +783,7 @@ export function MockInterviewModePage({
                           Flow 1: Button or Space Toggle
                         </div>
                         <p className="mt-1 text-sm text-slate-600">
-                          Use the answer button or press Space to start and
-                          stop.
+                          Use the answer button or press Space to start and stop.
                         </p>
                       </div>
                     </div>
@@ -863,9 +802,7 @@ export function MockInterviewModePage({
                       <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            answeringFlowMode === "pushToTalk"
-                              ? "bg-[#0d7377]"
-                              : "bg-transparent"
+                            answeringFlowMode === "pushToTalk" ? "bg-[#0d7377]" : "bg-transparent"
                           }`}
                         />
                       </span>
@@ -874,8 +811,8 @@ export function MockInterviewModePage({
                           Flow 2: Hold Space to Talk
                         </div>
                         <p className="mt-1 text-sm text-slate-600">
-                          Hold Space to speak and release to stop, while the
-                          answer button still works.
+                          Hold Space to speak and release to stop, while the answer button still
+                          works.
                         </p>
                         <span className="mt-2 inline-flex rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-xs font-medium text-[#0d7377]">
                           Recommended
@@ -973,9 +910,7 @@ export function MockInterviewModePage({
 
             {/* Session Snapshot */}
             <div className="rounded-2xl border border-[#0d7377]/15 bg-[#e8f6f6]/50 p-5 mb-6">
-              <p className="text-sm leading-relaxed text-slate-800">
-                {insights.snapshot}
-              </p>
+              <p className="text-sm leading-relaxed text-slate-800">{insights.snapshot}</p>
             </div>
 
             {/* Key Metrics */}
@@ -1015,8 +950,7 @@ export function MockInterviewModePage({
             {!validity.isFullSession && (
               <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 mb-6">
                 <p className="text-sm text-amber-900">
-                  <span className="font-semibold">Note:</span> This analysis is
-                  based on a
+                  <span className="font-semibold">Note:</span> This analysis is based on a
                   {report.sessionEndReason === "aborted_focus"
                     ? " focus-limited"
                     : report.sessionEndReason === "aborted_time"
@@ -1077,9 +1011,7 @@ export function MockInterviewModePage({
                       key={idx}
                       className="rounded-lg border border-blue-200 bg-blue-50/60 p-3 text-sm text-blue-900 flex items-start gap-2"
                     >
-                      <span className="text-blue-600 font-semibold mt-0.5">
-                        •
-                      </span>
+                      <span className="text-blue-600 font-semibold mt-0.5">•</span>
                       <span>{focus}</span>
                     </div>
                   ))}
@@ -1173,9 +1105,7 @@ export function MockInterviewModePage({
 
           {/* Center: title */}
           <div className="flex-1 flex justify-center">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Mock Interview Mode
-            </h2>
+            <h2 className="text-lg font-semibold text-slate-900">Mock Interview Mode</h2>
           </div>
 
           {/* Right: timer */}
@@ -1189,9 +1119,7 @@ export function MockInterviewModePage({
             >
               <Timer
                 className={`h-4 w-4 ${
-                  secondsRemaining < 60
-                    ? "text-red-600 animate-pulse"
-                    : "text-[#0d7377]"
+                  secondsRemaining < 60 ? "text-red-600 animate-pulse" : "text-[#0d7377]"
                 }`}
               />
               <div className="leading-none">
@@ -1234,14 +1162,11 @@ export function MockInterviewModePage({
                   </p>
 
                   <div className="mt-4 space-y-4 text-sm text-gray-700 leading-relaxed font-medium">
+                    <p>Greetings, and welcome to your mock immigrant visa interview.</p>
                     <p>
-                      Greetings, and welcome to your mock immigrant visa
-                      interview.
-                    </p>
-                    <p>
-                      My name is Officer Sandro, and I will be conducting your
-                      interview today. Please answer each question clearly and
-                      naturally, as you would during an actual visa interview.
+                      My name is Officer Sandro, and I will be conducting your interview today.
+                      Please answer each question clearly and naturally, as you would during an
+                      actual visa interview.
                     </p>
                     <p>Let&apos;s begin.</p>
                   </div>
@@ -1252,8 +1177,7 @@ export function MockInterviewModePage({
                     }}
                     className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
                     style={{
-                      background:
-                        "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+                      background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
                     }}
                   >
                     Continue
@@ -1274,9 +1198,8 @@ export function MockInterviewModePage({
                   <div className="mt-4 space-y-4 text-sm text-gray-700 leading-relaxed font-medium">
                     <p>Thank you. That concludes your interview.</p>
                     <p>
-                      Your responses have been recorded for performance
-                      evaluation. You may now review your interview summary and
-                      feedback.
+                      Your responses have been recorded for performance evaluation. You may now
+                      review your interview summary and feedback.
                     </p>
                     <p>Have a good day.</p>
                   </div>
@@ -1289,8 +1212,7 @@ export function MockInterviewModePage({
                     }}
                     className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
                     style={{
-                      background:
-                        "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+                      background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
                     }}
                   >
                     Continue to Summary
@@ -1312,9 +1234,7 @@ export function MockInterviewModePage({
                     <span className="text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
                       {currentQuestionIndex + 1}
                     </span>
-                    <span className="text-sm text-slate-400">
-                      / {interviewQuestions.length}
-                    </span>
+                    <span className="text-sm text-slate-400">/ {interviewQuestions.length}</span>
                   </div>
                   <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div
@@ -1323,8 +1243,7 @@ export function MockInterviewModePage({
                     />
                   </div>
                   <p className="mt-2 text-xs text-slate-500">
-                    Questions remaining:{" "}
-                    {interviewQuestions.length - (currentQuestionIndex + 1)}
+                    Questions remaining: {interviewQuestions.length - (currentQuestionIndex + 1)}
                   </p>
                 </div>
 
@@ -1343,9 +1262,7 @@ export function MockInterviewModePage({
                       <p className="text-base font-semibold text-slate-900 truncate">
                         {stat.value}
                       </p>
-                      <p className="text-[11px] text-slate-400 truncate">
-                        {stat.hint}
-                      </p>
+                      <p className="text-[11px] text-slate-400 truncate">{stat.hint}</p>
                     </div>
                   </div>
                 ))}
@@ -1361,9 +1278,7 @@ export function MockInterviewModePage({
                       Avg Response
                     </p>
 
-                    <p className="text-base font-semibold text-slate-900">
-                      {averageResponseTime}s
-                    </p>
+                    <p className="text-base font-semibold text-slate-900">{averageResponseTime}s</p>
 
                     <p className="text-[11px] text-slate-400">per question</p>
                   </div>
@@ -1383,8 +1298,7 @@ export function MockInterviewModePage({
                     Current Question
                   </p>
                   <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-snug tracking-tight">
-                    {currentQuestion.selectedQuestion ||
-                      currentQuestion.question}
+                    {currentQuestion.selectedQuestion || currentQuestion.question}
                   </h3>
                 </div>
 
@@ -1486,11 +1400,7 @@ export function MockInterviewModePage({
                     }}
                     disabled={isListening}
                     className="flex-1 h-12 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={
-                      isListening
-                        ? "Stop Answering to advance"
-                        : "Move to the next question"
-                    }
+                    title={isListening ? "Stop Answering to advance" : "Move to the next question"}
                   >
                     {currentQuestionIndex + 1 >= interviewQuestions.length
                       ? "Finish Interview"

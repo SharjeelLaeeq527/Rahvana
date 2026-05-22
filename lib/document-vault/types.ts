@@ -16,11 +16,7 @@ export type VisaCategory =
 
 export type ProcessStage = "USCIS" | "NVC" | "INTERVIEW" | "DS260_SUBMISSION";
 
-export type DocumentRole =
-  | "PETITIONER"
-  | "BENEFICIARY"
-  | "JOINT_SPONSOR"
-  | "HOUSEHOLD_MEMBER";
+export type DocumentRole = "PETITIONER" | "BENEFICIARY" | "JOINT_SPONSOR" | "HOUSEHOLD_MEMBER";
 
 export type DocumentCategory =
   // Original categories

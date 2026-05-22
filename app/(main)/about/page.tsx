@@ -97,8 +97,7 @@ export default function AboutPage() {
               className="font-bold text-center font-serif text-4xl sm:text-5xl lg:text-6xl 2xl:text-7xl leading-[1.1] text-[#121e2e]"
             >
               Some journeys begin with paperwork.{" "}
-              <em className="italic text-[#0d7a75] font-bold">Ours began</em>{" "}
-              with distance.
+              <em className="italic text-[#0d7a75] font-bold">Ours began</em> with distance.
             </motion.h1>
           </motion.div>
 
@@ -121,10 +120,9 @@ export default function AboutPage() {
                 variants={itemVariants}
                 className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600"
               >
-                Rahvana was built for the space between people who belong
-                together — the weeks that stretch too long, the forms that carry
-                real lives, and the quiet hope families hold onto while they
-                wait to be reunited.
+                Rahvana was built for the space between people who belong together — the weeks that
+                stretch too long, the forms that carry real lives, and the quiet hope families hold
+                onto while they wait to be reunited.
               </motion.p>
               <motion.div
                 variants={itemVariants}
@@ -224,12 +222,7 @@ export default function AboutPage() {
               className={`shrink-0 bg-white p-3 pb-12 w-64 lg:w-auto shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-gray-100 transition-all ${item.rotate}`}
             >
               <div className="aspect-square w-full relative overflow-hidden bg-gray-100 mb-6">
-                <Image
-                  src={item.img}
-                  alt={item.text}
-                  fill
-                  className="object-cover"
-                />
+                <Image src={item.img} alt={item.text} fill className="object-cover" />
               </div>
               <p className="text-sm text-gray-600 font-medium italic leading-relaxed text-center px-2">
                 {item.text}
@@ -251,35 +244,28 @@ export default function AboutPage() {
             The story behind Rahvana
           </h2>
           <div className="space-y-5 text-gray-600 leading-relaxed">
+            <p>Behind every immigration case is a family trying to become whole again.</p>
             <p>
-              Behind every immigration case is a family trying to become whole
-              again.
+              Rahvana was built from that reality — not as an abstract idea, but as a response to
+              what we saw people we love go through: complex form codes instead of clear language,
+              critical steps spread across government sites, and long periods of silence while cases
+              moved through opaque systems.
             </p>
             <p>
-              Rahvana was built from that reality — not as an abstract idea, but
-              as a response to what we saw people we love go through: complex
-              form codes instead of clear language, critical steps spread across
-              government sites, and long periods of silence while cases moved
-              through opaque systems.
+              The paperwork is real. So is what it holds — someone waiting at home, children growing
+              up over video calls, milestones spent apart, and the steady effort of holding hope
+              across distance.
             </p>
+            <p>That&apos;s Rahvana: the space between people who belong together.</p>
             <p>
-              The paperwork is real. So is what it holds — someone waiting at
-              home, children growing up over video calls, milestones spent
-              apart, and the steady effort of holding hope across distance.
-            </p>
-            <p>
-              That&apos;s Rahvana: the space between people who belong together.
-            </p>
-            <p>
-              In Phase 1, we are focused exclusively on the IR-1 spouse visa
-              journey — to go deep on one path before expanding further.
+              In Phase 1, we are focused exclusively on the IR-1 spouse visa journey — to go deep on
+              one path before expanding further.
             </p>
           </div>
           <div className="mt-10 p-5 md:p-7 bg-white rounded-r-xl border-l-4 border-[#0d7a75] shadow-sm text-lg italic text-[#121e2e] leading-relaxed">
-            &quot;We wanted to build something that understood both things: the
-            bureaucratic complexity and the human weight. A tool that holds your
-            hand through the process without losing sight of why you&apos;re
-            doing it.&quot;
+            &quot;We wanted to build something that understood both things: the bureaucratic
+            complexity and the human weight. A tool that holds your hand through the process without
+            losing sight of why you&apos;re doing it.&quot;
           </div>
         </div>
       </section>
@@ -293,9 +279,7 @@ export default function AboutPage() {
         </div>
         <h2 className="font-serif font-bold text-3xl md:text-5xl text-white text-center mb-16 max-w-4xl mx-auto leading-tight">
           The emotional reality of{" "}
-          <em className="italic text-[#0d7a75] font-normal">
-            a family visa journey.
-          </em>
+          <em className="italic text-[#0d7a75] font-normal">a family visa journey.</em>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
@@ -340,9 +324,7 @@ export default function AboutPage() {
                 {item.icon}
               </div>
               <h3 className="text-white font-semibold mb-2.5">{item.title}</h3>
-              <p className="text-[#8fa3b8] text-sm leading-relaxed">
-                {item.desc}
-              </p>
+              <p className="text-[#8fa3b8] text-sm leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -358,13 +340,11 @@ export default function AboutPage() {
               </span>
             </div>
             <h2 className="font-serif font-bold text-4xl md:text-5xl text-[#121e2e] mb-4 leading-tight">
-              What we{" "}
-              <em className="italic text-[#0d7a75] font-normal">believe.</em>
+              What we <em className="italic text-[#0d7a75] font-normal">believe.</em>
             </h2>
             <p className="text-gray-500 text-[15px] leading-relaxed">
-              Not a slide deck of corporate values. Just the things we genuinely
-              hold to be true about building tools for people in hard
-              situations.
+              Not a slide deck of corporate values. Just the things we genuinely hold to be true
+              about building tools for people in hard situations.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
@@ -415,8 +395,8 @@ export default function AboutPage() {
                 Distance
               </span>
               <h3 className="font-serif text-2xl leading-tight text-[#121e2e] mb-4">
-                Being far from your loved ones is already hard enough. The tools
-                you use shouldn't add to that burden.
+                Being far from your loved ones is already hard enough. The tools you use shouldn't
+                add to that burden.
               </h3>
             </motion.div>
 
@@ -477,15 +457,12 @@ export default function AboutPage() {
               <em className="italic text-[#0d7a75] font-normal">begins.</em>
               <br />
               Rahvana is how it{" "}
-              <em className="italic text-[#0d7a75] font-normal">
-                moves forward.
-              </em>
+              <em className="italic text-[#0d7a75] font-normal">moves forward.</em>
             </h2>
             <p className="text-gray-600 text-[15px] leading-relaxed mb-8">
-              We&apos;re not here to keep you in the feeling of distance.
-              We&apos;re here to help you close it. Every tool, every guide,
-              every step in Rahvana is designed to move you forward — toward
-              clarity, toward submission, toward reunion.
+              We&apos;re not here to keep you in the feeling of distance. We&apos;re here to help
+              you close it. Every tool, every guide, every step in Rahvana is designed to move you
+              forward — toward clarity, toward submission, toward reunion.
             </p>
             <Link
               href="/visa-category/ir-category/ir-1"
@@ -506,9 +483,7 @@ export default function AboutPage() {
         </div>
         <h2 className="font-serif font-bold text-3xl md:text-5xl text-[#121e2e] mb-14 leading-tight">
           Built by people who{" "}
-          <em className="italic text-[#0d7a75] font-normal">
-            have lived this too.
-          </em>
+          <em className="italic text-[#0d7a75] font-normal">have lived this too.</em>
         </h2>
 
         <div
@@ -637,15 +612,11 @@ export default function AboutPage() {
                   className="object-cover object-top"
                 />
               </div>
-              <p className="text-2xl font-serif font-bold text-[#121e2e] mb-1">
-                {member.name}
-              </p>
+              <p className="text-2xl font-serif font-bold text-[#121e2e] mb-1">{member.name}</p>
               <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#0d7a75] mb-4">
                 {member.role}
               </p>
-              <p className="text-sm text-gray-600 leading-relaxed text-left">
-                {member.desc}
-              </p>
+              <p className="text-sm text-gray-600 leading-relaxed text-left">{member.desc}</p>
             </div>
           ))}
         </div>
@@ -656,15 +627,11 @@ export default function AboutPage() {
         <h2 className="font-serif font-bold text-3xl md:text-5xl leading-tight mb-5 max-w-4xl mx-auto">
           If this journey is part of
           <br />
-          your story too,{" "}
-          <em className="italic text-[#a8e8e5] font-normal">
-            we&apos;re here.
-          </em>
+          your story too, <em className="italic text-[#a8e8e5] font-normal">we&apos;re here.</em>
         </h2>
         <p className="text-white/75 text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed">
-          You don&apos;t have to figure it out alone. Rahvana walks with you
-          through the IR-1 process — one step, one form, one checkpoint at a
-          time.
+          You don&apos;t have to figure it out alone. Rahvana walks with you through the IR-1
+          process — one step, one form, one checkpoint at a time.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
@@ -681,8 +648,7 @@ export default function AboutPage() {
           </Link>
         </div>
         <p className="mt-7 text-[14px] text-white/50 tracking-wider">
-          Phase 1 · IR-1 Spouse Visa Journey · U.S. Embassy Islamabad · Karachi
-          · Lahore
+          Phase 1 · IR-1 Spouse Visa Journey · U.S. Embassy Islamabad · Karachi · Lahore
         </p>
       </section>
     </div>

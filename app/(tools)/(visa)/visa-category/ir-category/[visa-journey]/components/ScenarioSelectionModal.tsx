@@ -42,30 +42,42 @@ export default function ScenarioSelectionModal({
   const getIcon = (opt: ScenarioOption) => {
     if (opt.icon) return opt.icon;
     switch (opt.id) {
-      case "bio": return Baby;
-      case "step": return Users;
-      case "adopted": return HeartHandshake;
-      default: return CheckCircle;
+      case "bio":
+        return Baby;
+      case "step":
+        return Users;
+      case "adopted":
+        return HeartHandshake;
+      default:
+        return CheckCircle;
     }
   };
 
   const getBg = (opt: ScenarioOption) => {
     if (opt.bg) return opt.bg;
     switch (opt.id) {
-      case "bio": return "bg-[#e8f6f6]";
-      case "step": return "bg-[#fef3c7]";
-      case "adopted": return "bg-[#eef2ff]";
-      default: return "bg-slate-50";
+      case "bio":
+        return "bg-[#e8f6f6]";
+      case "step":
+        return "bg-[#fef3c7]";
+      case "adopted":
+        return "bg-[#eef2ff]";
+      default:
+        return "bg-slate-50";
     }
   };
 
   const getHover = (opt: ScenarioOption) => {
     if (opt.hover) return opt.hover;
     switch (opt.id) {
-      case "bio": return "hover:bg-[#d5f0f1]";
-      case "step": return "hover:bg-[#fde68a]";
-      case "adopted": return "hover:bg-[#e0e7ff]";
-      default: return "hover:bg-slate-100";
+      case "bio":
+        return "hover:bg-[#d5f0f1]";
+      case "step":
+        return "hover:bg-[#fde68a]";
+      case "adopted":
+        return "hover:bg-[#e0e7ff]";
+      default:
+        return "hover:bg-slate-100";
     }
   };
 
@@ -77,9 +89,7 @@ export default function ScenarioSelectionModal({
         <div className="px-6 pt-6 pb-4 border-b border-border">
           <h3 className="text-lg font-semibold">{title}</h3>
 
-          <p className="text-sm text-muted-foreground mt-1">
-            {description}
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
         </div>
 
         {/* Body */}
@@ -101,9 +111,7 @@ export default function ScenarioSelectionModal({
 
         ${bgColor}
 
-        ${
-          isSelected ? "border-primary ring-2 ring-primary/30" : "border-border"
-        }
+        ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-border"}
 
         ${hoverColor}
       `}

@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+build/
+coverage/
+public/
+package-lock.json
+api-debug.log
+dev.log
+stepview.txt
+*.csv
+powershell.cmd
+**/*.html

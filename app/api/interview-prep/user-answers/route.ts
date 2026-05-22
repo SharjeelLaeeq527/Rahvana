@@ -1,7 +1,7 @@
 /**
  * POST/GET /api/interview-prep/user-answers
  * Handle user answer operations: save and retrieve answers
-*/
+ */
 
 import { NextResponse, NextRequest } from "next/server";
 import {
@@ -13,7 +13,7 @@ import {
 /**
  * POST /api/interview-prep/user-answers
  * Save a user's answer to a question
- * 
+ *
  * Body:
  * - sessionId: string
  * - questionId: string
@@ -29,8 +29,7 @@ export async function POST(request: NextRequest) {
     if (!sessionId || !questionId || !userAnswerText) {
       return NextResponse.json(
         {
-          error:
-            "Missing required fields: sessionId, questionId, userAnswerText",
+          error: "Missing required fields: sessionId, questionId, userAnswerText",
         },
         { status: 400 }
       );
@@ -55,8 +54,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, answer: savedAnswer }, { status: 201 });
   } catch (error) {
     console.error("Error saving user answer:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to save answer";
+    const message = error instanceof Error ? error.message : "Failed to save answer";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -64,9 +62,9 @@ export async function POST(request: NextRequest) {
 /**
  * GET /api/interview-prep/user-answers?sessionId={id}
  * Get all saved answers for a session
- * 
+ *
  * OR
- * 
+ *
  * GET /api/interview-prep/user-answers?sessionId={id}&questionId={id}
  * Get a single answer for a specific question
  */
@@ -78,10 +76,7 @@ export async function GET(request: NextRequest) {
 
     // Validate required parameter
     if (!sessionId) {
-      return NextResponse.json(
-        { error: "sessionId query parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "sessionId query parameter is required" }, { status: 400 });
     }
 
     // If questionId is provided, get single answer
@@ -95,8 +90,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, answers }, { status: 200 });
   } catch (error) {
     console.error("Error retrieving user answers:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to retrieve answers";
+    const message = error instanceof Error ? error.message : "Failed to retrieve answers";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

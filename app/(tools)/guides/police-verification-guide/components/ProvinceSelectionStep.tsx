@@ -21,10 +21,7 @@ interface ProvinceSelectionStepProps {
   data?: ProvinceSelectionData;
 }
 
-const POSTAL_COLORS: Record<
-  string,
-  { bg: string; text: string; border: string; hover: string }
-> = {
+const POSTAL_COLORS: Record<string, { bg: string; text: string; border: string; hover: string }> = {
   green: {
     bg: "bg-emerald-50/70",
     text: "text-emerald-700",
@@ -57,14 +54,9 @@ const POSTAL_COLORS: Record<
   },
 };
 
-const ProvinceSelectionStep = ({
-  selected,
-  onSelect,
-  data,
-}: ProvinceSelectionStepProps) => {
+const ProvinceSelectionStep = ({ selected, onSelect, data }: ProvinceSelectionStepProps) => {
   const title = data?.title || "Select Province";
-  const description =
-    data?.description || "Select the province where you want to apply.";
+  const description = data?.description || "Select the province where you want to apply.";
   const options = data?.options || [];
 
   return (
@@ -73,16 +65,13 @@ const ProvinceSelectionStep = ({
         <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2 md:mb-3 tracking-tight">
           {title}
         </h2>
-        <p className="text-slate-600 text-base md:text-lg max-w-xl">
-          {description}
-        </p>
+        <p className="text-slate-600 text-base md:text-lg max-w-xl">{description}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {options.map((option, i) => {
           const isSelected = selected === option.id;
-          const colorStyles =
-            POSTAL_COLORS[option.color || "default"] || POSTAL_COLORS.default;
+          const colorStyles = POSTAL_COLORS[option.color || "default"] || POSTAL_COLORS.default;
 
           return (
             <motion.button
@@ -105,9 +94,7 @@ const ProvinceSelectionStep = ({
               <div className="flex items-center gap-3 sm:gap-4">
                 <div
                   className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl flex items-center justify-center transition-colors shadow-xs ${
-                    isSelected
-                      ? "bg-primary text-white"
-                      : `bg-white ${colorStyles.text} shadow-sm`
+                    isSelected ? "bg-primary text-white" : `bg-white ${colorStyles.text} shadow-sm`
                   }`}
                 >
                   <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />

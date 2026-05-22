@@ -64,7 +64,9 @@ export default function WaitingStateCard({
   };
 
   return (
-    <Card className={`border-2 ${statusColors[status]} transition-all hover:shadow-md h-full ${className || ""}`}>
+    <Card
+      className={`border-2 ${statusColors[status]} transition-all hover:shadow-md h-full ${className || ""}`}
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 mt-1">{iconMap[icon]}</div>
@@ -75,27 +77,20 @@ export default function WaitingStateCard({
                 {status === "complete"
                   ? "Complete"
                   : status === "waiting"
-                  ? "Waiting"
-                  : status === "action-needed"
-                  ? "Action Needed"
-                  : "Pending"}
+                    ? "Waiting"
+                    : status === "action-needed"
+                      ? "Action Needed"
+                      : "Pending"}
               </Badge>
             </div>
             <p className="text-xs opacity-80 mb-2">{description}</p>
-            {date && (
-              <p className="text-xs font-medium opacity-70">Date: {date}</p>
-            )}
+            {date && <p className="text-xs font-medium opacity-70">Date: {date}</p>}
 
             {/* Action Button */}
             {(actionLabel || showIVToolLink) && (
               <div className="flex gap-2 mt-3">
                 {actionLabel && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={onAction}
-                    className="text-xs"
-                  >
+                  <Button size="sm" variant="outline" onClick={onAction} className="text-xs">
                     {actionLabel}
                     <ArrowRight className="ml-1 h-3 w-3" />
                   </Button>
@@ -117,15 +112,11 @@ export default function WaitingStateCard({
             {/* IV Wait Times Tool Link */}
             {showIVToolLink && ivEmbassy && (
               <div className="mt-3 p-3 bg-white/50 rounded-lg border border-current">
-                <p className="text-xs font-semibold mb-1">
-                  📊 Estimated Wait Time at {ivEmbassy}:
-                </p>
+                <p className="text-xs font-semibold mb-1">📊 Estimated Wait Time at {ivEmbassy}:</p>
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() =>
-                    window.open(`/iv-tool?city=${ivEmbassy}`, "_blank")
-                  }
+                  onClick={() => window.open(`/iv-tool?city=${ivEmbassy}`, "_blank")}
                   className="text-xs p-0 h-auto font-medium"
                 >
                   View IV Wait Times <ExternalLink className="ml-1 h-3 w-3" />

@@ -17,21 +17,21 @@ export async function POST(request: NextRequest) {
     // Check for existing unverified factors and remove them
     try {
       const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
-      
+
       if (!factorsError && factorsData?.totp) {
         console.log(`Found ${factorsData.totp.length} existing TOTP factors`);
-        
+
         // Only unenroll unverified factors
         for (const factor of factorsData.totp) {
           console.log(`Found factor: ${factor.id}, status: ${factor.status}`);
-          
-          if (factor.status.toLowerCase() === 'unverified') {
+
+          if (factor.status.toLowerCase() === "unverified") {
             console.log(`Attempting to unenroll unverified factor: ${factor.id}`);
-            
+
             const { error: unenrollError } = await supabase.auth.mfa.unenroll({
-              factorId: factor.id
+              factorId: factor.id,
             });
-            
+
             if (unenrollError) {
               console.error(`Error unenrolling unverified factor ${factor.id}:`, unenrollError);
             } else {
@@ -39,16 +39,21 @@ export async function POST(request: NextRequest) {
             }
           }
         }
-        
+
         // Check if there are any verified factors already
-        const verifiedFactors = factorsData.totp.filter(f => f.status.toLowerCase() === 'verified');
+        const verifiedFactors = factorsData.totp.filter(
+          (f) => f.status.toLowerCase() === "verified"
+        );
         if (verifiedFactors.length > 0) {
           console.log(`User already has ${verifiedFactors.length} verified TOTP factor(s)`);
-          return NextResponse.json({ error: "User already has a verified TOTP factor enrolled" }, { status: 400 });
+          return NextResponse.json(
+            { error: "User already has a verified TOTP factor enrolled" },
+            { status: 400 }
+          );
         }
       }
     } catch (listError) {
-      console.error('Error listing factors:', listError);
+      console.error("Error listing factors:", listError);
     }
 
     // Enroll MFA factor with a friendly name
@@ -73,9 +78,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("MFA enroll error:", error);
-    return NextResponse.json(
-      { error: "Failed to initiate MFA setup" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to initiate MFA setup" }, { status: 500 });
   }
 }

@@ -68,8 +68,7 @@ export const formFields: Field[] = [
       {
         key: "sibling_adoption",
         pdfKey: "sibling_adoption",
-        label:
-          "1.a Are you and your brother or sister related because one of you was adopted?",
+        label: "1.a Are you and your brother or sister related because one of you was adopted?",
         type: "radio",
         section: "Part 1. Relationship",
         condition: (d) => d.relationship === "BrotherSister",
@@ -83,8 +82,7 @@ export const formFields: Field[] = [
   {
     key: "citizen_adoption",
     pdfKey: "citizen_adoption",
-    label:
-      "Did you become a U.S. citizen or get a Green Card because you were adopted?",
+    label: "Did you become a U.S. citizen or get a Green Card because you were adopted?",
     type: "radio",
     section: "Relationship",
     options: [
@@ -375,8 +373,7 @@ export const formFields: Field[] = [
   {
     key: "same_mailing_address",
     pdfKey: "same_mailing_address",
-    label:
-      "Is the address where you live the same as the address where you get your mail?",
+    label: "Is the address where you live the same as the address where you get your mail?",
     type: "radio",
     section: "Address History",
     options: [
@@ -436,8 +433,7 @@ export const formFields: Field[] = [
         type: "dropdown",
         isState: true,
         section: "Address History",
-        condition: (d) =>
-          d.same_mailing_address === "No" && !d.mailing_province,
+        condition: (d) => d.same_mailing_address === "No" && !d.mailing_province,
       },
       {
         key: "mailing_zip",
@@ -445,8 +441,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in US)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          d.same_mailing_address === "No" && !d.mailing_postal_code,
+        condition: (d) => d.same_mailing_address === "No" && !d.mailing_postal_code,
       },
       {
         key: "mailing_province",
@@ -572,8 +567,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 1 && !d.previous_postal_code,
+        condition: (d) => Number(d.address_count) >= 1 && !d.previous_postal_code,
       },
       {
         key: "previous_province",
@@ -687,8 +681,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 2 && !d.address_3_postal_code,
+        condition: (d) => Number(d.address_count) >= 2 && !d.address_3_postal_code,
       },
       {
         key: "address_3_province",
@@ -798,8 +791,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 3 && !d.address_4_postal_code,
+        condition: (d) => Number(d.address_count) >= 3 && !d.address_4_postal_code,
       },
       {
         key: "address_4_province",
@@ -899,7 +891,7 @@ export const formFields: Field[] = [
         pdfKey: "N/A",
         label: "State (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4 && !d.address_5_province,
       },
@@ -909,8 +901,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 4 && !d.address_5_postal_code,
+        condition: (d) => Number(d.address_count) >= 4 && !d.address_5_postal_code,
       },
       {
         key: "address_5_province",
@@ -1010,7 +1001,7 @@ export const formFields: Field[] = [
         pdfKey: "N/A",
         label: "State (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5 && !d.address_6_province,
       },
@@ -1020,8 +1011,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 5 && !d.address_6_postal_code,
+        condition: (d) => Number(d.address_count) >= 5 && !d.address_6_postal_code,
       },
       {
         key: "address_6_province",
@@ -1121,7 +1111,7 @@ export const formFields: Field[] = [
         pdfKey: "N/A",
         label: "State (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6 && !d.address_7_province,
       },
@@ -1131,8 +1121,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 6 && !d.address_7_postal_code,
+        condition: (d) => Number(d.address_count) >= 6 && !d.address_7_postal_code,
       },
       {
         key: "address_7_province",
@@ -1232,7 +1221,7 @@ export const formFields: Field[] = [
         pdfKey: "N/A",
         label: "State (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7 && !d.address_8_province,
       },
@@ -1242,8 +1231,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 7 && !d.address_8_postal_code,
+        condition: (d) => Number(d.address_count) >= 7 && !d.address_8_postal_code,
       },
       {
         key: "address_8_province",
@@ -1343,7 +1331,7 @@ export const formFields: Field[] = [
         pdfKey: "N/A",
         label: "State (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8 && !d.address_9_province,
       },
@@ -1353,8 +1341,7 @@ export const formFields: Field[] = [
         label: "ZIP Code (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 8 && !d.address_9_postal_code,
+        condition: (d) => Number(d.address_count) >= 8 && !d.address_9_postal_code,
       },
       {
         key: "address_9_province",
@@ -1795,8 +1782,7 @@ export const formFields: Field[] = [
   {
     key: "certificate_place",
     pdfKey: "Pt2Line37b_PlaceOfIssuance",
-    label:
-      "Where was this certificate given to you? (For example: Los Angeles, CA)",
+    label: "Where was this certificate given to you? (For example: Los Angeles, CA)",
     type: "text",
     section: "Your Marital Information",
   },
@@ -1843,10 +1829,9 @@ export const formFields: Field[] = [
   {
     key: "state_of_admission",
     pdfKey: "Pt2Line40e_State",
-    label:
-      "What U.S. state did you arrive in when you last entered the country?",
+    label: "What U.S. state did you arrive in when you last entered the country?",
     type: "dropdown",
-    isState: true,// ComboBox in PDF → use text or dropdown
+    isState: true, // ComboBox in PDF → use text or dropdown
     section: "Your U.S. Entry Information",
   },
 
@@ -1856,8 +1841,7 @@ export const formFields: Field[] = [
   {
     key: "employment_different_address",
     pdfKey: "employment_different_address",
-    label:
-      "Is the address where you work different from the address where you live?",
+    label: "Is the address where you work different from the address where you live?",
     type: "radio",
     section: "Employment Information",
     options: [
@@ -1869,8 +1853,7 @@ export const formFields: Field[] = [
       {
         key: "employment_street",
         pdfKey: "Pt2Line41_StreetNumberName",
-        label:
-          "What is the street address of your workplace? (For example: 123 Main St)",
+        label: "What is the street address of your workplace? (For example: 123 Main St)",
         type: "text",
         section: "Employment Information",
         condition: (d) => d.employment_different_address === "Yes",
@@ -1910,7 +1893,7 @@ export const formFields: Field[] = [
         pdfKey: "Pt2Line41_State",
         label: "What U.S. state do you work in?",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Employment Information",
         condition: (d) => d.employment_different_address === "Yes",
       },
@@ -1926,8 +1909,7 @@ export const formFields: Field[] = [
       {
         key: "employment_province",
         pdfKey: "Pt2Line41_Province",
-        label:
-          "What province do you work in? (If outside the U.S., for example: Ontario)",
+        label: "What province do you work in? (If outside the U.S., for example: Ontario)",
         type: "text",
         section: "Employment Information",
         condition: (d) => d.employment_different_address === "Yes",
@@ -1958,8 +1940,7 @@ export const formFields: Field[] = [
   {
     key: "current_occupation",
     pdfKey: "Pt2Line42_Occupation",
-    label:
-      "What is your current job title? (For example: Teacher, Software Engineer, Manager)",
+    label: "What is your current job title? (For example: Teacher, Software Engineer, Manager)",
     type: "text",
     section: "Employment Information",
   },
@@ -1974,8 +1955,7 @@ export const formFields: Field[] = [
   {
     key: "employment_end_date",
     pdfKey: "Pt2Line43b_DateTo",
-    label:
-      "When did you stop working here? (If you still work here, type 'PRESENT')",
+    label: "When did you stop working here? (If you still work here, type 'PRESENT')",
     type: "text",
     section: "Employment Information",
     placeholder: "MM/DD/YYYY or PRESENT",
@@ -1994,8 +1974,7 @@ export const formFields: Field[] = [
   {
     key: "previous_employer_street",
     pdfKey: "Pt2Line45_StreetNumberName",
-    label:
-      "What was the street address of this previous job? (For example: 456 Broadway St)",
+    label: "What was the street address of this previous job? (For example: 456 Broadway St)",
     type: "text",
     section: "Previous Employment",
   },
@@ -2014,8 +1993,7 @@ export const formFields: Field[] = [
   {
     key: "previous_unit_number",
     pdfKey: "Pt2Line45_AptSteFlrNumber",
-    label:
-      "What was the Apartment, Suite, or Floor number? (For example: Floor 2)",
+    label: "What was the Apartment, Suite, or Floor number? (For example: Floor 2)",
     type: "text",
     section: "Previous Employment",
   },
@@ -2357,8 +2335,7 @@ export const formFields: Field[] = [
   },
   {
     key: "Pt2Line43b_DateTo",
-    label:
-      "When did you stop working at Employer 1? (Or type 'PRESENT' if you still work there)",
+    label: "When did you stop working at Employer 1? (Or type 'PRESENT' if you still work there)",
     section: "Immigration & Employment Information",
     type: "text",
     pdfKey: "Pt2Line43b_DateTo",
@@ -2621,8 +2598,7 @@ export const formFields: Field[] = [
     subQuestions: [
       {
         key: "alienNumber",
-        label:
-          "What is the Alien Registration Number (A-Number)? (If the beneficiary has one)",
+        label: "What is the Alien Registration Number (A-Number)? (If the beneficiary has one)",
         type: "text",
         section: "Information About Beneficiary",
         pdfKey: "Pt4Line1_AlienNumber", // ← SHORT KEY
@@ -2800,8 +2776,7 @@ export const formFields: Field[] = [
   },
   {
     key: "currentAptNumber",
-    label:
-      "What is the Apartment, Suite, or Floor number? (For example: Apt 4B)",
+    label: "What is the Apartment, Suite, or Floor number? (For example: Apt 4B)",
     type: "text",
     section: "Current Physical Address",
     pdfKey: "Pt4Line11_AptSteFlrNumber",
@@ -2874,8 +2849,7 @@ export const formFields: Field[] = [
   },
   {
     key: "futureAptNumber",
-    label:
-      "What is the Apartment, Suite, or Floor number of this intended address?",
+    label: "What is the Apartment, Suite, or Floor number of this intended address?",
     type: "text",
     section: "Address Where Your Relative Intends to Live",
     pdfKey: "Pt4Line12b_AptSteFlrNumber",
@@ -3042,8 +3016,7 @@ export const formFields: Field[] = [
       },
       {
         key: "spouseMiddleName",
-        label:
-          "What is the husband's or wife's Middle Name? (Leave blank if none)",
+        label: "What is the husband's or wife's Middle Name? (Leave blank if none)",
         type: "text",
         section: "Current Spouse Information",
         pdfKey: "Pt4Line18c_MiddleName",
@@ -3125,8 +3098,7 @@ export const formFields: Field[] = [
       },
       {
         key: "priorSpouseMiddleName",
-        label:
-          "What was the Middle Name of the previous husband or wife? (Leave blank if none)",
+        label: "What was the Middle Name of the previous husband or wife? (Leave blank if none)",
         type: "text",
         section: "Names of Prior Spouses",
         pdfKey: "Pt4Line16c_MiddleName",
@@ -3205,8 +3177,7 @@ export const formFields: Field[] = [
 
   {
     key: "note",
-    label:
-      "Now, let's list the husband, wife, and children of the family member you are helping.",
+    label: "Now, let's list the husband, wife, and children of the family member you are helping.",
     type: "hidden",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "",
@@ -3505,8 +3476,7 @@ export const formFields: Field[] = [
   // 45. Ever in US?
   {
     key: "beneficiary_everInUS",
-    label:
-      "Has the family member you are helping EVER been inside the United States?",
+    label: "Has the family member you are helping EVER been inside the United States?",
     type: "radio",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "beneficiary_everInUS",
@@ -3525,10 +3495,16 @@ export const formFields: Field[] = [
         placeholder: "Select Class of Admission",
         options: [
           // Existing options
-          { label: "1B1 - H1B1 – Specialty Occupation", value: "1B1 - H1B1 – Specialty Occupation" },
+          {
+            label: "1B1 - H1B1 – Specialty Occupation",
+            value: "1B1 - H1B1 – Specialty Occupation",
+          },
           { label: "1B2 - H1B2 – DOD Worker", value: "1B2 - H1B2 – DOD Worker" },
           { label: "1B3 - H1B3 – 55Fashion Model", value: "1B3 - H1B3 – 55Fashion Model" },
-          { label: "1B4 - H1B4 – Unique PGM ARTIST-ENT", value: "1B4 - H1B4 – Unique PGM ARTIST-ENT" },
+          {
+            label: "1B4 - H1B4 – Unique PGM ARTIST-ENT",
+            value: "1B4 - H1B4 – Unique PGM ARTIST-ENT",
+          },
           { label: "1B3 - H1B3 – Alien Athlethe", value: "1B3 - H1B3 – Alien Athlethe" },
           { label: "1BS - Support Person of H1", value: "1BS - Support Person of H1" },
           { label: "A1 – AMBASSADOR, DIPLOMAT", value: "A1 – AMBASSADOR, DIPLOMAT" },
@@ -3537,56 +3513,137 @@ export const formFields: Field[] = [
           { label: "AS _ Asylum", value: "AS _ Asylum" },
           { label: "ASD - Asylum Status Denied", value: "ASD - Asylum Status Denied" },
           { label: "AW - Raw Applied for at a port", value: "AW - Raw Applied for at a port" },
-          { label: "B1 - TEMPORARY VISITOR FOR BUSINESS", value: "B1 - TEMPORARY VISITOR FOR BUSINESS" },
-          { label: "B1A - NI PERSNL-DOM SRVANT OF NI EMP", value: "B1A - NI PERSNL-DOM SRVANT OF NI EMP" },
+          {
+            label: "B1 - TEMPORARY VISITOR FOR BUSINESS",
+            value: "B1 - TEMPORARY VISITOR FOR BUSINESS",
+          },
+          {
+            label: "B1A - NI PERSNL-DOM SRVANT OF NI EMP",
+            value: "B1A - NI PERSNL-DOM SRVANT OF NI EMP",
+          },
           { label: "B1B - NI DOMESTIC SERVANT OF USC", value: "B1B - NI DOMESTIC SERVANT OF USC" },
-          { label: "B1C - NI EMPLOYED BY FOREIGN AIRLINE", value: "B1C - NI EMPLOYED BY FOREIGN AIRLINE" },
+          {
+            label: "B1C - NI EMPLOYED BY FOREIGN AIRLINE",
+            value: "B1C - NI EMPLOYED BY FOREIGN AIRLINE",
+          },
           { label: "B1D - NI - MISSIONARIES", value: "B1D - NI - MISSIONARIES" },
-          { label: "B2 - TEMPORARY VISITOR FOR PLEASURE", value: "B2 - TEMPORARY VISITOR FOR PLEASURE" },
+          {
+            label: "B2 - TEMPORARY VISITOR FOR PLEASURE",
+            value: "B2 - TEMPORARY VISITOR FOR PLEASURE",
+          },
           { label: "BE - BERING STRAIT ENTRIES", value: "BE - BERING STRAIT ENTRIES" },
-          { label: "C1 - ALIEN IN TRANSIT THROUGH U.S.", value: "C1 - ALIEN IN TRANSIT THROUGH U.S." },
+          {
+            label: "C1 - ALIEN IN TRANSIT THROUGH U.S.",
+            value: "C1 - ALIEN IN TRANSIT THROUGH U.S.",
+          },
           { label: "C2 - ALIEN IN TRANSIT TO UN HQ", value: "C2 - ALIEN IN TRANSIT TO UN HQ" },
-          { label: "C3 - FRN GOV OFF IN TRANSIT THRU US", value: "C3 - FRN GOV OFF IN TRANSIT THRU US" },
+          {
+            label: "C3 - FRN GOV OFF IN TRANSIT THRU US",
+            value: "C3 - FRN GOV OFF IN TRANSIT THRU US",
+          },
           { label: "C4 - TRANSIT WITHOUT A VISA", value: "C4 - TRANSIT WITHOUT A VISA" },
-          { label: "CC - CUBAN MASS MIGRATION PROJECT", value: "CC - CUBAN MASS MIGRATION PROJECT" },
-          { label: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)", value: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)" },
-          { label: "CW1 - PRINCIPAL TRANSITIONAL WORKERS", value: "CW1 - PRINCIPAL TRANSITIONAL WORKERS" },
+          {
+            label: "CC - CUBAN MASS MIGRATION PROJECT",
+            value: "CC - CUBAN MASS MIGRATION PROJECT",
+          },
+          {
+            label: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)",
+            value: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)",
+          },
+          {
+            label: "CW1 - PRINCIPAL TRANSITIONAL WORKERS",
+            value: "CW1 - PRINCIPAL TRANSITIONAL WORKERS",
+          },
           { label: "CW2 - DEPENDENT OF CW1", value: "CW2 - DEPENDENT OF CW1" },
-          { label: "D1 - ALIEN CREW DEPART SAME VESSEL", value: "D1 - ALIEN CREW DEPART SAME VESSEL" },
-          { label: "D2 - ALIEN CREW DEPART OTHER VESSEL", value: "D2 - ALIEN CREW DEPART OTHER VESSEL" },
-          { label: "DA - ADVANCE PAROLE (DISTRICT AUTH)", value: "DA - ADVANCE PAROLE (DISTRICT AUTH)" },
-          { label: "DE - PAROLEE (DEFERRED INSPECTION)", value: "DE - PAROLEE (DEFERRED INSPECTION)" },
+          {
+            label: "D1 - ALIEN CREW DEPART SAME VESSEL",
+            value: "D1 - ALIEN CREW DEPART SAME VESSEL",
+          },
+          {
+            label: "D2 - ALIEN CREW DEPART OTHER VESSEL",
+            value: "D2 - ALIEN CREW DEPART OTHER VESSEL",
+          },
+          {
+            label: "DA - ADVANCE PAROLE (DISTRICT AUTH)",
+            value: "DA - ADVANCE PAROLE (DISTRICT AUTH)",
+          },
+          {
+            label: "DE - PAROLEE (DEFERRED INSPECTION)",
+            value: "DE - PAROLEE (DEFERRED INSPECTION)",
+          },
           { label: "DT - PAROLEE (DISTRICT-POE AUTH)", value: "DT - PAROLEE (DISTRICT-POE AUTH)" },
-          { label: "DX - CREW ARRIVING DETAINED ON SHIP", value: "DX - CREW ARRIVING DETAINED ON SHIP" },
-          { label: "E1 - TREATY TRADER-SPOUSE-CHILDREN", value: "E1 - TREATY TRADER-SPOUSE-CHILDREN" },
-          { label: "E2 - TREATY INVESTOR-SPOUSE-CHILD", value: "E2 - TREATY INVESTOR-SPOUSE-CHILD" },
+          {
+            label: "DX - CREW ARRIVING DETAINED ON SHIP",
+            value: "DX - CREW ARRIVING DETAINED ON SHIP",
+          },
+          {
+            label: "E1 - TREATY TRADER-SPOUSE-CHILDREN",
+            value: "E1 - TREATY TRADER-SPOUSE-CHILDREN",
+          },
+          {
+            label: "E2 - TREATY INVESTOR-SPOUSE-CHILD",
+            value: "E2 - TREATY INVESTOR-SPOUSE-CHILD",
+          },
           { label: "E2C - CNMI INVESTOR", value: "E2C - CNMI INVESTOR" },
-          { label: "E3 - AUSTRALIA FREE TRADE AGREEMENT", value: "E3 - AUSTRALIA FREE TRADE AGREEMENT" },
+          {
+            label: "E3 - AUSTRALIA FREE TRADE AGREEMENT",
+            value: "E3 - AUSTRALIA FREE TRADE AGREEMENT",
+          },
           { label: "EAO - EMPLOYMENT ADVISORY OPTION", value: "EAO - EMPLOYMENT ADVISORY OPTION" },
           { label: "EWI - ENTRY WITHOUT INSPECTION", value: "EWI - ENTRY WITHOUT INSPECTION" },
           { label: "F1 - STUDENT - ACADEMIC", value: "F1 - STUDENT - ACADEMIC" },
           { label: "F2 - SPOUSE-CHILD OF F-1", value: "F2 - SPOUSE-CHILD OF F-1" },
-          { label: "FSM - CFA ADM FED STATES MICRONESIA", value: "FSM - CFA ADM FED STATES MICRONESIA" },
+          {
+            label: "FSM - CFA ADM FED STATES MICRONESIA",
+            value: "FSM - CFA ADM FED STATES MICRONESIA",
+          },
           { label: "FUG - FAMILY UNITY GRANTED", value: "FUG - FAMILY UNITY GRANTED" },
           { label: "G1 - PRINCIPAL REP. FOREIGN GOVT", value: "G1 - PRINCIPAL REP. FOREIGN GOVT" },
           { label: "G2 - OTHER REP FOREIGN GOVT", value: "G2 - OTHER REP FOREIGN GOVT" },
-          { label: "G3 - REP NON-RECOGNIZED FOREIGN GOV", value: "G3 - REP NON-RECOGNIZED FOREIGN GOV" },
+          {
+            label: "G3 - REP NON-RECOGNIZED FOREIGN GOV",
+            value: "G3 - REP NON-RECOGNIZED FOREIGN GOV",
+          },
           { label: "G4 - OFFICER-EMPLOYEE INTL. ORG.", value: "G4 - OFFICER-EMPLOYEE INTL. ORG." },
-          { label: "G5 - ATTENDANTS OF G1, G2, G3, G4", value: "G5 - ATTENDANTS OF G1, G2, G3, G4" },
-          { label: "GB - VISITOR WITHOUT A VISA 15 DAYS", value: "GB - VISITOR WITHOUT A VISA 15 DAYS" },
-          { label: "GT - VISITOR WITHOUT A VISA 15 DAYS", value: "GT - VISITOR WITHOUT A VISA 15 DAYS" },
-          { label: "H1 - ALIEN OF DIST MERIT & ABILITY", value: "H1 - ALIEN OF DIST MERIT & ABILITY" },
+          {
+            label: "G5 - ATTENDANTS OF G1, G2, G3, G4",
+            value: "G5 - ATTENDANTS OF G1, G2, G3, G4",
+          },
+          {
+            label: "GB - VISITOR WITHOUT A VISA 15 DAYS",
+            value: "GB - VISITOR WITHOUT A VISA 15 DAYS",
+          },
+          {
+            label: "GT - VISITOR WITHOUT A VISA 15 DAYS",
+            value: "GT - VISITOR WITHOUT A VISA 15 DAYS",
+          },
+          {
+            label: "H1 - ALIEN OF DIST MERIT & ABILITY",
+            value: "H1 - ALIEN OF DIST MERIT & ABILITY",
+          },
           { label: "H1A - REGISTERED NURSE", value: "H1A - REGISTERED NURSE" },
           { label: "H1B - SPECIALITY OCCUPATION", value: "H1B - SPECIALITY OCCUPATION" },
           { label: "H1C - NURSE RELIEF", value: "H1C - NURSE RELIEF" },
-          { label: "H2 - TEMPORARY LABOR CERTIFICATION", value: "H2 - TEMPORARY LABOR CERTIFICATION" },
-          { label: "H2A - TEMPORARY AGRICULTURAL WORKER", value: "H2A - TEMPORARY AGRICULTURAL WORKER" },
+          {
+            label: "H2 - TEMPORARY LABOR CERTIFICATION",
+            value: "H2 - TEMPORARY LABOR CERTIFICATION",
+          },
+          {
+            label: "H2A - TEMPORARY AGRICULTURAL WORKER",
+            value: "H2A - TEMPORARY AGRICULTURAL WORKER",
+          },
           { label: "H2B - TEMPORARY NON-AG WORKER", value: "H2B - TEMPORARY NON-AG WORKER" },
-          { label: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP", value: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP" },
+          {
+            label: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP",
+            value: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP",
+          },
           { label: "H3 - ALIEN TRAINEE", value: "H3 - ALIEN TRAINEE" },
           { label: "H3A - TRAINEE", value: "H3A - TRAINEE" },
           { label: "H3B - SPECIAL EDUCATION TRAINING", value: "H3B - SPECIAL EDUCATION TRAINING" },
-          { label: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R", value: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R" },
+          {
+            label: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R",
+            value: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R",
+          },
           { label: "HSC - FREE TRADE H1B1", value: "HSC - FREE TRADE H1B1" },
           { label: "I - FOREIGN PRESS", value: "I - FOREIGN PRESS" },
           { label: "IMM - IMMIGRANT", value: "IMM - IMMIGRANT" },
@@ -3601,60 +3658,117 @@ export const formFields: Field[] = [
           { label: "K4 - CHILD OF USC", value: "K4 - CHILD OF USC" },
           { label: "L1 - INTRA-COMPANY TRANSFEREE", value: "L1 - INTRA-COMPANY TRANSFEREE" },
           { label: "L1A - MANAGER OR EXECUTIVE", value: "L1A - MANAGER OR EXECUTIVE" },
-          { label: "L1B - SPECIALIZED KNOWLEDGE ALIEN", value: "L1B - SPECIALIZED KNOWLEDGE ALIEN" },
+          {
+            label: "L1B - SPECIALIZED KNOWLEDGE ALIEN",
+            value: "L1B - SPECIALIZED KNOWLEDGE ALIEN",
+          },
           { label: "L2 - SPOUSE-CHILD OF L-1", value: "L2 - SPOUSE-CHILD OF L-1" },
           { label: "LZ - BLANKET L PETITION", value: "LZ - BLANKET L PETITION" },
-          { label: "M1 - STUDENT - VOCATIONAL-NON-ACAD.", value: "M1 - STUDENT - VOCATIONAL-NON-ACAD." },
+          {
+            label: "M1 - STUDENT - VOCATIONAL-NON-ACAD.",
+            value: "M1 - STUDENT - VOCATIONAL-NON-ACAD.",
+          },
           { label: "M2 - SPOUSE-CHILD OF M-1", value: "M2 - SPOUSE-CHILD OF M-1" },
-          { label: "MIS - CFA ADM REP MARSHALL ISLANDS", value: "MIS - CFA ADM REP MARSHALL ISLANDS" },
-          { label: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN", value: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN" },
-          { label: "N1 - PRINCIPAL REP. OF NATO MEMBER", value: "N1 - PRINCIPAL REP. OF NATO MEMBER" },
+          {
+            label: "MIS - CFA ADM REP MARSHALL ISLANDS",
+            value: "MIS - CFA ADM REP MARSHALL ISLANDS",
+          },
+          {
+            label: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN",
+            value: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN",
+          },
+          {
+            label: "N1 - PRINCIPAL REP. OF NATO MEMBER",
+            value: "N1 - PRINCIPAL REP. OF NATO MEMBER",
+          },
           { label: "N2 - OTHER REP. OF NATO MEMBER", value: "N2 - OTHER REP. OF NATO MEMBER" },
           { label: "N3 - CLERICAL STAFF FOR N-1, N-2", value: "N3 - CLERICAL STAFF FOR N-1, N-2" },
           { label: "N4 - OFFICIALS OF NATO", value: "N4 - OFFICIALS OF NATO" },
           { label: "N5 - EXPERTS EMPLOYED BY NATO", value: "N5 - EXPERTS EMPLOYED BY NATO" },
           { label: "N6 - CIVILIAN COMPONENT OF NATO", value: "N6 - CIVILIAN COMPONENT OF NATO" },
-          { label: "N7 - ATTENDANTS OF N-1 THROUGH N-6", value: "N7 - ATTENDANTS OF N-1 THROUGH N-6" },
-          { label: "N8 - PARENT OF SPEC IMMIGRANT CHILD", value: "N8 - PARENT OF SPEC IMMIGRANT CHILD" },
+          {
+            label: "N7 - ATTENDANTS OF N-1 THROUGH N-6",
+            value: "N7 - ATTENDANTS OF N-1 THROUGH N-6",
+          },
+          {
+            label: "N8 - PARENT OF SPEC IMMIGRANT CHILD",
+            value: "N8 - PARENT OF SPEC IMMIGRANT CHILD",
+          },
           { label: "N9 - SPOUSE-CHILD OF N8", value: "N9 - SPOUSE-CHILD OF N8" },
-          { label: "O1 - ALIEN W-EXTRAORDINARY ABILITY", value: "O1 - ALIEN W-EXTRAORDINARY ABILITY" },
-          { label: "O1A - EXTRAORDINARY ALIEN - NON-ARTS", value: "O1A - EXTRAORDINARY ALIEN - NON-ARTS" },
-          { label: "O1B - EXTRAORDINARY ALIEN IN ARTS", value: "O1B - EXTRAORDINARY ALIEN IN ARTS" },
+          {
+            label: "O1 - ALIEN W-EXTRAORDINARY ABILITY",
+            value: "O1 - ALIEN W-EXTRAORDINARY ABILITY",
+          },
+          {
+            label: "O1A - EXTRAORDINARY ALIEN - NON-ARTS",
+            value: "O1A - EXTRAORDINARY ALIEN - NON-ARTS",
+          },
+          {
+            label: "O1B - EXTRAORDINARY ALIEN IN ARTS",
+            value: "O1B - EXTRAORDINARY ALIEN IN ARTS",
+          },
           { label: "O2 - ACCOMPANYING ALIEN TO O1", value: "O2 - ACCOMPANYING ALIEN TO O1" },
           { label: "O3 - SPOUSE-CHILD OF O-1, O-2", value: "O3 - SPOUSE-CHILD OF O-1, O-2" },
-          { label: "OP - PAROLEE (OVERSEAS AUTHORIZED)", value: "OP - PAROLEE (OVERSEAS AUTHORIZED)" },
+          {
+            label: "OP - PAROLEE (OVERSEAS AUTHORIZED)",
+            value: "OP - PAROLEE (OVERSEAS AUTHORIZED)",
+          },
           { label: "P1 - ATHLETE OR ENTERTAINER", value: "P1 - ATHLETE OR ENTERTAINER" },
           { label: "P1A - ALIEN WITH ATHLETIC EVENT", value: "P1A - ALIEN WITH ATHLETIC EVENT" },
-          { label: "P1B - ALIEN WITH ENTERTAINMENT GROUP", value: "P1B - ALIEN WITH ENTERTAINMENT GROUP" },
+          {
+            label: "P1B - ALIEN WITH ENTERTAINMENT GROUP",
+            value: "P1B - ALIEN WITH ENTERTAINMENT GROUP",
+          },
           { label: "P1S - SUPPORT PERSON OF P-1", value: "P1S - SUPPORT PERSON OF P-1" },
           { label: "P2 - EXHANGE ARTIST-ENTERTAINER", value: "P2 - EXHANGE ARTIST-ENTERTAINER" },
           { label: "P2S - SUPPORT PERSON OF P-2", value: "P2S - SUPPORT PERSON OF P-2" },
-          { label: "P3 - UNIQUE PGM ARTIST-ENTERTAINER", value: "P3 - UNIQUE PGM ARTIST-ENTERTAINER" },
+          {
+            label: "P3 - UNIQUE PGM ARTIST-ENTERTAINER",
+            value: "P3 - UNIQUE PGM ARTIST-ENTERTAINER",
+          },
           { label: "P3S - SUPPORT PERSON OF P-3", value: "P3S - SUPPORT PERSON OF P-3" },
-          { label: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3", value: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3" },
+          {
+            label: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3",
+            value: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3",
+          },
           { label: "PAL - CFA ADMISSION PALAU", value: "PAL - CFA ADMISSION PALAU" },
           { label: "PAR - PAROLEE", value: "PAR - PAROLEE" },
           { label: "PI - PACIFIC ISLANDER", value: "PI - PACIFIC ISLANDER" },
           { label: "Q1 - INTL CULTURAL XCHG VISITORS", value: "Q1 - INTL CULTURAL XCHG VISITORS" },
-          { label: "Q2 - IRISH PEACE PROCESS PARTICPNTS", value: "Q2 - IRISH PEACE PROCESS PARTICPNTS" },
+          {
+            label: "Q2 - IRISH PEACE PROCESS PARTICPNTS",
+            value: "Q2 - IRISH PEACE PROCESS PARTICPNTS",
+          },
           { label: "Q3 - SPOUSE-CHILD OF Q2", value: "Q3 - SPOUSE-CHILD OF Q2" },
           { label: "R1 - RELIGIOUS OCCUPATION", value: "R1 - RELIGIOUS OCCUPATION" },
           { label: "R2 - SPOUSE-CHILD OF R-1", value: "R2 - SPOUSE-CHILD OF R-1" },
           { label: "RE - REFUGEE", value: "RE - REFUGEE" },
-          { label: "RE5 - HAITIAN W-GRANTED REFUGEE STAT", value: "RE5 - HAITIAN W-GRANTED REFUGEE STAT" },
+          {
+            label: "RE5 - HAITIAN W-GRANTED REFUGEE STAT",
+            value: "RE5 - HAITIAN W-GRANTED REFUGEE STAT",
+          },
           { label: "RW - RAW APPLIED FOR AT A US CO", value: "RW - RAW APPLIED FOR AT A US CO" },
           { label: "S1 - SPECIAL AGRICULTURAL WORKER", value: "S1 - SPECIAL AGRICULTURAL WORKER" },
           { label: "S2 - SPECIAL AGRICULTURAL WORKER", value: "S2 - SPECIAL AGRICULTURAL WORKER" },
           { label: "S9 - EMERGENCY FARM WORKER", value: "S9 - EMERGENCY FARM WORKER" },
           { label: "SDF - SUSPECTED DOCUMENT FRAUD", value: "SDF - SUSPECTED DOCUMENT FRAUD" },
           { label: "ST - STOWAWAY", value: "ST - STOWAWAY" },
-          { label: "T1 - VICTIM OF SEVERE FORM OF TRAFK", value: "T1 - VICTIM OF SEVERE FORM OF TRAFK" },
+          {
+            label: "T1 - VICTIM OF SEVERE FORM OF TRAFK",
+            value: "T1 - VICTIM OF SEVERE FORM OF TRAFK",
+          },
           { label: "T2 - SPOUSE OF T1", value: "T2 - SPOUSE OF T1" },
           { label: "T3 - CHILD OF T1", value: "T3 - CHILD OF T1" },
           { label: "T4 - PARENT OF T1", value: "T4 - PARENT OF T1" },
-          { label: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI", value: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI" },
+          {
+            label: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI",
+            value: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI",
+          },
           { label: "TB - SPOUSE OR CHILD OF CAN. FR", value: "TB - SPOUSE OR CHILD OF CAN. FR" },
-          { label: "TC - CANADIAN FREE TRADE AGREEMENT", value: "TC - CANADIAN FREE TRADE AGREEMENT" },
+          {
+            label: "TC - CANADIAN FREE TRADE AGREEMENT",
+            value: "TC - CANADIAN FREE TRADE AGREEMENT",
+          },
           { label: "TD - NAFTA DEPENDENT", value: "TD - NAFTA DEPENDENT" },
           { label: "TN1 - NAFTA PRINCIPAL (CANADA)", value: "TN1 - NAFTA PRINCIPAL (CANADA)" },
           { label: "TN2 - NAFTA PRINCIPAL (MEXICO)", value: "TN2 - NAFTA PRINCIPAL (MEXICO)" },
@@ -3663,13 +3777,19 @@ export const formFields: Field[] = [
           { label: "U2 - SPOUSE OF U1", value: "U2 - SPOUSE OF U1" },
           { label: "U3 - CHILD OF U1", value: "U3 - CHILD OF U1" },
           { label: "U4 - PARENT OF U1", value: "U4 - PARENT OF U1" },
-          { label: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI", value: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI" },
+          {
+            label: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI",
+            value: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI",
+          },
           { label: "UN - UNKNOWN", value: "UN - UNKNOWN" },
           { label: "UU - UNKNOWN", value: "UU - UNKNOWN" },
           { label: "V1 - SPOUSE OF LPR", value: "V1 - SPOUSE OF LPR" },
           { label: "V2 - CHILD OF LPR", value: "V2 - CHILD OF LPR" },
           { label: "V3 - CHILD OF V2", value: "V3 - CHILD OF V2" },
-          { label: "WB - VISITOR FOR BUSINESS - VWPP/VWP", value: "WB - VISITOR FOR BUSINESS - VWPP/VWP" },
+          {
+            label: "WB - VISITOR FOR BUSINESS - VWPP/VWP",
+            value: "WB - VISITOR FOR BUSINESS - VWPP/VWP",
+          },
           { label: "WD - WITHDRAWL (I-275)", value: "WD - WITHDRAWL (I-275)" },
           { label: "WI - WITHOUT INSPECTION", value: "WI - WITHOUT INSPECTION" },
           { label: "WT - VISITOR FOR PLEASURE - VWPP", value: "WT - VISITOR FOR PLEASURE - VWPP" },
@@ -3795,8 +3915,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_employerUnitNumber",
-        label:
-          "What is the Apartment, Suite, or Floor number? (For example: Suite 101)",
+        label: "What is the Apartment, Suite, or Floor number? (For example: Suite 101)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_AptSteFlrNumber",
@@ -3819,7 +3938,7 @@ export const formFields: Field[] = [
         key: "beneficiary_employerState",
         label: "In what U.S. state is the employer located? (If applicable)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_State",
         placeholder: "NY",
@@ -3837,8 +3956,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_employerProvince",
-        label:
-          "In what province is the employer located? (If outside the U.S.)",
+        label: "In what province is the employer located? (If outside the U.S.)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_Province",
@@ -3895,8 +4013,7 @@ export const formFields: Field[] = [
         label: "Select all the types of court cases that apply to the beneficiary:",
         type: "radio",
         section: "Information About Beneficiary (Continued)",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
         options: [
           {
             label: "Removal (The government ordered the beneficiary to leave the U.S.)",
@@ -3930,19 +4047,17 @@ export const formFields: Field[] = [
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line55a_CityOrTown",
         placeholder: "City Name",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
       },
       {
         key: "beneficiary_proceedingState",
         label: "In what U.S. state was the court case located?",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line55b_State",
         placeholder: "NY",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
       },
       {
         key: "beneficiary_proceedingDate",
@@ -3951,8 +4066,7 @@ export const formFields: Field[] = [
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line56_Date",
         placeholder: "MM/DD/YYYY",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
       },
     ],
   },
@@ -4039,8 +4153,7 @@ export const formFields: Field[] = [
     inputMode: "none",
     pdfKey: "Pt4Line56_AptSteFlrNumber",
     placeholder: "101",
-    condition: (data) =>
-      ["Ste", "Apt", "Flr"].includes(data.beneficiary_nativeLanguageUnitType),
+    condition: (data) => ["Ste", "Apt", "Flr"].includes(data.beneficiary_nativeLanguageUnitType),
   },
   {
     key: "beneficiary_nativeLanguageCity",
@@ -4111,8 +4224,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line57_AptSteFlrNumber",
     placeholder: "202",
-    condition: (data) =>
-      ["Ste", "Apt", "Flr"].includes(data.beneficiary_currentUSUnitType),
+    condition: (data) => ["Ste", "Apt", "Flr"].includes(data.beneficiary_currentUSUnitType),
   },
   {
     key: "beneficiary_currentUSCity",
@@ -4182,8 +4294,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_marriageDateTo",
-    label:
-      "On what date did that marriage end? (Leave blank if the beneficiary is still married)",
+    label: "On what date did that marriage end? (Leave blank if the beneficiary is still married)",
     type: "date",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line58b_DateTo",
@@ -4244,8 +4355,7 @@ export const formFields: Field[] = [
   // Part 5: Previous Petitions
   {
     key: "hasPreviousPetition",
-    label:
-      "Have you EVER helped this family member or any other person before?",
+    label: "Have you EVER helped this family member or any other person before?",
     type: "radio",
     section: "Other Information",
     pdfKey: "hasPreviousPetition",
@@ -4257,8 +4367,7 @@ export const formFields: Field[] = [
       // 2.a-c: Name of Previous Beneficiary
       {
         key: "previousPetitionerFamilyName",
-        label:
-          "What was the family name (last name) of the person you helped previously?",
+        label: "What was the family name (last name) of the person you helped previously?",
         type: "text",
         section: "Other Information",
         pdfKey: "Pt5Line2a_FamilyName",
@@ -4276,8 +4385,7 @@ export const formFields: Field[] = [
       },
       {
         key: "previousPetitionerMiddleName",
-        label:
-          "What was their middle name? (Leave blank if they don't have one)",
+        label: "What was their middle name? (Leave blank if they don't have one)",
         type: "text",
         section: "Other Information",
         pdfKey: "Pt5Line2c_MiddleName",
@@ -4326,8 +4434,7 @@ export const formFields: Field[] = [
   // 5. Result
   {
     key: "previousFilingResult",
-    label:
-      "What was the result of that application? (For example: Approved, Denied, or Withdrawn)",
+    label: "What was the result of that application? (For example: Approved, Denied, or Withdrawn)",
     type: "text",
     section: "Other Information",
     pdfKey: "Pt5Line5_Result",
@@ -4350,8 +4457,7 @@ export const formFields: Field[] = [
     key: "note_relative_intro",
     pdfKey: "relativeInfo",
     type: "hidden",
-    label:
-      "Please provide the names and how you are related to each family member.",
+    label: "Please provide the names and how you are related to each family member.",
     condition: (data) => data.submitting_others === "Yes",
   },
 
@@ -4384,8 +4490,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_childMiddleName",
-        label:
-          "What is their middle name? (Leave blank if they don't have one)",
+        label: "What is their middle name? (Leave blank if they don't have one)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line6c_MiddleName",
@@ -4435,11 +4540,10 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_childMiddleName2",
-        label:
-          "What is their middle name? (Leave blank if they don't have one)",
+        label: "What is their middle name? (Leave blank if they don't have one)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
-        pdfKey: "Pt4Line8c_MiddleName", 
+        pdfKey: "Pt4Line8c_MiddleName",
         condition: (data) => data.submitting_others === "Yes",
         placeholder: "Middle Name",
       },
@@ -4479,8 +4583,7 @@ export const formFields: Field[] = [
   },
   {
     key: "petitioner_daytimePhone",
-    label:
-      "What is your daytime telephone number? (Where can we reach you during the day?)",
+    label: "What is your daytime telephone number? (Where can we reach you during the day?)",
     type: "text",
     section: "Petitioner’s Contact Information, Declaration, and Signature",
     pdfKey: "Pt6Line3_DaytimePhoneNumber",
@@ -4506,8 +4609,7 @@ export const formFields: Field[] = [
   // Signature
   {
     key: "petitioner_signature",
-    label:
-      "Please type your(petitioner) full legal name here to act as your electronic signature.",
+    label: "Please type your(petitioner) full legal name here to act as your electronic signature.",
     type: "text",
     section: "Petitioner’s Contact Information, Declaration, and Signature",
     pdfKey: "P5_Line6a_SignatureofApplicant",
@@ -4541,8 +4643,7 @@ export const formFields: Field[] = [
   // Interpreter Help
   {
     key: "interpreter_help_english",
-    label:
-      "Can you read and understand English? (This helps us know if you needed an interpreter)",
+    label: "Can you read and understand English? (This helps us know if you needed an interpreter)",
     type: "radio",
     section: "Interpreter's Information",
     pdfKey: "interpreter_help_english",
@@ -4604,8 +4705,7 @@ export const formFields: Field[] = [
   },
   {
     key: "interpreter_business",
-    label:
-      "What is the name of the interpreter's business or organization? (If they have one)",
+    label: "What is the name of the interpreter's business or organization? (If they have one)",
     type: "text",
     section: "Interpreter's Information",
     pdfKey: "Pt7Line2_InterpreterBusinessorOrg",
@@ -4732,8 +4832,7 @@ export const formFields: Field[] = [
   // Interpreter Signature
   {
     key: "interpreter_signature",
-    label:
-      "Please type the interpreter's full legal name to act as their signature.",
+    label: "Please type the interpreter's full legal name to act as their signature.",
     type: "text",
     section: "Interpreter's Information",
     pdfKey: "Pt7Line7a_Signature",
@@ -4753,8 +4852,7 @@ export const formFields: Field[] = [
   // Language Name (Top of Page 10)
   {
     key: "interpreter_language_name",
-    label:
-      "What language did the interpreter use to translate this form for you?",
+    label: "What language did the interpreter use to translate this form for you?",
     type: "text",
     section: "Interpreter's Information",
     pdfKey: "Pt7_NameofLanguage",
@@ -4774,8 +4872,7 @@ export const formFields: Field[] = [
   // Representative Help
   {
     key: "representative_help",
-    label:
-      "Did someone else (like a lawyer or professional preparer) help you fill out this form?",
+    label: "Did someone else (like a lawyer or professional preparer) help you fill out this form?",
     type: "radio",
     section: "Petitioner’s Contact Information, Declaration, and Signature",
     pdfKey: "Pt6Line2_Checkbox",
@@ -4783,8 +4880,7 @@ export const formFields: Field[] = [
     subQuestions: [
       {
         key: "representative_name",
-        label:
-          "What is the name of the person who helped you fill out this form?",
+        label: "What is the name of the person who helped you fill out this form?",
         type: "text",
         section: "Petitioner’s Contact Information, Declaration, and Signature",
         pdfKey: "Pt6Line2_RepresentativeName",
@@ -4798,8 +4894,7 @@ export const formFields: Field[] = [
     key: "preparer_familyName",
     label: "What is the preparer's family name (last name)?",
     type: "text",
-    section:
-      "Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line1a_PreparerFamilyName",
     placeholder: "Last Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4808,8 +4903,7 @@ export const formFields: Field[] = [
         key: "preparer_givenName",
         label: "What is their given name (first name)?",
         type: "text",
-        section:
-          "Preparer's Contact Information, Certification, and Signature",
+        section: "Preparer's Contact Information, Certification, and Signature",
         pdfKey: "Pt8Line1b_PreparerGivenName",
         placeholder: "First Name",
         condition: (data) => data.representative_help === "Yes",
@@ -4818,11 +4912,9 @@ export const formFields: Field[] = [
   },
   {
     key: "preparer_business",
-    label:
-      "What is the name of the preparer's business or organization? (If available)",
+    label: "What is the name of the preparer's business or organization? (If available)",
     type: "text",
-    section:
-      "Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line2_BusinessName",
     placeholder: "Business Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4833,8 +4925,7 @@ export const formFields: Field[] = [
     key: "preparer_street",
     label: "What is the preparer's street address?",
     type: "text",
-    section:
-      "Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_StreetNumberName",
     placeholder: "Street Number and Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4843,8 +4934,7 @@ export const formFields: Field[] = [
     key: "preparer_unitType",
     label: "Is their address an Apartment, Suite, or Floor?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "preparer_unitType",
     options: [
       { label: "Ste", value: "Ste", pdfKey: "Pt8Line3_Unit[0]" },
@@ -4857,20 +4947,17 @@ export const formFields: Field[] = [
     key: "preparer_unitNumber",
     label: "What is the Apartment, Suite, or Floor number?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_AptSteFlrNumber",
     placeholder: "Number",
     condition: (data) =>
-      data.representative_help === "Yes" &&
-      ["Ste", "Apt", "Flr"].includes(data.preparer_unitType),
+      data.representative_help === "Yes" && ["Ste", "Apt", "Flr"].includes(data.preparer_unitType),
   },
   {
     key: "preparer_city",
     label: "In what city or town is the preparer located?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_CityOrTown",
     placeholder: "City Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4880,8 +4967,7 @@ export const formFields: Field[] = [
     label: "In what state?",
     type: "dropdown",
     isState: true,
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_State",
     // options: [{ label: "NY", value: "NY", pdfKey: "state_NY" }],
     placeholder: "Select State",
@@ -4891,8 +4977,7 @@ export const formFields: Field[] = [
     key: "preparer_zip",
     label: "What is the ZIP code?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_ZipCode",
     placeholder: "ZIP Code",
     maxLength: 5,
@@ -4902,8 +4987,7 @@ export const formFields: Field[] = [
     key: "preparer_province",
     label: "In what province is the preparer located? (If applicable)",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_Province",
     placeholder: "Province",
     condition: (data) => data.representative_help === "Yes",
@@ -4912,8 +4996,7 @@ export const formFields: Field[] = [
     key: "preparer_postalCode",
     label: "What is their postal code? (If applicable)",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_PostalCode",
     placeholder: "Postal Code",
     condition: (data) => data.representative_help === "Yes",
@@ -4922,8 +5005,7 @@ export const formFields: Field[] = [
     key: "preparer_country",
     label: "In what country is the preparer located?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_Country",
     placeholder: "Country Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4948,8 +5030,7 @@ export const formFields: Field[] = [
     key: "preparer_daytimePhone",
     label: "What is the preparer's daytime telephone number?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line4_DaytimePhoneNumber",
     placeholder: "(000) 000-0000",
     condition: (data) => data.representative_help === "Yes",
@@ -4958,8 +5039,7 @@ export const formFields: Field[] = [
     key: "preparer_has_a_number",
     label: "Do you have a fax number?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     options: [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
@@ -4970,13 +5050,11 @@ export const formFields: Field[] = [
         key: "preparer_fax",
         label: "What is the preparer's fax number? (If they have one)",
         type: "text",
-        section:
-          " Preparer's Contact Information, Certification, and Signature",
+        section: " Preparer's Contact Information, Certification, and Signature",
         pdfKey: "Pt8Line5_PreparerFaxNumber",
         placeholder: "Fax Number",
         condition: (data) =>
-          data.representative_help === "Yes" &&
-          data.preparer_has_a_number === "Yes",
+          data.representative_help === "Yes" && data.preparer_has_a_number === "Yes",
         tooltip:
           "A fax number is a telephone number used to send and receive scanned documents over a phone line. Many lawyers and professional offices still use them to share paperwork quickly.",
       },
@@ -4986,8 +5064,7 @@ export const formFields: Field[] = [
     key: "preparer_email",
     label: "What is the preparer's email address? (If they have one)",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line6_Email",
     placeholder: "e.g. preparer@example.com",
     condition: (data) => data.representative_help === "Yes",
@@ -4999,8 +5076,7 @@ export const formFields: Field[] = [
     label:
       "Does the preparer certify that they prepared this form at your request and that the information is accurate?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "preparer_certify",
     options: [
       {
@@ -5016,8 +5092,7 @@ export const formFields: Field[] = [
     key: "preparer_interpreter_used",
     label: "Did the preparer use an interpreter to assist you with this form?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "preparer_interpreter_used",
     options: [
       {
@@ -5037,11 +5112,9 @@ export const formFields: Field[] = [
   // Signature
   {
     key: "preparer_signature",
-    label:
-      "Please type the preparer's full legal name to act as their signature.",
+    label: "Please type the preparer's full legal name to act as their signature.",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line8a_Signature",
     placeholder: "Type full name",
     condition: (data) => data.representative_help === "Yes",
@@ -5050,8 +5123,7 @@ export const formFields: Field[] = [
     key: "preparer_signature_date",
     label: "On what date is the preparer signing this form?",
     type: "date",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: " Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line8b_DateofSignature",
     placeholder: "MM/DD/YYYY",
     condition: (data) => data.representative_help === "Yes",

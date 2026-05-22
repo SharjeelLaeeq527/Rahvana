@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
-import {
-  ChevronDown,
-  CheckCircle2,
-  Circle,
-  ArrowRightCircle,
-  ExternalLink,
-} from "lucide-react";
+import { ChevronDown, CheckCircle2, Circle, ArrowRightCircle, ExternalLink } from "lucide-react";
 import { RoadmapData, RoadmapStage, RoadmapStep, RoadmapSource } from "./types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ProgressTreeProps {
   roadmapData: RoadmapData;
@@ -35,9 +24,7 @@ export function ProgressTree({
 }: ProgressTreeProps) {
   const { t, language } = useLanguage();
   const isUrdu = language === "ur";
-  const [expandedStages, setExpandedStages] = useState<Record<number, boolean>>(
-    {},
-  );
+  const [expandedStages, setExpandedStages] = useState<Record<number, boolean>>({});
 
   // Sync expanded state with active stage
   useEffect(() => {
@@ -75,24 +62,22 @@ export function ProgressTree({
             (stage: any) =>
               !hasScenarios ||
               !stage.scenarioSpecific ||
-              stage.scenarioSpecific === selectedScenario,
+              stage.scenarioSpecific === selectedScenario
           )
           .map((stage: any, sIdx: number) => {
             // Find the actual index in the original roadmapData.stages for state.currentStage comparison
-            const originalStageIdx = (roadmapData.chapters || (roadmapData as any).stages).findIndex(
-              (s: any) => (s.chapter_key || s.id) === (stage.chapter_key || stage.id),
-            );
+            const originalStageIdx = (
+              roadmapData.chapters || (roadmapData as any).stages
+            ).findIndex((s: any) => (s.chapter_key || s.id) === (stage.chapter_key || stage.id));
             const isActiveStage = state.currentStage === originalStageIdx;
             const isExpanded = expandedStages[originalStageIdx];
 
             const visibleSteps = stage.steps.filter(
               (s: RoadmapStep) =>
-                !hasScenarios ||
-                !s.scenarioSpecific ||
-                s.scenarioSpecific === selectedScenario,
+                !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === selectedScenario
             );
             const completedInStage = visibleSteps.filter((s: RoadmapStep) =>
-              state.completedSteps.has(s.step_key || (s as any).id),
+              state.completedSteps.has(s.step_key || (s as any).id)
             ).length;
             const stageProgress =
               visibleSteps.length > 0
@@ -100,7 +85,9 @@ export function ProgressTree({
                 : 0;
 
             const stageNameDisplay =
-              language === "ur" && (stage.chapter_name_ur || stage.nameUr) ? (stage.chapter_name_ur || stage.nameUr) : (stage.chapter_name || stage.name);
+              language === "ur" && (stage.chapter_name_ur || stage.nameUr)
+                ? stage.chapter_name_ur || stage.nameUr
+                : stage.chapter_name || stage.name;
 
             return (
               <div key={stage.chapter_key || stage.id} className="group/stage">
@@ -145,20 +132,16 @@ export function ProgressTree({
                     {visibleSteps.map((step: RoadmapStep) => {
                       const sId = step.step_key || (step as any).id;
                       const actualStepIdx = stage.steps.findIndex(
-                        (s: any) => (s.step_key || s.id) === sId,
+                        (s: any) => (s.step_key || s.id) === sId
                       );
-                      const isCurrentStep =
-                        state.currentStep === actualStepIdx && isActiveStage;
+                      const isCurrentStep = state.currentStep === actualStepIdx && isActiveStage;
                       const isStepCompleted = state.completedSteps.has(sId);
-                      const stepNameDisplay =
-                        isUrdu && step.nameUr ? step.nameUr : step.name;
+                      const stepNameDisplay = isUrdu && step.nameUr ? step.nameUr : step.name;
 
                       return (
                         <div
                           key={sId}
-                          onClick={() =>
-                            onSelectStep(originalStageIdx, actualStepIdx)
-                          }
+                          onClick={() => onSelectStep(originalStageIdx, actualStepIdx)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
@@ -184,9 +167,7 @@ export function ProgressTree({
                           </div>
 
                           {(
-                            isUrdu && step.outputUr
-                              ? step.outputUr
-                              : step.output || step.success
+                            isUrdu && step.outputUr ? step.outputUr : step.output || step.success
                           ) ? (
                             <TooltipProvider>
                               <Tooltip>
@@ -224,8 +205,7 @@ export function ProgressTree({
                                         __html:
                                           (isUrdu && step.outputUr
                                             ? step.outputUr
-                                            : step.output || step.success) ||
-                                          "",
+                                            : step.output || step.success) || "",
                                       }}
                                     />
                                   </div>
@@ -275,22 +255,20 @@ export function ProgressTree({
               Official Sources
             </h4>
             <div className="flex flex-col gap-2">
-              {currentStageSources.map(
-                (source: RoadmapSource, idx: number) => (
-                  <a
-                    key={`source-${idx}`}
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-200 text-blue-600 text-xs font-semibold rounded-xl transition-all shadow-xs group"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
-                    <span className="truncate">
-                      {isUrdu && source.labelUr ? source.labelUr : source.label}
-                    </span>
-                  </a>
-                ),
-              )}
+              {currentStageSources.map((source: RoadmapSource, idx: number) => (
+                <a
+                  key={`source-${idx}`}
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-200 text-blue-600 text-xs font-semibold rounded-xl transition-all shadow-xs group"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                  <span className="truncate">
+                    {isUrdu && source.labelUr ? source.labelUr : source.label}
+                  </span>
+                </a>
+              ))}
             </div>
           </div>
         );

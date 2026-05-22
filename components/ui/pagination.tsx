@@ -13,11 +13,7 @@ const Pagination: React.FC<PaginationProps> = ({
   itemsPerPage,
   onPageChange,
 }) => {
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(totalItems / itemsPerPage)
-  );
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
@@ -76,8 +72,8 @@ const Pagination: React.FC<PaginationProps> = ({
               page === currentPage
                 ? "bg-gray-50 text-gray-900 border border-gray-300"
                 : page === "..."
-                ? "text-gray-400 cursor-default"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  ? "text-gray-400 cursor-default"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           >
             {page}

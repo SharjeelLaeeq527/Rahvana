@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -18,15 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  FileText,
-  Upload,
-  Package,
-  Eye,
-} from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, FileText, Upload, Package, Eye } from "lucide-react";
 import { FormSelections } from "../types/221g";
 import { manualChecklists, ChecklistItem } from "../utils/manualChecklists";
 import { DocumentType } from "../utils/documentValidation";
@@ -64,17 +51,10 @@ export default function DocumentChecklist({
 
   // Manual Verification State
   const [showManualVerify, setShowManualVerify] = useState(false);
-  const [manualVerifyDocId, setManualVerifyDocId] = useState<string | null>(
-    null,
-  );
-  const [manualVerifyDocType, setManualVerifyDocType] =
-    useState<DocumentType | null>(null);
-  const [manualChecklist, setManualChecklist] = useState<
-    Record<string, boolean>
-  >({});
-  const [currentChecklistItems, setCurrentChecklistItems] = useState<
-    ChecklistItem[]
-  >([]);
+  const [manualVerifyDocId, setManualVerifyDocId] = useState<string | null>(null);
+  const [manualVerifyDocType, setManualVerifyDocType] = useState<DocumentType | null>(null);
+  const [manualChecklist, setManualChecklist] = useState<Record<string, boolean>>({});
+  const [currentChecklistItems, setCurrentChecklistItems] = useState<ChecklistItem[]>([]);
 
   // Validation Error State
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -83,12 +63,10 @@ export default function DocumentChecklist({
 
   // Update documents when selectedItems change
   useEffect(() => {
-    import("../utils/documentDefinitions").then(
-      ({ generateRequiredDocumentsList }) => {
-        const newDocuments = generateRequiredDocumentsList(selectedItems);
-        setDocuments(newDocuments);
-      },
-    );
+    import("../utils/documentDefinitions").then(({ generateRequiredDocumentsList }) => {
+      const newDocuments = generateRequiredDocumentsList(selectedItems);
+      setDocuments(newDocuments);
+    });
   }, [selectedItems]);
 
   const getStatusColor = (status: DocumentStatus) => {
@@ -123,9 +101,7 @@ export default function DocumentChecklist({
 
   const updateDocumentStatus = (docId: string, status: DocumentStatus) => {
     onDocumentStatusChange(docId, status);
-    setDocuments((prev) =>
-      prev.map((doc) => (doc.id === docId ? { ...doc, status } : doc)),
-    );
+    setDocuments((prev) => prev.map((doc) => (doc.id === docId ? { ...doc, status } : doc)));
   };
 
   const openManualVerification = (docId: string, docType: string) => {
@@ -163,11 +139,10 @@ export default function DocumentChecklist({
 
   // Calculate progress
   const completedCount = documents.filter(
-    (d) => d.status === "ready" || d.status === "submitted",
+    (d) => d.status === "ready" || d.status === "submitted"
   ).length;
   const totalCount = documents.length;
-  const progressPercentage =
-    totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
     <Card className="w-full">
@@ -177,9 +152,7 @@ export default function DocumentChecklist({
             {completedCount}/{totalCount} completed
           </Badge>
         </div>
-        <CardDescription>
-          Upload and validate your required documents
-        </CardDescription>
+        <CardDescription>Upload and validate your required documents</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-6">
@@ -212,10 +185,7 @@ export default function DocumentChecklist({
                         </p>
                       </div>
                     </div>
-                    <Badge
-                      variant={getStatusColor(doc.status)}
-                      className="self-start sm:self-auto"
-                    >
+                    <Badge variant={getStatusColor(doc.status)} className="self-start sm:self-auto">
                       {doc.status.replace("-", " ")}
                     </Badge>
                   </div>
@@ -228,10 +198,7 @@ export default function DocumentChecklist({
                           type="file"
                           multiple
                           accept=".pdf,.jpg,.jpeg,.png"
-                          onChange={(e) =>
-                            e.target.files &&
-                            onFileUpload(docId, e.target.files)
-                          }
+                          onChange={(e) => e.target.files && onFileUpload(docId, e.target.files)}
                           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         />
                       </div>
@@ -248,9 +215,7 @@ export default function DocumentChecklist({
                             // Find the most recently uploaded file for this document
                             if (hasUploads) {
                               const latestFile =
-                                uploadedDocs[docId][
-                                  uploadedDocs[docId].length - 1
-                                ];
+                                uploadedDocs[docId][uploadedDocs[docId].length - 1];
 
                               // Create a temporary validator to validate this specific file
                               const validator = async () => {
@@ -263,9 +228,9 @@ export default function DocumentChecklist({
                                     latestFile.file,
                                     (progressInfo) => {
                                       console.log(
-                                        `OCR Progress: ${progressInfo.status} - ${progressInfo.current}%`,
+                                        `OCR Progress: ${progressInfo.status} - ${progressInfo.current}%`
                                       );
-                                    },
+                                    }
                                   );
 
                                   // Import the validation function from the utility
@@ -273,11 +238,10 @@ export default function DocumentChecklist({
                                     await import("../utils/documentValidation");
 
                                   // Validate based on document type
-                                  const validationResult =
-                                    validateByDocumentType(
-                                      text,
-                                      doc.type as DocumentType,
-                                    );
+                                  const validationResult = validateByDocumentType(
+                                    text,
+                                    doc.type as DocumentType
+                                  );
 
                                   // Update the document status based on validation result
                                   if (validationResult.isValid) {
@@ -285,7 +249,7 @@ export default function DocumentChecklist({
                                   } else {
                                     // Show the validation issues to the user
                                     const issues = validationResult.issues.map(
-                                      (issue) => `${issue.message}`,
+                                      (issue) => `${issue.message}`
                                     );
 
                                     // Add hidden debug info
@@ -312,10 +276,7 @@ export default function DocumentChecklist({
 
                               validator();
                             } else {
-                              showToast(
-                                "Please upload a file first before validating.",
-                                "error",
-                              );
+                              showToast("Please upload a file first before validating.", "error");
                             }
                           }}
                         >
@@ -329,9 +290,7 @@ export default function DocumentChecklist({
                             size="sm"
                             variant="default"
                             className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={() =>
-                              openManualVerification(docId, doc.type)
-                            }
+                            onClick={() => openManualVerification(docId, doc.type)}
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             Manual Verify
@@ -349,16 +308,10 @@ export default function DocumentChecklist({
                           className="flex flex-col sm:flex-row sm:items-center justify-between p-2 bg-gray-50 rounded text-xs gap-2"
                         >
                           <span className="flex items-center gap-2 overflow-hidden w-full sm:w-auto">
-                            <span
-                              className="truncate flex-1 sm:flex-none"
-                              title={upload.file.name}
-                            >
+                            <span className="truncate flex-1 sm:flex-none" title={upload.file.name}>
                               📄 {upload.file.name}
                             </span>
-                            <Badge
-                              variant="outline"
-                              className="text-xs shrink-0"
-                            >
+                            <Badge variant="outline" className="text-xs shrink-0">
                               {upload.quality}
                             </Badge>
                           </span>
@@ -432,12 +385,10 @@ export default function DocumentChecklist({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Manual Verification:{" "}
-              {manualVerifyDocType?.replace("_", " ").toUpperCase()}
+              Manual Verification: {manualVerifyDocType?.replace("_", " ").toUpperCase()}
             </DialogTitle>
             <DialogDescription>
-              Please manually verify that your document contains the following
-              required details.
+              Please manually verify that your document contains the following required details.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -458,15 +409,10 @@ export default function DocumentChecklist({
             ))}
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowManualVerify(false)}
-            >
+            <Button variant="outline" onClick={() => setShowManualVerify(false)}>
               Cancel
             </Button>
-            <Button onClick={handleManualVerifySubmit}>
-              Confirm & Mark Ready
-            </Button>
+            <Button onClick={handleManualVerifySubmit}>Confirm & Mark Ready</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

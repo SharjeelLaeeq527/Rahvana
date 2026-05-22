@@ -9,8 +9,7 @@ import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { usePlan } from "@/app/context/PlanContext";
 import { Loader } from "../ui/spinner";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 interface PassportPhotoToolProps {
   showHeader?: boolean;
@@ -62,7 +61,7 @@ export default function PassportPhotoTool({
         description: t("passportPhoto.presets.customDesc"),
       },
     ],
-    [t],
+    [t]
   );
 
   const [file, setFile] = useState<File | null>(null);
@@ -207,9 +206,7 @@ export default function PassportPhotoTool({
 
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(
-          `Server Error (${res.status}): ${errorText.substring(0, 100)}...`,
-        );
+        throw new Error(`Server Error (${res.status}): ${errorText.substring(0, 100)}...`);
       }
 
       setProcessingStep(t("passportPhoto.steps.finalizing"));
@@ -222,7 +219,7 @@ export default function PassportPhotoTool({
       setError(
         err instanceof Error
           ? err.message
-          : `${t("passportPhoto.errors.general")} API Base: ${API_BASE}`,
+          : `${t("passportPhoto.errors.general")} API Base: ${API_BASE}`
       );
       setProcessingStep("");
     } finally {
@@ -250,8 +247,7 @@ export default function PassportPhotoTool({
               className="text-3xl md:text-5xl font-bold text-primary/90 leading-tight"
               style={{
                 color: "#4a7c8e",
-                textShadow:
-                  "0 2px 8px rgba(74,124,142,0.3), 0 1px 4px rgba(0,0,0,0.1)",
+                textShadow: "0 2px 8px rgba(74,124,142,0.3), 0 1px 4px rgba(0,0,0,0.1)",
               }}
             >
               {t("passportPhoto.title")}
@@ -290,8 +286,7 @@ export default function PassportPhotoTool({
                     style={{ color: "#7fb3c8" }}
                   />
                   <span>
-                    <strong>{key}.</strong>{" "}
-                    {t(`passportPhoto.requirements.${key}`)}
+                    <strong>{key}.</strong> {t(`passportPhoto.requirements.${key}`)}
                   </span>
                 </li>
               ))}
@@ -308,9 +303,7 @@ export default function PassportPhotoTool({
               title="Click to view upgrade options"
             >
               <div>
-                <p className="text-sm font-semibold text-[#0d7377]">
-                  Photo credits
-                </p>
+                <p className="text-sm font-semibold text-[#0d7377]">Photo credits</p>
                 <p className="text-xs text-gray-500">
                   {creditStatusLoading
                     ? "Checking your remaining credits..."
@@ -389,9 +382,7 @@ export default function PassportPhotoTool({
               ) : (
                 <div className="flex flex-col items-center text-gray-500">
                   <Upload className="w-10 h-10 mb-2" />
-                  <p className="text-sm font-medium">
-                    {t("passportPhoto.dropzone")}
-                  </p>
+                  <p className="text-sm font-medium">{t("passportPhoto.dropzone")}</p>
                   <p className="text-xs mt-1">{t("passportPhoto.fileSize")}</p>
                 </div>
               )}
@@ -438,20 +429,17 @@ export default function PassportPhotoTool({
                   : {
                       backgroundColor: "#5a9ab5",
                       color: "#ffffff",
-                      boxShadow:
-                        "0 4px 18px rgba(90,154,181,0.45), 0 1px 4px rgba(0,0,0,0.10)",
+                      boxShadow: "0 4px 18px rgba(90,154,181,0.45), 0 1px 4px rgba(0,0,0,0.10)",
                       cursor: "pointer",
                     }
               }
               onMouseEnter={(e) => {
                 if (file && !loading)
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                    "#4a7c8e";
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#4a7c8e";
               }}
               onMouseLeave={(e) => {
                 if (file && !loading)
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                    "#5a9ab5";
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#5a9ab5";
               }}
             >
               {loading ? (
@@ -506,8 +494,7 @@ export default function PassportPhotoTool({
                 style={{
                   backgroundColor: "#4a8c6e",
                   color: "#ffffff",
-                  boxShadow:
-                    "0 4px 18px rgba(74,140,110,0.4), 0 1px 4px rgba(0,0,0,0.10)",
+                  boxShadow: "0 4px 18px rgba(74,140,110,0.4), 0 1px 4px rgba(0,0,0,0.10)",
                 }}
               >
                 <Download className="w-5 h-5" />

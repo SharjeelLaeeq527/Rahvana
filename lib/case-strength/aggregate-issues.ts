@@ -17,8 +17,16 @@ export interface AggregatedIssue {
   hint?: string;
   stepKey: string;
   stepName: string;
+  /** Display number shown in UI (from JSON step_number/display_order) */
+  stepNumber: number;
   chapterIdx: number;
+  /** Array index within chapter.steps — used for navigation */
   stepIdx: number;
+}
+
+/** Extract step number from JSON or fall back to parsing the step_key */
+function getStepNumber(step: any, fallbackIdx: number): number {
+  return step?.step_number ?? step?.display_order ?? fallbackIdx + 1;
 }
 
 interface AggregateContext {
@@ -48,7 +56,8 @@ export function aggregateChapter1Issues({
   // 1. Eligibility quest risks → tag to step_1_1
   const eligFlags = detectRiskFlagsFromEligibilityQuest(eligibilityAnswers);
   const step_1_1Idx = steps.findIndex((s: any) => s.step_key === "step_1_1");
-  const step_1_1Name = steps[step_1_1Idx]?.step_name ?? "Eligibility";
+  const step_1_1 = steps[step_1_1Idx];
+  const step_1_1Name = step_1_1?.step_name ?? "Eligibility";
   for (const f of eligFlags) {
     issues.push({
       level: f.severity === "critical" ? "critical" : f.severity === "warning" ? "warning" : "info",
@@ -56,6 +65,7 @@ export function aggregateChapter1Issues({
       hint: f.advisory,
       stepKey: "step_1_1",
       stepName: step_1_1Name,
+      stepNumber: getStepNumber(step_1_1, step_1_1Idx),
       chapterIdx: 0,
       stepIdx: step_1_1Idx >= 0 ? step_1_1Idx : 0,
     });
@@ -73,7 +83,7 @@ export function aggregateChapter1Issues({
       state.metadata?.docReviewStatus as Record<string, string> | undefined,
       state.docUploads,
       state.notes,
-      eligibilityAnswers,
+      eligibilityAnswers
     );
     for (const m of docResult.completeness.missing) {
       issues.push({
@@ -82,6 +92,7 @@ export function aggregateChapter1Issues({
         hint: m.subtitle,
         stepKey: "step_1_2",
         stepName: step_1_2?.step_name ?? "Documents",
+        stepNumber: getStepNumber(step_1_2, step_1_2Idx),
         chapterIdx: 0,
         stepIdx: step_1_2Idx >= 0 ? step_1_2Idx : 1,
       });
@@ -93,6 +104,7 @@ export function aggregateChapter1Issues({
         hint: c.hint,
         stepKey: "step_1_2",
         stepName: step_1_2?.step_name ?? "Documents",
+        stepNumber: getStepNumber(step_1_2, step_1_2Idx),
         chapterIdx: 0,
         stepIdx: step_1_2Idx >= 0 ? step_1_2Idx : 1,
       });
@@ -108,7 +120,7 @@ export function aggregateChapter1Issues({
     const checks = runStepChecks(
       stepKey,
       { state, uploadedDocuments, eligibilityAnswers },
-      registry,
+      registry
     );
     for (const c of checks) {
       issues.push({
@@ -117,6 +129,7 @@ export function aggregateChapter1Issues({
         hint: c.hint,
         stepKey,
         stepName: step.step_name ?? stepKey,
+        stepNumber: getStepNumber(step, i),
         chapterIdx: 0,
         stepIdx: i,
       });

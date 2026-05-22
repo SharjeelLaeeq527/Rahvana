@@ -1,13 +1,5 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
-export default function DocumentTranslationLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      {children}
-    </div>
-  );
+export default function DocumentTranslationLayout({ children }: { children: ReactNode }) {
+  return <div>{children}</div>;
 }

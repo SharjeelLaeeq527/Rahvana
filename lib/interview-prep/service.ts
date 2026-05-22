@@ -37,7 +37,7 @@ class DynamicQuestionSelectionEngine {
   // Select applicable questions based on user answers and loaded rules
   selectQuestions(
     answers: Record<string, unknown>,
-    questionBank: InterviewQuestion[],
+    questionBank: InterviewQuestion[]
   ): GeneratedQuestion[] {
     const applicableQuestions: GeneratedQuestion[] = [];
 
@@ -53,23 +53,16 @@ class DynamicQuestionSelectionEngine {
       }
 
       // Check if any rules apply to this question's category
-      const appliedRules = getAppliedRules(
-        questionCategory,
-        answers,
-        this.rules,
-      );
+      const appliedRules = getAppliedRules(questionCategory, answers, this.rules);
 
       if (appliedRules.length > 0) {
         isApplicable = true;
         // Use highest priority from applied rules
         const priorityOrder = { high: 3, medium: 2, low: 1 };
         const maxPriority = Math.max(
-          ...appliedRules.map(
-            (r) => priorityOrder[r.actions.priorityBoost[0] || "low"],
-          ),
+          ...appliedRules.map((r) => priorityOrder[r.actions.priorityBoost[0] || "low"])
         );
-        priority =
-          maxPriority === 3 ? "high" : maxPriority === 2 ? "medium" : "low";
+        priority = maxPriority === 3 ? "high" : maxPriority === 2 ? "medium" : "low";
         reason = appliedRules.map((r) => r.actions.reason).join("; ");
       }
 
@@ -99,10 +92,7 @@ class DynamicQuestionSelectionEngine {
   }
 
   // Check if a question should be skipped based on skipIf conditions
-  private shouldSkipQuestion(
-    question: any,
-    answers: Record<string, unknown>,
-  ): boolean {
+  private shouldSkipQuestion(question: any, answers: Record<string, unknown>): boolean {
     if (!question.skipIf || !Array.isArray(question.skipIf)) {
       return false;
     }
@@ -136,21 +126,12 @@ class AnswerGenerationEngine {
   // Generate personalized answers for selected questions
   generateAnswers(
     questions: GeneratedQuestion[],
-    answersMap: Record<string, unknown>,
+    answersMap: Record<string, unknown>
   ): GeneratedQuestion[] {
     return questions.map((question) => {
-      const personalizedAnswer = this.processTemplate(
-        question.sampleAnswer,
-        answersMap,
-      );
-      const personalizedGuidance = this.processTemplate(
-        question.guidance,
-        answersMap,
-      );
-      const personalizedTooltip = this.processTemplate(
-        question.tooltip,
-        answersMap,
-      );
+      const personalizedAnswer = this.processTemplate(question.sampleAnswer, answersMap);
+      const personalizedGuidance = this.processTemplate(question.guidance, answersMap);
+      const personalizedTooltip = this.processTemplate(question.tooltip, answersMap);
 
       return {
         ...question,
@@ -162,10 +143,7 @@ class AnswerGenerationEngine {
   }
 
   // Process template string by replacing placeholders and ternary operators
-  private processTemplate(
-    template: string,
-    answersMap: Record<string, unknown>,
-  ): string {
+  private processTemplate(template: string, answersMap: Record<string, unknown>): string {
     if (!template) return template;
 
     let processed = template;
@@ -178,7 +156,7 @@ class AnswerGenerationEngine {
       // Treat as truthy if value exists and is not false/0
       const isTruthy = value && value !== false && value !== 0 && value !== "false";
       const resultText = isTruthy ? trueText : falseText;
-      
+
       // Process any nested placeholders in the result text (e.g., {{country}})
       return this.processTemplate(resultText, answersMap);
     });
@@ -189,17 +167,18 @@ class AnswerGenerationEngine {
       const value = answersMap[field];
       const isTruthy = value && value !== false && value !== 0 && value !== "false";
       const resultText = isTruthy ? trueText : falseText;
-      
+
       // Process any nested placeholders in the result text
       return this.processTemplate(resultText, answersMap);
     });
 
     // Handle ternary operators with escaped quotes in text: {{field ? 'it\'s true' : 'it\'s false'}}
-    const ternaryRegexEscaped = /\{\{(\w+)\s*\?\s*'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'\}\}/g;
+    const ternaryRegexEscaped =
+      /\{\{(\w+)\s*\?\s*'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'\}\}/g;
     processed = processed.replace(ternaryRegexEscaped, (match, field, trueText, falseText) => {
       // Only process if the previous simple ternary regex didn't already handle it
       if (!match.includes("\\'")) return match;
-      
+
       const value = answersMap[field];
       const isTruthy = value && value !== false && value !== 0 && value !== "false";
       // Unescape the text and process any nested placeholders
@@ -219,10 +198,7 @@ class AnswerGenerationEngine {
       let replacement = String(value);
 
       // Special handling for common cases
-      if (
-        field === "daily_communication" &&
-        replacement === "All of the above"
-      ) {
+      if (field === "daily_communication" && replacement === "All of the above") {
         replacement = "phone calls, video calls, and text messages";
       }
 
@@ -241,15 +217,13 @@ class AnswerGenerationEngine {
 
 //  Create a new interview session
 export async function createInterviewSession(
-  sessionData: Omit<InterviewSessionInput, "user_id">,
+  sessionData: Omit<InterviewSessionInput, "user_id">
 ): Promise<InterviewSession> {
   return await createInterviewSessionDB(sessionData);
 }
 
 //  Get an interview session with answers and results
-export async function getInterviewSession(
-  sessionId: string,
-): Promise<InterviewSession | null> {
+export async function getInterviewSession(sessionId: string): Promise<InterviewSession | null> {
   const session = await getInterviewSessionDB(sessionId);
   if (!session) return null;
 
@@ -266,28 +240,24 @@ export async function getInterviewSession(
 // Update answers for an interview session
 export async function updateInterviewSessionAnswers(
   sessionId: string,
-  answers: Record<string, unknown>,
+  answers: Record<string, unknown>
 ): Promise<InterviewSession> {
   const session = await getInterviewSessionDB(sessionId);
   if (!session) {
     throw new Error("Session not found");
   }
 
-  const answersArray = Object.entries(answers).map(
-    ([questionKey, answerValue]) => ({
-      question_key: questionKey,
-      answer_value: answerValue,
-    }),
-  );
+  const answersArray = Object.entries(answers).map(([questionKey, answerValue]) => ({
+    question_key: questionKey,
+    answer_value: answerValue,
+  }));
 
   await saveInterviewAnswersDB(sessionId, answersArray);
   return (await getInterviewSession(sessionId)) as InterviewSession;
 }
 
 // Generate personalized interview prep output
-export async function generateInterviewPrepOutput(
-  sessionId: string,
-): Promise<InterviewPrepOutput> {
+export async function generateInterviewPrepOutput(sessionId: string): Promise<InterviewPrepOutput> {
   const session = await getInterviewSessionDB(sessionId);
   if (!session) {
     throw new Error("Session not found");
@@ -298,7 +268,7 @@ export async function generateInterviewPrepOutput(
 
   const answers = await getSessionAnswersDB(sessionId);
   const categoryData = await categoryLoader.loadCategory(session.category_slug);
-  
+
   // Load rules for the category
   const rules = await loadRulesForCategory(session.category_slug);
 
@@ -307,20 +277,14 @@ export async function generateInterviewPrepOutput(
     answersMap[answer.question_key] = answer.answer_value;
   });
 
-  const selectionEngine = new DynamicQuestionSelectionEngine(
-    session.category_slug,
-    rules,
-  );
+  const selectionEngine = new DynamicQuestionSelectionEngine(session.category_slug, rules);
   const applicableQuestions = selectionEngine.selectQuestions(
     answersMap,
-    categoryData.questionBank.questions,
+    categoryData.questionBank.questions
   );
 
   const generationEngine = new AnswerGenerationEngine();
-  const generatedQuestions = generationEngine.generateAnswers(
-    applicableQuestions,
-    answersMap,
-  );
+  const generatedQuestions = generationEngine.generateAnswers(applicableQuestions, answersMap);
 
   // Apply variation selection to each question
   const questionsWithVariations = applyVariationsToQuestions(generatedQuestions);
@@ -333,17 +297,13 @@ export async function generateInterviewPrepOutput(
     summary: {
       totalQuestions: categoryData.questionBank.questions.length,
       applicableQuestions: questionsWithVariations.length,
-      categories: Array.from(
-        new Set(questionsWithVariations.map((q) => q.category)),
-      ),
+      categories: Array.from(new Set(questionsWithVariations.map((q) => q.category))),
     },
   };
 }
 
 //  Mark an interview session as completed
-export async function completeInterviewSession(
-  sessionId: string,
-): Promise<InterviewSession> {
+export async function completeInterviewSession(sessionId: string): Promise<InterviewSession> {
   const updatedSession = await updateInterviewSessionDB(sessionId, {
     completed: true,
   });
@@ -352,7 +312,7 @@ export async function completeInterviewSession(
 
 // Get the generated interview prep output
 export async function getInterviewPrepOutput(
-  sessionId: string,
+  sessionId: string
 ): Promise<InterviewPrepOutput | null> {
   const results = await getInterviewResultsDB(sessionId);
   if (!results) return null;
@@ -361,17 +321,12 @@ export async function getInterviewPrepOutput(
     sessionId,
     questions: results.generated_questions as GeneratedQuestion[],
     summary: {
-      totalQuestions: (results.generated_questions as GeneratedQuestion[])
-        .length,
-      applicableQuestions: (
-        results.generated_questions as GeneratedQuestion[]
-      ).filter((q) => q.applicable).length,
+      totalQuestions: (results.generated_questions as GeneratedQuestion[]).length,
+      applicableQuestions: (results.generated_questions as GeneratedQuestion[]).filter(
+        (q) => q.applicable
+      ).length,
       categories: Array.from(
-        new Set(
-          (results.generated_questions as GeneratedQuestion[]).map(
-            (q) => q.category,
-          ),
-        ),
+        new Set((results.generated_questions as GeneratedQuestion[]).map((q) => q.category))
       ),
     },
   };

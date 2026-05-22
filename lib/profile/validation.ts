@@ -43,8 +43,11 @@ export function validateProfile(profile: Partial<MasterProfile>): ValidationResu
     errors.push("Email format is invalid");
   }
 
-  if (!profile.currentAddress?.street || !profile.currentAddress?.city || 
-      !profile.currentAddress?.country) {
+  if (
+    !profile.currentAddress?.street ||
+    !profile.currentAddress?.city ||
+    !profile.currentAddress?.country
+  ) {
     errors.push("Current address (street, city, country) is required");
   }
 
@@ -59,7 +62,7 @@ export function validateProfile(profile: Partial<MasterProfile>): ValidationResu
     const expiry = new Date(profile.passportExpiry);
     const sixMonthsFromNow = new Date();
     sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
-    
+
     if (expiry < sixMonthsFromNow) {
       warnings.push("Passport expires within 6 months - renewal may be needed");
     }
@@ -68,7 +71,7 @@ export function validateProfile(profile: Partial<MasterProfile>): ValidationResu
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -85,7 +88,7 @@ function isValidEmail(email: string): boolean {
  */
 export function isValidUSPhone(phone: string): boolean {
   // Remove all non-digit characters
-  const cleaned = phone.replace(/\D/g, '');
+  const cleaned = phone.replace(/\D/g, "");
   // US phone numbers should be 10 digits
   return cleaned.length === 10 || cleaned.length === 11;
 }

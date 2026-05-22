@@ -8,11 +8,7 @@
  * - Canonical data model
  */
 
-export type SessionEndReason =
-  | "completed"
-  | "aborted_focus"
-  | "aborted_manual"
-  | "aborted_time";
+export type SessionEndReason = "completed" | "aborted_focus" | "aborted_manual" | "aborted_time";
 
 export interface SessionEvent {
   id: string;
@@ -70,7 +66,7 @@ const MIN_QUESTIONS_FOR_PARTIAL_EVAL = 8;
  */
 export function computeSessionMetrics(
   session: InterviewSession,
-  totalQuestionsAvailable: number,
+  totalQuestionsAvailable: number
 ): SessionMetrics {
   const questionEvents = session.events.filter((e) => e.type === "question");
 
@@ -87,24 +83,18 @@ export function computeSessionMetrics(
       : 0;
 
   // Compute avg/variance only from non-skipped questions
-  const validDurations = questionEvents
-    .filter((e) => !e.skipped)
-    .map((e) => e.durationSeconds);
+  const validDurations = questionEvents.filter((e) => !e.skipped).map((e) => e.durationSeconds);
 
   const avgResponseTime =
     validDurations.length > 0
-      ? Math.round(
-          validDurations.reduce((a, b) => a + b, 0) / validDurations.length,
-        )
+      ? Math.round(validDurations.reduce((a, b) => a + b, 0) / validDurations.length)
       : 0;
 
   const responseVariance =
     validDurations.length > 1
       ? Math.sqrt(
-          validDurations.reduce(
-            (sum, d) => sum + Math.pow(d - avgResponseTime, 2),
-            0,
-          ) / validDurations.length,
+          validDurations.reduce((sum, d) => sum + Math.pow(d - avgResponseTime, 2), 0) /
+            validDurations.length
         )
       : 0;
 
@@ -133,7 +123,7 @@ export function computeSessionMetrics(
  */
 export function generateSessionInsights(
   session: InterviewSession,
-  metrics: SessionMetrics,
+  metrics: SessionMetrics
 ): SessionInsights {
   const questionEvents = session.events.filter((e) => e.type === "question");
 
@@ -160,8 +150,7 @@ export function generateSessionInsights(
         if (metrics.focusWarningsCount === 0) {
           snapshot += "Your focus remained strong throughout the session.";
         } else if (metrics.focusWarningsCount === 1) {
-          snapshot +=
-            "You stayed focused for most of the session, with one brief attention lapse.";
+          snapshot += "You stayed focused for most of the session, with one brief attention lapse.";
         } else {
           snapshot += `You had ${metrics.focusWarningsCount} focus warnings—concentration dipped at times.`;
         }
@@ -203,9 +192,10 @@ export function generateSessionInsights(
     }
 
     const answeredQuestions = metrics.attemptedQuestions - metrics.skippedQuestions;
-    const avgTranscriptLength = questionEvents
-      .filter((e) => !e.skipped)
-      .reduce((sum, e) => sum + e.transcript.split(/\s+/).length, 0) / (answeredQuestions || 1);
+    const avgTranscriptLength =
+      questionEvents
+        .filter((e) => !e.skipped)
+        .reduce((sum, e) => sum + e.transcript.split(/\s+/).length, 0) / (answeredQuestions || 1);
 
     if (avgTranscriptLength > 0 && avgTranscriptLength < 60) {
       strengths.push("Kept answers focused and concise");
@@ -237,63 +227,53 @@ export function generateSessionInsights(
     case "completed":
       if (metrics.skippedQuestions > 0) {
         improvements.push(
-          `${metrics.skippedQuestions} question(s) were skipped—aim to answer all questions, even if briefly`,
+          `${metrics.skippedQuestions} question(s) were skipped—aim to answer all questions, even if briefly`
         );
       }
 
-      const answeredQuestions =
-        metrics.attemptedQuestions - metrics.skippedQuestions;
-      const avgTranscriptLength = questionEvents
-        .filter((e) => !e.skipped)
-        .reduce((sum, e) => sum + e.transcript.split(/\s+/).length, 0) / (answeredQuestions || 1);
+      const answeredQuestions = metrics.attemptedQuestions - metrics.skippedQuestions;
+      const avgTranscriptLength =
+        questionEvents
+          .filter((e) => !e.skipped)
+          .reduce((sum, e) => sum + e.transcript.split(/\s+/).length, 0) / (answeredQuestions || 1);
 
       if (answeredQuestions > 0 && avgTranscriptLength > 80) {
         improvements.push(
-          `Many responses were verbose (avg ${Math.round(avgTranscriptLength)} words)—tighten to key point + example`,
+          `Many responses were verbose (avg ${Math.round(avgTranscriptLength)} words)—tighten to key point + example`
         );
       }
 
       if (metrics.responseVariance > 12) {
         improvements.push(
-          "Response pacing varied significantly—aim for more consistent answer lengths",
+          "Response pacing varied significantly—aim for more consistent answer lengths"
         );
       }
 
       if (metrics.focusWarningsCount > 1) {
         improvements.push(
-          "You had multiple focus warnings—minimize distractions in your next attempt",
+          "You had multiple focus warnings—minimize distractions in your next attempt"
         );
       }
       break;
 
     case "aborted_focus":
       improvements.push(
-        "Focus violations ended this session—you must eliminate distractions to proceed",
+        "Focus violations ended this session—you must eliminate distractions to proceed"
       );
-      improvements.push(
-        "Find a quiet, isolated space for your next attempt",
-      );
-      improvements.push(
-        "Ensure fullscreen remains active and avoid tab switching",
-      );
+      improvements.push("Find a quiet, isolated space for your next attempt");
+      improvements.push("Ensure fullscreen remains active and avoid tab switching");
       break;
 
     case "aborted_manual":
       improvements.push(
-        "Manual exit prevented completion—commit to the full session in your next attempt",
+        "Manual exit prevented completion—commit to the full session in your next attempt"
       );
-      improvements.push(
-        "Build interview stamina by pushing through the full 15 minutes",
-      );
+      improvements.push("Build interview stamina by pushing through the full 15 minutes");
       break;
 
     case "aborted_time":
-      improvements.push(
-        "Time ran out—you need to answer more quickly to cover all questions",
-      );
-      improvements.push(
-        "Practice keeping responses to 1–2 minutes per question",
-      );
+      improvements.push("Time ran out—you need to answer more quickly to cover all questions");
+      improvements.push("Practice keeping responses to 1–2 minutes per question");
       break;
   }
 
@@ -309,9 +289,7 @@ export function generateSessionInsights(
         nextFocus.push("Eliminate distractions—maintain perfect focus next time");
       }
       if (metrics.skippedQuestions > 0) {
-        nextFocus.push(
-          "Prepare answers for skipped categories before your next session",
-        );
+        nextFocus.push("Prepare answers for skipped categories before your next session");
       }
       if (metrics.responseVariance > 10) {
         nextFocus.push("Standardize your answer length to 60–90 seconds");
@@ -320,9 +298,7 @@ export function generateSessionInsights(
       break;
 
     case "aborted_focus":
-      nextFocus.push(
-        "CRITICAL: Resolve all focus violations before attempting again",
-      );
+      nextFocus.push("CRITICAL: Resolve all focus violations before attempting again");
       nextFocus.push("Move to a distraction-free environment");
       nextFocus.push("Eliminate all browser tabs except this one");
       break;
@@ -351,7 +327,7 @@ export function generateSessionInsights(
  */
 export function generateSessionReport(
   session: InterviewSession,
-  totalQuestionsAvailable: number,
+  totalQuestionsAvailable: number
 ): SessionReport {
   const metrics = computeSessionMetrics(session, totalQuestionsAvailable);
   const insights = generateSessionInsights(session, metrics);

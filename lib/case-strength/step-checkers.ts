@@ -20,7 +20,10 @@ export interface StepCheck {
 export interface StepCheckContext {
   state: WizardState;
   uploadedDocuments: UploadedDocument[];
-  eligibilityAnswers: Record<string, Record<string, string | string[]> | undefined> | null | undefined;
+  eligibilityAnswers:
+    | Record<string, Record<string, string | string[]> | undefined>
+    | null
+    | undefined;
 }
 
 export type StepChecker = (ctx: StepCheckContext) => StepCheck[];
@@ -37,7 +40,6 @@ function getQuestAnswers(state: WizardState) {
 // ─── IR-1 step-by-step checkers ─────────────────────────────────────────────
 
 export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
-
   // Step 1.3 — Choose Filing Method
   step_1_3: ({ state }) => {
     const checks: StepCheck[] = [];
@@ -199,7 +201,11 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_1_10: ({ state, eligibilityAnswers }) => {
     const checks: StepCheck[] = [];
     const baseline = state.metadata?.consistencyBaseline as any;
-    if (!baseline?.marriageDate || !baseline?.petitionerDateOfBirth || !baseline?.beneficiaryDateOfBirth) {
+    if (
+      !baseline?.marriageDate ||
+      !baseline?.petitionerDateOfBirth ||
+      !baseline?.beneficiaryDateOfBirth
+    ) {
       checks.push({
         level: "warning",
         title: "Key dates not captured",
@@ -277,7 +283,7 @@ function receiptChecks(state: WizardState): StepCheck[] {
 export function runStepChecks(
   stepKey: string,
   ctx: StepCheckContext,
-  registry: Record<string, StepChecker> = IR1_STEP_CHECKERS,
+  registry: Record<string, StepChecker> = IR1_STEP_CHECKERS
 ): StepCheck[] {
   const checker = registry[stepKey];
   if (!checker) return [];

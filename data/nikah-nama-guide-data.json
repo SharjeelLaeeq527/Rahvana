@@ -1,293 +1,293 @@
 {
-    "title": "Marriage (Nikah) Registration & Computerized MRC Guide",
-    "legal_basis": "Muslim Family Laws Ordinance 1961 (Section 5) + Provincial Rules",
-    "wizard": {
-        "title": "Marriage Registration",
-        "subtitle": "Union Council & NADRA • 2026 Official Guide",
-        "last_verified": "February 24, 2026",
-        "whats_this": {
-            "heading": "Nikah Nama & MRC Wizard",
-            "sub": "Union Council & NADRA Official Flow",
-            "description": "A Nikah Nama is the official Islamic marriage contract in Pakistan, which must be registered with the local Union Council (local government office) to become legally recognized. The Union Council issues an attested copy, which is then used to obtain a Marriage Registration Certificate (MRC) from NADRA, a computerized document required for legal, immigration, and visa purposes. ",
-            "quick_instructions": [
-                "Select your specific marriage case case (Standard, Foreign Partner, etc.)",
-                "Review the estimated fee structure for 2026",
-                "Follow the step-by-step registration and attestation roadmap",
-                "Generate a personalized document checklist",
-                "Validate your final certificate details"
-            ],
-            "disclaimer": "Fees and procedures are subject to change by local Union Councils. Always confirm with your local UC Secretary."
+  "title": "Marriage (Nikah) Registration & Computerized MRC Guide",
+  "legal_basis": "Muslim Family Laws Ordinance 1961 (Section 5) + Provincial Rules",
+  "wizard": {
+    "title": "Marriage Registration",
+    "subtitle": "Union Council & NADRA • 2026 Official Guide",
+    "last_verified": "February 24, 2026",
+    "whats_this": {
+      "heading": "Nikah Nama & MRC Wizard",
+      "sub": "Union Council & NADRA Official Flow",
+      "description": "A Nikah Nama is the official Islamic marriage contract in Pakistan, which must be registered with the local Union Council (local government office) to become legally recognized. The Union Council issues an attested copy, which is then used to obtain a Marriage Registration Certificate (MRC) from NADRA, a computerized document required for legal, immigration, and visa purposes. ",
+      "quick_instructions": [
+        "Select your specific marriage case case (Standard, Foreign Partner, etc.)",
+        "Review the estimated fee structure for 2026",
+        "Follow the step-by-step registration and attestation roadmap",
+        "Generate a personalized document checklist",
+        "Validate your final certificate details"
+      ],
+      "disclaimer": "Fees and procedures are subject to change by local Union Councils. Always confirm with your local UC Secretary."
+    },
+    "steps": [
+      {
+        "id": "document_need",
+        "label": "Application Type",
+        "icon": "clipboard"
+      },
+      {
+        "id": "roadmap",
+        "label": "Roadmap",
+        "icon": "map"
+      },
+      {
+        "id": "validation",
+        "label": "Validation",
+        "icon": "star"
+      }
+    ],
+    "fee_structure": {
+      "title": "Fee Structure (Estimated 2026)",
+      "special_note": {
+        "title": "Attestation Note",
+        "description": "Costs for MOFA attestation or certified translations are separate from registration fees."
+      },
+      "tiers": [
+        {
+          "type": "Official UC Fee",
+          "price": "500 - 2,000",
+          "days": "Standard processing",
+          "badge_variant": "green"
         },
-        "steps": [
-            {
-                "id": "document_need",
-                "label": "Application Type",
-                "icon": "clipboard"
-            },
-            {
-                "id": "roadmap",
-                "label": "Roadmap",
-                "icon": "map"
-            },
-            {
-                "id": "validation",
-                "label": "Validation",
-                "icon": "star"
-            }
-        ],
-        "fee_structure": {
-            "title": "Fee Structure (Estimated 2026)",
-            "special_note": {
-                "title": "Attestation Note",
-                "description": "Costs for MOFA attestation or certified translations are separate from registration fees."
-            },
-            "tiers": [
-                {
-                    "type": "Official UC Fee",
-                    "price": "500 - 2,000",
-                    "days": "Standard processing",
-                    "badge_variant": "green"
-                },
-                {
-                    "type": "Urgent Tracking",
-                    "price": "1,500 - 2,500",
-                    "days": "Fast-track issuance",
-                    "badge_variant": "orange"
-                },
-                {
-                    "type": "Lawyer/Agent Service",
-                    "price": "5,000 - 15,000",
-                    "days": "End-to-end handling",
-                    "badge_variant": "purple"
-                },
-                {
-                    "type": "Consultant/Legal Firm",
-                    "price": "25,000 - 50,000",
-                    "days": "Includes full documentation",
-                    "badge_variant": "blue"
-                }
-            ]
+        {
+          "type": "Urgent Tracking",
+          "price": "1,500 - 2,500",
+          "days": "Fast-track issuance",
+          "badge_variant": "orange"
         },
-        "document_need": {
-            "title": "Marriage Case Details",
-            "description": "Help us customize your guide by selecting the scenario that fits your marriage.",
-            "options": [
-                {
-                    "id": "case1",
-                    "title": "Standard Registration",
-                    "description": "Both partners are Pakistani citizens (Single)",
-                    "icon": "users",
-                    "color": "green"
-                },
-                {
-                    "id": "case2",
-                    "title": "Foreign Partner",
-                    "description": "One partner is a foreign national (e.g. US/UK Citizen)",
-                    "icon": "globe",
-                    "color": "blue"
-                },
-                {
-                    "id": "case3",
-                    "title": "Second Marriage",
-                    "description": "One or both partners are Divorced or Widowed",
-                    "icon": "history",
-                    "color": "orange"
-                },
-                {
-                    "id": "case4",
-                    "title": "Age-Specific Case",
-                    "description": "Bride is under the age of 18",
-                    "icon": "user-check",
-                    "color": "purple"
-                }
-            ]
+        {
+          "type": "Lawyer/Agent Service",
+          "price": "5,000 - 15,000",
+          "days": "End-to-end handling",
+          "badge_variant": "purple"
         },
-        "roadmap": {
-            "title": "Registration Roadmap",
-            "estimated_timeline": "10-20 Days",
-            "onsitePhases": [
-                {
-                    "id": 1,
-                    "title": "Nikah Ceremony",
-                    "duration": "Day 1",
-                    "description": "Licensed Nikah Khawan fills the handwritten Urdu Nikah Nama."
-                },
-                {
-                    "id": 2,
-                    "title": "UC Registration",
-                    "duration": "1-30 Days",
-                    "description": "Submit Urdu Nikah Nama and CNICs to Union Council for registration."
-                },
-                {
-                    "id": 3,
-                    "title": "NADRA Issuance",
-                    "duration": "3-7 Days",
-                    "description": "Collect the computerized Marriage Registration Certificate (MRC)."
-                },
-                {
-                    "id": 4,
-                    "title": "MOFA Attestation",
-                    "duration": "2-5 Days",
-                    "description": "Get the certificate attested by Ministry of Foreign Affairs (Mandatory for Visas)."
-                }
-            ],
-            "documents_checklist": [
-                {
-                    "id": "urdu_nikah",
-                    "label": "Original Urdu Nikah Nama",
-                    "description": "Signed by Nikah Khawan, Bride, Groom, and Witnesses",
-                    "required": true
-                },
-                {
-                    "id": "cnic_parties",
-                    "label": "CNIC of Bride & Groom",
-                    "description": "Valid original CNICs plus photocopies",
-                    "required": true
-                },
-                {
-                    "id": "cnic_fathers",
-                    "label": "CNIC of Both Fathers",
-                    "description": "Copies of bride's father and groom's father CNICs",
-                    "required": true
-                },
-                {
-                    "id": "photos",
-                    "label": "Passport Photos",
-                    "description": "Two passport-size photos with white background",
-                    "required": true
-                },
-                {
-                    "id": "passport_foreign",
-                    "label": "Foreign Passport Copy",
-                    "description": "Including entry stamp page to Pakistan",
-                    "required": false,
-                    "category": "case2"
-                },
-                {
-                    "id": "free_will",
-                    "label": "Affidavit of Free Will",
-                    "description": "Usually required when one spouse is a foreigner",
-                    "required": false,
-                    "category": "case2"
-                },
-                {
-                    "id": "visa_poc",
-                    "label": "Valid Visa / POC / NICOP",
-                    "description": "For foreign nationals or overseas Pakistanis",
-                    "required": false,
-                    "category": "case2"
-                },
-                {
-                    "id": "divorce_death",
-                    "label": "Divorce or Death Certificate",
-                    "description": "NADRA Divorce Certificate or Spouse's Death Certificate",
-                    "required": false,
-                    "category": "case3"
-                },
-                {
-                    "id": "bform_birth",
-                    "label": "B-Form / Birth Certificate",
-                    "description": "Proof of age for younger applicants",
-                    "required": false,
-                    "category": "case4"
-                }
-            ]
-        },
-        "validation": {
-            "title": "Certificate Validation",
-            "description": "Double check all computerized details before finalizing your paperwork.",
-            "upload_section": {
-                "title": "Upload Certificate",
-                "description": "Store your computerized MRC securely in your vault.",
-                "formats": "PDF, JPG, PNG (Max 10MB)"
-            },
-            "checklist_title": "Final Review Checklist",
-            "categories": [
-                {
-                    "name": "Identity Checks",
-                    "items": [
-                        {
-                            "label": "Spelling matches CNIC and Passport exactly",
-                            "critical": true
-                        },
-                        {
-                            "label": "Father's and Husband's names are correctly listed",
-                            "critical": true
-                        },
-                        {
-                            "label": "CNIC numbers are accurate without typos",
-                            "critical": true
-                        }
-                    ]
-                },
-                {
-                    "name": "Administrative Checks",
-                    "items": [
-                        {
-                            "label": "Column 21 is filled correctly",
-                            "critical": true
-                        },
-                        {
-                            "label": "Official seal and QR code are clear",
-                            "critical": true
-                        },
-                        {
-                            "label": "Registration date is within 30 days of Nikah",
-                            "critical": false
-                        }
-                    ]
-                }
-            ]
-        },
-        "info_panel": {
-            "document_need": {
-                "tips": [
-                    "Focus on the Computerized Certificate: The handwritten Urdu Nikah Nama alone is often not accepted by embassies.",
-                    "Ensure names on the Nikah Nama match the CNIC and Passport exactly to avoid attestation delays.",
-                    "Always use a licensed Nikah Khawan registered with the relevant Union Council."
-                ],
-                "pitfalls": [
-                    "Incorrect Spelling: Even a one-letter difference can cause rejection during MOFA attestation.",
-                    "Delayed Registration: Failing to register within 30 days requires a complex affidavit for late entry."
-                ],
-                "links": [
-                    {
-                        "label": "NADRA Procedure",
-                        "url": "https://www.nadra.gov.pk/marriage-certificate/"
-                    },
-                    {
-                        "label": "MOFA Attestation Guide",
-                        "url": "https://mofa.gov.pk/attestation-services/"
-                    }
-                ]
-            },
-            "roadmap": {
-                "tips": [
-                    "MOFA Attestation: The certificate must be attested by MOFA for any international visa application.",
-                    "Certified Translation: If your UC only issues a partial translation, use a certified service for a full English copy.",
-                    "Keep multiple certified copies (at least 5-6) of the computerized certificate for future use."
-                ],
-                "pitfalls": [
-                    "Column 21 Neglect: Leaving column 21 (regarding special conditions) blank can be a major hurdle later.",
-                    "Missing Father's Name: Ensure the certificates reflect the father's name correctly as per identity documents."
-                ],
-                "links": [
-                    {
-                        "label": "MOFA Checklist",
-                        "url": "https://mofa.gov.pk/checklist-for-attestation/"
-                    }
-                ]
-            },
-            "validation": {
-                "tips": [
-                    "Verify the database: Some embassies check the NADRA database directly; ensure your certificate is properly synced.",
-                    "In case of a married female, her CNIC should be updated with husband's name for certain visa types."
-                ],
-                "pitfalls": [
-                    "Errors in MRC digits: Typos in CNIC digits on the MRC will prevent future software updates (like FRC)."
-                ],
-                "links": []
-            }
+        {
+          "type": "Consultant/Legal Firm",
+          "price": "25,000 - 50,000",
+          "days": "Includes full documentation",
+          "badge_variant": "blue"
         }
+      ]
+    },
+    "document_need": {
+      "title": "Marriage Case Details",
+      "description": "Help us customize your guide by selecting the scenario that fits your marriage.",
+      "options": [
+        {
+          "id": "case1",
+          "title": "Standard Registration",
+          "description": "Both partners are Pakistani citizens (Single)",
+          "icon": "users",
+          "color": "green"
+        },
+        {
+          "id": "case2",
+          "title": "Foreign Partner",
+          "description": "One partner is a foreign national (e.g. US/UK Citizen)",
+          "icon": "globe",
+          "color": "blue"
+        },
+        {
+          "id": "case3",
+          "title": "Second Marriage",
+          "description": "One or both partners are Divorced or Widowed",
+          "icon": "history",
+          "color": "orange"
+        },
+        {
+          "id": "case4",
+          "title": "Age-Specific Case",
+          "description": "Bride is under the age of 18",
+          "icon": "user-check",
+          "color": "purple"
+        }
+      ]
+    },
+    "roadmap": {
+      "title": "Registration Roadmap",
+      "estimated_timeline": "10-20 Days",
+      "onsitePhases": [
+        {
+          "id": 1,
+          "title": "Nikah Ceremony",
+          "duration": "Day 1",
+          "description": "Licensed Nikah Khawan fills the handwritten Urdu Nikah Nama."
+        },
+        {
+          "id": 2,
+          "title": "UC Registration",
+          "duration": "1-30 Days",
+          "description": "Submit Urdu Nikah Nama and CNICs to Union Council for registration."
+        },
+        {
+          "id": 3,
+          "title": "NADRA Issuance",
+          "duration": "3-7 Days",
+          "description": "Collect the computerized Marriage Registration Certificate (MRC)."
+        },
+        {
+          "id": 4,
+          "title": "MOFA Attestation",
+          "duration": "2-5 Days",
+          "description": "Get the certificate attested by Ministry of Foreign Affairs (Mandatory for Visas)."
+        }
+      ],
+      "documents_checklist": [
+        {
+          "id": "urdu_nikah",
+          "label": "Original Urdu Nikah Nama",
+          "description": "Signed by Nikah Khawan, Bride, Groom, and Witnesses",
+          "required": true
+        },
+        {
+          "id": "cnic_parties",
+          "label": "CNIC of Bride & Groom",
+          "description": "Valid original CNICs plus photocopies",
+          "required": true
+        },
+        {
+          "id": "cnic_fathers",
+          "label": "CNIC of Both Fathers",
+          "description": "Copies of bride's father and groom's father CNICs",
+          "required": true
+        },
+        {
+          "id": "photos",
+          "label": "Passport Photos",
+          "description": "Two passport-size photos with white background",
+          "required": true
+        },
+        {
+          "id": "passport_foreign",
+          "label": "Foreign Passport Copy",
+          "description": "Including entry stamp page to Pakistan",
+          "required": false,
+          "category": "case2"
+        },
+        {
+          "id": "free_will",
+          "label": "Affidavit of Free Will",
+          "description": "Usually required when one spouse is a foreigner",
+          "required": false,
+          "category": "case2"
+        },
+        {
+          "id": "visa_poc",
+          "label": "Valid Visa / POC / NICOP",
+          "description": "For foreign nationals or overseas Pakistanis",
+          "required": false,
+          "category": "case2"
+        },
+        {
+          "id": "divorce_death",
+          "label": "Divorce or Death Certificate",
+          "description": "NADRA Divorce Certificate or Spouse's Death Certificate",
+          "required": false,
+          "category": "case3"
+        },
+        {
+          "id": "bform_birth",
+          "label": "B-Form / Birth Certificate",
+          "description": "Proof of age for younger applicants",
+          "required": false,
+          "category": "case4"
+        }
+      ]
+    },
+    "validation": {
+      "title": "Certificate Validation",
+      "description": "Double check all computerized details before finalizing your paperwork.",
+      "upload_section": {
+        "title": "Upload Certificate",
+        "description": "Store your computerized MRC securely in your vault.",
+        "formats": "PDF, JPG, PNG (Max 10MB)"
+      },
+      "checklist_title": "Final Review Checklist",
+      "categories": [
+        {
+          "name": "Identity Checks",
+          "items": [
+            {
+              "label": "Spelling matches CNIC and Passport exactly",
+              "critical": true
+            },
+            {
+              "label": "Father's and Husband's names are correctly listed",
+              "critical": true
+            },
+            {
+              "label": "CNIC numbers are accurate without typos",
+              "critical": true
+            }
+          ]
+        },
+        {
+          "name": "Administrative Checks",
+          "items": [
+            {
+              "label": "Column 21 is filled correctly",
+              "critical": true
+            },
+            {
+              "label": "Official seal and QR code are clear",
+              "critical": true
+            },
+            {
+              "label": "Registration date is within 30 days of Nikah",
+              "critical": false
+            }
+          ]
+        }
+      ]
+    },
+    "info_panel": {
+      "document_need": {
+        "tips": [
+          "Focus on the Computerized Certificate: The handwritten Urdu Nikah Nama alone is often not accepted by embassies.",
+          "Ensure names on the Nikah Nama match the CNIC and Passport exactly to avoid attestation delays.",
+          "Always use a licensed Nikah Khawan registered with the relevant Union Council."
+        ],
+        "pitfalls": [
+          "Incorrect Spelling: Even a one-letter difference can cause rejection during MOFA attestation.",
+          "Delayed Registration: Failing to register within 30 days requires a complex affidavit for late entry."
+        ],
+        "links": [
+          {
+            "label": "NADRA Procedure",
+            "url": "https://www.nadra.gov.pk/marriage-certificate/"
+          },
+          {
+            "label": "MOFA Attestation Guide",
+            "url": "https://mofa.gov.pk/attestation-services/"
+          }
+        ]
+      },
+      "roadmap": {
+        "tips": [
+          "MOFA Attestation: The certificate must be attested by MOFA for any international visa application.",
+          "Certified Translation: If your UC only issues a partial translation, use a certified service for a full English copy.",
+          "Keep multiple certified copies (at least 5-6) of the computerized certificate for future use."
+        ],
+        "pitfalls": [
+          "Column 21 Neglect: Leaving column 21 (regarding special conditions) blank can be a major hurdle later.",
+          "Missing Father's Name: Ensure the certificates reflect the father's name correctly as per identity documents."
+        ],
+        "links": [
+          {
+            "label": "MOFA Checklist",
+            "url": "https://mofa.gov.pk/checklist-for-attestation/"
+          }
+        ]
+      },
+      "validation": {
+        "tips": [
+          "Verify the database: Some embassies check the NADRA database directly; ensure your certificate is properly synced.",
+          "In case of a married female, her CNIC should be updated with husband's name for certain visa types."
+        ],
+        "pitfalls": [
+          "Errors in MRC digits: Typos in CNIC digits on the MRC will prevent future software updates (like FRC)."
+        ],
+        "links": []
+      }
     }
+  }
 }

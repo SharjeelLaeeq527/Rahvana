@@ -38,25 +38,19 @@ export async function POST(request: NextRequest) {
         {
           error: "Missing required fields: file, documentType",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate file type (PDF only)
     if (file.type !== "application/pdf") {
-      return NextResponse.json(
-        { error: "Only PDF files are allowed" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
     }
 
     // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: `File size exceeds 50MB limit` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: `File size exceeds 50MB limit` }, { status: 400 });
     }
 
     // Extract file name
@@ -65,10 +59,7 @@ export async function POST(request: NextRequest) {
     // Validate document type
     const allowedTypes = ["marriage", "birth", "death", "divorce"];
     if (!allowedTypes.includes(documentType)) {
-      return NextResponse.json(
-        { error: "Invalid document type" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid document type" }, { status: 400 });
     }
 
     // Generate unique document ID
@@ -92,10 +83,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      return NextResponse.json(
-        { error: "Failed to upload file to storage" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to upload file to storage" }, { status: 500 });
     }
 
     // Create database record
@@ -125,10 +113,7 @@ export async function POST(request: NextRequest) {
       console.error("Database error:", dbError);
       // Cleanup uploaded file
       await supabase.storage.from("document-vault").remove([storagePath]);
-      return NextResponse.json(
-        { error: "Failed to create database record" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -140,9 +125,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

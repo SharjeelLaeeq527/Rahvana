@@ -83,13 +83,10 @@ export async function updateSession(request: NextRequest) {
   const authRoutes = ["/login", "/signup"];
   const adminAuthRoutes = ["/admin-login"];
 
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
   const isAdminRoute =
-    adminRoutes.some((route) => pathname.startsWith(route)) &&
-    !adminAuthRoutes.includes(pathname);
+    adminRoutes.some((route) => pathname.startsWith(route)) && !adminAuthRoutes.includes(pathname);
 
   const isAuthRoute = authRoutes.includes(pathname);
   const isAdminAuthRoute = adminAuthRoutes.includes(pathname);
@@ -116,7 +113,8 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    const isAuthorizedAdmin = profile && ADMIN_EMAILS.includes(profile.email) && profile.role === 'admin';
+    const isAuthorizedAdmin =
+      profile && ADMIN_EMAILS.includes(profile.email) && profile.role === "admin";
 
     if (!isAuthorizedAdmin) {
       if (isApiAdminRoute) {
@@ -147,7 +145,9 @@ export async function updateSession(request: NextRequest) {
       return response;
     }
 
-    const redirectTo = request.nextUrl.searchParams.get("redirectTo") || request.nextUrl.searchParams.get("redirect");
+    const redirectTo =
+      request.nextUrl.searchParams.get("redirectTo") ||
+      request.nextUrl.searchParams.get("redirect");
     if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
       return NextResponse.redirect(new URL(redirectTo, request.url));
     }

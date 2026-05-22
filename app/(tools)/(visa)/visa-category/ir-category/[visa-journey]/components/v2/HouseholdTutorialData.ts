@@ -3,7 +3,7 @@ export interface HouseholdTutorialStep {
   heading: string;
   instruction: string;
   note: string | null;
-  media?: { type: 'img' | 'video'; src: string };
+  media?: { type: "img" | "video"; src: string };
   vlabel: string;
   visual: string; // HTML string for mock UI
 }
@@ -15,7 +15,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     instruction:
       "Sign in to CEAC at <strong>ceac.state.gov</strong> using your NVC Case Number and Invoice ID from the Welcome Letter.",
     note: null,
-    media: { type: 'img', src: '/assets/images/ir1-journey/c2_step4/01-case-into-ceac.png' },
+    media: { type: "img", src: "/assets/images/ir1-journey/c2_step4/01-case-into-ceac.png" },
     vlabel: "CEAC Login",
     visual: `
       <div class="mock-card">
@@ -31,7 +31,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     instruction:
       "After signing in, navigate to the <strong>Affidavit of Support</strong> or sponsorship section inside your CEAC case. This is where sponsorship participants are managed.",
     note: null,
-    media: { type: 'img', src: '/assets/images/ir1-journey/c2_step7/locate_affidavit.png' },
+    media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/locate_affidavit.png" },
     vlabel: "CEAC Case Sections",
     visual: `
       <div class="mock-card">
@@ -48,7 +48,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     instruction:
       "Inside the sponsorship section, select the appropriate option to add a participant. The two options — household member and joint sponsor — are handled through the same CEAC area but have different implications.",
     note: "Remember: joint sponsors do not require relationship-proof documents. Household members do — the checklist below will generate the correct items once you define who they are.",
-    media: { type: 'img', src: '/assets/images/ir1-journey/c2_step7/choose_sponsor.png' },
+    media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/choose_sponsor.png" },
     vlabel: "Add Participant",
     visual: `
       <div class="mock-card">
@@ -65,7 +65,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     instruction:
       "Fill in the required personal information for the participant — name, date of birth, address, and their relationship to the petitioner. Complete all required fields before saving.",
     note: null,
-    media: { type: 'img', src: '/assets/images/ir1-journey/c2_step7/Participant\'s_details.png' },
+    media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/Participant's_details.png" },
     vlabel: "Participant Entry Form",
     visual: `
       <div class="mock-card">
@@ -82,7 +82,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     instruction:
       "After saving, verify the participant appears in the sponsorship summary with the correct name and relationship. If you see an error, edit before continuing.",
     note: null,
-    media: { type: 'img', src: '/assets/images/ir1-journey/c2_step7/confirm_details.png' },
+    media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/confirm_details.png" },
     vlabel: "Sponsorship Summary",
     visual: `
       <div class="mock-card">
@@ -97,7 +97,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     instruction:
       "Once the participant is confirmed in CEAC, return to this step. Use the <strong>scenario builder</strong> to select each household member's relationship — Rahvana will generate the exact relationship-proof checklist for you.",
     note: null,
-        media: { type: 'img', src: '/assets/images/ir1-journey/c2_step7/back_to_rahvana.png' },
+    media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/back_to_rahvana.png" },
     vlabel: "Return to Rahvana",
     visual: `
       <div style="background:#e8f5ef;border:1px solid #a8d9be;border-radius:10px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px">
@@ -121,8 +121,7 @@ export interface HouseholdGuide {
 export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
   "birth-cert-hh": {
     title: "Birth Certificate — Household Member",
-    intro:
-      "Proves the parent–child relationship between the household member and the petitioner.",
+    intro: "Proves the parent–child relationship between the household member and the petitioner.",
     sections: [
       {
         title: "What this is",
@@ -163,8 +162,7 @@ export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
   },
   "marriage-cert-hh": {
     title: "Marriage Certificate — Household Member",
-    intro:
-      "Establishes the spousal relationship between the household member and the petitioner.",
+    intro: "Establishes the spousal relationship between the household member and the petitioner.",
     sections: [
       {
         title: "What this is",

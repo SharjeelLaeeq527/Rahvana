@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -74,9 +73,7 @@ export default function AdminPanel() {
             <p className="text-muted-foreground mb-4">
               You do not have permission to access the admin panel.
             </p>
-            <Button onClick={() => router.push("/admin-login")}>
-              Go to Admin Login
-            </Button>
+            <Button onClick={() => router.push("/admin-login")}>Go to Admin Login</Button>
           </CardContent>
         </Card>
       </div>
@@ -90,9 +87,7 @@ export default function AdminPanel() {
         <div className="site-main-px site-main-py">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-foreground">
-                Admin Dashboard
-              </h1>
+              <h1 className="text-xl font-bold text-foreground">Admin Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
@@ -104,9 +99,7 @@ export default function AdminPanel() {
                   timeZoneName: "short",
                 })}
               </span>
-              <span className="text-sm text-muted-foreground">
-                Admin: {user?.email}
-              </span>
+              <span className="text-sm text-muted-foreground">Admin: {user?.email}</span>
               <Link
                 href="/admin/dashboard"
                 className="text-white bg-teal-600 hover:bg-teal-700 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5"
@@ -205,10 +198,7 @@ export default function AdminPanel() {
             <PoliceVerificationTable />
           </CollapsibleSection>
 
-          <FeatureAnnouncementModal
-            open={openFeatureModal}
-            onOpenChange={setOpenFeatureModal}
-          />
+          <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
         </div>
       </main>
     </div>

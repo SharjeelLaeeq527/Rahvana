@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useCallback,
-  Suspense,
-} from "react";
+import React, { useEffect, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
@@ -27,13 +21,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  VISA_CATEGORIES,
-  HELPER_DATA,
-  COMPARISON_GROUPS,
-  ADDONS,
-  FAQS,
-} from "./data/pricing";
+import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
 
 /* ===========================================================================
@@ -41,7 +29,7 @@ import type { PlanData } from "./data/pricing";
    =========================================================================== */
 const TIER = {
   basic: {
-       cardBg: "bg-gradient-to-br from-[#e8f5f1] to-[#cce9df]",
+    cardBg: "bg-gradient-to-br from-[#e8f5f1] to-[#cce9df]",
     border: "border-[#92ccbc]",
     selBorder: "border-[#0d7a5c]",
     textAccent: "text-[#0d7a5c]",
@@ -49,13 +37,12 @@ const TIER = {
     badgeText: "text-[#065e42]",
     checkCol: "text-[#0d7a5c]",
     btn: "bg-[#0d7a5c] hover:bg-[#0a6048] text-white",
-    btnOut:
-      "border border-[#92ccbc] text-[#0d7a5c] hover:bg-[#aed9ca]/50 bg-transparent",
+    btnOut: "border border-[#92ccbc] text-[#0d7a5c] hover:bg-[#aed9ca]/50 bg-transparent",
     ring: "ring-2 ring-[#0d7a5c]/20",
     glow: "[box-shadow:0_16px_52px_rgba(13,122,92,0.15)]",
   },
   premium: {
-  cardBg: "bg-gradient-to-br from-[#ede8f8] to-[#d9d0f2]",
+    cardBg: "bg-gradient-to-br from-[#ede8f8] to-[#d9d0f2]",
     border: "border-[#b5a5e3]",
     selBorder: "border-[#5c2db8]",
     textAccent: "text-[#5c2db8]",
@@ -63,13 +50,12 @@ const TIER = {
     badgeText: "text-[#471e9c]",
     checkCol: "text-[#5c2db8]",
     btn: "bg-[#5c2db8] hover:bg-[#4b22a3] text-white",
-    btnOut:
-      "border border-[#b5a5e3] text-[#5c2db8] hover:bg-[#c4b6ed]/50 bg-transparent",
+    btnOut: "border border-[#b5a5e3] text-[#5c2db8] hover:bg-[#c4b6ed]/50 bg-transparent",
     ring: "ring-2 ring-[#5c2db8]/20",
     glow: "[box-shadow:0_16px_52px_rgba(92,45,184,0.15)]",
   },
   executive: {
-      cardBg: "bg-gradient-to-br from-[#fdf4e2] to-[#f1dea8]",
+    cardBg: "bg-gradient-to-br from-[#fdf4e2] to-[#f1dea8]",
     border: "border-[#d9ba6e]",
     selBorder: "border-[#b45309]",
     textAccent: "text-[#b45309]",
@@ -77,8 +63,7 @@ const TIER = {
     badgeText: "text-[#8a3f07]",
     checkCol: "text-[#b45309]",
     btn: "bg-[#b45309] hover:bg-[#9c4808] text-white",
-    btnOut:
-      "border border-[#d9ba6e] text-[#b45309] hover:bg-[#e8c96c]/50 bg-transparent",
+    btnOut: "border border-[#d9ba6e] text-[#b45309] hover:bg-[#e8c96c]/50 bg-transparent",
     ring: "ring-2 ring-[#b45309]/20",
     glow: "[box-shadow:0_16px_52px_rgba(180,83,9,0.15)]",
   },
@@ -153,13 +138,7 @@ const PLAN_RECS: Record<string, string[]> = {
 /* ===========================================================================
    SVG HELPERS
    =========================================================================== */
-function IconCheck({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+function IconCheck({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg
       viewBox="0 0 20 20"
@@ -176,13 +155,7 @@ function IconCheck({
   );
 }
 
-function IconX({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+function IconX({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg
       viewBox="0 0 20 20"
@@ -337,8 +310,7 @@ function CompareModal({
                 Compare Rahvana plans
               </h2>
               <p className="text-muted-foreground text-[13px] mt-1 m-0">
-                See exactly what&apos;s included in Basic, Premium, and
-                Executive.
+                See exactly what&apos;s included in Basic, Premium, and Executive.
               </p>
             </div>
             <button
@@ -405,10 +377,7 @@ function CompareModal({
                   : group.rows;
                 if (!rows.length) return null;
                 return (
-                  <div
-                    key={gi}
-                    className="border-b border-border/50 last:border-0"
-                  >
+                  <div key={gi} className="border-b border-border/50 last:border-0">
                     <div className="px-6 py-2.5 bg-muted/30">
                       <span className="text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
                         {group.label}
@@ -421,9 +390,7 @@ function CompareModal({
                           ri % 2 === 0 ? "bg-card" : "bg-muted/[0.04]"
                         }`}
                       >
-                        <span className="text-[13px] font-medium text-foreground">
-                          {row[0]}
-                        </span>
+                        <span className="text-[13px] font-medium text-foreground">{row[0]}</span>
                         {row.slice(1).map((val, vi) => (
                           <div key={vi} className="flex justify-center">
                             <ComparisonCell value={val} />
@@ -475,17 +442,13 @@ function PricingContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userActiveTier, setUserActiveTier] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] =
-    useState(false);
+  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
 
-  const isAnyCheckoutLoading =
-    isProcessingAutoCheckout || isManualCheckoutLoading;
+  const isAnyCheckoutLoading = isProcessingAutoCheckout || isManualCheckoutLoading;
 
   const [mode, setMode] = useState<"plans" | "resources">("plans");
-  const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">(
-    "browse",
-  );
+  const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
 
   const [visa, setVisa] = useState("IR-1 / CR-1");
   const billing = "monthly";
@@ -501,31 +464,28 @@ function PricingContent() {
   // Derived
   const activeVisaCategory = useMemo(
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
-    [visa],
+    [visa]
   );
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
-  const currentPlanData =
-    activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
+  const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
   const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
   const planDisplayPrice = (plan: PlanData) => plan.monthlyPrice;
   const summaryBase =
-    mode === "plans" && currentPlanData.id !== "free"
-      ? currentPlanData.annualPrice
-      : 0;
+    mode === "plans" && currentPlanData.id !== "free" ? currentPlanData.annualPrice : 0;
   const summaryAddonsTotal = activeAddons.reduce((s, a) => s + a.price, 0);
   const summaryTotal = summaryBase + summaryAddonsTotal;
 
   const reviewAddons = useMemo(
     () => ADDONS.filter((a) => (PLAN_RECS[selectedPlan] || []).includes(a.id)),
-    [selectedPlan],
+    [selectedPlan]
   );
 
   const resourcesForCat = useMemo(() => {
     if (resourceCat === "all") {
       const titledAddons = ADDONS.filter(
         (addon): addon is (typeof ADDONS)[number] & { title: string } =>
-          typeof addon.title === "string",
+          typeof addon.title === "string"
       );
       return [...titledAddons].sort((a, b) => a.title.localeCompare(b.title));
     }
@@ -544,8 +504,7 @@ function PricingContent() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            productTier:
-              planOverride || (mode === "plans" ? selectedPlan : undefined),
+            productTier: planOverride || (mode === "plans" ? selectedPlan : undefined),
             addons: addonsOverride || Array.from(selectedAddons),
             visaCategory: visa,
             billing,
@@ -560,7 +519,7 @@ function PricingContent() {
         setIsProcessingAutoCheckout(false);
       }
     },
-    [selectedPlan, selectedAddons, visa, billing, isProcessingAutoCheckout],
+    [selectedPlan, selectedAddons, visa, billing, isProcessingAutoCheckout]
   );
 
   const toggleAddon = (id: string) =>
@@ -580,19 +539,9 @@ function PricingContent() {
     if (visaCat) setVisa(visaCat);
     if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
       window.history.replaceState({}, "", window.location.pathname);
-      handleCheckout(
-        userId,
-        plan || undefined,
-        addons ? addons.split(",") : undefined,
-      );
+      handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
     }
-  }, [
-    searchParams,
-    userId,
-    isLoadingUser,
-    handleCheckout,
-    isProcessingAutoCheckout,
-  ]);
+  }, [searchParams, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -601,11 +550,11 @@ function PricingContent() {
       setUserId(uid);
       if (uid) {
         const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('subscription_tier, subscription_status')
-          .eq('id', uid)
+          .from("user_profiles")
+          .select("subscription_tier, subscription_status")
+          .eq("id", uid)
           .single();
-        if (profile?.subscription_status === 'active' && profile?.subscription_tier) {
+        if (profile?.subscription_status === "active" && profile?.subscription_tier) {
           setUserActiveTier(profile.subscription_tier);
         }
       }
@@ -615,8 +564,7 @@ function PricingContent() {
 
   // Layout tokens
   const W = "px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto";
-  const eyebrow =
-    "text-[11px] tracking-[0.15em] uppercase font-bold text-primary mb-2";
+  const eyebrow = "text-[11px] tracking-[0.15em] uppercase font-bold text-primary mb-2";
   const secBtn =
     "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
 
@@ -641,11 +589,7 @@ function PricingContent() {
         </button>
       ) : userId ? (
         <CheckoutButton
-          productTier={
-            mode === "plans" && selectedPlan !== "free"
-              ? selectedPlan
-              : undefined
-          }
+          productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
           addons={Array.from(selectedAddons)}
           visaCategory={visa}
           userId={userId}
@@ -662,9 +606,7 @@ function PricingContent() {
           Sign in to Checkout →
         </Link>
       )}
-      <p className="text-center text-[11px] text-muted-foreground">
-        Secure checkout via Stripe
-      </p>
+      <p className="text-center text-[11px] text-muted-foreground">Secure checkout via Stripe</p>
     </div>
   );
 
@@ -672,10 +614,7 @@ function PricingContent() {
     <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
       <div className={`${W} pt-[88px] pb-0`}>
-        <nav
-          className="flex items-end gap-1 border-b-2 border-border/40"
-          aria-label="Pricing mode"
-        >
+        <nav className="flex items-end gap-1 border-b-2 border-border/40" aria-label="Pricing mode">
           {(
             [
               {
@@ -738,27 +677,19 @@ function PricingContent() {
                   Choose your Rahvana journey plan
                 </h1>
                 <p className="page-description mt-2 text-muted-foreground">
-                  Pick the level of guidance, tools, and support that fits your
-                  case.
+                  Pick the level of guidance, tools, and support that fits your case.
                 </p>
               </div>
               {/* Visa pill — top right */}
-              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">
-                {visaPill}
-              </div>
+              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">{visaPill}</div>
             </div>
 
             <div className="mt-5 flex items-center gap-3 flex-wrap">
-              <button
-                className={secBtn}
-                onClick={() => setComparePlansOpen(true)}
-              >
+              <button className={secBtn} onClick={() => setComparePlansOpen(true)}>
                 <IcoTableCompare className="w-4 h-4 opacity-60" />
                 Compare plans
               </button>
-              <span className="text-[12px] text-muted-foreground/50 hidden md:inline">
-                ·
-              </span>
+              <span className="text-[12px] text-muted-foreground/50 hidden md:inline">·</span>
               <span className="text-[12px] text-muted-foreground hidden md:inline">
                 Government fees are not included in any plan
               </span>
@@ -768,123 +699,132 @@ function PricingContent() {
           {/* Plan cards — full width, no sidebar */}
           <div className={`${W}`}>
             {(() => {
-              const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
-              const activeTierRank = TIER_RANK[userActiveTier ?? 'free'] ?? 0;
+              const TIER_RANK: Record<string, number> = {
+                free: 0,
+                basic: 1,
+                premium: 2,
+                executive: 3,
+              };
+              const activeTierRank = TIER_RANK[userActiveTier ?? "free"] ?? 0;
               return (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {paidPlans.map((plan) => {
-                const tc = TIER[plan.id as TierKey];
-                const isSelected = selectedPlan === plan.id;
-                const planRank = TIER_RANK[plan.id] ?? 0;
-                const isCurrentPlan = userActiveTier && plan.id === userActiveTier;
-                const isDowngrade = !!userActiveTier && planRank < activeTierRank;
-                return (
-                  <article
-                    key={plan.id}
-                    className={`${tc.cardBg} border rounded-[24px] p-6 flex flex-col relative transition-all duration-200 ${
-                      isDowngrade
-                        ? 'opacity-50 cursor-not-allowed'
-                        : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:shadow-lg hover:-translate-y-0.5`}`
-                    }`}
-                    onClick={() => { if (!isDowngrade) setSelectedPlan(plan.id); }}
-                  >
-                    {isCurrentPlan && (
-                      <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase bg-green-100 text-green-700 border border-green-300">
-                        Current Plan
-                      </div>
-                    )}
-                    {!isCurrentPlan && plan.recommended && !isDowngrade && (
-                      <div
-                        className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
-                      >
-                        Most Popular
-                      </div>
-                    )}
-                    {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
-                      <div
-                        className={`absolute top-4 right-4 w-6 h-6 rounded-full ${tc.btn} flex items-center justify-center`}
-                      >
-                        <IconCheck className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-
-
-                      {/* Icon + Name/Price row */}
-                      <div className="flex items-center gap-0 mb-4 -ml-3">
-  <span
-    aria-hidden="true"
-    className={`plan-icon plan-icon--${plan.id}`}
-    style={{ width: 72, height: 72, flexShrink: 0 }}
-  />
-  <div className="flex flex-col gap-0.5">
-    <div className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}>
-      {plan.name}
-    </div>
-    <div className="flex items-baseline gap-1">
-      <span className="text-[34px] font-bold tracking-tight leading-none">
-        ${planDisplayPrice(plan)}
-      </span>
-      <span className="text-[12px] text-muted-foreground">/mo</span>
-    </div>
-    <div className="text-[11px] text-muted-foreground">
-      ${plan.annualPrice} total
-    </div>
-  </div>
-</div>
-                      <p className="text-muted-foreground text-[13px] leading-[1.5] mb-4">
-                        {plan.tagline}
-                      </p>
-
-                    {/* Key features — single line each */}
-                    <ul className="list-none p-0 m-0 space-y-2 flex-1">
-                      {plan.bullets.slice(0, 5).map((item, idx) => (
-                        <li
-                          key={idx}
-                          className="flex gap-2 items-center text-[13px]"
-                        >
-                          <IconCheck
-                            className={`w-4 h-4 flex-shrink-0 ${tc.checkCol}`}
-                          />
-                          <span className="truncate">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* "See what else is included" → opens compare modal */}
-                    {plan.bullets.length > 5 && (
-                      <button
-                        className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0 text-left`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setComparePlansOpen(true);
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {paidPlans.map((plan) => {
+                    const tc = TIER[plan.id as TierKey];
+                    const isSelected = selectedPlan === plan.id;
+                    const planRank = TIER_RANK[plan.id] ?? 0;
+                    const isCurrentPlan = userActiveTier && plan.id === userActiveTier;
+                    const isDowngrade = !!userActiveTier && planRank < activeTierRank;
+                    return (
+                      <article
+                        key={plan.id}
+                        className={`${tc.cardBg} border rounded-[24px] p-6 flex flex-col relative transition-all duration-200 ${
+                          isDowngrade
+                            ? "opacity-50 cursor-not-allowed"
+                            : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:shadow-lg hover:-translate-y-0.5`}`
+                        }`}
+                        onClick={() => {
+                          if (!isDowngrade) setSelectedPlan(plan.id);
                         }}
                       >
-                        Click here to see what else is included
-                        <IcoChevron className="w-3.5 h-3.5 -rotate-90" />
-                      </button>
-                    )}
+                        {isCurrentPlan && (
+                          <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase bg-green-100 text-green-700 border border-green-300">
+                            Current Plan
+                          </div>
+                        )}
+                        {!isCurrentPlan && plan.recommended && !isDowngrade && (
+                          <div
+                            className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
+                          >
+                            Most Popular
+                          </div>
+                        )}
+                        {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
+                          <div
+                            className={`absolute top-4 right-4 w-6 h-6 rounded-full ${tc.btn} flex items-center justify-center`}
+                          >
+                            <IconCheck className="w-3.5 h-3.5" />
+                          </div>
+                        )}
 
-                    <button
-                      disabled={isDowngrade || !!isCurrentPlan}
-                      className={`mt-4 w-full py-[10px] px-4 rounded-full text-[13.5px] font-semibold transition-all duration-150 ${
-                        isDowngrade || isCurrentPlan
-                          ? 'cursor-not-allowed opacity-60 bg-muted text-muted-foreground border border-border'
-                          : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isDowngrade || isCurrentPlan) return;
-                        setSelectedPlan(plan.id);
-                        setPurchaseStep("review");
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    >
-                      {isCurrentPlan ? "Your Current Plan" : isDowngrade ? "Not Available" : isSelected ? "Continue to Checkout →" : plan.cta}
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
+                        {/* Icon + Name/Price row */}
+                        <div className="flex items-center gap-0 mb-4 -ml-3">
+                          <span
+                            aria-hidden="true"
+                            className={`plan-icon plan-icon--${plan.id}`}
+                            style={{ width: 72, height: 72, flexShrink: 0 }}
+                          />
+                          <div className="flex flex-col gap-0.5">
+                            <div
+                              className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}
+                            >
+                              {plan.name}
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[34px] font-bold tracking-tight leading-none">
+                                ${planDisplayPrice(plan)}
+                              </span>
+                              <span className="text-[12px] text-muted-foreground">/mo</span>
+                            </div>
+                            <div className="text-[11px] text-muted-foreground">
+                              ${plan.annualPrice} total
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground text-[13px] leading-[1.5] mb-4">
+                          {plan.tagline}
+                        </p>
+
+                        {/* Key features — single line each */}
+                        <ul className="list-none p-0 m-0 space-y-2 flex-1">
+                          {plan.bullets.slice(0, 5).map((item, idx) => (
+                            <li key={idx} className="flex gap-2 items-center text-[13px]">
+                              <IconCheck className={`w-4 h-4 flex-shrink-0 ${tc.checkCol}`} />
+                              <span className="truncate">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* "See what else is included" → opens compare modal */}
+                        {plan.bullets.length > 5 && (
+                          <button
+                            className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0 text-left`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setComparePlansOpen(true);
+                            }}
+                          >
+                            Click here to see what else is included
+                            <IcoChevron className="w-3.5 h-3.5 -rotate-90" />
+                          </button>
+                        )}
+
+                        <button
+                          disabled={isDowngrade || !!isCurrentPlan}
+                          className={`mt-4 w-full py-[10px] px-4 rounded-full text-[13.5px] font-semibold transition-all duration-150 ${
+                            isDowngrade || isCurrentPlan
+                              ? "cursor-not-allowed opacity-60 bg-muted text-muted-foreground border border-border"
+                              : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isDowngrade || isCurrentPlan) return;
+                            setSelectedPlan(plan.id);
+                            setPurchaseStep("review");
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                        >
+                          {isCurrentPlan
+                            ? "Your Current Plan"
+                            : isDowngrade
+                              ? "Not Available"
+                              : isSelected
+                                ? "Continue to Checkout →"
+                                : plan.cta}
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
               );
             })()}
 
@@ -895,8 +835,7 @@ function PricingContent() {
                   Not ready to commit? Start with a free preview.
                 </p>
                 <p className="text-muted-foreground text-[13px] m-0 mt-0.5">
-                  Preview the roadmap structure, access public tools — no
-                  payment required.
+                  Preview the roadmap structure, access public tools — no payment required.
                 </p>
               </div>
               <Link href={userId ? "/" : "/signup"} className="shrink-0">
@@ -924,17 +863,12 @@ function PricingContent() {
                       }`}
                       onClick={() => setSelectedPlan(card.plan)}
                     >
-                      <strong className="block text-[14.5px] mb-2">
-                        {card.title}
-                      </strong>
+                      <strong className="block text-[14.5px] mb-2">{card.title}</strong>
                       <p className="m-0 text-muted-foreground text-[13px] leading-[1.55] mb-3">
                         {card.copy}
                       </p>
-                      <span
-                        className={`text-[12px] font-bold ${tc.textAccent}`}
-                      >
-                        → Use{" "}
-                        {activePlans.find((p) => p.id === card.plan)?.name}
+                      <span className={`text-[12px] font-bold ${tc.textAccent}`}>
+                        → Use {activePlans.find((p) => p.id === card.plan)?.name}
                       </span>
                     </button>
                   );
@@ -944,9 +878,7 @@ function PricingContent() {
 
             {/* FAQs — full width */}
             <div className="mt-10">
-              <h2 className="text-[22px] font-bold m-0 mb-1">
-                Common questions
-              </h2>
+              <h2 className="text-[22px] font-bold m-0 mb-1">Common questions</h2>
               <p className="text-muted-foreground text-[13.5px] mb-4">
                 Everything you need to know before purchasing.
               </p>
@@ -958,9 +890,7 @@ function PricingContent() {
                   >
                     <button
                       className="w-full bg-transparent border-0 p-[16px_22px] flex justify-between items-center gap-4 text-left cursor-pointer hover:bg-muted/25 transition-colors"
-                      onClick={() =>
-                        setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)
-                      }
+                      onClick={() => setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)}
                     >
                       <span className="font-semibold text-[14px]">{q}</span>
                       <span className="text-xl text-muted-foreground font-normal leading-none shrink-0">
@@ -990,9 +920,7 @@ function PricingContent() {
               <div className="flex gap-3 flex-wrap shrink-0">
                 <button
                   className="px-5 py-[9px] bg-white text-primary rounded-full text-[13.5px] font-semibold hover:bg-white/90 transition-colors cursor-pointer"
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 >
                   Review Plans
                 </button>
@@ -1033,9 +961,7 @@ function PricingContent() {
                   const tc = TIER[currentPlanData.id as TierKey];
                   if (!tc) return null;
                   return (
-                    <div
-                      className={`${tc.cardBg} border ${tc.selBorder} rounded-[22px] p-5 mb-8`}
-                    >
+                    <div className={`${tc.cardBg} border ${tc.selBorder} rounded-[22px] p-5 mb-8`}>
                       <div className="flex justify-between items-start">
                         <div>
                           <div
@@ -1043,9 +969,7 @@ function PricingContent() {
                           >
                             Selected Plan
                           </div>
-                          <div className="text-[20px] font-bold">
-                            {currentPlanData.name}
-                          </div>
+                          <div className="text-[20px] font-bold">{currentPlanData.name}</div>
                           <p className="text-muted-foreground text-[13px] mt-0.5 m-0">
                             {currentPlanData.tagline}
                           </p>
@@ -1072,12 +996,10 @@ function PricingContent() {
                 {/* Want to add extra help? */}
                 <div>
                   <div className={eyebrow}>Optional add-ons</div>
-                  <h2 className="text-[21px] font-bold m-0 mb-1">
-                    Want to add extra help?
-                  </h2>
+                  <h2 className="text-[21px] font-bold m-0 mb-1">Want to add extra help?</h2>
                   <p className="text-[13.5px] text-muted-foreground mb-5">
-                    Add only what you need. Recommended for the{" "}
-                    {currentPlanData.name} plan — or browse all below.
+                    Add only what you need. Recommended for the {currentPlanData.name} plan — or
+                    browse all below.
                   </p>
 
                   {/* Recommended add-ons */}
@@ -1098,11 +1020,9 @@ function PricingContent() {
                             >
                               <div
                                 className={`resource-fcard-frame ${
-                                  cfg?.iconBg.includes("emerald") ||
-                                  cfg?.iconBg.includes("cyan")
+                                  cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
                                     ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                                    : cfg?.iconBg.includes("indigo") ||
-                                        cfg?.iconBg.includes("blue")
+                                    : cfg?.iconBg.includes("indigo") || cfg?.iconBg.includes("blue")
                                       ? "bg-[#EAF1FB] text-[#1A5FA3]"
                                       : cfg?.iconBg.includes("amber") ||
                                           cfg?.iconBg.includes("yellow")
@@ -1117,21 +1037,13 @@ function PricingContent() {
                               </div>
 
                               <div className="resource-fcard-body">
-                                <h3 className="resource-fcard-name">
-                                  {addon.title}
-                                </h3>
-                                <p className="resource-fcard-desc">
-                                  {addon.copy}
-                                </p>
+                                <h3 className="resource-fcard-name">{addon.title}</h3>
+                                <p className="resource-fcard-desc">{addon.copy}</p>
 
                                 <div className="resource-fcard-foot">
                                   <div>
-                                    <div className="resource-fcard-price">
-                                      ${addon.price}
-                                    </div>
-                                    <div className="resource-fcard-unit">
-                                      {addon.unit}
-                                    </div>
+                                    <div className="resource-fcard-price">${addon.price}</div>
+                                    <div className="resource-fcard-unit">{addon.unit}</div>
                                   </div>
 
                                   <button
@@ -1139,9 +1051,7 @@ function PricingContent() {
                                     className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
                                     onClick={() => toggleAddon(addon.id)}
                                   >
-                                    {isAdded
-                                      ? "✓ Added to order"
-                                      : "+ Add to order"}
+                                    {isAdded ? "✓ Added to order" : "+ Add to order"}
                                   </button>
                                 </div>
                               </div>
@@ -1172,70 +1082,58 @@ function PricingContent() {
                     </button>
                     {allAddonsOpen && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                        {ADDONS.filter(
-                          (a) =>
-                            !(PLAN_RECS[selectedPlan] || []).includes(a.id),
-                        ).map((addon) => {
-                          const isAdded = selectedAddons.has(addon.id);
-                          const cfg = ADDON_CONFIG[addon.id];
-                          const Icon = cfg?.icon ?? Wand2;
-                          return (
-                            <article
-                              key={addon.id}
-                              className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
-                            >
-                              <div
-                                className={`resource-fcard-frame ${
-                                  cfg?.iconBg.includes("emerald") ||
-                                  cfg?.iconBg.includes("cyan")
-                                    ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                                    : cfg?.iconBg.includes("indigo") ||
-                                        cfg?.iconBg.includes("blue")
-                                      ? "bg-[#EAF1FB] text-[#1A5FA3]"
-                                      : cfg?.iconBg.includes("amber") ||
-                                          cfg?.iconBg.includes("yellow")
-                                        ? "bg-[#FBF2E3] text-[#9B6220]"
-                                        : cfg?.iconBg.includes("violet") ||
-                                            cfg?.iconBg.includes("purple")
-                                          ? "bg-[#F3EFFE] text-[#5C3DAA]"
-                                          : "bg-[#FEF0F0] text-[#903030]"
-                                }`}
+                        {ADDONS.filter((a) => !(PLAN_RECS[selectedPlan] || []).includes(a.id)).map(
+                          (addon) => {
+                            const isAdded = selectedAddons.has(addon.id);
+                            const cfg = ADDON_CONFIG[addon.id];
+                            const Icon = cfg?.icon ?? Wand2;
+                            return (
+                              <article
+                                key={addon.id}
+                                className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
                               >
-                                <Icon className="w-7 h-7 opacity-70" />
-                              </div>
-
-                              <div className="resource-fcard-body">
-                                <h3 className="resource-fcard-name">
-                                  {addon.title}
-                                </h3>
-                                <p className="resource-fcard-desc">
-                                  {addon.copy}
-                                </p>
-
-                                <div className="resource-fcard-foot">
-                                  <div>
-                                    <div className="resource-fcard-price">
-                                      ${addon.price}
-                                    </div>
-                                    <div className="resource-fcard-unit">
-                                      {addon.unit}
-                                    </div>
-                                  </div>
-
-                                  <button
-                                    disabled={isAnyCheckoutLoading}
-                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                                    onClick={() => toggleAddon(addon.id)}
-                                  >
-                                    {isAdded
-                                      ? "✓ Added to order"
-                                      : "+ Add to order"}
-                                  </button>
+                                <div
+                                  className={`resource-fcard-frame ${
+                                    cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
+                                      ? "bg-[#EEF6F0] text-[#3A6E4A]"
+                                      : cfg?.iconBg.includes("indigo") ||
+                                          cfg?.iconBg.includes("blue")
+                                        ? "bg-[#EAF1FB] text-[#1A5FA3]"
+                                        : cfg?.iconBg.includes("amber") ||
+                                            cfg?.iconBg.includes("yellow")
+                                          ? "bg-[#FBF2E3] text-[#9B6220]"
+                                          : cfg?.iconBg.includes("violet") ||
+                                              cfg?.iconBg.includes("purple")
+                                            ? "bg-[#F3EFFE] text-[#5C3DAA]"
+                                            : "bg-[#FEF0F0] text-[#903030]"
+                                  }`}
+                                >
+                                  <Icon className="w-7 h-7 opacity-70" />
                                 </div>
-                              </div>
-                            </article>
-                          );
-                        })}
+
+                                <div className="resource-fcard-body">
+                                  <h3 className="resource-fcard-name">{addon.title}</h3>
+                                  <p className="resource-fcard-desc">{addon.copy}</p>
+
+                                  <div className="resource-fcard-foot">
+                                    <div>
+                                      <div className="resource-fcard-price">${addon.price}</div>
+                                      <div className="resource-fcard-unit">{addon.unit}</div>
+                                    </div>
+
+                                    <button
+                                      disabled={isAnyCheckoutLoading}
+                                      className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                                      onClick={() => toggleAddon(addon.id)}
+                                    >
+                                      {isAdded ? "✓ Added to order" : "+ Add to order"}
+                                    </button>
+                                  </div>
+                                </div>
+                              </article>
+                            );
+                          }
+                        )}
                       </div>
                     )}
                   </div>
@@ -1263,8 +1161,7 @@ function PricingContent() {
                         {currentPlanData.name}
                       </strong>
                       <span className="text-[11px] text-muted-foreground">
-                        ${currentPlanData.monthlyPrice}/mo · $
-                        {currentPlanData.annualPrice} total
+                        ${currentPlanData.monthlyPrice}/mo · ${currentPlanData.annualPrice} total
                       </span>
                     </div>
                   </div>
@@ -1275,9 +1172,7 @@ function PricingContent() {
                     key={a.id}
                     className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
                   >
-                    <span className="text-[12.5px] truncate pr-2">
-                      {a.title}
-                    </span>
+                    <span className="text-[12.5px] truncate pr-2">{a.title}</span>
                     <div className="text-right shrink-0">
                       <strong>${a.price}</strong>
                       <button
@@ -1292,9 +1187,7 @@ function PricingContent() {
                 ))}
 
                 <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
-                  <span className="text-[12px] text-muted-foreground">
-                    Total commitment
-                  </span>
+                  <span className="text-[12px] text-muted-foreground">Total commitment</span>
                   <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
                     ${summaryTotal}
                   </span>
@@ -1302,9 +1195,7 @@ function PricingContent() {
 
                 <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
                   Billed monthly at $
-                  {currentPlanData.id !== "free"
-                    ? currentPlanData.monthlyPrice
-                    : 0}
+                  {currentPlanData.id !== "free" ? currentPlanData.monthlyPrice : 0}
                   /mo. Add-ons are one-time. Government fees excluded.
                 </p>
 
@@ -1363,17 +1254,13 @@ function PricingContent() {
                       >
                         <div
                           className={`resource-fcard-frame ${
-                            cfg?.iconBg.includes("emerald") ||
-                            cfg?.iconBg.includes("cyan")
+                            cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
                               ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                              : cfg?.iconBg.includes("indigo") ||
-                                  cfg?.iconBg.includes("blue")
+                              : cfg?.iconBg.includes("indigo") || cfg?.iconBg.includes("blue")
                                 ? "bg-[#EAF1FB] text-[#1A5FA3]"
-                                : cfg?.iconBg.includes("amber") ||
-                                    cfg?.iconBg.includes("yellow")
+                                : cfg?.iconBg.includes("amber") || cfg?.iconBg.includes("yellow")
                                   ? "bg-[#FBF2E3] text-[#9B6220]"
-                                  : cfg?.iconBg.includes("violet") ||
-                                      cfg?.iconBg.includes("purple")
+                                  : cfg?.iconBg.includes("violet") || cfg?.iconBg.includes("purple")
                                     ? "bg-[#F3EFFE] text-[#5C3DAA]"
                                     : "bg-[#FEF0F0] text-[#903030]"
                           }`}
@@ -1401,12 +1288,8 @@ function PricingContent() {
 
                           <div className="resource-fcard-foot">
                             <div>
-                              <div className="resource-fcard-price">
-                                ${addon.price}
-                              </div>
-                              <div className="resource-fcard-unit">
-                                {addon.unit}
-                              </div>
+                              <div className="resource-fcard-price">${addon.price}</div>
+                              <div className="resource-fcard-unit">{addon.unit}</div>
                             </div>
 
                             <button
@@ -1450,9 +1333,7 @@ function PricingContent() {
                       key={a.id}
                       className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
                     >
-                      <span className="text-[12.5px] truncate pr-2">
-                        {a.title}
-                      </span>
+                      <span className="text-[12.5px] truncate pr-2">{a.title}</span>
                       <div className="text-right shrink-0">
                         <strong>${a.price}</strong>
                         <button
@@ -1470,16 +1351,13 @@ function PricingContent() {
                 {activeAddons.length > 0 && (
                   <>
                     <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
-                      <span className="text-[12px] text-muted-foreground">
-                        Total
-                      </span>
+                      <span className="text-[12px] text-muted-foreground">Total</span>
                       <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
                         ${summaryAddonsTotal}
                       </span>
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
-                      Add-ons are one-time charges. Government fees are not
-                      included.
+                      Add-ons are one-time charges. Government fees are not included.
                     </p>
                     {checkoutBtn}
                   </>

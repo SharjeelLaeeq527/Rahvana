@@ -45,54 +45,27 @@ const portals: {
   {
     type: "USCIS",
     title: "USCIS",
-    description:
-      "U.S. Citizenship and Immigration Services — track cases, forms, and account.",
+    description: "U.S. Citizenship and Immigration Services — track cases, forms, and account.",
     url: "https://myaccount.uscis.gov/sign-in",
-    icon: (
-      <Image
-        src="/uscis.png"
-        alt="USCIS"
-        width={64}
-        height={64}
-        className="object-contain"
-      />
-    ),
+    icon: <Image src="/uscis.png" alt="USCIS" width={64} height={64} className="object-contain" />,
     iconBgColor: "bg-[#e8f6f6]",
     iconHoverBgColor: "group-hover:bg-[#0d7377]",
   },
   {
     type: "NVC",
     title: "NVC (CEAC)",
-    description:
-      "National Visa Center — manage documents, affidavits, and case status.",
+    description: "National Visa Center — manage documents, affidavits, and case status.",
     url: "https://ceac.state.gov/iv/login.aspx",
-    icon: (
-      <Image
-        src="/ceac.png"
-        alt="CEAC"
-        width={64}
-        height={64}
-        className="object-contain"
-      />
-    ),
+    icon: <Image src="/ceac.png" alt="CEAC" width={64} height={64} className="object-contain" />,
     iconBgColor: "bg-[#fef3c7]",
     iconHoverBgColor: "group-hover:bg-[#f59e0b]",
   },
   {
     type: "COURIER",
     title: "Courier Service",
-    description:
-      "Track passport delivery, schedule pickups, and manage courier logistics.",
+    description: "Track passport delivery, schedule pickups, and manage courier logistics.",
     url: "https://atlasauth.b2clogin.com/f50ebcfb-eadd-41d8-9099-a7049d073f5c/b2c_1a_atoproduction_atlas_susi/oauth2/v2.0/authorize?client_id=607d08d6-b63b-4735-ad82-05dfcff7efa4&redirect_uri=https%3A%2F%2Fwww.usvisascheduling.com%2Fsignin-aad-b2c_1&response_type=code%20id_token&scope=openid&state=OpenIdConnect.AuthenticationProperties%3D2K23hD4xKzVe12jbVwjyqaABq8BvO9XR4dhxyvhM7SW5r2pLF5Rw4GpLbGg1SrhKGKcppBq4KNWDndIYuM863mlKn1fzE2KBfWVp3CNydelGJjAMx8mKVWAGq8ejU1j_os42RN93Egg5pqqgb_DUyiyluHJiUekQEK3ejCf2cGnJox-DigSRszd4RuUOOihD0Y6c1Hpe6GOOk41Y0gIIquzA9zzqTcrjWjMwx0-VXDCqUcH2fmr6qPDD75ogQTvjDKt9bnqWuV4cvfGquOOyqo0gAVtBE3cfF2JUvI4eP60Ktla_mMBiyIaYOdRC6Nkw3gs-5mKXMz-0ZBpSs8plZLBPAXyRKtKkFntQdtGUjz3OpzjMFUQySSZYlg4KAqk9m6_QhSee5b0ZmVV7hf6r2ocvBlfdHQIJKpjRz6eLgJDzmfKbZWFYxce-gPpLxmcwxOC4za80kv0torvGvZAyDyeY_RONVFzmYFXyMQsGHtua9Ll6wHxDN4ZPF9lEPTsThtgrrfydnrVxWu-BWZVaGzwovnUp3hQzNoa3c8jtS11JAtMC780rjr2dNDAv9EpHWr6ISfsO-Syu-4IdVGizjsHkwqQRLNUZoqKW7YtlTUkWn80R4tDfH3WkcMLRS-4D&response_mode=form_post&nonce=639086504989774135.NDYwYmEzMGMtYjI4Yi00MDBiLTg5ZGItZmU0MTM1ZjVhYTMyNTM0YWI0ZDAtNzI5NC00OGMxLWIxYjctNjZlMzcxYjM3ODk5&ui_locales=en-US&x-client-SKU=ID_NET472&x-client-ver=6.35.0.0",
-    icon: (
-      <Image
-        src="/ceac.png"
-        alt="CEAC"
-        width={64}
-        height={64}
-        className="object-contain"
-      />
-    ),
+    icon: <Image src="/ceac.png" alt="CEAC" width={64} height={64} className="object-contain" />,
     iconBgColor: "bg-[#eef2ff]",
     iconHoverBgColor: "group-hover:bg-[#4f46e5]",
   },
@@ -131,9 +104,7 @@ const PortalWallet: React.FC = () => {
   }, [fetchCredentials]);
 
   const getCredential = (portalType: string) =>
-    credentials.find(
-      (c) => c.portal_type.toUpperCase() === portalType.toUpperCase(),
-    );
+    credentials.find((c) => c.portal_type.toUpperCase() === portalType.toUpperCase());
 
   const handleAddOrEdit = async (data: any) => {
     setIsSubmitting(true);
@@ -181,9 +152,7 @@ const PortalWallet: React.FC = () => {
     }
   };
 
-  const handleRevealPassword = async (
-    credentialId: string,
-  ): Promise<string> => {
+  const handleRevealPassword = async (credentialId: string): Promise<string> => {
     const cred = credentials.find((c) => c.id === credentialId);
 
     const res = await fetch(`${API_BASE}/reveal`, {
@@ -200,18 +169,14 @@ const PortalWallet: React.FC = () => {
 
     if (data.value) {
       setCredentials((prev) =>
-        prev.map((c) =>
-          c.id === credentialId ? { ...c, password: data.value } : c,
-        ),
+        prev.map((c) => (c.id === credentialId ? { ...c, password: data.value } : c))
       );
     }
 
     return data.value || "";
   };
 
-  const handleRevealNVCCaseNumber = async (
-    credentialId: string,
-  ): Promise<string> => {
+  const handleRevealNVCCaseNumber = async (credentialId: string): Promise<string> => {
     const cred = credentials.find((c) => c.id === credentialId);
 
     const res = await fetch(`${API_BASE}/reveal`, {
@@ -228,18 +193,14 @@ const PortalWallet: React.FC = () => {
 
     if (data.value) {
       setCredentials((prev) =>
-        prev.map((c) =>
-          c.id === credentialId ? { ...c, nvc_case_number: data.value } : c,
-        ),
+        prev.map((c) => (c.id === credentialId ? { ...c, nvc_case_number: data.value } : c))
       );
     }
 
     return data.value || "";
   };
 
-  const handleRevealNVCInvoiceID = async (
-    credentialId: string,
-  ): Promise<string> => {
+  const handleRevealNVCInvoiceID = async (credentialId: string): Promise<string> => {
     const cred = credentials.find((c) => c.id === credentialId);
 
     const res = await fetch(`${API_BASE}/reveal`, {
@@ -256,19 +217,14 @@ const PortalWallet: React.FC = () => {
 
     if (data.value) {
       setCredentials((prev) =>
-        prev.map((c) =>
-          c.id === credentialId ? { ...c, nvc_invoice_id: data.value } : c,
-        ),
+        prev.map((c) => (c.id === credentialId ? { ...c, nvc_invoice_id: data.value } : c))
       );
     }
 
     return data.value || "";
   };
 
-  const handleRevealAnswer = async (
-    credentialId: string,
-    questionId: string,
-  ): Promise<string> => {
+  const handleRevealAnswer = async (credentialId: string, questionId: string): Promise<string> => {
     const cred = credentials.find((c) => c.id === credentialId);
 
     const res = await fetch(`${API_BASE}/reveal`, {
@@ -291,12 +247,12 @@ const PortalWallet: React.FC = () => {
             return {
               ...c,
               security_questions: c.security_questions.map((q) =>
-                q.id === questionId ? { ...q, answer: data.value } : q,
+                q.id === questionId ? { ...q, answer: data.value } : q
               ),
             };
           }
           return c;
-        }),
+        })
       );
     }
 
@@ -310,9 +266,7 @@ const PortalWallet: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-screen gap-4">
         <Loader size="lg" />
-        <p className="text-[#0d7377] text-sm font-medium mt-2">
-          Loading your vault...
-        </p>
+        <p className="text-[#0d7377] text-sm font-medium mt-2">Loading your vault...</p>
       </div>
     );
   }
@@ -326,8 +280,8 @@ const PortalWallet: React.FC = () => {
             Portal Wallet - Your Secure Credential Vault
           </h1>
           <p className="text-[15px] text-[#67737e] max-w-lg mx-auto">
-            Store, manage, and quickly access your immigration portal logins —
-            encrypted and protected.
+            Store, manage, and quickly access your immigration portal logins — encrypted and
+            protected.
           </p>
         </div>
 
@@ -365,8 +319,7 @@ const PortalWallet: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#e8f6f6] border border-[#0d7377]/10">
             <Shield size={14} className="text-[#0d7377]" />
             <span className="text-[12px] font-medium text-[#0d7377]">
-              All credentials are encrypted end-to-end. We never store plaintext
-              passwords.
+              All credentials are encrypted end-to-end. We never store plaintext passwords.
             </span>
           </div>
         </div>
@@ -384,13 +337,11 @@ const PortalWallet: React.FC = () => {
             ? {
                 username: formCredential.username,
                 password: "",
-                securityQuestions: formCredential.security_questions.map(
-                  (sq) => ({
-                    id: sq.id,
-                    question: sq.question,
-                    answer: "",
-                  }),
-                ),
+                securityQuestions: formCredential.security_questions.map((sq) => ({
+                  id: sq.id,
+                  question: sq.question,
+                  answer: "",
+                })),
               }
             : undefined
         }

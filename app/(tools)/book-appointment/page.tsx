@@ -94,9 +94,7 @@ const LocationStep = ({
       <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
         {t("bookAppointment.locationStep.title")}
       </h2>
-      <p className="text-slate-600 mb-8">
-        {t("bookAppointment.locationStep.subtitle")}
-      </p>
+      <p className="text-slate-600 mb-8">{t("bookAppointment.locationStep.subtitle")}</p>
 
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -167,9 +165,7 @@ const LocationStep = ({
                 }`}
                 onClick={() => onProviderChange("amc")}
               >
-                <h4 className="font-semibold mb-1">
-                  {t("bookAppointment.locationStep.amc")}
-                </h4>
+                <h4 className="font-semibold mb-1">{t("bookAppointment.locationStep.amc")}</h4>
                 <p className="text-xs text-slate-600">
                   {t("bookAppointment.locationStep.amcDesc")}
                 </p>
@@ -184,9 +180,7 @@ const LocationStep = ({
                 }`}
                 onClick={() => onProviderChange("iom")}
               >
-                <h4 className="font-semibold mb-1">
-                  {t("bookAppointment.locationStep.iom")}
-                </h4>
+                <h4 className="font-semibold mb-1">{t("bookAppointment.locationStep.iom")}</h4>
                 <p className="text-xs text-slate-600">
                   {t("bookAppointment.locationStep.iomDesc")}
                 </p>
@@ -202,10 +196,7 @@ const LocationStep = ({
         )}
 
         <div className="flex justify-end pt-4">
-          <Button
-            onClick={onNext}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
-          >
+          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
             {t("bookAppointment.locationStep.nextBtn")}
           </Button>
         </div>
@@ -277,39 +268,27 @@ const BasicInfoStep = ({
                 >
                   <SelectTrigger id="visaCategory">
                     <SelectValue
-                      placeholder={t(
-                        "bookAppointment.basicInfoStep.selectVisaCategory",
-                      )}
+                      placeholder={t("bookAppointment.basicInfoStep.selectVisaCategory")}
                     />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Immigrant Visa">
-                      {t(
-                        "bookAppointment.basicInfoStep.visaCategories.immigrant",
-                      )}
+                      {t("bookAppointment.basicInfoStep.visaCategories.immigrant")}
                     </SelectItem>
                     <SelectItem value="Non-immigrant Visa">
-                      {t(
-                        "bookAppointment.basicInfoStep.visaCategories.nonImmigrant",
-                      )}
+                      {t("bookAppointment.basicInfoStep.visaCategories.nonImmigrant")}
                     </SelectItem>
                     <SelectItem value="K-1 Fiance Visa">
-                      {t(
-                        "bookAppointment.basicInfoStep.visaCategories.k1Fiance",
-                      )}
+                      {t("bookAppointment.basicInfoStep.visaCategories.k1Fiance")}
                     </SelectItem>
                     <SelectItem value="Student Visa">
-                      {t(
-                        "bookAppointment.basicInfoStep.visaCategories.student",
-                      )}
+                      {t("bookAppointment.basicInfoStep.visaCategories.student")}
                     </SelectItem>
                     <SelectItem value="Work Visa">
                       {t("bookAppointment.basicInfoStep.visaCategories.work")}
                     </SelectItem>
                     <SelectItem value="Tourist Visa">
-                      {t(
-                        "bookAppointment.basicInfoStep.visaCategories.tourist",
-                      )}
+                      {t("bookAppointment.basicInfoStep.visaCategories.tourist")}
                     </SelectItem>
                     <SelectItem value="Other">
                       {t("bookAppointment.basicInfoStep.visaCategories.other")}
@@ -327,19 +306,11 @@ const BasicInfoStep = ({
                   onValueChange={onSelectChange("hadMedicalBefore")}
                 >
                   <SelectTrigger>
-                    <SelectValue
-                      placeholder={t(
-                        "bookAppointment.basicInfoStep.selectYesNo",
-                      )}
-                    />
+                    <SelectValue placeholder={t("bookAppointment.basicInfoStep.selectYesNo")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Yes">
-                      {t("bookAppointment.basicInfoStep.yes")}
-                    </SelectItem>
-                    <SelectItem value="No">
-                      {t("bookAppointment.basicInfoStep.no")}
-                    </SelectItem>
+                    <SelectItem value="Yes">{t("bookAppointment.basicInfoStep.yes")}</SelectItem>
+                    <SelectItem value="No">{t("bookAppointment.basicInfoStep.no")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -347,9 +318,7 @@ const BasicInfoStep = ({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="primaryContact">
-              {t("bookAppointment.basicInfoStep.mobileNo")}
-            </Label>
+            <Label htmlFor="primaryContact">{t("bookAppointment.basicInfoStep.mobileNo")}</Label>
             <div className="flex gap-2">
               <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
                 🇵🇰 92
@@ -367,9 +336,7 @@ const BasicInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">
-              {t("bookAppointment.basicInfoStep.email")}
-            </Label>
+            <Label htmlFor="email">{t("bookAppointment.basicInfoStep.email")}</Label>
             <Input
               id="email"
               name="email"
@@ -383,9 +350,7 @@ const BasicInfoStep = ({
           {isAMC && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="city">
-                  {t("bookAppointment.basicInfoStep.city")}
-                </Label>
+                <Label htmlFor="city">{t("bookAppointment.basicInfoStep.city")}</Label>
                 <Input
                   id="city"
                   name="city"
@@ -396,9 +361,7 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="caseRef">
-                  {t("bookAppointment.basicInfoStep.caseRef")}
-                </Label>
+                <Label htmlFor="caseRef">{t("bookAppointment.basicInfoStep.caseRef")}</Label>
                 <Input
                   id="caseRef"
                   name="caseRef"
@@ -417,11 +380,7 @@ const BasicInfoStep = ({
                   onValueChange={onSelectChange("numberOfApplicants")}
                 >
                   <SelectTrigger>
-                    <SelectValue
-                      placeholder={t(
-                        "bookAppointment.basicInfoStep.selectNumber",
-                      )}
-                    />
+                    <SelectValue placeholder={t("bookAppointment.basicInfoStep.selectNumber")} />
                   </SelectTrigger>
                   <SelectContent>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
@@ -447,40 +406,25 @@ const BasicInfoStep = ({
                 >
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={t(
-                        "bookAppointment.basicInfoStep.selectAppointmentType",
-                      )}
+                      placeholder={t("bookAppointment.basicInfoStep.selectAppointmentType")}
                     />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Individual">
-                      {t(
-                        "bookAppointment.basicInfoStep.appointmentTypes.individual",
-                      )}
+                      {t("bookAppointment.basicInfoStep.appointmentTypes.individual")}
                     </SelectItem>
                     <SelectItem value="Family">
-                      {t(
-                        "bookAppointment.basicInfoStep.appointmentTypes.family",
-                      )}
+                      {t("bookAppointment.basicInfoStep.appointmentTypes.family")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="visaType">
-                  {t("bookAppointment.basicInfoStep.visaType")}
-                </Label>
-                <Select
-                  value={formData.visaType}
-                  onValueChange={onSelectChange("visaType")}
-                >
+                <Label htmlFor="visaType">{t("bookAppointment.basicInfoStep.visaType")}</Label>
+                <Select value={formData.visaType} onValueChange={onSelectChange("visaType")}>
                   <SelectTrigger id="visaType">
-                    <SelectValue
-                      placeholder={t(
-                        "bookAppointment.basicInfoStep.selectVisaType",
-                      )}
-                    />
+                    <SelectValue placeholder={t("bookAppointment.basicInfoStep.selectVisaType")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="IR-1">
@@ -500,21 +444,15 @@ const BasicInfoStep = ({
                 >
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={t(
-                        "bookAppointment.basicInfoStep.originalPassportOptions.yes",
-                      )}
+                      placeholder={t("bookAppointment.basicInfoStep.originalPassportOptions.yes")}
                     />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="YES">
-                      {t(
-                        "bookAppointment.basicInfoStep.originalPassportOptions.yes",
-                      )}
+                      {t("bookAppointment.basicInfoStep.originalPassportOptions.yes")}
                     </SelectItem>
                     <SelectItem value="NO">
-                      {t(
-                        "bookAppointment.basicInfoStep.originalPassportOptions.no",
-                      )}
+                      {t("bookAppointment.basicInfoStep.originalPassportOptions.no")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -524,15 +462,10 @@ const BasicInfoStep = ({
                 <Label htmlFor="medicalType">
                   {t("bookAppointment.basicInfoStep.medicalType")}
                 </Label>
-                <Select
-                  value={formData.medicalType}
-                  onValueChange={onSelectChange("medicalType")}
-                >
+                <Select value={formData.medicalType} onValueChange={onSelectChange("medicalType")}>
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={t(
-                        "bookAppointment.basicInfoStep.selectMedicalType",
-                      )}
+                      placeholder={t("bookAppointment.basicInfoStep.selectMedicalType")}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -540,9 +473,7 @@ const BasicInfoStep = ({
                       {t("bookAppointment.basicInfoStep.medicalTypes.first")}
                     </SelectItem>
                     <SelectItem value="Re-Medical">
-                      {t(
-                        "bookAppointment.basicInfoStep.medicalTypes.reMedical",
-                      )}
+                      {t("bookAppointment.basicInfoStep.medicalTypes.reMedical")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -565,10 +496,7 @@ const BasicInfoStep = ({
           >
             {t("bookAppointment.basicInfoStep.prevBtn")}
           </Button>
-          <Button
-            onClick={onNext}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
-          >
+          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
             {t("bookAppointment.basicInfoStep.nextBtn")}
           </Button>
         </div>
@@ -590,7 +518,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
         {t("bookAppointment.personalInfoStep.applicantNumber").replace(
           "{index}",
-          (index + 1).toString(),
+          (index + 1).toString()
         )}
       </h3>
 
@@ -628,17 +556,11 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
             onValueChange={(value) => onChange(index, "gender", value)}
           >
             <SelectTrigger>
-              <SelectValue
-                placeholder={t("bookAppointment.personalInfoStep.selectGender")}
-              />
+              <SelectValue placeholder={t("bookAppointment.personalInfoStep.selectGender")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="M">
-                {t("bookAppointment.personalInfoStep.genders.m")}
-              </SelectItem>
-              <SelectItem value="F">
-                {t("bookAppointment.personalInfoStep.genders.f")}
-              </SelectItem>
+              <SelectItem value="M">{t("bookAppointment.personalInfoStep.genders.m")}</SelectItem>
+              <SelectItem value="F">{t("bookAppointment.personalInfoStep.genders.f")}</SelectItem>
               <SelectItem value="Other">
                 {t("bookAppointment.personalInfoStep.genders.other")}
               </SelectItem>
@@ -667,11 +589,7 @@ interface PersonalInfoStepProps {
   error: string | null;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: keyof FormData) => (value: string) => void;
-  onApplicantChange: (
-    index: number,
-    field: keyof Applicant,
-    value: string,
-  ) => void;
+  onApplicantChange: (index: number, field: keyof Applicant, value: string) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -706,9 +624,7 @@ const PersonalInfoStep = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="surname">
-                {t("bookAppointment.personalInfoStep.surname")}
-              </Label>
+              <Label htmlFor="surname">{t("bookAppointment.personalInfoStep.surname")}</Label>
               <Input
                 id="surname"
                 name="surname"
@@ -719,34 +635,21 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="givenName">
-                {t("bookAppointment.personalInfoStep.givenName")}
-              </Label>
+              <Label htmlFor="givenName">{t("bookAppointment.personalInfoStep.givenName")}</Label>
               <Input
                 id="givenName"
                 name="givenName"
                 value={formData.givenName}
                 onChange={onChange}
-                placeholder={t(
-                  "bookAppointment.personalInfoStep.enterGivenName",
-                )}
+                placeholder={t("bookAppointment.personalInfoStep.enterGivenName")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="gender">
-                {t("bookAppointment.personalInfoStep.gender")}
-              </Label>
-              <Select
-                value={formData.gender}
-                onValueChange={onSelectChange("gender")}
-              >
+              <Label htmlFor="gender">{t("bookAppointment.personalInfoStep.gender")}</Label>
+              <Select value={formData.gender} onValueChange={onSelectChange("gender")}>
                 <SelectTrigger>
-                  <SelectValue
-                    placeholder={t(
-                      "bookAppointment.personalInfoStep.selectGender",
-                    )}
-                  />
+                  <SelectValue placeholder={t("bookAppointment.personalInfoStep.selectGender")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="M">
@@ -808,10 +711,7 @@ const PersonalInfoStep = ({
           >
             {t("bookAppointment.personalInfoStep.prevBtn")}
           </Button>
-          <Button
-            onClick={onNext}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
-          >
+          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
             {t("bookAppointment.personalInfoStep.nextBtn")}
           </Button>
         </div>
@@ -839,7 +739,7 @@ const ApplicantPassportInfo = ({
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
         {t("bookAppointment.passportDetailsStep.applicantNumber").replace(
           "{index}",
-          (index + 1).toString(),
+          (index + 1).toString()
         )}
       </h3>
 
@@ -852,9 +752,7 @@ const ApplicantPassportInfo = ({
             id={`applicant-${index}-passportNumber`}
             value={applicant.passportNumber}
             onChange={(e) => onChange(index, "passportNumber", e.target.value)}
-            placeholder={t(
-              "bookAppointment.passportDetailsStep.enterPassportNumber",
-            )}
+            placeholder={t("bookAppointment.passportDetailsStep.enterPassportNumber")}
           />
         </div>
 
@@ -866,9 +764,7 @@ const ApplicantPassportInfo = ({
             id={`applicant-${index}-passportIssueDate`}
             type="date"
             value={applicant.passportIssueDate}
-            onChange={(e) =>
-              onChange(index, "passportIssueDate", e.target.value)
-            }
+            onChange={(e) => onChange(index, "passportIssueDate", e.target.value)}
           />
         </div>
 
@@ -880,9 +776,7 @@ const ApplicantPassportInfo = ({
             id={`applicant-${index}-passportExpiryDate`}
             type="date"
             value={applicant.passportExpiryDate}
-            onChange={(e) =>
-              onChange(index, "passportExpiryDate", e.target.value)
-            }
+            onChange={(e) => onChange(index, "passportExpiryDate", e.target.value)}
           />
         </div>
 
@@ -895,9 +789,7 @@ const ApplicantPassportInfo = ({
               id={`applicant-${index}-caseNumber`}
               value={applicant.caseNumber}
               onChange={(e) => onChange(index, "caseNumber", e.target.value)}
-              placeholder={t(
-                "bookAppointment.passportDetailsStep.enterCaseNumber",
-              )}
+              placeholder={t("bookAppointment.passportDetailsStep.enterCaseNumber")}
             />
           </div>
         )}
@@ -911,9 +803,7 @@ const ApplicantPassportInfo = ({
               id={`applicant-${index}-caseRef`}
               value={applicant.caseRef}
               onChange={(e) => onChange(index, "caseRef", e.target.value)}
-              placeholder={t(
-                "bookAppointment.passportDetailsStep.enterCaseRef",
-              )}
+              placeholder={t("bookAppointment.passportDetailsStep.enterCaseRef")}
             />
           </div>
         )}
@@ -927,11 +817,7 @@ interface PassportDetailsStepProps {
   error: string | null;
   isAMC: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onApplicantChange: (
-    index: number,
-    field: keyof Applicant,
-    value: string,
-  ) => void;
+  onApplicantChange: (index: number, field: keyof Applicant, value: string) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -974,9 +860,7 @@ const PassportDetailsStep = ({
                 name="passportNumber"
                 value={formData.passportNumber}
                 onChange={onChange}
-                placeholder={t(
-                  "bookAppointment.passportDetailsStep.enterPassportNumber",
-                )}
+                placeholder={t("bookAppointment.passportDetailsStep.enterPassportNumber")}
               />
             </div>
 
@@ -1016,26 +900,20 @@ const PassportDetailsStep = ({
                   name="caseNumber"
                   value={formData.caseNumber}
                   onChange={onChange}
-                  placeholder={t(
-                    "bookAppointment.passportDetailsStep.enterCaseNumber",
-                  )}
+                  placeholder={t("bookAppointment.passportDetailsStep.enterCaseNumber")}
                 />
               </div>
             )}
 
             {isAMC && (
               <div className="space-y-2">
-                <Label htmlFor="caseRef">
-                  {t("bookAppointment.passportDetailsStep.caseRef")}
-                </Label>
+                <Label htmlFor="caseRef">{t("bookAppointment.passportDetailsStep.caseRef")}</Label>
                 <Input
                   id="caseRef"
                   name="caseRef"
                   value={formData.caseRef}
                   onChange={onChange}
-                  placeholder={t(
-                    "bookAppointment.passportDetailsStep.enterCaseRef",
-                  )}
+                  placeholder={t("bookAppointment.passportDetailsStep.enterCaseRef")}
                 />
               </div>
             )}
@@ -1046,9 +924,7 @@ const PassportDetailsStep = ({
         {parseInt(formData.numberOfApplicants) > 1 && (
           <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              {t(
-                "bookAppointment.passportDetailsStep.additionalApplicantsTitle",
-              )}
+              {t("bookAppointment.passportDetailsStep.additionalApplicantsTitle")}
             </h3>
             {formData.applicants.map((applicant, index) => (
               <ApplicantPassportInfo
@@ -1076,10 +952,7 @@ const PassportDetailsStep = ({
           >
             {t("bookAppointment.passportDetailsStep.prevBtn")}
           </Button>
-          <Button
-            onClick={onNext}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
-          >
+          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
             {t("bookAppointment.passportDetailsStep.nextBtn")}
           </Button>
         </div>
@@ -1091,20 +964,12 @@ const PassportDetailsStep = ({
 interface DocumentsStepProps {
   formData: FormData;
   error: string | null;
-  onFileChange: (
-    name: keyof FormData,
-  ) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileChange: (name: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => void;
   onNext: () => void;
   onBack: () => void;
 }
 
-const DocumentsStep = ({
-  formData,
-  error,
-  onFileChange,
-  onNext,
-  onBack,
-}: DocumentsStepProps) => {
+const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: DocumentsStepProps) => {
   const { t } = useLanguage();
   return (
     <div className="space-y-6">
@@ -1136,12 +1001,7 @@ const DocumentsStep = ({
             htmlFor="scannedPassport"
             className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
           >
-            <svg
-              className="w-6 h-6 mb-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1163,12 +1023,7 @@ const DocumentsStep = ({
           />
           {formData.scannedPassport && (
             <p className="text-sm text-green-600 flex items-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1190,12 +1045,7 @@ const DocumentsStep = ({
             htmlFor="kOneLetter"
             className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
           >
-            <svg
-              className="w-6 h-6 mb-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1217,12 +1067,7 @@ const DocumentsStep = ({
           />
           {formData.kOneLetter && (
             <p className="text-sm text-green-600 flex items-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1244,12 +1089,7 @@ const DocumentsStep = ({
             htmlFor="appointmentConfirmationLetter"
             className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
           >
-            <svg
-              className="w-6 h-6 mb-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1271,12 +1111,7 @@ const DocumentsStep = ({
           />
           {formData.appointmentConfirmationLetter && (
             <p className="text-sm text-green-600 flex items-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1306,10 +1141,7 @@ const DocumentsStep = ({
           >
             {t("bookAppointment.documentsStep.prevBtn")}
           </Button>
-          <Button
-            onClick={onNext}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
-          >
+          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
             {t("bookAppointment.documentsStep.nextBtn")}
           </Button>
         </div>
@@ -1358,9 +1190,7 @@ const ScheduleStep = ({
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="estimatedCharges">
-              {t("bookAppointment.scheduleStep.estCharges")}
-            </Label>
+            <Label htmlFor="estimatedCharges">{t("bookAppointment.scheduleStep.estCharges")}</Label>
             <Input
               id="estimatedCharges"
               name="estimatedCharges"
@@ -1384,17 +1214,10 @@ const ScheduleStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="preferredTime">
-              {t("bookAppointment.scheduleStep.time")}
-            </Label>
-            <Select
-              value={formData.preferredTime}
-              onValueChange={onSelectChange("preferredTime")}
-            >
+            <Label htmlFor="preferredTime">{t("bookAppointment.scheduleStep.time")}</Label>
+            <Select value={formData.preferredTime} onValueChange={onSelectChange("preferredTime")}>
               <SelectTrigger>
-                <SelectValue
-                  placeholder={t("bookAppointment.scheduleStep.selectTimeSlot")}
-                />
+                <SelectValue placeholder={t("bookAppointment.scheduleStep.selectTimeSlot")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="08:00-08:30">08:00 AM - 08:30 AM</SelectItem>
@@ -1506,8 +1329,7 @@ const ReviewStep = ({
                 {formData.location === "islamabad" &&
                   formData.islamabadProvider &&
                   ` - ${formData.islamabadProvider.toUpperCase()}`}
-                {(formData.location === "karachi" ||
-                  formData.location === "lahore") &&
+                {(formData.location === "karachi" || formData.location === "lahore") &&
                   " - Wilcare Medical"}
               </p>
             </div>
@@ -1539,9 +1361,7 @@ const ReviewStep = ({
               <p className="font-medium">+92 {formData.primaryContact}</p>
             </div>
             <div>
-              <p className="text-sm text-slate-600">
-                {t("bookAppointment.reviewStep.email")}
-              </p>
+              <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
               <p className="font-medium">{formData.email}</p>
             </div>
             {formData.interviewDate && (
@@ -1549,9 +1369,7 @@ const ReviewStep = ({
                 <p className="text-sm text-slate-600">
                   {t("bookAppointment.reviewStep.interviewDate")}
                 </p>
-                <p className="font-medium">
-                  {formatDate(formData.interviewDate)}
-                </p>
+                <p className="font-medium">{formatDate(formData.interviewDate)}</p>
               </div>
             )}
             {formData.visaCategory && (
@@ -1572,9 +1390,7 @@ const ReviewStep = ({
             )}
             {formData.visaType && (
               <div>
-                <p className="text-sm text-slate-600">
-                  {t("bookAppointment.reviewStep.visaType")}
-                </p>
+                <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.visaType")}</p>
                 <p className="font-medium">{formData.visaType}</p>
               </div>
             )}
@@ -1647,9 +1463,7 @@ const ReviewStep = ({
                   <p className="font-medium">{formData.givenName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600">
-                    {t("bookAppointment.reviewStep.gender")}
-                  </p>
+                  <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.gender")}</p>
                   <p className="font-medium">{formData.gender}</p>
                 </div>
                 <div>
@@ -1666,57 +1480,56 @@ const ReviewStep = ({
             </div>
 
             {/* Additional applicants if any */}
-            {parseInt(formData.numberOfApplicants) > 1 &&
-              formData.applicants.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-slate-900 mb-3">
-                    {t("bookAppointment.reviewStep.additionalApplicants")}
-                  </h4>
-                  {formData.applicants.map((applicant, index) => (
-                    <div
-                      key={applicant.id}
-                      className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
-                    >
-                      <h5 className="font-semibold text-slate-900 mb-2">
-                        {t("bookAppointment.reviewStep.applicantIndex").replace(
-                          "{index}",
-                          (index + 1).toString(),
-                        )}
-                      </h5>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.surname")}
-                          </p>
-                          <p className="font-medium">{applicant.surname}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.givenName")}
-                          </p>
-                          <p className="font-medium">{applicant.givenName}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.gender")}
-                          </p>
-                          <p className="font-medium">{applicant.gender}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.dob")}
-                          </p>
-                          <p className="font-medium">
-                            {applicant.dateOfBirth
-                              ? formatDate(applicant.dateOfBirth)
-                              : t("bookAppointment.reviewStep.notSpecified")}
-                          </p>
-                        </div>
+            {parseInt(formData.numberOfApplicants) > 1 && formData.applicants.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-3">
+                  {t("bookAppointment.reviewStep.additionalApplicants")}
+                </h4>
+                {formData.applicants.map((applicant, index) => (
+                  <div
+                    key={applicant.id}
+                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                  >
+                    <h5 className="font-semibold text-slate-900 mb-2">
+                      {t("bookAppointment.reviewStep.applicantIndex").replace(
+                        "{index}",
+                        (index + 1).toString()
+                      )}
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.surname")}
+                        </p>
+                        <p className="font-medium">{applicant.surname}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.givenName")}
+                        </p>
+                        <p className="font-medium">{applicant.givenName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.gender")}
+                        </p>
+                        <p className="font-medium">{applicant.gender}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.dob")}
+                        </p>
+                        <p className="font-medium">
+                          {applicant.dateOfBirth
+                            ? formatDate(applicant.dateOfBirth)
+                            : t("bookAppointment.reviewStep.notSpecified")}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1790,71 +1603,68 @@ const ReviewStep = ({
             </div>
 
             {/* Additional applicants if any */}
-            {parseInt(formData.numberOfApplicants) > 1 &&
-              formData.applicants.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-slate-900 mb-3">
-                    {t("bookAppointment.reviewStep.additionalApplicants")}
-                  </h4>
-                  {formData.applicants.map((applicant, index) => (
-                    <div
-                      key={applicant.id}
-                      className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
-                    >
-                      <h5 className="font-semibold text-slate-900 mb-2">
-                        {t("bookAppointment.reviewStep.applicantIndex").replace(
-                          "{index}",
-                          (index + 1).toString(),
-                        )}
-                      </h5>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.passportNumber")}
-                          </p>
-                          <p className="font-medium">
-                            {applicant.passportNumber}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.issueDate")}
-                          </p>
-                          <p className="font-medium">
-                            {applicant.passportIssueDate
-                              ? formatDate(applicant.passportIssueDate)
-                              : t("bookAppointment.reviewStep.notSpecified")}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.expiryDate")}
-                          </p>
-                          <p className="font-medium">
-                            {applicant.passportExpiryDate
-                              ? formatDate(applicant.passportExpiryDate)
-                              : t("bookAppointment.reviewStep.notSpecified")}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600">
-                            {t("bookAppointment.reviewStep.caseNumber")}
-                          </p>
-                          <p className="font-medium">{applicant.caseNumber}</p>
-                        </div>
-                        {isAMC && (
-                          <div>
-                            <p className="text-sm text-slate-600">
-                              {t("bookAppointment.reviewStep.caseRef")}
-                            </p>
-                            <p className="font-medium">{applicant.caseRef}</p>
-                          </div>
-                        )}
+            {parseInt(formData.numberOfApplicants) > 1 && formData.applicants.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-3">
+                  {t("bookAppointment.reviewStep.additionalApplicants")}
+                </h4>
+                {formData.applicants.map((applicant, index) => (
+                  <div
+                    key={applicant.id}
+                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                  >
+                    <h5 className="font-semibold text-slate-900 mb-2">
+                      {t("bookAppointment.reviewStep.applicantIndex").replace(
+                        "{index}",
+                        (index + 1).toString()
+                      )}
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.passportNumber")}
+                        </p>
+                        <p className="font-medium">{applicant.passportNumber}</p>
                       </div>
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.issueDate")}
+                        </p>
+                        <p className="font-medium">
+                          {applicant.passportIssueDate
+                            ? formatDate(applicant.passportIssueDate)
+                            : t("bookAppointment.reviewStep.notSpecified")}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.expiryDate")}
+                        </p>
+                        <p className="font-medium">
+                          {applicant.passportExpiryDate
+                            ? formatDate(applicant.passportExpiryDate)
+                            : t("bookAppointment.reviewStep.notSpecified")}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600">
+                          {t("bookAppointment.reviewStep.caseNumber")}
+                        </p>
+                        <p className="font-medium">{applicant.caseNumber}</p>
+                      </div>
+                      {isAMC && (
+                        <div>
+                          <p className="text-sm text-slate-600">
+                            {t("bookAppointment.reviewStep.caseRef")}
+                          </p>
+                          <p className="font-medium">{applicant.caseRef}</p>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1946,12 +1756,9 @@ const ReviewStep = ({
               </p>
             </div>
             <div className="col-span-2">
-              <p className="text-sm text-slate-600">
-                {t("bookAppointment.reviewStep.timeSlot")}
-              </p>
+              <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.timeSlot")}</p>
               <p className="font-medium">
-                {formData.preferredTime ||
-                  t("bookAppointment.reviewStep.notSpecified")}
+                {formData.preferredTime || t("bookAppointment.reviewStep.notSpecified")}
               </p>
             </div>
           </div>
@@ -2012,14 +1819,9 @@ const SuccessStep = ({ onReset }: SuccessStepProps) => {
       <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
         {t("bookAppointment.successStep.title")}
       </h2>
-      <p className="text-slate-600 mb-8">
-        {t("bookAppointment.successStep.desc")}
-      </p>
+      <p className="text-slate-600 mb-8">{t("bookAppointment.successStep.desc")}</p>
       <div className="flex justify-center gap-4">
-        <Button
-          onClick={onReset}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
-        >
+        <Button onClick={onReset} className="bg-teal-600 hover:bg-teal-700 text-white">
           {t("bookAppointment.successStep.bookAnotherBtn")}
         </Button>
       </div>
@@ -2071,7 +1873,7 @@ export default function WilcareAppointmentForm() {
   const { t } = useLanguage();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   // Auto-fill profile data
@@ -2120,12 +1922,9 @@ export default function WilcareAppointmentForm() {
     fetchProfile();
   }, [user, profileLoaded, supabase, formData]);
 
-  const isAMC =
-    formData.location === "islamabad" && formData.islamabadProvider === "amc";
-  const isIOM =
-    formData.location === "islamabad" && formData.islamabadProvider === "iom";
-  const isWilcare =
-    formData.location === "karachi" || formData.location === "lahore";
+  const isAMC = formData.location === "islamabad" && formData.islamabadProvider === "amc";
+  const isIOM = formData.location === "islamabad" && formData.islamabadProvider === "iom";
+  const isWilcare = formData.location === "karachi" || formData.location === "lahore";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -2170,17 +1969,12 @@ export default function WilcareAppointmentForm() {
     });
   };
 
-  const handleFileChange =
-    (name: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0] || null;
-      setFormData((prev) => ({ ...prev, [name]: file }));
-    };
+  const handleFileChange = (name: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, [name]: file }));
+  };
 
-  const handleApplicantChange = (
-    index: number,
-    field: keyof Applicant,
-    value: string,
-  ) => {
+  const handleApplicantChange = (index: number, field: keyof Applicant, value: string) => {
     setFormData((prev) => {
       const updatedApplicants = [...prev.applicants];
       updatedApplicants[index] = {
@@ -2261,12 +2055,7 @@ export default function WilcareAppointmentForm() {
 
     if (step === 3) {
       // Validate primary applicant
-      if (
-        !formData.surname ||
-        !formData.givenName ||
-        !formData.gender ||
-        !formData.dateOfBirth
-      ) {
+      if (!formData.surname || !formData.givenName || !formData.gender || !formData.dateOfBirth) {
         setError(t("bookAppointment.validation.reqPrimaryApplicantFields"));
         return;
       }
@@ -2284,8 +2073,8 @@ export default function WilcareAppointmentForm() {
             setError(
               t("bookAppointment.validation.reqApplicantIndexFields").replace(
                 "{index}",
-                (i + 1).toString(),
-              ),
+                (i + 1).toString()
+              )
             );
             return;
           }
@@ -2310,9 +2099,10 @@ export default function WilcareAppointmentForm() {
           const applicant = formData.applicants[i];
           if (!applicant.passportNumber) {
             setError(
-              t(
-                "bookAppointment.validation.reqApplicantPassportNumber",
-              ).replace("{index}", (i + 1).toString()),
+              t("bookAppointment.validation.reqApplicantPassportNumber").replace(
+                "{index}",
+                (i + 1).toString()
+              )
             );
             return;
           }
@@ -2322,8 +2112,8 @@ export default function WilcareAppointmentForm() {
             setError(
               t("bookAppointment.validation.reqApplicantCaseRef").replace(
                 "{index}",
-                (i + 1).toString(),
-              ),
+                (i + 1).toString()
+              )
             );
             return;
           }
@@ -2399,10 +2189,7 @@ export default function WilcareAppointmentForm() {
       const appointmentResult = await appointmentResponse.json();
 
       if (!appointmentResponse.ok) {
-        throw new Error(
-          appointmentResult.error ||
-            t("bookAppointment.validation.submitError"),
-        );
+        throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
       }
 
       const appointmentId = appointmentResult.id;
@@ -2421,7 +2208,7 @@ export default function WilcareAppointmentForm() {
           fetch("/api/upload", {
             method: "POST",
             body: formDataUpload,
-          }),
+          })
         );
       }
 
@@ -2435,7 +2222,7 @@ export default function WilcareAppointmentForm() {
           fetch("/api/upload", {
             method: "POST",
             body: formDataUpload,
-          }),
+          })
         );
       }
 
@@ -2449,7 +2236,7 @@ export default function WilcareAppointmentForm() {
           fetch("/api/upload", {
             method: "POST",
             body: formDataUpload,
-          }),
+          })
         );
       }
 
@@ -2460,9 +2247,7 @@ export default function WilcareAppointmentForm() {
 
         if (uploadErrors.length > 0) {
           const errorText = await uploadErrors[0].text();
-          throw new Error(
-            errorText || t("bookAppointment.validation.uploadError"),
-          );
+          throw new Error(errorText || t("bookAppointment.validation.uploadError"));
         }
       }
 
@@ -2470,9 +2255,7 @@ export default function WilcareAppointmentForm() {
     } catch (err: unknown) {
       console.error("Error submitting appointment:", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      setError(
-        errorMessage || "An error occurred while submitting your appointment",
-      );
+      setError(errorMessage || "An error occurred while submitting your appointment");
     } finally {
       setLoading(false);
     }
@@ -2647,9 +2430,7 @@ export default function WilcareAppointmentForm() {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
             {t("bookAppointment.title")}
           </h1>
-          <p className="text-slate-600 text-sm sm:text-base">
-            {t("bookAppointment.description")}
-          </p>
+          <p className="text-slate-600 text-sm sm:text-base">{t("bookAppointment.description")}</p>
 
           {step > 1 && step < 8 && step !== 9 && !isIOM && (
             <div className="mt-6">
@@ -2690,9 +2471,7 @@ export default function WilcareAppointmentForm() {
           )}
         </div>
 
-        <Card className="p-4 sm:p-8 bg-white shadow-lg border-0">
-          {renderStep()}
-        </Card>
+        <Card className="p-4 sm:p-8 bg-white shadow-lg border-0">{renderStep()}</Card>
       </div>
     </div>
   );

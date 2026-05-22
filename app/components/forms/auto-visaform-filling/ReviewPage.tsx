@@ -82,8 +82,7 @@ export function ReviewPage({
                 Review Your Information
               </h2>
               <p className="text-sm md:text-base text-white/90">
-                Everything looks good! Please review each section before
-                finalizing.
+                Everything looks good! Please review each section before finalizing.
               </p>
             </div>
           </div>
@@ -92,15 +91,11 @@ export function ReviewPage({
         {/* Progress Stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-            <div className="text-3xl font-bold text-white mb-1">
-              {completedCount}
-            </div>
+            <div className="text-3xl font-bold text-white mb-1">{completedCount}</div>
             <div className="text-sm text-white/80">Sections Completed</div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-            <div className="text-3xl font-bold text-white mb-1">
-              {totalCount}
-            </div>
+            <div className="text-3xl font-bold text-white mb-1">{totalCount}</div>
             <div className="text-sm text-white/80">Total Sections</div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 col-span-2 md:col-span-1">
@@ -118,9 +113,7 @@ export function ReviewPage({
           const stepNum = idx + 1;
           const hasData = section.fields.some((f) => formData[f.key]);
           const isExpanded = expandedSections.has(idx);
-          const answeredFields = section.fields.filter(
-            (f) => formData[f.key]
-          ).length;
+          const answeredFields = section.fields.filter((f) => formData[f.key]).length;
           const totalFields = section.fields.length;
 
           return (
@@ -131,9 +124,7 @@ export function ReviewPage({
               transition={{ delay: idx * 0.05 }}
               className="border-2 rounded-xl overflow-hidden transition-all hover:shadow-lg"
               style={{
-                borderColor: isExpanded
-                  ? "rgba(13, 115, 119, 0.3)"
-                  : "rgba(0, 0, 0, 0.08)",
+                borderColor: isExpanded ? "rgba(13, 115, 119, 0.3)" : "rgba(0, 0, 0, 0.08)",
                 backgroundColor: isExpanded ? "#ffffff" : "#fafafa",
               }}
             >
@@ -213,17 +204,11 @@ export function ReviewPage({
                               <span
                                 className="text-gray-900 text-sm text-right max-w-xs font-medium px-3 py-1.5 rounded-lg"
                                 style={{
-                                  backgroundColor: hasValue
-                                    ? "#e8f6f6"
-                                    : "#f5f5f5",
+                                  backgroundColor: hasValue ? "#e8f6f6" : "#f5f5f5",
                                   color: hasValue ? "#0a5a5d" : "#9ca3af",
                                 }}
                               >
-                                {hasValue ? (
-                                  value
-                                ) : (
-                                  <span className="italic">Not provided</span>
-                                )}
+                                {hasValue ? value : <span className="italic">Not provided</span>}
                               </span>
                             </div>
                           );

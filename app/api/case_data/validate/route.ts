@@ -9,18 +9,13 @@ export async function POST(request: NextRequest) {
     if (!body.journey_id) {
       return NextResponse.json(
         { success: false, error: "journey_id is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const validationResults = await caseDataService.validateAllCaseData(
-      body.journey_id,
-    );
+    const validationResults = await caseDataService.validateAllCaseData(body.journey_id);
 
-    return NextResponse.json(
-      { success: true, data: validationResults },
-      { status: 200 },
-    );
+    return NextResponse.json({ success: true, data: validationResults }, { status: 200 });
   } catch (error) {
     console.error("Error in POST /api/case-data/validate:", error);
     return NextResponse.json(
@@ -28,7 +23,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

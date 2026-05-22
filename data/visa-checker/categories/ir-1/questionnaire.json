@@ -45,10 +45,7 @@
           "id": "spousal_relationship_type",
           "label": "What is your relationship to your spouse?",
           "type": "select",
-          "options": [
-            "No biological relation",
-            "First cousins"
-          ],
+          "options": ["No biological relation", "First cousins"],
           "risk_tag": "CONSANGUINEOUS_MARRIAGE"
         },
         {
@@ -113,12 +110,7 @@
           "id": "i130_status",
           "label": "Current status of Form I-130 Petition",
           "type": "select",
-          "options": [
-            "Not filed yet",
-            "Filed but pending",
-            "Approved",
-            "At NVC / NVC Processing"
-          ],
+          "options": ["Not filed yet", "Filed but pending", "Approved", "At NVC / NVC Processing"],
           "risk_tag": "I130_PROCESS_NOT_STARTED"
         }
       ]

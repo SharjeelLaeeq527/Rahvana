@@ -58,9 +58,7 @@ export function FloatingSidePanel({
         transition: "opacity 0.2s ease",
       }}
     >
-      <div className="overflow-y-auto scrollbar-hide flex-1 flex flex-col gap-3">
-        {children}
-      </div>
+      <div className="overflow-y-auto scrollbar-hide flex-1 flex flex-col gap-3">{children}</div>
     </aside>
   );
 }

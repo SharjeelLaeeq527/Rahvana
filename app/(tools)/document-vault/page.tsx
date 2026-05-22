@@ -55,12 +55,7 @@ import { Loader } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import Link from "next/link";
@@ -118,8 +113,7 @@ export default function DocumentVaultPage() {
     Object.entries(baseDocs).forEach(([category, docs]) => {
       const filteredDocs = docs.filter(
         (doc) =>
-          doc.name.toLowerCase().includes(query) ||
-          doc.description?.toLowerCase().includes(query),
+          doc.name.toLowerCase().includes(query) || doc.description?.toLowerCase().includes(query)
       );
       if (filteredDocs.length > 0) {
         filtered[category] = filteredDocs;
@@ -140,22 +134,18 @@ export default function DocumentVaultPage() {
       uploadedDocuments.some(
         (ud) =>
           ud.documentDefId === rd.id &&
-          (ud.status === "UPLOADED" || ud.status === "NEEDS_ATTENTION"),
-      ),
+          (ud.status === "UPLOADED" || ud.status === "NEEDS_ATTENTION")
+      )
     ).length;
 
     // A document is missing only if no version exists at all
     const missing = mandatoryDocs.filter(
-      (rd) => !uploadedDocuments.some((ud) => ud.documentDefId === rd.id),
+      (rd) => !uploadedDocuments.some((ud) => ud.documentDefId === rd.id)
     ).length;
 
-    const expiring = uploadedDocuments.filter(
-      (d) => d.status === "NEEDS_ATTENTION",
-    ).length;
+    const expiring = uploadedDocuments.filter((d) => d.status === "NEEDS_ATTENTION").length;
 
-    const expired = uploadedDocuments.filter(
-      (d) => d.status === "EXPIRED",
-    ).length;
+    const expired = uploadedDocuments.filter((d) => d.status === "EXPIRED").length;
 
     return {
       total,
@@ -167,9 +157,7 @@ export default function DocumentVaultPage() {
     };
   }, [uploadedDocuments, requiredDocuments]);
   const documentsByCategory = useMemo(() => {
-    return config
-      ? getDocumentsByCategory(config, true, uploadedDocuments)
-      : {};
+    return config ? getDocumentsByCategory(config, true, uploadedDocuments) : {};
   }, [config, uploadedDocuments]);
 
   // Get documents for special filters (required/optional)
@@ -199,7 +187,7 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.push(
-        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
       );
       return;
     }
@@ -220,8 +208,7 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     if (initialized && wizard.isLoaded && !hasShownWelcome) {
       const isEligibilityDone = wizard.state.completedSteps.has("step_1_1");
-      const isPersonalizationDone =
-        wizard.state.metadata?.docQuestionnaireCompleted === true;
+      const isPersonalizationDone = wizard.state.metadata?.docQuestionnaireCompleted === true;
 
       if (!isEligibilityDone || !isPersonalizationDone) {
         setWelcomeModalOpen(true);
@@ -303,10 +290,8 @@ export default function DocumentVaultPage() {
       const a = document.createElement("a");
       a.href = url;
       a.download =
-        response.headers
-          .get("content-disposition")
-          ?.split("filename=")[1]
-          ?.replace(/"/g, "") || "document";
+        response.headers.get("content-disposition")?.split("filename=")[1]?.replace(/"/g, "") ||
+        "document";
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -319,15 +304,12 @@ export default function DocumentVaultPage() {
     }
   };
 
-  const handleExportSingle = async (
-    documentId: string,
-    hasCompressed: boolean,
-  ) => {
+  const handleExportSingle = async (documentId: string, hasCompressed: boolean) => {
     try {
       toast.info(
         hasCompressed
           ? t("documentVaultPage.page.messages.preparingZip")
-          : t("documentVaultPage.page.messages.preparingExport"),
+          : t("documentVaultPage.page.messages.preparingExport")
       );
       const response = await fetch(`/api/documents/${documentId}/export`);
 
@@ -351,7 +333,7 @@ export default function DocumentVaultPage() {
       toast.success(
         hasCompressed
           ? t("documentVaultPage.page.messages.zipExported")
-          : t("documentVaultPage.page.messages.documentExported"),
+          : t("documentVaultPage.page.messages.documentExported")
       );
     } catch (error) {
       console.error("Export error:", error);
@@ -410,9 +392,7 @@ export default function DocumentVaultPage() {
   const handleExport = async () => {
     try {
       toast.info(t("documentVaultPage.page.messages.preparingExport"));
-      const response = await fetch(
-        "/api/documents/export?structureByCategory=true",
-      );
+      const response = await fetch("/api/documents/export?structureByCategory=true");
 
       if (!response.ok) {
         throw new Error("Export failed");
@@ -436,9 +416,7 @@ export default function DocumentVaultPage() {
   };
 
   const handleDeleteAll = async () => {
-    if (
-      !confirm(t("documentVaultPage.page.messages.deleteAllConfirmWarning"))
-    ) {
+    if (!confirm(t("documentVaultPage.page.messages.deleteAllConfirmWarning"))) {
       return;
     }
 
@@ -469,11 +447,11 @@ export default function DocumentVaultPage() {
       toast.success(
         t("documentVaultPage.page.messages.deletedAllSuccess").replace(
           "{{count}}",
-          deleted.toString(),
+          deleted.toString()
         ),
         {
           id: "delete-all",
-        },
+        }
       );
 
       // Reload data
@@ -509,9 +487,7 @@ export default function DocumentVaultPage() {
                       className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5"
                     >
                       {config?.visaCategory &&
-                        t(
-                          `documentVaultPage.visaCategories.${config.visaCategory}`,
-                        )}
+                        t(`documentVaultPage.visaCategories.${config.visaCategory}`)}
                     </Badge>
                     <span className="text-xs text-slate-500 font-medium">
                       {t("documentVaultPage.page.subtitle")}
@@ -639,11 +615,7 @@ export default function DocumentVaultPage() {
 
             {/* Right Side: Document Management Tabs */}
             <div className="lg:col-span-9">
-              <Tabs
-                defaultValue="required"
-                className="w-full"
-                onValueChange={setActiveTab}
-              >
+              <Tabs defaultValue="required" className="w-full" onValueChange={setActiveTab}>
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 xl:mb-8 gap-4 xl:gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto overflow-hidden">
                     <div className="w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0 -mb-2 sm:mb-0">
@@ -677,13 +649,8 @@ export default function DocumentVaultPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               {categories.slice(5).map((cat) => (
-                                <DropdownMenuItem
-                                  key={cat}
-                                  onClick={() => setActiveTab(cat)}
-                                >
-                                  {cat === "optional"
-                                    ? "Optional"
-                                    : getCategoryDisplayName(cat, t)}
+                                <DropdownMenuItem key={cat} onClick={() => setActiveTab(cat)}>
+                                  {cat === "optional" ? "Optional" : getCategoryDisplayName(cat, t)}
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuContent>
@@ -717,9 +684,7 @@ export default function DocumentVaultPage() {
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input
-                        placeholder={t(
-                          "documentVaultPage.page.searchPlaceholder",
-                        )}
+                        placeholder={t("documentVaultPage.page.searchPlaceholder")}
                         className="pl-10 h-11 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:ring-primary/20 w-full"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -750,8 +715,7 @@ export default function DocumentVaultPage() {
                         variant="outline"
                         className="font-bold text-primary border-primary/20 bg-primary/5"
                       >
-                        {t("documentVaultPage.page.foundPrefix")}{" "}
-                        {flatFilteredDocuments.length}{" "}
+                        {t("documentVaultPage.page.foundPrefix")} {flatFilteredDocuments.length}{" "}
                         {t("documentVaultPage.page.matchingDocuments")}
                       </Badge>
                     )}
@@ -769,19 +733,12 @@ export default function DocumentVaultPage() {
                                   <Info className="w-4 h-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent
-                                side="right"
-                                className="max-w-xs p-3"
-                              >
-                                <p className="font-bold mb-2">
-                                  Suggested Documents:
-                                </p>
+                              <TooltipContent side="right" className="max-w-xs p-3">
+                                <p className="font-bold mb-2">Suggested Documents:</p>
                                 <ul className="list-disc pl-4 space-y-1 text-xs">
-                                  {CATEGORY_SUGGESTIONS[activeTab]?.map(
-                                    (suggestion, i) => (
-                                      <li key={i}>{suggestion}</li>
-                                    ),
-                                  )}
+                                  {CATEGORY_SUGGESTIONS[activeTab]?.map((suggestion, i) => (
+                                    <li key={i}>{suggestion}</li>
+                                  ))}
                                 </ul>
                               </TooltipContent>
                             </Tooltip>
@@ -800,10 +757,7 @@ export default function DocumentVaultPage() {
                   </h2>
                 </div>
 
-                <TabsContent
-                  value={activeTab}
-                  className="mt-0 ring-offset-0 focus-visible:ring-0"
-                >
+                <TabsContent value={activeTab} className="mt-0 ring-offset-0 focus-visible:ring-0">
                   <div className="space-y-6 sm:space-y-10">
                     {searchQuery ? (
                       // Show flat list of search results when searching
@@ -811,8 +765,7 @@ export default function DocumentVaultPage() {
                         <div className="flex items-center gap-3">
                           <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
                           <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                            {t("documentVaultPage.page.foundPrefix")}{" "}
-                            {flatFilteredDocuments.length}{" "}
+                            {t("documentVaultPage.page.foundPrefix")} {flatFilteredDocuments.length}{" "}
                             {t("documentVaultPage.page.matchingDocuments")}
                           </h3>
                         </div>
@@ -822,48 +775,35 @@ export default function DocumentVaultPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                               {flatFilteredDocuments.map((doc) => {
                                 const uploadedDoc = uploadedDocuments.find(
-                                  (ud) => ud.documentDefId === doc.id,
+                                  (ud) => ud.documentDefId === doc.id
                                 );
                                 return (
                                   <DocumentCard
                                     key={doc.id}
                                     documentDef={doc}
                                     uploadedDoc={uploadedDoc}
-                                    onUpload={(replaceId) =>
-                                      openUploadModal(doc.id, replaceId)
-                                    }
+                                    onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
                                     onPreview={
-                                      uploadedDoc
-                                        ? () => handlePreview(uploadedDoc)
-                                        : undefined
+                                      uploadedDoc ? () => handlePreview(uploadedDoc) : undefined
                                     }
                                     onDownload={
-                                      uploadedDoc
-                                        ? () => handleDownload(uploadedDoc.id)
-                                        : undefined
+                                      uploadedDoc ? () => handleDownload(uploadedDoc.id) : undefined
                                     }
                                     onDelete={
-                                      uploadedDoc
-                                        ? () => handleDelete(uploadedDoc.id)
-                                        : undefined
+                                      uploadedDoc ? () => handleDelete(uploadedDoc.id) : undefined
                                     }
                                     onExport={
                                       uploadedDoc
                                         ? () =>
                                             handleExportSingle(
                                               uploadedDoc.id,
-                                              uploadedDoc.hasCompressedVersion ||
-                                                false,
+                                              uploadedDoc.hasCompressedVersion || false
                                             )
                                         : undefined
                                     }
                                     onOpenWizard={() => openWizard(doc.id)}
                                     onRename={(newName) =>
-                                      renameDynamicSlot(
-                                        doc.category,
-                                        doc.id,
-                                        newName,
-                                      )
+                                      renameDynamicSlot(doc.category, doc.id, newName)
                                     }
                                   />
                                 );
@@ -889,13 +829,9 @@ export default function DocumentVaultPage() {
                               {t("documentVaultPage.page.noDocumentsFound")}
                             </h3>
                             <p className="text-slate-500 max-w-xs mx-auto mt-2">
-                              {t(
-                                "documentVaultPage.page.noDocumentsDescPrefix",
-                              )}
+                              {t("documentVaultPage.page.noDocumentsDescPrefix")}
                               {searchQuery}
-                              {t(
-                                "documentVaultPage.page.noDocumentsDescSuffix",
-                              )}
+                              {t("documentVaultPage.page.noDocumentsDescSuffix")}
                             </p>
                             <Button
                               variant="link"
@@ -909,126 +845,105 @@ export default function DocumentVaultPage() {
                       </div>
                     ) : activeTab === "all" ? (
                       // Show all categories in 'all' tab when NOT searching
-                      Object.entries(documentsByCategory).map(
-                        ([category, docs]) => (
-                          <div key={category} className="space-y-4">
-                            <div className="flex items-center gap-3">
-                              <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
-                              <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
-                                {getCategoryDisplayName(category, t)}
-                              </h3>
-                              {DYNAMIC_CATEGORIES.includes(category) && (
-                                <div className="flex items-center gap-2">
-                                  {CATEGORY_SUGGESTIONS[category] &&
-                                    CATEGORY_SUGGESTIONS[category].length >
-                                      0 && (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
-                                          >
-                                            <Info className="w-3.5 h-3.5" />
-                                          </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent
-                                          side="right"
-                                          className="max-w-xs p-3"
+                      Object.entries(documentsByCategory).map(([category, docs]) => (
+                        <div key={category} className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
+                            <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
+                              {getCategoryDisplayName(category, t)}
+                            </h3>
+                            {DYNAMIC_CATEGORIES.includes(category) && (
+                              <div className="flex items-center gap-2">
+                                {CATEGORY_SUGGESTIONS[category] &&
+                                  CATEGORY_SUGGESTIONS[category].length > 0 && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
                                         >
-                                          <p className="font-bold mb-2 text-[11px]">
-                                            Suggested Documents:
-                                          </p>
-                                          <ul className="list-disc pl-4 space-y-1 text-[10px]">
-                                            {CATEGORY_SUGGESTIONS[
-                                              category
-                                            ]?.map((suggestion, i) => (
-                                              <li key={i}>{suggestion}</li>
-                                            ))}
-                                          </ul>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    )}
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => addDynamicSlot(category)}
-                                    className="h-7 px-2 gap-1 text-primary hover:bg-primary/10 font-bold text-[10px]"
-                                  >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    Add
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-
-                            {viewMode === "grid" ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-                                {docs.map((doc) => {
-                                  const uploadedDoc = uploadedDocuments.find(
-                                    (ud) => ud.documentDefId === doc.id,
-                                  );
-                                  return (
-                                    <DocumentCard
-                                      key={doc.id}
-                                      documentDef={doc}
-                                      uploadedDoc={uploadedDoc}
-                                      onUpload={(replaceId) =>
-                                        openUploadModal(doc.id, replaceId)
-                                      }
-                                      onPreview={
-                                        uploadedDoc
-                                          ? () => handlePreview(uploadedDoc)
-                                          : undefined
-                                      }
-                                      onDownload={
-                                        uploadedDoc
-                                          ? () => handleDownload(uploadedDoc.id)
-                                          : undefined
-                                      }
-                                      onDelete={
-                                        uploadedDoc
-                                          ? () => handleDelete(uploadedDoc.id)
-                                          : undefined
-                                      }
-                                      onExport={
-                                        uploadedDoc
-                                          ? () =>
-                                              handleExportSingle(
-                                                uploadedDoc.id,
-                                                uploadedDoc.hasCompressedVersion ||
-                                                  false,
-                                              )
-                                          : undefined
-                                      }
-                                      onOpenWizard={() => openWizard(doc.id)}
-                                      onRename={(newName) =>
-                                        renameDynamicSlot(
-                                          doc.category,
-                                          doc.id,
-                                          newName,
-                                        )
-                                      }
-                                    />
-                                  );
-                                })}
+                                          <Info className="w-3.5 h-3.5" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="right" className="max-w-xs p-3">
+                                        <p className="font-bold mb-2 text-[11px]">
+                                          Suggested Documents:
+                                        </p>
+                                        <ul className="list-disc pl-4 space-y-1 text-[10px]">
+                                          {CATEGORY_SUGGESTIONS[category]?.map((suggestion, i) => (
+                                            <li key={i}>{suggestion}</li>
+                                          ))}
+                                        </ul>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => addDynamicSlot(category)}
+                                  className="h-7 px-2 gap-1 text-primary hover:bg-primary/10 font-bold text-[10px]"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                  Add
+                                </Button>
                               </div>
-                            ) : (
-                              <DocumentTableView
-                                documents={docs}
-                                uploadedDocuments={uploadedDocuments}
-                                onUpload={openUploadModal}
-                                onPreview={handlePreview}
-                                onDownload={handleDownload}
-                                onDelete={handleDelete}
-                                onExport={handleExportSingle}
-                                onOpenWizard={openWizard}
-                                onRename={renameDynamicSlot}
-                              />
                             )}
                           </div>
-                        ),
-                      )
+
+                          {viewMode === "grid" ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                              {docs.map((doc) => {
+                                const uploadedDoc = uploadedDocuments.find(
+                                  (ud) => ud.documentDefId === doc.id
+                                );
+                                return (
+                                  <DocumentCard
+                                    key={doc.id}
+                                    documentDef={doc}
+                                    uploadedDoc={uploadedDoc}
+                                    onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
+                                    onPreview={
+                                      uploadedDoc ? () => handlePreview(uploadedDoc) : undefined
+                                    }
+                                    onDownload={
+                                      uploadedDoc ? () => handleDownload(uploadedDoc.id) : undefined
+                                    }
+                                    onDelete={
+                                      uploadedDoc ? () => handleDelete(uploadedDoc.id) : undefined
+                                    }
+                                    onExport={
+                                      uploadedDoc
+                                        ? () =>
+                                            handleExportSingle(
+                                              uploadedDoc.id,
+                                              uploadedDoc.hasCompressedVersion || false
+                                            )
+                                        : undefined
+                                    }
+                                    onOpenWizard={() => openWizard(doc.id)}
+                                    onRename={(newName) =>
+                                      renameDynamicSlot(doc.category, doc.id, newName)
+                                    }
+                                  />
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <DocumentTableView
+                              documents={docs}
+                              uploadedDocuments={uploadedDocuments}
+                              onUpload={openUploadModal}
+                              onPreview={handlePreview}
+                              onDownload={handleDownload}
+                              onDelete={handleDelete}
+                              onExport={handleExportSingle}
+                              onOpenWizard={openWizard}
+                              onRename={renameDynamicSlot}
+                            />
+                          )}
+                        </div>
+                      ))
                     ) : activeTab === "required" || activeTab === "optional" ? (
                       // Show required or optional documents when NOT searching
                       <div className="space-y-4">
@@ -1038,48 +953,35 @@ export default function DocumentVaultPage() {
                               activeTab as "required" | "optional"
                             ]?.map((doc) => {
                               const uploadedDoc = uploadedDocuments.find(
-                                (ud) => ud.documentDefId === doc.id,
+                                (ud) => ud.documentDefId === doc.id
                               );
                               return (
                                 <DocumentCard
                                   key={doc.id}
                                   documentDef={doc}
                                   uploadedDoc={uploadedDoc}
-                                  onUpload={(replaceId) =>
-                                    openUploadModal(doc.id, replaceId)
-                                  }
+                                  onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
                                   onPreview={
-                                    uploadedDoc
-                                      ? () => handlePreview(uploadedDoc)
-                                      : undefined
+                                    uploadedDoc ? () => handlePreview(uploadedDoc) : undefined
                                   }
                                   onDownload={
-                                    uploadedDoc
-                                      ? () => handleDownload(uploadedDoc.id)
-                                      : undefined
+                                    uploadedDoc ? () => handleDownload(uploadedDoc.id) : undefined
                                   }
                                   onDelete={
-                                    uploadedDoc
-                                      ? () => handleDelete(uploadedDoc.id)
-                                      : undefined
+                                    uploadedDoc ? () => handleDelete(uploadedDoc.id) : undefined
                                   }
                                   onExport={
                                     uploadedDoc
                                       ? () =>
                                           handleExportSingle(
                                             uploadedDoc.id,
-                                            uploadedDoc.hasCompressedVersion ||
-                                              false,
+                                            uploadedDoc.hasCompressedVersion || false
                                           )
                                       : undefined
                                   }
                                   onOpenWizard={() => openWizard(doc.id)}
                                   onRename={(newName) =>
-                                    renameDynamicSlot(
-                                      doc.category,
-                                      doc.id,
-                                      newName,
-                                    )
+                                    renameDynamicSlot(doc.category, doc.id, newName)
                                   }
                                 />
                               );
@@ -1110,7 +1012,7 @@ export default function DocumentVaultPage() {
                           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                             {documentsByCategory[activeTab]?.map((doc) => {
                               const uploadedDoc = uploadedDocuments.find(
-                                (ud) => ud.documentDefId === doc.id,
+                                (ud) => ud.documentDefId === doc.id
                               );
                               return (
                                 <DocumentCard
@@ -1119,37 +1021,26 @@ export default function DocumentVaultPage() {
                                   uploadedDoc={uploadedDoc}
                                   onUpload={() => openUploadModal(doc.id)}
                                   onPreview={
-                                    uploadedDoc
-                                      ? () => handlePreview(uploadedDoc)
-                                      : undefined
+                                    uploadedDoc ? () => handlePreview(uploadedDoc) : undefined
                                   }
                                   onDownload={
-                                    uploadedDoc
-                                      ? () => handleDownload(uploadedDoc.id)
-                                      : undefined
+                                    uploadedDoc ? () => handleDownload(uploadedDoc.id) : undefined
                                   }
                                   onDelete={
-                                    uploadedDoc
-                                      ? () => handleDelete(uploadedDoc.id)
-                                      : undefined
+                                    uploadedDoc ? () => handleDelete(uploadedDoc.id) : undefined
                                   }
                                   onExport={
                                     uploadedDoc
                                       ? () =>
                                           handleExportSingle(
                                             uploadedDoc.id,
-                                            uploadedDoc.hasCompressedVersion ||
-                                              false,
+                                            uploadedDoc.hasCompressedVersion || false
                                           )
                                       : undefined
                                   }
                                   onOpenWizard={() => openWizard(doc.id)}
                                   onRename={(newName) =>
-                                    renameDynamicSlot(
-                                      doc.category,
-                                      doc.id,
-                                      newName,
-                                    )
+                                    renameDynamicSlot(doc.category, doc.id, newName)
                                   }
                                 />
                               );
@@ -1191,11 +1082,7 @@ export default function DocumentVaultPage() {
               }}
             />
 
-            <DocumentWizard
-              open={wizardOpen}
-              onClose={closeWizard}
-              documentDef={selectedDoc}
-            />
+            <DocumentWizard open={wizardOpen} onClose={closeWizard} documentDef={selectedDoc} />
 
             {/* Testing Panel - only shows in development */}
             {/* <NotificationTestPanel /> */}
@@ -1239,10 +1126,9 @@ export default function DocumentVaultPage() {
                 Personalize Your Vault
               </h3>
               <p className="relative z-10 text-left text-slate-600 dark:text-slate-400 leading-relaxed text-[15px]">
-                Your document checklist is currently showing a standard list of
-                documents. To view the exact documents required for your
-                specific situation, please complete these steps in your Journey
-                roadmap:{" "}
+                Your document checklist is currently showing a standard list of documents. To view
+                the exact documents required for your specific situation, please complete these
+                steps in your Journey roadmap:{" "}
               </p>
 
               <ul className="font-bold text-primary mb-8 text-left">
@@ -1276,9 +1162,7 @@ export default function DocumentVaultPage() {
           open={deleteModalOpen}
           onOpenChange={setDeleteModalOpen}
           title="Delete Document?"
-          description={
-            "Are you sure you want to delete this document? This cannot be undone."
-          }
+          description={"Are you sure you want to delete this document? This cannot be undone."}
           confirmText="Delete"
           cancelText="Cancel"
           confirmVariant="danger"

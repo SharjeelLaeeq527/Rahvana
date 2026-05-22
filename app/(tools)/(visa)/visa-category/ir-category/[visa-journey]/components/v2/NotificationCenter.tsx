@@ -34,7 +34,7 @@ interface JourneyReminder {
 
 interface NotificationCenterProps {
   userId?: string;
-  journeyId?: string;          // real Supabase journey UUID
+  journeyId?: string; // real Supabase journey UUID
   trackingStatus?: Record<string, any>;
   onClose?: () => void;
 }
@@ -44,45 +44,49 @@ interface NotificationCenterProps {
 // ─────────────────────────────────────────────────────────────
 const PRIORITY_DOT: Record<string, string> = {
   critical: "bg-red-500",
-  high:     "bg-orange-400",
-  normal:   "bg-primary",
-  low:      "bg-slate-300",
+  high: "bg-orange-400",
+  normal: "bg-primary",
+  low: "bg-slate-300",
 };
 
 // ─────────────────────────────────────────────────────────────
 // Icon per reminder type
 // ─────────────────────────────────────────────────────────────
 function ReminderIcon({ type, priority }: { type: string; priority: string }) {
-  const cls = priority === "critical" ? "text-red-500"
-            : priority === "high"     ? "text-orange-400"
-            : "text-primary";
+  const cls =
+    priority === "critical"
+      ? "text-red-500"
+      : priority === "high"
+        ? "text-orange-400"
+        : "text-primary";
 
-  if (type === "ceac_status_update")      return <Bell       className={cls} size={16} />;
-  if (type === "appointment_approaching") return <Calendar   className={cls} size={16} />;
-  if (type === "missing_document")        return <AlertTriangle className={cls} size={16} />;
-  if (type === "receipt_not_captured")    return <Info       className={cls} size={16} />;
-  if (type === "nvc_fee_not_confirmed")   return <Clock      className={cls} size={16} />;
+  if (type === "ceac_status_update") return <Bell className={cls} size={16} />;
+  if (type === "appointment_approaching") return <Calendar className={cls} size={16} />;
+  if (type === "missing_document") return <AlertTriangle className={cls} size={16} />;
+  if (type === "receipt_not_captured") return <Info className={cls} size={16} />;
+  if (type === "nvc_fee_not_confirmed") return <Clock className={cls} size={16} />;
   return <Bell className={cls} size={16} />;
 }
 
 // ─────────────────────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────────────────────
-export default function NotificationCenter({
-  journeyId,
-  onClose,
-}: NotificationCenterProps) {
-  const [reminders, setReminders]   = useState<JourneyReminder[]>([]);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState<string | null>(null);
-  const [readIds, setReadIds]       = useState<Set<string>>(() => {
+export default function NotificationCenter({ journeyId, onClose }: NotificationCenterProps) {
+  const [reminders, setReminders] = useState<JourneyReminder[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [readIds, setReadIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem("rahvana_notif_read");
       return saved ? new Set(JSON.parse(saved)) : new Set<string>();
-    } catch { return new Set<string>(); }
+    } catch {
+      return new Set<string>();
+    }
   });
 
-  const [resolvedJourneyId, setResolvedJourneyId] = useState<string | null>(journeyId === "ir-1" ? null : (journeyId || null));
+  const [resolvedJourneyId, setResolvedJourneyId] = useState<string | null>(
+    journeyId === "ir-1" ? null : journeyId || null
+  );
 
   // ── Fetch from real API ──────────────────────────────────
   const fetchReminders = useCallback(async () => {
@@ -94,7 +98,9 @@ export default function NotificationCenter({
         if (listRes.ok) {
           const listData = await listRes.json();
           if (listData.success && listData.data && listData.data.length > 0) {
-            const active = listData.data.find((j: any) => j.journey.status === "in_progress") || listData.data[0];
+            const active =
+              listData.data.find((j: any) => j.journey.status === "in_progress") ||
+              listData.data[0];
             activeJourneyId = active.journey.id;
             setResolvedJourneyId(activeJourneyId);
           }
@@ -147,11 +153,12 @@ export default function NotificationCenter({
     }).catch(() => {});
   };
 
-
   const markOneRead = (id: string) => {
     setReadIds((prev) => {
       const next = new Set([...prev, id]);
-      try { localStorage.setItem("rahvana_notif_read", JSON.stringify([...next])); } catch {}
+      try {
+        localStorage.setItem("rahvana_notif_read", JSON.stringify([...next]));
+      } catch {}
       return next;
     });
   };
@@ -163,7 +170,6 @@ export default function NotificationCenter({
 
   return (
     <div className="flex flex-col h-full bg-white border-l border-[#d0e4f7] shadow-2xl w-[360px] animate-in slide-in-from-right duration-300">
-
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-[#d0e4f7]">
         <div className="flex items-center gap-2">
@@ -191,16 +197,18 @@ export default function NotificationCenter({
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-
         {/* Journey not synced to DB yet */}
         {noRealId && (
           <div className="flex flex-col items-center justify-center h-full p-10 text-center">
             <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
               <Bell size={24} className="text-slate-200" />
             </div>
-            <h3 className="text-[14px] font-bold text-[#0c1b33] mb-1">Notifications activate after sync</h3>
+            <h3 className="text-[14px] font-bold text-[#0c1b33] mb-1">
+              Notifications activate after sync
+            </h3>
             <p className="text-[12px] text-[#6b8097] leading-relaxed">
-              Complete a step to sync your journey to the server, then notifications will appear here.
+              Complete a step to sync your journey to the server, then notifications will appear
+              here.
             </p>
           </div>
         )}
@@ -216,7 +224,10 @@ export default function NotificationCenter({
         {!noRealId && !loading && error && (
           <div className="p-5 text-center">
             <p className="text-[12px] text-red-400">{error}</p>
-            <button onClick={fetchReminders} className="mt-2 text-[11px] text-primary font-bold hover:underline">
+            <button
+              onClick={fetchReminders}
+              className="mt-2 text-[11px] text-primary font-bold hover:underline"
+            >
               Try again
             </button>
           </div>
@@ -241,73 +252,83 @@ export default function NotificationCenter({
             {reminders.map((r) => {
               const isRead = readIds.has(r.id);
               return (
-              <div
-                key={r.id}
-                className={`p-5 transition-colors relative group ${
-                  !isRead
-                    ? r.priority === "critical" || r.priority === "high"
-                      ? "bg-orange-50"
-                      : "bg-[#f0f7ff]"
-                    : "bg-white hover:bg-slate-50"
-                }`}
-              >
-                {/* Left border — only when unread */}
-                {!isRead && (
-                  <div className={`absolute left-0 top-0 bottom-0 w-0.5 ${PRIORITY_DOT[r.priority] ?? "bg-primary"}`} />
-                )}
+                <div
+                  key={r.id}
+                  className={`p-5 transition-colors relative group ${
+                    !isRead
+                      ? r.priority === "critical" || r.priority === "high"
+                        ? "bg-orange-50"
+                        : "bg-[#f0f7ff]"
+                      : "bg-white hover:bg-slate-50"
+                  }`}
+                >
+                  {/* Left border — only when unread */}
+                  {!isRead && (
+                    <div
+                      className={`absolute left-0 top-0 bottom-0 w-0.5 ${PRIORITY_DOT[r.priority] ?? "bg-primary"}`}
+                    />
+                  )}
 
-                <div className="flex gap-3">
-                  <div className="mt-0.5 shrink-0">
-                    {!isRead
-                      ? <ReminderIcon type={r.reminder_type} priority={r.priority} />
-                      : <div className="w-4 h-4" />
-                    }
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`text-[13px] line-clamp-1 ${isRead ? "font-medium text-[#6b8097]" : "font-bold text-[#0c1b33]"}`}>
-                        {r.title}
-                      </span>
-                      <span className="text-[10px] text-[#6b8097] whitespace-nowrap ml-2">
-                        {new Date(r.created_at).toLocaleDateString("en-US", {
-                          month: "short", day: "numeric",
-                        })}
-                      </span>
+                  <div className="flex gap-3">
+                    <div className="mt-0.5 shrink-0">
+                      {!isRead ? (
+                        <ReminderIcon type={r.reminder_type} priority={r.priority} />
+                      ) : (
+                        <div className="w-4 h-4" />
+                      )}
                     </div>
-
-                    <p className={`text-[12px] leading-relaxed mb-3 line-clamp-3 ${isRead ? "text-[#6b8097]" : "text-[#3a4f63]"}`}>
-                      {r.body}
-                    </p>
-
-                    <div className="flex items-center gap-3">
-                      {r.action_label && r.action_url && (
-                        <a
-                          href={r.action_url}
-                          className="flex items-center gap-1 text-[11px] font-black text-primary hover:underline uppercase tracking-wider"
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span
+                          className={`text-[13px] line-clamp-1 ${isRead ? "font-medium text-[#6b8097]" : "font-bold text-[#0c1b33]"}`}
                         >
-                          {r.action_label}
-                          <ChevronRight size={12} strokeWidth={3} />
-                        </a>
-                      )}
-                      {!isRead && (
-                        <button
-                          onClick={() => markOneRead(r.id)}
-                          className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1"
-                        >
-                          <span className="w-3 h-3 rounded-full border border-primary flex items-center justify-center text-[7px]">✓</span>
-                          Mark as read
-                        </button>
-                      )}
-                      <button
-                        onClick={() => dismiss(r.id)}
-                        className="text-[10px] text-[#6b8097] hover:text-red-400 font-medium ml-auto"
+                          {r.title}
+                        </span>
+                        <span className="text-[10px] text-[#6b8097] whitespace-nowrap ml-2">
+                          {new Date(r.created_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+
+                      <p
+                        className={`text-[12px] leading-relaxed mb-3 line-clamp-3 ${isRead ? "text-[#6b8097]" : "text-[#3a4f63]"}`}
                       >
-                        Delete
-                      </button>
+                        {r.body}
+                      </p>
+
+                      <div className="flex items-center gap-3">
+                        {r.action_label && r.action_url && (
+                          <a
+                            href={r.action_url}
+                            className="flex items-center gap-1 text-[11px] font-black text-primary hover:underline uppercase tracking-wider"
+                          >
+                            {r.action_label}
+                            <ChevronRight size={12} strokeWidth={3} />
+                          </a>
+                        )}
+                        {!isRead && (
+                          <button
+                            onClick={() => markOneRead(r.id)}
+                            className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1"
+                          >
+                            <span className="w-3 h-3 rounded-full border border-primary flex items-center justify-center text-[7px]">
+                              ✓
+                            </span>
+                            Mark as read
+                          </button>
+                        )}
+                        <button
+                          onClick={() => dismiss(r.id)}
+                          className="text-[10px] text-[#6b8097] hover:text-red-400 font-medium ml-auto"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
               );
             })}
           </div>
@@ -325,7 +346,6 @@ export default function NotificationCenter({
           </button>
         </div>
       )}
-
     </div>
   );
 }

@@ -68,16 +68,14 @@ export async function POST(request: Request) {
       .getPublicUrl(filePath);
 
     // 7️⃣ Save metadata in DB
-    const { error: dbError } = await supabaseAdmin
-      .from("user_guide_files")
-      .insert({
-        user_guide_id: session.id,
-        user_id: user.id,
-        step_key: stepKey,
-        file_url: publicUrlData.publicUrl,
-        file_name: file.name,
-        mime_type: file.type,
-      });
+    const { error: dbError } = await supabaseAdmin.from("user_guide_files").insert({
+      user_guide_id: session.id,
+      user_id: user.id,
+      step_key: stepKey,
+      file_url: publicUrlData.publicUrl,
+      file_name: file.name,
+      mime_type: file.type,
+    });
 
     if (dbError) {
       console.error("DB insert error:", dbError);

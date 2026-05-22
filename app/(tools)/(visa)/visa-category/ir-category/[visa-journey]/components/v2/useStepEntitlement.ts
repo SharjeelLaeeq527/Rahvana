@@ -19,27 +19,21 @@ export function useStepEntitlement(stepKey: string) {
   const featureKey = STEP_PRIMARY_FEATURE[stepKey] ?? null;
 
   /** Whether the user can interact with the primary feature of this step. */
-  const canUse = useMemo(
-    () => (featureKey ? plan.canUse(featureKey) : true),
-    [featureKey, plan],
-  );
+  const canUse = useMemo(() => (featureKey ? plan.canUse(featureKey) : true), [featureKey, plan]);
 
   /** Whether the primary feature is locked (needs upgrade or purchase). */
   const isLocked = useMemo(
     () => (featureKey ? plan.isLocked(featureKey) : false),
-    [featureKey, plan],
+    [featureKey, plan]
   );
 
   /** Short explanation of why the feature is locked. */
-  const lockHint = useMemo(
-    () => (featureKey ? plan.lockHint(featureKey) : ""),
-    [featureKey, plan],
-  );
+  const lockHint = useMemo(() => (featureKey ? plan.lockHint(featureKey) : ""), [featureKey, plan]);
 
   /** CTA text for upgrading / purchasing. */
   const upgradeCTA = useMemo(
     () => (featureKey ? plan.upgradeCTA(featureKey) : null),
-    [featureKey, plan],
+    [featureKey, plan]
   );
 
   /** Opens the UpgradeModal for this step's feature. */
@@ -61,7 +55,7 @@ export function useStepEntitlement(stepKey: string) {
    *   onClick={() => { if (guard()) setIsTutorialOpen(true); }}
    */
   const guard = useCallback((): boolean => {
-    if (!featureKey) return true;        // No gating → always proceed
+    if (!featureKey) return true; // No gating → always proceed
     if (plan.canUse(featureKey)) return true;
     setUpgradeModalFeature(featureKey);
     return false;

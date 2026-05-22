@@ -86,7 +86,7 @@ export default function CountryAutocomplete({
         }
 
         const res = await fetch(
-          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(value)}&type=country&limit=5&apiKey=${GEOAPIFY_KEY}`,
+          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(value)}&type=country&limit=5&apiKey=${GEOAPIFY_KEY}`
         );
 
         if (!res.ok) {
@@ -98,13 +98,13 @@ export default function CountryAutocomplete({
       } catch (error) {
         console.warn(
           "Geoapify error (using fallback countries):",
-          error instanceof Error ? error.message : error,
+          error instanceof Error ? error.message : error
         );
 
         // Fallback: simple local filter
         const lowerValue = value.toLowerCase();
         const fallbackFeatures = COMMON_COUNTRIES.filter((c) =>
-          c.toLowerCase().includes(lowerValue),
+          c.toLowerCase().includes(lowerValue)
         ).map((c) => ({
           properties: {
             place_id: c,
@@ -117,7 +117,7 @@ export default function CountryAutocomplete({
 
       setLoading(false);
     },
-    [GEOAPIFY_KEY, setFormData, valueKey],
+    [GEOAPIFY_KEY, setFormData, valueKey]
   );
 
   const handleSelect = useCallback(
@@ -127,7 +127,7 @@ export default function CountryAutocomplete({
       setSuggestions([]);
       setHighlightedIndex(-1);
     },
-    [setFormData, valueKey],
+    [setFormData, valueKey]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -141,15 +141,11 @@ export default function CountryAutocomplete({
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : 0,
-        );
+        setHighlightedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
         break;
       case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev > 0 ? prev - 1 : suggestions.length - 1,
-        );
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
         break;
       case "Enter":
         e.preventDefault();
@@ -178,9 +174,7 @@ export default function CountryAutocomplete({
   return (
     <div className="relative">
       {!hideLabel && (
-        <label className="text-base text-muted-foreground mb-1 block">
-          Country of Residence
-        </label>
+        <label className="text-base text-muted-foreground mb-1 block">Country of Residence</label>
       )}
 
       <input

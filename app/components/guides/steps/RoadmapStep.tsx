@@ -32,11 +32,7 @@ interface RoadmapStepProps {
   data?: RoadmapData;
 }
 
-const RoadmapStep = ({
-  checkedDocuments,
-  onToggleDocument,
-  data,
-}: RoadmapStepProps) => {
+const RoadmapStep = ({ checkedDocuments, onToggleDocument, data }: RoadmapStepProps) => {
   const { t, isUrdu } = useLanguage();
   const title = data?.title || t("wizard.common.personalizedRoadmap");
   // const estimatedTimeline = data?.estimated_timeline || "";
@@ -103,9 +99,7 @@ const RoadmapStep = ({
       className={isUrdu ? "font-urdu-body" : ""}
     >
       {/* Heading */}
-      <h2 className="text-[1.75rem] font-extrabold text-[hsl(220_20%_10%)] mb-2">
-        {title}
-      </h2>
+      <h2 className="text-[1.75rem] font-extrabold text-[hsl(220_20%_10%)] mb-2">{title}</h2>
 
       {/* Flashcard Timeline */}
       <div className="mb-8">
@@ -162,8 +156,8 @@ const RoadmapStep = ({
           onClick={() => setShowDocuments(!showDocuments)}
         >
           <h3 className="text-[1.15rem] font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2">
-            {t("wizard.common.requiredDocs")} ({checkedDocuments.length}/
-            {documentsChecklist.length})
+            {t("wizard.common.requiredDocs")} ({checkedDocuments.length}/{documentsChecklist.length}
+            )
             <ChevronDown
               className={`w-5 h-5 transition-transform duration-300 ${
                 showDocuments ? "rotate-180" : ""
@@ -211,9 +205,7 @@ const RoadmapStep = ({
                             : "bg-white border-2 border-slate-300"
                         }`}
                       >
-                        {isChecked && (
-                          <Check className="w-3.5 h-3.5 text-white" />
-                        )}
+                        {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
                       </div>
 
                       <div className={isUrdu ? "font-urdu-body" : ""}>
@@ -275,12 +267,9 @@ const RoadmapStep = ({
                     <div className="flex justify-between items-center mb-4">
                       <div>
                         <h4 className="text-lg font-bold text-primary">
-                          {t("wizard.common.phase")} {activePhase.id}:{" "}
-                          {activePhase.title}
+                          {t("wizard.common.phase")} {activePhase.id}: {activePhase.title}
                         </h4>
-                        <p className="text-sm text-slate-500 mt-1">
-                          {activePhase.duration}
-                        </p>
+                        <p className="text-sm text-slate-500 mt-1">{activePhase.duration}</p>
                       </div>
                       <button
                         onClick={() => setActivePhase(null)}
@@ -292,18 +281,14 @@ const RoadmapStep = ({
 
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                       <ul className="space-y-3">
-                        {getBulletPoints(activePhase.description).map(
-                          (point, index) => (
-                            <li key={index} className="flex gap-3">
-                              <span className="text-primary font-bold shrink-0">
-                                •
-                              </span>
-                              <span className="text-slate-700 text-sm leading-relaxed">
-                                {renderTextWithLinks(point)}
-                              </span>
-                            </li>
-                          ),
-                        )}
+                        {getBulletPoints(activePhase.description).map((point, index) => (
+                          <li key={index} className="flex gap-3">
+                            <span className="text-primary font-bold shrink-0">•</span>
+                            <span className="text-slate-700 text-sm leading-relaxed">
+                              {renderTextWithLinks(point)}
+                            </span>
+                          </li>
+                        ))}
                       </ul>
                     </div>
 
@@ -319,7 +304,7 @@ const RoadmapStep = ({
                 </>
               )}
             </AnimatePresence>,
-            document.body,
+            document.body
           )
         : null}
     </motion.div>
@@ -432,9 +417,7 @@ const TimelinePhases = ({
                       className="absolute inset-0 rounded-full bg-current opacity-30 animate-ping z-0 pointer-events-none"
                       style={{
                         color:
-                          type === t("wizard.common.onsiteApplication")
-                            ? "#0d7377"
-                            : "#0d47a1",
+                          type === t("wizard.common.onsiteApplication") ? "#0d7377" : "#0d47a1",
                       }}
                     />
                   )}

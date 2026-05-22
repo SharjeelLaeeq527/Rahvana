@@ -4,11 +4,11 @@
  * and properly syncs with profile data
  */
 
-import { useState, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
-import { useAuth } from '@/app/context/AuthContext';
-import { MasterProfile } from '@/types/profile';
-import { autoFillForm } from './mapper';
+import { useState, useEffect } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import { useAuth } from "@/app/context/AuthContext";
+import { MasterProfile } from "@/types/profile";
+import { autoFillForm } from "./mapper";
 
 export function useAutoFill<T extends Record<string, unknown>>(
   formStructure: T
@@ -42,13 +42,13 @@ export function useAutoFill<T extends Record<string, unknown>>(
 
         // Fetch user profile
         const { data, error } = await supabase
-          .from('user_profiles')
-          .select('profile_details')
-          .eq('id', user.id)
+          .from("user_profiles")
+          .select("profile_details")
+          .eq("id", user.id)
           .single();
 
         if (error) {
-          console.error('Error fetching profile for autofill:', error);
+          console.error("Error fetching profile for autofill:", error);
           setAutoFilledData(formStructure);
           setProfile(null);
           return;
@@ -67,7 +67,7 @@ export function useAutoFill<T extends Record<string, unknown>>(
           setProfile(null);
         }
       } catch (err) {
-        console.error('Unexpected error in useAutoFill:', err);
+        console.error("Unexpected error in useAutoFill:", err);
         setAutoFilledData(formStructure);
         setProfile(null);
       } finally {

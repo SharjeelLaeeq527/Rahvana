@@ -12,18 +12,14 @@ const CaseTypeStep = ({
 }: CaseTypeStepProps) => (
   <div className="space-y-8 mt-10">
     <div className="text-center mb-8">
-      <h2 className="text-3xl font-bold text-slate-900 mb-3">
-        Select Case Type
-      </h2>
+      <h2 className="text-3xl font-bold text-slate-900 mb-3">Select Case Type</h2>
       <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
         Please select the type of visa case you want to assess.
       </p>
       {isAuthenticated && (
         <div className="mt-4">
           <button
-            onClick={() =>
-              (window.location.href = "/visa-case-strength-checker/my-cases")
-            }
+            onClick={() => (window.location.href = "/visa-case-strength-checker/my-cases")}
             suppressHydrationWarning
             className="text-teal-600 hover:text-teal-700 hover:underline text-base font-medium cursor-pointer"
           >
@@ -63,12 +59,8 @@ const CaseTypeStep = ({
             />
           </svg>
         </div>
-        <h3 className="font-bold text-lg md:text-xl mb-2 text-foreground">
-          Spouse Visa
-        </h3>
-        <p className="text-base text-muted-foreground">
-          IR-1 / CR-1 – Spouse of U.S. Citizen
-        </p>
+        <h3 className="font-bold text-lg md:text-xl mb-2 text-foreground">Spouse Visa</h3>
+        <p className="text-base text-muted-foreground">IR-1 / CR-1 – Spouse of U.S. Citizen</p>
       </button>
     </div>
 

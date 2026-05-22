@@ -273,19 +273,13 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
 
   const allItems = getHhDocItems(hhCount, hhRelationships);
   const total = allItems.length;
-  const reviewed = allItems.filter(
-    (item: any) => hhDocsStatus[item.id] === "reviewed",
-  ).length;
+  const reviewed = allItems.filter((item: any) => hhDocsStatus[item.id] === "reviewed").length;
   const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
 
   const renderHhDocCard = (item: any) => {
     const st = hhDocsStatus[item.id] || "not-started";
     const stLabel =
-      st === "reviewed"
-        ? "\u2713 Reviewed"
-        : st === "in-progress"
-          ? "In progress"
-          : "Open guide";
+      st === "reviewed" ? "\u2713 Reviewed" : st === "in-progress" ? "In progress" : "Open guide";
 
     return (
       <div
@@ -319,9 +313,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
             {item.title}
           </div>
-          <div className="text-[12px] text-[#6b8097] leading-tight">
-            {item.sub}
-          </div>
+          <div className="text-[12px] text-[#6b8097] leading-tight">{item.sub}</div>
           <div className="flex gap-[5px] mt-[6px] flex-wrap">
             {item.tags.map((tag: any, idx: number) => {
               const tagMap: Record<string, string> = {
@@ -402,10 +394,9 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
             Added in CEAC, no proof checklist
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A joint sponsor is an independent U.S. citizen or LPR who sponsors
-            separately. Added through the CEAC sponsorship flow \u2014{" "}
-            <strong>no relationship-proof documents</strong> are typically
-            required from them.
+            A joint sponsor is an independent U.S. citizen or LPR who sponsors separately. Added
+            through the CEAC sponsorship flow \u2014{" "}
+            <strong>no relationship-proof documents</strong> are typically required from them.
           </div>
         </div>
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
@@ -416,10 +407,9 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
             Added in CEAC + relationship proof required
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A household member&apos;s income is used alongside the
-            petitioner&apos;s. Added through CEAC \u2014 and also requires{" "}
-            <strong>relationship-proof documentation</strong> showing their
-            connection to the sponsoring household.
+            A household member&apos;s income is used alongside the petitioner&apos;s. Added through
+            CEAC \u2014 and also requires <strong>relationship-proof documentation</strong> showing
+            their connection to the sponsoring household.
           </div>
         </div>
       </div>
@@ -454,9 +444,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
                 className="bg-white/6 border border-white/10 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
               >
                 <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5px]" />
-                <div className="text-[13px] text-white/55 leading-tight">
-                  {cue}
-                </div>
+                <div className="text-[13px] text-white/55 leading-tight">{cue}</div>
               </div>
             ))}
           </div>
@@ -487,16 +475,12 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
                   key={card.id}
                   onClick={() => {
                     if (!stepEntitlement.guard()) return;
-                    const pathMap: Record<
-                      string,
-                      "household_member" | "joint_sponsor"
-                    > = {
+                    const pathMap: Record<string, "household_member" | "joint_sponsor"> = {
                       "add-household-member": "household_member",
                       "add-joint-sponsor": "joint_sponsor",
                     };
                     setTutorialPath(
-                      pathMap[card.id] ||
-                        (card.id as "household_member" | "joint_sponsor"),
+                      pathMap[card.id] || (card.id as "household_member" | "joint_sponsor")
                     );
                     setTutorialIdx(0);
                     setIsTutorialOpen(true);
@@ -505,19 +489,11 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
                 >
                   <div className="flex items-center gap-[10px] mb-[12px]">
                     <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                      <Book
-                        size={18}
-                        className="text-[#4a2d8a]"
-                        strokeWidth={1.7}
-                      />
+                      <Book size={18} className="text-[#4a2d8a]" strokeWidth={1.7} />
                     </div>
                   </div>
-                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                    {card.title}
-                  </h3>
-                  <p className="text-[12px] text-[#6b8097] leading-normal mb-3">
-                    {card.subtitle}
-                  </p>
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">{card.title}</h3>
+                  <p className="text-[12px] text-[#6b8097] leading-normal mb-3">{card.subtitle}</p>
                   <div className="flex items-center gap-1 mt-auto text-[12px] font-semibold text-primary">
                     <span>View guide</span>
                     <ArrowRight size={11} strokeWidth={2} />
@@ -582,10 +558,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
               {Array.from({ length: hhCount }).map((_, idx) => {
                 const num = idx + 1;
                 return (
-                  <div
-                    key={num}
-                    className="flex flex-col sm:flex-row sm:items-center gap-2"
-                  >
+                  <div key={num} className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
                       Household Member {num}
                     </span>
@@ -625,9 +598,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
               Joint Sponsors
             </div>
             <div className="text-[14px] font-semibold text-white/90">
-              {jsCount === 0
-                ? "None"
-                : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
+              {jsCount === 0 ? "None" : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
             </div>
             {jsCount > 0 && (
               <div className="text-[11px] text-white/50 mt-0.5">
@@ -640,9 +611,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
               Household Members
             </div>
             <div className="text-[14px] font-semibold text-white/90">
-              {hhCount === 0
-                ? "None"
-                : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
+              {hhCount === 0 ? "None" : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
             </div>
             {hhCount > 0 && (
               <div className="text-[11px] text-white/50 mt-0.5">
@@ -705,8 +674,8 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
             No relationship-proof checklist needed
           </div>
           <div className="text-[13px] text-[#6b8097]">
-            Joint sponsors do not require relationship documentation. Your
-            I-864 forms are the primary requirement \u2014 see Step 5 for those.
+            Joint sponsors do not require relationship documentation. Your I-864 forms are the
+            primary requirement \u2014 see Step 5 for those.
           </div>
         </div>
       ) : (
@@ -715,8 +684,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
             Set your scenario above
           </div>
           <div className="text-[13px] text-[#6b8097]">
-            Select the number of joint sponsors and household members to see
-            the relevant checklist.
+            Select the number of joint sponsors and household members to see the relevant checklist.
           </div>
         </div>
       )}

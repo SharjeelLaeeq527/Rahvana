@@ -15,7 +15,10 @@ interface CategorySelectionStepProps {
 }
 
 const getThemeColor = (themeColor: string) => {
-  const colorMap: Record<string, { bg: string; text: string; border: string; hover: string; ring: string }> = {
+  const colorMap: Record<
+    string,
+    { bg: string; text: string; border: string; hover: string; ring: string }
+  > = {
     teal: {
       bg: "bg-teal-100",
       text: "text-teal-800",
@@ -90,9 +93,7 @@ export function CategorySelectionStep({
   return (
     <div className="space-y-8 mx-2">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-3">
-          Select Your Visa Category
-        </h2>
+        <h2 className="text-3xl font-bold text-foreground mb-3">Select Your Visa Category</h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           Choose the visa type that best matches your immigration case
         </p>
@@ -133,15 +134,13 @@ export function CategorySelectionStep({
               }`}
               onClick={() => onSelectCategory(category)}
             >
-              <div className={`mx-auto ${themeColor.bg} ${themeColor.text} w-16 h-16 rounded-full flex items-center justify-center mb-4`}>
+              <div
+                className={`mx-auto ${themeColor.bg} ${themeColor.text} w-16 h-16 rounded-full flex items-center justify-center mb-4`}
+              >
                 {getIcon(category.ui.icon)}
               </div>
-              <h3 className="font-bold text-xl mb-2 text-foreground">
-                {category.displayName}
-              </h3>
-              <p className="text-base text-muted-foreground">
-                {category.description}
-              </p>
+              <h3 className="font-bold text-xl mb-2 text-foreground">{category.displayName}</h3>
+              <p className="text-base text-muted-foreground">{category.description}</p>
             </button>
           );
         })}

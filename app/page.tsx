@@ -28,11 +28,7 @@ import { AuthRequiredModal } from "./components/shared/AuthRequiredModal";
 import { MfaPromptModal } from "./components/shared/MFAPromptModal";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import { useLanguage } from "@/app/context/LanguageContext";
-import {
-  FAQS,
-  heroAnnotationFont,
-  heroAnnotations,
-} from "@/data/home-page-data";
+import { FAQS, heroAnnotationFont, heroAnnotations } from "@/data/home-page-data";
 import { Loader } from "@/components/ui/spinner";
 import {
   RealDashboardScene,
@@ -64,7 +60,7 @@ const renderWithAbbr = (text: string) => {
 };
 
 const ALL_SERVICES = NAV_DATA.services.tabs.flatMap((tab) =>
-  tab.items ? tab.items.map((item) => ({ ...item, category: tab.label })) : [],
+  tab.items ? tab.items.map((item) => ({ ...item, category: tab.label })) : []
 );
 
 const LiveBackground = () => {
@@ -163,11 +159,7 @@ const LiveBackground = () => {
           style={{ width: "360px", height: "360px" }}
         >
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 -rotate-90">
-            <Icons.Plane
-              className="h-3.5 w-3.5 sm:h-5 sm:w-5"
-              color="#cdadcc"
-              opacity={0.5}
-            />
+            <Icons.Plane className="h-3.5 w-3.5 sm:h-5 sm:w-5" color="#cdadcc" opacity={0.5} />
           </div>
         </BannerMotion.div>
       </BannerMotion.div>
@@ -181,11 +173,7 @@ const LiveBackground = () => {
         animate={{ y: [0, -20, 0], rotate: [-5, 5, -5] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <Icons.FileText
-          className="h-4 w-4 sm:h-7 sm:w-7"
-          color="#cdadcc"
-          strokeWidth={1.5}
-        />
+        <Icons.FileText className="h-4 w-4 sm:h-7 sm:w-7" color="#cdadcc" strokeWidth={1.5} />
       </BannerMotion.div>
 
       <BannerMotion.div
@@ -202,11 +190,7 @@ const LiveBackground = () => {
           delay: 1,
         }}
       >
-        <Icons.MessagesSquare
-          className="h-4 w-4 sm:h-7 sm:w-7"
-          color="#db8090"
-          strokeWidth={1.5}
-        />
+        <Icons.MessagesSquare className="h-4 w-4 sm:h-7 sm:w-7" color="#db8090" strokeWidth={1.5} />
       </BannerMotion.div>
 
       <BannerMotion.div
@@ -223,11 +207,7 @@ const LiveBackground = () => {
           delay: 0.5,
         }}
       >
-        <Icons.MapPin
-          className="h-4 w-4 sm:h-6 sm:w-6"
-          color="#afdbdb"
-          strokeWidth={1.5}
-        />
+        <Icons.MapPin className="h-4 w-4 sm:h-6 sm:w-6" color="#afdbdb" strokeWidth={1.5} />
       </BannerMotion.div>
     </div>
   );
@@ -339,9 +319,7 @@ function HomePageContent() {
     if (section === "contact") {
       setActiveSection("home");
       setTimeout(() => {
-        document
-          .getElementById("contact")
-          ?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
       return;
     }
@@ -376,8 +354,7 @@ function HomePageContent() {
 
       if (
         !data.mfa_enabled &&
-        (!data.mfa_prompt_dismissed_at ||
-          daysSince(data.mfa_prompt_dismissed_at) >= 7)
+        (!data.mfa_prompt_dismissed_at || daysSince(data.mfa_prompt_dismissed_at) >= 7)
       ) {
         setShowMfaPrompt(true);
       }
@@ -475,10 +452,9 @@ function HomePageContent() {
                     <div className="px-1">
                       <p className="page-description text-left text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)]">
                         <span className="">
-                          Rahvana gives you a structured step-by-step IR-1
-                          roadmap from petition filing to interview readiness
-                          with guided steps, document organization, progress
-                          tracking, and focused tools when you need them.
+                          Rahvana gives you a structured step-by-step IR-1 roadmap from petition
+                          filing to interview readiness with guided steps, document organization,
+                          progress tracking, and focused tools when you need them.
                         </span>
                       </p>
                     </div>
@@ -504,13 +480,7 @@ function HomePageContent() {
                       fill="none"
                     >
                       <defs>
-                        <filter
-                          id="heroConnectorGlow"
-                          x="-40%"
-                          y="-80%"
-                          width="180%"
-                          height="260%"
-                        >
+                        <filter id="heroConnectorGlow" x="-40%" y="-80%" width="180%" height="260%">
                           <feGaussianBlur stdDeviation="4" result="blur" />
                           <feMerge>
                             <feMergeNode in="blur" />
@@ -684,10 +654,9 @@ function HomePageContent() {
                 <div className="mx-auto flex w-full max-w-[760px] flex-col gap-5">
                   <p className="text-base leading-7 text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] sm:text-lg">
                     <span className="block">
-                      Rahvana gives you a structured step-by-step IR-1 roadmap
-                      from petition filing to interview readiness with guided
-                      steps, document organization, progress tracking, and
-                      focused tools when you need them.
+                      Rahvana gives you a structured step-by-step IR-1 roadmap from petition filing
+                      to interview readiness with guided steps, document organization, progress
+                      tracking, and focused tools when you need them.
                     </span>
                   </p>
                   <div className="flex flex-col gap-3 sm:flex-row">
@@ -711,9 +680,7 @@ function HomePageContent() {
 
             <JourneyConsultationBand>
               <TwoWaysScene />
-              <ConsultationBanner
-                onConsultationClick={handleConsultationClick}
-              />
+              <ConsultationBanner onConsultationClick={handleConsultationClick} />
 
               {/* TESTIMONIALS (moved from About page) */}
               <section className="py-24 px-8 md:px-20 text-center">
@@ -724,9 +691,7 @@ function HomePageContent() {
                 </div>
                 <h2 className="font-serif font-bold text-3xl md:text-5xl text-[#121e2e] mb-14 max-w-4xl mx-auto leading-tight">
                   Words from people{" "}
-                  <em className="italic text-[#0d7a75] font-normal">
-                    who&apos;ve been there.
-                  </em>
+                  <em className="italic text-[#0d7a75] font-normal">who&apos;ve been there.</em>
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -762,9 +727,7 @@ function HomePageContent() {
                         <strong className="block text-[#121e2e] font-semibold">
                           {item.author}
                         </strong>
-                        <span className="text-xs text-gray-500">
-                          {item.role}
-                        </span>
+                        <span className="text-xs text-gray-500">{item.role}</span>
                       </div>
                     </div>
                   ))}
@@ -867,9 +830,7 @@ function HomePageContent() {
           </div>
         )}
 
-        {activeSection === "journeys" && (
-          <VisaCategorySection onNavigate={handleNavigate} />
-        )}
+        {activeSection === "journeys" && <VisaCategorySection onNavigate={handleNavigate} />}
 
         {activeSection === "ir1-journey" && (
           <IR1JourneyDetail
@@ -904,12 +865,7 @@ function HomePageContent() {
         />
       )}
 
-      {showComingSoon && (
-        <ComingSoonModal
-          open={showComingSoon}
-          onOpenChange={setShowComingSoon}
-        />
-      )}
+      {showComingSoon && <ComingSoonModal open={showComingSoon} onOpenChange={setShowComingSoon} />}
     </div>
   );
 }

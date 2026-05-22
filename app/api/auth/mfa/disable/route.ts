@@ -19,20 +19,15 @@ export async function POST(req: NextRequest) {
     const { factorId, code } = body;
 
     if (!factorId || !code) {
-      return NextResponse.json(
-        { error: "Missing factorId or code" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing factorId or code" }, { status: 400 });
     }
 
     // Verify OTP again
-    const { data: challenge, error: challengeError } =
-      await supabase.auth.mfa.challenge({ factorId });
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+      factorId,
+    });
     if (challengeError || !challenge) {
-      return NextResponse.json(
-        { error: "Failed to initiate MFA challenge" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Failed to initiate MFA challenge" }, { status: 400 });
     }
 
     const { error: verifyError } = await supabase.auth.mfa.verify({
@@ -42,30 +37,23 @@ export async function POST(req: NextRequest) {
     });
 
     if (verifyError) {
-      return NextResponse.json(
-        { error: "Invalid authentication code" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid authentication code" }, { status: 400 });
     }
 
     // Fetch all MFA factors
-    const { data: factors, error: factorsError } =
-      await supabase.auth.mfa.listFactors();
+    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
     if (factorsError) {
-      return NextResponse.json(
-        { error: "Failed to fetch MFA factors" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch MFA factors" }, { status: 500 });
     }
 
     // Unenroll all verified totp factors
     const verifiedFactors = factors?.totp?.filter(
-      (factor: { status: string }) => factor.status === "verified",
+      (factor: { status: string }) => factor.status === "verified"
     );
     if (!verifiedFactors || verifiedFactors.length === 0) {
       return NextResponse.json(
         { error: "No verified TOTP factors found to disable" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -75,10 +63,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (unenrollError) {
-        return NextResponse.json(
-          { error: "Failed to disable MFA" },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: "Failed to disable MFA" }, { status: 500 });
       }
     }
 
@@ -106,16 +91,21 @@ export async function POST(req: NextRequest) {
     // Send MFA disabled notification email
     try {
       console.log("Attempting to send MFA disabled email to:", session.user.email);
-      console.log("Environment variables check - RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY, "EMAIL_FROM:", process.env.EMAIL_FROM);
-      
+      console.log(
+        "Environment variables check - RESEND_API_KEY exists:",
+        !!process.env.RESEND_API_KEY,
+        "EMAIL_FROM:",
+        process.env.EMAIL_FROM
+      );
+
       const emailResult = await sendEmail({
         to: session.user.email!,
         subject: "Two-Factor Authentication Disabled - Rahvana",
         html: getMFADisabledEmailHtml(),
       });
-      
+
       console.log("Email send result:", emailResult);
-      
+
       if (!emailResult.success) {
         console.error("MFA disabled email failed to send:", emailResult.error);
       } else {
@@ -132,9 +122,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Disable MFA error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

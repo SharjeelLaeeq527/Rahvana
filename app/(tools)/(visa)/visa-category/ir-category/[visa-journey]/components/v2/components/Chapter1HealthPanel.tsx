@@ -46,7 +46,7 @@ export function Chapter1HealthPanel({
   const checks = runStepChecks(
     sId,
     { state, uploadedDocuments, eligibilityAnswers },
-    checkerRegistry,
+    checkerRegistry
   );
 
   if (checks.length === 0) return null;

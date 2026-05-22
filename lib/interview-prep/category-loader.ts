@@ -21,12 +21,7 @@ class CategoryLoaderService {
 
   // Base path resolver
   private getCategoryPath(slug: string) {
-    return path.join(
-      process.cwd(),
-      "data",
-      "interview-categories",
-      slug
-    );
+    return path.join(process.cwd(), "data", "interview-categories", slug);
   }
 
   // Generic JSON reader
@@ -55,15 +50,9 @@ class CategoryLoaderService {
 
       // Parallel load via FS
       const [config, questionnaire, questionBank] = await Promise.all([
-        this.readJsonFile<InterviewCategoryConfig>(
-          path.join(basePath, "config.json")
-        ),
-        this.readJsonFile<DynamicQuestionnaire>(
-          path.join(basePath, "questionnaire.json")
-        ),
-        this.readJsonFile<QuestionBank>(
-          path.join(basePath, "question-bank.json")
-        ),
+        this.readJsonFile<InterviewCategoryConfig>(path.join(basePath, "config.json")),
+        this.readJsonFile<DynamicQuestionnaire>(path.join(basePath, "questionnaire.json")),
+        this.readJsonFile<QuestionBank>(path.join(basePath, "question-bank.json")),
       ]);
 
       const categoryData = { config, questionnaire, questionBank };
@@ -94,9 +83,7 @@ class CategoryLoaderService {
       // "it-student",
     ];
 
-    const results = await Promise.allSettled(
-      slugs.map((slug) => this.loadCategory(slug))
-    );
+    const results = await Promise.allSettled(slugs.map((slug) => this.loadCategory(slug)));
 
     let categories = results
       .filter((r): r is PromiseFulfilledResult<CategoryData> => r.status === "fulfilled")

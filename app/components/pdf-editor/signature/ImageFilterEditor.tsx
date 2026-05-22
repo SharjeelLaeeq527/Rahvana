@@ -1,69 +1,68 @@
 // C:\Users\HP\Desktop\arachnie\Arachnie\app\components\signature-tool\ImageFilterEditor.tsx
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect, useRef } from "react"
-import NextImage from "next/image"
-import { SignatureImageProcessor } from "@/lib/imageProcessor"
-
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
+import NextImage from "next/image";
+import { SignatureImageProcessor } from "@/lib/imageProcessor";
 
 type Props = {
-  imageSrc: string
-  onDone: (dataURL: string) => void
-  onCancel: () => void
-}
+  imageSrc: string;
+  onDone: (dataURL: string) => void;
+  onCancel: () => void;
+};
 
 interface CropBox {
-  x: number
-  y: number
-  width: number
-  height: number
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export default function ImageFilterEditor({ imageSrc, onDone, onCancel }: Props) {
-  const [brightness] = useState(100)
-  const [contrast] = useState(150)
-  const [processedImage, setProcessedImage] = useState<string | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [brightness] = useState(100);
+  const [contrast] = useState(150);
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const [cropBox, setCropBox] = useState<CropBox>({ x: 0, y: 0, width: 100, height: 100 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragType, setDragType] = useState<"move" | "nw" | "ne" | "sw" | "se" | null>(null)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [cropBox, setCropBox] = useState<CropBox>({ x: 0, y: 0, width: 100, height: 100 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragType, setDragType] = useState<"move" | "nw" | "ne" | "sw" | "se" | null>(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  const previewRef = useRef<HTMLDivElement>(null)
-  const imageRef = useRef<HTMLImageElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   // Auto reprocess
   useEffect(() => {
-    processImage()
-  }, )
+    processImage();
+  });
 
   // Auto detect signature bounds
   useEffect(() => {
-    if (processedImage && imageRef.current) detectSignatureBounds()
-  }, )
+    if (processedImage && imageRef.current) detectSignatureBounds();
+  });
 
   const processImage = async () => {
-    setIsProcessing(true)
+    setIsProcessing(true);
     try {
-      const img = new Image()
-      img.crossOrigin = "anonymous"
-      img.src = imageSrc
-      await img.decode()
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = imageSrc;
+      await img.decode();
 
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d", { willReadFrequently: true })
-      if (!ctx) return
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return;
 
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`
-      ctx.drawImage(img, 0, 0)
-      ctx.filter = "none"
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+      ctx.drawImage(img, 0, 0);
+      ctx.filter = "none";
 
-      const filtered = canvas.toDataURL("image/png")
-      const processor = new SignatureImageProcessor()
+      const filtered = canvas.toDataURL("image/png");
+      const processor = new SignatureImageProcessor();
       const result = await processor.processImage(filtered, {
         threshold: 140,
         contrast: 2.5,
@@ -71,133 +70,133 @@ export default function ImageFilterEditor({ imageSrc, onDone, onCancel }: Props)
         noiseReduction: true,
         edgeSmoothing: true,
         aggressiveMode: true,
-      })
-      setProcessedImage(result)
-      processor.destroy()
+      });
+      setProcessedImage(result);
+      processor.destroy();
     } catch (err) {
-      console.error(err)
+      console.error(err);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const detectSignatureBounds = () => {
-    if (!processedImage || !imageRef.current) return
+    if (!processedImage || !imageRef.current) return;
 
-    const img = new Image()
-    img.src = processedImage
+    const img = new Image();
+    img.src = processedImage;
     img.onload = () => {
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d")!
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.drawImage(img, 0, 0)
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d")!;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
 
-      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
       let minX = canvas.width,
         minY = canvas.height,
         maxX = 0,
-        maxY = 0
+        maxY = 0;
 
       for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
           if (data[(y * canvas.width + x) * 4 + 3] > 50) {
-            minX = Math.min(minX, x)
-            maxX = Math.max(maxX, x)
-            minY = Math.min(minY, y)
-            maxY = Math.max(maxY, y)
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
           }
         }
       }
 
-      const padding = Math.min(canvas.width, canvas.height) * 0.06
-      minX = Math.max(0, minX - padding)
-      minY = Math.max(0, minY - padding)
-      maxX = Math.min(canvas.width, maxX + padding)
-      maxY = Math.min(canvas.height, maxY + padding)
+      const padding = Math.min(canvas.width, canvas.height) * 0.06;
+      minX = Math.max(0, minX - padding);
+      minY = Math.max(0, minY - padding);
+      maxX = Math.min(canvas.width, maxX + padding);
+      maxY = Math.min(canvas.height, maxY + padding);
 
-      const rect = imageRef.current!.getBoundingClientRect()
-      const scaleX = rect.width / canvas.width
-      const scaleY = rect.height / canvas.height
+      const rect = imageRef.current!.getBoundingClientRect();
+      const scaleX = rect.width / canvas.width;
+      const scaleY = rect.height / canvas.height;
 
       setCropBox({
         x: minX * scaleX,
         y: minY * scaleY,
         width: (maxX - minX) * scaleX,
         height: (maxY - minY) * scaleY,
-      })
-    }
-  }
+      });
+    };
+  };
 
   // Crop drag handlers
   const startDrag = (e: React.MouseEvent, type: typeof dragType) => {
-    e.stopPropagation()
-    setIsDragging(true)
-    setDragType(type)
-    setDragStart({ x: e.clientX, y: e.clientY })
-  }
+    e.stopPropagation();
+    setIsDragging(true);
+    setDragType(type);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
 
   useEffect(() => {
-    if (!isDragging) return
+    if (!isDragging) return;
 
     const move = (e: MouseEvent) => {
-      if (!previewRef.current || !dragType) return
-      const dx = e.clientX - dragStart.x
-      const dy = e.clientY - dragStart.y
-      const rect = previewRef.current.getBoundingClientRect()
+      if (!previewRef.current || !dragType) return;
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
+      const rect = previewRef.current.getBoundingClientRect();
 
       setCropBox((prev) => {
-        const box = { ...prev }
-        const min = 60
+        const box = { ...prev };
+        const min = 60;
 
         if (dragType === "move") {
-          box.x = Math.max(0, Math.min(rect.width - prev.width, prev.x + dx))
-          box.y = Math.max(0, Math.min(rect.height - prev.height, prev.y + dy))
+          box.x = Math.max(0, Math.min(rect.width - prev.width, prev.x + dx));
+          box.y = Math.max(0, Math.min(rect.height - prev.height, prev.y + dy));
         } else if (dragType === "se") {
-          box.width = Math.max(min, prev.width + dx)
-          box.height = Math.max(min, prev.height + dy)
+          box.width = Math.max(min, prev.width + dx);
+          box.height = Math.max(min, prev.height + dy);
         } else if (dragType === "nw") {
-          const nx = Math.max(0, prev.x + dx)
-          const ny = Math.max(0, prev.y + dy)
-          box.x = nx
-          box.y = ny
-          box.width = Math.max(min, prev.width - dx)
-          box.height = Math.max(min, prev.height - dy)
+          const nx = Math.max(0, prev.x + dx);
+          const ny = Math.max(0, prev.y + dy);
+          box.x = nx;
+          box.y = ny;
+          box.width = Math.max(min, prev.width - dx);
+          box.height = Math.max(min, prev.height - dy);
         }
         // Add ne/sw if you want full 8-way resize (optional)
-        return box
-      })
+        return box;
+      });
 
-      setDragStart({ x: e.clientX, y: e.clientY })
-    }
+      setDragStart({ x: e.clientX, y: e.clientY });
+    };
 
     const up = () => {
-      setIsDragging(false)
-      setDragType(null)
-    }
+      setIsDragging(false);
+      setDragType(null);
+    };
 
-    document.addEventListener("mousemove", move)
-    document.addEventListener("mouseup", up)
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
     return () => {
-      document.removeEventListener("mousemove", move)
-      document.removeEventListener("mouseup", up)
-    }
-  }, [isDragging, dragType, dragStart])
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+  }, [isDragging, dragType, dragStart]);
 
   const handleSave = () => {
-    if (!processedImage || !imageRef.current) return
+    if (!processedImage || !imageRef.current) return;
 
-    const img = new Image()
-    img.src = processedImage
+    const img = new Image();
+    img.src = processedImage;
     img.onload = () => {
-      const display = imageRef.current!.getBoundingClientRect()
-      const scaleX = img.width / display.width
-      const scaleY = img.height / display.height
+      const display = imageRef.current!.getBoundingClientRect();
+      const scaleX = img.width / display.width;
+      const scaleY = img.height / display.height;
 
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d")!
-      canvas.width = cropBox.width * scaleX
-      canvas.height = cropBox.height * scaleY
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d")!;
+      canvas.width = cropBox.width * scaleX;
+      canvas.height = cropBox.height * scaleY;
 
       ctx.drawImage(
         img,
@@ -208,12 +207,12 @@ export default function ImageFilterEditor({ imageSrc, onDone, onCancel }: Props)
         0,
         0,
         canvas.width,
-        canvas.height,
-      )
+        canvas.height
+      );
 
-      onDone(canvas.toDataURL("image/png"))
-    }
-  }
+      onDone(canvas.toDataURL("image/png"));
+    };
+  };
 
   return (
     <div className="space-y-4">
@@ -224,14 +223,21 @@ export default function ImageFilterEditor({ imageSrc, onDone, onCancel }: Props)
         <div className="flex flex-col gap-2">
           <p className="text-xs font-medium text-gray-600">Original</p>
           <div className="relative border border-gray-300 rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center h-48">
-            <NextImage src={imageSrc || "/placeholder.svg"} alt="Original" fill className="object-contain" unoptimized />
+            <NextImage
+              src={imageSrc || "/placeholder.svg"}
+              alt="Original"
+              fill
+              className="object-contain"
+              unoptimized
+            />
           </div>
         </div>
 
         {/* Preview + Crop */}
         <div className="flex flex-col gap-2">
           <p className="text-xs font-medium text-gray-600">
-            Preview {isProcessing && <span className="text-blue-600 text-xs ml-2">Processing...</span>}
+            Preview{" "}
+            {isProcessing && <span className="text-blue-600 text-xs ml-2">Processing...</span>}
           </p>
           <div
             ref={previewRef}
@@ -274,7 +280,6 @@ export default function ImageFilterEditor({ imageSrc, onDone, onCancel }: Props)
         </div>
       </div>
 
-
       {/* Buttons */}
       <div className="flex justify-end gap-3 pt-2">
         <button
@@ -294,12 +299,17 @@ export default function ImageFilterEditor({ imageSrc, onDone, onCancel }: Props)
 
       <style jsx>{`
         .bg-checkerboard {
-          background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+          background-image:
+            linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
             linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
             linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
             linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
           background-size: 20px 20px;
-          background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+          background-position:
+            0 0,
+            0 10px,
+            10px -10px,
+            -10px 0px;
         }
         .slider::-webkit-slider-thumb {
           appearance: none;
@@ -319,5 +329,5 @@ export default function ImageFilterEditor({ imageSrc, onDone, onCancel }: Props)
         }
       `}</style>
     </div>
-  )
+  );
 }

@@ -183,9 +183,7 @@ export const AUSTRALIA_DATA: CountryData = {
 
   getCandidateCodes,
   buildFollowUpSteps,
-  officialSources: [
-    { label: "HomeAffairs.gov.au", url: "https://immi.homeaffairs.gov.au" },
-  ],
+  officialSources: [{ label: "HomeAffairs.gov.au", url: "https://immi.homeaffairs.gov.au" }],
 
   visas: {
     // ──────────────────────────────────────────────────────────────
@@ -367,7 +365,8 @@ export const AUSTRALIA_DATA: CountryData = {
       label: "Skilled Work Regional (Provisional) Visa",
       badge: "Pathway to PR",
       color: "#F59E0B",
-      description: "For skilled workers who want to live and work in regional Australia. Adds 15 points to your total score via state/territory or family sponsorship. Provides a direct pathway to Permanent Residency (Subclass 191) after 3 years.",
+      description:
+        "For skilled workers who want to live and work in regional Australia. Adds 15 points to your total score via state/territory or family sponsorship. Provides a direct pathway to Permanent Residency (Subclass 191) after 3 years.",
       criteria: [
         "Nominated by a state/territory government or sponsored by an eligible relative in a regional area.",
         "Under 45 years of age.",
@@ -384,7 +383,8 @@ export const AUSTRALIA_DATA: CountryData = {
       label: "Prospective Marriage Visa (Fiancé)",
       badge: "Settlement",
       color: T.primary,
-      description: "For people who want to come to Australia to marry their Australian partner. Grants a 9-month stay to get married, then apply for a Partner Visa (820/801).",
+      description:
+        "For people who want to come to Australia to marry their Australian partner. Grants a 9-month stay to get married, then apply for a Partner Visa (820/801).",
       criteria: [
         "Intend to marry your sponsor (citizen/PR) within 9 months of arrival.",
         "Must be outside Australia at application and grant.",
@@ -398,7 +398,8 @@ export const AUSTRALIA_DATA: CountryData = {
       label: "Global Talent Visa",
       badge: "Direct PR",
       color: T.success,
-      description: "A fast-track permanent residency pathway for highly skilled individuals in priority sectors who can earn at least AUD $175,000/year and have a record of exceptional achievement.",
+      description:
+        "A fast-track permanent residency pathway for highly skilled individuals in priority sectors who can earn at least AUD $175,000/year and have a record of exceptional achievement.",
       criteria: [
         "Record of exceptional achievement in a priority sector (e.g., Tech, Energy, Health, Defence).",
         "Earning capacity of at least AUD $175,000 per year.",
@@ -420,10 +421,8 @@ export const AUSTRALIA_DATA: CountryData = {
         id: "coe",
         question:
           "Do you have (or are you in the process of obtaining) a Confirmation of Enrolment (CoE) from a CRICOS-registered Australian institution?",
-        source:
-          "Dept. of Home Affairs — Student Visa (Subclass 500) Eligibility",
-        sourceUrl:
-          "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500",
+        source: "Dept. of Home Affairs — Student Visa (Subclass 500) Eligibility",
+        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500",
         passWith: ["YES"],
         failMsg:
           "A valid CoE from a CRICOS-registered institution is mandatory before you can apply. Enrol in your chosen course first, pay the deposit, and the institution will issue your CoE.",
@@ -451,8 +450,7 @@ export const AUSTRALIA_DATA: CountryData = {
         id: "gs_requirement",
         question:
           "Can you demonstrate that you are a Genuine Student (GS) — that your primary purpose in going to Australia is to study, and that your study fits your future plans?",
-        source:
-          "Dept. of Home Affairs — Genuine Student (GS) requirement (replaced GTE in 2024)",
+        source: "Dept. of Home Affairs — Genuine Student (GS) requirement (replaced GTE in 2024)",
         sourceUrl:
           "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500#Eligibility",
         passWith: ["YES"],
@@ -474,10 +472,8 @@ export const AUSTRALIA_DATA: CountryData = {
     "AU-SKILLED-189": [
       {
         id: "occupation",
-        question:
-          "Is your occupation on the Medium and Long-Term Strategic Skills List (MLTSSL)?",
-        source:
-          "Dept. of Home Affairs — Subclass 189 Eligibility (MLTSSL requirement)",
+        question: "Is your occupation on the Medium and Long-Term Strategic Skills List (MLTSSL)?",
+        source: "Dept. of Home Affairs — Subclass 189 Eligibility (MLTSSL requirement)",
         sourceUrl:
           "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/skilled-independent-189#Eligibility",
         passWith: ["YES"],
@@ -507,8 +503,7 @@ export const AUSTRALIA_DATA: CountryData = {
         id: "points",
         question:
           "Do you have at least 65 points on the Australian points test (noting that competitive scores for Subclass 189 are typically 85–95+)?",
-        source:
-          "Dept. of Home Affairs — Points Table for Skilled Independent Visa (Subclass 189)",
+        source: "Dept. of Home Affairs — Points Table for Skilled Independent Visa (Subclass 189)",
         sourceUrl:
           "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/skilled-independent-189/points-table",
         passWith: ["YES_COMPETITIVE", "YES_MINIMUM"],
@@ -533,8 +528,7 @@ export const AUSTRALIA_DATA: CountryData = {
         id: "nomination",
         question:
           "Have you received (or are you actively applying for) a state or territory nomination for the Subclass 190?",
-        source:
-          "Dept. of Home Affairs — Skilled Nominated Visa (Subclass 190) Eligibility",
+        source: "Dept. of Home Affairs — Skilled Nominated Visa (Subclass 190) Eligibility",
         sourceUrl:
           "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/skilled-nominated-190#Eligibility",
         passWith: ["YES"],
@@ -552,8 +546,7 @@ export const AUSTRALIA_DATA: CountryData = {
         id: "assessment_190",
         question:
           "Do you have a positive Skills Assessment from the relevant Australian assessing authority?",
-        source:
-          "Dept. of Home Affairs — Subclass 190 Skills Assessment requirement",
+        source: "Dept. of Home Affairs — Subclass 190 Skills Assessment requirement",
         sourceUrl:
           "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/skilled-nominated-190#Eligibility",
         passWith: ["YES"],
@@ -609,8 +602,7 @@ export const AUSTRALIA_DATA: CountryData = {
         id: "sponsor_eligible",
         question:
           "Is your Australian partner an Australian citizen, Australian permanent resident, or an eligible New Zealand citizen?",
-        source:
-          "Dept. of Home Affairs — Partner Visa (Subclass 309/100) Eligibility",
+        source: "Dept. of Home Affairs — Partner Visa (Subclass 309/100) Eligibility",
         sourceUrl:
           "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/partner-offshore/provisional-309",
         passWith: ["YES"],
@@ -631,8 +623,7 @@ export const AUSTRALIA_DATA: CountryData = {
         id: "genuine_relationship",
         question:
           "Are you in a genuine, ongoing relationship — either legally married, or in a de facto partnership (generally at least 12 months)?",
-        source:
-          "Dept. of Home Affairs — Partner Visa relationship requirements",
+        source: "Dept. of Home Affairs — Partner Visa relationship requirements",
         sourceUrl:
           "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/partner-offshore",
         passWith: ["MARRIED", "DEFACTO"],
@@ -641,8 +632,7 @@ export const AUSTRALIA_DATA: CountryData = {
         options: [
           { label: "Yes — we are legally married", value: "MARRIED" },
           {
-            label:
-              "Yes — we are in a de facto relationship (12+ months, or with a child)",
+            label: "Yes — we are in a de facto relationship (12+ months, or with a child)",
             value: "DEFACTO",
           },
           {
@@ -655,43 +645,66 @@ export const AUSTRALIA_DATA: CountryData = {
     "AU-SKILLED-491": [
       {
         id: "regional_nom",
-        question: "Do you have (or can you obtain) a nomination from a state/territory or sponsorship from an eligible relative living in regional Australia?",
+        question:
+          "Do you have (or can you obtain) a nomination from a state/territory or sponsorship from an eligible relative living in regional Australia?",
         source: "Home Affairs — Subclass 491 Eligibility",
-        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/skilled-work-regional-provisional-491",
+        sourceUrl:
+          "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/skilled-work-regional-provisional-491",
         passWith: ["YES"],
-        failMsg: "The 491 specifically requires that you live and work in 'Regional Australia'. You must be sponsored by a state government or a relative in a regional area.",
-        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }],
+        failMsg:
+          "The 491 specifically requires that you live and work in 'Regional Australia'. You must be sponsored by a state government or a relative in a regional area.",
+        options: [
+          { label: "Yes", value: "YES" },
+          { label: "No", value: "NO" },
+        ],
       },
     ],
     "AU-PARTNER-300": [
       {
         id: "marriage_plan",
-        question: "Do you have a genuine intention to marry your partner in Australia within 9 months of your arrival?",
+        question:
+          "Do you have a genuine intention to marry your partner in Australia within 9 months of your arrival?",
         source: "Subclass 300 Prospective Marriage Visa",
-        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/prospective-marriage-300",
+        sourceUrl:
+          "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/prospective-marriage-300",
         passWith: ["YES"],
-        failMsg: "A Subclass 300 is for those intending to get married IN Australia. If you're already married, you should apply for a Subclass 309 instead.",
-        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }],
+        failMsg:
+          "A Subclass 300 is for those intending to get married IN Australia. If you're already married, you should apply for a Subclass 309 instead.",
+        options: [
+          { label: "Yes", value: "YES" },
+          { label: "No", value: "NO" },
+        ],
       },
     ],
     "AU-GLOBAL-858": [
       {
         id: "exceptional_achievement",
-        question: "Do you have a record of exceptional achievement in one of Australia's priority sectors (e.g. IT, Energy, Health)?",
+        question:
+          "Do you have a record of exceptional achievement in one of Australia's priority sectors (e.g. IT, Energy, Health)?",
         source: "Home Affairs — Global Talent (Subclass 858)",
-        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/global-talent-858",
+        sourceUrl:
+          "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/global-talent-858",
         passWith: ["YES"],
-        failMsg: "The Global Talent visa is for the world's best and brightest. You must be able to prove that you are one of the best in your field globally.",
-        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }],
+        failMsg:
+          "The Global Talent visa is for the world's best and brightest. You must be able to prove that you are one of the best in your field globally.",
+        options: [
+          { label: "Yes", value: "YES" },
+          { label: "No", value: "NO" },
+        ],
       },
       {
         id: "income_capacity",
         question: "Do you have the capacity to earn AUD $175,000 or more annually in Australia?",
         source: "Global Talent Income Requirement",
-        sourceUrl: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/global-talent-858",
+        sourceUrl:
+          "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/global-talent-858",
         passWith: ["YES"],
-        failMsg: "You must demonstrate the ability to reach a high-income threshold (typically AUD $175,000/year as of 2026).",
-        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }],
+        failMsg:
+          "You must demonstrate the ability to reach a high-income threshold (typically AUD $175,000/year as of 2026).",
+        options: [
+          { label: "Yes", value: "YES" },
+          { label: "No", value: "NO" },
+        ],
       },
     ],
   },

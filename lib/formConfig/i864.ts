@@ -588,7 +588,6 @@
 //   // Repeatable Household Members (You can handle dynamically in UI)
 //   // For now, static first 3 as per PDF
 
-
 //   // Family Member 1
 //   {
 //     key: "",
@@ -1853,7 +1852,6 @@ export interface RichField extends Field {
 
 // ─── Form fields ─────────────────────────────────────────────────────────────
 export const formFields: RichField[] = [
-
   // ══════════════════════════════════════════════════════════════════════════
   // ATTORNEY / ACCREDITED REPRESENTATIVE
   // ══════════════════════════════════════════════════════════════════════════
@@ -1864,9 +1862,7 @@ export const formFields: RichField[] = [
     hint: "If someone filed Form G-28 or G-28I on your behalf, select Yes. Most people filling this out themselves select No.",
     type: "checkbox",
     section: "Attorney or Accredited Representative",
-    options: [
-      { value: "Yes", label: "Yes — Form G-28 or G-28I is attached" },
-    ],
+    options: [{ value: "Yes", label: "Yes — Form G-28 or G-28I is attached" }],
     skip: "No — I'm filling this out myself",
   },
   {
@@ -2045,7 +2041,7 @@ export const formFields: RichField[] = [
     key: "sponsor_in_care_of",
     pdfKey: "sponsor_in_care_of",
     label: "Does your mail arrive in someone else's name? (In Care Of)",
-    help: "Use this if mail comes addressed to \"c/o [someone else's name].\" Leave blank if mail comes in your own name.",
+    help: 'Use this if mail comes addressed to "c/o [someone else\'s name]." Leave blank if mail comes in your own name.',
     type: "text",
     section: "Part 2. Sponsor Information",
     placeholder: "e.g. Maria Flores",
@@ -2110,7 +2106,8 @@ export const formFields: RichField[] = [
     label: "Which state?",
     type: "combo",
     section: "Part 2. Sponsor Information",
-    condition: (d) => d.sponsor_country === "United States" || d.sponsor_country === "US" || !d.sponsor_country,
+    condition: (d) =>
+      d.sponsor_country === "United States" || d.sponsor_country === "US" || !d.sponsor_country,
   },
   {
     key: "sponsor_zip",
@@ -2122,7 +2119,8 @@ export const formFields: RichField[] = [
     section: "Part 2. Sponsor Information",
     placeholder: "5 digits",
     maxLength: 5,
-    condition: (d) => d.sponsor_country === "United States" || d.sponsor_country === "US" || !d.sponsor_country,
+    condition: (d) =>
+      d.sponsor_country === "United States" || d.sponsor_country === "US" || !d.sponsor_country,
     validate: (v) => (!v || /^\d{5}$/.test(v) ? null : "Needs to be exactly 5 digits"),
   },
   {
@@ -2155,7 +2153,11 @@ export const formFields: RichField[] = [
     section: "Part 2. Sponsor Information",
     options: [
       { label: "Yes — that's where I live too", value: "Yes", pdfKey: "sponsor_is_us_citizen_yes" },
-      { label: "No — my home address is different", value: "No", pdfKey: "sponsor_is_us_citizen_no" },
+      {
+        label: "No — my home address is different",
+        value: "No",
+        pdfKey: "sponsor_is_us_citizen_no",
+      },
     ],
   },
   {
@@ -2301,7 +2303,11 @@ export const formFields: RichField[] = [
     options: [
       { label: "U.S. Citizen", value: "us_citizen", pdfKey: "sponsor_citizenship_us" },
       { label: "U.S. National", value: "us_national", pdfKey: "sponsor_citizenship_national" },
-      { label: "Lawful Permanent Resident (Green Card holder)", value: "lpr", pdfKey: "sponsor_citizenship_lpr" },
+      {
+        label: "Lawful Permanent Resident (Green Card holder)",
+        value: "lpr",
+        pdfKey: "sponsor_citizenship_lpr",
+      },
     ],
   },
   {
@@ -2309,7 +2315,7 @@ export const formFields: RichField[] = [
     pdfKey: "sponsor_alien_number",
     label: "Do you have an Alien Registration Number (A-Number)?",
     help: "An A-Number starts with \"A\" followed by 8 or 9 digits. You'd have one if you hold or previously held a green card or work permit. U.S. citizens typically don't have one.",
-    find: "Front of your green card, labeled \"A-Number\" or \"USCIS#.\"",
+    find: 'Front of your green card, labeled "A-Number" or "USCIS#."',
     example: "A123456789 → type: 123456789",
     type: "text",
     section: "Part 2. Sponsor Information",
@@ -2323,7 +2329,7 @@ export const formFields: RichField[] = [
     pdfKey: "sponsor_uscis_account",
     label: "Do you have a USCIS Online Account Number?",
     help: "Only if you've created an account on my.uscis.gov. Not the same as an A-Number, and not on any physical card.",
-    find: "Log into my.uscis.gov → click your name or profile icon → look for \"USCIS Online Account Number.\"",
+    find: 'Log into my.uscis.gov → click your name or profile icon → look for "USCIS Online Account Number."',
     type: "text",
     section: "Part 2. Sponsor Information",
     placeholder: "8 to 12 digits",
@@ -2383,7 +2389,7 @@ export const formFields: RichField[] = [
     key: "immigrant_in_care_of",
     pdfKey: "immigrant_in_care_of",
     label: "Does their mail arrive in someone else's name? (In Care Of)",
-    help: "Use this if mail is sent \"c/o [another person's name].\" Leave blank if mail comes in their own name.",
+    help: 'Use this if mail is sent "c/o [another person\'s name]." Leave blank if mail comes in their own name.',
     type: "text",
     section: "Part 3. Information About the Principal Immigrant",
     placeholder: "e.g. John Smith",
@@ -2499,7 +2505,7 @@ export const formFields: RichField[] = [
     pdfKey: "immigrant_alien_number",
     label: "Do they have an Alien Registration Number (A-Number)?",
     help: "Most first-time green card applicants don't have one yet. They'd only have one from a previous green card, work permit, or prior immigration case.",
-    find: "Front of their green card or work permit, labeled \"A-Number\" or \"USCIS#.\"",
+    find: 'Front of their green card or work permit, labeled "A-Number" or "USCIS#."',
     example: "A123456789 → type: 123456789",
     type: "text",
     section: "Part 3. Information About the Principal Immigrant",
@@ -2542,7 +2548,8 @@ export const formFields: RichField[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "household_sponsoring_self_yes" },
       {
-        label: "No — I'm the second joint sponsor, or I'm only sponsoring family members immigrating more than six months after the principal immigrant",
+        label:
+          "No — I'm the second joint sponsor, or I'm only sponsoring family members immigrating more than six months after the principal immigrant",
         value: "No",
         sublabel: "Select this if your role is more limited.",
         pdfKey: "household_sponsoring_self_no",
@@ -2552,7 +2559,8 @@ export const formFields: RichField[] = [
   {
     key: "household_sponsoring_family",
     pdfKey: "household_sponsoring_family",
-    label: "Are you also sponsoring family members immigrating at the same time as (or within six months of) the principal immigrant?",
+    label:
+      "Are you also sponsoring family members immigrating at the same time as (or within six months of) the principal immigrant?",
     hint: "Do not include relatives listed on a separate visa petition.",
     type: "radio",
     section: "Part 4. Information About the Immigrants You Are Sponsoring",
@@ -2564,7 +2572,8 @@ export const formFields: RichField[] = [
   {
     key: "household_sponsoring_family_list",
     pdfKey: "household_sponsoring_family_list",
-    label: "Are you sponsoring any family members who will immigrate more than six months after the principal immigrant?",
+    label:
+      "Are you sponsoring any family members who will immigrate more than six months after the principal immigrant?",
     type: "radio",
     section: "Part 4. Information About the Immigrants You Are Sponsoring",
     options: [
@@ -2911,7 +2920,8 @@ export const formFields: RichField[] = [
   {
     key: "hsize_sponsors",
     pdfKey: "hsize_sponsors",
-    label: "Have you previously sponsored immigrants on Form I-864 or I-864EZ who are now permanent residents and you're still obligated to support?",
+    label:
+      "Have you previously sponsored immigrants on Form I-864 or I-864EZ who are now permanent residents and you're still obligated to support?",
     hint: "Enter 0 if you already counted them in the immigrants total above.",
     type: "text",
     section: "Part 5. Sponsor's Household Size",
@@ -2921,7 +2931,8 @@ export const formFields: RichField[] = [
   {
     key: "hsize_same_residence",
     pdfKey: "hsize_same_residence",
-    label: "Do you have siblings, parents, or adult children at the same address who are adding their income by filing Form I-864A?",
+    label:
+      "Do you have siblings, parents, or adult children at the same address who are adding their income by filing Form I-864A?",
     hint: "Enter 0 if you already counted these persons in the immigrants total above.",
     type: "text",
     section: "Part 5. Sponsor's Household Size",
@@ -2955,7 +2966,7 @@ export const formFields: RichField[] = [
         pdfKey: "emp_employer_name",
         label: "Primary employer name?",
         help: "The official legal name of the company or organization that pays you.",
-        find: "The top of your pay stub, or box \"c\" on your W-2.",
+        find: 'The top of your pay stub, or box "c" on your W-2.',
         example: "Memorial Hospital / City of Chicago / Amazon",
         type: "text",
         section: "Part 6. Sponsor's Employment and Income",
@@ -3183,14 +3194,19 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 6. Sponsor's Employment and Income",
     options: [
-      { label: "Yes — all necessary I-864As are attached", value: "Yes", pdfKey: "hh_people_listed" },
+      {
+        label: "Yes — all necessary I-864As are attached",
+        value: "Yes",
+        pdfKey: "hh_people_listed",
+      },
       { label: "No — not applicable", value: "No" },
     ],
   },
   {
     key: "hh_intending_immigrant_check",
     pdfKey: "hh_intending_immigrant_check",
-    label: "Is any of the people listed above the intending immigrant themselves — with no accompanying dependents?",
+    label:
+      "Is any of the people listed above the intending immigrant themselves — with no accompanying dependents?",
     hint: "In some cases, the immigrant's own income can count without them needing to file Form I-864A.",
     type: "radio",
     section: "Part 6. Sponsor's Employment and Income",
@@ -3218,8 +3234,16 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 6. Sponsor's Employment and Income",
     options: [
-      { label: "Yes — I filed U.S. federal tax returns", value: "Yes", pdfKey: "tax_filed_3years_chk_yes" },
-      { label: "No — I didn't file, or wasn't required to", value: "No", pdfKey: "tax_filed_3years_chk_no" },
+      {
+        label: "Yes — I filed U.S. federal tax returns",
+        value: "Yes",
+        pdfKey: "tax_filed_3years_chk_yes",
+      },
+      {
+        label: "No — I didn't file, or wasn't required to",
+        value: "No",
+        pdfKey: "tax_filed_3years_chk_no",
+      },
     ],
   },
   {
@@ -3227,7 +3251,7 @@ export const formFields: RichField[] = [
     pdfKey: "tax_year_1",
     label: "Most recent tax year?",
     help: "The year on your return is the year you earned the money — not when you filed. Filed April 2025 for income earned in 2024? Enter 2024.",
-    find: "The top of your Form 1040 — it says \"20__ U.S. Individual Income Tax Return.\"",
+    find: 'The top of your Form 1040 — it says "20__ U.S. Individual Income Tax Return."',
     example: "Filed April 2025 for income earned in 2024 → enter: 2024",
     type: "text",
     section: "Part 6. Sponsor's Employment and Income",
@@ -3239,7 +3263,7 @@ export const formFields: RichField[] = [
         key: "tax_income_1",
         pdfKey: "tax_income_1",
         label: "Income on that return?",
-        help: "Look at Form 1040, Line 11 — labeled \"Adjusted Gross Income\" (AGI). That's the figure immigration uses. If the amount was zero, type 0.",
+        help: 'Look at Form 1040, Line 11 — labeled "Adjusted Gross Income" (AGI). That\'s the figure immigration uses. If the amount was zero, type 0.',
         find: "Form 1040, Line 11 — about a third of the way down the first page.",
         example: "If Line 11 shows $52,100 — type: 52100",
         type: "text",
@@ -3432,8 +3456,16 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 8. Sponsor's Contract",
     options: [
-      { value: "english", label: "Yes — I read and understood every question in English", pdfKey: "p8_can_read_english" },
-      { value: "interpreter", label: "No — an interpreter read it to me", pdfKey: "p8_interpreter_chk" },
+      {
+        value: "english",
+        label: "Yes — I read and understood every question in English",
+        pdfKey: "p8_can_read_english",
+      },
+      {
+        value: "interpreter",
+        label: "No — an interpreter read it to me",
+        pdfKey: "p8_interpreter_chk",
+      },
     ],
   },
   {
@@ -3492,7 +3524,8 @@ export const formFields: RichField[] = [
     section: "Part 8. Sponsor's Contract",
     placeholder: "email@example.com",
     skip: "I don't have one",
-    validate: (v) => (!v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Enter a valid email address"),
+    validate: (v) =>
+      !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Enter a valid email address",
   },
   {
     key: "p8_sponsor_signature",
@@ -3583,7 +3616,8 @@ export const formFields: RichField[] = [
     section: "Part 9. Interpreter",
     placeholder: "email@example.com",
     skip: "No email",
-    validate: (v) => (!v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Enter a valid email address"),
+    validate: (v) =>
+      !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Enter a valid email address",
   },
   {
     key: "p9_interp_signature",
@@ -3664,7 +3698,8 @@ export const formFields: RichField[] = [
     section: "Part 10. Preparer",
     placeholder: "email@example.com",
     skip: "No email",
-    validate: (v) => (!v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Enter a valid email address"),
+    validate: (v) =>
+      !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Enter a valid email address",
   },
   {
     key: "p10_prep_signature",

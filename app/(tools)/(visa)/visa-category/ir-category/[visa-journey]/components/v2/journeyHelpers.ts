@@ -16,12 +16,17 @@ export function getDisplayStepNumber(step: RoadmapStep): number {
  * Returns all steps for a given stage/chapter index that are applicable based on the filing method and state metadata.
  * Filters by visible_when conditions.
  */
-export function getActiveStepsForStage(data: RoadmapData, index: number, metadata: any, filingMethodFallback?: string | null): RoadmapStep[] {
+export function getActiveStepsForStage(
+  data: RoadmapData,
+  index: number,
+  metadata: any,
+  filingMethodFallback?: string | null
+): RoadmapStep[] {
   const chapters = data.chapters || (data as any).stages;
   const chapter = chapters?.[index] as RoadmapChapter;
   if (!chapter) return [];
-  
-  const method = metadata?.filingMethod || filingMethodFallback || 'online'; // Default to online if not set
+
+  const method = metadata?.filingMethod || filingMethodFallback || "online"; // Default to online if not set
   // Filter steps by visibility and branch
   const filtered = chapter.steps.filter((step: RoadmapStep) => {
     const stepAny = step as any;
@@ -30,7 +35,7 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, metadat
     if (visibleWhen && Object.keys(visibleWhen).length > 0) {
       let isVisible = true;
       for (const [key, value] of Object.entries(visibleWhen)) {
-        if (key === 'filingMethod') {
+        if (key === "filingMethod") {
           if (value !== method) isVisible = false;
         } else {
           const stateValue = metadata?.[key];
@@ -45,7 +50,7 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, metadat
     }
     // Fallback to legacy 'branch' field
     const branch = stepAny.branch;
-    if (!branch || branch === 'both') return true;
+    if (!branch || branch === "both") return true;
     return branch === method;
   });
 
@@ -62,7 +67,11 @@ export function getActiveStepsForStage(data: RoadmapData, index: number, metadat
 /**
  * Returns all active steps across all chapters.
  */
-export function getAllActiveSteps(data: RoadmapData, metadata: any, filingMethodFallback?: string | null): RoadmapStep[] {
+export function getAllActiveSteps(
+  data: RoadmapData,
+  metadata: any,
+  filingMethodFallback?: string | null
+): RoadmapStep[] {
   const chapters = data.chapters || (data as any).stages;
   if (!chapters) return [];
   return chapters.reduce((acc: RoadmapStep[], _: any, idx: number) => {
@@ -73,27 +82,30 @@ export function getAllActiveSteps(data: RoadmapData, metadata: any, filingMethod
 /**
  * Finds the first uncompleted active step across the entire journey.
  */
-export function getNextBestAction(data: RoadmapData, state: WizardState): { step: RoadmapStep; chapterIdx: number; stepIdxInChapter: number } | null {
+export function getNextBestAction(
+  data: RoadmapData,
+  state: WizardState
+): { step: RoadmapStep; chapterIdx: number; stepIdxInChapter: number } | null {
   const allActive = getAllActiveSteps(data, state.metadata, state.filingType);
-  
-  const nextStep = allActive.find(s => {
+
+  const nextStep = allActive.find((s) => {
     const sId = s.step_key || (s as any).id;
     return !state.completedSteps.has(sId);
   });
-  
+
   if (!nextStep) return null;
-  
+
   const chapters = data.chapters || (data as any).stages;
   for (let cIdx = 0; cIdx < chapters.length; cIdx++) {
     const activeSteps = getActiveStepsForStage(data, cIdx, state.metadata, state.filingType);
-    const stepInActiveIdx = activeSteps.findIndex((s: any) => 
-      (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
+    const stepInActiveIdx = activeSteps.findIndex(
+      (s: any) => (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
     );
     if (stepInActiveIdx !== -1) {
       return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: stepInActiveIdx };
     }
   }
-  
+
   return null;
 }
 
@@ -103,25 +115,29 @@ export function getNextBestAction(data: RoadmapData, state: WizardState): { step
 export function getStageProgress(data: RoadmapData, chapterIdx: number, state: WizardState) {
   const activeSteps = getActiveStepsForStage(data, chapterIdx, state.metadata, state.filingType);
   if (activeSteps.length === 0) return { done: 0, total: 0, pct: 0 };
-  
-  const done = activeSteps.filter(s => {
+
+  const done = activeSteps.filter((s) => {
     const sId = s.step_key || (s as any).id;
     return state.completedSteps.has(sId);
   }).length;
-  
+
   return {
     done,
     total: activeSteps.length,
-    pct: Math.round((done / activeSteps.length) * 100)
+    pct: Math.round((done / activeSteps.length) * 100),
   };
 }
 
 /**
  * Checks if a chapter should be unlocked (all steps in previous chapter completed).
  */
-export function isStageUnlocked(data: RoadmapData, chapterIdx: number, state: WizardState): boolean {
+export function isStageUnlocked(
+  data: RoadmapData,
+  chapterIdx: number,
+  state: WizardState
+): boolean {
   if (chapterIdx === 0) return true; // First chapter is always unlocked
-  
+
   const prevChapterProgress = getStageProgress(data, chapterIdx - 1, state);
   return prevChapterProgress.done === prevChapterProgress.total && prevChapterProgress.total > 0;
 }
@@ -131,48 +147,54 @@ export function isStageUnlocked(data: RoadmapData, chapterIdx: number, state: Wi
  */
 export function getDocumentReviewProgress(step: any, metadata: any) {
   const documentItems = step.document_items || [];
-  
+
   // Tool-based doc steps (step 2.4, etc)
   let toolItems: any[] = [];
   if (step.tool_data?.doc_list?.groups) {
     toolItems = step.tool_data.doc_list.groups.flatMap((g: any) => g.items || []);
   } else if (step.tool_data?.groups) {
-     toolItems = step.tool_data.groups.flatMap((g: any) => g.items || []);
+    toolItems = step.tool_data.groups.flatMap((g: any) => g.items || []);
   }
-  
+
   const items = documentItems.length > 0 ? documentItems : toolItems;
-  
+
   if (items.length === 0) {
-    return { reviewed: 0, total: 0, requiredReviewed: 0, requiredTotal: 0, percentage: 0, isComplete: true };
+    return {
+      reviewed: 0,
+      total: 0,
+      requiredReviewed: 0,
+      requiredTotal: 0,
+      percentage: 0,
+      isComplete: true,
+    };
   }
-  
+
   // docReviewStatus is stored at metadata.docReviewStatus
   const docReviewStatus = (metadata?.docReviewStatus as Record<string, string>) || {};
 
   // Only required items block completion
-  const requiredItems = items.filter((d: any) => 
-    !d.group || d.group === 'Required Now' || d.group === 'USCIS Intake Order'
+  const requiredItems = items.filter(
+    (d: any) => !d.group || d.group === "Required Now" || d.group === "USCIS Intake Order"
   );
-  
-  const reviewedCount = items.filter((d: any) => 
-    docReviewStatus[d.id] === 'reviewed'
+
+  const reviewedCount = items.filter((d: any) => docReviewStatus[d.id] === "reviewed").length;
+
+  const requiredReviewedCount = requiredItems.filter(
+    (d: any) => docReviewStatus[d.id] === "reviewed"
   ).length;
 
-  const requiredReviewedCount = requiredItems.filter((d: any) => 
-    docReviewStatus[d.id] === 'reviewed'
-  ).length;
+  const isComplete =
+    requiredItems.length === 0
+      ? false // agar koi required item hi nahi hai, complete mat maano
+      : requiredReviewedCount >= requiredItems.length;
 
-  const isComplete = requiredItems.length === 0 
-    ? false // agar koi required item hi nahi hai, complete mat maano
-    : requiredReviewedCount >= requiredItems.length;
-
-  return { 
-    reviewed: reviewedCount, 
-    total: items.length, 
-    requiredReviewed: requiredReviewedCount, 
-    requiredTotal: requiredItems.length, 
-    percentage: items.length > 0 ? Math.round((reviewedCount / items.length) * 100) : 0, 
-    isComplete 
+  return {
+    reviewed: reviewedCount,
+    total: items.length,
+    requiredReviewed: requiredReviewedCount,
+    requiredTotal: requiredItems.length,
+    percentage: items.length > 0 ? Math.round((reviewedCount / items.length) * 100) : 0,
+    isComplete,
   };
 }
 
@@ -187,7 +209,7 @@ export function getQuestProgress(step: any, state: any) {
   const stepKey = step.step_key || step.id;
   const answers = state.answers || {};
   const completedSteps = state.completedSteps;
-  
+
   // Agar step already completed hai backend se, skip check
   if (completedSteps && completedSteps.has && completedSteps.has(stepKey)) {
     return { answered: 1, total: 1, percentage: 100, isComplete: true };
@@ -195,15 +217,15 @@ export function getQuestProgress(step: any, state: any) {
 
   // Quest suites enumerate karo
   const suites = questData.suites || questData.quests || [];
-  
+
   if (suites.length === 0) {
     // Single quest without suites — check if answers[stepKey] has any data
     const hasAnyAnswer = answers[stepKey] && Object.keys(answers[stepKey]).length > 0;
-    return { 
-      answered: hasAnyAnswer ? 1 : 0, 
-      total: 1, 
-      percentage: hasAnyAnswer ? 100 : 0, 
-      isComplete: hasAnyAnswer 
+    return {
+      answered: hasAnyAnswer ? 1 : 0,
+      total: 1,
+      percentage: hasAnyAnswer ? 100 : 0,
+      isComplete: hasAnyAnswer,
     };
   }
 
@@ -215,18 +237,18 @@ export function getQuestProgress(step: any, state: any) {
     screens.forEach((screen: any) => {
       if (screen.required === false) return;
       totalRequired++;
-      
+
       // Answer keys jo QuestRenderer use karta hai: answers[questId][screenId]
       const questLevelAnswer = answers[questData.id]?.[screen.id];
       // Ya flat format: answers[stepKey_suiteId_screenId]
       const flatAnswer = answers[`${stepKey}_${suite.id}_${screen.id}`];
       // Ya suite level: answers[suite.id]?.[screen.id]
       const suiteLevelAnswer = answers[suite.id]?.[screen.id];
-      
+
       if (
-        (questLevelAnswer !== undefined && questLevelAnswer !== null && questLevelAnswer !== '') ||
-        (flatAnswer !== undefined && flatAnswer !== null && flatAnswer !== '') ||
-        (suiteLevelAnswer !== undefined && suiteLevelAnswer !== null && suiteLevelAnswer !== '')
+        (questLevelAnswer !== undefined && questLevelAnswer !== null && questLevelAnswer !== "") ||
+        (flatAnswer !== undefined && flatAnswer !== null && flatAnswer !== "") ||
+        (suiteLevelAnswer !== undefined && suiteLevelAnswer !== null && suiteLevelAnswer !== "")
       ) {
         totalAnswered++;
       }
@@ -235,15 +257,22 @@ export function getQuestProgress(step: any, state: any) {
 
   // Agar koi screens nahi mili lekin suites hain, check karo koi bhi answer hai
   if (totalRequired === 0) {
-    const hasAnyAnswer = Object.keys(answers).some(k => k.includes(stepKey) || k.includes(questData.id || ''));
-    return { answered: hasAnyAnswer ? 1 : 0, total: 1, percentage: hasAnyAnswer ? 100 : 0, isComplete: hasAnyAnswer };
+    const hasAnyAnswer = Object.keys(answers).some(
+      (k) => k.includes(stepKey) || k.includes(questData.id || "")
+    );
+    return {
+      answered: hasAnyAnswer ? 1 : 0,
+      total: 1,
+      percentage: hasAnyAnswer ? 100 : 0,
+      isComplete: hasAnyAnswer,
+    };
   }
 
   const isComplete = totalAnswered >= totalRequired;
-  return { 
-    answered: totalAnswered, 
-    total: totalRequired, 
-    percentage: Math.round((totalAnswered / totalRequired) * 100), 
-    isComplete 
+  return {
+    answered: totalAnswered,
+    total: totalRequired,
+    percentage: Math.round((totalAnswered / totalRequired) * 100),
+    isComplete,
   };
 }

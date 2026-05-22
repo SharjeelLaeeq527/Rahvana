@@ -30,7 +30,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
   const [uscisCredentials, setUscisCredentials] = useState<PortalCredential | null>(null);
   const [ceacCredentials, setCeacCredentials] = useState<PortalCredential | null>(null);
   const [courierCredentials, setCourierCredentials] = useState<PortalCredential | null>(null);
-  
+
   const [isWalletFormOpen, setIsWalletFormOpen] = useState(false);
   const [isWalletViewOpen, setIsWalletViewOpen] = useState(false);
   const [walletPortalType, setWalletPortalType] = useState<"USCIS" | "NVC" | "COURIER">("USCIS");
@@ -45,13 +45,13 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
       const data = await res.json();
       if (data.credentials) {
         const uscis = data.credentials.find(
-          (c: PortalCredential) => c.portal_type.toUpperCase() === "USCIS",
+          (c: PortalCredential) => c.portal_type.toUpperCase() === "USCIS"
         );
         const ceac = data.credentials.find(
-          (c: PortalCredential) => c.portal_type.toUpperCase() === "NVC",
+          (c: PortalCredential) => c.portal_type.toUpperCase() === "NVC"
         );
         const courier = data.credentials.find(
-          (c: PortalCredential) => c.portal_type.toUpperCase() === "COURIER",
+          (c: PortalCredential) => c.portal_type.toUpperCase() === "COURIER"
         );
         setUscisCredentials(uscis || null);
         setCeacCredentials(ceac || null);
@@ -91,7 +91,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
           const res = await fetch("/api/portal-wallet");
           const wallet = await res.json();
           const nvcCreds = wallet.credentials?.find(
-            (c: any) => c.portal_type?.toUpperCase() === "NVC",
+            (c: any) => c.portal_type?.toUpperCase() === "NVC"
           );
           if (nvcCreds) {
             if (nvcCreds.nvc_case_number) {
@@ -106,8 +106,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         } catch (err) {
           console.error("Failed to sync NVC credentials to metadata", err);
         }
-        if (sId === "step_2_1" && !isCompleted)
-          actions.toggleComplete("step_2_1");
+        if (sId === "step_2_1" && !isCompleted) actions.toggleComplete("step_2_1");
       }
       if (data.portalType === "USCIS" && sId === "step_1_6") {
         if (!isCompleted) actions.toggleComplete("step_1_6");
@@ -133,10 +132,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
     return data.value || "";
   };
 
-  const handleRevealAnswer = async (
-    credentialId: string,
-    questionId: string,
-  ): Promise<string> => {
+  const handleRevealAnswer = async (credentialId: string, questionId: string): Promise<string> => {
     const res = await fetch("/api/portal-wallet/reveal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

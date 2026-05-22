@@ -48,7 +48,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
   },
 
   // FAMILY PREFERENCE
-  "F1": {
+  F1: {
     title: "Result: Family Preference F1",
     description: "Unmarried Sons and Daughters of U.S. Citizens.",
     criteria: [
@@ -57,7 +57,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
       "Must have a U.S. citizen parent petitioner.",
     ],
   },
-  "F2A": {
+  F2A: {
     title: "Result: Family Preference F2A",
     description: "Spouses and Children of Permanent Residents.",
     criteria: [
@@ -66,7 +66,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
       "Subject to annual visa numerical limits.",
     ],
   },
-  "F2B": {
+  F2B: {
     title: "Result: Family Preference F2B",
     description: "Unmarried Sons and Daughters (21+) of Permanent Residents.",
     criteria: [
@@ -75,7 +75,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
       "Subject to annual visa numerical limits.",
     ],
   },
-  "F4": {
+  F4: {
     title: "Result: Family Preference F4",
     description: "Brothers and Sisters of Adult U.S. Citizens.",
     criteria: [
@@ -142,7 +142,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
   },
 
   // HUMANITARIAN
-  "Humanitarian": {
+  Humanitarian: {
     title: "Humanitarian-Based Immigration",
     description: "Includes asylum, refugee, VAWA, and special immigrant categories.",
     criteria: [
@@ -208,7 +208,8 @@ export const visaCriteria: Record<string, VisaCriteria> = {
   },
   "O-1": {
     title: "Extraordinary Ability Visa",
-    description: "For individuals with extraordinary ability in science, arts, business, or athletics.",
+    description:
+      "For individuals with extraordinary ability in science, arts, business, or athletics.",
     criteria: [
       "Demonstrate extraordinary ability by sustained national/international acclaim.",
       "Must be coming to work in area of extraordinary ability.",
@@ -235,7 +236,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
       "Mst intent to return home (some subject to 2-year home residency requirement).",
     ],
   },
-  "P": {
+  P: {
     title: "Athlete or Artist Visa (P-1/P-2/P-3)",
     description: "For internationally recognized athletes or entertainment groups.",
     criteria: [
@@ -244,7 +245,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
       "Must be coming to the U.S. to perform in a specific event or performance.",
     ],
   },
-  "Q": {
+  Q: {
     title: "Cultural Exchange Visa",
     description: "For participants in international cultural exchange programs.",
     criteria: [
@@ -263,5 +264,4 @@ export const visaCriteria: Record<string, VisaCriteria> = {
       "E-2 (Investor): Substantial 'at risk' investment in a U.S. enterprise; applicant must develop and direct the enterprise.",
     ],
   },
-
 };

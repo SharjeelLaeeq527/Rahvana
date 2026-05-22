@@ -79,8 +79,7 @@ const GUIDES: Guide[] = [
     id: "birth-certificate",
     title: "Birth Certificate",
     subtitle: "",
-    description:
-      "Union Council CBRC process for birth registration, correction, and replacement",
+    description: "Union Council CBRC process for birth registration, correction, and replacement",
     category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
@@ -90,8 +89,7 @@ const GUIDES: Guide[] = [
     id: "frc",
     title: "FRC",
     subtitle: "NADRA Family Registration Certificate",
-    description:
-      "NADRA process to apply for an FRC and review registered family details.",
+    description: "NADRA process to apply for an FRC and review registered family details.",
     category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
@@ -112,8 +110,7 @@ const GUIDES: Guide[] = [
     id: "vaccinations",
     title: "Polio Vaccination",
     subtitle: "",
-    description:
-      "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
+    description: "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
     category: "Medical & Exam",
     href: "/guides/polio-vaccination-guide",
     icon: Syringe,
@@ -121,42 +118,47 @@ const GUIDES: Guide[] = [
   },
 ];
 
-const CATEGORIES: ("All" | GuideCategory)[] = [
-  "All",
-  "Pakistan Document",
-  "Medical & Exam",
-];
+const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
 
 // --- Tier-aware card styles ------------------------------------------------
 // Card border, shadow, and gradient border all follow the tier
-const TIER_CARD_STYLE: Record<string, {
-  cardBorder: string;
-  cardShadow: string;
-  cardHoverShadow: string;
-  gradientBorder: string;
-  badgeBg: string;
-  badgeBorder: string;
-}> = {
+const TIER_CARD_STYLE: Record<
+  string,
+  {
+    cardBorder: string;
+    cardShadow: string;
+    cardHoverShadow: string;
+    gradientBorder: string;
+    badgeBg: string;
+    badgeBorder: string;
+  }
+> = {
   basic: {
     cardBorder: "border-[#a8d4d4]",
-    cardShadow: "shadow-[0_18px_38px_-24px_rgba(13,148,136,0.6),0_0_0_1px_rgba(168,212,212,0.3)_inset]",
-    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(13,148,136,0.75),0_0_26px_rgba(13,148,136,0.15)]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(13,148,136,0.6),0_0_0_1px_rgba(168,212,212,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(13,148,136,0.75),0_0_26px_rgba(13,148,136,0.15)]",
     gradientBorder: "from-teal-300 to-teal-200",
     badgeBg: "bg-teal-50",
     badgeBorder: "border-teal-200",
   },
   premium: {
     cardBorder: "border-[#94a3b8]",
-    cardShadow: "shadow-[0_18px_38px_-24px_rgba(71,85,105,0.6),0_0_0_1px_rgba(148,163,184,0.3)_inset]",
-    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(71,85,105,0.75),0_0_26px_rgba(71,85,105,0.15)]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(71,85,105,0.6),0_0_0_1px_rgba(148,163,184,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(71,85,105,0.75),0_0_26px_rgba(71,85,105,0.15)]",
     gradientBorder: "from-slate-400 to-slate-300",
     badgeBg: "bg-slate-100",
     badgeBorder: "border-slate-300",
   },
   executive: {
     cardBorder: "border-[#e8c96a]",
-    cardShadow: "shadow-[0_18px_38px_-24px_rgba(202,138,4,0.7),0_0_0_1px_rgba(232,201,106,0.3)_inset]",
-    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(202,138,4,0.85),0_0_26px_rgba(202,138,4,0.2)]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(202,138,4,0.7),0_0_0_1px_rgba(232,201,106,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(202,138,4,0.85),0_0_26px_rgba(202,138,4,0.2)]",
     gradientBorder: "from-amber-300 to-amber-200",
     badgeBg: "bg-amber-50",
     badgeBorder: "border-amber-200",
@@ -167,7 +169,8 @@ const TIER_CARD_STYLE: Record<string, {
 const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
   basic: {
     padding: "2.5px",
-    background: "linear-gradient(135deg, #0f766e 0%, #5eead4 34%, #0d9488 50%, #99f6e4 66%, #0f766e 100%)",
+    background:
+      "linear-gradient(135deg, #0f766e 0%, #5eead4 34%, #0d9488 50%, #99f6e4 66%, #0f766e 100%)",
     WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
     WebkitMaskComposite: "xor",
     maskComposite: "exclude",
@@ -175,7 +178,8 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
   },
   premium: {
     padding: "2.5px",
-    background: "linear-gradient(135deg, #334155 0%, #94a3b8 25%, #e2e8f0 50%, #94a3b8 75%, #334155 100%)",
+    background:
+      "linear-gradient(135deg, #334155 0%, #94a3b8 25%, #e2e8f0 50%, #94a3b8 75%, #334155 100%)",
     WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
     WebkitMaskComposite: "xor",
     maskComposite: "exclude",
@@ -183,7 +187,8 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
   },
   executive: {
     padding: "2.5px",
-    background: "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%)",
+    background:
+      "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%)",
     WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
     WebkitMaskComposite: "xor",
     maskComposite: "exclude",
@@ -193,11 +198,7 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
 
 // --- Components ---
 
-export default function GuidesPage({
-  isEmbedded = false,
-}: {
-  isEmbedded?: boolean;
-}) {
+export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
   const [visibleCount, setVisibleCount] = useState(7);
@@ -263,8 +264,7 @@ export default function GuidesPage({
     const matchesSearch =
       guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guide.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || guide.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || guide.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
@@ -275,10 +275,7 @@ export default function GuidesPage({
       }`}
     >
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
       {/* Ambient Glow */}
@@ -303,8 +300,8 @@ export default function GuidesPage({
             Master the Paperwork.
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            Step-by-step guides for every document you need. Clear instructions,
-            timelines, and common pitfalls to avoid.
+            Step-by-step guides for every document you need. Clear instructions, timelines, and
+            common pitfalls to avoid.
           </p>
         </section>
 
@@ -407,12 +404,15 @@ export default function GuidesPage({
 
 // --- Guide Card Component ---
 
-const CATEGORY_STYLES: Record<GuideCategory, {
-  iconBox: string;
-  innerBox: string;
-  link: string;
-  borderGradient: string;
-}> = {
+const CATEGORY_STYLES: Record<
+  GuideCategory,
+  {
+    iconBox: string;
+    innerBox: string;
+    link: string;
+    borderGradient: string;
+  }
+> = {
   "Pakistan Document": {
     iconBox: "bg-green-600 text-white border-transparent dark:bg-green-500",
     innerBox: "bg-white/20",
@@ -441,18 +441,16 @@ function GuideCard({
   const styles = CATEGORY_STYLES[guide.category];
 
   const featureLocked =
-    !!guide.entitlementFeature &&
-    !plan.isLoading &&
-    plan.isLocked(guide.entitlementFeature);
+    !!guide.entitlementFeature && !plan.isLoading && plan.isLocked(guide.entitlementFeature);
 
   const upgradeTarget: string =
-    (guide.entitlementFeature
-      ? plan.entitlement(guide.entitlementFeature).upgradeTarget
-      : null) ?? "premium";
+    (guide.entitlementFeature ? plan.entitlement(guide.entitlementFeature).upgradeTarget : null) ??
+    "premium";
 
   // All tier-specific card styles derived from upgradeTarget
   const tierStyle = TIER_CARD_STYLE[upgradeTarget] ?? TIER_CARD_STYLE.premium;
-  const tierGradientBorderStyle = TIER_GRADIENT_BORDER_STYLE[upgradeTarget] ?? TIER_GRADIENT_BORDER_STYLE.premium;
+  const tierGradientBorderStyle =
+    TIER_GRADIENT_BORDER_STYLE[upgradeTarget] ?? TIER_GRADIENT_BORDER_STYLE.premium;
   const tierIconClass = `plan-icon--${upgradeTarget}`;
 
   const isNavigable = !guide.disabled;
@@ -472,28 +470,29 @@ function GuideCard({
       onClick={handleClick}
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-      ${featureLocked
-        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-        : isNavigable
-          ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+      ${
+        featureLocked
+          ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+          : isNavigable
+            ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-          {/* Ribbon for locked cards */}
-          {featureLocked && (
-            <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
-              <Image
-                src="/icons/ribbon.png"
-                alt="Premium ribbon"
-                width={240}
-                height={300}
-                priority={false}
-                className="w-40 h-56 object-contain drop-shadow-lg"
-              />
-            </div>
-          )}
+      {/* Ribbon for locked cards */}
+      {featureLocked && (
+        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
+          <Image
+            src="/icons/ribbon.png"
+            alt="Premium ribbon"
+            width={240}
+            height={300}
+            priority={false}
+            className="w-40 h-56 object-contain drop-shadow-lg"
+          />
+        </div>
+      )}
 
       {/* Floating Icon Box */}
       <div
@@ -501,7 +500,9 @@ function GuideCard({
         group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
         ${styles.iconBox}`}
       >
-        <div className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`} />
+        <div
+          className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
+        />
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 

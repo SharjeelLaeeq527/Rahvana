@@ -17,7 +17,7 @@ export default function TwentyTwoOneGActionPlanner() {
   const { user } = useAuth();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   // Restore session from profile
@@ -36,7 +36,8 @@ export default function TwentyTwoOneGActionPlanner() {
           const profile = data.profile_details as MasterProfile;
           if (profile.actionPlanner?.questionnaire) {
             const savedData = profile.actionPlanner.questionnaire.formData as unknown as FormData;
-            const savedSelections = profile.actionPlanner.questionnaire.selectedItems as unknown as FormSelections;
+            const savedSelections = profile.actionPlanner.questionnaire
+              .selectedItems as unknown as FormSelections;
 
             if (savedData) setInitialData(savedData);
             if (savedSelections) setInitialSelections(savedSelections);

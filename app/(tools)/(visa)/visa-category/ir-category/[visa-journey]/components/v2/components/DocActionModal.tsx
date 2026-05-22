@@ -14,11 +14,7 @@ import {
   BookOpen,
   Upload,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { toast } from "sonner";
 
@@ -91,9 +87,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
 
       <Dialog
         open={isOpen}
-        onOpenChange={(open) =>
-          setDocActionModal({ ...docActionModal, isOpen: open })
-        }
+        onOpenChange={(open) => setDocActionModal({ ...docActionModal, isOpen: open })}
       >
         <DialogContent className="max-w-xl w-[95vw] p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
           <div className="relative overflow-hidden bg-white">
@@ -193,9 +187,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                   </div>
 
                   <h4 className="font-bold text-[#0f1f38] mb-1">
-                    {isTranslation || isPassportPhoto
-                      ? "Launch the Tool"
-                      : "Read the Guide"}
+                    {isTranslation || isPassportPhoto ? "Launch the Tool" : "Read the Guide"}
                   </h4>
                   <p className="text-xs text-[#6b8097] leading-relaxed">
                     {isTranslation
@@ -238,12 +230,12 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                       if (sId === "step_1_15") {
                         toast.info(
                           "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
-                          { duration: 6000 },
+                          { duration: 6000 }
                         );
                       } else if (sId === "step_1_17") {
                         toast.info(
                           "Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.",
-                          { duration: 6000 },
+                          { duration: 6000 }
                         );
                       }
                       setDocActionUpgradeFeature("document_vault");
@@ -282,9 +274,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                     <Upload size={20} />
                   </div>
 
-                  <h4 className="font-bold text-[#0f1f38] mb-1">
-                    Upload Document
-                  </h4>
+                  <h4 className="font-bold text-[#0f1f38] mb-1">Upload Document</h4>
                   <p className="text-xs text-[#6b8097] leading-relaxed">
                     Attach and submit your document for processing.
                   </p>
@@ -300,9 +290,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
 
               <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
                 <button
-                  onClick={() =>
-                    setDocActionModal({ ...docActionModal, isOpen: false })
-                  }
+                  onClick={() => setDocActionModal({ ...docActionModal, isOpen: false })}
                   className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
                 >
                   Close

@@ -7,9 +7,7 @@ interface SignatureProcessorProps {
   progress?: number;
 }
 
-export default function SignatureProcessor({
-  progress = 0,
-}: SignatureProcessorProps) {
+export default function SignatureProcessor({ progress = 0 }: SignatureProcessorProps) {
   const { t } = useLanguage();
   const steps = [
     { id: 1, label: t("signatureProcessing.processing.steps.analyzing") },
@@ -32,9 +30,7 @@ export default function SignatureProcessor({
       <h2 className="text-xl font-semibold text-slate-900 mb-2">
         {t("signatureProcessing.processing.title")}
       </h2>
-      <p className="text-slate-600 mb-8 text-sm">
-        {t("signatureProcessing.processing.subtitle")}
-      </p>
+      <p className="text-slate-600 mb-8 text-sm">{t("signatureProcessing.processing.subtitle")}</p>
 
       <div className="mb-8">
         <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">

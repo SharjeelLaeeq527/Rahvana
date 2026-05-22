@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { XCircle } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { XCircle } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function PaymentCancelPage() {
   const router = useRouter();
@@ -14,9 +14,7 @@ export default function PaymentCancelPage() {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <XCircle className="w-12 h-12 text-red-600" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Payment Canceled
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Payment Canceled</h1>
           <p className="text-slate-600">
             Your payment was canceled. No charges have been made to your account.
           </p>
@@ -25,7 +23,8 @@ export default function PaymentCancelPage() {
         <div className="bg-slate-50 rounded-lg p-6 mb-6">
           <h2 className="font-semibold text-slate-900 mb-3">Need Help?</h2>
           <p className="text-sm text-slate-600 mb-4">
-            If you encountered any issues during checkout or have questions about our pricing, we&apos;re here to help.
+            If you encountered any issues during checkout or have questions about our pricing,
+            we&apos;re here to help.
           </p>
           <Link
             href="mailto:support@rahvana.com"

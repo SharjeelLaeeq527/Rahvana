@@ -1,5 +1,5 @@
-import React from 'react';
-import { FileText, Layout, Users, IdCard, Plane, ArrowRight, Loader2 } from 'lucide-react';
+import React from "react";
+import { FileText, Layout, Users, IdCard, Plane, ArrowRight, Loader2 } from "lucide-react";
 
 export function HomeSection({
   onNavigate,
@@ -17,8 +17,8 @@ export function HomeSection({
             Your U.S. visa journey, guided step-by-step
           </h1>
           <p className="text-lg md:text-xl text-slate-500 mb-8 max-w-[700px] mx-auto">
-            Navigate complex immigration processes with confidence. From
-            petition to visa, we`re with you every step of the way.
+            Navigate complex immigration processes with confidence. From petition to visa, we`re
+            with you every step of the way.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <button
@@ -41,37 +41,33 @@ export function HomeSection({
         </div>
 
         {/* How It Works */}
-        <h2 className="text-center mb-10 text-3xl font-bold">
-          How Rahvana Works
-        </h2>
+        <h2 className="text-center mb-10 text-3xl font-bold">How Rahvana Works</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
             <h3 className="text-xl font-bold mb-3">1️⃣ Choose Your Journey</h3>
             <p className="text-slate-500 mb-4">
-              Select your visa type (IR-1 spouse, IR-5 parents, K-1 fiancé, and
-              more). We`ll show you exactly what to expect.
+              Select your visa type (IR-1 spouse, IR-5 parents, K-1 fiancé, and more). We`ll show
+              you exactly what to expect.
             </p>
           </div>
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
             <h3 className="text-xl font-bold mb-3">2️⃣ Follow Step-by-Step</h3>
             <p className="text-slate-500 mb-4">
-              Each journey is broken into clear stages and steps. No legal
-              jargon—just plain guidance on what to do, when, and how.
+              Each journey is broken into clear stages and steps. No legal jargon—just plain
+              guidance on what to do, when, and how.
             </p>
           </div>
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
             <h3 className="text-xl font-bold mb-3">3️⃣ Track Your Progress</h3>
             <p className="text-slate-500 mb-4">
-              Mark steps complete, use integrated tools, watch tutorials, and
-              see your progress grow. You`re never lost.
+              Mark steps complete, use integrated tools, watch tutorials, and see your progress
+              grow. You`re never lost.
             </p>
           </div>
         </div>
 
         {/* Journey Preview */}
-        <h2 className="text-center mt-[60px] mb-10 text-3xl font-bold">
-          Available Journeys
-        </h2>
+        <h2 className="text-center mt-[60px] mb-10 text-3xl font-bold">Available Journeys</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative">
             <div className="absolute top-4 right-4 px-3 py-1 bg-[#10b981] text-white rounded-full text-xs font-semibold">
@@ -79,8 +75,8 @@ export function HomeSection({
             </div>
             <h3 className="text-xl font-bold mb-3">🇺🇸 IR-1/CR-1 Spouse Visa</h3>
             <p className="text-slate-500 mb-4">
-              Bring your spouse to the U.S. via consular processing. Full
-              roadmap for Pakistani beneficiaries.
+              Bring your spouse to the U.S. via consular processing. Full roadmap for Pakistani
+              beneficiaries.
             </p>
             <button
               className="px-6 py-3 rounded-lg cursor-pointer text-[15px] font-semibold transition-all no-underline bg-[#0d9488] text-white hover:bg-[#0f766e] hover:-translate-y-px hover:shadow-md"
@@ -94,12 +90,9 @@ export function HomeSection({
             <div className="absolute top-4 right-4 px-3 py-1 bg-slate-400 text-white rounded-full text-xs font-semibold">
               Coming Soon
             </div>
-            <h3 className="text-xl font-bold mb-3 text-black">
-              👪 IR-5 Parents Visa
-            </h3>
+            <h3 className="text-xl font-bold mb-3 text-black">👪 IR-5 Parents Visa</h3>
             <p className="text-slate-500 mb-4">
-              Sponsor your parents to join you in the U.S. Complete petition and
-              consular guide.
+              Sponsor your parents to join you in the U.S. Complete petition and consular guide.
             </p>
             <button
               className="px-6 py-3 rounded-lg text-[15px] font-semibold transition-all bg-white text-slate-800 border border-slate-200 hover:border-primary"
@@ -112,12 +105,9 @@ export function HomeSection({
             <div className="absolute top-4 right-4 px-3 py-1 bg-slate-400 text-white rounded-full text-xs font-semibold">
               Coming Soon
             </div>
-            <h3 className="text-xl font-bold mb-3 text-black">
-              💍 K-1 Fiancé Visa
-            </h3>
+            <h3 className="text-xl font-bold mb-3 text-black">💍 K-1 Fiancé Visa</h3>
             <p className="text-slate-500 mb-4">
-              Bring your fiancé to marry in the U.S. Petition through interview
-              and adjustment.
+              Bring your fiancé to marry in the U.S. Petition through interview and adjustment.
             </p>
             <button
               className="px-6 py-3 rounded-lg text-[15px] font-semibold transition-all bg-white text-slate-800 border border-slate-200 hover:border-primary"
@@ -135,9 +125,7 @@ export function HomeSection({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative">
             <h3 className="text-xl font-bold mb-3">📸 Photo Booth</h3>
-            <p className="text-slate-500 mb-4">
-              Make a compliant passport/visa photo in minutes.
-            </p>
+            <p className="text-slate-500 mb-4">Make a compliant passport/visa photo in minutes.</p>
             <div className="inline-flex px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-semibold">
               Free
             </div>
@@ -146,8 +134,7 @@ export function HomeSection({
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 relative">
             <h3 className="text-xl font-bold mb-3">📄 </h3>
             <p className="text-slate-500 mb-4">
-              CEAC-friendly filenames generated instantly from plain
-              descriptions.
+              CEAC-friendly filenames generated instantly from plain descriptions.
             </p>
             <div className="inline-flex px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-semibold">
               Free
@@ -169,11 +156,7 @@ export function HomeSection({
   );
 }
 
-export function VisaCategorySection({
-  onNavigate,
-}: {
-  onNavigate: (section: string) => void;
-}) {
+export function VisaCategorySection({ onNavigate }: { onNavigate: (section: string) => void }) {
   return (
     <section id="journeys" className="block">
       <div className="w-full px-6 py-8 md:py-12">
@@ -196,13 +179,12 @@ export function VisaCategorySection({
                 <strong>Timeline:</strong> 18-36 months average
               </p>
               <p>
-                <strong>Process:</strong> USCIS → NVC → Consular Interview →
-                Visa
+                <strong>Process:</strong> USCIS → NVC → Consular Interview → Visa
               </p>
             </div>
             <p className="mt-3 text-slate-500">
-              Complete roadmap for Pakistani beneficiaries via U.S. Embassy
-              Islamabad with stage-by-stage guidance, document vault, and tools.
+              Complete roadmap for Pakistani beneficiaries via U.S. Embassy Islamabad with
+              stage-by-stage guidance, document vault, and tools.
             </p>
             <button
               className="w-full mt-4 px-8 py-4 rounded-lg cursor-pointer text-base font-semibold transition-all no-underline bg-[#0d9488] text-white hover:bg-[#0f766e] hover:-translate-y-px hover:shadow-md"
@@ -226,13 +208,12 @@ export function VisaCategorySection({
                 <strong>Timeline:</strong> 12-24 months average
               </p>
               <p>
-                <strong>Process:</strong> USCIS → NVC → Consular Interview →
-                Visa
+                <strong>Process:</strong> USCIS → NVC → Consular Interview → Visa
               </p>
             </div>
             <p className="mt-3 text-slate-500">
-              Step-by-step guidance for parent visa applications. Specialized
-              help for older applicants and NADRA document verification.
+              Step-by-step guidance for parent visa applications. Specialized help for older
+              applicants and NADRA document verification.
             </p>
             <button
               className="w-full mt-4 px-8 py-4 rounded-lg text-base font-semibold transition-all bg-white text-slate-800 border border-slate-200 cursor-not-allowed"
@@ -244,12 +225,9 @@ export function VisaCategorySection({
         </div>
 
         <div className="mt-10 bg-slate-50 border-2 border-dashed border-slate-200 text-center py-16 px-6 rounded-xl">
-          <h3 className="text-xl font-bold text-slate-400 mb-2">
-            More Categories Coming Soon
-          </h3>
+          <h3 className="text-xl font-bold text-slate-400 mb-2">More Categories Coming Soon</h3>
           <p className="text-slate-500 text-base">
-            K-1 Fiancé, F2A Spouse/Child of LPR, and Student Visas are under
-            development.
+            K-1 Fiancé, F2A Spouse/Child of LPR, and Student Visas are under development.
           </p>
         </div>
       </div>
@@ -320,15 +298,13 @@ export function ToolsSection() {
           ))}
         </div>
 
-        <h3 className="mt-12 mb-6 text-xl font-bold">
-          📝 Templates & Generators
-        </h3>
+        <h3 className="mt-12 mb-6 text-xl font-bold">📝 Templates & Generators</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
             <h3 className="text-xl font-bold mb-3">Cover Letter Generator</h3>
             <p className="text-slate-500 mb-4 text-sm">
-              Create perfect cover letters for USCIS and NVC packages.
-              Pre-filled with Pakistan-specific requirements.
+              Create perfect cover letters for USCIS and NVC packages. Pre-filled with
+              Pakistan-specific requirements.
             </p>
             <button className="px-5 py-2 rounded-lg text-[13px] font-semibold border border-slate-200 hover:border-[#0d9488] transition-colors">
               Start Generator
@@ -344,9 +320,7 @@ export function PricingSection() {
   return (
     <section id="pricing" className="block">
       <div className="w-full px-6 py-8 md:py-12">
-        <h1 className="text-[40px] font-bold mb-4 text-center">
-          Plain Pricing
-        </h1>
+        <h1 className="text-[40px] font-bold mb-4 text-center">Plain Pricing</h1>
         <p className="text-slate-500 text-lg mb-12 text-center">
           Use the roadmap for free. Upgrade for automation and experts.
         </p>
@@ -355,23 +329,17 @@ export function PricingSection() {
           <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm text-center">
             <h3 className="text-xl font-bold mb-2">Rahvana Core</h3>
             <div className="text-[48px] font-bold text-[#0d9488] my-4">
-              $0{" "}
-              <span className="text-sm text-slate-400 font-normal">
-                Free Forever
-              </span>
+              $0 <span className="text-sm text-slate-400 font-normal">Free Forever</span>
             </div>
             <ul className="text-left my-8 space-y-3">
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Full
-                IR-1/CR-1 Step Roadmap
+                <span className="text-green-500 font-bold">✓</span> Full IR-1/CR-1 Step Roadmap
               </li>
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Pakistan
-                Specific Checklists
+                <span className="text-green-500 font-bold">✓</span> Pakistan Specific Checklists
               </li>
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Browser
-                Progress Saving
+                <span className="text-green-500 font-bold">✓</span> Browser Progress Saving
               </li>
             </ul>
             <button className="w-full px-6 py-4 rounded-lg bg-white border border-slate-200 font-bold hover:border-[#0d9488] transition-colors">
@@ -385,27 +353,20 @@ export function PricingSection() {
             </div>
             <h3 className="text-xl font-bold mb-2">Rahvana Plus</h3>
             <div className="text-[48px] font-bold text-[#0d9488] my-4">
-              $9.99{" "}
-              <span className="text-sm text-slate-400 font-normal">
-                one-time
-              </span>
+              $9.99 <span className="text-sm text-slate-400 font-normal">one-time</span>
             </div>
             <ul className="text-left my-8 space-y-3">
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Everything
-                in Core
+                <span className="text-green-500 font-bold">✓</span> Everything in Core
               </li>
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Cloud Backup
-                (Cross-device)
+                <span className="text-green-500 font-bold">✓</span> Cloud Backup (Cross-device)
               </li>
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Form Filling
-                Masterclass
+                <span className="text-green-500 font-bold">✓</span> Form Filling Masterclass
               </li>
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> NVC Document
-                Verification
+                <span className="text-green-500 font-bold">✓</span> NVC Document Verification
               </li>
             </ul>
             <button className="w-full px-6 py-4 rounded-lg bg-[#0d9488] text-white font-bold hover:bg-[#0f766e] transition-colors shadow-lg">
@@ -416,23 +377,17 @@ export function PricingSection() {
           <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm text-center opacity-70">
             <h3 className="text-xl font-bold mb-2">Rahvana Pro</h3>
             <div className="text-[48px] font-bold text-slate-500 my-4">
-              $199{" "}
-              <span className="text-sm text-slate-400 font-normal">
-                Expert Assitance
-              </span>
+              $199 <span className="text-sm text-slate-400 font-normal">Expert Assitance</span>
             </div>
             <ul className="text-left my-8 space-y-3">
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Everything
-                in Plus
+                <span className="text-green-500 font-bold">✓</span> Everything in Plus
               </li>
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Document
-                Review by Experts
+                <span className="text-green-500 font-bold">✓</span> Document Review by Experts
               </li>
               <li className="flex gap-2 text-sm">
-                <span className="text-green-500 font-bold">✓</span> Mock
-                Interview Preparation
+                <span className="text-green-500 font-bold">✓</span> Mock Interview Preparation
               </li>
             </ul>
             <button
@@ -462,12 +417,10 @@ export function IR1JourneyDetail({
     <section id="ir1-journey" className="block">
       <div className="w-full px-6 py-8 md:py-12">
         <div className="max-w-5xl mx-auto mb-12">
-          <h1 className="text-5xl font-bold mb-4">
-            IR-1/CR-1 Spouse Visa Journey
-          </h1>
+          <h1 className="text-5xl font-bold mb-4">IR-1/CR-1 Spouse Visa Journey</h1>
           <p className="text-slate-500 mb-8 text-lg">
-            Comprehensive roadmap for bringing your spouse to the United States
-            via consular processing at U.S. Embassy Islamabad, Pakistan.
+            Comprehensive roadmap for bringing your spouse to the United States via consular
+            processing at U.S. Embassy Islamabad, Pakistan.
           </p>
 
           {/* Stage Overview */}
@@ -555,8 +508,7 @@ export function IR1JourneyDetail({
                 <h4 className="text-2xl font-bold">Full Wizard Access</h4>
               </div>
               <p className="mb-4 text-lg opacity-90 mx-auto">
-                Sign in free to save your progress, mark steps complete, and use
-                the document vault.
+                Sign in free to save your progress, mark steps complete, and use the document vault.
               </p>
               <button
                 className="px-8 py-3 rounded-xl bg-primary/90 text-white font-bold text-lg hover:bg-[#0f766e] transition-all shadow-lg active:scale-95"

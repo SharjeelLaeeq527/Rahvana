@@ -72,11 +72,8 @@ export const RapidFireModePage = ({
   >(null);
   const [totalScore, setTotalScore] = useState<number | null>(null);
   const [skippedQuestions, setSkippedQuestions] = useState<number>(0);
-  const [questionResponses, setQuestionResponses] = useState<
-    QuestionResponse[]
-  >([]);
-  const [reviewQuestion, setReviewQuestion] =
-    useState<GeneratedQuestion | null>(null);
+  const [questionResponses, setQuestionResponses] = useState<QuestionResponse[]>([]);
+  const [reviewQuestion, setReviewQuestion] = useState<GeneratedQuestion | null>(null);
   const [isReviewFlipped, setIsReviewFlipped] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -107,9 +104,9 @@ export const RapidFireModePage = ({
     return shuffled;
   };
 
-  const [shuffledQuestions, setShuffledQuestions] = useState<
-    GeneratedQuestion[]
-  >(() => shuffleArray(questions.filter((q) => q.applicable)));
+  const [shuffledQuestions, setShuffledQuestions] = useState<GeneratedQuestion[]>(() =>
+    shuffleArray(questions.filter((q) => q.applicable))
+  );
 
   const getProgressGradient = (percent: number) => {
     return {
@@ -154,9 +151,7 @@ export const RapidFireModePage = ({
     };
 
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -210,23 +205,15 @@ export const RapidFireModePage = ({
       }
 
       // Calculate final score based on actual responses
-      const coveredCount = allResponses.filter(
-        (r) => r.response === "covered",
-      ).length;
-      const partialCount = allResponses.filter(
-        (r) => r.response === "partial",
-      ).length;
-      const skippedCount = allResponses.filter(
-        (r) => r.response === "skipped",
-      ).length;
+      const coveredCount = allResponses.filter((r) => r.response === "covered").length;
+      const partialCount = allResponses.filter((r) => r.response === "partial").length;
+      const skippedCount = allResponses.filter((r) => r.response === "skipped").length;
 
       const totalPoints = coveredCount * 10 + partialCount * 5;
       const maxPossiblePoints = (shuffledQuestions.length - skippedCount) * 10;
 
       const percentageScore =
-        maxPossiblePoints > 0
-          ? Math.round((totalPoints / maxPossiblePoints) * 100)
-          : 0;
+        maxPossiblePoints > 0 ? Math.round((totalPoints / maxPossiblePoints) * 100) : 0;
 
       // Update the state with complete response data
       setQuestionResponses(allResponses);
@@ -268,9 +255,7 @@ export const RapidFireModePage = ({
     };
 
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -305,7 +290,7 @@ export const RapidFireModePage = ({
     if (timeLeft === 0 && !showAnswer && userResponse === null) {
       // Check if this question was already recorded as skipped
       const isAlreadySkipped = questionResponses.some(
-        (r) => r.index === currentQuestionIndex && r.response === "skipped",
+        (r) => r.index === currentQuestionIndex && r.response === "skipped"
       );
 
       if (!isAlreadySkipped) {
@@ -317,9 +302,7 @@ export const RapidFireModePage = ({
         };
 
         setQuestionResponses((prev) => {
-          const existingIndex = prev.findIndex(
-            (r) => r.index === currentQuestionIndex,
-          );
+          const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
           if (existingIndex >= 0) {
             // Don't overwrite skipped responses
             if (prev[existingIndex].response === "skipped") {
@@ -361,10 +344,7 @@ export const RapidFireModePage = ({
               No applicable questions found for rapid fire mode.
             </p>
             <div className="flex gap-3 justify-center">
-              <Button
-                onClick={onSwitchToPrep}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
+              <Button onClick={onSwitchToPrep} className="bg-teal-600 hover:bg-teal-700">
                 Switch to Prep Mode
               </Button>
               <Button onClick={onExit} variant="outline">
@@ -382,12 +362,8 @@ export const RapidFireModePage = ({
       <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
         <div className="">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Rapid Fire Completed!
-            </h1>
-            <p className="text-slate-600">
-              Your interview readiness assessment
-            </p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Rapid Fire Completed!</h1>
+            <p className="text-slate-600">Your interview readiness assessment</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
@@ -396,16 +372,9 @@ export const RapidFireModePage = ({
                 <div className="w-40 h-40 rounded-full border-8 border-teal-200 flex items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
                   <div className="text-center">
                     <span className="text-4xl font-bold text-teal-700">
-                      {Math.round(
-                        (score /
-                          (shuffledQuestions.length - skippedQuestions)) *
-                          10,
-                      )}
-                      %
+                      {Math.round((score / (shuffledQuestions.length - skippedQuestions)) * 10)}%
                     </span>
-                    <div className="text-sm text-teal-600 font-medium mt-1">
-                      Readiness Score
-                    </div>
+                    <div className="text-sm text-teal-600 font-medium mt-1">Readiness Score</div>
                   </div>
                 </div>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
@@ -418,11 +387,7 @@ export const RapidFireModePage = ({
                           : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {totalScore >= 80
-                      ? "Excellent"
-                      : totalScore >= 60
-                        ? "Good"
-                        : "Needs Practice"}
+                    {totalScore >= 80 ? "Excellent" : totalScore >= 60 ? "Good" : "Needs Practice"}
                   </div>
                 </div>
               </div>
@@ -436,9 +401,8 @@ export const RapidFireModePage = ({
                       : "Keep practicing to build confidence"}
                 </p>
                 <p className="text-slate-500">
-                  You scored{" "}
-                  <span className="font-semibold text-teal-600">{score}</span>{" "}
-                  points out of{" "}
+                  You scored <span className="font-semibold text-teal-600">{score}</span> points out
+                  of{" "}
                   <span className="font-semibold">
                     {(shuffledQuestions.length - skippedQuestions) * 10}
                   </span>{" "}
@@ -458,28 +422,19 @@ export const RapidFireModePage = ({
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
                 <div className="text-2xl font-bold text-emerald-600">
-                  {
-                    questionResponses.filter((r) => r.response === "covered")
-                      .length
-                  }
+                  {questionResponses.filter((r) => r.response === "covered").length}
                 </div>
                 <div className="text-sm text-emerald-700">Covered Well</div>
               </div>
               <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
                 <div className="text-2xl font-bold text-amber-600">
-                  {
-                    questionResponses.filter((r) => r.response === "partial")
-                      .length
-                  }
+                  {questionResponses.filter((r) => r.response === "partial").length}
                 </div>
                 <div className="text-sm text-amber-700">Partial Coverage</div>
               </div>
               <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
                 <div className="text-2xl font-bold text-rose-600">
-                  {
-                    questionResponses.filter((r) => r.response === "missed")
-                      .length
-                  }
+                  {questionResponses.filter((r) => r.response === "missed").length}
                 </div>
                 <div className="text-sm text-rose-700">Missed</div>
               </div>
@@ -489,29 +444,23 @@ export const RapidFireModePage = ({
               <div className="text-center mb-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
                   <span className="text-slate-600">Questions skipped:</span>
-                  <span className="font-bold text-slate-800">
-                    {skippedQuestions}
-                  </span>
+                  <span className="font-bold text-slate-800">{skippedQuestions}</span>
                 </div>
               </div>
             )}
 
             {/* Reviewable Progress Bar */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Performance Review
-              </h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Performance Review</h3>
               <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800">
-                  <span className="font-medium">Note:</span> Click on any of the
-                  color-coded tabs to review the Q&A.
+                  <span className="font-medium">Note:</span> Click on any of the color-coded tabs to
+                  review the Q&A.
                 </p>
               </div>
               <div className="flex gap-1 mb-4 mt-2">
                 {shuffledQuestions.map((_, index) => {
-                  const response = questionResponses.find(
-                    (r) => r.index === index,
-                  );
+                  const response = questionResponses.find((r) => r.index === index);
                   let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
 
                   if (response) {
@@ -536,9 +485,7 @@ export const RapidFireModePage = ({
                       key={index}
                       className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
                       onClick={() => {
-                        const questionResp = questionResponses.find(
-                          (r) => r.index === index,
-                        );
+                        const questionResp = questionResponses.find((r) => r.index === index);
                         if (questionResp) {
                           handleReviewQuestionClick(questionResp.question);
                         }
@@ -572,14 +519,8 @@ export const RapidFireModePage = ({
             {reviewQuestion && (
               <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg\">
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-slate-900 text-lg\">
-                    Question Review
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReviewQuestion(null)}
-                  >
+                  <h4 className="font-semibold text-slate-900 text-lg\">Question Review</h4>
+                  <Button variant="ghost" size="sm" onClick={() => setReviewQuestion(null)}>
                     Close
                   </Button>
                 </div>
@@ -606,14 +547,11 @@ export const RapidFireModePage = ({
                         </span>
                       </div>
                       <h3 className="text-lg font-bold leading-tight">
-                        {reviewQuestion.selectedQuestion ||
-                          reviewQuestion.question}
+                        {reviewQuestion.selectedQuestion || reviewQuestion.question}
                       </h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-teal-100 text-sm">
-                        Click to see answer and guidance
-                      </p>
+                      <p className="text-teal-100 text-sm">Click to see answer and guidance</p>
                       <div className="flex justify-center mt-2">
                         <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
                           <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
@@ -665,9 +603,7 @@ export const RapidFireModePage = ({
                     </div>
 
                     <div className="text-center mt-4">
-                      <p className="text-slate-300 text-xs">
-                        Click to flip back
-                      </p>
+                      <p className="text-slate-300 text-xs">Click to flip back</p>
                     </div>
                   </div>
                 </div>
@@ -689,11 +625,7 @@ export const RapidFireModePage = ({
                 <Zap className="w-4 h-4 mr-2" />
                 Switch to Prep Mode
               </Button>
-              <Button
-                onClick={onExit}
-                variant="outline"
-                className="cursor-pointer"
-              >
+              <Button onClick={onExit} variant="outline" className="cursor-pointer">
                 Exit
               </Button>
             </div>
@@ -774,8 +706,7 @@ export const RapidFireModePage = ({
                     </span>
                   </div>
                   <h2 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-slate-800 mb-4 sm:mb-6 line-clamp-5 sm:line-clamp-4">
-                    {currentQuestion.selectedQuestion ||
-                      currentQuestion.question}
+                    {currentQuestion.selectedQuestion || currentQuestion.question}
                   </h2>
 
                   {!showAnswer && (
@@ -787,10 +718,7 @@ export const RapidFireModePage = ({
                         ></div>
 
                         {/* Enhanced circular timer */}
-                        <svg
-                          className="w-full h-full drop-shadow-sm"
-                          viewBox="0 0 176 176"
-                        >
+                        <svg className="w-full h-full drop-shadow-sm" viewBox="0 0 176 176">
                           {/* Background ring with subtle gradient */}
                           <circle
                             cx="88"
@@ -807,11 +735,7 @@ export const RapidFireModePage = ({
                             cy="88"
                             r="76"
                             fill="none"
-                            stroke={
-                              timeLeft <= 3
-                                ? "url(#timerDanger)"
-                                : "url(#timerSuccess)"
-                            }
+                            stroke={timeLeft <= 3 ? "url(#timerDanger)" : "url(#timerSuccess)"}
                             strokeWidth="6"
                             strokeDasharray={`${2 * Math.PI * 76}`}
                             strokeDashoffset={`${2 * Math.PI * 76 * (1 - timeLeft / 10)}`}
@@ -822,33 +746,15 @@ export const RapidFireModePage = ({
 
                           {/* Gradient definitions */}
                           <defs>
-                            <linearGradient
-                              id="timerBg"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
+                            <linearGradient id="timerBg" x1="0%" y1="0%" x2="100%" y2="100%">
                               <stop offset="0%" stopColor="#f1f5f9" />
                               <stop offset="100%" stopColor="#e2e8f0" />
                             </linearGradient>
-                            <linearGradient
-                              id="timerSuccess"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
+                            <linearGradient id="timerSuccess" x1="0%" y1="0%" x2="100%" y2="100%">
                               <stop offset="0%" stopColor="#0d9488" />
                               <stop offset="100%" stopColor="#0f766e" />
                             </linearGradient>
-                            <linearGradient
-                              id="timerDanger"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
+                            <linearGradient id="timerDanger" x1="0%" y1="0%" x2="100%" y2="100%">
                               <stop offset="0%" stopColor="#ef4444" />
                               <stop offset="100%" stopColor="#dc2626" />
                             </linearGradient>
@@ -879,9 +785,7 @@ export const RapidFireModePage = ({
                       <span>Preparing response...</span>
                     </div>
                   ) : (
-                    <p className="text-slate-600 text-xs sm:text-sm">
-                      Click to see answer
-                    </p>
+                    <p className="text-slate-600 text-xs sm:text-sm">Click to see answer</p>
                   )}
                 </div>
               </div>
@@ -997,9 +901,7 @@ export const RapidFireModePage = ({
               className="bg-orange-600 hover:bg-orange-700"
               disabled={userResponse === null}
             >
-              {currentQuestionIndex < shuffledQuestions.length - 1
-                ? "Next Question"
-                : "Finish"}
+              {currentQuestionIndex < shuffledQuestions.length - 1 ? "Next Question" : "Finish"}
             </Button>
           )}
         </div>

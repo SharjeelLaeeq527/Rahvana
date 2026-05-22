@@ -88,9 +88,7 @@ export const AwaitingReviewStep: React.FC<{
               <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/38">
                 {item.label}
               </div>
-              <div className="text-[13px] font-semibold text-white/88">
-                {item.value}
-              </div>
+              <div className="text-[13px] font-semibold text-white/88">{item.value}</div>
             </div>
           ))}
         </div>
@@ -99,11 +97,7 @@ export const AwaitingReviewStep: React.FC<{
   );
 };
 
-export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
-  dqState,
-  actions,
-  guard,
-}) => {
+export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, actions, guard }) => {
   const {
     dqSaved,
     setDqSaved,
@@ -164,9 +158,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
           Your documents have been accepted by NVC
         </div>
 
-        <div className="text-[13px] text-white/55">
-          Case is now documentarily complete.
-        </div>
+        <div className="text-[13px] text-white/55">Case is now documentarily complete.</div>
       </div>
 
       {/* FORM */}
@@ -191,13 +183,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
 
             {/* CATEGORY */}
             <div>
-              <div
-                className={
-                  showErrors && !dqCategory
-                    ? "border border-red-500 rounded-lg"
-                    : ""
-                }
-              >
+              <div className={showErrors && !dqCategory ? "border border-red-500 rounded-lg" : ""}>
                 <CustomDropdown
                   value={dqCategory}
                   onChange={(val) => setDqCategory(val)}
@@ -206,21 +192,13 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
                 />
               </div>
               {showErrors && !dqCategory && (
-                <p className="text-xs text-red-500 mt-1">
-                  Category is required
-                </p>
+                <p className="text-xs text-red-500 mt-1">Category is required</p>
               )}
             </div>
 
             {/* POST */}
             <div>
-              <div
-                className={
-                  showErrors && !dqPost
-                    ? "border border-red-500 rounded-lg"
-                    : ""
-                }
-              >
+              <div className={showErrors && !dqPost ? "border border-red-500 rounded-lg" : ""}>
                 <CustomDropdown
                   value={dqPost}
                   onChange={(val) => setDqPost(val)}
@@ -267,9 +245,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
         </div>
       ) : (
         <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-4 flex justify-between items-center">
-          <div className="font-bold text-emerald-800 text-xs">
-            ✓ DQ Recorded ({dqDate})
-          </div>
+          <div className="font-bold text-emerald-800 text-xs">✓ DQ Recorded ({dqDate})</div>
           <button
             onClick={() => setDqSaved(false)}
             className="text-primary text-xs font-semibold hover:underline"
@@ -282,12 +258,9 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({
   );
 };
 
-export const InterviewSchedulingTool: React.FC<{ metadata: any }> = ({
-  metadata,
-}) => {
+export const InterviewSchedulingTool: React.FC<{ metadata: any }> = ({ metadata }) => {
   const postKey =
-    ((metadata.post ||
-      metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
+    ((metadata.post || metadata.dqPost) as keyof typeof INTERVIEW_SCHEDULING_DATA.schedulingData) ||
     "Other";
   const postData = INTERVIEW_SCHEDULING_DATA.schedulingData[postKey];
 
@@ -302,15 +275,11 @@ export const InterviewSchedulingTool: React.FC<{ metadata: any }> = ({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 bg-slate-50 border rounded-xl">
-          <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">
-            Official Status
-          </div>
+          <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Official Status</div>
           <div className="text-lg font-bold">{postData?.official || "—"}</div>
         </div>
         <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-          <div className="text-[10px] uppercase font-bold text-blue-600 mb-1">
-            Trend
-          </div>
+          <div className="text-[10px] uppercase font-bold text-blue-600 mb-1">Trend</div>
           <div className="text-lg font-bold">{postData?.trend || "—"}</div>
         </div>
       </div>
@@ -355,8 +324,7 @@ export const AppointmentReceivedTool: React.FC<{
     } else if (loc.length < 2) {
       newErrors.consulateLocation = "Must be at least 2 characters.";
     } else if (!/^[a-zA-Z\s\-,\.]+$/.test(loc)) {
-      newErrors.consulateLocation =
-        "Only letters, spaces, dashes, and commas allowed.";
+      newErrors.consulateLocation = "Only letters, spaces, dashes, and commas allowed.";
     }
 
     return newErrors;
@@ -400,9 +368,7 @@ export const AppointmentReceivedTool: React.FC<{
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex justify-between items-center">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">
-                  Location
-                </label>
+                <label className="text-[11px] font-bold text-slate-500 uppercase">Location</label>
                 <span
                   className={`text-[9px] font-medium ${consulateLocation.length >= 50 ? "text-red-500" : "text-slate-400"}`}
                 >
@@ -415,9 +381,7 @@ export const AppointmentReceivedTool: React.FC<{
                 maxLength={50}
                 placeholder="e.g. Islamabad"
                 onChange={(e) => {
-                  const val = e.target.value
-                    .replace(/[^a-zA-Z\s\-,\.]/g, "")
-                    .slice(0, 50);
+                  const val = e.target.value.replace(/[^a-zA-Z\s\-,\.]/g, "").slice(0, 50);
                   setConsulateLocation(val);
                   setErrors((prev) => ({ ...prev, consulateLocation: "" }));
                 }}
@@ -512,9 +476,7 @@ export const MedicalExamTool: React.FC<{
     const digits = upper.replace(/\D/g, "").slice(0, 4);
 
     // Extract letters specifically after the numbers/colon
-    const rawSuffix = upper.slice(
-      digits.length > 2 ? digits.length + 1 : digits.length,
-    );
+    const rawSuffix = upper.slice(digits.length > 2 ? digits.length + 1 : digits.length);
     let suffix = rawSuffix.replace(/[^APM]/g, "");
 
     // Logic: Suffix must start with A or P
@@ -542,8 +504,7 @@ export const MedicalExamTool: React.FC<{
     setMedTime(formatted);
   };
 
-  const currentSteps =
-    medWizardMode === "service" ? data.serviceSteps : data.guideSteps;
+  const currentSteps = medWizardMode === "service" ? data.serviceSteps : data.guideSteps;
   const s = currentSteps[medWizardStep];
 
   return (
@@ -584,12 +545,8 @@ export const MedicalExamTool: React.FC<{
                   <div className="text-2xl mb-3 group-hover:scale-110 transition-transform">
                     {p.icon}
                   </div>
-                  <div className="text-sm font-bold text-white mb-1">
-                    {p.title}
-                  </div>
-                  <div className="text-[10px] text-white/50 leading-relaxed">
-                    {p.sub}
-                  </div>
+                  <div className="text-sm font-bold text-white mb-1">{p.title}</div>
+                  <div className="text-[10px] text-white/50 leading-relaxed">{p.sub}</div>
                 </button>
               ))}
             </div>
@@ -604,9 +561,7 @@ export const MedicalExamTool: React.FC<{
             <div className="text-sm font-bold text-emerald-900">
               {medDate} at {medTime}
             </div>
-            <div className="text-[10px] text-emerald-700 font-medium">
-              {medClinic}
-            </div>
+            <div className="text-[10px] text-emerald-700 font-medium">{medClinic}</div>
           </div>
           <button
             onClick={() => setMedSaved(false)}
@@ -641,24 +596,15 @@ export const MedicalExamTool: React.FC<{
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-w-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {medWizardStep + 1} —{" "}
-                {medWizardMode === "service" ? "Service" : "Guide"}
+                Step {medWizardStep + 1} — {medWizardMode === "service" ? "Service" : "Guide"}
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                {s.heading}
-              </h2>
-              <p className="text-sm text-slate-600 leading-relaxed mb-8">
-                {s.sub}
-              </p>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">{s.heading}</h2>
+              <p className="text-sm text-slate-600 leading-relaxed mb-8">{s.sub}</p>
 
               {(s as any).card && (
                 <div className="bg-slate-50 border rounded-2xl p-6 mb-8 shadow-sm">
-                  <div className="font-bold text-slate-900 mb-1">
-                    {(s as any).card.title}
-                  </div>
-                  <div className="text-sm text-slate-500 mb-6">
-                    {(s as any).card.description}
-                  </div>
+                  <div className="font-bold text-slate-900 mb-1">{(s as any).card.title}</div>
+                  <div className="text-sm text-slate-500 mb-6">{(s as any).card.description}</div>
                   <button className="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 group">
                     {(s as any).card.buttonLabel}{" "}
                     <ExternalLink
@@ -672,9 +618,7 @@ export const MedicalExamTool: React.FC<{
               {s.form && (
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">
-                      Date
-                    </label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Date</label>
                     <input
                       type="date"
                       value={medDate}
@@ -692,9 +636,7 @@ export const MedicalExamTool: React.FC<{
                     )}
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">
-                      Time
-                    </label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Time</label>
                     <input
                       type="text"
                       value={medTime}
@@ -765,14 +707,12 @@ export const MedicalExamTool: React.FC<{
                       if (!medDate) {
                         saveErrors.medDate = "Date is required.";
                       } else if (new Date(medDate) < today) {
-                        saveErrors.medDate =
-                          "Appointment date cannot be in the past.";
+                        saveErrors.medDate = "Appointment date cannot be in the past.";
                       }
 
                       const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
                       if (!medTime || !timeRegex.test(medTime)) {
-                        saveErrors.medTime =
-                          "Enter a valid time (e.g. 09:30 AM).";
+                        saveErrors.medTime = "Enter a valid time (e.g. 09:30 AM).";
                       }
 
                       const clinic = medClinic.trim();
@@ -863,9 +803,7 @@ export const PolioCertificateTool: React.FC<{
         <div className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-1">
           {data.launchModule.eyebrow}
         </div>
-        <div className="text-xl text-white/95 font-bold mb-6">
-          {data.launchModule.heading}
-        </div>
+        <div className="text-xl text-white/95 font-bold mb-6">{data.launchModule.heading}</div>
         <button
           onClick={() => {
             if (guard && !guard()) return;
@@ -877,18 +815,12 @@ export const PolioCertificateTool: React.FC<{
           {polioLaunched
             ? data.launchModule.buttonLabels.completed
             : data.launchModule.buttonLabels.initial}
-          {polioLaunched ? (
-            <CheckCircle2 size={18} />
-          ) : (
-            <ArrowRight size={18} />
-          )}
+          {polioLaunched ? <CheckCircle2 size={18} /> : <ArrowRight size={18} />}
         </button>
       </div>
 
       <div className="bg-white border-[1.5px] border-slate-200 p-6 rounded-2xl shadow-sm">
-        <div className="text-sm font-bold mb-4">
-          {data.completionCard.title}
-        </div>
+        <div className="text-sm font-bold mb-4">{data.completionCard.title}</div>
         <div className="flex flex-col gap-3">
           {data.completionCard.items.map((item: string, i: number) => (
             <label
@@ -948,8 +880,7 @@ export const PolioCertificateTool: React.FC<{
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {polioGuideStep + 1} —{" "}
-                {data.guideSteps[polioGuideStep].label}
+                Step {polioGuideStep + 1} — {data.guideSteps[polioGuideStep].label}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
                 {data.guideSteps[polioGuideStep].heading}
@@ -1054,11 +985,10 @@ export const PoliceClearanceTool: React.FC<{
 
   const data = POLICE_CLEARANCE_DATA;
   const isPccUploaded = uploadedDocuments?.some(
-    (doc: any) => doc.documentDefId === "police-certificate-pakistan",
+    (doc: any) => doc.documentDefId === "police-certificate-pakistan"
   );
 
-  const currentSteps =
-    pccOverlayMode === "service" ? data.serviceSteps : data.guideSteps;
+  const currentSteps = pccOverlayMode === "service" ? data.serviceSteps : data.guideSteps;
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 shadow-xs border p-6 rounded-2xl bg-white">
@@ -1078,9 +1008,7 @@ export const PoliceClearanceTool: React.FC<{
         <div className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-1">
           {data.decisionModule.eyebrow}
         </div>
-        <div className="text-xl text-white/95 font-bold mb-6">
-          {data.decisionModule.heading}
-        </div>
+        <div className="text-xl text-white/95 font-bold mb-6">{data.decisionModule.heading}</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {data.decisionModule.paths.map((p: any) => (
             <button
@@ -1097,9 +1025,7 @@ export const PoliceClearanceTool: React.FC<{
                 {p.icon}
               </div>
               <div className="text-sm font-bold text-white mb-1">{p.title}</div>
-              <div className="text-[10px] text-white/50 leading-tight">
-                {p.sub}
-              </div>
+              <div className="text-[10px] text-white/50 leading-tight">{p.sub}</div>
             </button>
           ))}
         </div>
@@ -1135,18 +1061,12 @@ export const PoliceClearanceTool: React.FC<{
                   max={isDate ? todayStr : undefined}
                   maxLength={!isDate ? MAX_LEN : undefined}
                   placeholder={
-                    !isDate
-                      ? f.id === "receipt"
-                        ? "e.g. PCC-2024-001234"
-                        : "Optional"
-                      : undefined
+                    !isDate ? (f.id === "receipt" ? "e.g. PCC-2024-001234" : "Optional") : undefined
                   }
                   onChange={(e) => {
                     let val = e.target.value;
                     if (!isDate) {
-                      val = val
-                        .replace(/[^a-zA-Z0-9\-\/\s]/g, "")
-                        .toUpperCase();
+                      val = val.replace(/[^a-zA-Z0-9\-\/\s]/g, "").toUpperCase();
                       if (val.length > MAX_LEN) val = val.slice(0, MAX_LEN);
                       const err = validatePccField(f.id, val);
                       setErrors((prev) => ({ ...prev, [f.id]: err }));
@@ -1154,9 +1074,7 @@ export const PoliceClearanceTool: React.FC<{
                     setPccData({ ...pccData, [f.id]: val });
                   }}
                   className={`p-3 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm ${
-                    errors[f.id]
-                      ? "border-red-500 bg-red-50/30"
-                      : "border-slate-200"
+                    errors[f.id] ? "border-red-500 bg-red-50/30" : "border-slate-200"
                   }`}
                 />
                 {errors[f.id] && (
@@ -1217,12 +1135,8 @@ export const PoliceClearanceTool: React.FC<{
       {pccSaved && !pccReceived && (
         <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl flex flex-col gap-4">
           <div>
-            <div className="text-sm font-bold text-amber-900 mb-1">
-              📌 {data.pendingCard.title}
-            </div>
-            <div className="text-xs text-amber-800 leading-relaxed">
-              {data.pendingCard.body}
-            </div>
+            <div className="text-sm font-bold text-amber-900 mb-1">📌 {data.pendingCard.title}</div>
+            <div className="text-xs text-amber-800 leading-relaxed">{data.pendingCard.body}</div>
           </div>
           <button
             onClick={async () => {
@@ -1248,12 +1162,9 @@ export const PoliceClearanceTool: React.FC<{
         <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex flex-col gap-4">
           <div>
             <div className="text-sm font-bold text-emerald-900 mb-1 flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-emerald-600" />{" "}
-              {data.receivedCard.title}
+              <CheckCircle2 size={18} className="text-emerald-600" /> {data.receivedCard.title}
             </div>
-            <div className="text-xs text-emerald-800 leading-relaxed">
-              {data.receivedCard.body}
-            </div>
+            <div className="text-xs text-emerald-800 leading-relaxed">{data.receivedCard.body}</div>
           </div>
           {isPccUploaded ? (
             <div className="flex flex-col gap-3">
@@ -1264,11 +1175,7 @@ export const PoliceClearanceTool: React.FC<{
               <button
                 onClick={() => {
                   if (guard && !guard()) return;
-                  if (
-                    openUploadModal &&
-                    setActiveUploadId &&
-                    setActiveUploadType
-                  ) {
+                  if (openUploadModal && setActiveUploadId && setActiveUploadType) {
                     setActiveUploadId("pcc_upload");
                     setActiveUploadType("doc");
                     openUploadModal("police-certificate-pakistan");
@@ -1285,11 +1192,7 @@ export const PoliceClearanceTool: React.FC<{
             <button
               onClick={() => {
                 if (guard && !guard()) return;
-                if (
-                  openUploadModal &&
-                  setActiveUploadId &&
-                  setActiveUploadType
-                ) {
+                if (openUploadModal && setActiveUploadId && setActiveUploadType) {
                   setActiveUploadId("pcc_upload");
                   setActiveUploadType("doc");
                   openUploadModal("police-certificate-pakistan");
@@ -1357,9 +1260,7 @@ export const PoliceClearanceTool: React.FC<{
                   }}
                   className="flex-1 bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 transition-colors"
                 >
-                  {pccOverlayStep === currentSteps.length - 1
-                    ? "Finish Guide"
-                    : "Next →"}
+                  {pccOverlayStep === currentSteps.length - 1 ? "Finish Guide" : "Next →"}
                 </button>
               </div>
             </div>
@@ -1391,9 +1292,7 @@ export const GatheringChecklistTool: React.FC<{
   const groups = tool.doc_gathering?.groups || [];
   const allItems = groups.flatMap((g: any) => g.items);
   const total = allItems.length;
-  const rev = allItems.filter(
-    (it: any) => gatheringStatus[it.id] === "reviewed",
-  ).length;
+  const rev = allItems.filter((it: any) => gatheringStatus[it.id] === "reviewed").length;
   const pct = total > 0 ? (rev / total) * 100 : 0;
 
   return (
@@ -1482,9 +1381,7 @@ export const GatheringChecklistTool: React.FC<{
                       >
                         {item.title}
                       </div>
-                      <div className="text-[11px] text-[#6b8097] mt-0.5">
-                        {item.sub}
-                      </div>
+                      <div className="text-[11px] text-[#6b8097] mt-0.5">{item.sub}</div>
                     </div>
                   </div>
                 );

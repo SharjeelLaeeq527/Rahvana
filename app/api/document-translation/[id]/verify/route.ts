@@ -12,10 +12,7 @@ function getStorageSupabase() {
   return createSupabaseClient(supabaseUrl, serviceRoleKey);
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -31,10 +28,7 @@ export async function POST(
       .single();
 
     if (checkError || !existing) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     if (existing.status !== "USER_CONFIRMED") {
@@ -47,10 +41,7 @@ export async function POST(
     }
 
     if (!existing.translated_file_path) {
-      return NextResponse.json(
-        { error: "No translated file available" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No translated file available" }, { status: 400 });
     }
 
     // Update status to VERIFIED (final state)
@@ -67,10 +58,7 @@ export async function POST(
 
     if (updateError) {
       console.error("Update error:", updateError);
-      return NextResponse.json(
-        { error: "Failed to verify translation" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to verify translation" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -80,9 +68,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Verify error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

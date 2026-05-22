@@ -28,11 +28,7 @@ interface MedicalExamToolProps {
   guard?: () => boolean;
 }
 
-export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
-  actions,
-  medState,
-  guard,
-}) => {
+export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({ actions, medState, guard }) => {
   const {
     medSaved,
     setMedSaved,
@@ -74,8 +70,7 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
     return `${h.toString().padStart(2, "0")}:${m}`;
   };
 
-  const currentSteps =
-    medWizardMode === "service" ? data.serviceSteps : data.guideSteps;
+  const currentSteps = medWizardMode === "service" ? data.serviceSteps : data.guideSteps;
   const s = currentSteps[medWizardStep];
 
   return (
@@ -116,12 +111,8 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
                   <div className="text-2xl mb-3 group-hover:scale-110 transition-transform">
                     {p.icon}
                   </div>
-                  <div className="text-sm font-bold text-white mb-1">
-                    {p.title}
-                  </div>
-                  <div className="text-[10px] text-white/50 leading-relaxed">
-                    {p.sub}
-                  </div>
+                  <div className="text-sm font-bold text-white mb-1">{p.title}</div>
+                  <div className="text-[10px] text-white/50 leading-relaxed">{p.sub}</div>
                 </button>
               ))}
             </div>
@@ -136,9 +127,7 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
             <div className="text-sm font-bold text-emerald-900">
               {medDate} at {medTime}
             </div>
-            <div className="text-[10px] text-emerald-700 font-medium">
-              {medClinic}
-            </div>
+            <div className="text-[10px] text-emerald-700 font-medium">{medClinic}</div>
           </div>
           <button
             onClick={() => setMedSaved(false)}
@@ -173,24 +162,15 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-w-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {medWizardStep + 1} —{" "}
-                {medWizardMode === "service" ? "Service" : "Guide"}
+                Step {medWizardStep + 1} — {medWizardMode === "service" ? "Service" : "Guide"}
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                {s.heading}
-              </h2>
-              <p className="text-sm text-slate-600 leading-relaxed mb-8">
-                {s.sub}
-              </p>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">{s.heading}</h2>
+              <p className="text-sm text-slate-600 leading-relaxed mb-8">{s.sub}</p>
 
               {(s as any).card && (
                 <div className="bg-slate-50 border rounded-2xl p-6 mb-8 shadow-sm">
-                  <div className="font-bold text-slate-900 mb-1">
-                    {(s as any).card.title}
-                  </div>
-                  <div className="text-sm text-slate-500 mb-6">
-                    {(s as any).card.description}
-                  </div>
+                  <div className="font-bold text-slate-900 mb-1">{(s as any).card.title}</div>
+                  <div className="text-sm text-slate-500 mb-6">{(s as any).card.description}</div>
                   <Link
                     href={(s as any).card.href}
                     target="_blank"
@@ -209,9 +189,7 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
               {s.form && (
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">
-                      Date
-                    </label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Date</label>
                     <input
                       type="date"
                       value={medDate}
@@ -229,9 +207,7 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
                     )}
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">
-                      Time
-                    </label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase">Time</label>
                     <input
                       type="time"
                       value={to24h(medTime)}
@@ -300,14 +276,12 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({
                       if (!medDate) {
                         saveErrors.medDate = "Date is required.";
                       } else if (new Date(medDate) < today) {
-                        saveErrors.medDate =
-                          "Appointment date cannot be in the past.";
+                        saveErrors.medDate = "Appointment date cannot be in the past.";
                       }
 
                       const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
                       if (!medTime || !timeRegex.test(medTime)) {
-                        saveErrors.medTime =
-                          "Enter a valid time (e.g. 09:30 AM).";
+                        saveErrors.medTime = "Enter a valid time (e.g. 09:30 AM).";
                       }
 
                       const clinic = medClinic.trim();

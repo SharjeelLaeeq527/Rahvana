@@ -4,7 +4,7 @@ export interface GuideSession {
   hide_intro_modal: boolean;
   saved: boolean;
   id: string;
-  status: 'not_started' | 'in_progress' | 'completed' | 'abandoned';
+  status: "not_started" | "in_progress" | "completed" | "abandoned";
   progress_percent: number;
   current_step_key: string | null;
   guides?: {
@@ -31,7 +31,7 @@ export const useGuideSession = (slug: string) => {
       setLoading(true);
       const res = await fetch(`/api/guides/progress?slug=${slug}`);
       const data = await res.json();
-      
+
       if (data.session) {
         setSession(data.session);
         const stepsMap = data.steps.reduce((acc: any, step: any) => {
@@ -67,7 +67,12 @@ export const useGuideSession = (slug: string) => {
     }
   };
 
-  const saveStep = async (stepKey: string, data: any, isCompleted = false, progressPercent?: number) => {
+  const saveStep = async (
+    stepKey: string,
+    data: any,
+    isCompleted = false,
+    progressPercent?: number
+  ) => {
     if (!session) return;
 
     try {
@@ -83,15 +88,19 @@ export const useGuideSession = (slug: string) => {
           progressPercent,
         }),
       });
-      
+
       // Update local state cache
-      setStepsData(prev => ({ ...prev, [stepKey]: data }));
-      setSession(prev => prev ? { 
-        ...prev, 
-        current_step_key: stepKey,
-        progress_percent: progressPercent !== undefined ? progressPercent : prev.progress_percent 
-      } : null);
-      
+      setStepsData((prev) => ({ ...prev, [stepKey]: data }));
+      setSession((prev) =>
+        prev
+          ? {
+              ...prev,
+              current_step_key: stepKey,
+              progress_percent:
+                progressPercent !== undefined ? progressPercent : prev.progress_percent,
+            }
+          : null
+      );
     } catch (error) {
       console.error("Failed to save step progress:", error);
     } finally {
@@ -112,6 +121,6 @@ export const useGuideSession = (slug: string) => {
     saving,
     startSession,
     saveStep,
-    refresh: fetchProgress
+    refresh: fetchProgress,
   };
 };

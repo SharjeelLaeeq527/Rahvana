@@ -265,11 +265,7 @@ export const HouseholdMemberTool: React.FC<HouseholdMemberToolProps> = ({
   const renderHhDocCard = (item: any) => {
     const st = hhDocsStatus[item.id] || "not-started";
     const stLabel =
-      st === "reviewed"
-        ? "✓ Reviewed"
-        : st === "in-progress"
-          ? "In progress"
-          : "Open guide";
+      st === "reviewed" ? "✓ Reviewed" : st === "in-progress" ? "In progress" : "Open guide";
 
     return (
       <div
@@ -293,9 +289,7 @@ export const HouseholdMemberTool: React.FC<HouseholdMemberToolProps> = ({
           <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
             {item.title}
           </div>
-          <div className="text-[12px] text-[#6b8097] leading-tight">
-            {item.sub}
-          </div>
+          <div className="text-[12px] text-[#6b8097] leading-tight">{item.sub}</div>
           <div className="flex gap-[5px] mt-[6px] flex-wrap">
             {item.tags.map((tag: any, idx: number) => {
               const tagMap: Record<string, string> = {
@@ -364,9 +358,5 @@ export const HouseholdMemberTool: React.FC<HouseholdMemberToolProps> = ({
     );
   };
 
-  return (
-    <div className="flex flex-col gap-3">
-      {items.map((item) => renderHhDocCard(item))}
-    </div>
-  );
+  return <div className="flex flex-col gap-3">{items.map((item) => renderHhDocCard(item))}</div>;
 };

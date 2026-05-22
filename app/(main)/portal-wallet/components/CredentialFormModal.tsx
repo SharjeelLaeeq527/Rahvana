@@ -68,12 +68,10 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [nvcCaseNumber, setNvcCaseNumber] = useState("");
   const [nvcInvoiceId, setNvcInvoiceId] = useState("");
-  const [securityQuestions, setSecurityQuestions] = useState<
-    SecurityQuestionField[]
-  >(
+  const [securityQuestions, setSecurityQuestions] = useState<SecurityQuestionField[]>(
     Array(questionLimit)
       .fill(null)
-      .map(() => ({ question: "", answer: "" })),
+      .map(() => ({ question: "", answer: "" }))
   );
 
   const questionsKey = portalType === "COURIER" ? "COURIER" : portalType;
@@ -95,7 +93,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
             .map((_, i) => ({
               question: sq[i]?.question || "",
               answer: sq[i]?.answer || "",
-            })),
+            }))
         );
       } else {
         setUsername("");
@@ -105,7 +103,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
         setSecurityQuestions(
           Array(questionLimit)
             .fill(null)
-            .map(() => ({ question: "", answer: "" })),
+            .map(() => ({ question: "", answer: "" }))
         );
       }
     }
@@ -116,15 +114,11 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
   }, [isOpen, mode, initialData, questionLimit]);
 
   const handleQuestionChange = (index: number, question: string) => {
-    setSecurityQuestions((prev) =>
-      prev.map((sq, i) => (i === index ? { ...sq, question } : sq)),
-    );
+    setSecurityQuestions((prev) => prev.map((sq, i) => (i === index ? { ...sq, question } : sq)));
   };
 
   const handleAnswerChange = (index: number, answer: string) => {
-    setSecurityQuestions((prev) =>
-      prev.map((sq, i) => (i === index ? { ...sq, answer } : sq)),
-    );
+    setSecurityQuestions((prev) => prev.map((sq, i) => (i === index ? { ...sq, answer } : sq)));
   };
 
   const getFilteredQuestions = (currentIndex: number) => {
@@ -161,9 +155,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       return;
     }
 
-    const filledQuestions = securityQuestions.filter(
-      (sq) => sq.question && sq.answer,
-    );
+    const filledQuestions = securityQuestions.filter((sq) => sq.question && sq.answer);
 
     onSubmit({
       portalType,
@@ -304,7 +296,7 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     setNvcInvoiceId(value);
                   }}
                   placeholder="Enter invoice ID number"
-                    className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                  className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
                 />
               </div>
             </>

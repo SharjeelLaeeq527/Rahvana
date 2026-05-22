@@ -1,4 +1,4 @@
-declare module 'dom-to-image-more' {
+declare module "dom-to-image-more" {
   interface Options {
     filter?: (node: Node) => boolean;
     bgcolor?: string;

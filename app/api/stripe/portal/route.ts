@@ -1,16 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe/config';
-import { paymentService } from '@/lib/services/paymentService';
+import { NextRequest, NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe/config";
+import { paymentService } from "@/lib/services/paymentService";
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json();
 
     if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
     // Get user's Stripe customer ID
@@ -18,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     if (!subscription?.stripe_customer_id) {
       return NextResponse.json(
-        { error: 'No Stripe customer found for this user' },
+        { error: "No Stripe customer found for this user" },
         { status: 404 }
       );
     }
@@ -33,11 +30,8 @@ export async function POST(request: NextRequest) {
       url: session.url,
     });
   } catch (error: unknown) {
-    console.error('Error creating portal session:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create portal session';
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    console.error("Error creating portal session:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to create portal session";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

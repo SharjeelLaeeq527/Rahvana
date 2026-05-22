@@ -1,7 +1,7 @@
 interface ProgressBarProps {
-  current: number
-  total: number
-  progress: number
+  current: number;
+  total: number;
+  progress: number;
 }
 
 export function ProgressBar({ current, total, progress }: ProgressBarProps) {
@@ -20,5 +20,5 @@ export function ProgressBar({ current, total, progress }: ProgressBarProps) {
         />
       </div>
     </div>
-  )
+  );
 }

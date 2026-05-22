@@ -27,9 +27,9 @@ export const useFilingQuiz = ({
 }: UseFilingQuizProps) => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizScreenIdx, setQuizScreenIdx] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState<
-    Record<string, { value: string; signal: string }>
-  >({});
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, { value: string; signal: string }>>(
+    {}
+  );
   const [quizResult, setQuizResult] = useState<FilingQuizResult | null>(null);
   const [isLocked, setIsLocked] = useState(metadata.filingMethodConfirmed || false);
 
@@ -39,9 +39,7 @@ export const useFilingQuiz = ({
       const isSelf = a["attorney"].value === "no";
       f.push({
         icon: isSelf ? "Check" : "User",
-        text: isSelf
-          ? "Self-filing — the decision is yours"
-          : "Representative involvement noted",
+        text: isSelf ? "Self-filing — the decision is yours" : "Representative involvement noted",
       });
     }
     if (a["online-account"]) {
@@ -90,9 +88,7 @@ export const useFilingQuiz = ({
     return f;
   };
 
-  const computeRecommendation = (
-    answers: Record<string, { value: string; signal: string }>,
-  ) => {
+  const computeRecommendation = (answers: Record<string, { value: string; signal: string }>) => {
     const a = answers;
     if (a["attorney"]?.signal === "discuss")
       return {
@@ -123,9 +119,7 @@ export const useFilingQuiz = ({
         emphasize: "paper",
       } as FilingQuizResult;
 
-    const onlineCount = Object.values(a).filter(
-      (ans) => ans.signal === "online",
-    ).length;
+    const onlineCount = Object.values(a).filter((ans) => ans.signal === "online").length;
 
     if (onlineCount >= 2)
       return {
@@ -150,10 +144,7 @@ export const useFilingQuiz = ({
     if (!quiz) return;
     const screen = quiz.screens[quizScreenIdx];
 
-    if (
-      screen.id === "attorney" &&
-      quizAnswers["attorney"]?.signal === "discuss"
-    ) {
+    if (screen.id === "attorney" && quizAnswers["attorney"]?.signal === "discuss") {
       setQuizResult(computeRecommendation(quizAnswers));
       return;
     }

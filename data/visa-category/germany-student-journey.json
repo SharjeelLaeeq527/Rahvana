@@ -24,9 +24,15 @@
       "color": "bg-blue-50 text-blue-600",
       "timeline": "Before applying",
       "sources": [
-        { "label": "DAAD – Study in Germany", "url": "https://www.daad.de/en/study-and-research-in-germany/" },
+        {
+          "label": "DAAD – Study in Germany",
+          "url": "https://www.daad.de/en/study-and-research-in-germany/"
+        },
         { "label": "uni-assist – Application Portal", "url": "https://www.uni-assist.de/en/" },
-        { "label": "German Embassy Islamabad – Study Visa", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" }
+        {
+          "label": "German Embassy Islamabad – Study Visa",
+          "url": "https://islamabad.diplo.de/pk-en/service/-/2565764"
+        }
       ],
       "steps": [
         {
@@ -67,8 +73,14 @@
       "color": "bg-purple-50 text-purple-600",
       "timeline": "Before visa application",
       "sources": [
-        { "label": "German Embassy Islamabad – Study Visa Documents", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
-        { "label": "Federal Foreign Office – Visa Information", "url": "https://www.auswaertiges-amt.de/en/visa-service" }
+        {
+          "label": "German Embassy Islamabad – Study Visa Documents",
+          "url": "https://islamabad.diplo.de/pk-en/service/-/2565764"
+        },
+        {
+          "label": "Federal Foreign Office – Visa Information",
+          "url": "https://www.auswaertiges-amt.de/en/visa-service"
+        }
       ],
       "steps": [
         {
@@ -84,7 +96,12 @@
           ],
           "success": "Valid passport confirmed; compliant photographs prepared",
           "relevantTools": [
-            { "label": "Passport Guide", "labelUr": "پاسپورٹ گائیڈ", "href": "/guides/passport-guide", "type": "guide" },
+            {
+              "label": "Passport Guide",
+              "labelUr": "پاسپورٹ گائیڈ",
+              "href": "/guides/passport-guide",
+              "type": "guide"
+            },
             { "label": "Photo Booth", "labelUr": "فوٹو بوتھ", "href": "/passport", "type": "tool" }
           ]
         },
@@ -100,7 +117,12 @@
           ],
           "success": "Admission letter and all academic documents prepared with certified translations where required",
           "relevantTools": [
-            { "label": "Urdu → English Translation", "labelUr": "اردو سے انگریزی ترجمہ", "href": "/document-translation", "type": "service" }
+            {
+              "label": "Urdu → English Translation",
+              "labelUr": "اردو سے انگریزی ترجمہ",
+              "href": "/document-translation",
+              "type": "service"
+            }
           ]
         },
         {
@@ -116,7 +138,12 @@
           ],
           "success": "Visa application form completed, signed, and reviewed",
           "relevantTools": [
-            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+            {
+              "label": "Smart Form Filler",
+              "labelUr": "سمارٹ فارم فلر",
+              "href": "/visa-forms",
+              "type": "tool"
+            }
           ]
         }
       ]
@@ -130,8 +157,14 @@
       "color": "bg-green-50 text-green-600",
       "timeline": "Before visa appointment",
       "sources": [
-        { "label": "German Embassy Islamabad – Proof of Funds", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
-        { "label": "Federal Foreign Office – Financial Proof", "url": "https://www.auswaertiges-amt.de/en/visa-service" }
+        {
+          "label": "German Embassy Islamabad – Proof of Funds",
+          "url": "https://islamabad.diplo.de/pk-en/service/-/2565764"
+        },
+        {
+          "label": "Federal Foreign Office – Financial Proof",
+          "url": "https://www.auswaertiges-amt.de/en/visa-service"
+        }
       ],
       "steps": [
         {
@@ -171,8 +204,14 @@
       "color": "bg-amber-50 text-amber-600",
       "timeline": "At German Embassy",
       "sources": [
-        { "label": "German Embassy Islamabad – Appointments", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
-        { "label": "VFS Global Germany – Pakistan", "url": "https://visa.vfsglobal.com/pak/en/deu/" }
+        {
+          "label": "German Embassy Islamabad – Appointments",
+          "url": "https://islamabad.diplo.de/pk-en/service/-/2565764"
+        },
+        {
+          "label": "VFS Global Germany – Pakistan",
+          "url": "https://visa.vfsglobal.com/pak/en/deu/"
+        }
       ],
       "steps": [
         {
@@ -205,7 +244,12 @@
           ],
           "success": "Complete application submitted at German Embassy; fee paid; receipt obtained",
           "relevantTools": [
-            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+            {
+              "label": "PDF Toolkit",
+              "labelUr": "پی ڈی ایف ٹول کٹ",
+              "href": "/pdf-processing",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -233,8 +277,14 @@
       "color": "bg-rose-50 text-rose-600",
       "timeline": "After visa approval",
       "sources": [
-        { "label": "German Embassy Islamabad", "url": "https://islamabad.diplo.de/pk-en/service/-/2565764" },
-        { "label": "DAAD – Before You Go", "url": "https://www.daad.de/en/study-and-research-in-germany/first-steps/before-you-go/" }
+        {
+          "label": "German Embassy Islamabad",
+          "url": "https://islamabad.diplo.de/pk-en/service/-/2565764"
+        },
+        {
+          "label": "DAAD – Before You Go",
+          "url": "https://www.daad.de/en/study-and-research-in-germany/first-steps/before-you-go/"
+        }
       ],
       "steps": [
         {
@@ -261,8 +311,14 @@
       "color": "bg-indigo-50 text-indigo-600",
       "timeline": "Within 90 days of arrival",
       "sources": [
-        { "label": "Federal Foreign Office – Residence Permit", "url": "https://www.auswaertiges-amt.de/en/visa-service/buergerservice/faq/-/606852" },
-        { "label": "DAAD – After Arrival", "url": "https://www.daad.de/en/study-and-research-in-germany/first-steps/after-arrival/" }
+        {
+          "label": "Federal Foreign Office – Residence Permit",
+          "url": "https://www.auswaertiges-amt.de/en/visa-service/buergerservice/faq/-/606852"
+        },
+        {
+          "label": "DAAD – After Arrival",
+          "url": "https://www.daad.de/en/study-and-research-in-germany/first-steps/after-arrival/"
+        }
       ],
       "steps": [
         {
@@ -306,7 +362,12 @@
           ],
           "success": "Residence Permit for Study applied for before National Visa expiry; permit received",
           "relevantTools": [
-            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+            {
+              "label": "Visa Path Finder",
+              "labelUr": "ویزہ پاتھ فائنڈر",
+              "href": "/visa-eligibility",
+              "type": "tool"
+            }
           ]
         }
       ]

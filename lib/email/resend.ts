@@ -455,7 +455,7 @@ export function getMFADisabledEmailHtml(): string {
 export function getFeatureAnnouncementEmailHtml(
   title: string,
   description: string,
-  featureUrl: string,
+  featureUrl: string
 ): string {
   return `
     <!DOCTYPE html>

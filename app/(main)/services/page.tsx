@@ -33,19 +33,19 @@ interface Service {
  *  Service IDs are derived from: title.toLowerCase().replace(/\s+/g, "-")
  */
 const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
-  "book-a-consultation":          "expert_consultation",
-  "expert-case-review":           "expert_doc_review",
-  "pcc-filing-service-—-sindh":   "pcc_filing",
-  "book-medical-appointment":     "medical_booking",
-  "urdu-→-english-translation":   "document_translation",
+  "book-a-consultation": "expert_consultation",
+  "expert-case-review": "expert_doc_review",
+  "pcc-filing-service-—-sindh": "pcc_filing",
+  "book-medical-appointment": "medical_booking",
+  "urdu-→-english-translation": "document_translation",
 };
 /** Maps service ID → minimum required plan tier */
 const SERVICE_TIER_MAP: Record<string, "basic" | "premium" | "executive"> = {
-  "book-a-consultation":          "premium",
-  "expert-case-review":           "premium",
-  "pcc-filing-service-—-sindh":   "executive",
-  "book-medical-appointment":     "premium",
-  "urdu-→-english-translation":   "premium",
+  "book-a-consultation": "premium",
+  "expert-case-review": "premium",
+  "pcc-filing-service-—-sindh": "executive",
+  "book-medical-appointment": "premium",
+  "urdu-→-english-translation": "premium",
 };
 
 interface CategoryOption {
@@ -54,11 +54,7 @@ interface CategoryOption {
 }
 
 // --- Components ---
-export default function ServicesPage({
-  isEmbedded = false,
-}: {
-  isEmbedded?: boolean;
-}) {
+export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const { t } = useLanguage();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,7 +87,7 @@ export default function ServicesPage({
           disabled: item.disabled,
           entitlementFeature: SERVICE_ENTITLEMENT_MAP[id],
         };
-      }),
+      })
     );
 
     const categoriesList: CategoryOption[] = [
@@ -112,9 +108,7 @@ export default function ServicesPage({
       if (!containerRef.current || !measureRef.current) return;
 
       const containerWidth = containerRef.current.clientWidth;
-      const measureItems = Array.from(
-        measureRef.current.children,
-      ) as HTMLDivElement[];
+      const measureItems = Array.from(measureRef.current.children) as HTMLDivElement[];
 
       // Extract the More button width (last item) and Category widths
       const moreButtonEl = measureItems[measureItems.length - 1];
@@ -146,8 +140,7 @@ export default function ServicesPage({
         const itemWidth = categoryEls[i].offsetWidth;
         // Check if adding this item + gap + MoreButton exceeds container
         const gapWidth = i > 0 ? gap : 0;
-        const projectedWidth =
-          totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
+        const projectedWidth = totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
 
         if (projectedWidth <= containerWidth) {
           visible++;
@@ -173,9 +166,7 @@ export default function ServicesPage({
 
   const visibleCategories = categories.slice(0, visibleCount);
   const hiddenCategories = categories.slice(visibleCount);
-  const isMoreSelected = hiddenCategories.some(
-    (c) => c.id === selectedCategoryId,
-  );
+  const isMoreSelected = hiddenCategories.some((c) => c.id === selectedCategoryId);
 
   const filteredServices = services
     .filter((service) => {
@@ -183,8 +174,7 @@ export default function ServicesPage({
         service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         service.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory =
-        selectedCategoryId === "All" ||
-        service.categoryId === selectedCategoryId;
+        selectedCategoryId === "All" || service.categoryId === selectedCategoryId;
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => a.title.localeCompare(b.title));
@@ -197,10 +187,7 @@ export default function ServicesPage({
     >
       {/* Upgrade Modal */}
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
       {/* Ambient Glow */}
@@ -211,9 +198,7 @@ export default function ServicesPage({
 
       <div className="w-full site-main-px site-main-py">
         {/* Hero Section */}
-        <section
-          className={`text-center mb-5 md:mb-10 pt-1`}
-        >
+        <section className={`text-center mb-5 md:mb-10 pt-1`}>
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
             {t("pages.services.heroTitle")}
           </h1>
@@ -235,10 +220,7 @@ export default function ServicesPage({
         </div>
 
         {/* Categories */}
-        <div
-          ref={containerRef}
-          className="relative w-full mb-8 flex justify-center"
-        >
+        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           {/* Hidden container for measuring */}
           <div
             ref={measureRef}
@@ -256,8 +238,7 @@ export default function ServicesPage({
             ))}
             {/* Force render the More button to measure it */}
             <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
-              {t("pages.services.more")}{" "}
-              <ChevronDown className="w-4 h-4 ml-1" />
+              {t("pages.services.more")} <ChevronDown className="w-4 h-4 ml-1" />
             </div>
           </div>
 
@@ -287,8 +268,7 @@ export default function ServicesPage({
                         : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
-                    {t("pages.services.more")}{" "}
-                    <ChevronDown className="w-4 h-4 ml-1" />
+                    {t("pages.services.more")} <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-[200px]">
@@ -348,37 +328,32 @@ const CATEGORY_STYLES: Record<
     iconBox: "bg-indigo-600 text-white border-transparent dark:bg-indigo-500",
     innerBox: "bg-white/20",
     link: "text-indigo-600 dark:text-indigo-400",
-    borderGradient:
-      "from-indigo-400 to-indigo-300 dark:from-indigo-400 dark:to-indigo-300",
+    borderGradient: "from-indigo-400 to-indigo-300 dark:from-indigo-400 dark:to-indigo-300",
   },
   "pakistan-docs-services": {
     iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
     innerBox: "bg-white/20",
     link: "text-emerald-600 dark:text-emerald-400",
-    borderGradient:
-      "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
+    borderGradient: "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
   },
   medical: {
     iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
     innerBox: "bg-white/20",
     link: "text-rose-600 dark:text-rose-400",
-    borderGradient:
-      "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
+    borderGradient: "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
   },
   documents: {
     iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
     innerBox: "bg-white/20",
     link: "text-amber-600 dark:text-amber-400",
-    borderGradient:
-      "from-amber-300 to-amber-200 dark:from-amber-300 dark:to-amber-200",
+    borderGradient: "from-amber-300 to-amber-200 dark:from-amber-300 dark:to-amber-200",
   },
   // Fallback for any other categories
   Default: {
     iconBox: "bg-slate-600 text-white border-transparent dark:bg-slate-500",
     innerBox: "bg-white/20",
     link: "text-slate-600 dark:text-slate-400",
-    borderGradient:
-      "from-slate-400 to-slate-300 dark:from-slate-400 dark:to-slate-300",
+    borderGradient: "from-slate-400 to-slate-300 dark:from-slate-400 dark:to-slate-300",
   },
 };
 
@@ -393,14 +368,11 @@ function ServiceCard({
 }) {
   const { t } = useLanguage();
   const plan = usePlan();
-  const styles =
-    CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
+  const styles = CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
 
   // Entitlement check
   const featureLocked =
-    !!service.entitlementFeature &&
-    !plan.isLoading &&
-    plan.isLocked(service.entitlementFeature);
+    !!service.entitlementFeature && !plan.isLoading && plan.isLocked(service.entitlementFeature);
   // Determine required tier for this service
   const requiredTier = SERVICE_TIER_MAP[service.id] ?? "premium";
   const isNavigable = !service.disabled;
@@ -413,17 +385,18 @@ function ServiceCard({
     }
   };
 
- return (
+  return (
     <CardWrapper
       href={isNavigable ? service.href : "#"}
       onClick={handleClick}
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-      ${featureLocked
-        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-        : isNavigable
-          ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+      ${
+        featureLocked
+          ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+          : isNavigable
+            ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
@@ -441,7 +414,7 @@ function ServiceCard({
           />
         </div>
       )}
- 
+
       {/* Floating Icon Box */}
       <div
         className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
@@ -452,25 +425,24 @@ function ServiceCard({
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
         {React.isValidElement(service.icon)
-          ? React.cloneElement(
-              service.icon as React.ReactElement<{ className?: string }>,
-              { className: "w-6 h-6 stroke-2" },
-            )
+          ? React.cloneElement(service.icon as React.ReactElement<{ className?: string }>, {
+              className: "w-6 h-6 stroke-2",
+            })
           : service.icon}
       </div>
- 
+
       {/* (Removed tier badge — ribbon now indicates locked state) */}
- 
+
       {/* Border gradient on hover (category color) */}
       {!featureLocked && (
         <div
           className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
         />
       )}
- 
+
       {/* Radial Glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
- 
+
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
         <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
@@ -485,11 +457,11 @@ function ServiceCard({
           {service.description}
         </p>
       </div>
- 
+
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
- 
+
         {featureLocked ? (
           <span aria-hidden="true" className="h-5" />
         ) : isNavigable ? (
@@ -507,4 +479,3 @@ function ServiceCard({
     </CardWrapper>
   );
 }
- 

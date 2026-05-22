@@ -17,11 +17,7 @@ export type PolioWizardContextType = {
   setCurrentStep: (step: number) => void;
   completeStep: (step: number) => void;
   setPersonType: (type: string) => void;
-  setLocation: (location: {
-    province: string;
-    district: string;
-    city: string;
-  }) => void;
+  setLocation: (location: { province: string; district: string; city: string }) => void;
   addToActiveWizards: () => void;
   resetWizard: () => void;
   showWelcomeModal: boolean;
@@ -40,11 +36,7 @@ const initialState: PolioWizardState = {
   isAddedToActive: false,
 };
 
-export function PolioWizardProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function PolioWizardProvider({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
   const [state, setState] = useState(() => initialState);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -96,20 +88,14 @@ export function PolioWizardProvider({
     completeStep(1);
   };
 
-  const setLocation = (location: {
-    province: string;
-    district: string;
-    city: string;
-  }) => {
+  const setLocation = (location: { province: string; district: string; city: string }) => {
     updateState({ location });
   };
 
   const addToActiveWizards = () => {
     updateState({ isAddedToActive: true });
     if (typeof window !== "undefined") {
-      const activeWizards = JSON.parse(
-        localStorage.getItem("active_wizards") || "[]",
-      );
+      const activeWizards = JSON.parse(localStorage.getItem("active_wizards") || "[]");
       const wizardEntry = {
         id: Date.now(),
         title: "Polio Vaccination Certificate Guide",
@@ -117,10 +103,7 @@ export function PolioWizardProvider({
         savedAt: new Date().toISOString(),
         url: "/guides/polio-vaccination-guide",
       };
-      localStorage.setItem(
-        "active_wizards",
-        JSON.stringify([...activeWizards, wizardEntry]),
-      );
+      localStorage.setItem("active_wizards", JSON.stringify([...activeWizards, wizardEntry]));
     }
   };
 
@@ -151,11 +134,7 @@ export function PolioWizardProvider({
     setShowWelcomeModal,
   };
 
-  return (
-    <PolioWizardContext.Provider value={value}>
-      {children}
-    </PolioWizardContext.Provider>
-  );
+  return <PolioWizardContext.Provider value={value}>{children}</PolioWizardContext.Provider>;
 }
 
 export function usePolioWizard() {

@@ -20,10 +20,7 @@ export async function POST(request: Request) {
     const slug = body.slug;
 
     if (!slug) {
-      return NextResponse.json(
-        { error: "Guide slug is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Guide slug is required" }, { status: 400 });
     }
 
     // Fetch the user_guide session for this guide slug
@@ -33,7 +30,7 @@ export async function POST(request: Request) {
         `
         *,
         guides!inner(slug, title)
-      `,
+      `
       )
       .eq("user_id", user.id)
       .eq("guides.slug", slug)
@@ -41,17 +38,11 @@ export async function POST(request: Request) {
 
     if (sessionError) {
       console.error("Error fetching session:", sessionError);
-      return NextResponse.json(
-        { error: "Failed to fetch user guide session" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch user guide session" }, { status: 500 });
     }
 
     if (!session) {
-      return NextResponse.json(
-        { error: "User guide session not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "User guide session not found" }, { status: 404 });
     }
 
     // Update hide_intro_modal to true
@@ -64,10 +55,7 @@ export async function POST(request: Request) {
 
     if (updateError) {
       console.error("Error updating hide_intro_modal:", updateError);
-      return NextResponse.json(
-        { error: "Failed to update hide_intro_modal" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to update hide_intro_modal" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -76,9 +64,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Unexpected error in /api/guides/hide-intro:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

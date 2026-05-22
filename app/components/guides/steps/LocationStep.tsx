@@ -58,9 +58,7 @@ const LocationStep = ({
         {title}
       </h2>
 
-      <p className="text-[0.95rem] text-[hsl(215_16%_47%)] mb-8">
-        {description}
-      </p>
+      <p className="text-[0.95rem] text-[hsl(215_16%_47%)] mb-8">{description}</p>
 
       <div className="flex flex-col gap-6 max-w-135">
         {/* Country */}
@@ -76,16 +74,13 @@ const LocationStep = ({
             className="w-full px-4 py-3 text-[0.9rem] border border-[hsl(214_32%_91%)] rounded-[10px] bg-[hsl(210_20%_98%)] text-[hsl(215_16%_47%)] cursor-default"
           />
 
-          <p className="text-[0.78rem] text-[hsl(168_80%_30%)] mt-1.5">
-            {countryNote}
-          </p>
+          <p className="text-[0.78rem] text-[hsl(168_80%_30%)] mt-1.5">{countryNote}</p>
         </div>
 
         {/* Province */}
         <div>
           <label className="block text-sm font-semibold text-[hsl(220_20%_20%)] mb-1.5">
-            Province / Territory{" "}
-            <span className="text-[hsl(0_84%_60%)]">*</span>
+            Province / Territory <span className="text-[hsl(0_84%_60%)]">*</span>
           </label>
 
           <Select
@@ -117,9 +112,7 @@ const LocationStep = ({
 
           <input
             type="text"
-            placeholder={
-              province ? "Enter your City / Area" : "Select Province First"
-            }
+            placeholder={province ? "Enter your City / Area" : "Select Province First"}
             value={city || ""}
             onChange={(e) => onCityChange(e.target.value)}
             disabled={!province}
@@ -145,9 +138,7 @@ const LocationStep = ({
                 !city ? "opacity-60 cursor-not-allowed" : ""
               }`}
             >
-              <SelectValue
-                placeholder={city ? "Select District" : "Enter City First"}
-              />
+              <SelectValue placeholder={city ? "Select District" : "Enter City First"} />
             </SelectTrigger>
 
             <SelectContent>
@@ -163,9 +154,7 @@ const LocationStep = ({
         {/* Info Card */}
         <div className="p-4 rounded-xl bg-[hsl(168_60%_96%)] border border-[hsl(168_50%_88%)] flex gap-3 items-start">
           <Info className="w-4.5 h-4.5 text-[hsl(168_80%_30%)] shrink-0 mt-0.5" />
-          <p className="text-[0.83rem] leading-[1.6] text-[hsl(168_60%_20%)]">
-            {locationNote}
-          </p>
+          <p className="text-[0.83rem] leading-[1.6] text-[hsl(168_60%_20%)]">{locationNote}</p>
         </div>
       </div>
     </motion.div>

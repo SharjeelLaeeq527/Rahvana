@@ -6,30 +6,20 @@ import { usePDFStore } from "@/lib/store";
 
 // Dynamically import components (client-only)
 const PDFUpload = dynamic(
-  () =>
-    import("@/app/components/pdf-editor/PdfUpload").then(
-      (mod) => mod.PDFUpload,
-    ),
-  { ssr: false },
+  () => import("@/app/components/pdf-editor/PdfUpload").then((mod) => mod.PDFUpload),
+  { ssr: false }
 );
 const PDFEditor = dynamic(
-  () =>
-    import("@/app/components/pdf-editor/PdfEditor").then(
-      (mod) => mod.PDFEditor,
-    ),
-  { ssr: false },
+  () => import("@/app/components/pdf-editor/PdfEditor").then((mod) => mod.PDFEditor),
+  { ssr: false }
 );
-const PDFMergeAdvanced = dynamic(
-  () => import("@/app/components/pdf-tools/PdfMerge"),
-  { ssr: false },
-);
-const CompressPDF = dynamic(
-  () => import("@/app/components/pdf-tools/CompressPdf"),
-  { ssr: false },
-);
+const PDFMergeAdvanced = dynamic(() => import("@/app/components/pdf-tools/PdfMerge"), {
+  ssr: false,
+});
+const CompressPDF = dynamic(() => import("@/app/components/pdf-tools/CompressPdf"), { ssr: false });
 const MultiFormatConverter = dynamic(
   () => import("@/app/components/pdf-tools/MultiFormatConverter"),
-  { ssr: false },
+  { ssr: false }
 );
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -37,9 +27,7 @@ export default function PDFProcessingPage() {
   const { t } = useLanguage();
   const { pdfFile, reset } = usePDFStore();
   // Add "compress" and "convert" to tabs
-  const [activeTab, setActiveTab] = useState<
-    "upload" | "merge" | "compress" | "convert"
-  >("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "merge" | "compress" | "convert">("upload");
 
   const handleCloseEditor = () => reset();
 
@@ -74,9 +62,7 @@ export default function PDFProcessingPage() {
             <button
               onClick={() => setActiveTab("upload")}
               className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
-                activeTab === "upload"
-                  ? "bg-primary text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                activeTab === "upload" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               {t("pdfProcessing.tabs.edit")}
@@ -84,9 +70,7 @@ export default function PDFProcessingPage() {
             <button
               onClick={() => setActiveTab("merge")}
               className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
-                activeTab === "merge"
-                  ? "bg-primary text-white"
-                  : "text-gray-600 hover:bg-gray-100"
+                activeTab === "merge" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               {t("pdfProcessing.tabs.merge")}

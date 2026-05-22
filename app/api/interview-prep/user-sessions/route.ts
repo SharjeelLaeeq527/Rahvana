@@ -1,23 +1,27 @@
 /**
  * GET /api/interview-prep/user-sessions
  * Get all interview preparation sessions for the current user
- * 
+ *
  * Query Parameters:
  * - completed: boolean (optional) - filter by completion status
  * - limit: number (optional) - limit number of results
  */
 
 import { NextResponse, NextRequest } from "next/server";
-import { getAllUserSessionsDB, getSessionAnswersDB, getInterviewResultsDB } from "@/lib/interview-prep/data-access";
+import {
+  getAllUserSessionsDB,
+  getSessionAnswersDB,
+  getInterviewResultsDB,
+} from "@/lib/interview-prep/data-access";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    
+
     // Parse query parameters
     const completedParam = searchParams.get("completed");
     const limitParam = searchParams.get("limit");
-    
+
     const completed = completedParam ? completedParam === "true" : undefined;
     const limit = limitParam ? parseInt(limitParam, 10) : undefined;
 
@@ -30,13 +34,13 @@ export async function GET(request: NextRequest) {
         try {
           const answers = await getSessionAnswersDB(session.id);
           const results = await getInterviewResultsDB(session.id);
-          
+
           return {
             ...session,
             answerCount: answers?.length || 0,
             questionCount: results?.generated_questions?.length || 0,
-            completionPercentage: results?.generated_questions 
-              ? Math.round((answers?.length || 0) / (results.generated_questions.length) * 100)
+            completionPercentage: results?.generated_questions
+              ? Math.round(((answers?.length || 0) / results.generated_questions.length) * 100)
               : 0,
           };
         } catch (error) {

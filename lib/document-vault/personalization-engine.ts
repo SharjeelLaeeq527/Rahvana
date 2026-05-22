@@ -73,7 +73,7 @@ type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 function isDocumentRequired(
   doc: DocumentDefinition,
   visaCategory: VisaCategory,
-  scenarioFlags: ScenarioFlags,
+  scenarioFlags: ScenarioFlags
 ): boolean {
   // If applicableVisas is defined, check if current visa is in the list
   if (doc.applicableVisas && doc.applicableVisas.length > 0) {
@@ -117,7 +117,7 @@ function isDocumentRequired(
 export function generateRequiredDocuments(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
-  uploadedDocuments: UploadedDocument[] = [],
+  uploadedDocuments: UploadedDocument[] = []
 ): DocumentDefinition[] {
   const { visaCategory, scenarioFlags } = config;
   const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
@@ -129,12 +129,8 @@ export function generateRequiredDocuments(
     }
     const catDocs = ALL_DOCUMENTS.filter((d) => d.category === cat);
     if (catDocs.length > 0) {
-      const petitionerCount = catDocs.filter((d) =>
-        d.roles?.includes("PETITIONER"),
-      ).length;
-      const beneficiaryCount = catDocs.filter((d) =>
-        d.roles?.includes("BENEFICIARY"),
-      ).length;
+      const petitionerCount = catDocs.filter((d) => d.roles?.includes("PETITIONER")).length;
+      const beneficiaryCount = catDocs.filter((d) => d.roles?.includes("BENEFICIARY")).length;
       if (petitionerCount > beneficiaryCount) {
         return ["PETITIONER"];
       } else if (petitionerCount > 0 && beneficiaryCount > 0) {
@@ -149,10 +145,7 @@ export function generateRequiredDocuments(
     // Some categories are dynamic BUT should still keep their static definitions
     // (e.g., CIVIL has Nikah Nama, MISC has generic docs, etc.)
     const keepStatic = ["CIVIL", "MISC", "TRANSLATIONS", "CITIZENSHIP_PROOF"];
-    if (
-      DYNAMIC_CATEGORIES.includes(doc.category) &&
-      !keepStatic.includes(doc.category)
-    ) {
+    if (DYNAMIC_CATEGORIES.includes(doc.category) && !keepStatic.includes(doc.category)) {
       return false;
     }
     return isDocumentRequired(doc, visaCategory, scenarioFlags);
@@ -237,10 +230,7 @@ export function generateRequiredDocuments(
         if (staticDef) {
           recoveredName = staticDef.name;
         } else {
-          recoveredName = getCategoryDisplayName(category).replace(
-            / (Documents|Evidence)$/,
-            "",
-          );
+          recoveredName = getCategoryDisplayName(category).replace(/ (Documents|Evidence)$/, "");
         }
       }
 
@@ -250,9 +240,7 @@ export function generateRequiredDocuments(
       seenSafetyNetNames.add(normalizedName);
 
       // Check if a requirement with this name already exists (perhaps under a different ID)
-      const nameExists = requiredDocs.some(
-        (d) => d.name.toLowerCase().trim() === normalizedName,
-      );
+      const nameExists = requiredDocs.some((d) => d.name.toLowerCase().trim() === normalizedName);
       if (nameExists) return;
 
       const rolesForCategory = getCategoryRoles(category);
@@ -305,11 +293,9 @@ export function generateRequiredDocuments(
 
       // If scenarioFlags are set, only show if they match
       if (requiredFlags) {
-        const flagsMatch = Object.entries(requiredFlags).every(
-          ([flag, value]) => {
-            return scenarioFlags[flag as keyof ScenarioFlags] === value;
-          },
-        );
+        const flagsMatch = Object.entries(requiredFlags).every(([flag, value]) => {
+          return scenarioFlags[flag as keyof ScenarioFlags] === value;
+        });
         if (!flagsMatch) {
           return false;
         }
@@ -324,7 +310,7 @@ export function generateRequiredDocuments(
   // Ensure documents that have been uploaded are ALWAYS present, even if their scenario flag wasn't set!
   if (uploadedDocIds.length > 0) {
     const forcedUploadDocs = ALL_DOCUMENTS.filter(
-      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc),
+      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc)
     );
     finalDocs = [...finalDocs, ...forcedUploadDocs];
   }
@@ -342,20 +328,14 @@ export function generateRequiredDocuments(
   const namedRequirementCategories = new Set<string>();
   finalDocs.forEach((d) => {
     if (!d.name.includes(" Document (") && !d.name.includes(" Evidence (")) {
-      namedRequirementCategories.add(
-        `${d.category}-${d.name.toLowerCase().trim()}`,
-      );
+      namedRequirementCategories.add(`${d.category}-${d.name.toLowerCase().trim()}`);
     }
   });
 
   // Also look at uploaded docs to see what names we have
   uploadedDocuments.forEach((ud) => {
     if (ud.notes?.startsWith("Type: ")) {
-      const type = ud.notes
-        .split("\n")[0]
-        .replace("Type: ", "")
-        .trim()
-        .toLowerCase();
+      const type = ud.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
       // Use the logic from the engine to determine which category it belongs to
       const staticDef = ALL_DOCUMENTS.find((d) => d.id === ud.documentDefId);
       let category = "MISC";
@@ -370,19 +350,14 @@ export function generateRequiredDocuments(
   });
 
   finalDocs = finalDocs.filter((d) => {
-    const isGeneric =
-      d.name.includes(" Document (") || d.name.includes(" Evidence (");
+    const isGeneric = d.name.includes(" Document (") || d.name.includes(" Evidence (");
     if (!isGeneric) return true;
 
     // Check if there's any named version of this category's docs uploaded
-    const baseName = d.name
-      .split(" Document (")[0]
-      .split(" Evidence (")[0]
-      .toLowerCase()
-      .trim();
+    const baseName = d.name.split(" Document (")[0].split(" Evidence (")[0].toLowerCase().trim();
 
     const hasNamedMatch = Array.from(namedRequirementCategories).some(
-      (nc) => nc.startsWith(d.category) && nc.includes(baseName),
+      (nc) => nc.startsWith(d.category) && nc.includes(baseName)
     );
 
     return !hasNamedMatch;
@@ -427,13 +402,9 @@ export function generateRequiredDocuments(
 export function getDocumentsByCategory(
   config: DocumentVaultConfig,
   includeOptional: boolean = true,
-  uploadedDocuments: UploadedDocument[] = [],
+  uploadedDocuments: UploadedDocument[] = []
 ) {
-  const requiredDocs = generateRequiredDocuments(
-    config,
-    includeOptional,
-    uploadedDocuments,
-  );
+  const requiredDocs = generateRequiredDocuments(config, includeOptional, uploadedDocuments);
 
   const byCategory: Record<string, DocumentDefinition[]> = {};
 
@@ -452,7 +423,7 @@ export function getDocumentsByCategory(
  */
 export function calculateDocumentStats(
   requiredDocs: DocumentDefinition[],
-  uploadedDocs: UploadedDocument[],
+  uploadedDocs: UploadedDocument[]
 ) {
   const mandatoryDocs = requiredDocs.filter((d) => d.required);
   const total = mandatoryDocs.length;
@@ -460,18 +431,15 @@ export function calculateDocumentStats(
   const uploaded = mandatoryDocs.filter((md) =>
     uploadedDocs.some(
       (ud) =>
-        ud.documentDefId === md.id &&
-        (ud.status === "UPLOADED" || ud.status === "NEEDS_ATTENTION"),
-    ),
+        ud.documentDefId === md.id && (ud.status === "UPLOADED" || ud.status === "NEEDS_ATTENTION")
+    )
   ).length;
 
   const missing = mandatoryDocs.filter(
-    (md) => !uploadedDocs.some((ud) => ud.documentDefId === md.id),
+    (md) => !uploadedDocs.some((ud) => ud.documentDefId === md.id)
   ).length;
 
-  const expiring = uploadedDocs.filter(
-    (d) => d.status === "NEEDS_ATTENTION",
-  ).length;
+  const expiring = uploadedDocs.filter((d) => d.status === "NEEDS_ATTENTION").length;
   const expired = uploadedDocs.filter((d) => d.status === "EXPIRED").length;
 
   return {
@@ -510,10 +478,7 @@ export function validateScenarioFlags(flags: ScenarioFlags): {
 /**
  * Gets category display name
  */
-export function getCategoryDisplayName(
-  category: string,
-  t?: TranslateFn,
-): string {
+export function getCategoryDisplayName(category: string, t?: TranslateFn): string {
   if (t) {
     const translated = t(`documentVaultPage.categories.${category}`);
     if (translated !== `documentVaultPage.categories.${category}`) {
@@ -553,10 +518,7 @@ export function getCategoryDisplayName(
 /**
  * Gets visa category display name
  */
-export function getVisaCategoryDisplayName(
-  category: VisaCategory,
-  t?: TranslateFn,
-): string {
+export function getVisaCategoryDisplayName(category: VisaCategory, t?: TranslateFn): string {
   if (t) {
     const translated = t(`documentVaultPage.visaCategories.${category}`);
     if (translated !== `documentVaultPage.visaCategories.${category}`) {
@@ -574,8 +536,7 @@ export function getVisaCategoryDisplayName(
     "IR-5": "IR-5: Immediate Relative - Parent of U.S. Citizen",
     // F1: "F1: Unmarried Sons/Daughters of U.S. Citizens",
     "F-1 Student Visa": "F-1 Student Visa",
-    "Australia Student Visa (Subclass 500)":
-      "Australia Student Visa (Subclass 500)",
+    "Australia Student Visa (Subclass 500)": "Australia Student Visa (Subclass 500)",
     "China Student Visa (X1 & X2)": "China Student Visa (X1 & X2)",
     // F2A: "F2A: Spouses/Children of Lawful Permanent Residents",
     // F2B: "F2B: Unmarried Sons/Daughters of LPR",
@@ -609,7 +570,7 @@ export function isPoliceCertificateRequired(beneficiaryAge: number): boolean {
 export function getDocumentRequirementReason(
   doc: DocumentDefinition,
   config: DocumentVaultConfig,
-  t?: TranslateFn,
+  t?: TranslateFn
 ): string[] {
   const reasons: string[] = [];
 
@@ -619,7 +580,7 @@ export function getDocumentRequirementReason(
         ? t("documentVaultPage.logic.requirements.requiredForAll", {
             category: config.visaCategory,
           })
-        : "Required for all " + config.visaCategory + " cases",
+        : "Required for all " + config.visaCategory + " cases"
     );
   }
 
@@ -627,8 +588,7 @@ export function getDocumentRequirementReason(
     reasons.push(
       (t
         ? t("documentVaultPage.logic.requirements.requiredForVisa")
-        : "Required for visa categories: ") +
-        doc.requiredWhen.visaCategories.join(", "),
+        : "Required for visa categories: ") + doc.requiredWhen.visaCategories.join(", ")
     );
   }
 
@@ -637,9 +597,8 @@ export function getDocumentRequirementReason(
     flags.forEach(([flag, value]) => {
       if (config.scenarioFlags[flag as keyof ScenarioFlags] === value) {
         reasons.push(
-          (t
-            ? t("documentVaultPage.logic.requirements.requiredBecause")
-            : "Required because: ") + flag.replace(/_/g, " ").toLowerCase(),
+          (t ? t("documentVaultPage.logic.requirements.requiredBecause") : "Required because: ") +
+            flag.replace(/_/g, " ").toLowerCase()
         );
       }
     });

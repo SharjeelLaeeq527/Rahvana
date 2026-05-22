@@ -40,7 +40,7 @@ export default function SecurityQuestionsPreviewPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.push(
-        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
       );
     }
   }, [user, authLoading, router]);
@@ -71,10 +71,7 @@ export default function SecurityQuestionsPreviewPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
-          <Loader
-            size="lg"
-            text={t("pages.courierRegistration.securityPreview.loadingSession")}
-          />
+          <Loader size="lg" text={t("pages.courierRegistration.securityPreview.loadingSession")} />
         </div>
       </div>
     );
@@ -92,8 +89,7 @@ export default function SecurityQuestionsPreviewPage() {
             onClick={() => router.back()}
             className="rounded-xl hover:bg-white font-bold gap-2 text-gray-500"
           >
-            <ArrowLeft size={18} />{" "}
-            {t("pages.courierRegistration.securityPreview.back")}
+            <ArrowLeft size={18} /> {t("pages.courierRegistration.securityPreview.back")}
           </Button>
           <div className="flex items-center gap-2">
             <ShieldCheck className="text-green-500" size={20} />
@@ -129,9 +125,7 @@ export default function SecurityQuestionsPreviewPage() {
                   {t("pages.courierRegistration.securityPreview.noData.title")}
                 </h2>
                 <p className="text-gray-500 max-w-sm mx-auto">
-                  {t(
-                    "pages.courierRegistration.securityPreview.noData.description",
-                  )}
+                  {t("pages.courierRegistration.securityPreview.noData.description")}
                 </p>
               </div>
               <Button
@@ -155,15 +149,10 @@ export default function SecurityQuestionsPreviewPage() {
                   <div className="space-y-1">
                     <CardTitle className="text-lg sm:text-xl font-black text-gray-900 flex items-center gap-2">
                       <Lock className="text-primary" size={20} />{" "}
-                      {t(
-                        "pages.courierRegistration.securityPreview.vault.title",
-                      )}
+                      {t("pages.courierRegistration.securityPreview.vault.title")}
                     </CardTitle>
                     <p className="text-[10px] sm:text-xs text-gray-400 font-bold uppercase tracking-wider">
-                      {t(
-                        "pages.courierRegistration.securityPreview.vault.verified",
-                      )}{" "}
-                      {user.email}
+                      {t("pages.courierRegistration.securityPreview.vault.verified")} {user.email}
                     </p>
                   </div>
                   <Button
@@ -173,12 +162,8 @@ export default function SecurityQuestionsPreviewPage() {
                   >
                     {showAnswers ? <EyeOff size={16} /> : <Eye size={16} />}
                     {showAnswers
-                      ? t(
-                          "pages.courierRegistration.securityPreview.vault.mask",
-                        )
-                      : t(
-                          "pages.courierRegistration.securityPreview.vault.reveal",
-                        )}{" "}
+                      ? t("pages.courierRegistration.securityPreview.vault.mask")
+                      : t("pages.courierRegistration.securityPreview.vault.reveal")}{" "}
                     {t("pages.courierRegistration.securityPreview.vault.data")}
                   </Button>
                 </div>
@@ -190,15 +175,11 @@ export default function SecurityQuestionsPreviewPage() {
                   <div className="relative space-y-3">
                     <Label className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-1">
                       <User size={14} className="text-primary" />{" "}
-                      {t(
-                        "pages.courierRegistration.securityPreview.vault.username",
-                      )}
+                      {t("pages.courierRegistration.securityPreview.vault.username")}
                     </Label>
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-base sm:text-lg font-bold text-gray-800 break-all">
                       {data?.portal_username ||
-                        t(
-                          "pages.courierRegistration.securityPreview.vault.notSet",
-                        )}
+                        t("pages.courierRegistration.securityPreview.vault.notSet")}
                     </div>
                   </div>
                 </div>
@@ -215,17 +196,13 @@ export default function SecurityQuestionsPreviewPage() {
                           {item.id}
                         </Badge>
                         <span className="text-[10px] sm:text-sm font-bold text-gray-500 uppercase tracking-widest">
-                          {t(
-                            "pages.courierRegistration.securityPreview.vault.questionLabel",
-                          )}
+                          {t("pages.courierRegistration.securityPreview.vault.questionLabel")}
                         </span>
                       </div>
                       <div className="space-y-3 pl-0 sm:pl-9">
                         <p className="text-gray-900 font-bold text-base sm:text-lg leading-tight">
                           {item.q ||
-                            t(
-                              "pages.courierRegistration.securityPreview.vault.noQuestion",
-                            )}
+                            t("pages.courierRegistration.securityPreview.vault.noQuestion")}
                         </p>
                         <div className="p-4 bg-primary/2 rounded-2xl border border-primary/5 font-mono text-sm sm:text-base font-bold text-primary transition-all">
                           {showAnswers ? (
@@ -250,9 +227,7 @@ export default function SecurityQuestionsPreviewPage() {
                   {t("pages.courierRegistration.securityPreview.notice.title")}
                 </p>
                 <p className="text-xs text-blue-700 font-medium leading-relaxed">
-                  {t(
-                    "pages.courierRegistration.securityPreview.notice.description",
-                  )}
+                  {t("pages.courierRegistration.securityPreview.notice.description")}
                 </p>
               </div>
             </div>
