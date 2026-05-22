@@ -21,6 +21,9 @@ import {
 import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
+import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
+import { DashboardCriticalCard } from "./components/DashboardCriticalCard";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
@@ -52,9 +55,26 @@ export function DashboardView({
   actions,
 }: DashboardViewProps) {
   const plan = usePlan();
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
-    null,
-  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+
+  // Pull uploaded docs from vault for DocCaseStrengthMeter
+  const { uploadedDocuments } = useDocumentVaultStore();
+
+  // Extract step_1_2 document_items from roadmap data
+  const step1_2DocItems = useMemo(() => {
+    const chapters = (data as any).chapters || (data as any).stages || [];
+    const chapter1 = chapters[0];
+    if (!chapter1) return null;
+    const step = (chapter1.steps || []).find((s: any) => s.step_key === "step_1_2");
+    return step?.document_items ?? null;
+  }, [data]);
+
+  const hasPriorMarriage = useMemo(() => {
+    const q3s1 =
+      state.answers?.["eligibility-suite"]?.["q3"]?.["q3s1"] ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any)?.["q3"]?.["q3s1"];
+    return !!q3s1 && q3s1 !== "none";
+  }, [state.answers, state.metadata]);
 
   const trackingStatus = useMemo(
     () => (state.metadata?.tracking_status as any) || {},
@@ -408,7 +428,7 @@ export function DashboardView({
         className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.6 }}
       />
-      <div className="w-full max-w-[1200px] mx-auto animate-in fade-in duration-700 relative z-10">
+      <div className="w-full max-w-[1200px] xl:max-w-[1500px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className={`w-full ${showSidebar ? "" : "lg:max-w-4xl mx-auto"}`}>
           <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
             IR-1 Spouse Visa · Pakistan
@@ -418,18 +438,31 @@ export function DashboardView({
           </h1>
         </div>
 
-        <div
-          className={`flex flex-col lg:flex-row gap-8 items-start ${!showSidebar ? "justify-center" : ""}`}
-        >
-          {upgradeModalFeature && (
-            <UpgradeModal
-              feature={upgradeModalFeature}
-              onClose={() => setUpgradeModalFeature(null)}
+        {upgradeModalFeature && (
+          <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        )}
+
+        {/* 3-column layout — LEFT: risk card | CENTER: chapters | RIGHT: doc strength */}
+        <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_280px] gap-5 items-start">
+
+          {/* ── LEFT COLUMN — Dashboard Critical Items (single consolidated card) ─── */}
+          <div className="hidden xl:flex flex-col gap-3">
+            <DashboardCriticalCard
+              chapters={(data as any).chapters || (data as any).stages || []}
+              state={state}
+              uploadedDocuments={uploadedDocuments}
+              onOpenStep={(cIdx, sIdx) => {
+                if (onSelectStep) onSelectStep(cIdx, sIdx);
+                else { actions.setStage(cIdx); actions.setCurrentStep(sIdx); }
+              }}
             />
-          )}
+          </div>
+
+          {/* ── CENTER — Hero + Chapters + Accordions ─── */}
+          <div className="flex flex-col xl:flex-col lg:flex-row gap-8 xl:gap-6 items-start">
           {/* Main Content Column */}
           <div
-            className={`flex flex-col gap-6 order-1 w-full ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
+            className={`flex flex-col gap-6 order-1 w-full xl:max-w-none ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
           >
             {/* Journey Complete — highest priority status card */}
             {isJourneyComplete && (
@@ -579,14 +612,30 @@ export function DashboardView({
               </div>
             </section>
 
-            {/* Case Strength Insights — risk advisories from eligibility quest + baselines */}
-            <JourneyRiskCard
-              metadata={state.metadata}
-              onOpenEligibility={() => {
-                actions.setStage(0);
-                actions.setCurrentStep(0);
-              }}
-            />
+            {/* Mobile/tablet only — analysis cards inline below hero */}
+            <div className="xl:hidden flex flex-col gap-4">
+              <JourneyRiskCard
+                metadata={state.metadata}
+                onOpenEligibility={() => { actions.setStage(0); actions.setCurrentStep(0); }}
+              />
+              {step1_2DocItems && (
+                <DocCaseStrengthMeter
+                  documentItems={step1_2DocItems}
+                  uploadedDocuments={uploadedDocuments}
+                  documentChecklist={state.documentChecklist}
+                  docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
+                  docUploads={state.docUploads}
+                  notes={state.notes}
+                  eligibilityAnswers={
+                    (state.answers?.["eligibility-suite"] as any) ??
+                    (state.metadata?.["questAnswers_eligibility-suite"] as any)
+                  }
+                  contextLabel="Chapter 1 · Step 2"
+                  stepName="Petition Readiness"
+                  defaultCollapsed={true}
+                />
+              )}
+            </div>
 
             <div
               className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${
@@ -828,7 +877,6 @@ export function DashboardView({
                   <div className="px-[18px] pb-4 pt-1 animate-in fade-in slide-in-from-top-1">
                     <div className="flex flex-col gap-1.5 py-1">
                       {milestones.map((m, i) => {
-                        // For milestones with both key and sid, consider either as completion
                         const isDone =
                           m.key && m.sid
                             ? (state.metadata && state.metadata[m.key]) ||
@@ -867,9 +915,9 @@ export function DashboardView({
             </div>
           </div>
 
-          {/* Sidebar Column (Case Tracking) */}
+          {/* Sidebar Column (Case Tracking) — hidden at xl (moves to right column) */}
           {showSidebar && (
-            <div className="w-full lg:w-[360px] shrink-0 order-2 flex flex-col gap-4">
+            <div className="w-full lg:w-[360px] xl:hidden shrink-0 order-2 flex flex-col gap-4">
               <div className="flex items-center justify-between px-1">
                 <h2 className="text-[12px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">
                   Live Case Tracking
@@ -1182,7 +1230,58 @@ export function DashboardView({
               )}
             </div>
           )}
-        </div>
+          </div>{/* end center column */}
+
+          {/* ── RIGHT COLUMN — Sidebar tracking only (case strength moved to left) ─── */}
+          <div className={`hidden xl:flex flex-col gap-3 ${!showSidebar ? "xl:hidden" : ""}`}>
+            {/* Sidebar tracking cards */}
+            {showSidebar && (
+              <div className="flex flex-col gap-3 mt-1">
+                <div className="flex items-center justify-between px-1">
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">Live Case Tracking</h2>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[9px] font-bold text-[#6b8097]">Live</span>
+                  </div>
+                </div>
+                {trackingStatus.interview_queue && !interviewDate && !state.metadata?.dqDate &&
+                  trackingStatus.dq_status !== "qualified" && !state.metadata?.dqStatus && (
+                  <WaitingStateCard icon="clock" title="In Interview Queue"
+                    description="Your case is in the scheduling queue at the embassy."
+                    status="waiting" showIVToolLink ivEmbassy={trackingStatus.interview_embassy} />
+                )}
+                {interviewDate && !interviewAttended && (
+                  <WaitingStateCard icon="calendar" title="Interview Scheduled"
+                    description="Your visa interview is scheduled."
+                    date={`${trackingStatus.interview_date || state.metadata?.interviewDate}${trackingStatus.interview_time ? ` at ${trackingStatus.interview_time}` : ""}`}
+                    status="complete" actionLabel="Interview Prep"
+                    onAction={() => { actions.setStage(2); actions.setCurrentStep(3); }} />
+                )}
+                {isApPhase && state.metadata?.apSaved !== "true" && (
+                  <WaitingStateCard icon="alert" title="Administrative Processing"
+                    description="Go to Chapter 3 → Step 9 to record AP details."
+                    date={trackingStatus.ap_date} status="waiting"
+                    actionLabel="Go to Step 9" actionUrl="/visa-category/ir-category/ir1-journey" />
+                )}
+                {alerts.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {alerts.map((alert, i) => (
+                      <div key={i}
+                        className={`flex gap-2 items-start p-3 rounded-2xl border ${alert.type === "gold" ? "bg-[#fffbeb] border-[#fde68a] text-[#b38600]" : alert.type === "sky" ? "bg-[#e3f0fa] border-[#6aa8f0] text-[#1e3a5c]" : alert.type === "amber" ? "bg-[#fef8e8] border-[#f0d98a] text-[#8a6200]" : "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f]"}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#b38600]" : alert.type === "sky" ? "bg-primary" : alert.type === "amber" ? "bg-[#8a6200]" : "bg-[#15744f]"}`} />
+                        <div className="text-[11px] leading-relaxed flex-1">
+                          <span className="font-bold">{alert.title}: </span><span className="opacity-80">{alert.text}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {isApPhase && state.metadata?.apSaved === "true" && <APTrackingTool state={state} />}
+              </div>
+            )}
+          </div>
+
+        </div>{/* end 3-col grid */}
       </div>
     </div>
   );

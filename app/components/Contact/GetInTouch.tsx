@@ -113,6 +113,7 @@ export default function GetInTouch() {
                 icon={<Linkedin size={20} />}
                 label="LinkedIn"
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
+                target="_blank"
                 ariaLabel="Connect on LinkedIn"
               />
               {/* <SocialCard

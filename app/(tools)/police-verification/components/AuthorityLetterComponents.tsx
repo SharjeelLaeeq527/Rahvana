@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { motion } from "framer-motion";
 import { X, Eye, Download } from "lucide-react";
 import { E, msg } from "@/lib/errors";
@@ -42,6 +43,7 @@ export function AuthorityLetterModal({
   province,
 }: AuthorityLetterModalProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { showToast } = useToast();
 
   const formatCNIC = (value: string) => {
     const cleaned = value.replace(/\D/g, "");

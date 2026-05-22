@@ -35,10 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   Search,
   X as CloseIcon,
@@ -170,7 +167,9 @@ export default function DocumentVaultPage() {
     };
   }, [uploadedDocuments, requiredDocuments]);
   const documentsByCategory = useMemo(() => {
-    return config ? getDocumentsByCategory(config, true, uploadedDocuments) : {};
+    return config
+      ? getDocumentsByCategory(config, true, uploadedDocuments)
+      : {};
   }, [config, uploadedDocuments]);
 
   // Get documents for special filters (required/optional)
@@ -758,29 +757,35 @@ export default function DocumentVaultPage() {
                     )}
                     {DYNAMIC_CATEGORIES.includes(activeTab) && (
                       <div className="flex items-center gap-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-400 hover:text-primary"
-                            >
-                              <Info className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="right" className="max-w-xs p-3">
-                            <p className="font-bold mb-2">
-                              Suggested Documents:
-                            </p>
-                            <ul className="list-disc pl-4 space-y-1 text-xs">
-                              {CATEGORY_SUGGESTIONS[activeTab]?.map(
-                                (suggestion, i) => (
-                                  <li key={i}>{suggestion}</li>
-                                ),
-                              )}
-                            </ul>
-                          </TooltipContent>
-                        </Tooltip>
+                        {CATEGORY_SUGGESTIONS[activeTab] &&
+                          CATEGORY_SUGGESTIONS[activeTab].length > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-slate-400 hover:text-primary"
+                                >
+                                  <Info className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent
+                                side="right"
+                                className="max-w-xs p-3"
+                              >
+                                <p className="font-bold mb-2">
+                                  Suggested Documents:
+                                </p>
+                                <ul className="list-disc pl-4 space-y-1 text-xs">
+                                  {CATEGORY_SUGGESTIONS[activeTab]?.map(
+                                    (suggestion, i) => (
+                                      <li key={i}>{suggestion}</li>
+                                    ),
+                                  )}
+                                </ul>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
                         <Button
                           size="sm"
                           variant="ghost"
@@ -914,32 +919,36 @@ export default function DocumentVaultPage() {
                               </h3>
                               {DYNAMIC_CATEGORIES.includes(category) && (
                                 <div className="flex items-center gap-2">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
-                                      >
-                                        <Info className="w-3.5 h-3.5" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                      side="right"
-                                      className="max-w-xs p-3"
-                                    >
-                                      <p className="font-bold mb-2 text-[11px]">
-                                        Suggested Documents:
-                                      </p>
-                                      <ul className="list-disc pl-4 space-y-1 text-[10px]">
-                                        {CATEGORY_SUGGESTIONS[category]?.map(
-                                          (suggestion, i) => (
-                                            <li key={i}>{suggestion}</li>
-                                          ),
-                                        )}
-                                      </ul>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  {CATEGORY_SUGGESTIONS[category] &&
+                                    CATEGORY_SUGGESTIONS[category].length >
+                                      0 && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
+                                          >
+                                            <Info className="w-3.5 h-3.5" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                          side="right"
+                                          className="max-w-xs p-3"
+                                        >
+                                          <p className="font-bold mb-2 text-[11px]">
+                                            Suggested Documents:
+                                          </p>
+                                          <ul className="list-disc pl-4 space-y-1 text-[10px]">
+                                            {CATEGORY_SUGGESTIONS[
+                                              category
+                                            ]?.map((suggestion, i) => (
+                                              <li key={i}>{suggestion}</li>
+                                            ))}
+                                          </ul>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    )}
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -1213,7 +1222,7 @@ export default function DocumentVaultPage() {
         {/* Welcome / Incomplete Progress Modal */}
         <Dialog open={welcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
           <DialogContent className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden">
-            <div className="relative p-8 flex flex-col items-center text-center">
+            <div className="relative p-8 flex flex-col items-center">
               {/* Decorative Background */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden">
                 <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
@@ -1226,25 +1235,31 @@ export default function DocumentVaultPage() {
               </div>
 
               {/* Text */}
-              <h3 className="relative z-10 text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+              <h3 className="relative z-10 text-2xl text-center font-black text-slate-900 dark:text-white mb-3 tracking-tight">
                 Personalize Your Vault
               </h3>
-              <p className="relative z-10 text-slate-600 dark:text-slate-400 leading-relaxed mb-8 text-[15px]">
-                Your document checklist is currently using a generic template. To see the exact documents required for your specific situation, please complete{" "}
-                <span className="font-bold text-primary">Chapter 1: Step 1 (Eligibility Check)</span>{" "}
-                and{" "}
-                <span className="font-bold text-primary">Chapter 1: Step 2 (Checklist Personalization)</span>{" "}
-                in your Journey roadmap.
+              <p className="relative z-10 text-left text-slate-600 dark:text-slate-400 leading-relaxed text-[15px]">
+                Your document checklist is currently showing a standard list of
+                documents. To view the exact documents required for your
+                specific situation, please complete these steps in your Journey
+                roadmap:{" "}
               </p>
 
+              <ul className="font-bold text-primary mb-8 text-left">
+                <li> Chapter 1: Step 1 (Eligibility Check)</li>
+                <li> Chapter 1: Step 2 (Checklist Personalization)</li>
+              </ul>
               {/* Actions */}
               <div className="relative z-10 w-full space-y-3">
-               <Link href="/visa-category/ir-category/ir-1"> <Button
-                  // onClick={() => router.push("/visa-category/ir-category/ir-1")}
-                  className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
-                >
-                  Go to Journey Roadmap
-                </Button></Link>
+                <Link href="/visa-category/ir-category/ir-1">
+                  {" "}
+                  <Button
+                    // onClick={() => router.push("/visa-category/ir-category/ir-1")}
+                    className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+                  >
+                    Go to Journey Roadmap
+                  </Button>
+                </Link>
                 <button
                   onClick={() => setWelcomeModalOpen(false)}
                   className="w-full h-12 rounded-2xl text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold text-sm transition-colors cursor-pointer"

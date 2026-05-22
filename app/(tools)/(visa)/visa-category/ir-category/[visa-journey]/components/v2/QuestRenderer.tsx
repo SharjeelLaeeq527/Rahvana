@@ -12,6 +12,7 @@ import {
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestSuite, QuestData } from "../types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
+import { FloatingSidePanel } from "./components/FloatingSidePanel";
 import { E, msg } from "@/lib/errors";
 
 interface QuestRendererProps {
@@ -374,15 +375,33 @@ export function QuestRenderer({
           })}
         </div>
 
-        {/* Risk advisories — only for eligibility-suite */}
+        {/* Risk advisories — eligibility-suite only
+            Fixed right-side panel at xl, inline below xl */}
         {suiteId === "eligibility-suite" && (
-          <EligibilityRiskBanner
-            answers={
-              Object.keys(suiteAnswers).length > 0
-                ? suiteAnswers
-                : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
-            }
-          />
+          <>
+            {/* Reusable floating panel — auto fades when footer enters viewport */}
+            <FloatingSidePanel>
+              <EligibilityRiskBanner
+                answers={
+                  Object.keys(suiteAnswers).length > 0
+                    ? suiteAnswers
+                    : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+                }
+                compact={true}
+              />
+            </FloatingSidePanel>
+
+            {/* Inline below content on smaller screens */}
+            <div className="xl:hidden">
+              <EligibilityRiskBanner
+                answers={
+                  Object.keys(suiteAnswers).length > 0
+                    ? suiteAnswers
+                    : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+                }
+              />
+            </div>
+          </>
         )}
 
         {/* Disclaimer */}

@@ -114,7 +114,7 @@ export default function SignatureRemoverPage() {
 
   return (
     <div className="bg-white">
-      <div className="site-main-px site-main-py">
+      <div className="site-main-px site-main-py mt-[55px]">
         <header className="text-center mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             {t("signatureProcessing.title")}

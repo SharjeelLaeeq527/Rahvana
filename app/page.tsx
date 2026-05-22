@@ -441,7 +441,7 @@ function HomePageContent() {
               <div className="hidden lg:flex h-full flex-col relative z-10 px-[5vw] xl:px-[10vw] 2xl:px-[13vw] pt-[45px]">
                 {/* Header Section */}
                 <div className="py-[3vh] xl:py-[5vh] 2xl:py-[9vh]">
-                  <h1 className="page-heading relative z-10 w-full text-center text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
+                  <h1 className="text-[clamp(24px,2.8vw,42px)] font-extrabold leading-[1.08] tracking-[-0.045em] relative z-10 w-full text-center text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
                     <span className="inline-block pb-2">
                       Navigate your IR-1 journey with clarity.
                     </span>
@@ -729,28 +729,21 @@ function HomePageContent() {
                   </em>
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                   {[
                     {
                       bg: "bg-[#fde8ec]",
                       iconBg: "bg-[#fbc8d2]",
-                      author: "Fatima A.",
+                      author: "Ayesha W.",
                       role: "IR-1 applicant · Islamabad",
                       text: "For the first time, I felt like someone had actually thought about what this process feels like to go through — not just the steps, but the weight of it.",
                     },
                     {
                       bg: "bg-[#e3edf9]",
                       iconBg: "bg-[#c4d9f5]",
-                      author: "Omar K.",
-                      role: "US Citizen sponsor · Houston",
+                      author: "Karim U.",
+                      role: "US Citizen sponsor · Chicago",
                       text: "Three years of waiting. Rahvana helped me understand where I was in the process without the constant anxiety of not knowing what comes next.",
-                    },
-                    {
-                      bg: "bg-[#fef9e3]",
-                      iconBg: "bg-[#faedb8]",
-                      author: "Sara M.",
-                      role: "Beneficiary spouse · Lahore",
-                      text: "The form filler saved me hours. But more than that — reading the guides felt like being understood by people who knew what this was really like.",
                     },
                   ].map((item, i) => (
                     <div
@@ -769,7 +762,9 @@ function HomePageContent() {
                         <strong className="block text-[#121e2e] font-semibold">
                           {item.author}
                         </strong>
-                        <span className="text-xs text-gray-500">{item.role}</span>
+                        <span className="text-xs text-gray-500">
+                          {item.role}
+                        </span>
                       </div>
                     </div>
                   ))}

@@ -32,6 +32,7 @@ import { FormSelections } from "../types/221g";
 import { manualChecklists, ChecklistItem } from "../utils/manualChecklists";
 import { DocumentType } from "../utils/documentValidation";
 import { DocumentItem, DocumentStatus } from "../utils/documentDefinitions";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 // Local definitions removed in favor of imports from documentDefinitions.ts
 
@@ -79,6 +80,7 @@ export default function DocumentChecklist({
   // Validation Error State
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const { showToast } = useToast();
 
   // Update documents when selectedItems change
   useEffect(() => {
@@ -311,8 +313,9 @@ export default function DocumentChecklist({
 
                               validator();
                             } else {
-                              alert(
+                              showToast(
                                 "Please upload a file first before validating.",
+                                "error",
                               );
                             }
                           }}

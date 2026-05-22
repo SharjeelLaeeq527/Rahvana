@@ -39,6 +39,7 @@ import { E, msg } from '@/lib/errors';
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { Loader } from "@/components/ui/spinner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { PKMCenter, pkmCenters } from "./(data)/punjab-pkm-centers";
 import { balochistanCenters } from "./(data)/balochistan-pkm-centers";
 import { kpkCenters } from "./(data)/kpk-centers";
@@ -1443,6 +1444,7 @@ function LetterModal({
   province,
 }: LetterModalProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { showToast } = useToast();
 
   const formatCNIC = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -1520,7 +1522,7 @@ function LetterModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
@@ -1746,6 +1748,7 @@ function PreviewModal({
   formData,
 }: PreviewModalProps) {
   const previewRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
 
   const downloadPDF = async () => {
     const apiUrl =
@@ -1773,7 +1776,7 @@ function PreviewModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 

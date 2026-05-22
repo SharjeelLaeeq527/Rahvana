@@ -29,9 +29,11 @@ import { ConsultationBooking, TimeSlot } from '@/types/consultation';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { Loader } from "@/components/ui/spinner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 
 const ConsultationRequestsTable = () => {
+  const { showToast } = useToast();
   const [requests, setRequests] = useState<ConsultationBooking[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<ConsultationBooking[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -236,7 +238,7 @@ const ConsultationRequestsTable = () => {
         setShowActionModal(false);
         if (showSheet) setShowSheet(false);
       } else {
-        alert('Failed to update request.');
+        showToast('Failed to update request.', 'error');
       }
     } catch (error) {
       console.error('Error updating request:', error);

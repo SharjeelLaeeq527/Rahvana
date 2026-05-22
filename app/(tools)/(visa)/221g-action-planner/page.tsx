@@ -93,7 +93,7 @@ export default function TwentyTwoOneGActionPlanner() {
   };
 
   return (
-    <div className="w-full site-main-px site-main-py">
+    <div className="w-full site-main-px site-main-py mt-10">
       <div className="mb-5 rounded-2xl border border-slate-200 px-4 py-4 md:px-6 md:py-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
           Visa Response Toolkit

@@ -303,7 +303,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py">
+    <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py mt-[55px]">
       <div className="">
         <h1 className="text-3xl font-bold text-primary mb-2">
           {t("ivTool.title")}

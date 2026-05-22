@@ -92,7 +92,7 @@ export default function InterviewPrepResultPage() {
   if (error) {
     return (
       <ToastProvider>
-        <div className="container mx-auto py-8 px-4">
+        <div className="container mx-auto py-8 px-4 my-32">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Session</h2>
             <p className="text-red-600 mb-4">{error}</p>
@@ -111,7 +111,7 @@ export default function InterviewPrepResultPage() {
   if (!results || results.questions.length === 0) {
     return (
       <ToastProvider>
-        <div className="container mx-auto py-8 px-4">
+        <div className="container mx-auto py-8 px-4 my-32">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
             <h2 className="text-xl font-semibold text-yellow-800 mb-2">No Results Found</h2>
             <p className="text-yellow-600 mb-4">The session has no results available.</p>

@@ -13,7 +13,9 @@ import {
   Save,
   ArrowLeft,
   FileCheck,
+  Lock,
 } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 interface ReviewPageProps {
   formData: Record<string, string>;
@@ -40,6 +42,7 @@ export function ReviewPage({
   isDownloading,
   isSavingToVault,
 }: ReviewPageProps) {
+  const { t } = useLanguage();
   const [expandedSections, setExpandedSections] = useState<Set<number>>(
     new Set([0]) // First section expanded by default
   );
@@ -242,7 +245,7 @@ export function ReviewPage({
           boxShadow: "0 -4px 20px rgba(0,0,0,0.05)",
         }}
       >
-        <div className="flex flex-col md:flex-row gap-3 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-start gap-3 max-w-7xl mx-auto">
           <button
             onClick={onBackToForm}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition-all text-sm"
@@ -251,7 +254,7 @@ export function ReviewPage({
             Back to Form
           </button>
 
-          <div className="flex-1 flex flex-wrap gap-3">
+          <div className="flex-1 flex flex-wrap items-start gap-3">
             <button
               onClick={onPreviewPDF}
               disabled={isPreviewing || isDownloading || isSavingToVault}
@@ -270,14 +273,20 @@ export function ReviewPage({
               {isDownloading ? "Downloading..." : "Download PDF"}
             </button>
 
-            <button
-              onClick={onSaveToVault}
-              disabled={isPreviewing || isDownloading || isSavingToVault}
-              className="flex-[1.5] flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0d7377] to-[#14a0a6] hover:from-[#0a5a5d] hover:to-[#0d7377] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#0d7377]/20 text-sm"
-            >
-              <Save className="w-4 h-4" />
-              {isSavingToVault ? "Saving..." : "Save to Vault"}
-            </button>
+            <div className="flex-[1.5] flex flex-col gap-1.5 min-w-[150px]">
+              <button
+                onClick={onSaveToVault}
+                disabled={isPreviewing || isDownloading || isSavingToVault}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0d7377] to-[#14a0a6] hover:from-[#0a5a5d] hover:to-[#0d7377] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#0d7377]/20 text-sm"
+              >
+                <Save className="w-4 h-4" />
+                {isSavingToVault ? "Saving..." : "Save to Vault"}
+              </button>
+              <div className="flex items-center justify-center gap-1 text-[10px] text-slate-500 font-semibold leading-none py-0.5">
+                <Lock className="w-3 h-3 text-emerald-600 shrink-0" />
+                <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

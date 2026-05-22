@@ -383,7 +383,7 @@ export default function PoliceVerificationGuide() {
         title={guideData.wizard.title}
       />
 
-      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto flex-col xl:flex-row">
+      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -396,7 +396,7 @@ export default function PoliceVerificationGuide() {
           session={session}
         />
 
-        <main className="flex-1 xl:flex-initial xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
+        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -459,68 +459,70 @@ export default function PoliceVerificationGuide() {
           </div>
         </main>
 
-        <WizardInfoPanel
-          data={infoPanelData}
-          lastVerified={guideData.wizard.last_verified}
-          guideData={guideData as Record<string, unknown>}
-          guideType="police-verification"
-        >
-          {/* Custom Action Buttons for Police Verification */}
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setIsPKMModalOpen(true)}
-              className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
-            >
-              <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                <MapPin size={18} /> PKM Locator
-              </span>
-              <ArrowRight
-                size={18}
-                className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
-              />
-            </button>
-            {state.province === "Sindh" && (
+        <div className="xl:sticky xl:top-4 xl:self-start">
+          <WizardInfoPanel
+            data={infoPanelData}
+            lastVerified={guideData.wizard.last_verified}
+            guideData={guideData as Record<string, unknown>}
+            guideType="police-verification"
+          >
+            {/* Custom Action Buttons for Police Verification */}
+            <div className="flex flex-col gap-3">
               <button
-                onClick={() => setIsLetterModalOpen(true)}
+                onClick={() => setIsPKMModalOpen(true)}
                 className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
               >
                 <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                  <FileText size={18} /> Create Purpose Letter
+                  <MapPin size={18} /> PKM Locator
                 </span>
                 <ArrowRight
                   size={18}
                   className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
                 />
               </button>
-            )}
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
-            >
-              <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                <UserCheck size={18} /> Create Authority Letter
-              </span>
-              <ArrowRight
-                size={18}
-                className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
-              />
-            </button>
-            {state.province === "Sindh" && (
+              {state.province === "Sindh" && (
+                <button
+                  onClick={() => setIsLetterModalOpen(true)}
+                  className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
+                >
+                  <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
+                    <FileText size={18} /> Create Purpose Letter
+                  </span>
+                  <ArrowRight
+                    size={18}
+                    className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
+                  />
+                </button>
+              )}
               <button
-                onClick={() => setIsSindhApplyModalOpen(true)}
-                className="w-full flex items-center justify-between p-4 bg-primary text-white hover:bg-primary/90 rounded-xl transition-all shadow-md group"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
               >
-                <span className="font-bold flex items-center gap-2">
-                  <Building2 size={18} /> Apply Now (Sindh)
+                <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
+                  <UserCheck size={18} /> Create Authority Letter
                 </span>
                 <ArrowRight
                   size={18}
-                  className="group-hover:translate-x-1 transition-all"
+                  className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
                 />
               </button>
-            )}
-          </div>
-        </WizardInfoPanel>
+              {state.province === "Sindh" && (
+                <button
+                  onClick={() => setIsSindhApplyModalOpen(true)}
+                  className="w-full flex items-center justify-between p-4 bg-primary text-white hover:bg-primary/90 rounded-xl transition-all shadow-md group"
+                >
+                  <span className="font-bold flex items-center gap-2">
+                    <Building2 size={18} /> Apply Now (Sindh)
+                  </span>
+                  <ArrowRight
+                    size={18}
+                    className="group-hover:translate-x-1 transition-all"
+                  />
+                </button>
+              )}
+            </div>
+          </WizardInfoPanel>
+        </div>
       </div>
 
       <NarrativeModal

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 type Props = {
   onGenerate: (dataURL: string) => void;
@@ -9,6 +10,7 @@ type Props = {
 
 export default function TextSignature({ onGenerate, closeModal }: Props) {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [name, setName] = useState("");
   const [selectedFont, setSelectedFont] = useState(0);
   const [, setFontsLoaded] = useState(false);
@@ -42,7 +44,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
 
   const handleGenerate = () => {
     if (!name.trim()) {
-      alert(t("editor.signature.enterName"));
+      showToast(t("editor.signature.enterName"), "error");
       return;
     }
 
@@ -56,7 +58,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       const ctx = canvas.getContext("2d");
       
       if (!ctx) {
-        alert("Failed to create signature. Please try again.");
+          showToast("Failed to create signature. Please try again.", "error");
         return;
       }
 
@@ -84,6 +86,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
     } catch (error) {
       console.error("Error generating signature:", error);
       alert(t("editor.signature.failed"));
+        showToast(t("editor.signature.failed"), "error");
     }
   };
 
@@ -165,7 +168,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
         <button
           onClick={handleGenerate}
           disabled={!name.trim()}
-          className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t("editor.signature.create")}
         </button>

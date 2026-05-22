@@ -84,11 +84,11 @@ export class ReminderEngine {
    */
   private async checkNewStepsAvailable(journeyId: string, reminders: any[]) {
     const { data: currentStep } = await this.supabase
-      .from("journey_steps")
-      .select("id, step_name")
-      .eq("journey_id", journeyId)
+      .from("steps")
+      .select("id, step_name, chapters!inner(journey_id)")
+      .eq("chapters.journey_id", journeyId)
       .eq("status", "not_started")
-      .order("sequence_order", { ascending: true })
+      .order("display_order", { ascending: true })
       .limit(1)
       .single();
 

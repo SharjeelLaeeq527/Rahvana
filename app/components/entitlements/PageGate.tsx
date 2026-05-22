@@ -5,6 +5,7 @@ import { Lock, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useRouter } from "next/navigation";
+import { Loader } from "@/components/ui/spinner";
 
 interface PageGateProps {
   feature: string;
@@ -19,6 +20,25 @@ export function PageGate({ feature, children, title, description }: PageGateProp
   const router = useRouter();
   const plan = usePlan();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // If plan is loading, show loading spinner instead of the restriction card
+  // We wrap the loader in a solid bg-[#fafcff] screen with z-[9999] to completely mask 
+  // the header/footer during access verification for a cleaner, premium user experience.
+  if (plan.isLoading) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#fafcff] overflow-hidden">
+        {/* Decorative background elements matching the restricted card screen */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[80px] pointer-events-none translate-y-1/2 -translate-x-1/3" />
+        
+        <Loader
+          size="lg"
+          text="Loading..."
+          subText=""
+        />
+      </div>
+    );
+  }
 
   // If user has access or the feature is fully open, render normally
   if (plan.canUse(feature)) {

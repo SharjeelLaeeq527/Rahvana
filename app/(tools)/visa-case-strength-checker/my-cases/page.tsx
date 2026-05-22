@@ -19,6 +19,7 @@ import ActionMenu from "@/app/components/shared/ActionMenu";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { DataTable, Column } from "@/app/components/shared/table/DataTable";
 import { FilterPanel } from "@/app/components/shared/FilterPanel";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 type RiskLevel = "STRONG" | "MODERATE" | "WEAK" | "PENDING";
 type CaseType = "Spouse";
@@ -100,6 +101,7 @@ export default function MyCases() {
   );
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
+  const { showToast } = useToast();
 
   // Filter states
   const [selectedCaseType, setSelectedCaseType] = useState<string>("all");
@@ -308,7 +310,7 @@ export default function MyCases() {
   );
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py mt-10">
       <div className="">
         <header className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
@@ -325,18 +327,18 @@ export default function MyCases() {
             {cases.length > 0 && (
               <FilterPanel
                 fields={[
-                  {
-                    key: "caseType",
-                    label: "Case Type",
-                    options: [
-                      { value: "all", label: "All Types" },
-                      ...uniqueCaseTypes.map((type) => ({
-                        value: type,
-                        label: getCaseTypeLabel(type),
-                      })),
-                    ],
-                    value: selectedCaseType,
-                  },
+                  // {
+                  //   key: "caseType",
+                  //   label: "Case Type",
+                  //   options: [
+                  //     { value: "all", label: "All Types" },
+                  //     ...uniqueCaseTypes.map((type) => ({
+                  //       value: type,
+                  //       label: getCaseTypeLabel(type),
+                  //     })),
+                  //   ],
+                  //   value: selectedCaseType,
+                  // },
                   {
                     key: "riskLevel",
                     label: "Risk Level",

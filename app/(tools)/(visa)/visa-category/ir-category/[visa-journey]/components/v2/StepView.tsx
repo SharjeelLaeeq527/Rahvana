@@ -85,6 +85,10 @@ import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
 import { HouseholdMemberTool } from "./components/HouseholdMemberTool";
 import { EvidenceStrengthMeter } from "./components/EvidenceStrengthMeter";
+import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
+import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
+import { Chapter1HealthPanel } from "./components/Chapter1HealthPanel";
+import { FloatingSidePanel } from "./components/FloatingSidePanel";
 import {
   ConsistencyBaselineCapture,
   type ConsistencyBaseline,
@@ -1150,6 +1154,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
+
+        {/* Chapter 1 case strength — side panel + inline step alerts (all in one) */}
+        <Chapter1HealthPanel
+          currentStep={currentStep}
+          chapters={chapters}
+          state={state}
+          uploadedDocuments={uploadedDocuments}
+        />
+
         {/* Page Shell */}
         <div className="w-full max-w-[680px] px-[24px] pb-10 flex flex-col">
           {/* Step Header */}
@@ -1980,7 +1993,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
           {tool.support_cards &&
             tool.support_cards.length > 0 &&
             sId !== "step_2_1" && (
-              <div className="flex flex-col gap-[12px] mt-[12px]">
+              <div className={`flex flex-col gap-[12px] mt-[12px] ${sId === "step_2_3" ? 'mb-3' : 'mb-0'}`}>
                 {tool.support_cards.map((card: any, i: number) => (
                   <div
                     key={i}
@@ -2272,6 +2285,86 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   return cards.map((card: any, idx: number) => {
                     const guideFeatureKey = "step_guides";
                     const isGuideLocked = !plan.canUse(guideFeatureKey);
+                    const hasWalletCard = !!tool.wallet_card;
+
+                    if (hasWalletCard) {
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            if (isGuideLocked) {
+                              setUpgradeModalFeature(guideFeatureKey);
+                            } else {
+                              if (card.id === "add-household-member") {
+                                setTutorialPath("household_member");
+                              } else if (card.id === "add-joint-sponsor") {
+                                setTutorialPath("joint_sponsor");
+                              }
+                              setTutorialIdx(0);
+                              setIsTutorialOpen(true);
+                            }
+                          }}
+                          className={`bg-[#fafcff] border-[1.5px] rounded-[16px] p-[20px] text-left group hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col relative w-full ${
+                            isGuideLocked
+                              ? "border-[#d0e4f7] hover:border-[#f0c878]/60 hover:shadow-[0_8px_30px_rgba(160,96,0,0.06)]"
+                              : "border-[#d0e4f7] hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-[10px] mb-[12px]">
+                            <div
+                              className={`w-[36px] h-[36px] rounded-[9px] border flex items-center justify-center shrink-0 transition-opacity ${
+                                isGuideLocked
+                                  ? "bg-[#f3f0fb] border-[#c9bef2] opacity-50"
+                                  : "bg-[#f3f0fb] border-[#c9bef2]"
+                              }`}
+                            >
+                              <Monitor
+                                size={18}
+                                className="text-[#4a2d8a]"
+                                strokeWidth={1.7}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3
+                              className={`text-[14px] font-semibold mb-1 ${
+                                isGuideLocked
+                                  ? "text-[#6b8097]"
+                                  : "text-[#0c1b33]"
+                              }`}
+                            >
+                              {card.title}
+                            </h3>
+                            <p
+                              className={`text-[12px] leading-normal ${
+                                isGuideLocked
+                                  ? "text-[#9aabb8]"
+                                  : "text-[#6b8097]"
+                              }`}
+                            >
+                              {card.subtitle}
+                            </p>
+                          </div>
+                          <div
+                            className={`flex items-center gap-1 mt-3 text-[12px] font-semibold ${
+                              isGuideLocked ? "text-[#a06000]" : "text-primary"
+                            }`}
+                          >
+                            {isGuideLocked ? (
+                              <>
+                                <span>Unlock guide</span>
+                                <Lock size={11} strokeWidth={2.5} />
+                              </>
+                            ) : (
+                              <>
+                                <span>View guide</span>
+                                <ArrowRight size={11} strokeWidth={2} />
+                              </>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    }
 
                     return (
                       <button
@@ -2943,20 +3036,47 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 </div>
                 {/* )} */}
 
-                {/* Documents still pending — advisory, only for step_1_2 */}
+                {/* Case Strength Tool — fixed right panel at xl; inline below xl */}
                 {currentStep.step_key === "step_1_2" && (
-                  <EvidenceStrengthMeter
-                    documentItems={(currentStep as any).document_items}
-                    uploadedDocuments={uploadedDocuments}
-                    documentChecklist={state.documentChecklist}
-                    docReviewStatus={
-                      state.metadata?.docReviewStatus as
-                        | Record<string, string>
-                        | undefined
-                    }
-                    docUploads={state.docUploads}
-                    notes={state.notes}
-                  />
+                  <>
+                    {/* Reusable floating panel — auto fades when footer enters viewport */}
+                    <FloatingSidePanel>
+                      <DocCaseStrengthMeter
+                        documentItems={(currentStep as any).document_items}
+                        uploadedDocuments={uploadedDocuments}
+                        documentChecklist={state.documentChecklist}
+                        docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
+                        docUploads={state.docUploads}
+                        notes={state.notes}
+                        eligibilityAnswers={
+                          (state.answers?.["eligibility-suite"] as any) ??
+                          (state.metadata?.["questAnswers_eligibility-suite"] as any)
+                        }
+                        contextLabel="Case Strength"
+                        stepName="Petition Readiness"
+                        defaultCollapsed={false}
+                      />
+                    </FloatingSidePanel>
+
+                    {/* Inline below content on smaller screens */}
+                    <div className="xl:hidden max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pb-4">
+                      <DocCaseStrengthMeter
+                        documentItems={(currentStep as any).document_items}
+                        uploadedDocuments={uploadedDocuments}
+                        documentChecklist={state.documentChecklist}
+                        docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
+                        docUploads={state.docUploads}
+                        notes={state.notes}
+                        eligibilityAnswers={
+                          (state.answers?.["eligibility-suite"] as any) ??
+                          (state.metadata?.["questAnswers_eligibility-suite"] as any)
+                        }
+                        contextLabel="Case Strength"
+                        stepName="Petition Readiness"
+                        defaultCollapsed={true}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* Document Cards — rendered by DocListSection below */}

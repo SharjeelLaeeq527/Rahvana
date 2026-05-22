@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -13,24 +13,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
-import { useRouter } from "next/navigation";
-
-let scrollLockCount = 0;
-
-function useScrollLock(isOpen: boolean) {
-  useEffect(() => {
-    if (isOpen) {
-      scrollLockCount++;
-      document.body.style.overflow = "hidden";
-      return () => {
-        scrollLockCount--;
-        if (scrollLockCount === 0) {
-          document.body.style.overflow = "unset";
-        }
-      };
-    }
-  }, [isOpen]);
-}
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 // External Imports for PKM Locator
 import {
@@ -44,6 +28,7 @@ import {
   findNearestCenters,
   geocodeAddress,
 } from "../../../police-verification/location-utils";
+import Link from "next/link";
 
 export interface FormData {
   fullName: string;
@@ -94,8 +79,8 @@ export function LetterModal({
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   province: string;
 }) {
-  useScrollLock(isOpen);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { showToast } = useToast();
 
   const formatCNIC = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -158,26 +143,20 @@ export function LetterModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm px-4 overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white w-full max-w-2xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-gray-200 max-h-[90vh] md:max-h-[95vh]"
-      >
-        <div className="p-5 md:p-8 overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-gray-200 max-h-[90vh] md:max-h-[95vh] p-0 gap-0">
+        <div className="p-5 md:p-8 overflow-y-auto flex-1">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+            <DialogTitle className="text-xl md:text-2xl font-bold text-gray-900">
               Create Purpose Letter
-            </h2>
+            </DialogTitle>
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors bg-gray-100"
             >
@@ -362,8 +341,8 @@ export function LetterModal({
             </div>
           </form>
         </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -378,7 +357,7 @@ export function PreviewModal({
   province: string;
   formData: FormData;
 }) {
-  useScrollLock(isOpen);
+  const { showToast } = useToast();
 
   const downloadPDF = async () => {
     const apiUrl =
@@ -402,26 +381,20 @@ export function PreviewModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh] border border-gray-200"
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh] border border-gray-200 p-0 gap-0">
         <div className="p-4 md:p-6 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white sticky top-0 z-10 gap-4 sm:gap-0">
           <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 flex-1 sm:flex-none">
+            <DialogTitle className="text-lg md:text-xl font-bold text-gray-900 flex-1 sm:flex-none">
               Letter Preview
-            </h2>
+            </DialogTitle>
             <button
+              type="button"
               onClick={downloadPDF}
               className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm whitespace-nowrap"
             >
@@ -430,6 +403,7 @@ export function PreviewModal({
             </button>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="absolute top-4 right-4 sm:static p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
@@ -441,8 +415,8 @@ export function PreviewModal({
             <LetterContent formData={formData} province={province} />
           </div>
         </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -559,10 +533,9 @@ export function AuthorityLetterModal({
   setFormData: React.Dispatch<React.SetStateAction<AuthorityFormData>>;
   province: string;
 }) {
-  useScrollLock(isOpen);
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { showToast } = useToast();
 
   const formatCNIC = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -614,26 +587,20 @@ export function AuthorityLetterModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm px-4 overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white w-full max-w-2xl my-auto rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh]"
-      >
-        <div className="p-5 md:p-8 overflow-y-auto bg-white">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh] p-0 gap-0">
+        <div className="p-5 md:p-8 overflow-y-auto bg-white flex-1">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+            <DialogTitle className="text-xl md:text-2xl font-bold text-gray-800">
               Create Authority Letter
-            </h2>
+            </DialogTitle>
             <button
+              type="button"
               onClick={onClose}
               className="p-2 hover:bg-primary/30 rounded-full transition-colors bg-gray-100"
             >
@@ -895,8 +862,8 @@ export function AuthorityLetterModal({
             </div>
           </form>
         </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -911,7 +878,7 @@ export function AuthorityLetterPreviewModal({
   formData: AuthorityFormData;
   province: string;
 }) {
-  useScrollLock(isOpen);
+  const { showToast } = useToast();
 
   const downloadPDF = async () => {
     const apiUrl =
@@ -935,26 +902,20 @@ export function AuthorityLetterPreviewModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      showToast("Failed to generate PDF. Please try again.", "error");
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh]"
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] md:max-h-[95vh] p-0 gap-0 border border-gray-200">
         <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white sticky top-0 z-10 gap-4 sm:gap-0">
           <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            <h2 className="text-lg md:text-xl font-bold text-gray-800 flex-1 sm:flex-none">
+            <DialogTitle className="text-lg md:text-xl font-bold text-gray-800 flex-1 sm:flex-none">
               Preview
-            </h2>
+            </DialogTitle>
             <button
+              type="button"
               onClick={downloadPDF}
               className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-sm font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap"
             >
@@ -963,6 +924,7 @@ export function AuthorityLetterPreviewModal({
             </button>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="absolute top-4 right-4 sm:static p-2 hover:bg-gray-100 rounded-full"
           >
@@ -974,8 +936,8 @@ export function AuthorityLetterPreviewModal({
             <AuthorityLetterContent formData={formData} province={province} />
           </div>
         </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -1072,25 +1034,15 @@ export function SindhApplyModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  useScrollLock(isOpen);
-  const router = useRouter();
-
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white w-full max-w-lg my-auto rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col items-center text-center mx-4 max-h-[90vh] md:max-h-[95vh] overflow-y-auto"
-      >
-        <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col items-center text-center max-h-[90vh] md:max-h-[95vh] overflow-y-auto gap-0 border border-gray-200">
+        <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 md:mb-6 flex-shrink-0">
           <Building2 className="text-primary w-8 h-8 md:w-10 md:h-10" />
         </div>
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+        <DialogTitle className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
           Apply Online
-        </h2>
+        </DialogTitle>
         <p className="text-gray-500 mb-6 md:mb-8 text-sm md:text-base leading-relaxed">
           We are directly providing you with this official service. By clicking{" "}
           <b>Apply Now</b>, you will be redirected to the comprehensive Police
@@ -1099,23 +1051,27 @@ export function SindhApplyModal({
 
         <div className="flex flex-col sm:flex-row w-full gap-3 md:gap-4">
           <button
+            type="button"
             onClick={onClose}
             className="flex-1 py-3 md:py-4 bg-gray-100 text-gray-700 font-semibold rounded-2xl hover:bg-gray-200 transition-colors"
           >
             Cancel
           </button>
-          <button
-            onClick={() => {
-              onClose();
-              router.push(`/police-verification/apply?province=Sindh`);
-            }}
-            className="flex-1 py-3 md:py-4 bg-primary text-white font-semibold rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-2"
+          <Link
+            href="/police-verification/apply?province=Sindh"
+            target="_blank"
+            className="flex-1 py-3 md:py-4 bg-primary rounded-2xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center"
           >
-            Apply Now <ExternalLink size={18} />
-          </button>
+            <button
+              type="button"
+              className="flex text-white font-semibold gap-2 bg-transparent border-0 outline-none"
+            >
+              Apply Now <ExternalLink size={18} />
+            </button>
+          </Link>
         </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -1132,16 +1088,12 @@ export function PKMLocatorModal({
   onClose: () => void;
   province: string;
 }) {
-  useScrollLock(isOpen);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [nearestCenters, setNearestCenters] = useState<
     (PKMCenter & { distance: number })[]
   >([]);
   const [error, setError] = useState<string | null>(null);
-
-  if (!isOpen) return null;
 
   const centersData =
     province === "Punjab"
@@ -1201,14 +1153,10 @@ export function PKMLocatorModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl p-0 relative my-auto max-h-[90vh] md:max-h-[95vh] flex flex-col overflow-hidden"
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl p-0 max-h-[90vh] md:max-h-[95vh] flex flex-col overflow-hidden gap-0 border border-gray-200">
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-4 right-4 md:top-6 md:right-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-10"
         >
@@ -1217,9 +1165,9 @@ export function PKMLocatorModal({
 
         <div className="flex-1 overflow-y-auto p-5 md:p-8">
           <div className="mb-6 md:mb-8 pr-10">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+            <DialogTitle className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
               Find Nearest PKM Center
-            </h2>
+            </DialogTitle>
             <p className="text-gray-500 text-sm md:text-base">
               Locate the closest Police Khidmat Markaz for your character
               certificate.
@@ -1229,6 +1177,7 @@ export function PKMLocatorModal({
           <div className="space-y-5 md:space-y-6">
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <button
+                type="button"
                 onClick={getBrowserLocation}
                 disabled={loading}
                 className="flex-1 flex items-center justify-center gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl bg-primary/5 text-primary text-sm md:text-base font-semibold hover:bg-primary/10 transition-all border border-primary/20"
@@ -1281,6 +1230,7 @@ export function PKMLocatorModal({
                   <div className="flex items-center justify-between top-0 bg-white py-2">
                     <h4 className="font-bold text-gray-800">Nearest Centers</h4>
                     <button
+                      type="button"
                       onClick={() => setNearestCenters([])}
                       className="text-gray-400 hover:text-gray-600"
                     >
@@ -1317,7 +1267,7 @@ export function PKMLocatorModal({
             </AnimatePresence>
           </div>
         </div>
-      </motion.div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

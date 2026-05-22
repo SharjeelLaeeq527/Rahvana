@@ -7,14 +7,14 @@ import Link from 'next/link';
 import { Loader } from "@/components/ui/spinner";
 import { usePlan } from '@/app/context/PlanContext';
 
-// Poll /api/stripe/verify-session until the webhook has updated the DB tier,
-// or until we hit maxAttempts. Returns the confirmed tier string.
+// Poll /api/stripe/verify-session — first call is immediate (no delay).
+// verify-session directly applies the tier from Stripe so usually one call is enough.
 async function pollUntilActivated(
   sessionId: string,
   onActivated: (tier: string) => void,
   onTimeout: () => void,
-  intervalMs = 2500,
-  maxAttempts = 16, // 16 × 2.5s = 40s max
+  intervalMs = 1500,
+  maxAttempts = 20, // 20 × 1.5s = 30s max
 ) {
   let attempts = 0;
   const run = async () => {
@@ -35,7 +35,8 @@ async function pollUntilActivated(
       onTimeout();
     }
   };
-  setTimeout(run, intervalMs);
+  // First call IMMEDIATELY — no initial wait
+  run();
 }
 
 // ── Animated Credit Card ─────────────────────────────────────────────────────

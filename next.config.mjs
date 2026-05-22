@@ -101,10 +101,8 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  experimental: {
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./data/**/*'],
-    },
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./data/**/*'],
   },
 }
 

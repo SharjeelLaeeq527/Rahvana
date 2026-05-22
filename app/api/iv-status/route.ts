@@ -122,7 +122,7 @@ async function scrapeIVData(): Promise<IVData[]> {
         headers: {
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         },
-        next: { revalidate: 86400 }, // Cache for 24 hours
+        cache: "no-store",
       }
     );
 
@@ -155,9 +155,9 @@ async function scrapeIVData(): Promise<IVData[]> {
         if (cells.length < 4) return;
 
         const post = cells[0];
-        const ir = cells[1];
-        const fs = cells[2];
-        const eb = cells[3];
+        const eb = cells[1];  // Employment Visa
+        const fs = cells[2];  // Preference (Family-Sponsored) Visa
+        const ir = cells[3];  // Relative (Immediate Relative) Visa
 
         if (ir && ir !== "-" && !ir.toLowerCase().includes("n/a")) {
           data.push({
@@ -189,8 +189,7 @@ async function scrapeIVData(): Promise<IVData[]> {
     return data;
   } catch (error) {
     console.error("Scraping failed:", error);
-    // Return sample data as fallback
-    return getSampleData();
+    throw error;
   }
 }
 

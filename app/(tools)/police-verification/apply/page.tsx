@@ -19,15 +19,18 @@ import {
   Clock,
   Send,
   Upload,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader } from "@/components/ui/spinner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { E, msg } from "@/lib/errors";
 
 function PoliceApplyContent() {
   // const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { showToast } = useToast();
   // const province = searchParams.get("province") || "";
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -172,7 +175,10 @@ function PoliceApplyContent() {
       // Photograph and Passport Copy: JPG, PNG
       if (name === "photograph" || name === "passportCopy") {
         if (!["jpg", "jpeg", "png"].includes(ext || "")) {
-          alert(msg(E.POLICE_FILE_PHOTO_INVALID_FORMAT));
+          showToast(
+            "Only JPG and PNG formats are allowed for this field.",
+            "error",
+          );
           return;
         }
       }
@@ -180,14 +186,14 @@ function PoliceApplyContent() {
       // Utility Bill and Police Letter: PDF
       if (name === "utilityBill" || name === "policeLetter") {
         if (ext !== "pdf") {
-          alert(msg(E.POLICE_FILE_PDF_INVALID));
+          showToast("Only PDF format is allowed for this field.", "error");
           return;
         }
       }
 
       // File Size Check (Max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert(msg(E.POLICE_FILE_TOO_LARGE));
+        showToast("File size exceeds 5MB limit.", "error");
         return;
       }
 
@@ -223,7 +229,9 @@ function PoliceApplyContent() {
       if (!formData.passportIssue) isValid = false;
       if (!formData.passportExpiry) isValid = false;
 
-      if (!isValid) alert(msg(E.POLICE_STEP1_INCOMPLETE));
+      if (!isValid) {
+        showToast(msg(E.POLICE_STEP1_INCOMPLETE), "error");
+      }
     }
 
     if (step === 2) {
@@ -245,8 +253,9 @@ function PoliceApplyContent() {
       )
         isValid = false;
 
-      if (!isValid)
-        alert(msg(E.POLICE_WITNESSES_INCOMPLETE));
+      if (!isValid) {
+        showToast(msg(E.POLICE_WITNESSES_INCOMPLETE), "error");
+      }
     }
 
     if (step === 3) {
@@ -264,8 +273,12 @@ function PoliceApplyContent() {
       }
 
       if (!isValid) {
-        const extra = formData.arrested === "Yes" ? " including arrest details." : ".";
-        alert(msg(E.POLICE_UPLOADS_MISSING, { extra }));
+        showToast(
+          msg(E.POLICE_UPLOADS_MISSING, {
+            extra: formData.arrested === "Yes" ? " including arrest details." : "",
+          }),
+          "error",
+        );
       }
     }
 
@@ -322,11 +335,16 @@ function PoliceApplyContent() {
 
         await Promise.all(fileUploadPromises);
 
-        alert(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }));
+        showToast(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }), "success");
         router.push("/user-dashboard");
+        // router.push("/user-dashboard");
       } catch (error) {
         console.error(error);
-        alert(msg(E.POLICE_SUBMIT_FAILED, { reason: error instanceof Error ? error.message : "Unknown error" }));
+        showToast(
+          "Failed to submit application: " +
+            (error instanceof Error ? error.message : "Unknown error"),
+          "error",
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -346,7 +364,7 @@ function PoliceApplyContent() {
   };
 
   return (
-    <div className="w-full bg-[#f8fafc] flex flex-col items-center site-main-px site-main-py pt-[55px]">
+    <div className="w-full bg-[#f8fafc] flex flex-col items-center site-main-px site-main-py pt-[55px] md:mt-8">
       <div className="w-full bg-white rounded-3xl md:rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden flex flex-col min-h-[700px] border border-gray-100">
         {/* Header */}
         <div className="p-6 md:p-8 pb-4 md:pb-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
@@ -1012,8 +1030,8 @@ function PoliceApplyContent() {
                             <div className="p-3 bg-orange-50 rounded-xl group-hover:bg-orange-100 transition-colors">
                               <Upload className="text-orange-600" size={20} />
                             </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-bold text-gray-800">
+                            <div className="flex-1 overflow-hidden">
+                              <p className="text-sm font-bold text-gray-800 truncate">
                                 {files.judgmentCopy
                                   ? files.judgmentCopy.name
                                   : "Choose File"}
@@ -1022,6 +1040,26 @@ function PoliceApplyContent() {
                                 PDF, JPG, PNG (Max 5MB)
                               </p>
                             </div>
+                            {files.judgmentCopy && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setFiles((prev) => ({
+                                    ...prev,
+                                    judgmentCopy: null,
+                                  }));
+                                  const inputEl = document.getElementById(
+                                    "judgementUpload",
+                                  ) as HTMLInputElement;
+                                  if (inputEl) inputEl.value = "";
+                                }}
+                                className="p-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg transition-colors z-10 shrink-0"
+                              >
+                                <X size={16} />
+                              </button>
+                            )}
                           </label>
                         </div>
                       </div>
@@ -1327,6 +1365,26 @@ function PoliceApplyContent() {
                               Max size 2MB
                             </p>
                           </div>
+                          {files.photograph && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setFiles((prev) => ({
+                                  ...prev,
+                                  photograph: null,
+                                }));
+                                const inputEl = document.getElementById(
+                                  "photographUpload",
+                                ) as HTMLInputElement;
+                                if (inputEl) inputEl.value = "";
+                              }}
+                              className="p-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg transition-colors z-10 shrink-0"
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
                         </label>
                       </div>
                     </div>
@@ -1364,6 +1422,26 @@ function PoliceApplyContent() {
                               Max size 5MB
                             </p>
                           </div>
+                          {files.passportCopy && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setFiles((prev) => ({
+                                  ...prev,
+                                  passportCopy: null,
+                                }));
+                                const inputEl = document.getElementById(
+                                  "passportUpload",
+                                ) as HTMLInputElement;
+                                if (inputEl) inputEl.value = "";
+                              }}
+                              className="p-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg transition-colors z-10 shrink-0"
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
                         </label>
                       </div>
                     </div>
@@ -1401,6 +1479,26 @@ function PoliceApplyContent() {
                               PDF format required
                             </p>
                           </div>
+                          {files.utilityBill && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setFiles((prev) => ({
+                                  ...prev,
+                                  utilityBill: null,
+                                }));
+                                const inputEl = document.getElementById(
+                                  "billUpload",
+                                ) as HTMLInputElement;
+                                if (inputEl) inputEl.value = "";
+                              }}
+                              className="p-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg transition-colors z-10 shrink-0"
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
                         </label>
                       </div>
                     </div>
@@ -1438,6 +1536,26 @@ function PoliceApplyContent() {
                               PDF format required
                             </p>
                           </div>
+                          {files.policeLetter && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setFiles((prev) => ({
+                                  ...prev,
+                                  policeLetter: null,
+                                }));
+                                const inputEl = document.getElementById(
+                                  "letterUpload",
+                                ) as HTMLInputElement;
+                                if (inputEl) inputEl.value = "";
+                              }}
+                              className="p-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 rounded-lg transition-colors z-10 shrink-0"
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
                         </label>
                       </div>
                     </div>
@@ -1529,7 +1647,7 @@ function PoliceApplyContent() {
               className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-green-600/25"
             >
               {isSubmitting ? (
-                <Loader size="sm" text="Running Checks" />
+                "Submitting..."
               ) : (
                 <>
                   Submit Application{" "}

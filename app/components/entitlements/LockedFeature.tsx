@@ -3,6 +3,7 @@
 import React from "react";
 import { Lock, Sparkles } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { Loader } from "@/components/ui/spinner";
 
 interface LockedFeatureProps {
   /** The feature key from ENTITLEMENTS config. */
@@ -29,6 +30,16 @@ export function LockedFeature({
   className,
 }: LockedFeatureProps) {
   const plan = usePlan();
+
+  // If plan is loading, show a small inline loader to avoid locked state flickering
+  if (plan.isLoading) {
+    if (mode === "hide") return null;
+    return (
+      <div className={`flex items-center justify-center p-4 min-h-[50px] ${className ?? ""}`}>
+        <Loader size="sm" />
+      </div>
+    );
+  }
 
   // Fully accessible — render normally
   if (plan.canUse(feature)) return <>{children}</>;

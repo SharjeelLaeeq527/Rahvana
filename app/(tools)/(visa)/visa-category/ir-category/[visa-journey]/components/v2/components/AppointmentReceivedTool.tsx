@@ -161,7 +161,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
               }
             }}
             disabled={isSaving}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-primary hover:bg-primary/90 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isSaving ? "Saving..." : "Save Appointment & Unlock Chapter 3"}
           </button>

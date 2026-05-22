@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import * as Errors from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import {
   getUser221gCase,
   update221gStatus,
@@ -22,6 +23,7 @@ export function FollowUpManager() {
   const [caseData, setCaseData] = useState<CaseData | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function checkFollowUp() {

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react"
 import NextImage from "next/image"
 import { SignatureImageProcessor } from "@/lib/imageProcessor"
 import { useLanguage } from "@/app/context/LanguageContext"
+import { useToast } from "@/app/components/shared/ToastProvider"
 
 type Props = {
   onUpload: (dataURL: string) => void
@@ -13,6 +14,7 @@ type Props = {
 
 export default function UploadImage({ onUpload, closeModal }: Props) {
   const { t } = useLanguage()
+  const { showToast } = useToast()
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -38,7 +40,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert(t("pdfProcessing.errors.invalidFile"))
+      showToast(t("pdfProcessing.errors.invalidFile"), "error")
       return
     }
     const reader = new FileReader()
@@ -67,7 +69,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
       processor.destroy()
     } catch (err) {
       console.error(err)
-      alert(t("pdfProcessing.editor.signature.failed"))
+        showToast(t("pdfProcessing.editor.signature.failed"), "error")
     } finally {
       setIsProcessing(false)
     }
@@ -176,7 +178,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
         <button
           onClick={handleCreate}
           disabled={!processedImage || isProcessing}
-          className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="px-6 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           {t("pdfProcessing.editor.signature.create")}
         </button>

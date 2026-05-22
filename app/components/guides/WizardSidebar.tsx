@@ -91,7 +91,7 @@ const WizardSidebar = ({
 
   return (
     <>
-      <aside className="flex shrink-0 flex-col bg-white border-b xl:border-b-0 xl:border-r border-slate-200 rounded-xl mx-4 my-3 xl:w-[320px] xl:h-[550px]">
+      <aside className="flex w-full shrink-0 flex-col bg-white border-b xl:border-b-0 xl:border-r border-slate-200 rounded-xl my-3 xl:h-137.5">
         {/* Add to Active Wizards Button */}
         {(!session || !session.saved) && (
           <div className="p-4 border-b border-slate-200 rounded-t-xl">

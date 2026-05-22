@@ -27,6 +27,7 @@ import {
   ChevronDown,
   // ChevronUp,
   History,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
@@ -919,6 +920,14 @@ export function MultipleDocumentUploadModal({
               Add Another Document Type
             </Button>
             {/* )} */}
+          </div>
+
+          {/* Security Guarantee */}
+          <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 border border-[#d0e4f7]/40 rounded-xl text-[#3a4f63] text-xs font-semibold shadow-sm mt-4">
+            <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>
+              {t("documentVaultPage.components.uploadModal.securityNotice")}
+            </span>
           </div>
         </div>
 
