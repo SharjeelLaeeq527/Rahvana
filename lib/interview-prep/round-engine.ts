@@ -2,11 +2,7 @@ import { GeneratedQuestion } from "./types";
 
 const QUESTIONS_PER_ROUND = 12;
 
-export type ResponseType =
-  | "covered"
-  | "partial"
-  | "missed"
-  | "skipped";
+export type ResponseType = "covered" | "partial" | "missed" | "skipped";
 
 export interface QuestionResponse {
   question: GeneratedQuestion;
@@ -25,16 +21,18 @@ export interface RoundSummary {
   weakQuestionIds: string[];
 }
 
-// ---------------------------
+export interface QuestionCooldownMap {
+  [questionId: string]: number;
+}
+
 // ROUND SUMMARY
-// ---------------------------
 export function computeRoundSummary(
-  responses: QuestionResponse[]
+  responses: QuestionResponse[],
 ): RoundSummary {
-  const coveredCount = responses.filter(r => r.response === "covered").length;
-  const partialCount = responses.filter(r => r.response === "partial").length;
-  const missedCount = responses.filter(r => r.response === "missed").length;
-  const skippedCount = responses.filter(r => r.response === "skipped").length;
+  const coveredCount = responses.filter((r) => r.response === "covered").length;
+  const partialCount = responses.filter((r) => r.response === "partial").length;
+  const missedCount = responses.filter((r) => r.response === "missed").length;
+  const skippedCount = responses.filter((r) => r.response === "skipped").length;
 
   const earnedPoints = coveredCount * 10 + partialCount * 5;
   const possiblePoints = (coveredCount + partialCount + missedCount) * 10;
@@ -51,59 +49,104 @@ export function computeRoundSummary(
         ? Math.round((earnedPoints / possiblePoints) * 100)
         : 0,
     weakQuestionIds: responses
-      .filter(r => r.response === "missed" || r.response === "skipped")
-      .map(r => r.question.id),
+      .filter((r) => r.response === "missed" || r.response === "skipped")
+      .map((r) => r.question.id),
   };
 }
 
-// ---------------------------
 // MASTERED + RETRY LOGIC
-// ---------------------------
 export function computeMasteredIds(responses: QuestionResponse[]) {
   return responses
-    .filter(r => r.response === "covered" || r.response === "partial")
-    .map(r => r.question.id);
+    .filter((r) => r.response === "covered" || r.response === "partial")
+    .map((r) => r.question.id);
 }
 
 export function computeRetryIds(
   responses: QuestionResponse[],
-  masteredIds: string[]
+  masteredIds: string[],
 ) {
   const weakIds = responses
-    .filter(r => r.response === "missed" || r.response === "skipped")
-    .map(r => r.question.id);
+    .filter((r) => r.response === "missed" || r.response === "skipped")
+    .map((r) => r.question.id);
 
-  return [...new Set(weakIds)].filter(id => !masteredIds.includes(id));
+  return [...new Set(weakIds)].filter((id) => !masteredIds.includes(id));
 }
 
-// ---------------------------
+// COOL-DOWN LOGIC
+export function computeQuestionCooldowns(
+  responses: QuestionResponse[],
+  existingCooldowns: QuestionCooldownMap = {},
+): QuestionCooldownMap {
+  const updated = { ...existingCooldowns };
+
+  responses.forEach((r) => {
+    switch (r.response) {
+      case "missed":
+      case "skipped":
+        updated[r.question.id] = 0;
+        break;
+
+      case "partial":
+        updated[r.question.id] = 1;
+        break;
+
+      case "covered":
+        updated[r.question.id] = 3;
+        break;
+    }
+  });
+
+  return updated;
+}
+
+// COOL-DOWN DECREMENT
+export function reduceCooldowns(
+  cooldowns: QuestionCooldownMap,
+): QuestionCooldownMap {
+  const updated: QuestionCooldownMap = {};
+
+  Object.entries(cooldowns).forEach(([id, value]) => {
+    updated[id] = Math.max(0, value - 1);
+  });
+
+  return updated;
+}
+
 // ROUND BUILDER
-// ---------------------------
 export function buildNextRoundQuestions(params: {
   allQuestions: GeneratedQuestion[];
   retryIds: string[];
   completedIds: string[];
   masteredIds: string[];
+  questionCooldowns: QuestionCooldownMap;
 }): GeneratedQuestion[] {
-  const { allQuestions, retryIds, completedIds, masteredIds } = params;
+  const {
+    allQuestions,
+    retryIds,
+    completedIds,
+    questionCooldowns,
+    masteredIds,
+  } = params;
+
+  const availableCooldownQuestions = (id: string) =>
+    (questionCooldowns[id] ?? 0) === 0;
 
   const retryQuestions = allQuestions.filter(
-    q =>
+    (q) =>
       q.applicable &&
       retryIds.includes(q.id) &&
-      !masteredIds.includes(q.id)
+      availableCooldownQuestions(q.id) &&
+      !masteredIds.includes(q.id),
   );
 
   const freshQuestions = allQuestions.filter(
-    q =>
+    (q) =>
       q.applicable &&
-      !completedIds.includes(q.id) &&
       !retryIds.includes(q.id) &&
-      !masteredIds.includes(q.id)
+      availableCooldownQuestions(q.id),
   );
 
-  const shuffle = <T,>(arr: T[]) =>
-    [...arr].sort(() => Math.random() - 0.5);
+  const shuffle = <T>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
 
   const remainingSlots = QUESTIONS_PER_ROUND - retryQuestions.length;
 
@@ -111,6 +154,6 @@ export function buildNextRoundQuestions(params: {
 
   return shuffle([...retryQuestions, ...selectedFresh]).slice(
     0,
-    QUESTIONS_PER_ROUND
+    QUESTIONS_PER_ROUND,
   );
 }

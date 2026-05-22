@@ -30,11 +30,13 @@ export async function POST(
       allQuestions,
       completedQuestionIds = [],
       currentRound = 1,
+      questionCooldowns = {},
     } = body as {
       questionResponses: QuestionResponse[];
       allQuestions: GeneratedQuestion[];
       completedQuestionIds?: string[];
       currentRound?: number;
+      questionCooldowns?: Record<string, number>;
     };
 
     // Load persisted progress to merge mastered/completed ids
@@ -67,6 +69,7 @@ export async function POST(
       retryIds,
       completedIds: effectiveCompletedIds,
       masteredIds,
+      questionCooldowns,
     });
 
     // 4. Summary

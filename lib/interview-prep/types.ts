@@ -47,7 +47,7 @@ export interface InterviewPrepRoundSummary {
 
 export interface InterviewPrepQuestionResponse {
   question: GeneratedQuestion;
-  response: "covered" | "partial" | "missed" | "skipped" | null;
+  response: "covered" | "partial" | "missed" | "skipped";
   index: number;
 }
 
@@ -126,6 +126,7 @@ export interface QuestionBankEntry {
   sampleAnswer: string;
   guidance: string;
   tooltip: string;
+  tier?: 'free' | 'basic' | 'premium' | 'executive';
   mockInterviewOrder?: number;
 }
 
@@ -144,6 +145,7 @@ export interface GeneratedQuestion {
   selectedQuestion?: string; 
   guidance: string;
   tooltip: string;
+  tier?: 'free' | 'basic' | 'premium' | 'executive';
   applicable: boolean;
   priority: 'high' | 'medium' | 'low';
   mockInterviewOrder?: number;

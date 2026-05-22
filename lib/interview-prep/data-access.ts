@@ -66,6 +66,25 @@ export async function getInterviewSessionDB(
   return data as InterviewSession;
 }
 
+export async function getInterviewSessionByCategory(
+  category_slug: string
+): Promise<InterviewSession | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("category_slug", category_slug)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as InterviewSession | null;
+}
+
 // Get latest incomplete session for current user
 export async function getLatestIncompleteSessionDB(): Promise<InterviewSession | null> {
   const { supabase, user } = await getSupabaseWithUser();
