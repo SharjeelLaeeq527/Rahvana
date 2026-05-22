@@ -118,6 +118,7 @@ export function DashboardCriticalCard({
   );
 
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [open, setOpen] = useState(false); // card itself collapsed by default
 
   if (issues.length === 0) {
     // All clean — show a small confirmation card (dashboards do show "OK" sometimes)
@@ -141,8 +142,12 @@ export function DashboardCriticalCard({
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 bg-slate-50">
+      {/* Collapsible header — click to expand the whole card */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-100 transition-colors ${open ? "border-b border-slate-100 bg-slate-50" : "bg-slate-50"}`}
+        aria-expanded={open}
+      >
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: `${headerColor}15`, border: `1.5px solid ${headerColor}33` }}
@@ -171,20 +176,27 @@ export function DashboardCriticalCard({
             </span>
           )}
         </div>
-      </div>
+        <ChevronDown
+          size={15}
+          className="text-slate-400 shrink-0 transition-transform"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0)" }}
+        />
+      </button>
 
-      {/* Rows — each is click-to-expand, then click-to-navigate */}
-      <div>
-        {issues.map((issue, i) => (
-          <IssueRow
-            key={`${issue.stepKey}-${i}`}
-            issue={issue}
-            expanded={expandedIdx === i}
-            onToggle={() => setExpandedIdx((cur) => (cur === i ? null : i))}
-            onOpenStep={onOpenStep ? () => onOpenStep(issue.chapterIdx, issue.stepIdx) : undefined}
-          />
-        ))}
-      </div>
+      {/* Rows — only shown when card is expanded */}
+      {open && (
+        <div>
+          {issues.map((issue, i) => (
+            <IssueRow
+              key={`${issue.stepKey}-${i}`}
+              issue={issue}
+              expanded={expandedIdx === i}
+              onToggle={() => setExpandedIdx((cur) => (cur === i ? null : i))}
+              onOpenStep={onOpenStep ? () => onOpenStep(issue.chapterIdx, issue.stepIdx) : undefined}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
