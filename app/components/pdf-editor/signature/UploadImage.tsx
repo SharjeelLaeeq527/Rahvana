@@ -178,7 +178,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
         <button
           onClick={handleCreate}
           disabled={!processedImage || isProcessing}
-          className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="px-6 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           {t("pdfProcessing.editor.signature.create")}
         </button>

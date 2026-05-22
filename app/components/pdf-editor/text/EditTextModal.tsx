@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { X, Lock } from "lucide-react"
 import { useLanguage } from "@/app/context/LanguageContext"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
 interface EditTextModalProps {
   isOpen: boolean
@@ -10,17 +11,15 @@ interface EditTextModalProps {
 
 export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
   const { t } = useLanguage()
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-md w-full overflow-hidden p-0 gap-0 bg-white border-none shadow-2xl">
         {/* Header */}
-        <div className="bg-linear-to-r from-blue-600 to-purple-600 text-white px-6 py-6 flex items-center justify-between">
+        <div className="bg-linear-to-r from-primary to-primary text-white px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Lock className="w-6 h-6" />
             <div>
-              <h2 className="text-xl font-bold">{t("pdfProcessing.editor.editText.title")}</h2>
+              <DialogTitle className="text-xl font-bold">{t("pdfProcessing.editor.editText.title")}</DialogTitle>
               <p className="text-blue-100 text-sm">{t("pdfProcessing.editor.editText.premium")}</p>
             </div>
           </div>
@@ -33,7 +32,7 @@ export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
         <div className="px-6 py-8">
           <div className="text-center mb-6">
             <div className="inline-flex w-16 h-16 rounded-full bg-blue-100 items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -81,11 +80,11 @@ export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
 
         {/* Footer */}
         <div className="border-t px-6 py-4 bg-gray-50">
-          <Button onClick={onClose} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90 text-white">
             {t("pdfProcessing.editor.editText.gotIt")}
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

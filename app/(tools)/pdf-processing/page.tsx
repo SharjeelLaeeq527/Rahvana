@@ -48,7 +48,7 @@ export default function PDFProcessingPage() {
   }, []);
 
   return (
-    <main className="bg-gray-50 flex flex-col items-center justify-center site-main-py site-main-px">
+    <main className="bg-gray-50 flex flex-col items-center justify-center site-main-py site-main-px mt-[55px]">
       {/* Full Screen Editor (only for "Edit" flow) */}
       {pdfFile && (
         <div className="fixed inset-0 z-50 bg-white">

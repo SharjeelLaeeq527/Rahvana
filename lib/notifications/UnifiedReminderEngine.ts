@@ -217,7 +217,7 @@ export class UnifiedReminderEngine {
   private async _fetchJourneyState(journeyId: string): Promise<JourneyState> {
     const [journeyResult, stepsResult, ceacResult, caseDataResult] = await Promise.allSettled([
       this.supabase.from('journeys').select('metadata').eq('id', journeyId).single(),
-      this.supabase.from('journey_steps').select('step_key, status, completed_at').eq('journey_id', journeyId),
+      this.supabase.from('steps').select('step_key, status, completed_at, chapters!inner(journey_id)').eq('chapters.journey_id', journeyId),
       this.supabase.from('ceac_case_status').select('current_status').eq('journey_id', journeyId).single(),
       this.supabase.from('case_data').select('data_key, data_value').eq('journey_id', journeyId),
     ])

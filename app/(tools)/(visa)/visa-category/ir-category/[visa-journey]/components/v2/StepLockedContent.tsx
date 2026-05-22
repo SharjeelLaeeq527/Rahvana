@@ -5,6 +5,7 @@ import { Lock, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { Loader } from "@/components/ui/spinner";
 
 type TierKey = "basic" | "premium" | "executive";
 
@@ -101,6 +102,16 @@ export function StepLockedContent({
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   const featureKey = STEP_PRIMARY_FEATURE[stepKey] ?? null;
+
+  // If plan is loading, show a small loader to prevent flickers of locked state
+  if (plan.isLoading) {
+    if (mode === "hide") return null;
+    return (
+      <div className={`flex items-center justify-center p-6 ${className ?? ""}`}>
+        <Loader size="sm" />
+      </div>
+    );
+  }
 
   // No gating or user has access → render children directly
   if (!featureKey || plan.canUse(featureKey)) {

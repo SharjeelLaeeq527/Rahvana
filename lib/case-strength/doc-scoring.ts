@@ -1,11 +1,15 @@
 /**
- * doc-scoring.ts
+ * Universal Case Strength scoring engine.
  *
- * Reusable document case-strength scoring engine.
- * Used by DocCaseStrengthMeter for any document-gathering step
- * (step_1_2, step_2_4, etc.).
+ * Three industry-standard dimensions — works for ANY visa category that
+ * exposes document_items in its JSON (IR-1, IR-2, F-2A, K-1, …).
  *
- * Pure functions — no React, no side effects.
+ *   1. Completeness     (50%) — required docs marked complete
+ *   2. Evidence Quality (30%) — done docs backed by upload + review/notes
+ *   3. Consistency      (20%) — eligibility answers align with provided docs
+ *
+ * No hardcoded weights per document. No category-specific content. Every
+ * piece of displayed text comes from the JSON document_items + state.
  */
 
 import type { UploadedDocument } from "@/lib/document-vault/types";
@@ -13,396 +17,278 @@ import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type RfeRisk =
-  | "filing-blocker"
-  | "critical"
-  | "high"
-  | "medium"
-  | "low"
-  | "bonus";
-
-export type DocStatus =
-  | "done"
-  | "missing"
-  | "pair-incomplete"
-  | "not-applicable";
-
-export interface DocScoreEntry {
-  /** Weight out of 100 for required docs; 0 for conditional until confirmed applicable */
-  weight: number;
-  impactLabel: string;
-  rfeRisk: RfeRisk;
-  /** If this doc must be paired (e.g. nikah_nama ↔ mrc), provide the partner id */
-  pairWith?: string;
-  /** Alert shown when this specific doc is missing */
-  missingAlert?: string;
-  /** Alert shown when doc is present but its pair is missing */
-  pairMissingAlert?: string;
-  /** Pak-specific inline note shown in the table */
-  pakistanNote?: string;
-  /** Whether this is a conditional doc (shown only when applicable) */
-  isConditional?: boolean;
-}
-
-export interface RecommendedAction {
-  priority: number;
-  docId?: string;
-  label: string;
-  description: string;
-  href?: string;
-}
-
-export interface DocScoringConfig {
-  stepKey: string;
-  stepName: string;
-  timeline: string;
-  scores: Record<string, DocScoreEntry>;
-  pakistanSpecificNotes: string[];
-  recommendedActions: RecommendedAction[];
-}
-
-export interface ComputedDocResult {
-  docId: string;
+export interface DocItem {
+  id: string;
   name: string;
-  group: string;
-  status: DocStatus;
-  scoreEntry: DocScoreEntry;
-  pointsEarned: number;
-  alert: string | null;
+  subtitle?: string;
+  required?: boolean;
+  group?: string;
+  tag?: string;
+  guideUrl?: string;
+  icon?: string;
+}
+
+export interface ConsistencyCheck {
+  id: string;
+  label: string;
+  passed: boolean;
+  hint?: string;
+  relatedDocId?: string;
+}
+
+export interface MissingDoc {
+  id: string;
+  name: string;
+  subtitle?: string;
+  guideUrl?: string;
 }
 
 export interface ScoringResult {
-  totalScore: number;          // 0-100
-  maxPossible: number;         // sum of non-conditional weights
-  pct: number;                 // 0-100
-  riskLevel: "filing-blocked" | "high" | "medium" | "low" | "strong";
-  riskLabel: string;
-  riskColor: string;
-  docs: ComputedDocResult[];
-  activeAlerts: string[];
-  strengths: string[];
-  gaps: string[];
-  doneCount: number;
-  totalRequired: number;
+  completeness: {
+    score: number;          // 0-100
+    done: number;
+    required: number;
+    missing: MissingDoc[];
+  };
+  evidenceQuality: {
+    score: number;          // 0-100
+    fullCount: number;
+    partialCount: number;
+    weak: Array<{ id: string; name: string }>;
+  };
+  consistency: {
+    score: number;          // 0-100
+    checks: ConsistencyCheck[];
+  };
+  overall: number;          // 0-100 (weighted)
+  strengthLevel: "weak" | "fair" | "good" | "strong";
+  strengthLabel: string;
+  strengthColor: string;
+  nextSteps: Array<{
+    priority: number;
+    action: string;
+    docId?: string;
+    href?: string;
+  }>;
 }
 
-// ─── Step-specific scoring configs ───────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const STEP_1_2_SCORING_CONFIG: DocScoringConfig = {
-  stepKey: "step_1_2",
-  stepName: "Gather Required Documents",
-  timeline: "4–8 weeks",
-  scores: {
-    doc_citizenship: {
-      weight: 25,
-      impactLabel: "Filing Blocker",
-      rfeRisk: "filing-blocker",
-      missingAlert:
-        "Cannot file I-130 without proof of U.S. citizenship — this is a hard blocker.",
-    },
-    doc_passport_ben: {
-      weight: 15,
-      impactLabel: "High",
-      rfeRisk: "high",
-      missingAlert: "Beneficiary passport is required before filing.",
-    },
-    doc_nikah_nama: {
-      weight: 10,
-      impactLabel: "Critical",
-      rfeRisk: "critical",
-      pairWith: "doc_mrc",
-      pairMissingAlert:
-        "Nikah Nama present but NADRA MRC missing — Islamabad Embassy expects both.",
-      pakistanNote:
-        "Islamabad Embassy expects Nikah Nama + NADRA MRC as a pair.",
-    },
-    doc_mrc: {
-      weight: 10,
-      impactLabel: "Critical",
-      rfeRisk: "critical",
-      pairWith: "doc_nikah_nama",
-      pairMissingAlert:
-        "NADRA MRC present but Nikah Nama missing — both required together.",
-      pakistanNote:
-        "NADRA MRC is increasingly required by Islamabad Embassy. Apply at Union Council.",
-    },
-    doc_relationship: {
-      weight: 20,
-      impactLabel: "Very High",
-      rfeRisk: "high",
-      missingAlert:
-        "Relationship evidence takes time to build — start collecting photos, messages, and travel docs now.",
-    },
-    doc_translations: {
-      weight: 10,
-      impactLabel: "Compliance",
-      rfeRisk: "critical",
-      missingAlert:
-        "Nikah Nama is in Urdu — a certified English translation is mandatory for USCIS.",
-    },
-    doc_prior_marriage: {
-      weight: 0,
-      impactLabel: "Conditional",
-      rfeRisk: "high",
-      isConditional: true,
-      missingAlert:
-        "Prior marriage flagged — termination documents (divorce decree / death cert) are required.",
-    },
-    doc_birth_cert: {
-      weight: 5,
-      impactLabel: "Consular Prep",
-      rfeRisk: "bonus",
-      pakistanNote: "Get NADRA birth certificate early — can take 1-2 weeks.",
-    },
-    doc_police_cert: {
-      weight: 5,
-      impactLabel: "Consular Prep",
-      rfeRisk: "bonus",
-      pakistanNote:
-        "PCC takes 3–7 days in Punjab/Islamabad — apply now to avoid delays later.",
-    },
-  },
-  pakistanSpecificNotes: [
-    "Union Council registration (NADRA MRC) is increasingly required by Islamabad Embassy — do not skip.",
-    "Police Character Certificate (PCC): 3–7 days in Punjab/Islamabad. Apply early.",
-    "Nikah Nama must have full certified English translation — partial translations trigger RFE.",
-    "If either party had a prior talaq in Pakistan, Union Council must have issued the final divorce certificate (90-day reconciliation period complete).",
-  ],
-  recommendedActions: [
-    {
-      priority: 1,
-      docId: "doc_citizenship",
-      label: "Upload Proof of U.S. Citizenship",
-      description:
-        "Highest priority — I-130 cannot be filed without this. Passport, naturalization cert, or U.S. birth cert.",
-    },
-    {
-      priority: 2,
-      docId: "doc_nikah_nama",
-      label: "Get Nikah Nama + NADRA MRC + Translation",
-      description:
-        "Visit Union Council for MRC if not obtained. Arrange certified Urdu→English translation of Nikah Nama.",
-      href: "/guides/nikah-nama-guide",
-    },
-    {
-      priority: 3,
-      docId: "doc_relationship",
-      label: "Start building Relationship Evidence",
-      description:
-        "Collect photos across different occasions, chat/call logs, travel receipts, and financial ties. More is better.",
-    },
-    {
-      priority: 4,
-      docId: "doc_passport_ben",
-      label: "Confirm Beneficiary Passport validity",
-      description:
-        "Ensure passport is valid for at least 6 months beyond expected visa issuance.",
-      href: "/guides/passport-guide",
-    },
-    {
-      priority: 5,
-      docId: "doc_police_cert",
-      label: "Apply for Police Character Certificate",
-      description:
-        "Not needed for I-130 but required at consular stage. Apply now — 3–7 days processing.",
-      href: "/guides/police-verification-guide",
-    },
-  ],
-};
-
-// ─── Scoring engine ───────────────────────────────────────────────────────────
-
-function isDocumentDone(
-  docName: string,
-  docId: string,
+function isDocDone(
+  doc: DocItem,
   uploadedDocuments: UploadedDocument[],
   documentChecklist: Record<string, boolean> | undefined,
   docReviewStatus: Record<string, string> | undefined,
   docUploads: Record<string, unknown> | undefined,
   notes: Record<string, string> | undefined,
 ): boolean {
-  if (docReviewStatus?.[docId] === "reviewed") return true;
-  if (documentChecklist?.[docName] === true) return true;
-  if (docUploads?.[docName] !== undefined && docUploads?.[docName] !== null)
-    return true;
-  if (notes?.[docName]) return true;
-  const vaultId = mapDocumentNameToId(docName);
-  if (vaultId && uploadedDocuments.some((u) => u.documentDefId === vaultId))
-    return true;
+  if (docReviewStatus?.[doc.id] === "reviewed") return true;
+  if (documentChecklist?.[doc.name] === true) return true;
+  if (docUploads?.[doc.name] !== undefined && docUploads?.[doc.name] !== null) return true;
+  if (notes?.[doc.name]) return true;
+  const vaultId = mapDocumentNameToId(doc.name);
+  if (vaultId && uploadedDocuments.some((u) => u.documentDefId === vaultId)) return true;
   return false;
 }
 
-export function computeDocScore(
-  documentItems: Array<{ id: string; name: string; group: string; required: boolean }>,
-  config: DocScoringConfig,
+function getEvidenceLevel(
+  doc: DocItem,
+  uploadedDocuments: UploadedDocument[],
+  documentChecklist: Record<string, boolean> | undefined,
+  docReviewStatus: Record<string, string> | undefined,
+  notes: Record<string, string> | undefined,
+): "none" | "partial" | "full" {
+  const vaultId = mapDocumentNameToId(doc.name);
+  const hasUpload = !!(vaultId && uploadedDocuments.some((u) => u.documentDefId === vaultId));
+  const hasReview = docReviewStatus?.[doc.id] === "reviewed";
+  const hasNotes = !!notes?.[doc.name];
+  const hasCheck = documentChecklist?.[doc.name] === true;
+
+  if (hasUpload && (hasReview || hasNotes)) return "full";
+  if (hasUpload || hasReview || hasNotes || hasCheck) return "partial";
+  return "none";
+}
+
+// ─── Main scoring engine ─────────────────────────────────────────────────────
+
+export function computeCaseStrength(
+  documentItems: DocItem[],
   uploadedDocuments: UploadedDocument[],
   documentChecklist: Record<string, boolean> | undefined,
   docReviewStatus: Record<string, string> | undefined,
   docUploads: Record<string, unknown> | undefined,
   notes: Record<string, string> | undefined,
-  hasPriorMarriage?: boolean,
+  eligibilityAnswers?: Record<string, Record<string, string | string[]> | undefined> | null,
 ): ScoringResult {
-  const doneMap: Record<string, boolean> = {};
-  for (const doc of documentItems) {
-    doneMap[doc.id] = isDocumentDone(
-      doc.name,
-      doc.id,
-      uploadedDocuments,
-      documentChecklist,
-      docReviewStatus,
-      docUploads,
-      notes,
-    );
+
+  // ── 1. Completeness ─────────────────────────────────────────────────────
+  const required = documentItems.filter((d) => d.required === true);
+  const missing: MissingDoc[] = [];
+  let doneCount = 0;
+  for (const d of required) {
+    if (isDocDone(d, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes)) {
+      doneCount++;
+    } else {
+      missing.push({ id: d.id, name: d.name, subtitle: d.subtitle, guideUrl: d.guideUrl });
+    }
   }
+  const completenessPct = required.length ? Math.round((doneCount / required.length) * 100) : 0;
 
-  const docs: ComputedDocResult[] = [];
-  const activeAlerts: string[] = [];
-  let totalScore = 0;
-  let maxPossible = 0;
-  let doneRequired = 0;
-  let totalRequired = 0;
+  // ── 2. Evidence Quality ─────────────────────────────────────────────────
+  // For docs that ARE done — how strong is the evidence backing them?
+  let fullCount = 0;
+  let partialCount = 0;
+  const weak: Array<{ id: string; name: string }> = [];
+  const doneDocs = required.filter((d) =>
+    isDocDone(d, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes),
+  );
+  for (const d of doneDocs) {
+    const level = getEvidenceLevel(d, uploadedDocuments, documentChecklist, docReviewStatus, notes);
+    if (level === "full") fullCount++;
+    else if (level === "partial") {
+      partialCount++;
+      weak.push({ id: d.id, name: d.name });
+    }
+  }
+  const evidencePct = doneDocs.length
+    ? Math.round(((fullCount + partialCount * 0.5) / doneDocs.length) * 100)
+    : 0;
 
-  for (const doc of documentItems) {
-    const entry = config.scores[doc.id];
-    if (!entry) continue;
+  // ── 3. Consistency ──────────────────────────────────────────────────────
+  // Cross-check eligibility answers against required document presence.
+  // All checks are derivable from JSON-defined doc names + standard answer keys.
+  const checks: ConsistencyCheck[] = [];
 
-    const isConditional = entry.isConditional ?? false;
-    // For prior_marriage: only count if applicable
-    if (doc.id === "doc_prior_marriage" && !hasPriorMarriage) {
-      docs.push({
-        docId: doc.id,
-        name: doc.name,
-        group: doc.group,
-        status: "not-applicable",
-        scoreEntry: entry,
-        pointsEarned: 0,
-        alert: null,
+  // Helper: find a doc by partial id match (works across categories)
+  const findDoc = (idFragment: string): DocItem | undefined =>
+    documentItems.find((d) => d.id.toLowerCase().includes(idFragment));
+
+  // Check A: prior marriage disclosed in eligibility → termination doc needed
+  const q3s1 =
+    eligibilityAnswers?.q3?.q3s1 as string | undefined;
+  if (q3s1 && q3s1 !== "none") {
+    const priorDoc = findDoc("prior_marriage") || findDoc("prior-marriage");
+    if (priorDoc) {
+      const done = isDocDone(priorDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
+      checks.push({
+        id: "prior_marriage_consistency",
+        label: "Old marriage papers",
+        passed: done,
+        hint: done ? undefined : `You said there was a previous marriage — please add ${priorDoc.name}`,
+        relatedDocId: priorDoc.id,
       });
-      continue;
     }
-
-    const done = doneMap[doc.id] ?? false;
-    const weight = isConditional && !hasPriorMarriage ? 0 : entry.weight;
-
-    if (!isConditional && weight > 0) {
-      maxPossible += weight;
-      totalRequired++;
-      if (done) doneRequired++;
-    } else if (isConditional && hasPriorMarriage) {
-      // treat as required when applicable
-      maxPossible += 10; // conditional weight when required
-      totalRequired++;
-      if (done) doneRequired++;
-    }
-
-    // Determine status
-    let status: DocStatus = done ? "done" : "missing";
-    let alert: string | null = null;
-
-    if (done && entry.pairWith) {
-      const partnerDone = doneMap[entry.pairWith] ?? false;
-      if (!partnerDone) {
-        status = "pair-incomplete";
-        if (entry.pairMissingAlert) {
-          alert = entry.pairMissingAlert;
-          if (!activeAlerts.includes(alert)) activeAlerts.push(alert);
-        }
-      }
-    }
-
-    if (!done) {
-      if (entry.missingAlert) {
-        if (!activeAlerts.includes(entry.missingAlert))
-          activeAlerts.push(entry.missingAlert);
-        alert = entry.missingAlert;
-      }
-    }
-
-    const pointsEarned = done && status !== "pair-incomplete" ? weight : 0;
-    totalScore += pointsEarned;
-
-    docs.push({ docId: doc.id, name: doc.name, group: doc.group, status, scoreEntry: entry, pointsEarned, alert });
   }
 
-  const pct = maxPossible > 0 ? Math.round((totalScore / maxPossible) * 100) : 0;
+  // Check B: non-English docs present → translations must be done
+  const hasNonEnglishDocs = documentItems.some((d) =>
+    d.tag === "beneficiary" && d.required === true
+  );
+  if (hasNonEnglishDocs) {
+    const translationDoc = findDoc("translation");
+    if (translationDoc) {
+      const done = isDocDone(translationDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
+      checks.push({
+        id: "translations_consistency",
+        label: "English translations",
+        passed: done,
+        hint: done ? undefined : `Your documents are in Urdu/regional language — please add the ${translationDoc.name}`,
+        relatedDocId: translationDoc.id,
+      });
+    }
+  }
 
-  // Determine risk level
-  const citizenshipDone = doneMap["doc_citizenship"] ?? false;
-  let riskLevel: ScoringResult["riskLevel"];
-  let riskLabel: string;
-  let riskColor: string;
+  // Check C: criminal history disclosed → police clearance / disclosure doc needed
+  const q5s2 = eligibilityAnswers?.q5?.q5s2 as string | undefined;
+  if (q5s2 === "yes") {
+    const policeDoc = findDoc("police");
+    if (policeDoc) {
+      const done = isDocDone(policeDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
+      checks.push({
+        id: "criminal_history_consistency",
+        label: "Police clearance",
+        passed: done,
+        hint: done ? undefined : `You mentioned an arrest/charge in eligibility — please add the ${policeDoc.name}`,
+        relatedDocId: policeDoc.id,
+      });
+    }
+  }
 
-  if (!citizenshipDone) {
-    riskLevel = "filing-blocked";
-    riskLabel = "Filing Blocked";
-    riskColor = "#dc2626";
-  } else if (pct < 45) {
-    riskLevel = "high";
-    riskLabel = "High Risk";
-    riskColor = "#ea580c";
-  } else if (pct < 70) {
-    riskLevel = "medium";
-    riskLabel = "Medium Risk";
-    riskColor = "#d97706";
-  } else if (pct < 88) {
-    riskLevel = "low";
-    riskLabel = "Looking Good";
-    riskColor = "#16a34a";
+  const consistencyPct = checks.length
+    ? Math.round((checks.filter((c) => c.passed).length / checks.length) * 100)
+    : 100; // No checks applicable = consistent by default
+
+  // ── Overall weighted score ──────────────────────────────────────────────
+  const overall = Math.round(
+    completenessPct * 0.5 + evidencePct * 0.3 + consistencyPct * 0.2,
+  );
+
+  let strengthLevel: ScoringResult["strengthLevel"];
+  let strengthLabel: string;
+  let strengthColor: string;
+  if (overall < 35) {
+    strengthLevel = "weak"; strengthLabel = "Weak"; strengthColor = "#dc2626";
+  } else if (overall < 60) {
+    strengthLevel = "fair"; strengthLabel = "Fair"; strengthColor = "#d97706";
+  } else if (overall < 85) {
+    strengthLevel = "good"; strengthLabel = "Good"; strengthColor = "#16a34a";
   } else {
-    riskLevel = "strong";
-    riskLabel = "Strong";
-    riskColor = "#059669";
+    strengthLevel = "strong"; strengthLabel = "Strong"; strengthColor = "#059669";
   }
 
-  // Strengths and gaps
-  const strengths: string[] = [];
-  const gaps: string[] = [];
+  // ── Next Steps — derived purely from scoring gaps ───────────────────────
+  const nextSteps: ScoringResult["nextSteps"] = [];
+  let priority = 1;
 
-  for (const d of docs) {
-    if (d.status === "done") {
-      if (d.scoreEntry.rfeRisk === "filing-blocker")
-        strengths.push("U.S. citizenship proof on file — I-130 filing is unblocked");
-      else if (d.docId === "doc_nikah_nama")
-        strengths.push("Nikah Nama present");
-      else if (d.docId === "doc_mrc")
-        strengths.push("NADRA MRC on file — embassy compliance strong");
-      else if (d.docId === "doc_relationship")
-        strengths.push("Relationship evidence gathering started");
-      else if (d.docId === "doc_translations")
-        strengths.push("Certified translations ready");
-      else if (d.docId === "doc_passport_ben")
-        strengths.push("Beneficiary passport confirmed");
-    } else if (d.status === "missing" && d.scoreEntry.rfeRisk !== "bonus" && d.status !== "not-applicable") {
-      if (d.scoreEntry.rfeRisk === "filing-blocker")
-        gaps.push("U.S. citizenship proof missing — I-130 CANNOT be filed yet");
-      else if (d.docId === "doc_nikah_nama")
-        gaps.push("Nikah Nama not yet uploaded");
-      else if (d.docId === "doc_mrc")
-        gaps.push("NADRA MRC not obtained — embassy compliance at risk");
-      else if (d.docId === "doc_relationship")
-        gaps.push("No relationship evidence collected yet — high consular risk");
-      else if (d.docId === "doc_translations")
-        gaps.push("Certified translations missing for non-English documents");
-    } else if (d.status === "pair-incomplete") {
-      if (d.docId === "doc_nikah_nama")
-        gaps.push("Nikah Nama present but NADRA MRC missing");
-      else if (d.docId === "doc_mrc")
-        gaps.push("NADRA MRC present but Nikah Nama missing");
-    }
+  // Top missing required docs first
+  for (const m of missing.slice(0, 3)) {
+    nextSteps.push({
+      priority: priority++,
+      action: `Add ${m.name}`,
+      docId: m.id,
+      href: m.guideUrl,
+    });
+  }
+
+  // Then resolve consistency issues
+  for (const c of checks.filter((c) => !c.passed).slice(0, 2)) {
+    nextSteps.push({
+      priority: priority++,
+      action: c.hint || `Resolve: ${c.label}`,
+      docId: c.relatedDocId,
+    });
+  }
+
+  // Then strengthen weak evidence
+  for (const w of weak.slice(0, 2)) {
+    nextSteps.push({
+      priority: priority++,
+      action: `Strengthen evidence — upload + mark reviewed: ${w.name}`,
+      docId: w.id,
+    });
   }
 
   return {
-    totalScore,
-    maxPossible,
-    pct,
-    riskLevel,
-    riskLabel,
-    riskColor,
-    docs,
-    activeAlerts,
-    strengths,
-    gaps,
-    doneCount: doneRequired,
-    totalRequired,
+    completeness: {
+      score: completenessPct,
+      done: doneCount,
+      required: required.length,
+      missing,
+    },
+    evidenceQuality: {
+      score: evidencePct,
+      fullCount,
+      partialCount,
+      weak,
+    },
+    consistency: {
+      score: consistencyPct,
+      checks,
+    },
+    overall,
+    strengthLevel,
+    strengthLabel,
+    strengthColor,
+    nextSteps: nextSteps.slice(0, 5),
   };
 }

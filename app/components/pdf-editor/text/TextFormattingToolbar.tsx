@@ -1,4 +1,5 @@
 "use client"
+import { useState } from "react"
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, ChevronDown } from "lucide-react"
 import ColorPicker from "../tools/ColorPicker"
 import { useLanguage } from "@/app/context/LanguageContext"
@@ -23,6 +24,7 @@ interface TextFormattingToolbarProps {
 
 export function TextFormattingToolbar({ format, onFormatChange, position }: TextFormattingToolbarProps) {
   const { t } = useLanguage()
+  const [activePicker, setActivePicker] = useState<"color" | "bg" | null>(null)
   const fonts = ["Arial", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Verdana"]
 
   const sizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72]
@@ -43,7 +45,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         <div className="relative">
           <select
             value={format.font}
-            onChange={(e) => onFormatChange({ font: e.target.value })}
+            onChange={(e) => {
+              onFormatChange({ font: e.target.value })
+              setActivePicker(null)
+            }}
             className="px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-6 bg-white"
             style={{ fontFamily: format.font }}
           >
@@ -63,7 +68,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
         <div className="relative">
           <select
             value={format.size}
-            onChange={(e) => onFormatChange({ size: Number(e.target.value) })}
+            onChange={(e) => {
+              onFormatChange({ size: Number(e.target.value) })
+              setActivePicker(null)
+            }}
             className="px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-6 bg-white"
           >
             {sizes.map((size) => (
@@ -86,6 +94,8 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
           currentColor={format.color}
           onColorChange={(color) => onFormatChange({ color })}
           buttonClassName="w-10 h-8 rounded border border-gray-300 cursor-pointer hover:scale-105 transition-transform"
+          isOpen={activePicker === "color"}
+          onToggle={(open) => setActivePicker(open ? "color" : null)}
         />
       </div>
 
@@ -96,6 +106,8 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
           currentColor={format.bgColor}
           onColorChange={(bgColor) => onFormatChange({ bgColor })}
           buttonClassName="w-10 h-8 rounded border border-gray-300 cursor-pointer hover:scale-105 transition-transform"
+          isOpen={activePicker === "bg"}
+          onToggle={(open) => setActivePicker(open ? "bg" : null)}
         />
       </div>
 
@@ -109,6 +121,7 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
             max="100"
             value={format.opacity}
             onChange={(e) => onFormatChange({ opacity: Number(e.target.value) })}
+            onFocus={() => setActivePicker(null)}
             className="w-20 h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
             style={{
               accentColor: "#3b82f6",
@@ -123,7 +136,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Bold Button */}
       <button
-        onClick={() => onFormatChange({ bold: !format.bold })}
+        onClick={() => {
+          onFormatChange({ bold: !format.bold })
+          setActivePicker(null)
+        }}
         className={`p-2 rounded transition ${
           format.bold ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
@@ -134,7 +150,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Italic Button */}
       <button
-        onClick={() => onFormatChange({ italic: !format.italic })}
+        onClick={() => {
+          onFormatChange({ italic: !format.italic })
+          setActivePicker(null)
+        }}
         className={`p-2 rounded transition ${
           format.italic ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
@@ -145,7 +164,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Underline Button */}
       <button
-        onClick={() => onFormatChange({ underline: !format.underline })}
+        onClick={() => {
+          onFormatChange({ underline: !format.underline })
+          setActivePicker(null)
+        }}
         className={`p-2 rounded transition ${
           format.underline ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
@@ -159,7 +181,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Align Left Button */}
       <button
-        onClick={() => onFormatChange({ align: "left" })}
+        onClick={() => {
+          onFormatChange({ align: "left" })
+          setActivePicker(null)
+        }}
         className={`p-2 rounded transition ${
           format.align === "left" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
@@ -170,7 +195,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Align Center Button */}
       <button
-        onClick={() => onFormatChange({ align: "center" })}
+        onClick={() => {
+          onFormatChange({ align: "center" })
+          setActivePicker(null)
+        }}
         className={`p-2 rounded transition ${
           format.align === "center" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
@@ -181,7 +209,10 @@ export function TextFormattingToolbar({ format, onFormatChange, position }: Text
 
       {/* Align Right Button */}
       <button
-        onClick={() => onFormatChange({ align: "right" })}
+        onClick={() => {
+          onFormatChange({ align: "right" })
+          setActivePicker(null)
+        }}
         className={`p-2 rounded transition ${
           format.align === "right" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Check, Zap, ShoppingCart, Loader2 } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
@@ -252,8 +252,13 @@ export function UpgradeModal({
     }
   };
 
+  useEffect(() => {
+    if (upgradeTiers.length === 0) {
+      onClose();
+    }
+  }, [upgradeTiers.length, onClose]);
+
   if (upgradeTiers.length === 0) {
-    onClose();
     return null;
   }
 

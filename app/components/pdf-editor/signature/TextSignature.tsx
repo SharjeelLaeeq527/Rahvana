@@ -168,7 +168,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
         <button
           onClick={handleGenerate}
           disabled={!name.trim()}
-          className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t("editor.signature.create")}
         </button>
