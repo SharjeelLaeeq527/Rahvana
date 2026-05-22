@@ -85,6 +85,9 @@ import { DocActionModal } from "./components/DocActionModal";
 import { HouseholdMemberTool } from "./components/HouseholdMemberTool";
 import { EvidenceStrengthMeter } from "./components/EvidenceStrengthMeter";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
+import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
+import { Chapter1HealthPanel } from "./components/Chapter1HealthPanel";
+import { FloatingSidePanel } from "./components/FloatingSidePanel";
 import {
   ConsistencyBaselineCapture,
   type ConsistencyBaseline,
@@ -1150,6 +1153,15 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-740 flex flex-col items-center w-full min-h-full">
+
+        {/* Chapter 1 case strength — side panel + inline step alerts (all in one) */}
+        <Chapter1HealthPanel
+          currentStep={currentStep}
+          chapters={chapters}
+          state={state}
+          uploadedDocuments={uploadedDocuments}
+        />
+
         {/* Page Shell */}
         <div className="w-full max-w-[680px] px-[24px] pb-10 flex flex-col">
           {/* Step Header */}
@@ -3026,36 +3038,24 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 {/* Case Strength Tool — fixed right panel at xl; inline below xl */}
                 {currentStep.step_key === "step_1_2" && (
                   <>
-                    {/* Fixed right-side panel — stays static while user scrolls */}
-                    <aside
-                      className="hidden xl:flex flex-col"
-                      style={{
-                        position: "fixed",
-                        top: 100,
-                        right: 24,
-                        width: 280,
-                        maxHeight: "calc(100vh - 140px)",
-                        zIndex: 40,
-                      }}
-                    >
-                      <div className="overflow-y-auto scrollbar-hide flex-1">
-                        <DocCaseStrengthMeter
-                          documentItems={(currentStep as any).document_items}
-                          uploadedDocuments={uploadedDocuments}
-                          documentChecklist={state.documentChecklist}
-                          docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
-                          docUploads={state.docUploads}
-                          notes={state.notes}
-                          eligibilityAnswers={
-                            (state.answers?.["eligibility-suite"] as any) ??
-                            (state.metadata?.["questAnswers_eligibility-suite"] as any)
-                          }
-                          contextLabel="Case Strength"
-                          stepName="Petition Readiness"
-                          defaultCollapsed={false}
-                        />
-                      </div>
-                    </aside>
+                    {/* Reusable floating panel — auto fades when footer enters viewport */}
+                    <FloatingSidePanel>
+                      <DocCaseStrengthMeter
+                        documentItems={(currentStep as any).document_items}
+                        uploadedDocuments={uploadedDocuments}
+                        documentChecklist={state.documentChecklist}
+                        docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
+                        docUploads={state.docUploads}
+                        notes={state.notes}
+                        eligibilityAnswers={
+                          (state.answers?.["eligibility-suite"] as any) ??
+                          (state.metadata?.["questAnswers_eligibility-suite"] as any)
+                        }
+                        contextLabel="Case Strength"
+                        stepName="Petition Readiness"
+                        defaultCollapsed={false}
+                      />
+                    </FloatingSidePanel>
 
                     {/* Inline below content on smaller screens */}
                     <div className="xl:hidden max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pb-4">

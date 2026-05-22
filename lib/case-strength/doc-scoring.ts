@@ -172,9 +172,9 @@ export function computeCaseStrength(
       const done = isDocDone(priorDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
       checks.push({
         id: "prior_marriage_consistency",
-        label: "Prior marriage termination evidence",
+        label: "Old marriage papers",
         passed: done,
-        hint: done ? undefined : `Disclosed in eligibility — upload ${priorDoc.name}`,
+        hint: done ? undefined : `You said there was a previous marriage — please add ${priorDoc.name}`,
         relatedDocId: priorDoc.id,
       });
     }
@@ -190,9 +190,9 @@ export function computeCaseStrength(
       const done = isDocDone(translationDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
       checks.push({
         id: "translations_consistency",
-        label: "Certified translations for non-English docs",
+        label: "English translations",
         passed: done,
-        hint: done ? undefined : `Required when beneficiary-side documents are present`,
+        hint: done ? undefined : `Your documents are in Urdu/regional language — please add the ${translationDoc.name}`,
         relatedDocId: translationDoc.id,
       });
     }
@@ -206,9 +206,9 @@ export function computeCaseStrength(
       const done = isDocDone(policeDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
       checks.push({
         id: "criminal_history_consistency",
-        label: "Police character / criminal disclosure",
+        label: "Police clearance",
         passed: done,
-        hint: done ? undefined : `Disclosed in eligibility — obtain ${policeDoc.name}`,
+        hint: done ? undefined : `You mentioned an arrest/charge in eligibility — please add the ${policeDoc.name}`,
         relatedDocId: policeDoc.id,
       });
     }

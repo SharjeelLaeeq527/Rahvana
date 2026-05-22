@@ -76,7 +76,6 @@ function FlagRow({ flag }: { flag: RiskFlag }) {
       {open && (
         <div className="px-3 pb-2.5 pt-0.5 border-t" style={{ borderColor: s.rowBorder }}>
           <p className="text-[11px] leading-relaxed" style={{ color: s.fg }}>{flag.advisory}</p>
-          <p className="text-[9.5px] text-[#a8a29e] mt-1.5 leading-snug">{flag.source_basis}</p>
         </div>
       )}
     </div>
@@ -133,31 +132,31 @@ export function JourneyRiskCard({
   if (!hasAnsweredQuest) {
     // On dashboard: hide when not started — no point showing empty panel
     if (defaultCollapsed) return null;
-    stateLabel = "Pending";
+    stateLabel = "Take check";
     stateColor = "#64748b";
-    stateText  = "Complete eligibility check to surface risks";
+    stateText  = "Answer a few questions to find any case risks";
     StateIcon  = ClipboardList;
   } else if (allFlags.length === 0) {
     // Dashboard: hide when clean — no risks = no panel needed
     if (defaultCollapsed) return null;
-    stateLabel = "Clean";
+    stateLabel = "All good";
     stateColor = "#059669";
-    stateText  = "No INA-level risks detected";
+    stateText  = "No issues found in your case";
     StateIcon  = ShieldCheck;
   } else if (criticalCount > 0) {
-    stateLabel = "Critical";
+    stateLabel = `${allFlags.length} to fix`;
     stateColor = "#dc2626";
-    stateText  = `${allFlags.length} risk${allFlags.length === 1 ? "" : "s"} need attention`;
+    stateText  = "Important issues found — please review";
     StateIcon  = ShieldAlert;
   } else if (warningCount > 0) {
-    stateLabel = "Warning";
+    stateLabel = `${allFlags.length} to review`;
     stateColor = "#d97706";
-    stateText  = `${allFlags.length} warning${allFlags.length === 1 ? "" : "s"} to review`;
+    stateText  = "Some things to be careful about";
     StateIcon  = AlertTriangle;
   } else {
-    stateLabel = "Note";
+    stateLabel = "Notes";
     stateColor = "#3b82f6";
-    stateText  = `${allFlags.length} advisor${allFlags.length === 1 ? "y" : "ies"}`;
+    stateText  = "A few things worth knowing";
     StateIcon  = Info;
   }
 
@@ -188,7 +187,7 @@ export function JourneyRiskCard({
             {contextLabel}
           </div>
           <div className="text-[13.5px] font-extrabold text-slate-900 leading-tight mt-0.5 truncate">
-            INA Risk Signals
+            Case Health Check
           </div>
           <div className="flex items-center gap-1.5 mt-1">
             <span

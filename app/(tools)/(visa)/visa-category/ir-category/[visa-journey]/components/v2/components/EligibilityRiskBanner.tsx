@@ -32,7 +32,7 @@ const SEV: Record<
     titleColor: "#991b1b",
     chipBg: "#fee2e2",
     chipFg: "#7f1d1d",
-    label: "Critical",
+    label: "Important",
     Icon: ShieldAlert,
     iconColor: "#dc2626",
   },
@@ -43,7 +43,7 @@ const SEV: Record<
     titleColor: "#92400e",
     chipBg: "#fef3c7",
     chipFg: "#78350f",
-    label: "Warning",
+    label: "Be careful",
     Icon: AlertTriangle,
     iconColor: "#d97706",
   },
@@ -54,7 +54,7 @@ const SEV: Record<
     titleColor: "#1e40af",
     chipBg: "#dbeafe",
     chipFg: "#1e3a8a",
-    label: "Note",
+    label: "FYI",
     Icon: Info,
     iconColor: "#3b82f6",
   },
@@ -102,20 +102,17 @@ function FlagRow({ flag, defaultOpen }: { flag: RiskFlag; defaultOpen: boolean }
         />
       </button>
 
-      {/* Expanded detail */}
+      {/* Expanded detail — simple advisory only, source hidden */}
       {open && (
         <div
-          className="px-4 pb-3 pt-0.5 border-t"
+          className="px-3.5 pb-2.5 pt-0.5 border-t"
           style={{ borderColor: s.rowBorder }}
         >
           <p
-            className="text-[12px] leading-relaxed"
+            className="text-[11.5px] leading-relaxed"
             style={{ color: s.titleColor, opacity: 0.85 }}
           >
             {flag.advisory}
-          </p>
-          <p className="text-[10.5px] text-[#a8a29e] mt-1.5 leading-snug">
-            {flag.source_basis}
           </p>
         </div>
       )}
@@ -148,8 +145,7 @@ export function EligibilityRiskBanner({ answers, compact = false }: EligibilityR
       >
         <ShieldAlert size={compact ? 13 : 15} color="#991b1b" className="shrink-0" />
         <span className={`font-semibold text-[#1c1917] flex-1 ${compact ? "text-[11.5px]" : "text-[13px]"}`}>
-          {flags.length} risk{flags.length === 1 ? "" : "s"}
-          {!compact && " detected"}
+          {flags.length} thing{flags.length === 1 ? "" : "s"} to check
         </span>
         <div className="flex items-center gap-1">
           {criticalCount > 0 && (
@@ -181,7 +177,7 @@ export function EligibilityRiskBanner({ answers, compact = false }: EligibilityR
       {!compact && (
         <div className="px-4 py-2.5 border-t" style={{ borderColor: "#f0ece8", background: "#fafaf9" }}>
           <p className="text-[10.5px] text-[#a8a29e] leading-snug">
-            Advisory only — not legal advice. Consult a licensed immigration attorney for case-specific guidance.
+            Follow the steps shown above to fix these. Rahvana will guide you through each one.
           </p>
         </div>
       )}

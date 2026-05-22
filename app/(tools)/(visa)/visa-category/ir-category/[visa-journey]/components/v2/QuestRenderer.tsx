@@ -12,6 +12,7 @@ import {
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestSuite, QuestData } from "../types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
+import { FloatingSidePanel } from "./components/FloatingSidePanel";
 
 interface QuestRendererProps {
   quest: QuestSuite;
@@ -377,29 +378,17 @@ export function QuestRenderer({
             Fixed right-side panel at xl, inline below xl */}
         {suiteId === "eligibility-suite" && (
           <>
-            {/* Fixed right-side panel — stays static while user scrolls */}
-            <aside
-              className="hidden xl:flex flex-col"
-              style={{
-                position: "fixed",
-                top: 100,
-                right: 24,
-                width: 280,
-                maxHeight: "calc(100vh - 140px)",
-                zIndex: 40,
-              }}
-            >
-              <div className="overflow-y-auto scrollbar-hide flex-1">
-                <EligibilityRiskBanner
-                  answers={
-                    Object.keys(suiteAnswers).length > 0
-                      ? suiteAnswers
-                      : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
-                  }
-                  compact={true}
-                />
-              </div>
-            </aside>
+            {/* Reusable floating panel — auto fades when footer enters viewport */}
+            <FloatingSidePanel>
+              <EligibilityRiskBanner
+                answers={
+                  Object.keys(suiteAnswers).length > 0
+                    ? suiteAnswers
+                    : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+                }
+                compact={true}
+              />
+            </FloatingSidePanel>
 
             {/* Inline below content on smaller screens */}
             <div className="xl:hidden">
