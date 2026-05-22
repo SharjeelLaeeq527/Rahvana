@@ -22,6 +22,7 @@ import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
+import { DashboardCriticalCard } from "./components/DashboardCriticalCard";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -443,13 +444,16 @@ export function DashboardView({
         {/* 3-column layout — LEFT: risk card | CENTER: chapters | RIGHT: doc strength */}
         <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_280px] gap-5 items-start">
 
-          {/* ── LEFT COLUMN — Case Strength Insights ─── */}
+          {/* ── LEFT COLUMN — Dashboard Critical Items (single consolidated card) ─── */}
           <div className="hidden xl:flex flex-col gap-3">
-            <JourneyRiskCard
-              metadata={state.metadata}
-              onOpenEligibility={() => { actions.setStage(0); actions.setCurrentStep(0); }}
-              defaultCollapsed={true}
-              contextLabel="Risk Signals"
+            <DashboardCriticalCard
+              chapters={(data as any).chapters || (data as any).stages || []}
+              state={state}
+              uploadedDocuments={uploadedDocuments}
+              onOpenStep={(cIdx, sIdx) => {
+                if (onSelectStep) onSelectStep(cIdx, sIdx);
+                else { actions.setStage(cIdx); actions.setCurrentStep(sIdx); }
+              }}
             />
           </div>
 
@@ -1227,26 +1231,9 @@ export function DashboardView({
           )}
           </div>{/* end center column */}
 
-          {/* ── RIGHT COLUMN — Document Readiness + Sidebar (only when content exists) ─── */}
-          <div className={`hidden xl:flex flex-col gap-3 ${!step1_2DocItems && !showSidebar ? "xl:hidden" : ""}`}>
-            {step1_2DocItems && (
-              <DocCaseStrengthMeter
-                documentItems={step1_2DocItems}
-                uploadedDocuments={uploadedDocuments}
-                documentChecklist={state.documentChecklist}
-                docReviewStatus={state.metadata?.docReviewStatus as Record<string, string> | undefined}
-                docUploads={state.docUploads}
-                notes={state.notes}
-                eligibilityAnswers={
-                  (state.answers?.["eligibility-suite"] as any) ??
-                  (state.metadata?.["questAnswers_eligibility-suite"] as any)
-                }
-                contextLabel="Chapter 1 · Step 2"
-                stepName="Petition Readiness"
-                defaultCollapsed={true}
-              />
-            )}
-            {/* Sidebar tracking cards also appear here at xl */}
+          {/* ── RIGHT COLUMN — Sidebar tracking only (case strength moved to left) ─── */}
+          <div className={`hidden xl:flex flex-col gap-3 ${!showSidebar ? "xl:hidden" : ""}`}>
+            {/* Sidebar tracking cards */}
             {showSidebar && (
               <div className="flex flex-col gap-3 mt-1">
                 <div className="flex items-center justify-between px-1">
