@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { ConfigLoader } from "@/lib/journey/config-loader";
+import { E, msg } from '@/lib/errors';
 import * as db from "@/lib/journey/data-access";
 
 export async function POST(
@@ -23,7 +24,7 @@ export async function POST(
     const journey = await db.getJourneyDB(journeyId);
     if (!journey) {
       return NextResponse.json(
-        { success: false, error: "Journey not found" },
+        { success: false, error: msg(E.JOURNEY_NOT_FOUND) },
         { status: 404 }
       );
     }

@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { consultationService } from '@/lib/services/consultationService';
+import { E, msg } from '@/lib/errors';
 
-// Helper function to handle service errors
+// Helper function to handle service errors (localized)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
   console.error(defaultMessage, error);
   const errorMessage = error instanceof Error ? error.message : String(error);
-  return NextResponse.json({
-    error: defaultMessage,
-    details: errorMessage
-  }, { status: 500 });
+  if (defaultMessage.toLowerCase().includes('fetch')) {
+    return NextResponse.json({ error: msg(E.CONSULTATION_FETCH_FAILED), details: errorMessage }, { status: 500 });
+  }
+  if (defaultMessage.toLowerCase().includes('create')) {
+    return NextResponse.json({ error: msg(E.CONSULTATION_CREATE_FAILED), details: errorMessage }, { status: 500 });
+  }
+  return NextResponse.json({ error: msg(E.CONSULTATION_CREATE_FAILED), details: errorMessage }, { status: 500 });
 };
 
 export async function GET(request: NextRequest) {
@@ -43,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!data.date || !data.start_time || !data.end_time) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: msg(E.AUTH_SIGNUP_FIELDS_REQUIRED, { fields: '[date, start_time, end_time]' }) }, { status: 400 });
     }
 
     // IMPORTANT: Accept the date and time as-is from admin
@@ -97,7 +101,7 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Slot ID is required' }, { status: 400 });
+      return NextResponse.json({ error: msg(E.AUTH_SIGNUP_FIELDS_REQUIRED, { fields: '[id]' }) }, { status: 400 });
     }
 
     const data = await request.json();

@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { E, msg } from '@/lib/errors';
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 interface USCISCaseStatus {
@@ -161,8 +162,8 @@ export default function CaseStatusPage() {
 
   const handleCheck = async () => {
     const normalized = receipt.trim().toUpperCase().replace(/[-\s]/g, "");
-    if (!normalized) { setError("Please enter your USCIS receipt number."); return; }
-    if (normalized.length !== 13) { setError("Receipt number must be 13 characters — 3 letters followed by 10 digits."); return; }
+    if (!normalized) { setError(msg(E.TOOL_CASE_MISSING_ANSWER, { questionLabel: 'USCIS receipt number' })); return; }
+    if (normalized.length !== 13) { setError(msg(E.TOOL_CASE_RECEIPT_LENGTH)); return; }
 
     setLoading(true);
     setError(null);
@@ -178,7 +179,8 @@ export default function CaseStatusPage() {
       const json = await res.json();
 
       if (!res.ok || json.error) {
-        setError(json.error ?? "Unable to retrieve case status. Please try again.");
+        console.error('Error fetching case status:', json.error ?? json);
+        setError(msg(E.TOOL_CASE_FETCH_FAILED));
         return;
       }
 
@@ -187,7 +189,8 @@ export default function CaseStatusPage() {
       setResult(parsed);
       saveHistory(parsed);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Network error. Please check your connection and try again.");
+      console.error('Network error fetching case status:', e);
+      setError(msg(E.TOOL_CASE_FETCH_FAILED));
     } finally {
       setLoading(false);
     }

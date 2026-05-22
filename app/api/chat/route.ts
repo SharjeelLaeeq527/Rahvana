@@ -1,5 +1,6 @@
 // app/api/chat/route.ts
 import { type NextRequest, NextResponse } from "next/server"
+import { E, msg } from '@/lib/errors'
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,7 +8,7 @@ export async function POST(req: NextRequest) {
 
     if (!query || query.trim() === "") {
       return NextResponse.json(
-        { error: "Query cannot be empty" },
+        { error: msg(E.TOOL_CHAT_EMPTY_QUERY) },
         { status: 400 }
       )
     }
@@ -47,9 +48,9 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("❌ Chat API Error:", error)
     return NextResponse.json(
-      { 
+      {
         response: "Sorry, I'm having trouble connecting to the assistant. Please try again.",
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: msg(E.TOOL_CHAT_SERVER_ERROR),
       },
       { status: 500 }
     )

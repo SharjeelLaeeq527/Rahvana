@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { E, msg } from '@/lib/errors'
 
 function getAdminClient() {
   return createClient(
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
   try {
     const { journeyId } = await request.json()
     if (!journeyId) {
-      return NextResponse.json({ error: 'journeyId required' }, { status: 400 })
+      return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[journeyId]' }) }, { status: 400 })
     }
 
     const supabase = getAdminClient()

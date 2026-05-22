@@ -34,6 +34,7 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import { PlanTier } from "@/lib/entitlements/config";
 import { usePlan } from "@/app/context/PlanContext";
+import { E, msg } from "@/lib/errors";
 
 interface ActionStepRendererProps {
   step: RoadmapStep;
@@ -320,10 +321,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         uploadedDoc,
       });
     } else {
-      showToast(
-        "This document is not uploaded in the document vault yet",
-        "error",
-      );
+      showToast(msg(E.JOURNEY_DOCUMENT_MISSING), "error");
     }
   };
 
@@ -539,24 +537,24 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   // Validation functions for mailing inputs
   const validateCarrier = (value: string): string => {
     if (!value.trim()) {
-      return "Carrier name is required";
+      return msg(E.JOURNEY_MAILING_CARRIER_REQUIRED);
     }
     if (value.trim().length < 2) {
-      return "Carrier name must be at least 2 characters";
+      return msg(E.JOURNEY_MAILING_CARRIER_TOO_SHORT);
     }
     return "";
   };
 
   const validateTracking = (value: string): string => {
     if (!value.trim()) {
-      return "Tracking number is required";
+      return msg(E.JOURNEY_MAILING_TRACKING_REQUIRED);
     }
     if (value.trim().length < 3) {
-      return "Tracking number must be at least 3 characters";
+      return msg(E.JOURNEY_MAILING_TRACKING_TOO_SHORT);
     }
     // Allow alphanumeric and common separators
     if (!/^[a-zA-Z0-9\-\s]*$/.test(value.trim())) {
-      return "Tracking number can only contain letters, numbers, dashes, and spaces";
+      return msg(E.JOURNEY_MAILING_TRACKING_INVALID);
     }
     return "";
   };
@@ -566,12 +564,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     const carrierErr = validateCarrier(mailingCarrier);
     if (carrierErr) {
       setCarrierError(carrierErr);
+      return;
     }
 
     // Validate tracking
     const trackingErr = validateTracking(mailingTracking);
     if (trackingErr) {
       setTrackingError(trackingErr);
+      return;
     }
 
     if (!stepEntitlement.guard()) return;
@@ -586,7 +586,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           paper_mailing_tracking: mailingTracking,
         });
       } else {
-        throw new Error("No save action available");
+        throw new Error(msg(E.JOURNEY_MAILING_SAVE_FAILED));
       }
       setStatusSaved(true);
       showToast("Mailing details saved successfully!", "success");
@@ -609,7 +609,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     } catch (error) {
       console.error("Failed to save mailing details:", error);
       setStatusSaved(false);
-      showToast("Failed to save mailing details", "error");
+      showToast(msg(E.JOURNEY_MAILING_SAVE_FAILED), "error");
     } finally {
       setIsSavingMailing(false);
       setIsEditingMailing(false);

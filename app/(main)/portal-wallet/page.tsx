@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Shield } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { E, msg } from "@/lib/errors";
 import PortalCard from "./components/PortalCard";
 import CredentialFormModal from "./components/CredentialFormModal";
 import ViewCredentialModal from "./components/ViewCredentialModal";
@@ -148,7 +149,7 @@ const PortalWallet: React.FC = () => {
       setFormModal((prev) => ({ ...prev, open: false }));
       await fetchCredentials();
     } catch {
-      toast.error("Failed to save credentials. Please try again.");
+      toast.error(msg(E.VAULT_CREDENTIAL_SAVE_FAILED));
     } finally {
       setIsSubmitting(false);
     }
@@ -175,7 +176,7 @@ const PortalWallet: React.FC = () => {
 
       await fetchCredentials();
     } catch {
-      toast.error("Failed to delete credentials.");
+      toast.error(msg(E.VAULT_CREDENTIAL_DELETE_FAILED));
     } finally {
       setIsSubmitting(false);
     }

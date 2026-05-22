@@ -27,6 +27,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { E, msg, errorCode } from "@/lib/errors";
 import {
   VISA_CATEGORIES,
   HELPER_DATA,
@@ -478,6 +479,7 @@ function PricingContent() {
   const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] =
     useState(false);
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const isAnyCheckoutLoading =
     isProcessingAutoCheckout || isManualCheckoutLoading;
@@ -539,6 +541,7 @@ function PricingContent() {
     async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
       if (isProcessingAutoCheckout) return;
       setIsProcessingAutoCheckout(true);
+      setCheckoutError(null);
       try {
         const res = await fetch("/api/stripe/checkout", {
           method: "POST",
@@ -553,10 +556,15 @@ function PricingContent() {
           }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Checkout failed");
+        if (!res.ok) {
+          setCheckoutError(`${msg(E.DASH_CHECKOUT_NO_URL)}`);
+          setIsProcessingAutoCheckout(false);
+          return;
+        }
         if (data.url) window.location.href = data.url;
       } catch (err) {
         console.error("Checkout error:", err);
+        setCheckoutError(`${msg(E.DASH_CHECKOUT_NO_URL)}`);
         setIsProcessingAutoCheckout(false);
       }
     },
@@ -756,6 +764,24 @@ function PricingContent() {
                 <IcoTableCompare className="w-4 h-4 opacity-60" />
                 Compare plans
               </button>
+                {checkoutError && (
+                  <div className="w-full mt-3 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                    <svg
+                      className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="text-sm text-red-700">{checkoutError}</p>
+                  </div>
+                )}
               <span className="text-[12px] text-muted-foreground/50 hidden md:inline">
                 ·
               </span>

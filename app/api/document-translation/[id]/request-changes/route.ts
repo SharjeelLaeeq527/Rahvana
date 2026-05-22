@@ -2,7 +2,7 @@
 // User rejects translation and requests changes
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-
+import { E, msg } from '@/lib/errors';
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -17,7 +17,7 @@ export async function POST(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -40,7 +40,7 @@ export async function POST(
 
     if (checkError || !existing) {
       return NextResponse.json(
-        { error: "Document not found" },
+        { error: msg(E.CASE_DATA_NOT_FOUND) },
         { status: 404 }
       );
     }
@@ -82,7 +82,7 @@ export async function POST(
   } catch (error) {
     console.error("Request changes error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 }
     );
   }

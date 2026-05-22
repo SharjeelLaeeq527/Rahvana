@@ -35,6 +35,7 @@ import {
   Download,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { E, msg } from '@/lib/errors';
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { Loader } from "@/components/ui/spinner";
@@ -825,7 +826,7 @@ function PKMLocator({ province }: { province: string }) {
     setLoading(true);
     setError(null);
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
+      setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
       setLoading(false);
       return;
     }
@@ -838,9 +839,7 @@ function PKMLocator({ province }: { province: string }) {
         setLoading(false);
       },
       () => {
-        setError(
-          "Unable to retrieve your location. Please check permissions or enter manually.",
-        );
+        setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
         setLoading(false);
       },
     );

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from '@/lib/errors';
 
 export async function DELETE(
     req: Request,
@@ -14,14 +15,14 @@ export async function DELETE(
       } = await supabase.auth.getUser();
   
       if (userError || !user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
       }
   
       const { portalType } = await context.params;
   
       if (!portalType) {
         return NextResponse.json(
-          { error: "portalType is required" },
+          { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[portalType]' }) },
           { status: 400 }
         );
       }
@@ -59,9 +60,9 @@ export async function DELETE(
   
       if (deleteError) {
         console.error("Error deleting credential:", deleteError);
-  
+
         return NextResponse.json(
-          { error: "Failed to delete credential" },
+          { error: msg(E.VAULT_CREDENTIAL_DELETE_FAILED) },
           { status: 500 }
         );
       }
@@ -74,7 +75,7 @@ export async function DELETE(
       console.error("Unexpected error deleting credential:", error);
   
       return NextResponse.json(
-        { error: "Internal server error" },
+        { error: msg(E.AUTH_UNEXPECTED_ERROR) },
         { status: 500 }
       );
     }

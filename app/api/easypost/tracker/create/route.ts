@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTracker } from "@/lib/easypost/tracker";
 import * as db from "@/lib/journey/data-access";
+import { E, msg } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     if (!caseId || !carrier || !trackingCode) {
       return NextResponse.json(
-        { error: "Missing required fields: caseId, carrier, trackingCode" },
+        { error: msg(E.EASPOST_TRACKER_MISSING_FIELDS) },
         { status: 400 },
       );
     }
@@ -28,14 +29,13 @@ export async function POST(request: NextRequest) {
       await db.upsertCaseDataDB(caseId, "tracking_error", {
         data_key: "tracking_error",
         data_value: error instanceof Error ? error.message : "Unknown error",
-        source: "easypost_api",
+        source: "external_api",
         source_reference: "tracker_creation",
       });
 
       return NextResponse.json(
         {
-          error: "Failed to create tracker",
-          details: error instanceof Error ? error.message : "Unknown error",
+          error: msg(E.EASPOST_TRACKER_CREATE_FAILED),
         },
         { status: 500 },
       );
@@ -49,20 +49,20 @@ export async function POST(request: NextRequest) {
         data_key: "easypost_tracker_id",
         data_value: trackerData.id,
         label: "EasyPost Tracker ID",
-        source: "easypost_api",
+        source: "external_api",
         source_reference: "tracker_creation",
       }),
       db.upsertCaseDataDB(caseId, "tracking_status", {
         data_key: "tracking_status",
         data_value: trackerData.status,
         label: "Tracking Status",
-        source: "easypost_api",
+        source: "external_api",
         source_reference: "tracker_creation",
       }),
       db.upsertCaseDataDB(caseId, "tracking_last_checked_at", {
         data_key: "tracking_last_checked_at",
         data_value: now,
-        source: "easypost_api",
+        source: "external_api",
         source_reference: "tracker_creation",
       }),
     ]);
@@ -81,8 +81,7 @@ export async function POST(request: NextRequest) {
     console.error("[EasyPost API] Unexpected error:", error);
     return NextResponse.json(
       {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: msg(E.EASPOST_WEBHOOK_PROCESS_FAILED),
       },
       { status: 500 },
     );

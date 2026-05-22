@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { msg, E, errorCode } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -47,12 +48,12 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to send reset email");
+        setError(data.error || `${msg(E.AUTH_RESET_EMAIL_FAILED)}`);
       } else {
         setSuccess(true);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(`${msg(E.AUTH_UNEXPECTED_ERROR)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -76,12 +77,12 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to resend email");
+        setError(data.error || `${msg(E.AUTH_RESET_EMAIL_RESEND_FAILED)}`);
       } else {
         setTimer(60);
       }
     } catch {
-      setError("Failed to resend. Please try again.");
+      setError(`${msg(E.AUTH_RESET_EMAIL_RESEND_FAILED)}`);
     } finally {
       setIsSubmitting(false);
     }

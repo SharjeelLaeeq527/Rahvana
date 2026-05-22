@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
+import { E, msg } from "@/lib/errors";
 
 export async function POST(
   request: NextRequest,
@@ -17,10 +18,7 @@ export async function POST(
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to submit session",
+        error: msg(E.TOOL_VISA_SUBMIT_FAILED),
       },
       { status: 500 }
     );

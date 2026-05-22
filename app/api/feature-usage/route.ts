@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from '@/lib/errors';
 import { checkFeatureUsage } from "@/lib/usage/checkFeatureUsage";
 import { type PlanTier } from "@/lib/entitlements/config";
 import { getEffectiveEntitlement } from "@/lib/entitlements/helpers";
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { success: false, message: "Unauthorized" },
+        { success: false, message: msg(E.AUTH_UNAUTHORIZED) },
         { status: 401 },
       );
     }
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
 
     if (!feature) {
       return NextResponse.json(
-        { success: false, message: "Feature parameter is required" },
+        { success: false, message: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[feature]' }) },
         { status: 400 },
       );
     }
@@ -153,7 +154,7 @@ export async function POST(request: Request) {
       if (error) {
         console.error("Usage increment error:", error);
         return NextResponse.json(
-          { success: false, message: "Failed to update usage" },
+          { success: false, message: msg(E.AUTH_UNEXPECTED_ERROR) },
           { status: 500 },
         );
       }
@@ -175,7 +176,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("POST /feature-usage error:", error);
     return NextResponse.json(
-      { success: false, message: "Internal Server Error" },
+      { success: false, message: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 },
     );
   }

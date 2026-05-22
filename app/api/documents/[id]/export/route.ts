@@ -3,6 +3,7 @@
 // Exports single document as ZIP with original + compressed versions (if exists)
 
 import { NextRequest, NextResponse } from 'next/server';
+import { E, msg } from '@/lib/errors';
 import { createClient } from '@/lib/supabase/server';
 import { DocumentFileManager } from '@/lib/document-vault/storage-server';
 import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
@@ -22,7 +23,8 @@ export async function GET(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error('[documents/export] Unauthorized:', authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -33,7 +35,7 @@ export async function GET(
     const document = await dbStorage.getDocument(documentId, user.id);
 
     if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Get document definition for naming
@@ -84,8 +86,9 @@ export async function GET(
     const readResult = await fileManager.readFile(document.storagePath);
 
     if (!readResult.success || !readResult.buffer) {
+      console.error('[documents/export] read error:', readResult.error);
       return NextResponse.json(
-        { error: readResult.error || 'File not found' },
+        { error: msg(E.CASE_DATA_NOT_FOUND) },
         { status: 404 }
       );
     }
@@ -99,6 +102,7 @@ export async function GET(
       },
     });
   } catch (error) {
+    console.error('Export document error:', error);
     console.error('Export document error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

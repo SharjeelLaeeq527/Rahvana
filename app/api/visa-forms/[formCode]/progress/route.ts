@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from '@/lib/errors';
 
 type DraftPayload = {
   payload: Record<string, string>;
@@ -38,7 +39,7 @@ export async function GET(
     const { supabase, user } = await getAuthedUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data, error } = await supabase
@@ -50,17 +51,14 @@ export async function GET(
       .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('/api/visa-forms progress GET db error:', error);
+      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
     return NextResponse.json({ draft: data ?? null });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal server error",
-      },
-      { status: 500 },
-    );
+    console.error('/api/visa-forms progress GET unexpected error:', error);
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
 
@@ -76,7 +74,7 @@ export async function POST(
     const { supabase, user } = await getAuthedUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const upsertRow = {
@@ -101,17 +99,14 @@ export async function POST(
       .maybeSingle();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('/api/visa-forms progress POST db error:', error);
+      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
     return NextResponse.json({ draft: data ?? null });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal server error",
-      },
-      { status: 500 },
-    );
+    console.error('/api/visa-forms progress POST unexpected error:', error);
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
 
@@ -127,7 +122,7 @@ export async function DELETE(
     const { supabase, user } = await getAuthedUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data, error } = await supabase
@@ -138,16 +133,13 @@ export async function DELETE(
       .eq("journey_key", journeyKey);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('/api/visa-forms progress DELETE db error:', error);
+      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
     return NextResponse.json({ message: "Draft deleted successfully" });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal server error",
-      },
-      { status: 500 },
-    );
+    console.error('/api/visa-forms progress DELETE unexpected error:', error);
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

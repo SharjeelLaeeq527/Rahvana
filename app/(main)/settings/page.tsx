@@ -57,7 +57,7 @@ export default function SettingsPage() {
       if (error) {
         console.error("Error fetching profile:", error.message);
         return;
-      }
+              }
 
       if (data) {
         setProfile(data);

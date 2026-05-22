@@ -17,6 +17,7 @@ import type { MasterProfile } from "@/types/profile";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentRole } from "@/lib/document-vault/types";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { E, msg } from "@/lib/errors";
 import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "../../shared/ExpandableTooltip";
 import { AlertCircle } from "lucide-react";
@@ -1128,10 +1129,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       clearTimeout(timeoutId);
       console.error("Save to vault error:", err);
       if (err instanceof Error && err.name === "AbortError") {
-        showToast("Vault save timed out. Please try again.", "error");
+        showToast(msg(E.DASH_VAULT_SAVE_FAILED), "error");
       } else {
         showToast(
-          err instanceof Error ? err.message : "Failed to save to vault",
+          err instanceof Error ? err.message : msg(E.DASH_VAULT_SAVE_FAILED),
           "error",
         );
       }

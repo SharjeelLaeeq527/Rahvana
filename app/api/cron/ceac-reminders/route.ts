@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { runCeacNotificationJob } from '@/lib/ceac-tracking/recurringJobRunner'
+import { E, msg } from '@/lib/errors'
 
 export const runtime = 'nodejs'  // node-cron / Resend require Node runtime
 
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest) {
   if (process.env.NODE_ENV !== 'development') {
     const secret = req.headers.get('x-cron-secret')
     if (secret !== process.env.CRON_SECRET) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.warn('[Cron API] Unauthorized cron request');
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 })
     }
   }
 

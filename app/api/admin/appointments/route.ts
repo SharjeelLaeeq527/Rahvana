@@ -1,6 +1,7 @@
 // app/api/admin/appointments/route.ts
 import { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { E, msg } from '@/lib/errors';
 
 // Specific admin emails - ONLY these emails can access admin panel
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'hammadnooralam@gmail.com').split(',').map(email => email.trim());
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
     const { isAdmin, error: authError } = await checkAdminRole(req);
 
     if (!isAdmin) {
-      return Response.json({ error: authError || 'Admin access required' }, { status: 403 });
+      return Response.json({ error: msg(E.AUTH_UNAUTHORIZED_ADMIN) }, { status: 403 });
     }
 
     const supabase = createServerClient(
@@ -143,7 +144,7 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('❌ Unexpected error:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }
 
@@ -152,7 +153,7 @@ export async function PUT(req: NextRequest) {
     const { isAdmin, error: authError } = await checkAdminRole(req);
 
     if (!isAdmin) {
-      return Response.json({ error: authError || 'Admin access required' }, { status: 403 });
+      return Response.json({ error: msg(E.AUTH_UNAUTHORIZED_ADMIN) }, { status: 403 });
     }
 
     const { id, status } = await req.json();
@@ -187,6 +188,6 @@ export async function PUT(req: NextRequest) {
     return Response.json({ success: true });
   } catch (error) {
     console.error('Unexpected error in updating appointment:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

@@ -12,6 +12,7 @@
 // Owner / admin accessing Supabase Storage directly sees ONLY encrypted garbage.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { E, msg } from '@/lib/errors';
 import { createClient } from '@/lib/supabase/server';
 import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
 import { createClient as createClientJs } from '@supabase/supabase-js';
@@ -30,7 +31,8 @@ export async function GET(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error('[download] Unauthorized:', authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -40,7 +42,7 @@ export async function GET(
     const document = await dbStorage.getDocument(id, user.id);
 
     if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // ── 3. Download encrypted blob from Supabase Storage ──────────────────────
@@ -48,8 +50,9 @@ export async function GET(
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
+      console.error('[download] Storage not configured');
       return NextResponse.json(
-        { error: 'Storage not configured' },
+        { error: msg(E.VAULT_NOT_CONFIGURED) },
         { status: 500 }
       );
     }
@@ -82,7 +85,7 @@ export async function GET(
       } catch (decryptError) {
         console.error('[download] Decryption failed:', decryptError);
         return NextResponse.json(
-          { error: 'Failed to decrypt file. Please contact support.' },
+          { error: msg(E.VAULT_DECRYPT_FAILED) },
           { status: 500 }
         );
       }
@@ -112,7 +115,7 @@ export async function GET(
   } catch (error) {
     console.error('[download] Unexpected error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: msg(E.VAULT_DOWNLOAD_FAILED) },
       { status: 500 }
     );
   }

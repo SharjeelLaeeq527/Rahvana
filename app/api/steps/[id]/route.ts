@@ -3,6 +3,7 @@ import { stepService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import type { StepUpdate } from "@/lib/journey/types";
 import { stepCompletionEngine } from "@/lib/journey/service";
+import { E, msg, normalizeError } from '@/lib/errors';
 
 // GET /api/steps/[id] - Get step details with metadata and visibility context
 export async function GET(
@@ -16,7 +17,7 @@ export async function GET(
     const step = await db.getStepDB(stepId);
     if (!step) {
       return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
+        { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 },
       );
     }
@@ -25,7 +26,7 @@ export async function GET(
     const chapter = await db.getChapterDB(step.chapter_id);
     if (!chapter) {
       return NextResponse.json(
-        { error: "Chapter not found", code: "NOT_FOUND" },
+        { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 },
       );
     }
@@ -65,26 +66,26 @@ export async function GET(
     );
   } catch (error) {
     console.error(`Error in GET /api/steps/[id]:`, error);
+    const norm = normalizeError(error, E.TOOL_CASE_FETCH_FAILED);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 },
       );
     }
 
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (norm.code === E.CASE_DATA_NOT_FOUND) {
       return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
+        { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 },
       );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to get step details",
+        error: msg(E.AUTH_UNEXPECTED_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );
@@ -105,26 +106,27 @@ export async function PATCH(
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
     console.error(`Error in PATCH /api/steps/[id]:`, error);
+    const norm = normalizeError(error, E.TOOL_CASE_FETCH_FAILED);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 },
       );
     }
 
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (norm.code === E.CASE_DATA_NOT_FOUND) {
       return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
+        { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 },
       );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to update step",
+        error: msg(E.AUTH_UNEXPECTED_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
+        details: msg(E.AUTH_UNEXPECTED_ERROR),
       },
       { status: 500 },
     );
@@ -153,7 +155,7 @@ export async function POST(
     const step = await db.getStepDB(stepId);
     if (!step) {
       return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
+        { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 },
       );
     }
@@ -162,7 +164,7 @@ export async function POST(
     const chapter = await db.getChapterDB(step.chapter_id);
     if (!chapter) {
       return NextResponse.json(
-        { error: "Chapter not found", code: "NOT_FOUND" },
+        { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 },
       );
     }
@@ -177,41 +179,29 @@ export async function POST(
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
     console.error(`Error in POST /api/steps/[id]/complete:`, error);
+    const norm = normalizeError(error, E.TOOL_VISA_SUBMIT_FAILED);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 },
       );
     }
 
-    if (error instanceof Error && error.message.includes("already completed")) {
+    if (norm.code === E.DASH_JOURNEY_STEP_LOCKED) {
       return NextResponse.json(
         {
-          error: "Step is already completed",
+          error: msg(E.DASH_JOURNEY_STEP_LOCKED),
           code: "INVALID_STATE",
         },
         { status: 400 },
       );
     }
 
-    if (
-      error instanceof Error &&
-      error.message?.includes("Cannot complete step")
-    ) {
+    if (norm.code === E.CASE_DATA_VALIDATION_FAILED) {
       return NextResponse.json(
         {
-          error: error.message,
-          code: "DEPENDENCY_ERROR",
-        },
-        { status: 400 },
-      );
-    }
-
-    if (error instanceof Error && error.message?.includes("Validation failed")) {
-      return NextResponse.json(
-        {
-          error: error.message,
+          error: msg(E.CASE_DATA_VALIDATION_FAILED),
           code: "VALIDATION_ERROR",
         },
         { status: 400 },
@@ -220,9 +210,8 @@ export async function POST(
 
     return NextResponse.json(
       {
-        error: "Failed to complete step",
+        error: msg(E.AUTH_UNEXPECTED_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );
@@ -241,7 +230,7 @@ export async function DELETE(
     const step = await db.getStepDB(stepId);
     if (!step) {
       return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
+        { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 },
       );
     }
@@ -264,7 +253,7 @@ export async function DELETE(
 
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 },
       );
     }

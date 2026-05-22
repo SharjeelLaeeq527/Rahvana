@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { caseDataService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import type { CaseDataUpdate } from "@/lib/journey/types";
+import { normalizeError, E } from '@/lib/errors';
 
 // GET /api/case_data/[journeyId]/[dataKey] - Retrieve single case data
 export async function GET(
@@ -16,17 +17,13 @@ export async function GET(
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
     console.error(`Error in GET /api/case-data/[journeyId]/[dataKey]:`, error);
+    const norm = normalizeError(error, E.CASE_DATA_NOT_FOUND);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Internal server error",
+        error: norm.message,
       },
-      {
-        status:
-          error instanceof Error && error.message.includes("not found")
-            ? 404
-            : 500,
-      },
+      { status: norm.code === E.CASE_DATA_NOT_FOUND ? 404 : 500 },
     );
   }
 }
@@ -61,17 +58,13 @@ export async function PATCH(
       `Error in PATCH /api/case-data/[journeyId]/[dataKey]:`,
       error,
     );
+    const norm = normalizeError(error, E.CASE_DATA_NOT_FOUND);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Internal server error",
+        error: norm.message,
       },
-      {
-        status:
-          error instanceof Error && error.message.includes("not found")
-            ? 404
-            : 500,
-      },
+      { status: norm.code === E.CASE_DATA_NOT_FOUND ? 404 : 500 },
     );
   }
 }
@@ -101,17 +94,13 @@ export async function DELETE(
       `Error in DELETE /api/case-data/[journeyId]/[dataKey]:`,
       error,
     );
+    const norm = normalizeError(error, E.CASE_DATA_NOT_FOUND);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Internal server error",
+        error: norm.message,
       },
-      {
-        status:
-          error instanceof Error && error.message.includes("not found")
-            ? 404
-            : 500,
-      },
+      { status: norm.code === E.CASE_DATA_NOT_FOUND ? 404 : 500 },
     );
   }
 }

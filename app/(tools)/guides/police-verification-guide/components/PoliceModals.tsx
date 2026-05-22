@@ -38,6 +38,7 @@ import {
   pkmCenters,
 } from "../../../police-verification/(data)/punjab-pkm-centers";
 import { balochistanCenters } from "../../../police-verification/(data)/balochistan-pkm-centers";
+import { E, msg } from '@/lib/errors';
 import { kpkCenters } from "../../../police-verification/(data)/kpk-centers";
 import {
   findNearestCenters,
@@ -1153,7 +1154,7 @@ export function PKMLocatorModal({
     setLoading(true);
     setError(null);
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
+      setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
       setLoading(false);
       return;
     }
@@ -1164,9 +1165,7 @@ export function PKMLocatorModal({
         setLoading(false);
       },
       () => {
-        setError(
-          "Unable to retrieve your location. Please check permissions or enter manually.",
-        );
+        setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
         setLoading(false);
       },
     );

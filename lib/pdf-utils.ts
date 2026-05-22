@@ -4,6 +4,7 @@
  */
 
 import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib"
+import * as Errors from '@/lib/errors'
 
 // ============================================================================
 // HEX/RGB UTILITIES (Consolidated)
@@ -111,9 +112,19 @@ export async function reorderPdfPages(pdfBytes: ArrayBuffer, pageOrder: number[]
 
 export async function deletePdfPages(pdfBytes: ArrayBuffer, pagesToDelete: number[]): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.load(pdfBytes)
+  const total = pdfDoc.getPageCount()
+  if (pagesToDelete.length >= total) {
+    console.warn(Errors.msg(Errors.E.PDF_CANNOT_DELETE_LAST_PAGE))
+    throw new Error(Errors.msg(Errors.E.PDF_CANNOT_DELETE_LAST_PAGE))
+  }
+
   const indices = pagesToDelete.map((p) => p - 1).sort((a, b) => b - a)
 
   for (const index of indices) {
+    if (index < 0 || index >= pdfDoc.getPageCount()) {
+      console.warn(Errors.msg(Errors.E.PDF_PAGE_INDEX_OUT_OF_BOUNDS))
+      continue
+    }
     pdfDoc.removePage(index)
   }
 
@@ -122,6 +133,11 @@ export async function deletePdfPages(pdfBytes: ArrayBuffer, pagesToDelete: numbe
 
 export async function rotatePdfPage(pdfBytes: ArrayBuffer, pageIndex: number, angle: number): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.load(pdfBytes)
+  if (pageIndex < 0 || pageIndex >= pdfDoc.getPageCount()) {
+    console.warn(Errors.msg(Errors.E.PDF_PAGE_INDEX_OUT_OF_BOUNDS))
+    throw new Error(Errors.msg(Errors.E.PDF_PAGE_INDEX_OUT_OF_BOUNDS))
+  }
+
   const page = pdfDoc.getPage(pageIndex)
   page.setRotation(degrees(page.getRotation().angle + angle))
 
@@ -159,6 +175,10 @@ export async function addTextAnnotationsToPdf(
   const pdfDoc = await PDFDocument.load(pdfBytes)
 
   for (const ann of annotations) {
+    if (ann.pageIndex < 0 || ann.pageIndex >= pdfDoc.getPageCount()) {
+      console.warn(Errors.msg(Errors.E.PDF_PAGE_INDEX_OUT_OF_BOUNDS))
+      continue
+    }
     const page = pdfDoc.getPage(ann.pageIndex)
     const rgbColor = hex2rgbNormalized(ann.color)
 
@@ -206,7 +226,7 @@ export async function addImageToPDF(
   const pages = pdfDoc.getPages()
 
   if (pageIndex >= pages.length) {
-    console.warn(`Page index ${pageIndex} out of bounds, using last page`)
+    console.warn(Errors.msg(Errors.E.PDF_PAGE_INDEX_OUT_OF_BOUNDS))
     pageIndex = pages.length - 1
   }
 
@@ -220,16 +240,21 @@ export async function addImageToPDF(
     } else if (imageData.startsWith("data:image/jpeg") || imageData.startsWith("data:image/jpg")) {
       embeddedImage = await pdfDoc.embedJpg(imageData)
     } else {
-      throw new Error("Unsupported image format (only PNG or JPEG allowed)")
+      throw new Error(Errors.msg(Errors.E.PDF_UNSUPPORTED_IMAGE_FORMAT))
     }
 
-    page.drawImage(embeddedImage, {
+    try {
+      page.drawImage(embeddedImage, {
       x,
       y: pageHeight - y - height,
       width,
       height,
       rotate: degrees(rotation),
     })
+    } catch (embedError) {
+      console.error("Error drawing embedded image:", embedError)
+      throw new Error(Errors.msg(Errors.E.PDF_EMBED_IMAGE_FAILED))
+    }
   } catch (error) {
     console.error("Error embedding image:", error)
     throw error
@@ -269,6 +294,11 @@ export async function createEditedPDF(
   pdfDoc = await applyPageModifications(pdfDoc, pageModifications)
 
   for (const annotation of textAnnotations) {
+    if (annotation.pageIndex < 0 || annotation.pageIndex >= pdfDoc.getPageCount()) {
+      console.warn(Errors.msg(Errors.E.PDF_PAGE_INDEX_OUT_OF_BOUNDS))
+      continue
+    }
+
     const page = pdfDoc.getPage(annotation.pageIndex)
     const rgbColor = hex2rgbNormalized(annotation.color)
 

@@ -11,6 +11,7 @@ import {
   getInterviewSession,
 } from "@/lib/interview-prep/service";
 import { categoryLoader } from "@/lib/interview-prep/category-loader";
+import { E, msg } from '@/lib/errors';
 
 /**
  * POST /api/interview-prep
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!category_slug) {
       return NextResponse.json(
-        { error: "Category slug is required" },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[category_slug]' }) },
         { status: 400 },
       );
     }
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating interview session:", error);
     return NextResponse.json(
-      { error: "Failed to create interview session" },
+      { error: msg(E.TOOL_INTERVIEW_SESSION_FAILED) },
       { status: 500 },
     );
   }
@@ -101,7 +102,7 @@ export async function GET(request: NextRequest) {
   // If sessionId provided, return session data
   if (!sessionId) {
     return NextResponse.json(
-      { error: "Session ID or category_slug is required" },
+      { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[sessionId]' }) },
       { status: 400 },
     );
   }
@@ -111,7 +112,7 @@ export async function GET(request: NextRequest) {
 
     if (!session) {
       return NextResponse.json(
-        { error: "Session not found" },
+        { error: msg(E.CASE_DATA_NOT_FOUND) },
         { status: 404 },
       );
     }

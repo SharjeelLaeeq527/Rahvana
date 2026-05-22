@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
+import { E, msg } from '@/lib/errors'
 
 export async function GET(
   request: NextRequest,
@@ -17,14 +18,6 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching scoring results:", error);
 
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch scoring results",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.TOOL_CASE_FETCH_FAILED) }, { status: 500 });
   }
 }

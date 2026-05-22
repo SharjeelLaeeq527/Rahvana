@@ -7,6 +7,7 @@ import { VISA_CATEGORIES } from '@/app/(main)/pricing/data/pricing';
 import { reconcileUserPlan } from '@/lib/plan/reconcile';
 import * as fs from 'fs';
 import * as path from 'path';
+import { E, msg } from '@/lib/errors';
 
 function logDebug(msg: string, obj?: any) {
   try {
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       logDebug('Returning 400 User ID is required');
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[userId]' }) },
         { status: 400 }
       );
     }
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
       await supabase.auth.admin.getUserById(userId);
 
     if (userError || !userData.user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     const userEmail = userData.user.email!;
@@ -80,13 +81,13 @@ export async function POST(request: NextRequest) {
 
       if (dbStatus === 'active' && targetRank < currentRank) {
         return NextResponse.json(
-          { error: `You already have the ${dbTier} plan. Downgrades are not allowed — manage via billing portal.` },
+          { error: msg(E.CASE_DATA_VALIDATION_FAILED) },
           { status: 400 }
         );
       }
       if (dbStatus === 'active' && targetRank === currentRank) {
         return NextResponse.json(
-          { error: `You already own the ${dbTier} plan. No need to purchase again.`, alreadyOwned: true },
+          { error: msg(E.CASE_DATA_VALIDATION_FAILED), alreadyOwned: true },
           { status: 400 }
         );
       }
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
 
       if (!product) {
         return NextResponse.json(
-          { error: `Product tier '${productTier}' not found` },
+          { error: msg(E.CASE_DATA_NOT_FOUND) },
           { status: 404 }
         );
       }
@@ -282,7 +283,7 @@ export async function POST(request: NextRequest) {
 
       if (consultationError || !consultation) {
         return NextResponse.json(
-          { error: 'Consultation not found' },
+          { error: msg(E.CASE_DATA_NOT_FOUND) },
           { status: 404 }
         );
       }
@@ -312,7 +313,7 @@ export async function POST(request: NextRequest) {
       };
     } else {
       return NextResponse.json(
-        { error: 'Either productTier, addons, or consultationId is required' },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[productTier, addons, consultationId]' }) },
         { status: 400 }
       );
     }
@@ -355,10 +356,10 @@ export async function POST(request: NextRequest) {
       product_type: dbProductType,
       product_id: dbProductId,
       metadata: {
-        product_name: sessionParams.metadata?.product_name || 'Add-on Purchase',
-        customer_email: userEmail,
-        stripe_customer_id: stripeCustomerId!,
-        original_product_type: sessionParams.metadata?.product_type, // keep reference
+        product_name: String(sessionParams.metadata?.product_name || 'Add-on Purchase'),
+        customer_email: String(userEmail),
+        stripe_customer_id: String(stripeCustomerId || ''),
+        original_product_type: String(sessionParams.metadata?.product_type || ''), // keep reference
       },
     });
     logDebug('Payment record created successfully');
@@ -374,9 +375,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.stack) {
       logDebug('Error stack:', error.stack);
     }
-    const errorMessage =
-      error instanceof Error ? error.message : 'Failed to create checkout session';
-    logDebug('Returning 500 with errorMessage:', errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    logDebug('Returning 500 for checkout API');
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

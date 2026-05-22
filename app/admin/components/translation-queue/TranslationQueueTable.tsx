@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { msg, E, errorCode } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -375,7 +376,7 @@ export default function TranslationQueueTable() {
                                     data.error
                                   );
                                   toast.error(
-                                    "Could not download the document",
+                                    `${msg(E.VAULT_DOWNLOAD_FAILED)}`,
                                     {
                                       position: "top-right",
                                       duration: 3000,
@@ -387,7 +388,7 @@ export default function TranslationQueueTable() {
                                   "Error downloading document:",
                                   error
                                 );
-                                toast.error("Could not download the document", {
+                                toast.error(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, {
                                   position: "top-right",
                                   duration: 3000,
                                 });

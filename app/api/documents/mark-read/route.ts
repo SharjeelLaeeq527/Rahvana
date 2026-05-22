@@ -4,6 +4,7 @@
 import {  NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
+import { E, msg } from '@/lib/errors';
 
 export async function PATCH(request: Request) {
   try {
@@ -15,14 +16,14 @@ export async function PATCH(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     // Get the document ID from the request
     const { documentId } = await request.json();
 
     if (!documentId) {
-      return NextResponse.json({ error: 'Document ID is required' }, { status: 400 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[documentId]' }) }, { status: 400 });
     }
 
     // Mark the document as read
@@ -36,7 +37,7 @@ export async function PATCH(request: Request) {
   } catch (error) {
     console.error('Mark document as read error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 }
     );
   }

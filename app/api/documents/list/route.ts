@@ -4,6 +4,7 @@
 import {  NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
+import { E, msg } from '@/lib/errors'
 
 export async function GET() {
   try {
@@ -15,7 +16,8 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error('documents/list unauthorized:', authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     // Get all documents
@@ -28,9 +30,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('List documents error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.VAULT_SYNC_FAILED) }, { status: 500 });
   }
 }

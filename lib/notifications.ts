@@ -1,6 +1,7 @@
 // lib/notifications.ts
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
+import * as Errors from '@/lib/errors'
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -91,7 +92,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
 
     if (!subject || !htmlContent) {
       console.error("Invalid notification data");
-      return { error: "Invalid notification data" };
+      return { error: Errors.msg(Errors.E.APPOINTMENT_NOTIFICATION_INVALID) };
     }
 
     const { error } = await resend.emails.send({
@@ -103,14 +104,14 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
 
     if (error) {
       console.error("Error sending email:", error);
-      return { error };
+      return { error: Errors.msg(Errors.E.APPOINTMENT_NOTIFICATION_SEND_FAILED) };
     }
 
     console.log("Notification email sent successfully");
     return { success: true };
   } catch (error) {
     console.error("Error in sendAppointmentNotification:", error);
-    return { error: "Failed to send notification" };
+    return { error: Errors.msg(Errors.E.APPOINTMENT_NOTIFICATION_SEND_FAILED) };
   }
 }
 
@@ -128,7 +129,7 @@ export async function triggerAppointmentNotification(appointmentId: string) {
     
     if (error || !appointment) {
       console.error("Error fetching appointment:", error);
-      return { error: "Appointment not found" };
+      return { error: Errors.msg(Errors.E.APPOINTMENT_NOT_FOUND) };
     }
 
     // Send notification based on status
@@ -146,6 +147,6 @@ export async function triggerAppointmentNotification(appointmentId: string) {
     return await sendAppointmentNotification(notificationData);
   } catch (error) {
     console.error("Error triggering notification:", error);
-    return { error: "Failed to trigger notification" };
+    return { error: Errors.msg(Errors.E.APPOINTMENT_TRIGGER_FAILED) };
   }
 }

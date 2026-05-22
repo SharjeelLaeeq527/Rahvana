@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from '@/lib/errors';
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { guideSessionId, stepKey, data, isCompleted, progressPercent } =
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
 
     if (!guideSessionId || !stepKey) {
       return NextResponse.json(
-        { error: "guideSessionId and stepKey are required" },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[guideSessionId, stepKey]' }) },
         { status: 400 },
       );
     }
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
 
     if (sessionError || !session) {
       return NextResponse.json(
-        { error: "Session not found or unauthorized" },
+        { error: msg(E.CASE_DATA_NOT_FOUND) },
         { status: 403 },
       );
     }
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
     if (stepError) {
       console.error("Error saving step data:", stepError);
       return NextResponse.json(
-        { error: "Failed to save step data" },
+        { error: msg(E.CASE_DATA_SAVE_FAILED) },
         { status: 500 },
       );
     }
@@ -98,7 +99,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Unexpected error in /api/guides/save-step:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 },
     );
   }

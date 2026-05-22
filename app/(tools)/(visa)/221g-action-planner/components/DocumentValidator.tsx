@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { msg, E } from '@/lib/errors';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -83,12 +84,36 @@ const DocumentValidator = ({
     try {
       // Check if file is valid before processing
       if (file.size === 0) {
-        throw new Error('File is empty');
+        const errorResult: DocumentValidationResult = {
+          isValid: false,
+          issues: [{
+            severity: 'critical',
+            message: msg(E.UPLOAD_FILE_EMPTY),
+            suggestion: 'Please select a non-empty document and try again.',
+          }],
+          score: 0,
+        };
+        setValidationResult(errorResult);
+        onValidationComplete(errorResult);
+        return errorResult;
       }
 
-      // Validate file type before processing
+      // Validate file type before processing — return a clear user-facing error without leaking MIME
       if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        throw new Error(`Unsupported file type: ${file.type}. Please upload an image (JPG, PNG) or PDF.`);
+        const errorResult: DocumentValidationResult = {
+          isValid: false,
+          issues: [
+            {
+              severity: 'critical',
+              message: msg(E.TOOL_FILE_TYPE_UNSUPPORTED),
+              suggestion: 'Please upload a JPG, PNG, or PDF file.',
+            },
+          ],
+          score: 0,
+        };
+        setValidationResult(errorResult);
+        onValidationComplete(errorResult);
+        return errorResult;
       }
 
       // Use the new OCR processor that handles both images and PDFs
@@ -104,7 +129,7 @@ const DocumentValidator = ({
       onValidationComplete(result);
       return result;
     } catch (error: unknown) {
-      console.error('OCR processing failed:', error);
+      console.error('Document validation failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       
       // Check if it's a file format issue
@@ -113,6 +138,15 @@ const DocumentValidator = ({
         suggestion = 'File format not supported or corrupted. Try JPG, PNG, or PDF format.';
       } else if (errorMessage.includes('empty')) {
         suggestion = 'File is empty. Please select a valid document.';
+        // Prefer the explicit empty-file message when we detected that condition
+        const errorResult: DocumentValidationResult = {
+          isValid: false,
+          issues: [{ severity: 'critical', message: msg(E.UPLOAD_FILE_EMPTY), suggestion }],
+          score: 0,
+        };
+        setValidationResult(errorResult);
+        onValidationComplete(errorResult);
+        return errorResult;
       } else if (errorMessage.includes('PDF')) {
         suggestion = 'PDF processing failed. Ensure the PDF is not password-protected or corrupted.';
       } else if (file && file.type && !file.type.startsWith('image/') && file.type !== 'application/pdf') {
@@ -123,7 +157,7 @@ const DocumentValidator = ({
         isValid: false,
         issues: [{
           severity: 'critical',
-          message: `Failed to process document: ${errorMessage}`,
+          message: msg(E.TOOL_DOC_VALIDATION_FAILED),
           suggestion
         }],
         score: 0

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Trash2, RotateCw, X, Save, Copy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/app/context/LanguageContext"
+import * as Errors from '@/lib/errors'
 
 interface PageItem {
   index: number
@@ -97,7 +98,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
 
   const handleDeletePage = (index: number) => {
     if (pages.length <= 1) {
-      alert("Cannot delete the last page!")
+      alert(Errors.msg(Errors.E.PDF_CANNOT_DELETE_LAST_PAGE))
       return
     }
     if (confirm("Are you sure you want to delete this page?")) {

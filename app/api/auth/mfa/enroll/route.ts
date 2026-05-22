@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from '@/lib/errors'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,11 @@ export async function POST(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('MFA enroll unauthorized:', authError);
+      return NextResponse.json(
+        { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
+        { status: 401 },
+      );
     }
 
     // Check for existing unverified factors and remove them
@@ -44,7 +49,10 @@ export async function POST(request: NextRequest) {
         const verifiedFactors = factorsData.totp.filter(f => f.status.toLowerCase() === 'verified');
         if (verifiedFactors.length > 0) {
           console.log(`User already has ${verifiedFactors.length} verified TOTP factor(s)`);
-          return NextResponse.json({ error: "User already has a verified TOTP factor enrolled" }, { status: 400 });
+          return NextResponse.json(
+            { success: false, code: E.AUTH_MFA_ALREADY_ENROLLED, message: msg(E.AUTH_MFA_ALREADY_ENROLLED) },
+            { status: 400 },
+          );
         }
       }
     } catch (listError) {
@@ -59,7 +67,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("MFA enroll error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { success: false, code: E.AUTH_MFA_ENABLE_FAILED, message: msg(E.AUTH_MFA_ENABLE_FAILED) },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
@@ -74,7 +85,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("MFA enroll error:", error);
     return NextResponse.json(
-      { error: "Failed to initiate MFA setup" },
+      { success: false, code: E.AUTH_UNEXPECTED_ERROR, message: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 },
     );
   }

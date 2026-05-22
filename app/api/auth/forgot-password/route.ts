@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail, getPasswordResetEmailHtml } from "@/lib/email/resend";
 import crypto from "crypto";
+import { msg, E } from '@/lib/errors'
 
 // Create admin client for password reset
 const supabaseAdmin = createClient(
@@ -21,7 +22,10 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, code: E.AUTH_RESET_EMAIL_REQUIRED, message: msg(E.AUTH_RESET_EMAIL_REQUIRED) },
+        { status: 400 },
+      );
     }
 
     const normalizedEmail = email.toLowerCase().trim();
@@ -35,7 +39,10 @@ export async function POST(request: NextRequest) {
 
     if (listError) {
       console.error("List users error:", listError);
-      return NextResponse.json({ error: "Server error" }, { status: 500 });
+      return NextResponse.json(
+        { success: false, code: E.AUTH_RESET_EMAIL_FAILED, message: msg(E.AUTH_RESET_EMAIL_FAILED) },
+        { status: 500 },
+      );
     }
 
     const user = data.users.find(
@@ -67,7 +74,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error("Error updating user:", updateError);
       return NextResponse.json(
-        { error: "Failed to generate reset token" },
+        { success: false, code: E.AUTH_RESET_EMAIL_FAILED, message: msg(E.AUTH_RESET_EMAIL_FAILED) },
         { status: 500 },
       );
     }
@@ -90,7 +97,7 @@ export async function POST(request: NextRequest) {
     if (!success) {
       console.error("Email send failed:", emailError);
       return NextResponse.json(
-        { error: "Failed to send reset email" },
+        { success: false, code: E.AUTH_RESET_EMAIL_FAILED, message: msg(E.AUTH_RESET_EMAIL_FAILED) },
         { status: 500 },
       );
     }
@@ -99,7 +106,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Forgot password error:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred" },
+      { success: false, code: E.AUTH_UNEXPECTED_ERROR, message: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 },
     );
   }

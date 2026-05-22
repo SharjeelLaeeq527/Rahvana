@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
+import { E, msg } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { MasterProfile } from "@/types/profile";
 import { ChevronRight, ChevronLeft, Save } from "lucide-react";
@@ -1440,17 +1441,16 @@ export default function CompleteProfileForm() {
       });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save profile");
+        throw new Error(msg(E.PROFILE_SAVE_FAILED));
       }
 
       router.push("/user-dashboard");
     } catch (err) {
       console.error("Error saving profile:", err);
       if (err instanceof Error) {
-        setError(err.message || "Failed to save profile");
+        setError(err.message || msg(E.PROFILE_SAVE_FAILED));
       } else {
-        setError("Failed to save profile");
+        setError(msg(E.PROFILE_SAVE_FAILED));
       }
     } finally {
       setLoading(false);

@@ -9,6 +9,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import Link from "next/link";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { E, msg } from "@/lib/errors";
  
 interface ApprovalNoticeToolProps {
   state: any;
@@ -69,15 +70,13 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
  
   const saveDetails = () => {
     if (!approvalDetails.approvalDate || !approvalDetails.receiptNumber) {
-      toast.error("Please fill in the required fields.");
+      toast.error(msg(E.TOOL_APPROVAL_FIELDS_REQUIRED));
       return;
     }
  
     if (!validateReceiptNumber(approvalDetails.receiptNumber)) {
-      setReceiptError(
-        "Invalid format. Use 3 letters followed by 10 digits (e.g., IOE1234567890).",
-      );
-      toast.error("Invalid receipt number format.");
+      setReceiptError(msg(E.TOOL_APPROVAL_RECEIPT_FORMAT_FAILED));
+      toast.error(msg(E.TOOL_APPROVAL_RECEIPT_FORMAT_FAILED));
       return;
     }
  

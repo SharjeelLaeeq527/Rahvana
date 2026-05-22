@@ -10,6 +10,7 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { E, msg } from '@/lib/errors'
 import { createClient } from "@/lib/supabase/client";
 import {
   AuthError,
@@ -325,7 +326,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to initialize MFA setup",
+        error: msg(E.AUTH_MFA_ENABLE_FAILED),
       };
     }
   };
@@ -348,7 +349,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to verify MFA setup",
+        error: msg(E.AUTH_MFA_VERIFY_FAILED),
       };
     }
   };
@@ -366,7 +367,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: msg(E.AUTH_MFA_CODE_INVALID) };
       }
 
       // 🔥 Get updated session AFTER successful verification
@@ -390,7 +391,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to verify MFA code",
+        error: msg(E.AUTH_MFA_CODE_INVALID),
       };
     }
   };
@@ -425,7 +426,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase.auth.mfa.listFactors();
 
-      if (error) {
+        if (error) {
         return { totp: [], error: error.message };
       }
 
@@ -486,7 +487,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to verify MFA setup",
+        error: msg(E.AUTH_MFA_DISABLE_FAILED),
       };
     }
   };
@@ -513,7 +514,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (factorsError) {
               return {
                 error: {
-                  message: "MFA setup error",
+                  message: msg(E.AUTH_MFA_ENABLE_FAILED),
                   code: "mfa_error",
                 } as unknown as AuthError,
               };
@@ -522,7 +523,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!fetchedTotp || fetchedTotp.length === 0) {
               return {
                 error: {
-                  message: "No MFA factors found",
+                  message: msg(E.AUTH_MFA_FACTOR_NOT_FOUND),
                   code: "mfa_no_factors",
                 } as unknown as AuthError,
               };
@@ -598,7 +599,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Sign in error:", err);
       return {
         error: {
-          message: "Sign in failed",
+          message: msg(E.AUTH_LOGIN_FAILED),
           code: "sign_in_error",
         } as unknown as AuthError,
       };
@@ -618,9 +619,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!response.ok) {
         return {
           error: {
-            message: data.error,
+            message: data.message || data.error || msg(E.AUTH_UNEXPECTED_ERROR),
             status: response.status,
-            code: "SIGNUP_ERROR",
+            code: data.code || "SIGNUP_ERROR",
             name: "SignUpError",
           } as unknown as AuthError,
         };
@@ -630,7 +631,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         error: {
-          message: "An unexpected error occurred",
+          message: msg(E.AUTH_UNEXPECTED_ERROR),
           status: 500,
           code: "UNEXPECTED_ERROR",
           name: "UnexpectedError",

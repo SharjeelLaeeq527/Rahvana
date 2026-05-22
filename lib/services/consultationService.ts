@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { ConsultationBooking, TimeSlot } from '@/types/consultation';
+import * as Errors from '@/lib/errors'
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -46,8 +47,9 @@ export const consultationService = {
 
     if (error) {
       console.error('Error fetching consultation bookings:', error);
-      // Check if it's a table not found error
-      if (error.message && error.message.includes('does not exist')) {
+      // Centralized classification for common DB errors
+      const norm = Errors.normalizeError(error);
+      if (norm.code === Errors.E.CASE_DATA_NOT_FOUND) {
         console.warn('Consultation bookings table does not exist yet. Please run database migrations.');
       }
       // Return empty array instead of throwing to prevent app crashes
@@ -80,7 +82,7 @@ export const consultationService = {
   async createBooking(bookingData: Omit<ConsultationBooking, 'id' | 'reference_id' | 'status' | 'created_at' | 'updated_at' | 'expires_at'>) {
     if (!supabase) {
       console.error('Supabase client not initialized');
-      throw new Error('Failed to create consultation booking: Supabase not initialized');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
     }
 
     // Generate reference ID
@@ -119,7 +121,7 @@ export const consultationService = {
 
     if (error) {
       console.error('Error creating consultation booking:', error);
-      throw new Error('Failed to create consultation booking');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_CREATE_FAILED));
     }
 
     // Map the snake_case fields from Supabase to camelCase for the frontend
@@ -149,7 +151,7 @@ export const consultationService = {
   async updateBooking(id: string, updates: Partial<ConsultationBooking>) {
     if (!supabase) {
       console.error('Supabase client not initialized');
-      throw new Error('Failed to update consultation booking: Supabase not initialized');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
     }
 
     // Map camelCase to snake_case for Supabase
@@ -181,7 +183,7 @@ export const consultationService = {
 
     if (error) {
       console.error('Error updating consultation booking:', error);
-      throw new Error('Failed to update consultation booking');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_UPDATE_FAILED));
     }
 
     // Map the snake_case fields from Supabase to camelCase for the frontend
@@ -211,7 +213,7 @@ export const consultationService = {
   async getBookingById(id: string) {
     if (!supabase) {
       console.error('Supabase client not initialized');
-      throw new Error('Failed to fetch consultation booking: Supabase not initialized');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
     }
 
     const { data, error } = await supabase
@@ -222,7 +224,7 @@ export const consultationService = {
 
     if (error) {
       console.error('Error fetching consultation booking:', error);
-      throw new Error('Failed to fetch consultation booking');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_FETCH_FAILED));
     }
 
     // Map the snake_case fields from Supabase to camelCase for the frontend
@@ -272,8 +274,8 @@ export const consultationService = {
 
     if (error) {
       console.error('Error fetching time slots:', error);
-      // Check if it's a table not found error
-      if (error.message && error.message.includes('does not exist')) {
+      const norm = Errors.normalizeError(error);
+      if (norm.code === Errors.E.CASE_DATA_NOT_FOUND) {
         console.warn('Time slots table does not exist yet. Please run database migrations.');
       }
       // Return empty array instead of throwing to prevent app crashes
@@ -297,7 +299,7 @@ export const consultationService = {
   async createTimeSlot(slotData: Omit<TimeSlot, 'id' | 'created_at' | 'updated_at'>) {
     if (!supabase) {
       console.error('Supabase client not initialized');
-      throw new Error('Failed to create time slot: Supabase not initialized');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
     }
 
     // Map camelCase to snake_case for Supabase
@@ -320,7 +322,7 @@ export const consultationService = {
 
     if (error) {
       console.error('Error creating time slot:', error);
-      throw new Error(`Failed to create time slot: ${error.message}`);
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_TIMESLOT_CREATE_FAILED));
     }
 
     // Map the snake_case fields from Supabase to camelCase for the frontend
@@ -341,7 +343,7 @@ export const consultationService = {
   async updateTimeSlot(id: string, updates: Partial<TimeSlot>) {
     if (!supabase) {
       console.error('Supabase client not initialized');
-      throw new Error('Failed to update time slot: Supabase not initialized');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
     }
 
     // Map camelCase to snake_case for Supabase
@@ -367,7 +369,7 @@ export const consultationService = {
 
     if (error) {
       console.error('Error updating time slot:', error);
-      throw new Error('Failed to update time slot');
+      throw new Error(Errors.msg(Errors.E.CONSULTATION_TIMESLOT_UPDATE_FAILED));
     }
 
     // Map the snake_case fields from Supabase to camelCase for the frontend

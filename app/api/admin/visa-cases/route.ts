@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { decrypt } from '@/lib/encryption';
+import { E, msg } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       console.error('Error fetching visa cases:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
     if (!rawJourneys || rawJourneys.length === 0) {
@@ -117,7 +118,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: filtered });
   } catch (error: any) {
     console.error('Unexpected error fetching visa cases:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }
 
@@ -172,7 +173,7 @@ export async function PATCH(req: NextRequest) {
 
     if (error) {
       console.error('Error updating tracking status:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: msg(E.ADMIN_TRACKING_CLEAR_FAILED) }, { status: 500 });
     }
 
     // Write admin fields to case_data so they appear in user's wizard state
@@ -274,12 +275,12 @@ export async function DELETE(req: NextRequest) {
 
     if (error) {
       console.error('Error deleting journey:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: msg(E.JOURNEYS_DELETE_FAILED) }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error in DELETE:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: msg(E.JOURNEYS_DELETE_FAILED) }, { status: 500 });
   }
 }

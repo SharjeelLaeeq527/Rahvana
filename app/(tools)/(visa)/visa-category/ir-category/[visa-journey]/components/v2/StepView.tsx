@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { E, msg } from "@/lib/errors";
 import {
   ArrowLeft,
   Zap,
@@ -4068,7 +4069,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             await deleteDocument(docId);
             toast.success("Document deleted successfully");
           } catch (err) {
-            toast.error("Failed to delete document");
+            toast.error(msg(E.VAULT_DELETE_FAILED));
           }
         }}
       />

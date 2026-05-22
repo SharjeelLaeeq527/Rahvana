@@ -1,4 +1,5 @@
 import client from "./client";
+import * as Errors from '@/lib/errors'
 
 export interface TrackerData {
   id: string;
@@ -48,11 +49,11 @@ export async function createTracker(
       shipment_id: tracker.shipment_id,
       created_at: tracker.created_at,
       updated_at: tracker.updated_at,
-      events: tracker.events || [],
+      events: (tracker as any).events || [],
     };
   } catch (error) {
     console.error("[EasyPost] Error creating tracker:", error);
-    throw error;
+    throw new Error(Errors.msg(Errors.E.EASPOST_TRACKER_CREATE_FAILED));
   }
 }
 
@@ -76,7 +77,7 @@ export async function getTracker(trackerId: string): Promise<TrackerData> {
       shipment_id: tracker.shipment_id,
       created_at: tracker.created_at,
       updated_at: tracker.updated_at,
-      events: tracker.events || [],
+      events: (tracker as any).events || [],
     };
   } catch (error) {
     console.error("[EasyPost] Error retrieving tracker:", error);

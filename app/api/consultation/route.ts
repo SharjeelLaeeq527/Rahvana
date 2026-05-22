@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ConsultationRequest } from '@/types/consultation';
 import { consultationService } from '@/lib/services/consultationService';
+import { E, msg } from '@/lib/errors';
 
-// Helper function to handle service errors
+// Helper function to handle service errors (returns localized messages)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
   console.error(defaultMessage, error);
-  return NextResponse.json({ error: defaultMessage }, { status: 500 });
+  if (defaultMessage.toLowerCase().includes('fetch')) {
+    return NextResponse.json({ error: msg(E.CONSULTATION_FETCH_FAILED) }, { status: 500 });
+  }
+  if (defaultMessage.toLowerCase().includes('create')) {
+    return NextResponse.json({ error: msg(E.CONSULTATION_CREATE_FAILED) }, { status: 500 });
+  }
+  if (defaultMessage.toLowerCase().includes('update')) {
+    return NextResponse.json({ error: msg(E.CONSULTATION_UPDATE_FAILED) }, { status: 500 });
+  }
+  return NextResponse.json({ error: msg(E.CONSULTATION_CREATE_FAILED) }, { status: 500 });
 };
 
 export async function GET(request: NextRequest) {
@@ -35,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (!data.issue_category || !data.visa_category || !data.case_stage ||
         !data.full_name || !data.email || !data.whatsapp_phone ||
         !data.case_summary || !data.selected_slot) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: msg(E.AUTH_SIGNUP_FIELDS_REQUIRED, { fields: '[issue_category, visa_category, case_stage, full_name, email, whatsapp_phone, case_summary, selected_slot]' }) }, { status: 400 });
     }
 
     // Create new booking
@@ -69,7 +79,7 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
+      return NextResponse.json({ error: msg(E.AUTH_SIGNUP_FIELDS_REQUIRED, { fields: '[id]' }) }, { status: 400 });
     }
 
     const data = await request.json();

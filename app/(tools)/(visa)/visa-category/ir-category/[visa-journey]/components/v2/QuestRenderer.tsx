@@ -12,6 +12,7 @@ import {
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestSuite, QuestData } from "../types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
+import { E, msg } from "@/lib/errors";
 
 interface QuestRendererProps {
   quest: QuestSuite;
@@ -134,8 +135,8 @@ export function QuestRenderer({
       console.error("Logic evaluation error:", e);
       return {
         state: "review",
-        title: "Error",
-        body: "Could not evaluate results.",
+        title: msg(E.TOOL_LOGIC_EVALUATION_FAILED),
+        body: msg(E.TOOL_LOGIC_EVALUATION_FAILED),
       };
     }
   };

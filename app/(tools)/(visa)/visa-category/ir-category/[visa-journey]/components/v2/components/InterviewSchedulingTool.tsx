@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Info, Clock, RefreshCw, Zap, Activity } from "lucide-react";
 import { INTERVIEW_SCHEDULING_DATA } from "../InterviewSchedulingData";
+import { E, msg } from "@/lib/errors";
 
 interface InterviewSchedulingToolProps {
   tool: any;
@@ -22,7 +23,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
     if (!guard()) return;
     const postName = (state.metadata?.dqPost || state.metadata?.post || "") as string;
     if (!postName) {
-      setIvError("No embassy/post found. Please complete Step 2.10 first.");
+      setIvError(msg(E.TOOL_IV_POST_REQUIRED));
       return;
     }
     setIvLoading(true);
@@ -48,7 +49,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
           r.Post.toLowerCase().includes(postName.toLowerCase()),
         ) || results[0];
       if (!match) {
-        setIvError(`No scheduling data found for "${postName}". Try checking travel.state.gov manually.`);
+        setIvError(msg(E.TOOL_IV_NO_MATCH, { postName }));
         return;
       }
 
@@ -63,7 +64,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
       const monthNum = monthPart ? MONTH_MAP[monthPart.toLowerCase().slice(0, 3)] : null;
 
       if (!monthNum || !yearPart) {
-        setIvError(`Could not parse date: "${raw}". Try syncing again or check travel.state.gov.`);
+        setIvError(msg(E.TOOL_IV_DATE_PARSE_FAILED, { raw }));
         return;
       }
       const isoMonth = `${yearPart}-${monthNum}`;
@@ -72,7 +73,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
         schedulingDataLastUpdated: new Date().toISOString().split("T")[0],
       });
     } catch {
-      setIvError("Failed to fetch. Check your connection or try again.");
+      setIvError(msg(E.TOOL_IV_FETCH_FAILED));
     } finally {
       setIvLoading(false);
     }

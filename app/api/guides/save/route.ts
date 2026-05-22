@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from '@/lib/errors';
 
 export async function POST(request: Request) {
   try {
@@ -14,14 +15,14 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { slug } = await request.json();
 
     if (!slug) {
       return NextResponse.json(
-        { error: "Guide slug is required" },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[slug]' }) },
         { status: 400 },
       );
     }
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       .single();
 
     if (guideError || !guide) {
-      return NextResponse.json({ error: "Guide not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // 3. Get user session
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     if (sessionError) {
       console.error("Error checking session:", sessionError);
       return NextResponse.json(
-        { error: "Failed to check session" },
+        { error: msg(E.AUTH_UNEXPECTED_ERROR) },
         { status: 500 },
       );
     }
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
       if (insertError) {
         console.error("Error creating guide session:", insertError);
         return NextResponse.json(
-          { error: "Failed to save guide" },
+          { error: msg(E.CASE_DATA_SAVE_FAILED) },
           { status: 500 },
         );
       }
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
       if (updateError) {
         console.error("Error saving guide:", updateError);
         return NextResponse.json(
-          { error: "Failed to save guide" },
+          { error: msg(E.CASE_DATA_SAVE_FAILED) },
           { status: 500 },
         );
       }
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Unexpected error in /api/guides/save:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 },
     );
   }

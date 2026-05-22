@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { E, msg } from '@/lib/errors';
 import * as cheerio from "cheerio";
 
 // === Types ===
@@ -247,7 +248,7 @@ export async function POST(req: Request) {
 
     if (!city?.trim() || !visaCategory) {
       return NextResponse.json(
-        { error: "City and visa category are required" },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[city, visaCategory]' }) },
         { status: 400 }
       );
     }
@@ -335,10 +336,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 }
     );
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { msg, E, errorCode } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ export function MFASetup() {
       setFactorId(result.factorId);
       setStep("qr");
     } else {
-      setError(result.error || "Failed to enable MFA");
+      setError(result.error || msg(E.AUTH_MFA_ENABLE_FAILED));
     }
 
     setLoading(false);
@@ -91,7 +92,7 @@ export function MFASetup() {
 
   const handleVerifyCode = async () => {
     if (!code.trim() || !factorId) {
-      setError("Please enter the verification code");
+      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
       return;
     }
 
@@ -112,10 +113,10 @@ export function MFASetup() {
 
         return;
       } else {
-        setError(result.error || "Invalid verification code");
+        setError(result.error || `${msg(E.AUTH_MFA_CODE_INVALID)}`);
       }
     } catch {
-      setError("Failed to verify MFA setup");
+      setError(`${msg(E.AUTH_MFA_VERIFY_FAILED)}`);
     }
 
     setLoading(false);
@@ -123,7 +124,7 @@ export function MFASetup() {
 
   const handleDisableMFA = async () => {
     if (!disableOTP.trim()) {
-      setError("Please enter the authentication code");
+      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
       return;
     }
 
@@ -137,7 +138,7 @@ export function MFASetup() {
     }
 
     if (!currentFactorId) {
-      setError("Unable to identify MFA factor to disable");
+      setError(`${msg(E.AUTH_MFA_FACTOR_NOT_FOUND)}`);
       return;
     }
 
@@ -161,10 +162,10 @@ export function MFASetup() {
 
         return;
       } else {
-        setError(result.error || "Failed to disable MFA");
+        setError(result.error || `${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
       }
     } catch {
-      setError("Failed to disable MFA");
+      setError(`${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
     }
 
     setLoading(false);

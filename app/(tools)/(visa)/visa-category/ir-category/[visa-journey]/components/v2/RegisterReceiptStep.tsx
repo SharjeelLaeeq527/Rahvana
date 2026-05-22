@@ -10,6 +10,7 @@ import {
   type ReceiptRecord,
   type RegisterReceiptPayload,
 } from "@/lib/register-receipt";
+import { E, msg } from "@/lib/errors";
 
 // ─── Tiny SVG helpers ──────────────────────────────────────────────────────────
 
@@ -254,7 +255,7 @@ async function postReceipt(
     );
     const data = await res.json();
     if (!res.ok || "error" in data) {
-      return { record: null, error: data.error ?? "Failed to save receipt." };
+      return { record: null, error: msg(E.JOURNEY_RECEIPT_SAVE_FAILED) };
     }
     const record: ReceiptRecord = {
       receiptNumber: data.receipt_number,
@@ -280,7 +281,7 @@ async function fetchReceipt(journeyId: string) {
     );
     const data = await res.json();
     if (!res.ok || data.error)
-      return { record: null, error: data.error || "Failed to fetch receipt" };
+      return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
     const record: ReceiptRecord = {
       receiptNumber: data.receipt_number,
       noticeDate: data.notice_date,
@@ -713,7 +714,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
     setLoading(true);
     setError("");
     if (!uploadFile) {
-      setError("Please select a receipt notice file to upload.");
+      setError(msg(E.UPLOAD_NO_FILE));
       setLoading(false);
       return;
     }
@@ -729,16 +730,14 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
         method: "POST",
         body: formData,
       });
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || "Failed to upload receipt notice to vault.");
-        setLoading(false);
-        return;
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unexpected error during upload.",
-      );
+        const data = await response.json();
+        if (!response.ok) {
+          setError(msg(E.JOURNEY_RECEIPT_SAVE_FAILED));
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        setError(msg(E.JOURNEY_RECEIPT_SAVE_FAILED));
       setLoading(false);
       return;
     }

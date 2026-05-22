@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTracker } from "@/lib/easypost/tracker";
 import * as db from "@/lib/journey/data-access";
+import { E, msg } from '@/lib/errors';
 
 /**
  * GET /api/easypost/tracker/status?caseId=xxx
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     if (!caseId) {
       return NextResponse.json(
-        { error: "Missing caseId parameter" },
+        { error: msg(E.EASPOST_MISSING_CASE_ID) },
         { status: 400 },
       );
     }
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     if (!trackerIdData || !trackerIdData.data_value) {
       return NextResponse.json(
-        { error: "No tracker found for this case" },
+        { error: msg(E.EASPOST_NO_TRACKER) },
         { status: 404 },
       );
     }
@@ -93,12 +94,6 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error("[EasyPost API] Unexpected error:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.EASPOST_WEBHOOK_PROCESS_FAILED) }, { status: 500 });
   }
 }

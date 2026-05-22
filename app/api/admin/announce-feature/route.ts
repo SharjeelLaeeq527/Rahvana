@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail, getFeatureAnnouncementEmailHtml } from "@/lib/email/resend";
 import { createServerClient } from "@supabase/ssr";
+import { E, msg } from '@/lib/errors'
 
 // Specific admin emails - ONLY these emails can access admin panel
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
@@ -33,10 +34,10 @@ async function checkAdminRole(request: NextRequest) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user)
-    return { isAdmin: false, error: "Authentication required" };
-  if (!user.email || !ADMIN_EMAILS.includes(user.email))
-    return { isAdmin: false, error: "Admin access required" };
+    if (userError || !user)
+       return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED) };
+    if (!user.email || !ADMIN_EMAILS.includes(user.email))
+       return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED_ADMIN) };
 
   const supabaseAdmin = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,7 +57,7 @@ async function checkAdminRole(request: NextRequest) {
   }
 
   if (!profile || profile.role !== "admin")
-    return { isAdmin: false, error: "Admin role required" };
+     return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED_ADMIN) };
 
   return { isAdmin: true, error: null };
 }
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (announcementError) {
-      console.error("Error creating announcement:", announcementError);
+        console.error("Error creating announcement:", announcementError);
       return NextResponse.json(
         { error: "Failed to create announcement" },
         { status: 500 },
@@ -181,7 +182,7 @@ export async function POST(request: NextRequest) {
       message: `Feature announcement created and notifications sent to ${usersToNotify.length} users`,
     });
   } catch (error) {
-    console.error("API error:", error);
+      console.error("API error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 },

@@ -4,12 +4,14 @@
  */
 
 import { NextResponse, NextRequest } from "next/server";
+import { E, msg } from '@/lib/errors';
 import {
   getInterviewSession,
   updateInterviewSessionAnswers,
   generateInterviewPrepOutput,
   completeInterviewSession,
 } from "@/lib/interview-prep/service";
+import type { InterviewAnswer } from '@/lib/interview-prep/types';
 import {
   getSessionAnswersDB,
   getInterviewResultsDB,
@@ -34,7 +36,7 @@ export async function POST(
 
     const session = await getInterviewSession(sessionId);
     if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Handle different actions
@@ -73,7 +75,7 @@ export async function POST(
   } catch (error) {
     console.error("Error handling session action:", error);
     return NextResponse.json(
-      { error: "Failed to process session action" },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 },
     );
   }
@@ -96,12 +98,12 @@ export async function GET(
     const session = await getInterviewSession(sessionId);
 
     if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Load answers and results for this session
-    let answers = [];
-    let results = null;
+    let answers: InterviewAnswer[] = [];
+    let results: any = null;
 
     try {
       answers = await getSessionAnswersDB(sessionId);
@@ -126,7 +128,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching session:", error);
     return NextResponse.json(
-      { error: "Failed to fetch session" },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 },
     );
   }

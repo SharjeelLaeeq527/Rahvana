@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { E, msg } from '@/lib/errors';
 
 export async function POST(req: NextRequest) {
   console.log('=== Starting appointment submission ===');
@@ -120,19 +121,12 @@ export async function POST(req: NextRequest) {
         hint: appointmentError.hint,
         code: appointmentError.code
       });
-      return Response.json({
-        error: 'Failed to save appointment',
-        details: appointmentError.message,
-        code: appointmentError.code,
-        hint: appointmentError.hint
-      }, { status: 500 });
+      return Response.json({ error: msg(E.BOOKING_SUBMIT_FAILED) }, { status: 500 });
     }
 
     if (!appointment) {
       console.error('❌ No appointment data returned');
-      return Response.json({
-        error: 'Failed to create appointment - no data returned'
-      }, { status: 500 });
+      return Response.json({ error: msg(E.BOOKING_SUBMIT_FAILED) }, { status: 500 });
     }
 
     console.log('✅ Appointment created successfully:', appointment.id);

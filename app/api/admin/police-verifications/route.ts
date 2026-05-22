@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { E, msg } from '@/lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,13 +33,13 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       console.error('Error fetching police verification requests:', error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
     return Response.json({ data });
   } catch (error) {
     console.error('Unexpected error fetching police verifications:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }
 

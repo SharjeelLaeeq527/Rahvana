@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 import { journeyService } from "@/lib/journey/service";
 import type { JourneyFilters } from "@/lib/journey/types";
 
@@ -60,16 +61,15 @@ export async function GET(request: NextRequest) {
 
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { error: msg(E.JOURNEYS_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 },
       );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to fetch journeys",
+        error: msg(E.JOURNEYS_FETCH_FAILED),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );
@@ -96,16 +96,15 @@ export async function DELETE() {
 
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { error: msg(E.JOURNEYS_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 },
       );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to delete journeys",
+        error: msg(E.JOURNEYS_DELETE_FAILED),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );

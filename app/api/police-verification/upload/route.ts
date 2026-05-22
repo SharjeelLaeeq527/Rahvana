@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { E, msg } from '@/lib/errors';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File | null;
 
     if (!requestId || !fileType || !file) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return Response.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
     }
 
     const fieldMapping: Record<string, string> = {
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     };
 
     if (!fieldMapping[fileType]) {
-      return Response.json({ error: 'Invalid file type' }, { status: 400 });
+      return Response.json({ error: msg(E.TOOL_FILE_TYPE_UNSUPPORTED) }, { status: 400 });
     }
 
     const supabase = createServerClient(
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     if (uploadError) {
       console.error('Error uploading file:', uploadError);
-      return Response.json({ error: 'Failed to upload file' }, { status: 500 });
+      return Response.json({ error: msg(E.UPLOAD_FAILED) }, { status: 500 });
     }
 
     const { data: { publicUrl } } = supabase.storage
@@ -67,8 +68,8 @@ export async function POST(req: NextRequest) {
 
     return Response.json({ success: true, url: publicUrl });
 
-  } catch (error) {
+    } catch (error) {
     console.error('Unexpected error in file upload:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    return Response.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
   }
 }

@@ -7,6 +7,7 @@ import CaseTypeStep from "./components/CaseTypeStep";
 import QuestionStep from "./components/QuestionStep";
 import ReviewStep from "./components/ReviewStep";
 import { Questionnaire } from "@/lib/visa-checker/engine-types";
+import { E, msg } from '@/lib/errors';
 import { createBrowserClient } from "@supabase/ssr";
 import {
   mapProfileToVisaChecker,
@@ -51,7 +52,7 @@ export default function VisaCaseStrengthChecker() {
         })
         .catch((err) => {
           console.error("Error loading questionnaire:", err);
-          setError("Failed to load questionnaire for this visa category.");
+          setError(msg(E.TOOL_CASE_ANALYZE_FAILED));
           setLoading(false);
         });
     }
@@ -134,7 +135,7 @@ export default function VisaCaseStrengthChecker() {
       if (error) throw error;
     } catch (err) {
       console.error("Error updating profile:", err);
-      setError("Failed to update profile");
+      setError(msg(E.PROFILE_SAVE_FAILED));
     } finally {
       setLoading(false);
     }
@@ -143,7 +144,7 @@ export default function VisaCaseStrengthChecker() {
   const validateCurrentStep = () => {
     if (step === 0) {
       if (!formData.caseType) {
-        setError("Please select a visa category.");
+        setError(msg(E.TOOL_INTERVIEW_SELECT_CATEGORY));
         return false;
       }
       return true;
@@ -183,11 +184,11 @@ export default function VisaCaseStrengthChecker() {
         }
 
         const val = formData[q.id];
-        if (
+          if (
           q.type !== "boolean" &&
           (val === undefined || val === null || val === "")
         ) {
-          setError(`Please provide an answer for: ${q.label}`);
+          setError(msg(E.TOOL_CASE_MISSING_ANSWER, { questionLabel: q.label }));
           return false;
         }
       }
@@ -211,10 +212,11 @@ export default function VisaCaseStrengthChecker() {
         if (res.ok) {
           setSessionId(data.sessionId);
         } else {
-          throw new Error(data.error || "Failed to create session");
+          throw new Error(msg(E.TOOL_VISA_SESSION_CREATE_FAILED));
         }
       } catch (err) {
-        setError(String(err));
+        console.error('Error creating session:', err);
+        setError(msg(E.TOOL_VISA_SESSION_CREATE_FAILED));
         setLoading(false);
         return;
       }
@@ -299,11 +301,12 @@ export default function VisaCaseStrengthChecker() {
 
               if (res.ok) {
                 setStep((prev) => prev + 1);
-              } else {
-                throw new Error("Failed to analyze results.");
+                } else {
+                throw new Error(msg(E.TOOL_CASE_ANALYZE_FAILED));
               }
             } catch (err) {
-              setError(String(err));
+              console.error('Error analyzing results:', err);
+              setError(msg(E.TOOL_CASE_ANALYZE_FAILED));
             } finally {
               setLoading(false);
             }

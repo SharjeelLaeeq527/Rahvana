@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
+import { E, msg } from '@/lib/errors';
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const body = await req.json();
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
 
     if (!portalType || !type) {
       return NextResponse.json(
-        { error: "portalType and type required" },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[portalType, type]' }) },
         { status: 400 }
       );
     }

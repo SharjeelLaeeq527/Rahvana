@@ -1,6 +1,7 @@
 "use server";
 
 import { sendEmail } from "@/lib/email/resend";
+import { E, msg } from "@/lib/errors";
 
 export async function submitContactForm(formData: FormData) {
     const firstName = formData.get("firstName") as string;
@@ -9,7 +10,7 @@ export async function submitContactForm(formData: FormData) {
     const message = formData.get("message") as string;
 
     if (!firstName || !lastName || !email || !message) {
-        return { success: false, error: "All fields are required." };
+        return { success: false, error: msg(E.CONTACT_ALL_FIELDS_REQUIRED) };
     }
 
     const subject = `New Contact Form Submission from ${firstName} ${lastName}`;
@@ -38,10 +39,10 @@ export async function submitContactForm(formData: FormData) {
         if (result.success) {
             return { success: true };
         } else {
-            return { success: false, error: result.error || "Failed to send email." };
+            return { success: false, error: result.error || msg(E.CONTACT_SEND_FAILED) };
         }
     } catch (error) {
         console.error("Error submitting contact form:", error);
-        return { success: false, error: "An unexpected error occurred." };
+        return { success: false, error: msg(E.CONTACT_UNEXPECTED_ERROR) };
     }
 }

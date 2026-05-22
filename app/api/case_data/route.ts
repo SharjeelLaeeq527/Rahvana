@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { caseDataService } from "@/lib/journey/service";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { E, msg } from '@/lib/errors';
 
 // POST /api/case_data - Create or update case data
 export async function POST(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!body.journey_id) {
       return NextResponse.json(
-        { success: false, message: "Journey_id is required" },
+        { success: false, code: E.CASE_DATA_JOURNEY_ID_REQUIRED, message: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: 'journey_id' }) },
         { status: 400 },
       );
     }
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (body.batch && body.operations) {
       if (!Array.isArray(body.operations) || body.operations.length === 0) {
         return NextResponse.json(
-          { success: false, error: "operations must be a non-empty array" },
+          { success: false, code: E.CASE_DATA_OPERATIONS_INVALID, message: msg(E.CASE_DATA_OPERATIONS_INVALID, { fields: 'operations' }) },
           { status: 400 },
         );
       }
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Single operation
     if (!body.data_key || body.data_value === undefined) {
       return NextResponse.json(
-        { success: false, error: "data_key and data_value are required" },
+        { success: false, code: E.CASE_DATA_DATAKEY_REQUIRED, message: msg(E.CASE_DATA_DATAKEY_REQUIRED, { fields: 'data_key, data_value' }) },
         { status: 400 },
       );
     }
@@ -79,7 +80,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Internal server error",
+        code: E.CASE_DATA_SAVE_FAILED,
+        message: msg(E.CASE_DATA_SAVE_FAILED),
       },
       { status: 500 },
     );

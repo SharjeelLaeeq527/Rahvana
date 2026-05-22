@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 
 // USCIS Torch API — sandbox: api-int.uscis.gov | production: api.uscis.gov
 const IS_PRODUCTION = process.env.USCIS_ENV === "production";
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
 
     if (!raw) {
       return NextResponse.json(
-        { error: "Receipt number is required." },
+        { error: msg(E.USCIS_RECEIPT_REQUIRED) },
         { status: 400 }
       );
     }
@@ -80,10 +81,7 @@ export async function POST(req: NextRequest) {
 
     if (!validateReceiptNumber(normalized)) {
       return NextResponse.json(
-        {
-          error:
-            "Invalid receipt number format. Expected 3 letters followed by 10 digits (e.g. MSC2490000001).",
-        },
+        { error: msg(E.USCIS_INVALID_RECEIPT) },
         { status: 400 }
       );
     }
@@ -101,10 +99,7 @@ export async function POST(req: NextRequest) {
     if (!caseRes.ok) {
       if (caseRes.status === 404) {
         return NextResponse.json(
-          {
-            error:
-              "No case found for this receipt number. Please verify the number and try again.",
-          },
+          { error: msg(E.USCIS_NO_CASE_FOUND) },
           { status: 404 }
         );
       }
@@ -113,7 +108,7 @@ export async function POST(req: NextRequest) {
         // Clear cached token so next request re-authenticates
         cachedToken = null;
         return NextResponse.json(
-          { error: "Authentication failed. Please try again shortly." },
+          { error: msg(E.USCIS_AUTH_FAILED) },
           { status: 401 }
         );
       }
@@ -121,7 +116,7 @@ export async function POST(req: NextRequest) {
       const errorBody = await caseRes.text();
       console.error("USCIS Case API Error:", caseRes.status, errorBody);
       return NextResponse.json(
-        { error: `USCIS service returned an error (${caseRes.status}).` },
+        { error: msg(E.USCIS_SERVICE_ERROR) },
         { status: caseRes.status }
       );
     }
@@ -134,8 +129,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error("USCIS Route Error:", err);
-    const message =
-      err instanceof Error ? err.message : "An unexpected error occurred.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: msg(E.USCIS_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import PDFDocument from "pdfkit"
 import { type NextRequest, NextResponse } from "next/server"
+import { E, msg } from '@/lib/errors'
 
 /**
  * Type definition for the request body
@@ -23,17 +24,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const body = (await request.json()) as CreatePDFRequest
 
     if (!body.text || typeof body.text !== "string") {
-      return NextResponse.json({ error: "Text field is required and must be a string" }, { status: 400 })
+      return NextResponse.json({ error: msg(E.PDF_CONVERTER_TEXT_REQUIRED) }, { status: 400 })
     }
 
     const text = body.text.trim()
 
     if (text.length === 0) {
-      return NextResponse.json({ error: "Text cannot be empty" }, { status: 400 })
+      return NextResponse.json({ error: msg(E.PDF_CONVERTER_TEXT_REQUIRED) }, { status: 400 })
     }
 
     if (text.length > 50000) {
-      return NextResponse.json({ error: "Text exceeds maximum length of 50,000 characters" }, { status: 413 })
+      return NextResponse.json({ error: msg(E.PDF_CONVERTER_TOO_LONG, { max: 50000 }) }, { status: 413 })
     }
 
     // Generate PDF using PDFKit
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to generate PDF",
+        error: msg(E.PDF_GENERATION_FAILED),
       },
       { status: 500 },
     )

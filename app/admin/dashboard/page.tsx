@@ -24,6 +24,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
+import { E, msg } from "@/lib/errors";
 import {
   Select,
   SelectContent,
@@ -91,7 +92,7 @@ export default function AnalyticsDashboard() {
         setData(json);
         setLastUpdated(new Date());
       } catch (err: any) {
-        setError(err.message);
+        setError(msg(E.ANALYTICS_FETCH_FAILED));
       } finally {
         setLoading(false);
         setIsRefreshing(false);

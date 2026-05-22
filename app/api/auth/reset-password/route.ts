@@ -1,6 +1,7 @@
 // app/api/auth/reset-password/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { E, msg } from '@/lib/errors'
 import crypto from "crypto";
 
 const supabaseAdmin = createClient(
@@ -28,18 +29,17 @@ export async function POST(request: NextRequest) {
     const { token, email, password } = await request.json();
 
     if (!token || !email || !password) {
+      console.warn("reset-password invalid request");
       return NextResponse.json(
-        { error: "Token, email, and password are required" },
+        { error: msg(E.AUTH_RESET_LINK_INVALID) },
         { status: 400 },
       );
     }
 
     if (!validatePassword(password)) {
+      console.warn("reset-password weak password");
       return NextResponse.json(
-        {
-          error:
-            "Password must contain uppercase, lowercase, number, symbol and be 8+ characters",
-        },
+        { error: msg(E.AUTH_PASSWORD_TOO_WEAK) },
         { status: 400 },
       );
     }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     if (userError) {
       console.error("Error listing users:", userError);
-      return NextResponse.json({ error: "Server error" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.AUTH_PASSWORD_UPDATE_GENERIC) }, { status: 500 });
     }
 
     const user = users.users.find(
@@ -58,8 +58,9 @@ export async function POST(request: NextRequest) {
     );
 
     if (!user) {
+      console.warn("reset-password user not found");
       return NextResponse.json(
-        { error: "Invalid or expired reset link" },
+        { error: msg(E.AUTH_RESET_LINK_INVALID) },
         { status: 400 },
       );
     }
@@ -73,15 +74,17 @@ export async function POST(request: NextRequest) {
       !tokenExpiry ||
       !safeCompare(tokenHash, storedTokenHash)
     ) {
+      console.warn("reset-password invalid token");
       return NextResponse.json(
-        { error: "Invalid or expired reset link" },
+        { error: msg(E.AUTH_RESET_LINK_INVALID) },
         { status: 400 },
       );
     }
 
     if (new Date() > new Date(tokenExpiry)) {
+      console.warn("reset-password token expired");
       return NextResponse.json(
-        { error: "Reset link has expired. Please request a new one." },
+        { error: msg(E.AUTH_RESET_LINK_INVALID) },
         { status: 400 },
       );
     }
@@ -100,19 +103,16 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error("Error updating password:", updateError);
       return NextResponse.json(
-        { error: "Failed to update password" },
+        { error: msg(E.AUTH_PASSWORD_UPDATE_FAILED) },
         { status: 500 },
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Password has been reset successfully.",
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Reset password error:", error);
     return NextResponse.json(
-      { error: "An unexpected error occurred" },
+      { error: msg(E.AUTH_PASSWORD_UPDATE_GENERIC) },
       { status: 500 },
     );
   }

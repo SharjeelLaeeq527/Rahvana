@@ -1,5 +1,7 @@
 
 // Define document types and their validation requirements
+import { msg, E } from '@/lib/errors';
+
 export type DocumentType = 
   | 'passport'
   | 'nikah_nama'
@@ -213,7 +215,7 @@ export const validateByDocumentType = (text: string, type: DocumentType): Docume
       isValid: false,
       issues: [{
         severity: 'critical',
-        message: 'Document appears to have insufficient text content',
+        message: msg(E.TOOL_DOC_INSUFFICIENT_TEXT),
         suggestion: 'Document may be blank, corrupted, or OCR failed to extract text. Please try uploading a clearer image.'
       }],
       score: 0
@@ -227,11 +229,25 @@ export const validateByDocumentType = (text: string, type: DocumentType): Docume
   const typeCheckResult = checkDocumentType(upperText, type);
 
   if (!typeCheckResult.isValid) {
+    // Derive a short field hint for the user from the typeCheck reason
+    let fieldHint = type.replace('_', ' ');
+    try {
+      const m = /We looked for:\s*(.*)$/i.exec(typeCheckResult.reason || '');
+      if (m && m[1]) {
+        const list = m[1].split(',').map(s => s.trim()).filter(Boolean);
+        if (list.length > 0) fieldHint = list[0];
+      } else if (/missing\s+\d+/i.test(typeCheckResult.reason || '')) {
+        fieldHint = type.replace('_', ' ');
+      }
+    } catch {
+      fieldHint = type.replace('_', ' ');
+    }
+
     return {
       isValid: false,
       issues: [{
         severity: 'critical',
-        message: typeCheckResult.reason || `Uploaded document does not appear to be a ${type.replace('_', ' ')}`,
+        message: msg(E.TOOL_DOC_MISSING_IDENTIFIER, { field: fieldHint }),
         suggestion: 'Please upload the correct document type for validation'
       }],
       score: 0,
@@ -277,7 +293,7 @@ export const validateByDocumentType = (text: string, type: DocumentType): Docume
         isValid: false,
         issues: [{
           severity: 'critical',
-          message: 'Unknown document type',
+          message: msg(E.TOOL_DOC_VALIDATION_FAILED),
           suggestion: 'Please select a valid document type'
         }],
         score: 0

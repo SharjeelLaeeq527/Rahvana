@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { CreatePaymentData, Payment, UpdatePaymentData } from '@/types/payment';
+import * as Errors from '@/lib/errors'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -33,7 +34,7 @@ export const paymentService = {
 
     if (error) {
       console.error('Error creating payment:', error);
-      throw new Error(`Failed to create payment: ${error.message}`);
+      throw new Error(Errors.msg(Errors.E.PAYMENT_CREATE_FAILED));
     }
 
     return payment as Payment;
@@ -51,7 +52,7 @@ export const paymentService = {
 
     if (error) {
       console.error('Error fetching payment:', error);
-      throw new Error(`Failed to fetch payment: ${error.message}`);
+      throw new Error(Errors.msg(Errors.E.PAYMENT_FETCH_FAILED));
     }
 
     return payment as Payment;
@@ -73,7 +74,7 @@ export const paymentService = {
         return null;
       }
       console.error('Error fetching payment by session ID:', error);
-      throw new Error(`Failed to fetch payment: ${error.message}`);
+      throw new Error(Errors.msg(Errors.E.PAYMENT_FETCH_FAILED));
     }
 
     return payment as Payment;
@@ -94,7 +95,7 @@ export const paymentService = {
         return null;
       }
       console.error('Error fetching payment by Stripe ID:', error);
-      throw new Error(`Failed to fetch payment: ${error.message}`);
+      throw new Error(Errors.msg(Errors.E.PAYMENT_FETCH_FAILED));
     }
 
     return payment as Payment;
@@ -113,7 +114,7 @@ export const paymentService = {
 
     if (error) {
       console.error('Error updating payment:', error);
-      throw new Error(`Failed to update payment: ${error.message}`);
+      throw new Error(Errors.msg(Errors.E.PAYMENT_UPDATE_FAILED));
     }
 
     return payment as Payment;
@@ -131,7 +132,7 @@ export const paymentService = {
 
     if (error) {
       console.error('Error fetching user payments:', error);
-      throw new Error(`Failed to fetch user payments: ${error.message}`);
+      throw new Error(Errors.msg(Errors.E.PAYMENT_USER_FETCH_FAILED));
     }
 
     return payments as Payment[];
@@ -168,7 +169,7 @@ export const paymentService = {
 
       if (userError) {
         console.error('Error updating user subscription:', userError);
-        throw new Error(`Failed to update user subscription: ${userError.message}`);
+        throw new Error(Errors.msg(Errors.E.PAYMENT_SUBSCRIPTION_UPDATE_FAILED));
       }
     }
   },

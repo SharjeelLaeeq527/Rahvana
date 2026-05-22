@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from '@/lib/errors';
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,8 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('[guides/my-guides] Unauthorized:', userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data: sessions, error: sessionsError } = await supabase
@@ -35,7 +37,7 @@ export async function GET() {
     if (sessionsError) {
       console.error("Error fetching user guides:", sessionsError);
       return NextResponse.json(
-        { error: "Failed to fetch user guides" },
+        { error: msg(E.ADMIN_FETCH_FAILED) },
         { status: 500 },
       );
     }
@@ -44,7 +46,7 @@ export async function GET() {
   } catch (error) {
     console.error("Unexpected error in /api/guides/my-guides:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: msg(E.ADMIN_FETCH_FAILED) },
       { status: 500 },
     );
   }

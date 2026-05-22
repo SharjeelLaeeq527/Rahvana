@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from '@/lib/errors';
 
 export async function POST(request: Request) {
   try {
@@ -10,13 +11,13 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { slug } = await request.json();
 
     if (!slug) {
-      return NextResponse.json({ error: "Guide slug is required" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[slug]' }) }, { status: 400 });
     }
 
     // 1. Get the guide ID from the registry
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
       .single();
 
     if (guideError || !guide) {
-      return NextResponse.json({ error: "Guide not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // 2. Initialize or fetch existing session
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
 
     if (sessionError) {
       console.error("Error starting guide session:", sessionError);
-      return NextResponse.json({ error: "Failed to initialize session" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -56,6 +57,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Unexpected error in /api/guides/start:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

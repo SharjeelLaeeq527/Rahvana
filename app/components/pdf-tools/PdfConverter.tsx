@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import * as Errors from '@/lib/errors'
 import { Button } from "@/components/ui/button";
 import { FileDown, AlertCircle, FileCheck } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
@@ -27,13 +28,13 @@ export function PDFConverter() {
   const handleDownloadPDF = async () => {
     // Validate input
     if (!text.trim()) {
-      setError("Please enter some text to convert to PDF");
-      return;
+      setError(Errors.msg(Errors.E.PDF_CONVERTER_TEXT_REQUIRED))
+      return
     }
 
     if (text.length > 50000) {
-      setError("Text exceeds maximum length of 50,000 characters");
-      return;
+      setError(Errors.msg(Errors.E.PDF_CONVERTER_TOO_LONG, { max: 50000 }))
+      return
     }
 
     setIsLoading(true);
@@ -51,8 +52,9 @@ export function PDFConverter() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate PDF");
+        const errorData = await response.json().catch(() => ({}))
+        console.error("PDF create API error:", errorData)
+        throw new Error(Errors.msg(Errors.E.PDF_CONVERTER_FAILED))
       }
 
       // Get the PDF blob and trigger download
@@ -82,12 +84,10 @@ export function PDFConverter() {
 
       setText(""); // Clear textarea after success
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "An error occurred";
-      setError(message);
-      console.error("[PDF Converter Error]", error);
+      console.error("[PDF Converter Error]", error)
+      setError(Errors.msg(Errors.E.PDF_CONVERTER_FAILED))
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   };
 

@@ -6,6 +6,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getInterviewSessionDB } from "@/lib/interview-prep/data-access";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from '@/lib/errors';
 
 export async function DELETE(
   request: NextRequest,
@@ -22,7 +23,7 @@ export async function DELETE(
 
     if (!user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: msg(E.AUTH_UNAUTHORIZED) },
         { status: 401 }
       );
     }
@@ -31,7 +32,7 @@ export async function DELETE(
     const session = await getInterviewSessionDB(sessionId);
     if (!session) {
       return NextResponse.json(
-        { error: "Session not found" },
+        { error: msg(E.CASE_DATA_NOT_FOUND) },
         { status: 404 }
       );
     }

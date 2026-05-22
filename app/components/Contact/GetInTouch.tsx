@@ -14,6 +14,7 @@ import {
 import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
+import * as Errors from '@/lib/errors'
 const XIcon = ({ size = 20 }: { size?: number }) => (
   <svg
     width={size}
@@ -49,17 +50,12 @@ export default function GetInTouch() {
       } else {
         setStatus("error");
         setErrorMessage(
-          result.error ||
-            t("homePage.contactSection.error") ||
-            "Something went wrong. Please try again.",
+          result.error || Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED),
         );
       }
     } catch {
       setStatus("error");
-      setErrorMessage(
-        t("homePage.contactSection.error") ||
-          "An unexpected error occurred. Please try again.",
-      );
+      setErrorMessage(Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED));
     } finally {
       setIsSubmitting(false);
     }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import * as db from "@/lib/journey/data-access";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from '@/lib/errors';
 
 /**
  * POST /api/easypost/webhook
@@ -53,10 +54,10 @@ export async function POST(request: NextRequest) {
       const caseData = await findCaseByTrackerId(trackerId);
       if (!caseData) {
         console.log(`[EasyPost Webhook] No case found for tracker ${trackerId}`);
-        return NextResponse.json(
-          { success: true, message: "No associated case" },
-          { status: 200 },
-        );
+          return NextResponse.json(
+            { success: true, message: msg(E.EASPOST_WEBHOOK_NO_CASE) },
+            { status: 200 },
+          );
       }
 
       const journeyId = caseData.journey_id;
@@ -98,15 +99,9 @@ export async function POST(request: NextRequest) {
       { success: true, message: "Webhook processed" },
       { status: 200 },
     );
-  } catch (error) {
+    } catch (error) {
     console.error("[EasyPost Webhook] Error processing webhook:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to process webhook",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.EASPOST_WEBHOOK_PROCESS_FAILED) }, { status: 500 });
   }
 }
 

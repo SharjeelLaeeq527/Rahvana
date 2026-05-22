@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-
+import { E, msg } from '@/lib/errors';
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -18,7 +18,7 @@ export async function POST(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -33,21 +33,21 @@ export async function POST(
 
     if (checkError || !existing) {
       return NextResponse.json(
-        { error: 'Document not found' },
+        { error: msg(E.CASE_DATA_NOT_FOUND) },
         { status: 404 }
       );
     }
 
     if (existing.status !== 'TRANSLATED') {
       return NextResponse.json(
-        { error: `Cannot confirm. Current status: ${existing.status}. Must be TRANSLATED.` },
+          { error: msg(E.UPLOAD_TRANSLATION_NOT_READY) },
         { status: 400 }
       );
     }
 
     if (!existing.translated_file_path) {
       return NextResponse.json(
-        { error: 'No translated file available' },
+        { error: msg(E.UPLOAD_TRANSLATION_FILE_MISSING) },
         { status: 400 }
       );
     }
@@ -75,12 +75,12 @@ export async function POST(
     return NextResponse.json({
       success: true,
       status: updated.status,
-      message: 'Translation confirmed successfully. Awaiting admin verification.',
+      message: msg(E.UPLOAD_TRANSLATION_CONFIRMED),
     });
   } catch (error) {
     console.error('Confirm error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
       { status: 500 }
     );
   }

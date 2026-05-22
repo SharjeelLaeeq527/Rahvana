@@ -9,6 +9,7 @@ import {
   getUserAnswersForSessionDB,
   getUserAnswerDB,
 } from "@/lib/interview-prep/data-access";
+import { E, msg } from '@/lib/errors';
 
 /**
  * POST /api/interview-prep/user-answers
@@ -28,10 +29,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!sessionId || !questionId || !userAnswerText) {
       return NextResponse.json(
-        {
-          error:
-            "Missing required fields: sessionId, questionId, userAnswerText",
-        },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[sessionId, questionId, userAnswerText]' }) },
         { status: 400 }
       );
     }
@@ -39,7 +37,7 @@ export async function POST(request: NextRequest) {
     // Validate answer text length
     if (userAnswerText.trim().length < 10) {
       return NextResponse.json(
-        { error: "Answer must be at least 10 characters long" },
+        { error: msg(E.INTERVIEW_ANSWER_TOO_SHORT) },
         { status: 400 }
       );
     }
@@ -55,9 +53,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, answer: savedAnswer }, { status: 201 });
   } catch (error) {
     console.error("Error saving user answer:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to save answer";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
 

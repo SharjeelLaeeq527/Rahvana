@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as db from "@/lib/journey/data-access";
 import type { ChapterUpdate } from "@/lib/journey/types";
+import { E, msg, normalizeError } from '@/lib/errors';
 
 // GET /api/chapters/[id] - Get chapter by ID
 export async function GET(
@@ -12,28 +13,30 @@ export async function GET(
 
     const chapter = await db.getChapterDB(chapterId);
     if (!chapter) {
-      return NextResponse.json(
-        { error: "Chapter not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      console.error('chapters/[id] GET chapter not found:', chapterId);
+      return NextResponse.json({ error: msg(E.CHAPTER_NOT_FOUND), code: 'NOT_FOUND' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, data: chapter }, { status: 200 });
   } catch (error) {
     console.error("Error in GET /api/chapters/[id]:", error);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+    const norm = normalizeError(error, E.CHAPTER_SERVER_ERROR);
+
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
+      console.error('chapters/[id] unauthorized error');
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED), code: 'UNAUTHORIZED' }, { status: 401 });
+    }
+
+    if (norm.code === E.CHAPTER_NOT_FOUND) {
+      console.error('chapters/[id] chapter not found:', error);
+      return NextResponse.json({ error: msg(E.CHAPTER_NOT_FOUND), code: 'NOT_FOUND' }, { status: 404 });
     }
 
     return NextResponse.json(
       {
-        error: "Failed to fetch chapter",
+        error: msg(E.CHAPTER_SERVER_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );
@@ -70,25 +73,24 @@ export async function PATCH(
   } catch (error) {
     console.error("Error in PATCH /api/chapters/[id]:", error);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
+    const norm = normalizeError(error, E.CHAPTER_SERVER_ERROR);
+
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 },
       );
     }
 
-    if (error instanceof Error && error.message.includes("Chapter not found")) {
-      return NextResponse.json(
-        { error: "Chapter not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+    if (norm.code === E.CHAPTER_NOT_FOUND) {
+      console.error('chapters/[id] chapter not found (caught):', error);
+      return NextResponse.json({ error: msg(E.CHAPTER_NOT_FOUND), code: 'NOT_FOUND' }, { status: 404 });
     }
 
     return NextResponse.json(
       {
-        error: "Failed to update chapter",
+        error: msg(E.CHAPTER_SERVER_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );
@@ -115,25 +117,22 @@ export async function DELETE(
   } catch (error) {
     console.error("Error in DELETE /api/chapters/[id]:", error);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+    const norm = normalizeError(error, E.CHAPTER_SERVER_ERROR);
+
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
+      console.error('chapters/[id] unauthorized error (DELETE)');
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED), code: 'UNAUTHORIZED' }, { status: 401 });
     }
 
-    if (error instanceof Error && error.message.includes("Chapter not found")) {
-      return NextResponse.json(
-        { error: "Chapter not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+    if (norm.code === E.CHAPTER_NOT_FOUND) {
+      console.error('chapters/[id] chapter not found (DELETE caught):', error);
+      return NextResponse.json({ error: msg(E.CHAPTER_NOT_FOUND), code: 'NOT_FOUND' }, { status: 404 });
     }
 
     return NextResponse.json(
       {
-        error: "Failed to delete chapter",
+        error: msg(E.CHAPTER_SERVER_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );

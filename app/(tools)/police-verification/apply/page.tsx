@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader } from "@/components/ui/spinner";
+import { E, msg } from "@/lib/errors";
 
 function PoliceApplyContent() {
   // const searchParams = useSearchParams();
@@ -171,7 +172,7 @@ function PoliceApplyContent() {
       // Photograph and Passport Copy: JPG, PNG
       if (name === "photograph" || name === "passportCopy") {
         if (!["jpg", "jpeg", "png"].includes(ext || "")) {
-          alert("Only JPG and PNG formats are allowed for this field.");
+          alert(msg(E.POLICE_FILE_PHOTO_INVALID_FORMAT));
           return;
         }
       }
@@ -179,14 +180,14 @@ function PoliceApplyContent() {
       // Utility Bill and Police Letter: PDF
       if (name === "utilityBill" || name === "policeLetter") {
         if (ext !== "pdf") {
-          alert("Only PDF format is allowed for this field.");
+          alert(msg(E.POLICE_FILE_PDF_INVALID));
           return;
         }
       }
 
       // File Size Check (Max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert("File size exceeds 5MB limit.");
+        alert(msg(E.POLICE_FILE_TOO_LARGE));
         return;
       }
 
@@ -222,7 +223,7 @@ function PoliceApplyContent() {
       if (!formData.passportIssue) isValid = false;
       if (!formData.passportExpiry) isValid = false;
 
-      if (!isValid) alert("Please fill all required fields in Step 1");
+      if (!isValid) alert(msg(E.POLICE_STEP1_INCOMPLETE));
     }
 
     if (step === 2) {
@@ -245,7 +246,7 @@ function PoliceApplyContent() {
         isValid = false;
 
       if (!isValid)
-        alert("Please fill all details for both witnesses in Step 2");
+        alert(msg(E.POLICE_WITNESSES_INCOMPLETE));
     }
 
     if (step === 3) {
@@ -262,11 +263,10 @@ function PoliceApplyContent() {
         if (!files.judgmentCopy) isValid = false;
       }
 
-      if (!isValid)
-        alert(
-          "Please upload all required documents" +
-            (formData.arrested === "Yes" ? " including arrest details." : "."),
-        );
+      if (!isValid) {
+        const extra = formData.arrested === "Yes" ? " including arrest details." : ".";
+        alert(msg(E.POLICE_UPLOADS_MISSING, { extra }));
+      }
     }
 
     return isValid;
@@ -322,16 +322,11 @@ function PoliceApplyContent() {
 
         await Promise.all(fileUploadPromises);
 
-        alert(
-          `Application Submitted Successfully! Your Request ID is: ${requestId}`,
-        );
+        alert(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }));
         router.push("/user-dashboard");
       } catch (error) {
         console.error(error);
-        alert(
-          "Failed to submit application: " +
-            (error instanceof Error ? error.message : "Unknown error"),
-        );
+        alert(msg(E.POLICE_SUBMIT_FAILED, { reason: error instanceof Error ? error.message : "Unknown error" }));
       } finally {
         setIsSubmitting(false);
       }

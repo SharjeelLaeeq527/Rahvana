@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { encrypt } from "@/lib/encryption";
+import { E, msg } from '@/lib/errors'
 
 export async function GET() {
   try {
@@ -12,7 +13,8 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('portal-wallet GET unauthorized:', userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data, error } = await supabase
@@ -37,10 +39,7 @@ export async function GET() {
 
     if (error) {
       console.error("Error fetching credentials:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch portal credentials" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
     }
 
     const response =
@@ -65,12 +64,9 @@ export async function GET() {
       })) || [];
 
     return NextResponse.json({ credentials: response });
-  } catch (error) {
+    } catch (error) {
     console.error("Unexpected error in GET portal-wallet:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
   }
 }
 
@@ -84,7 +80,8 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('portal-wallet POST unauthorized:', userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const body = await req.json();
@@ -99,10 +96,7 @@ export async function POST(req: Request) {
     } = body;
 
     if (!portalType) {
-      return NextResponse.json(
-        { error: "Portal type required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 400 });
     }
 
     const { data: existingCred } = await supabase
@@ -114,18 +108,12 @@ export async function POST(req: Request) {
 
     if (portalType === "NVC") {
       if (!nvcCaseNumber || !nvcInvoiceId) {
-        return NextResponse.json(
-          { error: "NVC Case Number and Invoice ID required" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
       }
     } else {
       // For USCIS/COURIER, username is required. Password is required for ADD, optional for EDIT.
       if (!username || (!password && !existingCred)) {
-        return NextResponse.json(
-          { error: "Username and password required" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
       }
     }
 
@@ -153,10 +141,7 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error("Error saving credentials:", error);
-      return NextResponse.json(
-        { error: "Failed to save credentials" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
     }
 
     if (portalType !== "NVC" && securityQuestions?.length) {
@@ -180,15 +165,9 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Credentials saved successfully",
-    });
-  } catch (error) {
+    return NextResponse.json({ success: true, credentialId: credential.id });
+    } catch (error) {
     console.error("Unexpected error in POST portal-wallet:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
   }
 }

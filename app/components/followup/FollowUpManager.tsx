@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as Errors from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import {
   getUser221gCase,
@@ -116,10 +117,12 @@ export function FollowUpManager() {
         newDismissCount,
       );
       setShowDialog(false);
-    } catch (err) {
+      } catch (err) {
       console.error("Error updating follow-up status", err);
-      const msg = err instanceof Error ? err.message : String(err);
-      alert("Failed to update status in Database. Error: " + msg);
+      const msgText = err instanceof Error ? err.message : String(err);
+      // Show user-friendly message
+      // eslint-disable-next-line no-alert
+      alert(Errors.msg(Errors.E.FOLLOWUP_UPDATE_FAILED) + (msgText ? ` (${msgText})` : ""));
     }
   };
 

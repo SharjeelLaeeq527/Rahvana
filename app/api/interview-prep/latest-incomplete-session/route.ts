@@ -6,7 +6,7 @@
 
 import { NextResponse } from "next/server";
 import { getLatestIncompleteSessionDB, getSessionAnswersDB, getInterviewResultsDB } from "@/lib/interview-prep/data-access";
-
+import { E, msg } from '@/lib/errors';
 export async function GET() {
   try {
     // Get the latest incomplete session for the current user
@@ -53,7 +53,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching latest incomplete session:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch session" },
+      { success: false, error: msg(E.ADMIN_FETCH_FAILED) },
       { status: 500 }
     );
   }

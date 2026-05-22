@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { msg, E, errorCode } from "@/lib/errors";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,17 +56,17 @@ function ResetPasswordContent() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(`${msg(E.AUTH_CLIENT_PASSWORD_MISMATCH)}`);
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+      setError(`${msg(E.AUTH_CLIENT_PASSWORD_TOO_SHORT)}`);
       return;
     }
 
     if (!token || !email) {
-      setError("Invalid reset link.");
+      setError(`${msg(E.AUTH_RESET_LINK_INVALID)}`);
       return;
     }
 
@@ -83,12 +84,12 @@ function ResetPasswordContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to reset password");
+        setError(data.error || `${msg(E.AUTH_PASSWORD_UPDATE_FAILED)}`);
       } else {
         setSuccess(true);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(`${msg(E.AUTH_UNEXPECTED_ERROR)}`);
     } finally {
       setIsSubmitting(false);
     }

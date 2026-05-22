@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import jsPDF from "jspdf";
 import sharp from "sharp";
 import mammoth from "mammoth";
+import { E, msg } from '@/lib/errors';
 
 type FileFormat = "text" | "html" | "markdown" | "image" | "docx";
 
@@ -13,16 +14,18 @@ export async function POST(request: NextRequest) {
     const format = formData.get("format") as FileFormat | null;
 
     if (!file || !format) {
-      return NextResponse.json({ message: "File and format required" }, { status: 400 });
+      if (!file) return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
+      return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
     }
 
     if (!["text", "html", "markdown", "image", "docx"].includes(format)) {
-      return NextResponse.json({ message: "Unsupported format" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
     }
 
     const maxSize = format === "image" ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json({ message: `File too large (max ${maxSize / (1024 * 1024)}MB)` }, { status: 413 });
+      const maxMb = format === "image" ? 50 : 10;
+      return NextResponse.json({ error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: maxMb }) }, { status: 413 });
     }
 
     const pdfBuffer = await convertToPDF(file, format);
@@ -38,8 +41,9 @@ export async function POST(request: NextRequest) {
         "Content-Disposition": `attachment; filename="${fileName}"`,
       },
     });
-  } catch {
-    return NextResponse.json({ message: "Conversion failed" }, { status: 500 });
+  } catch (err) {
+    console.error('Convert PDF error:', err)
+    return NextResponse.json({ error: msg(E.PDF_CONVERTER_FAILED) }, { status: 500 });
   }
 }
 

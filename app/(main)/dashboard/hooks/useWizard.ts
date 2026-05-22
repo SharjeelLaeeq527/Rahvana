@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
+import { E, msg } from "@/lib/errors";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
@@ -238,7 +239,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (cancelled) return;
         console.error("[useWizard] Initialize error:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
-        toast.error("Cloud synchronization failed.");
+        toast.error(msg(E.DASH_CLOUD_SYNC_FAILED));
         setIsLoaded(true);
       }
     }
@@ -315,7 +316,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         const currentState = stateRef.current;
         const { isLocked } = getJourneyLockStatus(currentState.metadata);
         if (isLocked) {
-          toast.error("Journey locked", {
+          toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED), {
             description: "This journey is in read-only mode. The 14-day window following your interview outcome has ended.",
             duration: 4000,
           });
@@ -376,10 +377,10 @@ export function useWizard(options: UseWizardOptions = {}) {
               .find((s) => !currentState.completedSteps.has(s.key));
 
             if (firstIncomplete) {
-              toast.error(`Required step pending: "${firstIncomplete.name}"`, {
-                description: "Please complete the required preceding step first.",
-                duration: 4000,
-              });
+                toast.error(`Required step pending: "${firstIncomplete.name}"`, {
+                  description: "Please complete the required preceding step first.",
+                  duration: 4000,
+                });
               return;
             }
           }
@@ -390,10 +391,10 @@ export function useWizard(options: UseWizardOptions = {}) {
           return;
         }
 
-        if (!currentState.stepMap[stepKey]) {
+          if (!currentState.stepMap[stepKey]) {
           console.warn("[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync...");
           // (Rest of the sync logic skipped for brevity, but would use functional updates)
-          toast.error(`Step not found in your journey. Please refresh the page.`);
+          toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED));
           return;
         }
 
@@ -534,7 +535,7 @@ export function useWizard(options: UseWizardOptions = {}) {
                 useDocumentVaultStore.getState().reloadDocuments();
                 toast.success("Saved to vault", { id: "vault-upload" });
               })
-              .catch(() => toast.error("Vault save failed", { id: "vault-upload" }));
+              .catch(() => toast.error(msg(E.DASH_VAULT_SAVE_FAILED), { id: "vault-upload" }));
           }
           return {
             ...prev,

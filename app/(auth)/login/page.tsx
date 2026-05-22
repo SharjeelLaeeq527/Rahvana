@@ -8,6 +8,8 @@ interface Profile {
 
 import { useState, useEffect, Suspense, FormEvent } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { msg, E } from "@/lib/errors";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +33,7 @@ function LoginContent() {
     mfaPending,
     verifyMFALogin,
   } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [mfaRequired, setMfaRequired] = useState(false);
@@ -60,15 +63,15 @@ function LoginContent() {
     const confirmedParam = searchParams.get("confirmed");
 
     if (errorParam === "auth_callback_error") {
-      setError("Authentication failed. Please try again.");
+      setError(msg(E.AUTH_LOGIN_FAILED));
     } else if (errorParam === "invalid_link") {
-      setError("Invalid or expired confirmation link.");
+      setError(msg(E.AUTH_RESET_LINK_INVALID));
     } else if (errorParam === "link_expired") {
-      setError("This confirmation link has expired. Please sign up again.");
+      setError(msg(E.AUTH_RESET_LINK_INVALID));
     } else if (errorParam === "user_not_found") {
-      setError("Account not found. Please sign up first.");
+      setError(msg(E.AUTH_ACCOUNT_NOT_FOUND));
     } else if (errorParam === "server_error") {
-      setError("Server error. Please try again later.");
+      setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
     }
 
     if (confirmedParam === "true") {
@@ -142,10 +145,16 @@ function LoginContent() {
         challengeId: cId,
       } = await signIn(email, password);
       if (signInError) {
-        if (signInError.message.includes("Invalid login credentials")) {
-          setError("Invalid email or password. Please check and try again.");
-        } else if (signInError.message.includes("Email not confirmed")) {
-          setError("Please verify your email before signing in.");
+        const code = String((signInError as { code?: string }).code || "");
+
+        if (code === "AUTH_EMAIL_NOT_CONFIRMED") {
+          setError(msg(E.AUTH_EMAIL_NOT_CONFIRMED));
+        } else if (code === "AUTH_LOGIN_SERVER_ERROR") {
+          setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
+        } else if (code === "AUTH_LOGIN_FAILED") {
+          setError(msg(E.AUTH_LOGIN_FAILED));
+        } else {
+          setError(signInError.message || msg(E.AUTH_LOGIN_SERVER_ERROR));
         }
         setIsSubmitting(false);
         return;
@@ -177,7 +186,7 @@ function LoginContent() {
         window.location.assign("/");
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
       setIsSubmitting(false);
     }
   };
@@ -208,11 +217,11 @@ function LoginContent() {
           window.location.assign("/");
         }
       } else {
-        setError(mfaError || "Invalid authentication code");
+        setError(mfaError || msg(E.AUTH_MFA_CODE_INVALID));
         setIsSubmitting(false);
       }
     } catch {
-      setError("Failed to verify authentication code");
+      setError(msg(E.AUTH_MFA_VERIFY_FAILED));
       setIsSubmitting(false);
     }
   };
@@ -223,11 +232,11 @@ function LoginContent() {
     try {
       const { error: googleError } = await signInWithGoogle(redirect);
       if (googleError) {
-        setError("Failed to sign in with Google. Please try again.");
+        setError(msg(E.AUTH_GOOGLE_SIGNIN_FAILED));
         setIsSubmitting(false);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_GOOGLE_SIGNIN_FAILED));
       setIsSubmitting(false);
     }
   };
