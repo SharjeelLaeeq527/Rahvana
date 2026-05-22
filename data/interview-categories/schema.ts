@@ -89,10 +89,11 @@ export interface InterviewQuestion {
   id: string;
   category: string;
   question: string;
-  suggestedAnswer: string;
+  sampleAnswer: string;
   guidance: string;
   tooltip: string;
   priority: 'high' | 'medium' | 'low';
+  tier?: 'free' | 'basic' | 'premium' | 'executive';
   mockInterviewOrder?: number;
   skipIf?: SkipCondition[];
 }

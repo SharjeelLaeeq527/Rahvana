@@ -477,10 +477,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 const newStatus = updatedRow.data_value;
 
                 console.log(`[Realtime] Status: ${newStatus}`);
-                setTrackingStatus(newStatus);
 
-                // Adjust polling dynamically
-                startPolling(newStatus);
+                // Avoid unnecessary re-renders: only update when status actually changed
+                setTrackingStatus((prev) => {
+                  if (prev === newStatus) return prev;
+                  // Adjust polling dynamically when status changes
+                  startPolling(newStatus);
+                  return newStatus;
+                });
               }
 
               // LAST CHECKED

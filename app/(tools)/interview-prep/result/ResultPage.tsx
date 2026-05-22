@@ -8,13 +8,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import {
   BookOpen,
-  Info,
-  Shuffle,
-  Zap,
   Check,
-  X,
+  Info,
   Loader2,
   Mic,
+  Shuffle,
+  X,
+  Zap,
 } from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
@@ -74,6 +74,17 @@ export const ResultPage = ({
 
   const plan = usePlan();
 
+  const canSeePrepQuestion = useCallback(
+    (question: GeneratedQuestion) => {
+      if (plan.tier === "free") {
+        return question.tier === "free";
+      }
+
+      return true;
+    },
+    [plan.tier],
+  );
+
   const canAccessRapidFire = (): boolean => {
     const entitlement = getEntitlement("interview_rapid_fire", plan.tier);
     return entitlement.state === "full";
@@ -101,7 +112,8 @@ export const ResultPage = ({
       const applicableQuestions = results.questions.filter(
         (q: GeneratedQuestion) => q.applicable,
       );
-      const shuffled = shuffleQuestions(applicableQuestions);
+      const visibleQuestions = applicableQuestions.filter(canSeePrepQuestion);
+      const shuffled = shuffleQuestions(visibleQuestions);
       setQuestionsList(shuffled);
     }
   };
@@ -178,13 +190,15 @@ export const ResultPage = ({
       const applicableQuestions = results.questions.filter(
         (q: GeneratedQuestion) => q.applicable,
       );
-      setQuestionsList(applicableQuestions);
+      setQuestionsList(
+        applicableQuestions.filter(canSeePrepQuestion),
+      );
       // Load existing answers
       if (sessionId) {
         loadAnswers();
       }
     }
-  }, [results, sessionId, loadAnswers]);
+  }, [canSeePrepQuestion, results, sessionId, loadAnswers]);
 
   // NEW: Save answer to database
   const handleSaveAnswer = async (questionId: string) => {
@@ -702,19 +716,20 @@ export const ResultPage = ({
                           )}
 
                           {/* Answer button on back of card */}
-                          <div className="mt-3 sm:mt-4 flex gap-2">
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowAnswerModal(true);
-                              }}
+                          {plan.tier !== 'free' && (
+                            <div className="mt-3 sm:mt-4 flex gap-2">
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowAnswerModal(true);
+                                }}
                               className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
                             >
                               {savedAnswers[selectedQuestion.id]
                                 ? "Edit"
                                 : "Answer"}
                             </Button>
-                          </div>
+                          </div>)}
 
                           <div className="text-center mt-2">
                             <p className="text-slate-300 text-xs">
@@ -746,45 +761,44 @@ export const ResultPage = ({
 
             {/* Rapid Fire Mode */}
             {mode === "rapid" && (
-              <div className="w-full">
-                <div className="bg-linear-to-br from-[#e8f6f6] via-[#f0faf9] to-[#e8f6f6] rounded-2xl shadow-lg site-main-px border border-[#0d7377]/20">
-                  <div className="text-center site-main-py">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0d7377]/10 mb-4">
-                      <Zap className="w-8 h-8 text-[#0d7377]" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                      Rapid Fire Practice
-                    </h3>
-                    <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-                      Test your interview readiness under time pressure.
-                      Questions will appear one by one with a 10-second timer.
-                      After time expires, answers will be revealed
-                      automatically.
-                    </p>
-                    <div className="flex gap-4 justify-center">
-                      <Button
-                        onClick={handleRapidFirePageStart}
-                        className="bg-[#0d7377] hover:bg-[#0a5a5d] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
-                      >
-                        Start Rapid Fire Session
-                      </Button>
-                    </div>
+              <div className="w-full max-w-2xl mx-auto">
+              <div className="bg-linear-to-br from-[#e8f6f6] via-[#f0faf9] to-[#e8f6f6] rounded-2xl shadow-lg site-main-px border border-[#0d7377]/20">
+                <div className="text-center site-main-py">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0d7377]/10 mb-4">
+                    <Zap className="w-8 h-8 text-[#0d7377]" />
+                  </div>
+            
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                    Rapid Fire Practice
+                  </h3>
+            
+                  <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
+                    Simulate real interview pressure with timed questions, adaptive
+                    retries, and confidence-based repetition designed to improve long-term
+                    recall and speaking confidence.
+                  </p>
+            
+                  <div className="max-w-2xl mx-auto text-left">
+                    <ExpandableTooltip
+                      icon="i"
+                      title="How Rapid Fire Training Works?"
+                      message="Each round contains timed interview questions with a 10-second response window. Questions you miss or skip return quickly for reinforcement, while partially covered and well-covered questions reappear later using adaptive spaced repetition to strengthen long-term memory and confidence."
+                    />
+                  </div>        
+    
+                  <div className="flex gap-4 justify-center">
+                    <Button
+                      onClick={handleRapidFirePageStart}
+                      className="bg-[#0d7377] hover:bg-[#0a5a5d] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
+                    >
+                      Start Rapid Fire Session
+                    </Button>
                   </div>
                 </div>
               </div>
+            </div>
             )}
           </div>
-
-          {mode === "prep" && (
-            <div className="mt-8 text-center">
-              <Button
-                onClick={onRestart}
-                className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white px-8 py-6 cursor-pointer text-lg"
-              >
-                Start New Interview Prep
-              </Button>
-            </div>
-          )}
 
           {/* NEW: Answer Modal */}
           {showAnswerModal && selectedQuestion && (
