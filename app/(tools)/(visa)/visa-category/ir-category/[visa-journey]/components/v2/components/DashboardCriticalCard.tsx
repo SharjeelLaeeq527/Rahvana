@@ -72,7 +72,10 @@ function IssueRow({
   onOpenStep?: () => void;
 }) {
   const s = LEVEL[issue.level];
-  const stepLabel = `Step ${issue.stepNumber}`;
+  // Use step name if available — avoids numbering mismatch with filtered visible steps
+  const stepLabel = issue.stepName
+    ? issue.stepName.replace(/^(Chapter\s*\d+[:\s-]*|Step\s*\d+[:\s-]*)/i, "").trim() || issue.stepName
+    : `Step ${issue.stepNumber}`;
 
   return (
     <div className="border-b border-slate-100 last:border-0">
