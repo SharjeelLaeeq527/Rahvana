@@ -210,6 +210,12 @@ export const ADDON: Record<string, AddonInfo> = {
     price: 5,
     unit: "per signature",
   },
+  pdfToolKit: {
+    id: "pdf-tool-kit",
+    name: "PDF Tool Kit",
+    price: 69,
+    unit: "one-time",
+  }
   // caseManager: {
   //   id: "case-manager",
   //   name: "Dedicated Case Manager",
@@ -287,7 +293,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Snap & Sign — sign documents digitally. */
   snap_sign: {
-    free: lockedUpgrade("basic"),
+    free: lockedBuy(ADDON.snapSign, "basic"),
     basic: full(),
     premium: full(),
     executive: full(),
@@ -295,7 +301,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** PDF Tool Kit — merge, edit, compress PDF documents. */
   pdf_toolkit: {
-    free: lockedUpgrade("basic"),
+    free: lockedBuy(ADDON.pdfToolKit, "basic"),
     basic: full(),
     premium: full(),
     executive: full(),
@@ -303,7 +309,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** DQ Status Check tool. */
   dq_status_check: {
-    free: full(), // lockedUpgrade('basic'),
+    free: full(),//lockedUpgrade('basic'),
     basic: full(),
     premium: full(),
     executive: full(),
@@ -379,9 +385,9 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Book Medical Appointment through Rahvana. */
   medical_booking: {
-    free: lockedUpgrade("premium"),
-    basic: lockedUpgrade("premium"),
-    premium: full(),
+    free: lockedBuy(ADDON.medical, "executive"),
+    basic: lockedBuy(ADDON.medical, "executive"),
+    premium: lockedBuy(ADDON.medical, "executive"),
     executive: full(),
   },
 
@@ -495,9 +501,9 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** PCC Filing (Sindh Only). Executive included; Basic & Premium upgrade-only. */
   pcc_filing: {
-    free: lockedUpgrade("executive"),
-    basic: lockedUpgrade("executive"),
-    premium: lockedUpgrade("executive"),
+    free: lockedBuy(ADDON.pcc, "executive"),
+    basic: lockedBuy(ADDON.pcc, "executive"),
+    premium: lockedBuy(ADDON.pcc, "executive"),
     executive: full(),
   },
 

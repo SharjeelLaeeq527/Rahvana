@@ -124,7 +124,7 @@ const IOMInfoStep = ({
                 <SelectItem value="Immigrant Visa">
                   {t("bookAppointment.iomInfoStep.visaTypes.immigrant")}
                 </SelectItem>
-                <SelectItem value="Non-immigrant Visa">
+                {/* <SelectItem value="Non-immigrant Visa">
                   {t("bookAppointment.iomInfoStep.visaTypes.nonImmigrant")}
                 </SelectItem>
                 <SelectItem value="K-1 Fiance Visa">
@@ -141,7 +141,7 @@ const IOMInfoStep = ({
                 </SelectItem>
                 <SelectItem value="Other">
                   {t("bookAppointment.iomInfoStep.visaTypes.other")}
-                </SelectItem>
+                </SelectItem> */}
               </SelectContent>
             </Select>
           </div>
@@ -158,11 +158,17 @@ const IOMInfoStep = ({
                 id="contactNumber"
                 name="contactNumber"
                 value={formData.contactNumber || ""}
-                onChange={onChange}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  e.target.value = cleaned;
+                  onChange(e);
+                }}
                 placeholder={t(
                   "bookAppointment.iomInfoStep.contactNumberPlaceholder",
                 )}
                 type="tel"
+                maxLength={10}
+                inputMode="numeric"
                 className="flex-1"
               />
             </div>

@@ -26,6 +26,7 @@ import {
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "../../context/PlanContext";
 import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
+import { ROUTE_FEATURE_MAP } from "@/lib/entitlements/routeFeatureMap";
 
 import {
   DropdownMenu,
@@ -82,20 +83,20 @@ const TOOLS: Tool[] = [
     iconSrc: "/icons/221g-action-plan.svg",
     badge: "Live",
     entitlementFeature: "action_221g",
-    
+
   },
-  {
-    id: "visa-path",
-    title: "Visa Path Finder",
-    description:
-      "Quick quiz that points you to the right visa path + next steps.",
-    category: "AI & Planning",
-    href: "/visa-eligibility",
-    icon: Compass,
-    iconSrc: "/icons/visa-path-finder.svg",
-    badge: "Live",
-    // Public — no entitlement required
-  },
+  // {
+  //   id: "visa-path",
+  //   title: "Visa Path Finder",
+  //   description:
+  //     "Quick quiz that points you to the right visa path + next steps.",
+  //   category: "AI & Planning",
+  //   href: "/visa-eligibility",
+  //   icon: Compass,
+  //   iconSrc: "/icons/visa-path-finder.svg",
+  //   badge: "Live",
+  //   // Public — no entitlement required
+  // },
   {
     id: "interview-prep",
     title: "Interview Prep",
@@ -134,17 +135,17 @@ const TOOLS: Tool[] = [
     badge: "Live",
     entitlementFeature: "dq_status_check",
   },
-  {
-    id: "visa-bulletin-monitor",
-    title: "Visa Bulletin Monitor",
-    description: "Check your priority date progress against the Visa Bulletin.",
-    category: "Tracking",
-    href: "/visa-checker",
-    icon: Calendar,
-    iconSrc: "/icons/visa-bulletin-monitor.svg",
-    badge: "Live",
-    entitlementFeature: "visa_bulletin_monitor",
-  },
+  // {
+  //   id: "visa-bulletin-monitor",
+  //   title: "Visa Bulletin Monitor",
+  //   description: "Check your priority date progress against the Visa Bulletin.",
+  //   category: "Tracking",
+  //   href: "/visa-checker",
+  //   icon: Calendar,
+  //   iconSrc: "/icons/visa-bulletin-monitor.svg",
+  //   badge: "Live",
+  //   entitlementFeature: "visa_bulletin_monitor",
+  // },
   // {
   //   id: "uscis-case-status",
   //   title: "USCIS Case Status",
@@ -265,10 +266,10 @@ export default function ToolsPage({
         const gapWidth = i > 0 ? gap : 0;
         if (
           totalWidth +
-            gapWidth +
-            categoryEls[i].offsetWidth +
-            gap +
-            moreButtonWidth <=
+          gapWidth +
+          categoryEls[i].offsetWidth +
+          gap +
+          moreButtonWidth <=
           containerWidth
         ) {
           visible++;
@@ -338,7 +339,7 @@ export default function ToolsPage({
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
           />
         </div>
-        
+
 
         {/* Category tabs */}
         <div
@@ -514,14 +515,18 @@ function ToolCard({
   const { t } = useLanguage();
   const plan = usePlan();
 
-  const featureLocked =
+  const isLocked =
     !!tool.entitlementFeature &&
     !plan.isLoading &&
     plan.isLocked(tool.entitlementFeature);
-  const isNavigable = !tool.disabled && !featureLocked;
+
+  const isRouteLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] !== undefined;
+  const isResultLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] === undefined;
+
+  const isNavigable = !tool.disabled && !isRouteLocked;
 
   const handleClick = (e: React.MouseEvent) => {
-    if (featureLocked && tool.entitlementFeature) {
+    if (isRouteLocked && tool.entitlementFeature) {
       e.preventDefault();
       onLockedClick(tool.entitlementFeature);
     }
@@ -529,12 +534,11 @@ function ToolCard({
 
   const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
     transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-    ${
-      featureLocked
-        ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
-        : isNavigable
-          ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
+    ${isRouteLocked
+      ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
+      : isNavigable
+        ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+        : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
     }
     animate-fade-up`;
 
@@ -546,7 +550,7 @@ function ToolCard({
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Ribbon bookmark for Locked/Premium cards */}
-      {featureLocked && (
+      {(isRouteLocked || isResultLocked) && (
         <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
           <Image
             src="/icons/ribbon.png"
@@ -573,7 +577,7 @@ function ToolCard({
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      
+
 
       {/* Radial glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
@@ -583,10 +587,15 @@ function ToolCard({
         <h3 className="text-xl font-bold mb-1 text-foreground transition-colors">
           {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
         </h3>
-        <div className="mb-3">
+        <div className="mb-3 flex gap-2 items-center">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
             {t(`toolsPage.categories.${tool.category}`) || tool.category}
           </span>
+          {isResultLocked && (
+            <span className="text-[11px] font-bold uppercase tracking-wide bg-amber-50 text-amber-700 px-2 py-0.5 rounded flex items-center gap-1 border border-amber-200/50">
+              <Crown size={10} className="text-amber-500 fill-amber-500 animate-pulse" /> Premium
+            </span>
+          )}
         </div>
         <p className="text-sm leading-relaxed mb-6 grow text-slate-900 dark:text-white">
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
@@ -596,7 +605,7 @@ function ToolCard({
       {/* Footer */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
-        {featureLocked ? (
+        {isRouteLocked ? (
           <span className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}>
             <Lock size={14} className="mb-[1px]" />{" "}
             {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"

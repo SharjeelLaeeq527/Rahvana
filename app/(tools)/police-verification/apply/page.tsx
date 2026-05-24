@@ -20,10 +20,13 @@ import {
   Send,
   Upload,
   X,
+  Lock,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 function PoliceApplyContent() {
   // const searchParams = useSearchParams();
@@ -33,6 +36,9 @@ function PoliceApplyContent() {
   // const province = searchParams.get("province") || "";
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const plan = usePlan();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const isLocked = !plan.isLoading && !plan.canUse("pcc_filing");
 
   const [formData, setFormData] = useState({
     purpose: "Immigration",
@@ -1641,23 +1647,39 @@ function PoliceApplyContent() {
               />
             </button>
           ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={Object.keys(errors).length > 0 || isSubmitting}
-              className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-green-600/25"
-            >
-              {isSubmitting ? (
-                "Submitting..."
-              ) : (
-                <>
-                  Submit Application{" "}
-                  <Send
-                    size={20}
-                    className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
-                  />
-                </>
+            <>
+              <button
+                onClick={isLocked ? () => setShowUpgradeModal(true) : handleSubmit}
+                disabled={!isLocked && (Object.keys(errors).length > 0 || isSubmitting)}
+                className={`w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold transition-all flex items-center gap-2 group shadow-xl ${
+                  isLocked
+                    ? "blur-[1.5px] opacity-80 cursor-pointer hover:scale-[0.99] shadow-none"
+                    : "hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-green-600/25"
+                }`}
+              >
+                {isSubmitting ? (
+                  "Submitting..."
+                ) : (
+                  <>
+                    Submit Application{" "}
+                    {isLocked ? (
+                      <Lock size={20} />
+                    ) : (
+                      <Send
+                        size={20}
+                        className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+                      />
+                    )}
+                  </>
+                )}
+              </button>
+              {showUpgradeModal && (
+                <UpgradeModal
+                  feature="pcc_filing"
+                  onClose={() => setShowUpgradeModal(false)}
+                />
               )}
-            </button>
+            </>
           )}
         </div>
       </div>

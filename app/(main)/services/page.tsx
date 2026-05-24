@@ -33,19 +33,19 @@ interface Service {
  *  Service IDs are derived from: title.toLowerCase().replace(/\s+/g, "-")
  */
 const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
-  "book-a-consultation":          "expert_consultation",
-  "expert-case-review":           "expert_doc_review",
-  "pcc-filing-service-—-sindh":   "pcc_filing",
-  "book-medical-appointment":     "medical_booking",
-  "urdu-→-english-translation":   "document_translation",
+  "book-a-consultation": "expert_consultation",
+  // "expert-case-review":           "expert_doc_review",
+  "pcc-filing-service-—-sindh": "pcc_filing",
+  "book-medical-appointment": "medical_booking",
+  "urdu-→-english-translation": "document_translation",
 };
 /** Maps service ID → minimum required plan tier */
 const SERVICE_TIER_MAP: Record<string, "basic" | "premium" | "executive"> = {
-  "book-a-consultation":          "premium",
-  "expert-case-review":           "premium",
-  "pcc-filing-service-—-sindh":   "executive",
-  "book-medical-appointment":     "premium",
-  "urdu-→-english-translation":   "premium",
+  "book-a-consultation": "premium",
+  // "expert-case-review":           "premium",
+  "pcc-filing-service-—-sindh": "executive",
+  "book-medical-appointment": "premium",
+  "urdu-→-english-translation": "premium",
 };
 
 interface CategoryOption {
@@ -191,9 +191,8 @@ export default function ServicesPage({
 
   return (
     <div
-      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
-        isEmbedded ? "" : "pt-16"
-      }`}
+      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${isEmbedded ? "" : "pt-16"
+        }`}
     >
       {/* Upgrade Modal */}
       {upgradeModalFeature && (
@@ -267,11 +266,10 @@ export default function ServicesPage({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
-                  selectedCategoryId === cat.id
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
-                    : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                }`}
+                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategoryId === cat.id
+                  ? "bg-primary text-primary-foreground border-primary shadow-md"
+                  : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
+                  }`}
               >
                 {cat.label}
               </button>
@@ -281,11 +279,10 @@ export default function ServicesPage({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
-                      isMoreSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-md"
-                        : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                    }`}
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected
+                      ? "bg-primary text-primary-foreground border-primary shadow-md"
+                      : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
+                      }`}
                   >
                     {t("pages.services.more")}{" "}
                     <ChevronDown className="w-4 h-4 ml-1" />
@@ -296,11 +293,10 @@ export default function ServicesPage({
                     <DropdownMenuItem
                       key={cat.id}
                       onClick={() => setSelectedCategoryId(cat.id)}
-                      className={`cursor-pointer ${
-                        selectedCategoryId === cat.id
-                          ? "bg-primary/10 text-primary font-semibold"
-                          : ""
-                      }`}
+                      className={`cursor-pointer ${selectedCategoryId === cat.id
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : ""
+                        }`}
                     >
                       {cat.label}
                     </DropdownMenuItem>
@@ -413,18 +409,18 @@ function ServiceCard({
     }
   };
 
- return (
+  return (
     <CardWrapper
       href={isNavigable ? service.href : "#"}
       onClick={handleClick}
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${featureLocked
-        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-        : isNavigable
-          ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
-      }
+          ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+          : isNavigable
+            ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+        }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
@@ -441,7 +437,7 @@ function ServiceCard({
           />
         </div>
       )}
- 
+
       {/* Floating Icon Box */}
       <div
         className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
@@ -453,24 +449,24 @@ function ServiceCard({
         />
         {React.isValidElement(service.icon)
           ? React.cloneElement(
-              service.icon as React.ReactElement<{ className?: string }>,
-              { className: "w-6 h-6 stroke-2" },
-            )
+            service.icon as React.ReactElement<{ className?: string }>,
+            { className: "w-6 h-6 stroke-2" },
+          )
           : service.icon}
       </div>
- 
+
       {/* (Removed tier badge — ribbon now indicates locked state) */}
- 
+
       {/* Border gradient on hover (category color) */}
       {!featureLocked && (
         <div
           className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
         />
       )}
- 
+
       {/* Radial Glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
- 
+
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
         <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
@@ -485,11 +481,11 @@ function ServiceCard({
           {service.description}
         </p>
       </div>
- 
+
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
- 
+
         {featureLocked ? (
           <span aria-hidden="true" className="h-5" />
         ) : isNavigable ? (
@@ -507,4 +503,3 @@ function ServiceCard({
     </CardWrapper>
   );
 }
- 

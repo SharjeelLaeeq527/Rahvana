@@ -32,6 +32,7 @@ const MultiFormatConverter = dynamic(
   { ssr: false },
 );
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 export default function PDFProcessingPage() {
   const { t } = useLanguage();
@@ -61,7 +62,9 @@ export default function PDFProcessingPage() {
             </button>
           </div>
           <div className="h-[calc(100vh-64px)] w-full">
-            <PDFEditor />
+            <ResultGate feature="pdf_toolkit">
+              <PDFEditor />
+            </ResultGate>
           </div>
         </div>
       )}
@@ -115,10 +118,12 @@ export default function PDFProcessingPage() {
 
           {/* Content based on active tab */}
           <div className="w-full bg-white shadow-xl rounded-2xl p-6 md:p-8 md:min-h-[60vh]">
-            {activeTab === "upload" && <PDFUpload />}
-            {activeTab === "merge" && <PDFMergeAdvanced />}
-            {activeTab === "compress" && <CompressPDF />}
-            {activeTab === "convert" && <MultiFormatConverter />}
+            <ResultGate feature="pdf_toolkit">
+              {activeTab === "upload" && <PDFUpload />}
+              {activeTab === "merge" && <PDFMergeAdvanced />}
+              {activeTab === "compress" && <CompressPDF />}
+              {activeTab === "convert" && <MultiFormatConverter />}
+            </ResultGate>
           </div>
         </>
       )}

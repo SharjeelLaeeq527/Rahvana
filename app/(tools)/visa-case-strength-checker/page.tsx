@@ -13,6 +13,7 @@ import {
   mapFormToProfile,
 } from "@/lib/autoFill/mapper";
 import type { MasterProfile } from "@/types/profile";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 export default function VisaCaseStrengthChecker() {
   const [step, setStep] = useState<number>(0);
@@ -316,12 +317,19 @@ export default function VisaCaseStrengthChecker() {
 
     if (step === questionnaire.sections.length + 2) {
       return (
-        <ResultPage
-          sessionId={sessionId!}
-          onRestart={() => window.location.reload()}
-          onEdit={() => setStep(questionnaire.sections.length + 1)}
-          onSaveToProfile={user ? handleSaveToProfile : undefined}
-        />
+        <ResultGate
+          feature="case_strength"
+          title="Your Case Strength Results Are Ready"
+          description="Upgrade to Premium or above to unlock your full case analysis, risk flags, and recommendations."
+          minHeight="400px"
+        >
+          <ResultPage
+            sessionId={sessionId!}
+            onRestart={() => window.location.reload()}
+            onEdit={() => setStep(questionnaire.sections.length + 1)}
+            onSaveToProfile={user ? handleSaveToProfile : undefined}
+          />
+        </ResultGate>
       );
     }
 

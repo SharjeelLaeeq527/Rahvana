@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 import {
   ShieldCheck,
@@ -194,75 +195,77 @@ export default function PoliceVerificationPage() {
             )}
 
             {step === 2 && (
-              <motion.div key="step2" {...fadeIn} className="h-full">
-                {province === "Sindh" ? (
-                  <SindhInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : province === "Punjab" ? (
-                  <PunjabInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onGenerateAuthorityLetter={() =>
-                      setIsAuthorityModalOpen(true)
-                    }
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : province === "Balochistan" ? (
-                  <BalochistanInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onGenerateAuthorityLetter={() =>
-                      setIsAuthorityModalOpen(true)
-                    }
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : province === "KPK" ? (
-                  <KPKInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onGenerateAuthorityLetter={() =>
-                      setIsAuthorityModalOpen(true)
-                    }
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-                    <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center">
-                      <AlertCircle className="text-orange-500" size={48} />
+              <ResultGate feature="pcc_filing" title="Police Verification Guide" description="Upgrade your plan to access step-by-step instructions and letter generation.">
+                <motion.div key="step2" {...fadeIn} className="h-full">
+                  {province === "Sindh" ? (
+                    <SindhInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onApply={() =>
+                        router.push(
+                          `/police-verification/apply?province=${province}`,
+                        )
+                      }
+                    />
+                  ) : province === "Punjab" ? (
+                    <PunjabInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onGenerateAuthorityLetter={() =>
+                        setIsAuthorityModalOpen(true)
+                      }
+                      onApply={() =>
+                        router.push(
+                          `/police-verification/apply?province=${province}`,
+                        )
+                      }
+                    />
+                  ) : province === "Balochistan" ? (
+                    <BalochistanInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onGenerateAuthorityLetter={() =>
+                        setIsAuthorityModalOpen(true)
+                      }
+                      onApply={() =>
+                        router.push(
+                          `/police-verification/apply?province=${province}`,
+                        )
+                      }
+                    />
+                  ) : province === "KPK" ? (
+                    <KPKInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onGenerateAuthorityLetter={() =>
+                        setIsAuthorityModalOpen(true)
+                      }
+                      onApply={() =>
+                        router.push(
+                          `/police-verification/apply?province=${province}`,
+                        )
+                      }
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
+                      <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center">
+                        <AlertCircle className="text-orange-500" size={48} />
+                      </div>
+                      <div className="space-y-2 max-w-md">
+                        <h2 className="text-2xl font-bold text-foreground">
+                          Instructions Not Available
+                        </h2>
+                        <p className="text-muted-foreground">
+                          We are currently updating our database for {province}.
+                          Detailed instructions will be available soon.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setStep(1)}
+                        className="text-primary font-medium hover:underline flex items-center gap-2"
+                      >
+                        <ChevronLeft size={18} /> Go Back to Province Selection
+                      </button>
                     </div>
-                    <div className="space-y-2 max-w-md">
-                      <h2 className="text-2xl font-bold text-foreground">
-                        Instructions Not Available
-                      </h2>
-                      <p className="text-muted-foreground">
-                        We are currently updating our database for {province}.
-                        Detailed instructions will be available soon.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setStep(1)}
-                      className="text-primary font-medium hover:underline flex items-center gap-2"
-                    >
-                      <ChevronLeft size={18} /> Go Back to Province Selection
-                    </button>
-                  </div>
-                )}
-              </motion.div>
+                  )}
+                </motion.div>
+              </ResultGate>
             )}
           </AnimatePresence>
         </div>

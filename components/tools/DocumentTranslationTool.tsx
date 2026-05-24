@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, AlertCircle, CheckCircle, X, FileText } from "lucide-react";
+import { Upload, AlertCircle, CheckCircle, X, FileText, Lock } from "lucide-react";
 import SuccessState from "@/app/components/document-translation/SuccessState";
 import {
   Select,
@@ -13,6 +13,8 @@ import {
 import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 interface DocumentTranslationToolProps {
   showHeader?: boolean;
@@ -39,6 +41,9 @@ export default function DocumentTranslationTool({
 
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
+  const plan = usePlan();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const isLocked = !plan.isLoading && !plan.canUse("document_translation");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -288,20 +293,22 @@ export default function DocumentTranslationTool({
 
               {/* Upload Button */}
               <button
-                onClick={handleUpload}
-                disabled={!file || uploading}
-                className={`mt-6 w-full py-3 rounded-xl font-semibold transition-colors flex items-center justify-center cursor-pointer gap-2 border-none outline-hidden
+                onClick={isLocked ? () => setShowUpgradeModal(true) : handleUpload}
+                disabled={!isLocked && (!file || uploading)}
+                className={`mt-6 w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center cursor-pointer gap-2 border-none outline-hidden
                   ${
-                    !file || uploading
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-primary/90 text-white hover:bg-primary"
+                    isLocked
+                      ? "bg-primary/90 text-white blur-[1.5px] opacity-80 hover:scale-[0.99]"
+                      : !file || uploading
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-primary/90 text-white hover:bg-primary"
                   }`}
               >
                 {uploading ? (
                   <>{t("documentTranslation.uploadPage.processingBtn")}</>
                 ) : (
                   <>
-                    <Upload className="w-5 h-5" />
+                    {isLocked ? <Lock className="w-5 h-5" /> : <Upload className="w-5 h-5" />}
                     {t("documentTranslation.uploadPage.uploadBtn")}
                   </>
                 )}
@@ -310,12 +317,16 @@ export default function DocumentTranslationTool({
               {showRequestsLink && isAuthenticated && (
                 <div className="mt-4 text-center">
                   <button
-                    onClick={() =>
-                      (window.location.href =
-                        "/document-translation/my-requests")
+                    onClick={
+                      isLocked
+                        ? () => setShowUpgradeModal(true)
+                        : () => (window.location.href = "/document-translation/my-requests")
                     }
-                    className="text-primary hover:underline text-sm cursor-pointer bg-transparent border-none outline-hidden"
+                    className={`text-primary hover:underline text-sm cursor-pointer bg-transparent border-none outline-hidden flex items-center justify-center gap-1.5 mx-auto ${
+                      isLocked ? "blur-[1px] opacity-80" : ""
+                    }`}
                   >
+                    {isLocked && <Lock className="w-3.5 h-3.5" />}
                     {t("documentTranslation.uploadPage.seeMyRequestsBtn")}
                   </button>
                 </div>
@@ -338,6 +349,12 @@ export default function DocumentTranslationTool({
         onClose={() => setShowAuthModal(false)}
         redirectTo="/document-translation"
       />
+      {showUpgradeModal && (
+        <UpgradeModal
+          feature="document_translation"
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
     </div>
   );
 }

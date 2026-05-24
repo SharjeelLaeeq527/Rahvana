@@ -8,6 +8,7 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { usePlan } from "@/app/context/PlanContext";
 import { Loader } from "../ui/spinner";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
@@ -100,7 +101,9 @@ export default function PassportPhotoTool({
       if (!isMounted) return;
 
       const usage = access.data?.data?.usage;
-      if (access.allowed && usage?.remaining !== undefined) {
+      if (tier === "executive") {
+        setRemainingCredits(null);
+      } else if (access.allowed && usage?.remaining !== undefined) {
         setRemainingCredits(usage.remaining);
       } else if (access.allowed && usage?.limit !== undefined) {
         setRemainingCredits(usage.limit);
@@ -116,7 +119,7 @@ export default function PassportPhotoTool({
     return () => {
       isMounted = false;
     };
-  }, [checkAccess]);
+  }, [checkAccess, tier]);
 
   // Reset form
   const reset = () => {
@@ -168,27 +171,36 @@ export default function PassportPhotoTool({
       return;
     }
 
-    const access = await checkAccess("photo_booth");
-
-    if (!access.allowed) {
-      setShowUpgradeModal(true);
-      return;
-    }
-
-    const reservation = await consumeAccess("photo_booth");
-
-    if (!reservation.allowed) {
-      setShowUpgradeModal(true);
-      return;
-    }
-
-    if (reservation.data?.remaining !== undefined) {
-      setRemainingCredits(reservation.data.remaining);
-    }
-
     setLoading(true);
     setError(null);
     setProcessingStep(t("passportPhoto.steps.uploading"));
+
+    // Verify and consume credit if the user has limited credits, blocking if exhausted
+    try {
+      const access = await checkAccess("photo_booth");
+      if (!access.allowed || access.data?.data?.usage?.allowed === false) {
+        setLoading(false);
+        setProcessingStep("");
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      const reservation = await consumeAccess("photo_booth");
+      if (!reservation.allowed || reservation.data?.allowed === false) {
+        setLoading(false);
+        setProcessingStep("");
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      if (tier === "executive") {
+        setRemainingCredits(null);
+      } else if (reservation.data?.remaining !== undefined) {
+        setRemainingCredits(reservation.data.remaining);
+      }
+    } catch (err) {
+      console.warn("Usage check/consumption failed, continuing with photo generation:", err);
+    }
 
     const { width, height } = getFinalDimensions();
     const API_ENDPOINT = `${API_BASE}/passport-photo?width=${width}&height=${height}&quality=95`;
@@ -348,7 +360,7 @@ export default function PassportPhotoTool({
         )}
 
         {/* Upload Section - Made more compact with max-w-2xl */}
-        <section className="w-full max-w-2xl">
+        <section className="w-full max-w-2xl py-2 sm:py-4">
           <div
             className="bg-white rounded-xl shadow-md p-4 sm:p-6"
             style={{
@@ -365,7 +377,7 @@ export default function PassportPhotoTool({
 
             <div
               className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center transition-colors cursor-pointer
-              ${preview ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400"}`}
+            ${preview ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400"}`}
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -431,17 +443,17 @@ export default function PassportPhotoTool({
               style={
                 !file || loading
                   ? {
-                      backgroundColor: "#d1dde3",
-                      color: "#8aafc0",
-                      cursor: "not-allowed",
-                    }
+                    backgroundColor: "#d1dde3",
+                    color: "#8aafc0",
+                    cursor: "not-allowed",
+                  }
                   : {
-                      backgroundColor: "#5a9ab5",
-                      color: "#ffffff",
-                      boxShadow:
-                        "0 4px 18px rgba(90,154,181,0.45), 0 1px 4px rgba(0,0,0,0.10)",
-                      cursor: "pointer",
-                    }
+                    backgroundColor: "#5a9ab5",
+                    color: "#ffffff",
+                    boxShadow:
+                      "0 4px 18px rgba(90,154,181,0.45), 0 1px 4px rgba(0,0,0,0.10)",
+                    cursor: "pointer",
+                  }
               }
               onMouseEnter={(e) => {
                 if (file && !loading)
@@ -459,10 +471,9 @@ export default function PassportPhotoTool({
               ) : (
                 <>
                   <Upload className="w-5 h-5" />
-                  {remainingCredits !== null && remainingCredits <= 0
-                    ? tier === "premium"
-                      ? "Upgrade to Executive"
-                      : "Upgrade to continue"
+                  {remainingCredits !== null && remainingCredits <= 0 && tier !== "executive" ? tier === "premium"
+                    ? "Upgrade to Executive"
+                    : "Upgrade to continue"
                     : t("passportPhoto.generate")}
                 </>
               )}
@@ -473,47 +484,57 @@ export default function PassportPhotoTool({
         {/* Result */}
         {result && (
           <section ref={resultRef} className="mt-12 w-full max-w-2xl">
-            <div
-              className="rounded-2xl p-4 sm:p-6"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.85)",
-                backdropFilter: "blur(10px)",
-                boxShadow:
-                  "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
-                border: "1px solid rgba(74,124,142,0.2)",
-              }}
+
+            <ResultGate
+              feature="photo_booth"
+              isLocked={
+                tier !== "executive" &&
+                remainingCredits !== null &&
+                remainingCredits <= 0
+              }
             >
-              <p
-                className="text-xl font-semibold text-green-600 mb-4 flex items-center justify-center gap-2"
-                style={{ color: "#4a8c6e" }}
-              >
-                <CheckCircle className="w-6 h-6" />
-                {t("passportPhoto.ready")}
-              </p>
-              <div className="relative flex justify-center w-full max-w-50 aspect-square mx-auto">
-                <NextImage
-                  src={result}
-                  alt="Passport photo result"
-                  fill
-                  className="object-cover rounded-lg shadow-xl border-4 border-white"
-                  unoptimized
-                />
-              </div>
-              <a
-                href={result}
-                download="passport-photo.jpg"
-                className="mt-6 mx-auto flex w-fit items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:opacity-90"
+              <div
+                className="rounded-2xl p-4 sm:p-6"
                 style={{
-                  backgroundColor: "#4a8c6e",
-                  color: "#ffffff",
+                  backgroundColor: "rgba(255,255,255,0.85)",
+                  backdropFilter: "blur(10px)",
                   boxShadow:
-                    "0 4px 18px rgba(74,140,110,0.4), 0 1px 4px rgba(0,0,0,0.10)",
+                    "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
+                  border: "1px solid rgba(74,124,142,0.2)",
                 }}
               >
-                <Download className="w-5 h-5" />
-                {t("passportPhoto.download")}
-              </a>
-            </div>
+                <p
+                  className="text-xl font-semibold text-green-600 mb-4 flex items-center justify-center gap-2"
+                  style={{ color: "#4a8c6e" }}
+                >
+                  <CheckCircle className="w-6 h-6" />
+                  {t("passportPhoto.ready")}
+                </p>
+                <div className="relative flex justify-center w-full max-w-50 aspect-square mx-auto">
+                  <NextImage
+                    src={result}
+                    alt="Passport photo result"
+                    fill
+                    className="object-cover rounded-lg shadow-xl border-4 border-white"
+                    unoptimized
+                  />
+                </div>
+                <a
+                  href={result}
+                  download="passport-photo.jpg"
+                  className="mt-6 mx-auto flex w-fit items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:opacity-90"
+                  style={{
+                    backgroundColor: "#4a8c6e",
+                    color: "#ffffff",
+                    boxShadow:
+                      "0 4px 18px rgba(74,140,110,0.4), 0 1px 4px rgba(0,0,0,0.10)",
+                  }}
+                >
+                  <Download className="w-5 h-5" />
+                  {t("passportPhoto.download")}
+                </a>
+              </div>
+            </ResultGate>
           </section>
         )}
       </div>

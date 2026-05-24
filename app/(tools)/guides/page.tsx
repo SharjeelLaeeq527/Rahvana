@@ -270,9 +270,8 @@ export default function GuidesPage({
 
   return (
     <div
-      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
-        isEmbedded ? "" : "pt-16"
-      }`}
+      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${isEmbedded ? "" : "pt-16"
+        }`}
     >
       {upgradeModalFeature && (
         <UpgradeModal
@@ -342,11 +341,10 @@ export default function GuidesPage({
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
-                  selectedCategory === cat
+                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategory === cat
                     ? "bg-primary text-primary-foreground border-primary shadow-md"
                     : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -356,11 +354,10 @@ export default function GuidesPage({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
-                      isMoreSelected
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected
                         ? "bg-primary text-primary-foreground border-primary shadow-md"
                         : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                    }`}
+                      }`}
                   >
                     More <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
@@ -370,9 +367,8 @@ export default function GuidesPage({
                     <DropdownMenuItem
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`cursor-pointer ${
-                        selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
-                      }`}
+                      className={`cursor-pointer ${selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
+                        }`}
                     >
                       {cat}
                     </DropdownMenuItem>
@@ -473,27 +469,27 @@ function GuideCard({
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${featureLocked
-        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-        : isNavigable
-          ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
-      }
+          ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+          : isNavigable
+            ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+        }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-          {/* Ribbon for locked cards */}
-          {featureLocked && (
-            <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
-              <Image
-                src="/icons/ribbon.png"
-                alt="Premium ribbon"
-                width={240}
-                height={300}
-                priority={false}
-                className="w-40 h-56 object-contain drop-shadow-lg"
-              />
-            </div>
-          )}
+      {/* Ribbon for locked cards */}
+      {featureLocked && (
+        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
+          <Image
+            src="/icons/ribbon.png"
+            alt="Premium ribbon"
+            width={240}
+            height={300}
+            priority={false}
+            className="w-40 h-56 object-contain drop-shadow-lg"
+          />
+        </div>
+      )}
 
       {/* Floating Icon Box */}
       <div
@@ -523,9 +519,8 @@ function GuideCard({
           {guide.title}
         </h3>
         <p
-          className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-4 ${
-            guide.subtitle ? "" : "invisible"
-          }`}
+          className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-4 ${guide.subtitle ? "" : "invisible"
+            }`}
         >
           {guide.subtitle || " "}
         </p>

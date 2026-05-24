@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -102,11 +103,10 @@ const LocationStep = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
-              formData.location === "karachi"
-                ? "border-teal-600 bg-teal-50"
-                : "border-gray-200 hover:border-teal-400"
-            }`}
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${formData.location === "karachi"
+              ? "border-teal-600 bg-teal-50"
+              : "border-gray-200 hover:border-teal-400"
+              }`}
             onClick={() => onLocationChange("karachi")}
           >
             <h3 className="font-semibold text-lg mb-2">
@@ -119,11 +119,10 @@ const LocationStep = ({
 
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
-              formData.location === "lahore"
-                ? "border-teal-600 bg-teal-50"
-                : "border-gray-200 hover:border-teal-400"
-            }`}
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${formData.location === "lahore"
+              ? "border-teal-600 bg-teal-50"
+              : "border-gray-200 hover:border-teal-400"
+              }`}
             onClick={() => onLocationChange("lahore")}
           >
             <h3 className="font-semibold text-lg mb-2">
@@ -136,11 +135,10 @@ const LocationStep = ({
 
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
-              formData.location === "islamabad"
-                ? "border-teal-600 bg-teal-50"
-                : "border-gray-200 hover:border-teal-400"
-            }`}
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${formData.location === "islamabad"
+              ? "border-teal-600 bg-teal-50"
+              : "border-gray-200 hover:border-teal-400"
+              }`}
             onClick={() => onLocationChange("islamabad")}
           >
             <h3 className="font-semibold text-lg mb-2">
@@ -160,11 +158,10 @@ const LocationStep = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 type="button"
-                className={`p-4 border-2 rounded-lg text-center transition-all ${
-                  formData.islamabadProvider === "amc"
-                    ? "border-blue-600 bg-blue-100"
-                    : "border-gray-300 hover:border-blue-400"
-                }`}
+                className={`p-4 border-2 rounded-lg text-center transition-all ${formData.islamabadProvider === "amc"
+                  ? "border-blue-600 bg-blue-100"
+                  : "border-gray-300 hover:border-blue-400"
+                  }`}
                 onClick={() => onProviderChange("amc")}
               >
                 <h4 className="font-semibold mb-1">
@@ -177,11 +174,10 @@ const LocationStep = ({
 
               <button
                 type="button"
-                className={`p-4 border-2 rounded-lg text-center transition-all ${
-                  formData.islamabadProvider === "iom"
-                    ? "border-blue-600 bg-blue-100"
-                    : "border-gray-300 hover:border-blue-400"
-                }`}
+                className={`p-4 border-2 rounded-lg text-center transition-all ${formData.islamabadProvider === "iom"
+                  ? "border-blue-600 bg-blue-100"
+                  : "border-gray-300 hover:border-blue-400"
+                  }`}
                 onClick={() => onProviderChange("iom")}
               >
                 <h4 className="font-semibold mb-1">
@@ -288,7 +284,7 @@ const BasicInfoStep = ({
                         "bookAppointment.basicInfoStep.visaCategories.immigrant",
                       )}
                     </SelectItem>
-                    <SelectItem value="Non-immigrant Visa">
+                    {/* <SelectItem value="Non-immigrant Visa">
                       {t(
                         "bookAppointment.basicInfoStep.visaCategories.nonImmigrant",
                       )}
@@ -313,7 +309,7 @@ const BasicInfoStep = ({
                     </SelectItem>
                     <SelectItem value="Other">
                       {t("bookAppointment.basicInfoStep.visaCategories.other")}
-                    </SelectItem>
+                    </SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -358,10 +354,17 @@ const BasicInfoStep = ({
                 id="primaryContact"
                 name="primaryContact"
                 value={formData.primaryContact}
-                onChange={onChange}
+                // onChange={onChange}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  e.target.value = cleaned;
+                  onChange(e);
+                }}
                 placeholder="3001234567"
                 type="tel"
                 className="flex-1"
+                maxLength={10}
+                inputMode="numeric"
               />
             </div>
           </div>
@@ -1461,6 +1464,160 @@ const ReviewStep = ({
   formatDate,
 }: ReviewStepProps) => {
   const { t } = useLanguage();
+
+  if (isIOM) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+            {t("bookAppointment.reviewStep.badge")}
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+            {t("bookAppointment.reviewStep.title")}
+          </h2>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-teal-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                ></path>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path>
+              </svg>
+              {t("bookAppointment.reviewStep.locationSection")}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.selectedCentre")}
+                </p>
+                <p className="font-medium capitalize">
+                  {formData.location}
+                  {formData.location === "islamabad" &&
+                    formData.islamabadProvider &&
+                    ` - ${formData.islamabadProvider.toUpperCase()}`}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-teal-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                ></path>
+              </svg>
+              {t("bookAppointment.reviewStep.basicInfoSection")}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.fullName")}
+                </p>
+                <p className="font-medium">{formData.fullName}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.passportNumber")}
+                </p>
+                <p className="font-medium">{formData.passportNumber}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.dateOfBirth")}
+                </p>
+                <p className="font-medium">
+                  {formData.dateOfBirth
+                    ? formatDate(formData.dateOfBirth)
+                    : t("bookAppointment.reviewStep.notSpecified")}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.visaType")}
+                </p>
+                <p className="font-medium">{formData.visaType}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.contactNumber")}
+                </p>
+                <p className="font-medium">+92 {formData.contactNumber}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.email")}
+                </p>
+                <p className="font-medium">{formData.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.preferredLocation")}
+                </p>
+                <p className="font-medium capitalize">{formData.preferredLocation}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">
+                  {t("bookAppointment.reviewStep.destinationCountry")}
+                </p>
+                <p className="font-medium">{formData.destinationCountry}</p>
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div className="flex justify-between pt-4">
+            <Button
+              onClick={onBack}
+              variant="outline"
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+            >
+              {t("bookAppointment.reviewStep.backToEditBtn")}
+            </Button>
+            <Button
+              onClick={onSubmit}
+              disabled={loading}
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+            >
+              {loading
+                ? t("bookAppointment.reviewStep.submitting")
+                : t("bookAppointment.reviewStep.confirmBtn")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
@@ -2401,7 +2558,7 @@ export default function WilcareAppointmentForm() {
       if (!appointmentResponse.ok) {
         throw new Error(
           appointmentResult.error ||
-            t("bookAppointment.validation.submitError"),
+          t("bookAppointment.validation.submitError"),
         );
       }
 
@@ -2484,8 +2641,12 @@ export default function WilcareAppointmentForm() {
     } else if (step > 1) {
       // Updated to reflect new step structure (document upload step restored)
       if (step === 7) {
-        // Going back from review step to schedule step
-        setStep(6);
+        // Going back from review step to schedule step (or IOM step if IOM)
+        if (isIOM) {
+          setStep(9);
+        } else {
+          setStep(6);
+        }
       } else if (step === 6) {
         // Going back from schedule step to document upload step
         setStep(5);
@@ -2609,16 +2770,18 @@ export default function WilcareAppointmentForm() {
         );
       case 7:
         return (
-          <ReviewStep
-            formData={formData}
-            error={error}
-            loading={loading}
-            isAMC={isAMC}
-            isIOM={isIOM}
-            onSubmit={handleNextStep}
-            onBack={handleGoBack}
-            formatDate={formatDate}
-          />
+          <ResultGate feature="medical_booking">
+            <ReviewStep
+              formData={formData}
+              error={error}
+              loading={loading}
+              isAMC={isAMC}
+              isIOM={isIOM}
+              onSubmit={handleNextStep}
+              onBack={handleGoBack}
+              formatDate={formatDate}
+            />
+          </ResultGate>
         );
       case 8:
         return <SuccessStep onReset={handleReset} />;

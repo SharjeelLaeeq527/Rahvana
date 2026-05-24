@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 interface USCISCaseStatus {
@@ -329,88 +330,90 @@ export default function CaseStatusPage() {
 
         {/* Results Screen */}
         {result && theme && !loading && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-2.5 mb-2">
-              <CheckCircle2 className="w-6 h-6 text-primary" />
-              <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">Current Status</h3>
-            </div>
-
-            <div className={`bg-white rounded-2xl shadow-xl border overflow-hidden ${theme.border}`}>
-              <div className={`px-6 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${theme.bg} border-b ${theme.border}`}>
-                <div className="flex items-start gap-4">
-                  <div className={`w-3 h-3 rounded-full mt-2 shrink-0 animate-pulse ${theme.dot}`} />
-                  <div>
-                    <h4 className={`text-xl md:text-2xl font-black leading-tight ${theme.color}`}>
-                      {result.status || "Status Unavailable"}
-                    </h4>
-                    <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-1.5">
-                      <RefreshCw className="w-3 h-3" />
-                      Updated {new Date(result.checkedAt).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-[12px] font-black uppercase tracking-widest ${theme.bg} ${theme.color} ${theme.border}`}>
-                  {theme.label}
-                </div>
+          <ResultGate feature="dq_status_check">
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-2.5 mb-2">
+                <CheckCircle2 className="w-6 h-6 text-primary" />
+                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">Current Status</h3>
               </div>
 
-              <div className="p-6 md:p-8 space-y-8">
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  <ResultCell icon={<Hash className="w-4 h-4" />} label="Receipt Number" value={result.receiptNumber} mono />
-                  {result.formType && <ResultCell icon={<FileText className="w-4 h-4" />} label="Form Type" value={result.formType} />}
-                  {result.modifiedDate && <ResultCell icon={<Calendar className="w-4 h-4" />} label="Last Updated" value={result.modifiedDate} />}
-                </div>
-
-                {/* Case Description */}
-                {result.description && (
-                  <div className="bg-slate-50/80 rounded-2xl p-6 border border-slate-100">
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <Info className="w-3.5 h-3.5" /> Official Case Update
-                    </h5>
-                    <p className="text-[15px] font-medium text-slate-700 leading-relaxed italic">
-                      "{result.description}"
-                    </p>
-                  </div>
-                )}
-
-                {/* Next Steps */}
-                {result.nextSteps.length > 0 && (
-                  <div>
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <ArrowUpCircle className="w-3.5 h-3.5 text-primary" /> Roadmap Ahead
-                    </h5>
-                    <div className="space-y-3">
-                      {result.nextSteps.map((step, i) => (
-                        <div key={i} className="flex gap-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100/50 group hover:border-emerald-200 transition-all">
-                          <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
-                          <p className="text-[15px] font-bold text-emerald-900 leading-relaxed">{step.text}</p>
-                        </div>
-                      ))}
+              <div className={`bg-white rounded-2xl shadow-xl border overflow-hidden ${theme.border}`}>
+                <div className={`px-6 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${theme.bg} border-b ${theme.border}`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`w-3 h-3 rounded-full mt-2 shrink-0 animate-pulse ${theme.dot}`} />
+                    <div>
+                      <h4 className={`text-xl md:text-2xl font-black leading-tight ${theme.color}`}>
+                        {result.status || "Status Unavailable"}
+                      </h4>
+                      <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-1.5">
+                        <RefreshCw className="w-3 h-3" />
+                        Updated {new Date(result.checkedAt).toLocaleString()}
+                      </p>
                     </div>
                   </div>
-                )}
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-[12px] font-black uppercase tracking-widest ${theme.bg} ${theme.color} ${theme.border}`}>
+                    {theme.label}
+                  </div>
+                </div>
 
-                {/* Footer Controls */}
-                <div className="flex flex-wrap gap-4 pt-8 border-t border-slate-50">
-                  <a
-                    href="https://egov.uscis.gov/casestatus/landing.do"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-all active:scale-95"
-                  >
-                    <ExternalLink className="w-4 h-4" /> Official USCIS Website
-                  </a>
-                  <button
-                    onClick={reset}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all active:scale-95"
-                  >
-                    <RefreshCcw className="w-4 h-4" /> Check Another Number
-                  </button>
+                <div className="p-6 md:p-8 space-y-8">
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    <ResultCell icon={<Hash className="w-4 h-4" />} label="Receipt Number" value={result.receiptNumber} mono />
+                    {result.formType && <ResultCell icon={<FileText className="w-4 h-4" />} label="Form Type" value={result.formType} />}
+                    {result.modifiedDate && <ResultCell icon={<Calendar className="w-4 h-4" />} label="Last Updated" value={result.modifiedDate} />}
+                  </div>
+
+                  {/* Case Description */}
+                  {result.description && (
+                    <div className="bg-slate-50/80 rounded-2xl p-6 border border-slate-100">
+                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Info className="w-3.5 h-3.5" /> Official Case Update
+                      </h5>
+                      <p className="text-[15px] font-medium text-slate-700 leading-relaxed italic">
+                        "{result.description}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Next Steps */}
+                  {result.nextSteps.length > 0 && (
+                    <div>
+                      <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <ArrowUpCircle className="w-3.5 h-3.5 text-primary" /> Roadmap Ahead
+                      </h5>
+                      <div className="space-y-3">
+                        {result.nextSteps.map((step, i) => (
+                          <div key={i} className="flex gap-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100/50 group hover:border-emerald-200 transition-all">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+                            <p className="text-[15px] font-bold text-emerald-900 leading-relaxed">{step.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Footer Controls */}
+                  <div className="flex flex-wrap gap-4 pt-8 border-t border-slate-50">
+                    <a
+                      href="https://egov.uscis.gov/casestatus/landing.do"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/10 transition-all active:scale-95"
+                    >
+                      <ExternalLink className="w-4 h-4" /> Official USCIS Website
+                    </a>
+                    <button
+                      onClick={reset}
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all active:scale-95"
+                    >
+                      <RefreshCcw className="w-4 h-4" /> Check Another Number
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </ResultGate>
         )}
 
         {/* Loading Skeleton */}

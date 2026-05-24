@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 // Dynamically import components that use browser APIs - disable SSR
 const SignatureUploader = dynamic(
@@ -177,12 +178,14 @@ export default function SignatureRemoverPage() {
           )}
 
           {processedImage && originalImage && !isProcessing && (
-            <SignaturePreview
-              originalImage={originalImage}
-              processedImage={processedImage}
-              onDownload={handleDownload}
-              onReset={handleReset}
-            />
+            <ResultGate feature="snap_sign">
+              <SignaturePreview
+                originalImage={originalImage}
+                processedImage={processedImage}
+                onDownload={handleDownload}
+                onReset={handleReset}
+              />
+            </ResultGate>
           )}
         </div>
       </div>

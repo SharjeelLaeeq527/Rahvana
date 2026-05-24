@@ -64,6 +64,7 @@ import {
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import Link from "next/link";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 export default function DocumentVaultPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -804,7 +805,8 @@ export default function DocumentVaultPage() {
                   value={activeTab}
                   className="mt-0 ring-offset-0 focus-visible:ring-0"
                 >
-                  <div className="space-y-6 sm:space-y-10">
+                  <ResultGate feature="document_vault">
+                    <div className="space-y-6 sm:space-y-10">
                     {searchQuery ? (
                       // Show flat list of search results when searching
                       <div className="space-y-6">
@@ -1171,6 +1173,7 @@ export default function DocumentVaultPage() {
                       </div>
                     )}
                   </div>
+                  </ResultGate>
                 </TabsContent>
               </Tabs>
             </div>

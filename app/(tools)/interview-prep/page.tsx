@@ -28,6 +28,7 @@ import CountrySelectionModal from "../../components/interview-prep/CountrySelect
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { ToastProvider } from "@/app/components/shared/ToastProvider";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 import type {
   InterviewCategoryConfig,
@@ -746,17 +747,24 @@ export default function InterviewPreparation() {
         );
       }
       return (
-        <ResultPage
-          sessionId={sessionId}
-          results={generatedResults}
-          onRestart={() => {
-            setStep(0);
-            setSessionId(null);
-            setSelectedCategory(null);
-            setFormData({ caseType: "" });
-            router.push("/interview-prep");
-          }}
-        />
+        <ResultGate
+          feature="basic_interview_prep"
+          title="Your Interview Prep Plan Is Ready"
+          description="Upgrade to Basic or above to unlock your personalised interview questions and preparation guide."
+          minHeight="400px"
+        >
+          <ResultPage
+            sessionId={sessionId}
+            results={generatedResults}
+            onRestart={() => {
+              setStep(0);
+              setSessionId(null);
+              setSelectedCategory(null);
+              setFormData({ caseType: "" });
+              router.push("/interview-prep");
+            }}
+          />
+        </ResultGate>
       );
     }
 

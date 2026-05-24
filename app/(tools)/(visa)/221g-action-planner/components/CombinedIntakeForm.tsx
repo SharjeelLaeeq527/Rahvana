@@ -34,6 +34,7 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
@@ -2884,8 +2885,24 @@ export default function CombinedIntakeForm({
               </div>
             </div>
           )}
-          {currentStep === 3 && <StepReviewGenerate />}
-          {currentStep === 4 && <StepExportPacket />}
+          {currentStep === 3 && (
+            <ResultGate
+              feature="action_221g"
+              title="Review & Generate Locked"
+              description="Upgrade to Executive to review your 221(g) case response details, next steps, and generate your custom document packet."
+            >
+              <StepReviewGenerate />
+            </ResultGate>
+          )}
+          {currentStep === 4 && (
+            <ResultGate
+              feature="action_221g"
+              title="Action Packet Ready"
+              description="Upgrade to Executive to download, print, or copy your personalized 221(g) response plan, cover letter, and document packet checklist."
+            >
+              <StepExportPacket />
+            </ResultGate>
+          )}
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import {
   X,
   Shield,
@@ -708,317 +709,325 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 7) {
               return (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
-                  
-                  <div className={`p-6 rounded-2xl border-2 mb-8`} 
-                    style={{ 
-                      backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
-                      borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
-                    }}>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Current Standing</span>
-                      <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase" 
-                        style={{ backgroundColor: result.isEligible ? COLORS.secondary : COLORS.danger, color: 'white' }}>
-                        {result.isEligible ? "Qualified" : "Shortfall"}
-                      </span>
-                    </div>
-                    <div className="text-3xl font-black text-slate-900 mb-1">
-                      ${result.primaryIncome.toLocaleString()} / ${result.requiredIncome.toLocaleString()}
-                    </div>
-                    <p className="text-[13px] text-slate-600 font-medium">
-                      {result.isEligible
-                        ? "Based on your income and household size, you qualify as the sole sponsor."
-                        : `You are $${(result.shortfall ?? 0).toLocaleString()} below the threshold.`}
-                    </p>
-                  </div>
-
-                  <div className="space-y-4 mb-8">
-                    <p className="text-[14px] font-bold text-slate-900">Do you need to add support?</p>
-                    <button 
-                      onClick={() => setStepIdx(8)}
-                      className="w-full p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-primary transition-all text-left flex items-center justify-between group bg-slate-50"
-                    >
-                      <div>
-                        <p className="font-bold text-slate-900">Add Support Income</p>
-                        <p className="text-xs text-slate-500">Household members or Joint sponsors.</p>
+                <ResultGate feature="sponsorship_calc">
+                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
+                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
+                    
+                    <div className={`p-6 rounded-2xl border-2 mb-8`} 
+                      style={{ 
+                        backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
+                        borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
+                      }}>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Current Standing</span>
+                        <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase" 
+                          style={{ backgroundColor: result.isEligible ? COLORS.secondary : COLORS.danger, color: 'white' }}>
+                          {result.isEligible ? "Qualified" : "Shortfall"}
+                        </span>
                       </div>
-                      <Plus size={24} className="text-slate-400 group-hover:text-primary" />
-                    </button>
-                    {!result.isEligible && (
+                      <div className="text-3xl font-black text-slate-900 mb-1">
+                        ${result.primaryIncome.toLocaleString()} / ${result.requiredIncome.toLocaleString()}
+                      </div>
+                      <p className="text-[13px] text-slate-600 font-medium">
+                        {result.isEligible
+                          ? "Based on your income and household size, you qualify as the sole sponsor."
+                          : `You are $${(result.shortfall ?? 0).toLocaleString()} below the threshold.`}
+                      </p>
+                    </div>
+
+                    <div className="space-y-4 mb-8">
+                      <p className="text-[14px] font-bold text-slate-900">Do you need to add support?</p>
                       <button 
-                        onClick={() => setStepIdx(9)}
+                        onClick={() => setStepIdx(8)}
                         className="w-full p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-primary transition-all text-left flex items-center justify-between group bg-slate-50"
                       >
                         <div>
-                          <p className="font-bold text-slate-900">More Options / What-if</p>
-                          <p className="text-xs text-slate-500">Substitute sponsor, Assets, or Self-petition.</p>
+                          <p className="font-bold text-slate-900">Add Support Income</p>
+                          <p className="text-xs text-slate-500">Household members or Joint sponsors.</p>
                         </div>
-                        <AlertTriangle size={24} className="text-slate-400 group-hover:text-amber-500" />
+                        <Plus size={24} className="text-slate-400 group-hover:text-primary" />
                       </button>
-                    )}
-                  </div>
+                      {!result.isEligible && (
+                        <button 
+                          onClick={() => setStepIdx(9)}
+                          className="w-full p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-primary transition-all text-left flex items-center justify-between group bg-slate-50"
+                        >
+                          <div>
+                            <p className="font-bold text-slate-900">More Options / What-if</p>
+                            <p className="text-xs text-slate-500">Substitute sponsor, Assets, or Self-petition.</p>
+                          </div>
+                          <AlertTriangle size={24} className="text-slate-400 group-hover:text-amber-500" />
+                        </button>
+                      )}
+                    </div>
 
-                  <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(6)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
-                      <ArrowLeft size={14} /> Back
-                    </button>
-                    <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
-                      View Final Plan <ArrowRight size={14} />
-                    </button>
+                    <div className="flex gap-[10px]">
+                      <button onClick={() => setStepIdx(6)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                        <ArrowLeft size={14} /> Back
+                      </button>
+                      <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                        View Final Plan <ArrowRight size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </ResultGate>
               );
             }
 
             if (step === 8) {
               return (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 9 of 11</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Support Resources</h2>
-                  
-                  <div className="space-y-6 mb-8 text-left">
-                    <div className="border-2 rounded-2xl overflow-hidden" 
-                      style={{ borderColor: `${COLORS.household}40`, backgroundColor: `${COLORS.household}05` }}>
-                      <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.household}15` }}>
-                        <div className="flex items-center gap-2">
-                          <Home size={18} style={{ color: COLORS.household }} />
-                          <span className="font-bold text-slate-900">Household Members</span>
+                <ResultGate feature="sponsorship_calc">
+                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 9 of 11</div>
+                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Support Resources</h2>
+                    
+                    <div className="space-y-6 mb-8 text-left">
+                      <div className="border-2 rounded-2xl overflow-hidden" 
+                        style={{ borderColor: `${COLORS.household}40`, backgroundColor: `${COLORS.household}05` }}>
+                        <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.household}15` }}>
+                          <div className="flex items-center gap-2">
+                            <Home size={18} style={{ color: COLORS.household }} />
+                            <span className="font-bold text-slate-900">Household Members</span>
+                          </div>
+                          <button onClick={addHouseholdMember} style={{ backgroundColor: COLORS.household }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
                         </div>
-                        <button onClick={addHouseholdMember} style={{ backgroundColor: COLORS.household }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
-                      </div>
-                      <div className="p-4 space-y-3">
-                        {data.householdMembers.length === 0 ? (
-                          <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No members added</p>
-                        ) : (
-                          data.householdMembers.map((m: any) => (
-                            <div key={m.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                              <div className="flex gap-2 mb-3">
-                                <select 
-                                  value={m.relationship}
-                                  onChange={(e) => updateHouseholdMember(m.id, {relationship: e.target.value})}
-                                  className="flex-1 p-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50 focus:border-purple-200 outline-none"
-                                >
-                                  <option value="">Relationship...</option>
-                                  <option value="Spouse">Spouse</option>
-                                  <option value="Child">Child</option>
-                                  <option value="Parent">Parent</option>
-                                  <option value="Sibling">Sibling</option>
-                                  <option value="Other Living in Household">Other Relative</option>
-                                </select>
-                                <button onClick={() => removeHouseholdMember(m.id)} className="p-2 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
-                              </div>
-                              <input 
-                                type="number" 
-                                value={m.annualIncome || ""} 
-                                onChange={(e) => updateHouseholdMember(m.id, {annualIncome: parseInt(e.target.value) || 0})}
-                                className="w-full p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
-                                placeholder="$ Income"
-                              />
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="border-2 rounded-2xl overflow-hidden" 
-                      style={{ borderColor: `${COLORS.joint}40`, backgroundColor: `${COLORS.joint}05` }}>
-                      <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.joint}15` }}>
-                        <div className="flex items-center gap-2">
-                          <UserPlus size={18} style={{ color: COLORS.joint }} />
-                          <span className="font-bold text-slate-900">Joint Sponsors</span>
-                        </div>
-                        <button onClick={addJointSponsor} style={{ backgroundColor: COLORS.joint }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
-                      </div>
-                      <div className="p-4 space-y-3">
-                        {data.jointSponsors.length === 0 ? (
-                          <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No joint sponsors added</p>
-                        ) : (
-                          data.jointSponsors.map((s: any) => (
-                            <div key={s.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                              <input 
-                                type="text"
-                                value={s.name}
-                                onChange={(e) => updateJointSponsor(s.id, {name: e.target.value})}
-                                placeholder="Sponsor Name"
-                                className="w-full p-2 mb-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50"
-                              />
-                              <div className="flex gap-2">
+                        <div className="p-4 space-y-3">
+                          {data.householdMembers.length === 0 ? (
+                            <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No members added</p>
+                          ) : (
+                            data.householdMembers.map((m: any) => (
+                              <div key={m.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                <div className="flex gap-2 mb-3">
+                                  <select 
+                                    value={m.relationship}
+                                    onChange={(e) => updateHouseholdMember(m.id, {relationship: e.target.value})}
+                                    className="flex-1 p-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50 focus:border-purple-200 outline-none"
+                                  >
+                                    <option value="">Relationship...</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Child">Child</option>
+                                    <option value="Parent">Parent</option>
+                                    <option value="Sibling">Sibling</option>
+                                    <option value="Other Living in Household">Other Relative</option>
+                                  </select>
+                                  <button onClick={() => removeHouseholdMember(m.id)} className="p-2 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
+                                </div>
                                 <input 
                                   type="number" 
-                                  value={s.annualIncome || ""} 
-                                  onChange={(e) => updateJointSponsor(s.id, {annualIncome: parseInt(e.target.value) || 0})}
-                                  className="flex-1 p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
+                                  value={m.annualIncome || ""} 
+                                  onChange={(e) => updateHouseholdMember(m.id, {annualIncome: parseInt(e.target.value) || 0})}
+                                  className="w-full p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
                                   placeholder="$ Income"
                                 />
-                                <button onClick={() => removeJointSponsor(s.id)} className="p-3 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
                               </div>
-                            </div>
-                          ))
-                        )}
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="border-2 rounded-2xl overflow-hidden" 
+                        style={{ borderColor: `${COLORS.joint}40`, backgroundColor: `${COLORS.joint}05` }}>
+                        <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.joint}15` }}>
+                          <div className="flex items-center gap-2">
+                            <UserPlus size={18} style={{ color: COLORS.joint }} />
+                            <span className="font-bold text-slate-900">Joint Sponsors</span>
+                          </div>
+                          <button onClick={addJointSponsor} style={{ backgroundColor: COLORS.joint }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          {data.jointSponsors.length === 0 ? (
+                            <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No joint sponsors added</p>
+                          ) : (
+                            data.jointSponsors.map((s: any) => (
+                              <div key={s.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                <input 
+                                  type="text"
+                                  value={s.name}
+                                  onChange={(e) => updateJointSponsor(s.id, {name: e.target.value})}
+                                  placeholder="Sponsor Name"
+                                  className="w-full p-2 mb-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50"
+                                />
+                                <div className="flex gap-2">
+                                  <input 
+                                    type="number" 
+                                    value={s.annualIncome || ""} 
+                                    onChange={(e) => updateJointSponsor(s.id, {annualIncome: parseInt(e.target.value) || 0})}
+                                    className="flex-1 p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
+                                    placeholder="$ Income"
+                                  />
+                                  <button onClick={() => removeJointSponsor(s.id)} className="p-3 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
-                      <ArrowLeft size={14} /> Back
-                    </button>
-                    <button onClick={() => setStepIdx(9)} style={{ backgroundColor: "stepColor" }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
-                      Continue <ArrowRight size={14} />
-                    </button>
+                    <div className="flex gap-[10px]">
+                      <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                        <ArrowLeft size={14} /> Back
+                      </button>
+                      <button onClick={() => setStepIdx(9)} style={{ backgroundColor: stepColor }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                        Continue <ArrowRight size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </ResultGate>
               );
             }
 
             if (step === 9) {
               return (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 10 of 11</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Alternative Options</h2>
-                  
-                  <div className="space-y-4 mb-8">
-                    {/* Assets Option */}
-                    <div className="border-2 rounded-xl overflow-hidden border-slate-200">
-                      <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('assets')}>
-                        <div className="flex items-center gap-2">
-                          <DollarSign size={18} style={{ color: COLORS.secondary }} />
-                          <span className="font-bold text-slate-800">Use Assets (Property/Savings)</span>
-                        </div>
-                        {expandedOptions.assets ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                      </div>
-                      {expandedOptions.assets && (
-                        <div className="p-4 bg-white animate-in slide-in-from-top-2 duration-200">
-                          <p className="text-xs text-slate-500 mb-4">You can use 1/3 (spouse/child of USC) or 1/5 of asset value to meet the requirement.</p>
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                            <input 
-                              type="number" 
-                              value={data.assetValue || ""} 
-                              onChange={(e) => setData({...data, assetValue: parseInt(e.target.value) || 0})}
-                              className="w-full pl-8 p-3 text-lg border-2 border-slate-100 rounded-lg"
-                              placeholder="Total Asset Value"
-                            />
+                <ResultGate feature="sponsorship_calc">
+                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 10 of 11</div>
+                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Alternative Options</h2>
+                    
+                    <div className="space-y-4 mb-8">
+                      {/* Assets Option */}
+                      <div className="border-2 rounded-xl overflow-hidden border-slate-200">
+                        <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('assets')}>
+                          <div className="flex items-center gap-2">
+                            <DollarSign size={18} style={{ color: COLORS.secondary }} />
+                            <span className="font-bold text-slate-800">Use Assets (Property/Savings)</span>
                           </div>
+                          {expandedOptions.assets ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         </div>
-                      )}
+                        {expandedOptions.assets && (
+                          <div className="p-4 bg-white animate-in slide-in-from-top-2 duration-200">
+                            <p className="text-xs text-slate-500 mb-4">You can use 1/3 (spouse/child of USC) or 1/5 of asset value to meet the requirement.</p>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                              <input 
+                                type="number" 
+                                value={data.assetValue || ""} 
+                                onChange={(e) => setData({...data, assetValue: parseInt(e.target.value) || 0})}
+                                className="w-full pl-8 p-3 text-lg border-2 border-slate-100 rounded-lg"
+                                placeholder="Total Asset Value"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Substitute Sponsor Option */}
+                      <div className="border-2 rounded-xl overflow-hidden border-slate-200">
+                        <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('substitute')}>
+                          <div className="flex items-center gap-2">
+                            <Heart size={18} style={{ color: COLORS.danger }} />
+                            <span className="font-bold text-slate-800">Substitute Sponsor</span>
+                          </div>
+                          {expandedOptions.substitute ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </div>
+                        {expandedOptions.substitute && (
+                          <div className="p-4 bg-white">
+                            <p className="text-xs text-slate-500 mb-3">If the original petitioner has passed away.</p>
+                            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={data.sponsorDeceased} 
+                                onChange={() => setData({...data, sponsorDeceased: !data.sponsorDeceased})}
+                                className="w-4 h-4 rounded"
+                              />
+                              The Petitioner is Deceased
+                            </label>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Self-Petition Option */}
+                      <div className="border-2 rounded-xl overflow-hidden border-slate-200">
+                        <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('self')}>
+                          <div className="flex items-center gap-2">
+                            <Shield size={18} style={{ color: COLORS.primary }} />
+                            <span className="font-bold text-slate-800">Self-Petition Categories</span>
+                          </div>
+                          {expandedOptions.self ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </div>
+                        {expandedOptions.self && (
+                          <div className="p-4 bg-white space-y-3">
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input type="checkbox" checked={data.isVAWA} onChange={() => setData({...data, isVAWA: !data.isVAWA})} /> VAWA Self-petitioner
+                            </label>
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input type="checkbox" checked={data.isWidow} onChange={() => setData({...data, isWidow: !data.isWidow})} /> Widow(er) of US Citizen
+                            </label>
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input type="checkbox" checked={data.isSpecialImmigrant} onChange={() => setData({...data, isSpecialImmigrant: !data.isSpecialImmigrant})} /> Special Immigrant
+                            </label>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Substitute Sponsor Option */}
-                    <div className="border-2 rounded-xl overflow-hidden border-slate-200">
-                      <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('substitute')}>
-                        <div className="flex items-center gap-2">
-                          <Heart size={18} style={{ color: COLORS.danger }} />
-                          <span className="font-bold text-slate-800">Substitute Sponsor</span>
-                        </div>
-                        {expandedOptions.substitute ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                      </div>
-                      {expandedOptions.substitute && (
-                        <div className="p-4 bg-white">
-                          <p className="text-xs text-slate-500 mb-3">If the original petitioner has passed away.</p>
-                          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              checked={data.sponsorDeceased} 
-                              onChange={() => setData({...data, sponsorDeceased: !data.sponsorDeceased})}
-                              className="w-4 h-4 rounded"
-                            />
-                            The Petitioner is Deceased
-                          </label>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Self-Petition Option */}
-                    <div className="border-2 rounded-xl overflow-hidden border-slate-200">
-                      <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('self')}>
-                        <div className="flex items-center gap-2">
-                          <Shield size={18} style={{ color: COLORS.primary }} />
-                          <span className="font-bold text-slate-800">Self-Petition Categories</span>
-                        </div>
-                        {expandedOptions.self ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                      </div>
-                      {expandedOptions.self && (
-                        <div className="p-4 bg-white space-y-3">
-                          <label className="flex items-center gap-2 text-sm cursor-pointer">
-                            <input type="checkbox" checked={data.isVAWA} onChange={() => setData({...data, isVAWA: !data.isVAWA})} /> VAWA Self-petitioner
-                          </label>
-                          <label className="flex items-center gap-2 text-sm cursor-pointer">
-                            <input type="checkbox" checked={data.isWidow} onChange={() => setData({...data, isWidow: !data.isWidow})} /> Widow(er) of US Citizen
-                          </label>
-                          <label className="flex items-center gap-2 text-sm cursor-pointer">
-                            <input type="checkbox" checked={data.isSpecialImmigrant} onChange={() => setData({...data, isSpecialImmigrant: !data.isSpecialImmigrant})} /> Special Immigrant
-                          </label>
-                        </div>
-                      )}
+                    <div className="flex gap-[10px]">
+                      <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                        <ArrowLeft size={14} /> Back
+                      </button>
+                      <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                        View Results <ArrowRight size={14} />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
-                      <ArrowLeft size={14} /> Back
-                    </button>
-                    <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
-                      View Results <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
+                </ResultGate>
               );
             }
 
             if (step === 10) {
               return (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>
-                  
-                  <div className="space-y-4 mb-8">
-                    <div className={`p-8 rounded-3xl border-2 text-center`}
-                      style={{ 
-                        backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
-                        borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
-                      }}>
-                      <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">Final Conclusion</div>
-                      <div className="text-3xl font-black mb-3" style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}>
-                        {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
+                <ResultGate feature="sponsorship_calc">
+                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
+                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>
+                    
+                    <div className="space-y-4 mb-8">
+                      <div className={`p-8 rounded-3xl border-2 text-center`}
+                        style={{ 
+                          backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
+                          borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
+                        }}>
+                        <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">Final Conclusion</div>
+                        <div className="text-3xl font-black mb-3" style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}>
+                          {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
+                        </div>
+                        <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                          Total Household Income: <strong className="text-[#0c1b33] text-lg">${result.totalIncome.toLocaleString()}</strong><br/>
+                          Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${result.requiredIncome.toLocaleString()}</strong>
+                        </p>
                       </div>
-                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                        Total Household Income: <strong className="text-[#0c1b33] text-lg">${result.totalIncome.toLocaleString()}</strong><br/>
-                        Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${result.requiredIncome.toLocaleString()}</strong>
-                      </p>
-                    </div>
 
-                    <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
-                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
-                      <div className="space-y-3">
-                         {result.forms.map((f: any, i: number) => (
-                           <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                             <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
-                             <div>
-                               <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
-                               <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
+                      <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
+                        <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
+                        <div className="space-y-3">
+                           {result.forms.map((f: any, i: number) => (
+                             <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                               <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
+                               <div>
+                                 <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
+                                 <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
+                               </div>
                              </div>
-                           </div>
-                         ))}
+                           ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex gap-[10px]">
-                    <button onClick={() => setStepIdx(data.assetValue > 0 || data.sponsorDeceased ? 9 : 8)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
-                      <ArrowLeft size={14} /> Edit Info
-                    </button>
-                    <button 
-                      onClick={() => onSave(result)} 
-                      style={{ backgroundColor: COLORS.primary }}
-                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
-                    >
-                      Complete & Save Plan <ArrowRight size={14} />
-                    </button>
+                    <div className="flex gap-[10px]">
+                      <button onClick={() => setStepIdx(data.assetValue > 0 || data.sponsorDeceased ? 9 : 8)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                        <ArrowLeft size={14} /> Edit Info
+                      </button>
+                      <button 
+                        onClick={() => onSave(result)} 
+                        style={{ backgroundColor: COLORS.primary }}
+                        className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
+                      >
+                        Complete & Save Plan <ArrowRight size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </ResultGate>
               );
             }
           })()}

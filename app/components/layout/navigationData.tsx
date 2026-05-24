@@ -608,17 +608,17 @@ export const NAV_DATA: Record<string, NavSection> = {
               "Track interview scheduling movement and trends by category.",
             href: "/iv-tool",
           },
-          {
-            icon: (
-              <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            ),
-            title: "Visa Bulletin Monitor",
-            description:
-              "Check your priority date progress against the Visa Bulletin.",
-            href: "/visa-checker",
-            // badge: "Live",
-            disabled: false,
-          },
+          // {
+          //   icon: (
+          //     <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          //   ),
+          //   title: "Visa Bulletin Monitor",
+          //   description:
+          //     "Check your priority date progress against the Visa Bulletin.",
+          //   href: "/visa-checker",
+          //   // badge: "Live",
+          //   disabled: false,
+          // },
         ],
       },
       {
@@ -938,18 +938,18 @@ export const NAV_DATA: Record<string, NavSection> = {
             href: "/book-consultation",
             disabled: false,
           },
-          {
-            icon: (
-              <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            ),
-            title: "Expert Case Review",
-            translationKey: "expertCaseReview",
-            description:
-              "Human review of your documents + a tailored improvement plan.",
-            href: "#",
-            disabled: true,
-            // badge: "Soon",
-          },
+          // {
+          //   icon: (
+          //     <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          //   ),
+          //   title: "Expert Case Review",
+          //   translationKey: "expertCaseReview",
+          //   description:
+          //     "Human review of your documents + a tailored improvement plan.",
+          //   href: "#",
+          //   disabled: true,
+          //   // badge: "Soon",
+          // },
         ],
       },
       {

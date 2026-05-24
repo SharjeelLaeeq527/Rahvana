@@ -34,10 +34,10 @@ interface Booking {
   visa_category: string;
   issue_category: string;
   status:
-    | "confirmed"
-    | "pending_approval"
-    | "alternatives_proposed"
-    | "cancelled";
+  | "confirmed"
+  | "pending_approval"
+  | "alternatives_proposed"
+  | "cancelled";
   selected_slot: string;
   alternate_slots?: string[];
   admin_notes?: string;
@@ -351,6 +351,11 @@ const ConsultationBookingPage = () => {
       label: "Aging Out & CSPA Protection",
       group: "Visa Bulletin & Wait Times",
     },
+    {
+      value: "other",
+      label: "Other / Not Listed",
+      group: "Other",
+    },
   ];
 
   const issueCategoryOptions: DropdownOption[] = issueCategories.map((item) => ({
@@ -413,6 +418,11 @@ const ConsultationBookingPage = () => {
       group: "Embassy Phase",
     },
     { value: "visa-approved", label: "Visa Approved", group: "Embassy Phase" },
+    {
+      value: "other",
+      label: "Not Listed",
+      group: "Other",
+    },
   ];
 
   const countryCodes = [
@@ -1038,9 +1048,8 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                      errors.full_name ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.full_name ? "border-red-500" : "border-gray-300"
+                      }`}
                     placeholder="John Doe"
                     required
                   />
@@ -1077,9 +1086,8 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                      errors.email ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.email ? "border-red-500" : "border-gray-300"
+                      }`}
                     placeholder="john@example.com"
                     required
                   />
@@ -1133,11 +1141,10 @@ const ConsultationBookingPage = () => {
                           });
                         }
                       }}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                        errors.phone_number
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.phone_number
                           ? "border-red-500"
                           : "border-gray-300"
-                      }`}
+                        }`}
                       placeholder={getPhonePlaceholder(formData.country_code)}
                       required
                     />
@@ -1172,11 +1179,10 @@ const ConsultationBookingPage = () => {
                 onDragOver={handleDropZoneDragOver}
                 onDragLeave={handleDropZoneDragLeave}
                 onDrop={handleDropZoneDrop}
-                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${
-                  isDraggingFiles
+                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${isDraggingFiles
                     ? "border-teal-500 bg-teal-50/60"
                     : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
-                }`}
+                  }`}
               >
                 <input
                   id="consultation-file-input"
@@ -1242,9 +1248,8 @@ const ConsultationBookingPage = () => {
                   }
                 }}
                 rows={5}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition min-h-30 ${
-                  errors.case_summary ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition min-h-30 ${errors.case_summary ? "border-red-500" : "border-gray-300"
+                  }`}
                 placeholder="Tell us about your visa status, any RFE/221g received, and specific questions you have..."
                 required
               />
@@ -1272,9 +1277,8 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${
-                      errors.consent ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${errors.consent ? "border-red-500" : "border-gray-300"
+                      }`}
                   />
                 </div>
                 <span className="text-xs text-gray-600 leading-relaxed font-medium group-hover:text-teal-900 transition-colors">

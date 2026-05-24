@@ -8,8 +8,9 @@ import { Header } from "./Header";
 import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
-import { X, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
 import { autoFillForm } from "@/lib/autoFill/mapper";
@@ -20,6 +21,8 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "../../shared/ExpandableTooltip";
 import { AlertCircle } from "lucide-react";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 // ============ TYPE DEFINITIONS ============
 interface FormProgressDraft {
@@ -131,6 +134,9 @@ const getLastAnsweredIndex = (
 };
 
 export function MultiStepForm({ formCode }: MultiStepFormProps) {
+  const plan = usePlan();
+  const [sessionQuestionCount, setSessionQuestionCount] = useState(0);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -741,6 +747,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const handleNext = () => {
     if (isNavigating) return; // ← Rate limiting
     setNavigationDirection("next");
+
+    // Track user session question count
+    const nextQuestionCount = sessionQuestionCount + 1;
+    setSessionQuestionCount(nextQuestionCount);
+
+    // If user is locked out, check if warning needs to be displayed after every 7 questions
+    if (!plan.canUse("smart_form_filler") && nextQuestionCount > 0 && nextQuestionCount % 7 === 0) {
+      showToast("Preview Mode: PDF download & preview is locked on Free/Basic plan. Upgrade or unlock the tool to get access!", "info", 8000);
+    }
 
     if (currentQuestionIndex < visibleFields.length - 1) {
       const currentField = visibleFields[currentQuestionIndex];
@@ -1720,18 +1735,20 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                       "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
                   }}
                 >
-                  <ReviewPage
-                    formData={formData}
-                    sections={sections}
-                    onEditStep={handleEditStep}
-                    onBackToForm={() => setView("form")}
-                    onPreviewPDF={handlePreviewPDF}
-                    onDownloadPDF={handleDownloadPDF}
-                    onSaveToVault={handleSaveToVault}
-                    isPreviewing={isPreviewing}
-                    isDownloading={isDownloading}
-                    isSavingToVault={isSavingToVault}
-                  />
+                  <ResultGate feature="smart_form_filler">
+                    <ReviewPage
+                      formData={formData}
+                      sections={sections}
+                      onEditStep={handleEditStep}
+                      onBackToForm={() => setView("form")}
+                      onPreviewPDF={handlePreviewPDF}
+                      onDownloadPDF={handleDownloadPDF}
+                      onSaveToVault={handleSaveToVault}
+                      isPreviewing={isPreviewing}
+                      isDownloading={isDownloading}
+                      isSavingToVault={isSavingToVault}
+                    />
+                  </ResultGate>
                 </div>
               )}
             </div>
@@ -1758,6 +1775,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             sections={sections}
           />
         </div>
+      )}
+
+      {/* Upgrade Modal Hook */}
+      {showUpgradeModal && (
+        <UpgradeModal
+          feature="smart_form_filler"
+          onClose={() => setShowUpgradeModal(false)}
+        />
       )}
     </div>
   );

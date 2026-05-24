@@ -26,7 +26,7 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Full roadmap — all steps & chapters visible",
     "Checklist engine for your case",
     "Portal wallet (save credentials securely)",
-    "Visa bulletin monitor",
+    // "Visa bulletin monitor",
     "PDF toolkit, Snap & Sign, DQ status check",
     "Basic interview prep",
   ],
@@ -252,8 +252,13 @@ export function UpgradeModal({
     }
   };
 
+  React.useEffect(() => {
+    if (upgradeTiers.length === 0) {
+      onClose();
+    }
+  }, [upgradeTiers.length, onClose]);
+
   if (upgradeTiers.length === 0) {
-    onClose();
     return null;
   }
 

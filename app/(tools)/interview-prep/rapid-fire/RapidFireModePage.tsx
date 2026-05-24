@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { GeneratedQuestion } from "@/lib/interview-prep";
 import confetti from "canvas-confetti";
 import { X, RotateCcw, Zap } from "lucide-react";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 interface RapidFireModeProps {
   sessionId: string;
@@ -379,8 +380,14 @@ export const RapidFireModePage = ({
 
   if (totalScore !== null) {
     return (
-      <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
-        <div className="">
+      <ResultGate
+        feature="interview_rapid_fire"
+        title="Rapid Fire Results Ready"
+        description="Upgrade to Basic or above to view your readiness score, question breakdown, and performance review."
+        minHeight="400px"
+      >
+        <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
+          <div className="">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
               Rapid Fire Completed!
@@ -570,9 +577,9 @@ export const RapidFireModePage = ({
 
             {/* Review Question Card */}
             {reviewQuestion && (
-              <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg\">
+              <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-slate-900 text-lg\">
+                  <h4 className="font-semibold text-slate-900 text-lg">
                     Question Review
                   </h4>
                   <Button
@@ -700,6 +707,7 @@ export const RapidFireModePage = ({
           </div>
         </div>
       </div>
+      </ResultGate>
     );
   }
 

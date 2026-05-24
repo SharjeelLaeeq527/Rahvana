@@ -2640,16 +2640,16 @@ const featuredTools = [
     border: "#d1fae5",
     iconSrc: "/icons/221g-action-plan.svg",
   },
-  {
-    id: "path",
-    icon: Compass,
-    iconSize: 18,
-    label: "Visa Path Finder",
-    bg: "#fff7ed",
-    fg: "#ea580c",
-    border: "#ffedd5",
-    iconSrc: "/icons/visa-path-finder.svg",
-  },
+  // {
+  //   id: "path",
+  //   icon: Compass,
+  //   iconSize: 18,
+  //   label: "Visa Path Finder",
+  //   bg: "#fff7ed",
+  //   fg: "#ea580c",
+  //   border: "#ffedd5",
+  //   iconSrc: "/icons/visa-path-finder.svg",
+  // },
   {
     id: "interview",
     icon: MessageSquare,
@@ -2680,16 +2680,16 @@ const featuredTools = [
     border: "#fae8ff",
     iconSrc: "/icons/dq-case-tracker.svg",
   },
-  {
-    id: "bulletin",
-    icon: Calendar,
-    iconSize: 19,
-    label: "Visa Bulletin Monitor",
-    bg: "#f0fdfa",
-    fg: "#0d9488",
-    border: "#ccfbf1",
-    iconSrc: "/icons/visa-bulletin-monitor.svg",
-  },
+  // {
+  //   id: "bulletin",
+  //   icon: Calendar,
+  //   iconSize: 19,
+  //   label: "Visa Bulletin Monitor",
+  //   bg: "#f0fdfa",
+  //   fg: "#0d9488",
+  //   border: "#ccfbf1",
+  //   iconSrc: "/icons/visa-bulletin-monitor.svg",
+  // },
   {
     id: "photo",
     icon: Camera,
@@ -2757,18 +2757,18 @@ const toolContent: Record<string, any> = {
       "Embassy-specific guidance",
     ],
   },
-  path: {
-    eyebrow: "Getting Started",
-    title: "Visa Path Finder",
-    headline: "5 questions. One clear starting point.",
-    subtext:
-      "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
-    benefits: [
-      "Confirm IR-1 eligibility",
-      "Know who files what",
-      "Instant next step",
-    ],
-  },
+  // path: {
+  //   eyebrow: "Getting Started",
+  //   title: "Visa Path Finder",
+  //   headline: "5 questions. One clear starting point.",
+  //   subtext:
+  //     "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
+  //   benefits: [
+  //     "Confirm IR-1 eligibility",
+  //     "Know who files what",
+  //     "Instant next step",
+  //   ],
+  // },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Prep",
@@ -2805,18 +2805,18 @@ const toolContent: Record<string, any> = {
       "Estimate your wait",
     ],
   },
-  bulletin: {
-    eyebrow: "Priority Date",
-    title: "Visa Bulletin Monitor",
-    headline: "IR-1 is always current. But yours might not be.",
-    subtext:
-      "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
-    benefits: [
-      "Monthly bulletin updates",
-      "Priority date tracker",
-      "Current or waiting?",
-    ],
-  },
+  // bulletin: {
+  //   eyebrow: "Priority Date",
+  //   title: "Visa Bulletin Monitor",
+  //   headline: "IR-1 is always current. But yours might not be.",
+  //   subtext:
+  //     "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
+  //   benefits: [
+  //     "Monthly bulletin updates",
+  //     "Priority date tracker",
+  //     "Current or waiting?",
+  //   ],
+  // },
   photo: {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",

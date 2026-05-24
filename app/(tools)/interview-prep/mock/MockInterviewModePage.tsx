@@ -26,6 +26,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { GeneratedQuestion } from "@/lib/interview-prep";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 interface MockInterviewModePageProps {
   sessionId?: string;
@@ -951,164 +952,166 @@ export function MockInterviewModePage({
     const { metrics, insights, validity } = report;
 
     return (
-      <div className="guide-grid-bg relative min-h-screen overflow-hidden bg-gradient-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
-        <div className="pointer-events-none absolute -top-40 -left-40 h-[28rem] w-[28rem] rounded-full bg-[#32e0c4]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-[#0d7377]/10 blur-3xl" />
+      <ResultGate feature="mock_interview">
+        <div className="guide-grid-bg relative min-h-screen overflow-hidden bg-gradient-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
+          <div className="pointer-events-none absolute -top-40 -left-40 h-[28rem] w-[28rem] rounded-full bg-[#32e0c4]/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-[#0d7377]/10 blur-3xl" />
 
-        <div className="relative w-full max-w-3xl">
-          <div className="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.25)] p-8 sm:p-10">
-            <div className="text-center mb-10">
-              <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e8f6f6] border border-[#0d7377]/20">
-                <CheckCircle2 className="h-8 w-8 text-[#0d7377]" />
-              </div>
-              <h2 className="text-4xl font-semibold text-slate-900 mb-2 tracking-tight">
-                Session Complete
-              </h2>
-              <p className="text-slate-500">
-                {report.sessionEndReason === "completed"
-                  ? "Your performance analysis"
-                  : "Session Summary"}
-              </p>
-            </div>
-
-            {/* Session Snapshot */}
-            <div className="rounded-2xl border border-[#0d7377]/15 bg-[#e8f6f6]/50 p-5 mb-6">
-              <p className="text-sm leading-relaxed text-slate-800">
-                {insights.snapshot}
-              </p>
-            </div>
-
-            {/* Key Metrics */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {[
-                {
-                  label: "Attempted",
-                  value: metrics.attemptedQuestions,
-                },
-                {
-                  label: "Completion",
-                  value:
-                    report.sessionEndReason === "completed"
-                      ? `${Math.round(metrics.completionRate)}%`
-                      : "Partial",
-                },
-                {
-                  label: "Avg Response",
-                  value: `${metrics.avgResponseTime}s`,
-                },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 text-center"
-                >
-                  <div className="text-3xl font-semibold text-slate-900 tracking-tight">
-                    {stat.value}
-                  </div>
-                  <p className="text-[11px] uppercase tracking-wider text-slate-500 mt-1.5">
-                    {stat.label}
-                  </p>
+          <div className="relative w-full max-w-3xl">
+            <div className="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.25)] p-8 sm:p-10">
+              <div className="text-center mb-10">
+                <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e8f6f6] border border-[#0d7377]/20">
+                  <CheckCircle2 className="h-8 w-8 text-[#0d7377]" />
                 </div>
-              ))}
-            </div>
-
-            {/* Validity Notice (for partial sessions) */}
-            {!validity.isFullSession && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 mb-6">
-                <p className="text-sm text-amber-900">
-                  <span className="font-semibold">Note:</span> This analysis is
-                  based on a
-                  {report.sessionEndReason === "aborted_focus"
-                    ? " focus-limited"
-                    : report.sessionEndReason === "aborted_time"
-                      ? " time-limited"
-                      : " partial"}{" "}
-                  session. Complete future sessions for comprehensive feedback.
+                <h2 className="text-4xl font-semibold text-slate-900 mb-2 tracking-tight">
+                  Session Complete
+                </h2>
+                <p className="text-slate-500">
+                  {report.sessionEndReason === "completed"
+                    ? "Your performance analysis"
+                    : "Session Summary"}
                 </p>
               </div>
-            )}
 
-            {/* Strengths */}
-            {insights.strengths.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
-                  Your Strengths
-                </h3>
-                <div className="space-y-2">
-                  {insights.strengths.map((strength, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-900"
-                    >
-                      {strength}
-                    </div>
-                  ))}
-                </div>
+              {/* Session Snapshot */}
+              <div className="rounded-2xl border border-[#0d7377]/15 bg-[#e8f6f6]/50 p-5 mb-6">
+                <p className="text-sm leading-relaxed text-slate-800">
+                  {insights.snapshot}
+                </p>
               </div>
-            )}
 
-            {/* Needs Improvement */}
-            {insights.improvements.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
-                  Areas to Improve
-                </h3>
-                <div className="space-y-2">
-                  {insights.improvements.map((improvement, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-sm text-amber-900"
-                    >
-                      {improvement}
+              {/* Key Metrics */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {[
+                  {
+                    label: "Attempted",
+                    value: metrics.attemptedQuestions,
+                  },
+                  {
+                    label: "Completion",
+                    value:
+                      report.sessionEndReason === "completed"
+                        ? `${Math.round(metrics.completionRate)}%`
+                        : "Partial",
+                  },
+                  {
+                    label: "Avg Response",
+                    value: `${metrics.avgResponseTime}s`,
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 text-center"
+                  >
+                    <div className="text-3xl font-semibold text-slate-900 tracking-tight">
+                      {stat.value}
                     </div>
-                  ))}
-                </div>
+                    <p className="text-[11px] uppercase tracking-wider text-slate-500 mt-1.5">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
               </div>
-            )}
 
-            {/* Next Practice Focus */}
-            {insights.nextFocus.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
-                  Next Practice Focus
-                </h3>
-                <div className="space-y-2">
-                  {insights.nextFocus.map((focus, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-lg border border-blue-200 bg-blue-50/60 p-3 text-sm text-blue-900 flex items-start gap-2"
-                    >
-                      <span className="text-blue-600 font-semibold mt-0.5">
-                        •
-                      </span>
-                      <span>{focus}</span>
-                    </div>
-                  ))}
+              {/* Validity Notice (for partial sessions) */}
+              {!validity.isFullSession && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 mb-6">
+                  <p className="text-sm text-amber-900">
+                    <span className="font-semibold">Note:</span> This analysis is
+                    based on a
+                    {report.sessionEndReason === "aborted_focus"
+                      ? " focus-limited"
+                      : report.sessionEndReason === "aborted_time"
+                        ? " time-limited"
+                        : " partial"}{" "}
+                    session. Complete future sessions for comprehensive feedback.
+                  </p>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                onClick={() => {
-                  setPhase("intro");
-                  setSessionEndReason(null);
-                }}
-                variant="outline"
-                className="flex-1 h-12 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-              >
-                Try Again
-              </Button>
-              <Button
-                onClick={onExit}
-                className="flex-1 h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
-              >
-                Back to Prep
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
+              {/* Strengths */}
+              {insights.strengths.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
+                    Your Strengths
+                  </h3>
+                  <div className="space-y-2">
+                    {insights.strengths.map((strength, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-900"
+                      >
+                        {strength}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Needs Improvement */}
+              {insights.improvements.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
+                    Areas to Improve
+                  </h3>
+                  <div className="space-y-2">
+                    {insights.improvements.map((improvement, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-sm text-amber-900"
+                      >
+                        {improvement}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Next Practice Focus */}
+              {insights.nextFocus.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
+                    Next Practice Focus
+                  </h3>
+                  <div className="space-y-2">
+                    {insights.nextFocus.map((focus, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-lg border border-blue-200 bg-blue-50/60 p-3 text-sm text-blue-900 flex items-start gap-2"
+                      >
+                        <span className="text-blue-600 font-semibold mt-0.5">
+                          •
+                        </span>
+                        <span>{focus}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={() => {
+                    setPhase("intro");
+                    setSessionEndReason(null);
+                  }}
+                  variant="outline"
+                  className="flex-1 h-12 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                >
+                  Try Again
+                </Button>
+                <Button
+                  onClick={onExit}
+                  className="flex-1 h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
+                >
+                  Back to Prep
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </ResultGate>
     );
   }
 
