@@ -16,11 +16,15 @@ import {
   ChevronLeft,
   X as CloseIcon,
   Crown,
+  CreditCard,
+  ShoppingBag,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
 import { CustomDropdown, DropdownOption } from "@/app/components/shared/CustomDropdown";
 import { usePlan } from "@/app/context/PlanContext";
+import { useAuth } from "@/app/context/AuthContext";
 import { PageGate } from "@/app/components/entitlements/PageGate";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
@@ -200,6 +204,7 @@ const ConsultationBookingPage = () => {
   const [consultationCreditsLoading, setConsultationCreditsLoading] =
     useState(true);
   const { tier } = usePlan();
+  const { user, isLoading: authLoading } = useAuth();
   const { checkAccess, consumeAccess } = useFeatureAccess();
   const hasExecutiveAccess = tier === "executive";
   const { showToast } = useToast();
@@ -723,27 +728,25 @@ const ConsultationBookingPage = () => {
       return;
     }
 
-    if (remainingConsultations !== null && remainingConsultations <= 0) {
-      setShowConsultationUpgradeModal(true);
-      setLoading(false);
-      return;
-    }
+    const hasCredit = tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
 
-    const reservation = await consumeAccess("expert_consultation");
+    setLoading(true);
 
-    if (!reservation.allowed) {
-      // Show upgrade modal - UpgradeModal fetches entitlement data itself
-      setShowConsultationUpgradeModal(true);
-      setLoading(false);
-      return;
-    }
+    if (hasCredit) {
+      const reservation = await consumeAccess("expert_consultation");
 
-    if (reservation.data?.remaining !== undefined) {
-      setRemainingConsultations(reservation.data.remaining);
+      if (!reservation.allowed) {
+        setShowConsultationUpgradeModal(true);
+        setLoading(false);
+        return;
+      }
+
+      if (reservation.data?.remaining !== undefined) {
+        setRemainingConsultations(reservation.data.remaining);
+      }
     }
 
     console.log("Submitting form...", formData);
-    setLoading(true);
 
     try {
       // 1. Upload attachments first if any
@@ -768,11 +771,7 @@ const ConsultationBookingPage = () => {
       }
 
       // 2. Clean up and combine phone fields
-      // Remove all non-digits from phone_number except a leading + if present
       const cleanPhoneNumber = formData.phone_number.replace(/[^\d+]/g, "");
-      // If the phone number already starts with +, we assume it has its own country code,
-      // but the business requirement is to use the selected country_code.
-      // Most robust: remove leading + from phone_number if country_code is already preened.
       const finalPhoneStr =
         `${formData.country_code}${cleanPhoneNumber.startsWith("+") ? cleanPhoneNumber.substring(1) : cleanPhoneNumber}`.replace(
           /\s+/g,
@@ -799,14 +798,45 @@ const ConsultationBookingPage = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setReferenceId(result.reference_id);
-        setShowConfirmation(true);
+
+        // If not using credit, redirect to Stripe checkout!
+        if (!hasCredit && user?.id) {
+          try {
+            const stripeRes = await fetch("/api/stripe/checkout", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                consultationId: result.id,
+                userId: user.id,
+              }),
+            });
+
+            const stripeData = await stripeRes.json();
+
+            if (!stripeRes.ok) {
+              throw new Error(stripeData.error || "Failed to create checkout session");
+            }
+
+            if (stripeData.url) {
+              window.location.href = stripeData.url;
+              return; // Do not show confirmation screen yet since they are redirecting to pay
+            } else {
+              throw new Error("No checkout URL returned");
+            }
+          } catch (stripeErr: any) {
+            console.error("Checkout redirection failed:", stripeErr);
+            showToast(`Redirection failed: ${stripeErr.message || stripeErr}`, "error");
+          }
+        } else {
+          // Free booking -> show confirmation directly!
+          setReferenceId(result.reference_id);
+          setShowConfirmation(true);
+        }
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error("Submission failed:", errorData);
-        // if (response.status === 403) {
-        setShowConsultationUpgradeModal(true);
-        // }
         showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
       }
     } catch (error) {
@@ -821,7 +851,7 @@ const ConsultationBookingPage = () => {
     if (!validateStep(currentStep)) {
       return; // Don't proceed if validation fails
     }
-    setCurrentStep((prev) => Math.min(prev + 1, 3));
+    setCurrentStep((prev) => Math.min(prev + 1, 4));
   };
   // Validation function for each step
   const validateStep = (step: number): boolean => {
@@ -852,6 +882,11 @@ const ConsultationBookingPage = () => {
       }
       if (!formData.consent) {
         newErrors.consent = "You must agree to the terms to continue";
+      }
+    } else if (step === 3) {
+      if (!formData.selected_slot) {
+        newErrors.selected_slot = "Please select a consultation time slot";
+        showToast("Please select a consultation time slot.", "error");
       }
     }
 
@@ -1142,8 +1177,8 @@ const ConsultationBookingPage = () => {
                         }
                       }}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.phone_number
-                          ? "border-red-500"
-                          : "border-gray-300"
+                        ? "border-red-500"
+                        : "border-gray-300"
                         }`}
                       placeholder={getPhonePlaceholder(formData.country_code)}
                       required
@@ -1180,8 +1215,8 @@ const ConsultationBookingPage = () => {
                 onDragLeave={handleDropZoneDragLeave}
                 onDrop={handleDropZoneDrop}
                 className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${isDraggingFiles
-                    ? "border-teal-500 bg-teal-50/60"
-                    : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
+                  ? "border-teal-500 bg-teal-50/60"
+                  : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
                   }`}
               >
                 <input
@@ -1390,6 +1425,178 @@ const ConsultationBookingPage = () => {
             )}
           </div>
         );
+      case 4: {
+        const selectedIssue = issueCategories.find(c => c.value === formData.issue_category)?.label || formData.issue_category || "General Inquiry";
+        const selectedStage = caseStages.find(s => s.value === formData.case_stage)?.label || formData.case_stage || "Not Specified";
+        const selectedUrgency = urgencyOptions.find(u => u.value === formData.urgency)?.label || formData.urgency || "Normal";
+
+        const formattedDate = formData.selected_slot?.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }) || "No slot selected";
+
+        const slotTime = availableSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || "";
+
+        const hasCredit = tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
+
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            {/* Heading / Premium Badge */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-linear-to-r from-slate-900 to-slate-800 p-6 rounded-2xl text-white shadow-xl">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-500/20 text-teal-300 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border border-teal-500/30">
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                  Order Review
+                </span>
+                <h3 className="text-xl font-bold">Review your Consultation Details</h3>
+                <p className="text-slate-400 text-xs mt-1 font-light">Confirm details and complete booking.</p>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
+                {tier !== "free" ? (
+                  <span
+                    aria-hidden="true"
+                    className={`plan-icon plan-icon--${tier}`}
+                    style={{ width: 28, height: 28, flexShrink: 0 }}
+                  />
+                ) : null}
+                <span className="text-sm font-semibold capitalize">{tier} Plan</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+              {/* Order breakdown */}
+              <div className="md:col-span-3 space-y-6">
+                {/* Summary Card */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-teal-600" />
+                    Consultation Summary
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Issue / Subject</p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">{selectedIssue}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Visa Stage</p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">{selectedStage}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Urgency Priority</p>
+                      <span className={cn(
+                        "inline-block text-[11px] font-bold px-2 py-0.5 rounded mt-1.5",
+                        formData.urgency.startsWith("urgent")
+                          ? "bg-red-50 text-red-600 border border-red-100"
+                          : "bg-slate-50 text-slate-600 border border-slate-100"
+                      )}>
+                        {selectedUrgency}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Language Preference</p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">{formData.preferred_language}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-5 border-t border-slate-100">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Selected Slot</p>
+                    <div className="mt-2 flex items-center gap-3 bg-teal-50/50 border border-teal-100/50 p-4 rounded-xl">
+                      <div className="bg-teal-600 text-white rounded-lg p-2 flex items-center justify-center">
+                        <Calendar className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{formattedDate}</p>
+                        <p className="text-xs font-bold text-teal-700 mt-0.5">{slotTime}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secure checkout info */}
+                {/* <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex items-start gap-3">
+                  <ShieldCheck className="h-6 w-6 text-teal-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Secure Transaction Guaranteed</h5>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Your consultation details are handled with standard end-to-end encryption. Direct Stripe payment uses secure 256-bit SSL encryption.
+                    </p>
+                  </div>
+                </div> */}
+              </div>
+
+              {/* Shopping Cart Summary & Payment Choice */}
+              <div className="md:col-span-2 space-y-6">
+                <div className="bg-slate-50/55 border border-slate-200/60 rounded-2xl p-6 shadow-sm flex flex-col justify-between h-full">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                      <ShoppingBag className="h-4 w-4 text-teal-600" />
+                      Price Breakdown
+                    </h4>
+
+                    {/* Order line items */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-slate-600 font-medium">1x Expert Consultation</span>
+                        <span className="text-slate-800 font-bold">$99.00</span>
+                      </div>
+
+                      {/* Plan Discounts / Benefits */}
+                      {hasCredit ? (
+                        <div className="flex justify-between items-center text-sm text-green-600">
+                          <span className="font-semibold flex items-center gap-1">
+                            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                            Executive Credit Applied
+                          </span>
+                          <span className="font-bold">-$99.00</span>
+                        </div>
+                      ) : null}
+
+                      <div className="border-t border-slate-200 pt-4 mt-2 flex justify-between items-center">
+                        <span className="text-base font-bold text-slate-900">Total Due</span>
+                        <span className="text-xl font-black text-slate-900">
+                          {hasCredit ? "$0.00" : "$99.00"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Show available credits message */}
+                    {tier === "executive" && (
+                      <div className="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
+                        <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                        <span className="text-[11px] font-bold text-amber-800">
+                          {remainingConsultations !== null ? (
+                            remainingConsultations === 1
+                              ? "1 Executive Consultation credit left"
+                              : `${remainingConsultations} Executive Consultation credits left`
+                          ) : (
+                            "Executive credits active."
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Show Checkout badge if no credits */}
+                  {!hasCredit && (
+                    <div className="mt-5 p-4 rounded-xl bg-teal-50 border border-teal-100 flex items-start gap-3">
+                      <CreditCard className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-bold text-teal-800">Secure Card Checkout</p>
+                        <p className="text-[11px] text-teal-700/80 mt-0.5 leading-relaxed">
+                          Payment is processed securely via Stripe. All major credit and debit cards accepted.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
       default:
         return null;
     }
@@ -1596,12 +1803,22 @@ const ConsultationBookingPage = () => {
     );
   }
 
-  if (!hasExecutiveAccess) {
+  if (authLoading) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#fafcff] overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[80px] pointer-events-none translate-y-1/2 -translate-x-1/3" />
+        <Loader size="lg" text="Loading profile..." />
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <PageGate
         feature="expert_consultation"
-        title="Expert Consultation Locked"
-        description="Expert consultation booking is available on Premium or Executive plans, or as an add-on for other plans."
+        title="Expert Consultation"
+        description="Please log in or sign up to book a personalized consultation with our immigration experts."
       >
         <></>
       </PageGate>
@@ -1638,24 +1855,15 @@ const ConsultationBookingPage = () => {
             <div className="flex gap-3">
               <Button
                 onClick={() => {
-                  if (tier !== "executive") {
-                    setShowConsultationUpgradeModal(true);
-                  } else {
-                    setActiveView("booking");
-                  }
+                  setActiveView("booking");
                 }}
-                disabled={tier !== "executive"}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
-                  activeView === ("booking" as "booking" | "requests") &&
-                    tier === "executive"
+                  activeView === ("booking" as "booking" | "requests")
                     ? "bg-white text-teal-800 shadow-lg"
-                    : tier !== "executive"
-                      ? "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
-                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
                 )}
               >
-                {tier !== "executive" && <Crown className="h-4 w-4" />}
                 Book New
               </Button>
               <Button
@@ -1676,7 +1884,7 @@ const ConsultationBookingPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-20">
-        {activeView === "booking" && tier === "executive" && (
+        {activeView === "booking" && (
           <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
             {/* Improved Progress Tracker */}
             <div className="bg-gray-50/50 border-b border-gray-100 p-8">
@@ -1685,7 +1893,7 @@ const ConsultationBookingPage = () => {
                 <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200 -z-10">
                   <div
                     className="h-full bg-teal-600 transition-all duration-500"
-                    style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+                    style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
                   />
                 </div>
 
@@ -1693,6 +1901,7 @@ const ConsultationBookingPage = () => {
                   { step: 1, label: "Case Details", icon: FileText },
                   { step: 2, label: "Contact Info", icon: User },
                   { step: 3, label: "Select Time", icon: Clock },
+                  { step: 4, label: "Checkout", icon: CreditCard },
                 ].map((item) => (
                   <div
                     key={item.step}
@@ -1734,12 +1943,12 @@ const ConsultationBookingPage = () => {
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
-                  disabled={currentStep === 1}
+                  disabled={currentStep === 1 || loading}
                   className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 text-white"
                 >
                   <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
                 </Button>
-                {currentStep < 3 ? (
+                {currentStep < 4 ? (
                   <Button
                     type="button"
                     onClick={handleNext}
@@ -1754,9 +1963,11 @@ const ConsultationBookingPage = () => {
                     className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
                   >
                     {loading ? (
-                      <Loader size="sm" text="Processing..." />
+                      "Processing..."
+                    ) : tier === "executive" && remainingConsultations !== null && remainingConsultations > 0 ? (
+                      "Confirm & Book (Free)"
                     ) : (
-                      "Request Appointment"
+                      "Proceed to Payment ($99)"
                     )}
                   </Button>
                 )}
