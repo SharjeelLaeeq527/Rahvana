@@ -12,6 +12,7 @@ import {
 } from "@/lib/interview-prep";
 import confetti from "canvas-confetti";
 import { Zap } from "lucide-react";
+import { usePlan } from "@/app/context/PlanContext";
 import { Loader } from "@/components/ui/spinner";
 import {
   computeQuestionCooldowns,
@@ -47,7 +48,7 @@ interface PersistedAdaptiveTraining {
   score: number;
   showAnswer: boolean;
   isFlipped: boolean;
-  userResponse: QuestionResponse["response"];
+  userResponse: QuestionResponse["response"] | null;
   questionResponses: QuestionResponse[];
   shuffledQuestionIds: string[];
   screen: AdaptiveScreen;
@@ -147,7 +148,7 @@ const loadPersistedAdaptiveTraining = async (
 const savePersistedAdaptiveTraining = async (
   state: PersistedAdaptiveTraining,
 ) => {
-  const payload: InterviewPrepSessionProgressInput = {
+  const payload: Partial<InterviewPrepSessionProgressInput> = {
     current_round: state.currentRound,
     current_question_index: state.currentQuestionIndex,
     round_question_ids: state.shuffledQuestionIds,
@@ -162,7 +163,7 @@ const savePersistedAdaptiveTraining = async (
     time_left: state.timeLeft,
     show_answer: state.showAnswer,
     is_flipped: state.isFlipped,
-    user_response: state.userResponse,
+    user_response: state.userResponse ?? undefined,
     skipped_questions: state.skippedQuestions,
     screen: state.screen,
     completed: state.completed,
@@ -235,6 +236,10 @@ export const RapidFireModePage = ({
   onSwitchToPrep,
   savedAnswers = {},
 }: RapidFireModeProps) => {
+  const plan = usePlan();
+  const isFreeTier = plan.tier === "free";
+
+  const questionsPerRound = isFreeTier ? 5 : QUESTIONS_PER_ROUND;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [score, setScore] = useState(0);
@@ -300,14 +305,10 @@ export const RapidFireModePage = ({
 
   // NOTE: `buildQuestionRound` moved to server-side; client no longer performs full round computation.
 
-  const [shuffledQuestions, setShuffledQuestions] = useState<
-    GeneratedQuestion[]
-  >(() =>
-    shuffleArray(questions)
-      .filter((q) => q.applicable)
-      .slice(0, QUESTIONS_PER_ROUND),
+  const [shuffledQuestions, setShuffledQuestions] = useState<GeneratedQuestion[]>(() =>
+    shuffleArray(questions).filter((q) => q.applicable).slice(0, questionsPerRound),
   );
-  const roundQuestionCount = QUESTIONS_PER_ROUND;
+  const roundQuestionCount = questionsPerRound;
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / roundQuestionCount) * 100;
 
@@ -752,7 +753,7 @@ export const RapidFireModePage = ({
     );
   };
 
-  const restartRapidFire = () => {
+  const _restartRapidFire = () => {
     void clearPersistedAdaptiveTraining(sessionId);
     setCurrentQuestionIndex(0);
     setTimeLeft(10);
@@ -775,11 +776,7 @@ export const RapidFireModePage = ({
     setRetryQuestionIds([]);
     setMasteredQuestionIds([]);
     setTotalRoundsCompleted(0);
-    setShuffledQuestions(
-      shuffleArray(questions)
-        .filter((q) => q.applicable)
-        .slice(0, QUESTIONS_PER_ROUND),
-    );
+    setShuffledQuestions(shuffleArray(questions).filter((q) => q.applicable).slice(0, questionsPerRound));
   };
 
   const handleReviewQuestionClick = (question: GeneratedQuestion) => {
@@ -928,219 +925,223 @@ export const RapidFireModePage = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-                <div className="text-2xl font-bold text-emerald-600">
-                  {roundSummary?.coveredCount ??
-                    questionResponses.filter((r) => r.response === "covered")
-                      .length}
-                </div>
-                <div className="text-sm text-emerald-700">Covered Well</div>
-              </div>
-              <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
-                <div className="text-2xl font-bold text-amber-600">
-                  {roundSummary?.partialCount ??
-                    questionResponses.filter((r) => r.response === "partial")
-                      .length}
-                </div>
-                <div className="text-sm text-amber-700">Partial Coverage</div>
-              </div>
-              <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
-                <div className="text-2xl font-bold text-rose-600">
-                  {roundSummary?.missedCount ??
-                    questionResponses.filter((r) => r.response === "missed")
-                      .length}
-                </div>
-                <div className="text-sm text-rose-700">Missed</div>
-              </div>
-            </div>
-
-            {skippedQuestions > 0 && (
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                  <span className="text-slate-600">Questions skipped:</span>
-                  <span className="font-bold text-slate-800">
-                    {skippedQuestions}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Reviewable Progress Bar */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Performance Review
-              </h3>
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <span className="font-medium">Note:</span> Click on any of the
-                  color-coded tabs to review the Q&A.
-                </p>
-              </div>
-              <div className="flex gap-1 mb-4 mt-2">
-                {shuffledQuestions.map((_, index) => {
-                  const response = questionResponses.find(
-                    (r) => r.index === index,
-                  );
-                  let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
-
-                  if (response) {
-                    switch (response.response) {
-                      case "covered":
-                        bgColor = "bg-green-500";
-                        break;
-                      case "partial":
-                        bgColor = "bg-amber-500";
-                        break;
-                      case "missed":
-                        bgColor = "bg-red-500";
-                        break;
-                      case "skipped":
-                        bgColor = "bg-gray-400";
-                        break;
-                    }
-                  }
-
-                  return (
-                    <div
-                      key={index}
-                      className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
-                      onClick={() => {
-                        const questionResp = questionResponses.find(
-                          (r) => r.index === index,
-                        );
-                        if (questionResp) {
-                          handleReviewQuestionClick(questionResp.question);
-                        }
-                      }}
-                      title={`Question ${index + 1}: ${response?.response || "Unanswered"}`}
-                    />
-                  );
-                })}
-              </div>
-              <div className="flex justify-center gap-6 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-                  <span>Covered Well</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
-                  <span>Partial Coverage</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                  <span>Missed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-400 rounded-sm"></div>
-                  <span>Skipped</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Review Question Card */}
-            {reviewQuestion && (
-              <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg\">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-slate-900 text-lg\">
-                    Question Review
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReviewQuestion(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
-                <div
-                  className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
-                    isReviewFlipped ? "transform rotate-y-180" : ""
-                  }`}
-                  style={{
-                    transformStyle: "preserve-3d",
-                    perspective: "1000px",
-                  }}
-                  onClick={handleReviewCardClick}
-                >
-                  {/* Front of Card - Question */}
-                  <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
-                    <div>
-                      <div className="flex justify-between items-start mb-4">
-                        <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
-                          {reviewQuestion.category}
-                        </span>
-                        <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
-                          Review Mode
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-bold leading-tight">
-                        {reviewQuestion.selectedQuestion ||
-                          reviewQuestion.question}
-                      </h3>
+            {!isFreeTier && (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                    <div className="text-2xl font-bold text-emerald-600">
+                      {roundSummary?.coveredCount ??
+                        questionResponses.filter((r) => r.response === "covered")
+                          .length}
                     </div>
-                    <div className="text-center">
-                      <p className="text-teal-100 text-sm">
-                        Click to see answer and guidance
-                      </p>
-                      <div className="flex justify-center mt-2">
-                        <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
+                    <div className="text-sm text-emerald-700">Covered Well</div>
                   </div>
+                  <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
+                    <div className="text-2xl font-bold text-amber-600">
+                      {roundSummary?.partialCount ??
+                        questionResponses.filter((r) => r.response === "partial")
+                          .length}
+                    </div>
+                    <div className="text-sm text-amber-700">Partial Coverage</div>
+                  </div>
+                  <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
+                    <div className="text-2xl font-bold text-rose-600">
+                      {roundSummary?.missedCount ??
+                        questionResponses.filter((r) => r.response === "missed")
+                          .length}
+                    </div>
+                    <div className="text-sm text-rose-700">Missed</div>
+                  </div>
+                </div>
 
-                  {/* Back of Card - Answer & Guidance */}
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
-                    <div className="flex justify-between items-start mb-4">
-                      <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
-                        Answer & Guidance
+                {skippedQuestions > 0 && (
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                      <span className="text-slate-600">Questions skipped:</span>
+                      <span className="font-bold text-slate-800">
+                        {skippedQuestions}
                       </span>
                     </div>
+                  </div>
+                )}
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
-                      {savedAnswers[reviewQuestion.id] && (
-                        <div>
-                          <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                            <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
-                            Your Saved Answer
-                          </h4>
-                          <p className="text-slate-100 text-sm leading-relaxed">
-                            {savedAnswers[reviewQuestion.id]}
-                          </p>
-                        </div>
-                      )}
+                {/* Reviewable Progress Bar */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                    Performance Review
+                  </h3>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-medium">Note:</span> Click on any of the
+                      color-coded tabs to review the Q&A.
+                    </p>
+                  </div>
+                  <div className="flex gap-1 mb-4 mt-2">
+                    {shuffledQuestions.map((_, index) => {
+                      const response = questionResponses.find(
+                        (r) => r.index === index,
+                      );
+                      let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
 
-                      <div>
-                        <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                          <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                          Sample Answer
-                        </h4>
-                        <p className="text-slate-100 text-sm leading-relaxed">
-                          {reviewQuestion.sampleAnswer}
-                        </p>
-                      </div>
+                      if (response) {
+                        switch (response.response) {
+                          case "covered":
+                            bgColor = "bg-green-500";
+                            break;
+                          case "partial":
+                            bgColor = "bg-amber-500";
+                            break;
+                          case "missed":
+                            bgColor = "bg-red-500";
+                            break;
+                          case "skipped":
+                            bgColor = "bg-gray-400";
+                            break;
+                        }
+                      }
 
-                      <div>
-                        <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                          <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
-                          Guidance
-                        </h4>
-                        <p className="text-slate-200 text-sm leading-relaxed">
-                          {reviewQuestion.guidance}
-                        </p>
-                      </div>
+                      return (
+                        <div
+                          key={index}
+                          className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
+                          onClick={() => {
+                            const questionResp = questionResponses.find(
+                              (r) => r.index === index,
+                            );
+                            if (questionResp) {
+                              handleReviewQuestionClick(questionResp.question);
+                            }
+                          }}
+                          title={`Question ${index + 1}: ${response?.response || "Unanswered"}`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-center gap-6 text-sm text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                      <span>Covered Well</span>
                     </div>
-
-                    <div className="text-center mt-4">
-                      <p className="text-slate-300 text-xs">
-                        Click to flip back
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
+                      <span>Partial Coverage</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                      <span>Missed</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-gray-400 rounded-sm"></div>
+                      <span>Skipped</span>
                     </div>
                   </div>
                 </div>
-              </div>
+
+                {/* Review Question Card */}
+                {reviewQuestion && (
+                  <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="font-semibold text-slate-900 text-lg">
+                        Question Review
+                      </h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReviewQuestion(null)}
+                      >
+                        Close
+                      </Button>
+                    </div>
+                    <div
+                      className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+                        isReviewFlipped ? "transform rotate-y-180" : ""
+                      }`}
+                      style={{
+                        transformStyle: "preserve-3d",
+                        perspective: "1000px",
+                      }}
+                      onClick={handleReviewCardClick}
+                    >
+                      {/* Front of Card - Question */}
+                      <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
+                        <div>
+                          <div className="flex justify-between items-start mb-4">
+                            <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
+                              {reviewQuestion.category}
+                            </span>
+                            <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
+                              Review Mode
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold leading-tight">
+                            {reviewQuestion.selectedQuestion ||
+                              reviewQuestion.question}
+                          </h3>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-teal-100 text-sm">
+                            Click to see answer and guidance
+                          </p>
+                          <div className="flex justify-center mt-2">
+                            <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Back of Card - Answer & Guidance */}
+                      <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
+                        <div className="flex justify-between items-start mb-4">
+                          <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
+                            Answer & Guidance
+                          </span>
+                        </div>
+
+                        <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
+                          {savedAnswers[reviewQuestion.id] && (
+                            <div>
+                              <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                                <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
+                                Your Saved Answer
+                              </h4>
+                              <p className="text-slate-100 text-sm leading-relaxed">
+                                {savedAnswers[reviewQuestion.id]}
+                              </p>
+                            </div>
+                          )}
+
+                          <div>
+                            <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                              <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
+                              Sample Answer
+                            </h4>
+                            <p className="text-slate-100 text-sm leading-relaxed">
+                              {reviewQuestion.sampleAnswer}
+                            </p>
+                          </div>
+
+                          <div>
+                            <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                              <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
+                              Guidance
+                            </h4>
+                            <p className="text-slate-200 text-sm leading-relaxed">
+                              {reviewQuestion.guidance}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-center mt-4">
+                          <p className="text-slate-300 text-xs">
+                            Click to flip back
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex gap-3 justify-center">
