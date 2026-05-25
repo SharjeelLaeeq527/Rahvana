@@ -231,7 +231,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2 mt-14">
       <div className="pb-2">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">

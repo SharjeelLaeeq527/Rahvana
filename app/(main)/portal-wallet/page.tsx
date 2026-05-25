@@ -273,7 +273,7 @@ const PortalWallet: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafa]">
-      <div className="w-full site-main-px site-main-py">
+      <div className="w-full site-main-px site-main-py mt-14">
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-[28px] font-bold text-[#0a1128] mb-2">

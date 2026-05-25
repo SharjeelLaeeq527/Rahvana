@@ -170,7 +170,7 @@ const UserDashboard = () => {
 
   return (
     <div className="bg-[#f8fafa]">
-      <div className="w-full site-main-px site-main-py">
+      <div className="w-full site-main-px site-main-py mt-14">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-center mb-2">

@@ -45,20 +45,19 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
   const [questionsList, setQuestionsList] = useState<GeneratedQuestion[]>([]);
   const [mode, setMode] = useState<"prep" | "rapid" | "mock">("prep");
 
-  // NEW: Answer management state
+  // Answer management state
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   const [savingAnswers, setSavingAnswers] = useState<Record<string, boolean>>({});
   const [aiImproving, setAiImproving] = useState<Record<string, boolean>>({});
   const [improvedAnswers, setImprovedAnswers] = useState<Record<string, string>>({});
   const [showAnswerModal, setShowAnswerModal] = useState(false);
 
-  // NEW: Track which questions have saved answers (loaded from DB)
+  // Track which questions have saved answers (loaded from DB)
   const [savedAnswers, setSavedAnswers] = useState<Record<string, string>>({});
 
-  // NEW: Toggle to show/hide sample answer in flashcard
-  const [showSampleAnswerInFlashcard, setShowSampleAnswerInFlashcard] = useState<
-    Record<string, boolean>
-  >({});
+  // Toggle to show/hide sample answer in flashcard
+  const [showSampleAnswerInFlashcard, setShowSampleAnswerInFlashcard] =
+    useState<Record<string, boolean>>({});
 
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showMockUpgradeModal, setShowMockUpgradeModal] = useState(false);
@@ -173,9 +172,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       const applicableQuestions = results.questions.filter(
         (q: GeneratedQuestion) => q.applicable,
       );
-      setQuestionsList(
-        applicableQuestions.filter(canSeePrepQuestion),
-      );
+      setQuestionsList(applicableQuestions.filter(canSeePrepQuestion));
       // Load existing answers
       if (sessionId) {
         loadAnswers();
@@ -307,11 +304,82 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
   if (mode === "mock" && showMockInterviewPage) {
     return (
-      <MockInterviewModePage
-        sessionId={sessionId}
-        questions={questionsList}
-        onExit={handleMockInterviewPageExit}
-      />
+      <div className="bg-white site-main-py site-main-px">
+        <div className="text-center mb-8">
+          <div className="flex flex-col md:flex-row justify-center gap-4 mb-4">
+            <Button
+              onClick={() => setMode("prep")}
+              variant="outline"
+              className="w-full md:w-auto"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Prep Mode
+            </Button>
+            <div className="relative w-full md:w-auto">
+              <Button
+                onClick={handleRapidFireModeClick}
+                variant="outline"
+                className="w-full md:w-auto"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Rapid Fire Mode
+              </Button>
+              {plan.tier === "basic" && (
+                <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
+                  <Image
+                    src="/icons/ribbon.png"
+                    alt="Premium feature ribbon"
+                    width={52}
+                    height={52}
+                    priority={false}
+                    className="object-contain drop-shadow-lg"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="relative w-full md:w-auto">
+              <Button
+                onClick={handleMockInterviewPageStart}
+                variant="default"
+                className="w-full md:w-auto"
+                title={
+                  !canAccessMockInterview()
+                    ? "Upgrade to Executive to unlock Mock Interview Mode"
+                    : ""
+                }
+              >
+                <Mic className="h-4 w-4 mr-2" />
+                Mock Interview Mode
+              </Button>
+              {(plan.tier === "basic" || plan.tier === "premium") && (
+                <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
+                  <Image
+                    src="/icons/ribbon.png"
+                    alt="Executive feature ribbon"
+                    width={52}
+                    height={52}
+                    priority={false}
+                    className="object-contain drop-shadow-lg"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+            Mock Interview Mode
+          </h2>
+          <p className="text-slate-600">
+            Fullscreen voice interview simulation with a 15-minute timer
+          </p>
+        </div>
+
+        <MockInterviewModePage
+          sessionId={sessionId}
+          questions={questionsList}
+          onExit={handleMockInterviewPageExit}
+        />
+      </div>
     );
   }
 
@@ -331,7 +399,6 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
     return (
       <div className="bg-white site-main-py site-main-px">
         <div className="">
-          {/* removed  mx-auto from above div */}
           <div className="text-center mb-8">
             <div className="flex flex-col md:flex-row justify-center gap-4 mb-4">
               <Button
@@ -355,7 +422,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                   <Zap className="h-4 w-4 mr-2" />
                   Rapid Fire Mode
                 </Button>
-                {(plan.tier === "free" || plan.tier === "basic") && (
+                {plan.tier === "basic" && (
                   <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
                     <Image
                       src="/icons/ribbon.png"
@@ -384,7 +451,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                   <Mic className="h-4 w-4 mr-2" />
                   Mock Interview Mode
                 </Button>
-                {(plan.tier === "free" || plan.tier === "basic" || plan.tier === "premium") && (
+                {(plan.tier === "basic" || plan.tier === "premium") && (
                   <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
                     <Image
                       src="/icons/ribbon.png"
@@ -669,18 +736,21 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           )}
 
                           {/* Answer button on back of card */}
-                          {plan.tier !== 'free' && (
+                          {plan.tier !== "free" && (
                             <div className="mt-3 sm:mt-4 flex gap-2">
                               <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setShowAnswerModal(true);
                                 }}
-                              className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
-                            >
-                              {savedAnswers[selectedQuestion.id] ? "Edit" : "Answer"}
-                            </Button>
-                          </div>)}
+                                className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
+                              >
+                                {savedAnswers[selectedQuestion.id]
+                                  ? "Edit"
+                                  : "Answer"}
+                              </Button>
+                            </div>
+                          )}
 
                           <div className="text-center mt-2">
                             <p className="text-slate-300 text-xs">Click to flip</p>
@@ -708,41 +778,41 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
             {/* Rapid Fire Mode */}
             {mode === "rapid" && (
               <div className="w-full max-w-2xl mx-auto">
-              <div className="bg-linear-to-br from-[#e8f6f6] via-[#f0faf9] to-[#e8f6f6] rounded-2xl shadow-lg site-main-px border border-[#0d7377]/20">
-                <div className="text-center site-main-py">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0d7377]/10 mb-4">
-                    <Zap className="w-8 h-8 text-[#0d7377]" />
-                  </div>
+                <div className="bg-linear-to-br from-[#e8f6f6] via-[#f0faf9] to-[#e8f6f6] rounded-2xl shadow-lg site-main-px border border-[#0d7377]/20">
+                  <div className="text-center site-main-py">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0d7377]/10 mb-4">
+                      <Zap className="w-8 h-8 text-[#0d7377]" />
+                    </div>
 
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                    Rapid Fire Practice
-                  </h3>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                      Rapid Fire Practice
+                    </h3>
 
-                  <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
-                    Simulate real interview pressure with timed questions, adaptive
-                    retries, and confidence-based repetition designed to improve long-term
-                    recall and speaking confidence.
-                  </p>
+                    <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
+                      Simulate real interview pressure with timed questions,
+                      adaptive retries, and confidence-based repetition designed
+                      to improve long-term recall and speaking confidence.
+                    </p>
 
-                  <div className="max-w-2xl mx-auto text-left">
-                    <ExpandableTooltip
-                      icon="i"
-                      title="How Rapid Fire Training Works?"
-                      message="Each round contains timed interview questions with a 10-second response window. Questions you miss or skip return quickly for reinforcement, while partially covered and well-covered questions reappear later using adaptive spaced repetition to strengthen long-term memory and confidence."
-                    />
-                  </div>
+                    <div className="max-w-2xl mx-auto text-left">
+                      <ExpandableTooltip
+                        icon="i"
+                        title="How Rapid Fire Training Works?"
+                        message="Each round contains timed interview questions with a 10-second response window. Questions you miss or skip return quickly for reinforcement, while partially covered and well-covered questions reappear later using adaptive spaced repetition to strengthen long-term memory and confidence."
+                      />
+                    </div>
 
-                  <div className="flex gap-4 justify-center">
-                    <Button
-                      onClick={handleRapidFirePageStart}
-                      className="bg-[#0d7377] hover:bg-[#0a5a5d] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
-                    >
-                      Start Rapid Fire Session
-                    </Button>
+                    <div className="flex gap-4 justify-center">
+                      <Button
+                        onClick={handleRapidFirePageStart}
+                        className="bg-[#0d7377] hover:bg-[#0a5a5d] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
+                      >
+                        Start Rapid Fire Session
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             )}
           </div>
 

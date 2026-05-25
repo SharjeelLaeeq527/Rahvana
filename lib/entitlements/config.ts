@@ -341,7 +341,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Interview Prep — Rapid Fire Mode. */
   interview_rapid_fire: {
-    free: lockedBuy(ADDON.rapid, "premium"),
+    free: full(),
     basic: lockedBuy(ADDON.rapid, "premium"),
     premium: full(),
     executive: full(),
@@ -460,7 +460,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Executive included; Basic & Premium can purchase as standalone add-on.
    */
   mock_interview: {
-    free: lockedBuy(ADDON.mock, "executive"),
+    free: full(),
     basic: lockedBuy(ADDON.mock, "executive"),
     premium: lockedBuy(ADDON.mock, "executive"),
     executive: full(),
