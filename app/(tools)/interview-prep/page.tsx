@@ -12,9 +12,8 @@ import { Loader } from "@/components/ui/spinner";
 import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
 
 import { useAuth } from "@/app/context/AuthContext";
-import { createBrowserClient } from "@supabase/ssr";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
-import { MasterProfile } from "@/types/profile";
 import { ReviewStep } from "@/app/components/interview-prep/review-step";
 import { CategorySelectionStep } from "@/app/components/interview-prep/category-selection-step";
 import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
@@ -59,91 +58,66 @@ export default function InterviewPreparation() {
 
   // NEW: Confirmation modal state for session restoration
   const [restoreSessionModalOpen, setRestoreSessionModalOpen] = useState(false);
-<<<<<<< HEAD
-  const [pendingRestoreSession, setPendingRestoreSession] = useState<any | null>(null);
-=======
   const [pendingRestoreSession, setPendingRestoreSession] =
     useState<RestorableSession | null>(null);
   const [isRedirectingSession, setIsRedirectingSession] = useState(false);
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
 
   const { user } = useAuth();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const { profile, isProfileLoading } = useUserProfile();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  // Auto-fill profile data
+  // Auto-fill profile data (from central context)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || profileLoaded || !profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    // Map profile data to form structure
+    const mappedData = mapProfileToGenericForm(profile, {
+      caseType: formData.caseType,
+      beneficiary_country: formData.beneficiary_country,
+      age_range: formData.age_range,
+      highest_education: formData.highest_education,
+      marriage_date: formData.marriage_date,
+      marriage_location: formData.marriage_location,
+      previous_marriages: formData.previous_marriages,
+      relationship_origin_type: formData.relationship_origin_type,
+      current_living_arrangement: formData.current_living_arrangement,
+      spouse_address: formData.spouse_address,
+      communication_frequency: formData.communication_frequency,
+      daily_communication: formData.daily_communication,
+      shared_activities: formData.shared_activities,
+      important_dates_knowledge: formData.important_dates_knowledge,
+      met_spouse_family: formData.met_spouse_family,
+      family_reaction_to_marriage: formData.family_reaction_to_marriage,
+      wedding_attendees: formData.wedding_attendees,
+      marriage_type: formData.marriage_type,
+      mutual_friends: formData.mutual_friends,
+      petitioner_status: formData.petitioner_status,
+      petitioner_income_level: formData.petitioner_income_level,
+      household_size: formData.household_size,
+      beneficiary_employment: formData.beneficiary_employment,
+      sponsor_employment: formData.sponsor_employment,
+      military_or_defense_background: formData.military_or_defense_background,
+      previous_us_visits: formData.previous_us_visits,
+      previous_visa_refusal: formData.previous_visa_refusal,
+      visa_overstay_history: formData.visa_overstay_history,
+      criminal_history: formData.criminal_history,
+      english_proficiency: formData.english_proficiency,
+      intended_us_state: formData.intended_us_state,
+      living_arrangements_in_us: formData.living_arrangements_in_us,
+      future_plans: formData.future_plans,
+      joint_finances: formData.joint_finances,
+      financial_arrangement_description: formData.financial_arrangement_description,
+    });
 
-        if (data?.profile_details && !profileLoaded) {
-          const profile = data.profile_details as MasterProfile;
-
-          // Map profile data to form structure
-          const mappedData = mapProfileToGenericForm(profile, {
-            caseType: formData.caseType,
-            beneficiary_country: formData.beneficiary_country,
-            age_range: formData.age_range,
-            highest_education: formData.highest_education,
-            marriage_date: formData.marriage_date,
-            marriage_location: formData.marriage_location,
-            previous_marriages: formData.previous_marriages,
-            relationship_origin_type: formData.relationship_origin_type,
-            current_living_arrangement: formData.current_living_arrangement,
-            spouse_address: formData.spouse_address,
-            communication_frequency: formData.communication_frequency,
-            daily_communication: formData.daily_communication,
-            shared_activities: formData.shared_activities,
-            important_dates_knowledge: formData.important_dates_knowledge,
-            met_spouse_family: formData.met_spouse_family,
-            family_reaction_to_marriage: formData.family_reaction_to_marriage,
-            wedding_attendees: formData.wedding_attendees,
-            marriage_type: formData.marriage_type,
-            mutual_friends: formData.mutual_friends,
-            petitioner_status: formData.petitioner_status,
-            petitioner_income_level: formData.petitioner_income_level,
-            household_size: formData.household_size,
-            beneficiary_employment: formData.beneficiary_employment,
-            sponsor_employment: formData.sponsor_employment,
-            military_or_defense_background: formData.military_or_defense_background,
-            previous_us_visits: formData.previous_us_visits,
-            previous_visa_refusal: formData.previous_visa_refusal,
-            visa_overstay_history: formData.visa_overstay_history,
-            criminal_history: formData.criminal_history,
-            english_proficiency: formData.english_proficiency,
-            intended_us_state: formData.intended_us_state,
-            living_arrangements_in_us: formData.living_arrangements_in_us,
-            future_plans: formData.future_plans,
-            joint_finances: formData.joint_finances,
-            financial_arrangement_description: formData.financial_arrangement_description,
-          });
-
-          setFormData((prev) => ({
-            ...prev,
-            ...mappedData,
-          }));
-          setProfileLoaded(true);
-        }
-      } catch (err) {
-        console.error("Error auto-filling profile:", err);
-      }
-    };
-
-    fetchProfile();
-  }, [user, profileLoaded, supabase, formData]);
+    setFormData((prev) => ({
+      ...prev,
+      ...mappedData,
+    }));
+    setProfileLoaded(true);
+  }, [profile, isProfileLoading, profileLoaded, formData]);
 
   // Load available categories based on selected country
   const loadCategories = async (country: string) => {
@@ -316,70 +290,6 @@ export default function InterviewPreparation() {
       }
     };
 
-<<<<<<< HEAD
-    // Helper function to restore session data
-    const restoreSessionData = async (
-      session: {
-        id: string;
-        category_slug: string;
-        answers?: Array<{ question_key: string; answer_value: unknown }>;
-        results?: InterviewPrepOutput;
-      },
-      getCategoryFn: (slug: string) => InterviewCategoryConfig | undefined
-    ) => {
-      try {
-        setSessionId(session.id);
-        const categorySlug = session.category_slug;
-        const category = getCategoryFn(categorySlug);
-
-        if (!category && availableCategories.length > 0) {
-          localStorage.removeItem("interviewPrepSessionId");
-          return;
-        }
-
-        if (category) {
-          setSelectedCategory(category);
-
-          // Load questionnaire for the restored category
-          const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
-          const catData = await catDataResponse.json();
-
-          if (catData.success) {
-            setQuestionnaire({
-              categorySlug: category.categorySlug,
-              version: catData.questionnaire?.version || "1.0.0",
-              lastUpdated: new Date().toISOString(),
-              sections: catData.questionnaire?.sections || [],
-            });
-
-            // Restore form data (questionnaire answers)
-            if (session.answers && Array.isArray(session.answers)) {
-              const answersMap: Record<string, unknown> = {};
-              session.answers.forEach((answer: { question_key: string; answer_value: unknown }) => {
-                answersMap[answer.question_key] = answer.answer_value;
-              });
-              setFormData((prev) => ({
-                ...prev,
-                ...answersMap,
-              }));
-            }
-
-            // If results were already generated, restore them and jump to results step
-            if (session.results) {
-              setGeneratedResults(session.results);
-              setStep((catData.questionnaire?.sections?.length || 0) + 3); // Show results
-            } else {
-              setStep(1); // Show first question section
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error restoring session data:", err);
-      }
-    };
-
-=======
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
     if (typeof window !== "undefined") {
       restoreIncompleteSession();
     }
@@ -463,14 +373,7 @@ export default function InterviewPreparation() {
         }),
       });
 
-<<<<<<< HEAD
-      if (savedSessionId) {
-        try {
-          const response = await fetch(`/api/interview-prep/sessions/${savedSessionId}`);
-          const sessionData = await response.json();
-=======
       const sessionResult = await sessionResponse.json();
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
 
       if (!sessionResponse.ok || !sessionResult.success) {
         setError("Failed to create interview session");
@@ -483,58 +386,6 @@ export default function InterviewPreparation() {
         setIsRedirectingSession(true);
         setLoadingMessage("Redirecting to your existing session...");
 
-<<<<<<< HEAD
-        const sessionResult = await sessionResponse.json();
-        if (!sessionResult.success) {
-          setError("Failed to create interview session");
-          setLoading(false);
-          return;
-        }
-        sessionId = sessionResult.session.id;
-        setSessionId(sessionResult.session.id);
-        localStorage.setItem("interviewPrepSessionId", sessionResult.session.id);
-      }
-
-      // Load questionnaire for this category via API
-      const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
-      const catData = await catDataResponse.json();
-
-      if (catData.success) {
-        setQuestionnaire({
-          categorySlug: selectedCategory.categorySlug,
-          version: catData.questionnaire?.version || "1.0.0",
-          lastUpdated: new Date().toISOString(),
-          sections: catData.questionnaire?.sections || [],
-        });
-
-        // If restoring, also restore the form data
-        if (isRestoring && sessionId) {
-          try {
-            const answersResponse = await fetch(`/api/interview-prep/sessions/${sessionId}`);
-            const sessionDetails = await answersResponse.json();
-
-            if (sessionDetails.session && sessionDetails.session.answers) {
-              const restoredAnswers: Record<string, unknown> = {};
-              sessionDetails.session.answers.forEach(
-                (answer: { question_key: string; answer_value: unknown }) => {
-                  restoredAnswers[answer.question_key] = answer.answer_value;
-                }
-              );
-
-              setFormData((prev) => ({
-                ...prev,
-                ...restoredAnswers,
-              }));
-            }
-          } catch (err) {
-            console.error("Error restoring answers:", err);
-          }
-        }
-
-        setError(null);
-        setStep(1); // Move to first question section
-      } else {
-=======
         router.push("/interview-prep/my-sessions");
         return;
       }
@@ -555,7 +406,6 @@ export default function InterviewPreparation() {
       const catData = await catDataResponse.json();
 
       if (!catData.success) {
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
         setError("Failed to load questionnaire");
         return;
       }
@@ -1014,12 +864,6 @@ export default function InterviewPreparation() {
               setLoadingMessage("Restoring your interview session...");
               localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
 
-<<<<<<< HEAD
-              await restoreSessionData(pendingRestoreSession, (categorySlug) => {
-                const category = availableCategories.find((c) => c.categorySlug === categorySlug);
-                return category;
-              });
-=======
               await restoreSessionData(
                 pendingRestoreSession,
                 (categorySlug: string) => {
@@ -1029,7 +873,6 @@ export default function InterviewPreparation() {
                   return category;
                 },
               );
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
 
               setRestoreSessionModalOpen(false);
             } catch (error) {

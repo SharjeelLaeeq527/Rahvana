@@ -3,9 +3,7 @@
 import { useState, useEffect } from "react";
 import CombinedIntakeFormWrapper from "./components/CombinedIntakeFormWrapper";
 import { FormData, FormSelections } from "./types/221g";
-import { useAuth } from "@/app/context/AuthContext";
-import { createBrowserClient } from "@supabase/ssr";
-import { MasterProfile } from "@/types/profile";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 
 export default function TwentyTwoOneGActionPlanner() {
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -14,83 +12,44 @@ export default function TwentyTwoOneGActionPlanner() {
   const [initialSelections, setInitialSelections] = useState<FormSelections | null>(null);
   const [smartModeEnabled, setSmartModeEnabled] = useState(true);
 
-  const { user } = useAuth();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
-  // Restore session from profile
+  // Restore session from profile (now reads from context instead of direct Supabase)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || !profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    if (profile.actionPlanner?.questionnaire) {
+      const savedData = profile.actionPlanner.questionnaire.formData as unknown as FormData;
+      const savedSelections = profile.actionPlanner.questionnaire
+        .selectedItems as unknown as FormSelections;
 
-        if (data?.profile_details) {
-          const profile = data.profile_details as MasterProfile;
-          if (profile.actionPlanner?.questionnaire) {
-            const savedData = profile.actionPlanner.questionnaire.formData as unknown as FormData;
-            const savedSelections = profile.actionPlanner.questionnaire
-              .selectedItems as unknown as FormSelections;
-
-            if (savedData) setInitialData(savedData);
-            if (savedSelections) setInitialSelections(savedSelections);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching profile", err);
-      }
-    };
-    fetchProfile();
-  }, [user, supabase]);
+      if (savedData) setInitialData(savedData);
+      if (savedSelections) setInitialSelections(savedSelections);
+    }
+  }, [profile, isProfileLoading]);
 
   const handleSubmit = (data: FormData, selectedItems: FormSelections = {}) => {
     setFormData(data);
     setSelectedItems(selectedItems);
-    // Saving to profile is now possible from the wizard results step via onSaveToProfile prop
   };
 
   const handleSaveToProfile = async () => {
-    if (!user || !formData) return;
+    if (!formData) return;
 
-    try {
-      const actionPlannerData = {
-        questionnaire: {
-          formData,
-          selectedItems,
-        },
-        caseStatus: formData.ceacStatus,
-        interviewDate: formData.interviewDate,
-      };
+    const actionPlannerData = {
+      questionnaire: {
+        formData,
+        selectedItems,
+      },
+      caseStatus: formData.ceacStatus,
+      interviewDate: formData.interviewDate,
+    };
 
-      const { data: currentData } = await supabase
-        .from("user_profiles")
-        .select("profile_details")
-        .eq("id", user.id)
-        .single();
-
-      const currentProfile = currentData?.profile_details || {};
-
-      const { error } = await supabase.from("user_profiles").upsert({
-        id: user.id,
-        profile_details: {
-          ...currentProfile,
-          actionPlanner: actionPlannerData,
-        },
-        updated_at: new Date().toISOString(),
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      console.error("Error saving to profile", err);
-      throw err;
-    }
+    // Use context's updateProfile instead of direct Supabase upsert
+    updateProfile(
+      { actionPlanner: actionPlannerData } as any,
+      { immediate: true }
+    );
   };
 
   return (

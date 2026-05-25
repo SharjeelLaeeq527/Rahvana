@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { MasterProfile } from "@/types/profile";
 import { motion, AnimatePresence } from "framer-motion";
 import { autoFillForm } from "@/lib/autoFill/mapper";
@@ -67,167 +67,137 @@ export function VisaEligibilityTool() {
   const [saveMessage, setSaveMessage] = useState("");
 
   const { user } = useAuth();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || !profile) return;
 
-      const { data } = await supabase
-        .from("user_profiles")
-        .select("profile_details")
-        .eq("id", user.id)
-        .single();
-
-      if (data?.profile_details) {
-        const profile = data.profile_details as MasterProfile;
-
-        // Use the centralized auto-fill logic
-        const dummyForm: FutureAnswers = {
-          petitionerStatus: undefined,
-          statusOrigin: undefined,
-          petitionerAgeGroup: undefined,
-          relationship: undefined,
-          legalStatus: undefined,
-          applicantAgeGroup: undefined,
-          applicantMaritalStatus: undefined,
-          applicantLocation: undefined,
-          isLegallyMarried: undefined,
-          marriageDuration: undefined,
-          violationHistory: undefined,
-          intent: undefined,
-          sponsorBase: undefined,
-        };
-
-        // Initialize with null to ensure autoFillForm doesn't skip them
-        const formRecord = dummyForm as unknown as Record<string, unknown>;
-        Object.keys(dummyForm).forEach((k) => {
-          formRecord[k] = null;
-        });
-
-        const filledAnswers = autoFillForm(profile, formRecord) as FutureAnswers;
-
-        // Derivation logic for fields that might not be explicitly set in visaEligibility
-        const newAnswers: Partial<FutureAnswers> = { ...filledAnswers };
-
-        // 1. Petitioner Status (if not explicitly in visaEligibility)
-        if (!newAnswers.petitionerStatus) {
-          // Check standard citizenshipStatus
-          if (profile.citizenshipStatus === "USCitizen") newAnswers.petitionerStatus = "US_CITIZEN";
-          else if (profile.citizenshipStatus === "LPR") newAnswers.petitionerStatus = "LPR";
-          // Fallback: Check for loose string matches in case of legacy data
-          else if (String(profile.citizenshipStatus).toLowerCase().includes("citizen"))
-            newAnswers.petitionerStatus = "US_CITIZEN";
-          else if (
-            String(profile.citizenshipStatus).toLowerCase().includes("permanent") ||
-            String(profile.citizenshipStatus).includes("LPR")
-          )
-            newAnswers.petitionerStatus = "LPR";
-        }
-
-        // 2. Petitioner Age (Derive from DOB)
-        if (!newAnswers.petitionerAgeGroup && profile.dateOfBirth) {
-          // Handle direct age if available (legacy?) or calc from DOB
-          if (profile.dateOfBirth) {
-            const birthDate = new Date(profile.dateOfBirth);
-            const ageDiffMs = Date.now() - birthDate.getTime();
-            const ageDate = new Date(ageDiffMs);
-            const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-            newAnswers.petitionerAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
-          }
-        }
-
-        // 3. Relationship
-        if (!newAnswers.relationship) {
-          // Check visaType first
-          if (profile.visaType) {
-            const vt = profile.visaType;
-            if (["IR-1", "CR-1", "K-3", "K3", "IR1", "CR1"].includes(vt))
-              newAnswers.relationship = "SPOUSE";
-            else if (["IR-5", "IR5"].includes(vt)) newAnswers.relationship = "PARENT";
-            else if (["IR-2", "F1", "F2A", "F2B", "F3", "IR2"].includes(vt))
-              newAnswers.relationship = "CHILD";
-            else if (["F4"].includes(vt)) newAnswers.relationship = "SIBLING";
-            else if (["K-1", "K1"].includes(vt)) newAnswers.relationship = "FIANCE";
-          }
-
-          // Check explicit relationship object
-          if (!newAnswers.relationship && profile.relationship?.type) {
-            const rel = profile.relationship.type.toUpperCase();
-            if (rel === "SPOUSE") newAnswers.relationship = "SPOUSE";
-            else if (rel === "FIANCE" || rel === "FIANCEE") newAnswers.relationship = "FIANCE";
-            else if (rel === "CHILD") newAnswers.relationship = "CHILD";
-            else if (rel === "PARENT" || rel === "FATHER" || rel === "MOTHER")
-              newAnswers.relationship = "PARENT";
-            else if (rel === "SIBLING" || rel === "BROTHER" || rel === "SISTER")
-              newAnswers.relationship = "SIBLING";
-          }
-        }
-
-        // 4. Marriage Duration
-        if (!newAnswers.marriageDuration && profile.relationship?.marriageDate) {
-          const marriageDate = new Date(profile.relationship.marriageDate);
-          const diffMs = Date.now() - marriageDate.getTime();
-          const diffYears = diffMs / (1000 * 60 * 60 * 24 * 365.25);
-          newAnswers.marriageDuration = diffYears >= 2 ? "MORE_THAN_2" : "LESS_THAN_2";
-          newAnswers.isLegallyMarried = "YES";
-        }
-
-        // 5. Applicant Location
-        if (!newAnswers.applicantLocation) {
-          const beneficiaryCountry =
-            profile.beneficiary?.countryOfResidence || profile.currentAddress?.country;
-          if (beneficiaryCountry) {
-            const isUS =
-              beneficiaryCountry.toLowerCase().includes("united states") ||
-              beneficiaryCountry.toLowerCase() === "usa" ||
-              beneficiaryCountry.toLowerCase() === "us";
-            newAnswers.applicantLocation = isUS ? "INSIDE_US" : "OUTSIDE_US";
-          }
-        }
-
-        // 6. Applicant Age
-        if (!newAnswers.applicantAgeGroup) {
-          const benDob = profile.beneficiary?.dateOfBirth;
-          if (benDob) {
-            const birthDate = new Date(benDob);
-            const ageDiffMs = Date.now() - birthDate.getTime();
-            const ageDate = new Date(ageDiffMs);
-            const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-            newAnswers.applicantAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
-          }
-        }
-
-        if (Object.keys(newAnswers).length > 0) {
-          setAnswers((prev) => {
-            const finalAnswers = { ...prev, ...newAnswers };
-
-            // Check if we have enough info to show results directly
-            // Minimal set: petitionerStatus (or sponsorBase), intent, relationship (if family)
-            const hasFamilyBasics = finalAnswers.petitionerStatus && finalAnswers.relationship;
-            const hasEmploymentBasics =
-              finalAnswers.sponsorBase &&
-              ["EMPLOYMENT", "INVESTMENT", "HUMANITARIAN"].includes(finalAnswers.sponsorBase);
-
-            // If we have intent and either family or employment basics, likely enough for a result
-            if (finalAnswers.intent && (hasFamilyBasics || hasEmploymentBasics)) {
-              // We add a small delay to let state settle or just setStep(5)
-              // However, doing it here might cause render issues if not careful.
-              // We'll use a timeout to push to step 5.
-              setTimeout(() => setStep(5), 100);
-            }
-
-            return finalAnswers;
-          });
-        }
-      }
+    // Use the centralized auto-fill logic
+    const dummyForm: FutureAnswers = {
+      petitionerStatus: undefined,
+      statusOrigin: undefined,
+      petitionerAgeGroup: undefined,
+      relationship: undefined,
+      legalStatus: undefined,
+      applicantAgeGroup: undefined,
+      applicantMaritalStatus: undefined,
+      applicantLocation: undefined,
+      isLegallyMarried: undefined,
+      marriageDuration: undefined,
+      violationHistory: undefined,
+      intent: undefined,
+      sponsorBase: undefined,
     };
 
-    fetchProfile();
-  }, [user, supabase]);
+    // Initialize with null to ensure autoFillForm doesn't skip them
+    const formRecord = dummyForm as unknown as Record<string, unknown>;
+    Object.keys(dummyForm).forEach((k) => {
+      formRecord[k] = null;
+    });
+
+    const filledAnswers = autoFillForm(profile, formRecord) as FutureAnswers;
+
+    // Derivation logic for fields that might not be explicitly set in visaEligibility
+    const newAnswers: Partial<FutureAnswers> = { ...filledAnswers };
+
+    // 1. Petitioner Status
+    if (!newAnswers.petitionerStatus) {
+      if (profile.citizenshipStatus === "USCitizen") newAnswers.petitionerStatus = "US_CITIZEN";
+      else if (profile.citizenshipStatus === "LPR") newAnswers.petitionerStatus = "LPR";
+      else if (String(profile.citizenshipStatus).toLowerCase().includes("citizen"))
+        newAnswers.petitionerStatus = "US_CITIZEN";
+      else if (
+        String(profile.citizenshipStatus).toLowerCase().includes("permanent") ||
+        String(profile.citizenshipStatus).includes("LPR")
+      )
+        newAnswers.petitionerStatus = "LPR";
+    }
+
+    // 2. Petitioner Age
+    if (!newAnswers.petitionerAgeGroup && profile.dateOfBirth) {
+      const birthDate = new Date(profile.dateOfBirth);
+      const ageDiffMs = Date.now() - birthDate.getTime();
+      const ageDate = new Date(ageDiffMs);
+      const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+      newAnswers.petitionerAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
+    }
+
+    // 3. Relationship
+    if (!newAnswers.relationship) {
+      if (profile.visaType) {
+        const vt = profile.visaType;
+        if (["IR-1", "CR-1", "K-3", "K3", "IR1", "CR1"].includes(vt))
+          newAnswers.relationship = "SPOUSE";
+        else if (["IR-5", "IR5"].includes(vt)) newAnswers.relationship = "PARENT";
+        else if (["IR-2", "F1", "F2A", "F2B", "F3", "IR2"].includes(vt))
+          newAnswers.relationship = "CHILD";
+        else if (["F4"].includes(vt)) newAnswers.relationship = "SIBLING";
+        else if (["K-1", "K1"].includes(vt)) newAnswers.relationship = "FIANCE";
+      }
+
+      if (!newAnswers.relationship && profile.relationship?.type) {
+        const rel = profile.relationship.type.toUpperCase();
+        if (rel === "SPOUSE") newAnswers.relationship = "SPOUSE";
+        else if (rel === "FIANCE" || rel === "FIANCEE") newAnswers.relationship = "FIANCE";
+        else if (rel === "CHILD") newAnswers.relationship = "CHILD";
+        else if (rel === "PARENT" || rel === "FATHER" || rel === "MOTHER")
+          newAnswers.relationship = "PARENT";
+        else if (rel === "SIBLING" || rel === "BROTHER" || rel === "SISTER")
+          newAnswers.relationship = "SIBLING";
+      }
+    }
+
+    // 4. Marriage Duration
+    if (!newAnswers.marriageDuration && profile.relationship?.marriageDate) {
+      const marriageDate = new Date(profile.relationship.marriageDate);
+      const diffMs = Date.now() - marriageDate.getTime();
+      const diffYears = diffMs / (1000 * 60 * 60 * 24 * 365.25);
+      newAnswers.marriageDuration = diffYears >= 2 ? "MORE_THAN_2" : "LESS_THAN_2";
+      newAnswers.isLegallyMarried = "YES";
+    }
+
+    // 5. Applicant Location
+    if (!newAnswers.applicantLocation) {
+      const beneficiaryCountry =
+        profile.beneficiary?.countryOfResidence || profile.currentAddress?.country;
+      if (beneficiaryCountry) {
+        const isUS =
+          beneficiaryCountry.toLowerCase().includes("united states") ||
+          beneficiaryCountry.toLowerCase() === "usa" ||
+          beneficiaryCountry.toLowerCase() === "us";
+        newAnswers.applicantLocation = isUS ? "INSIDE_US" : "OUTSIDE_US";
+      }
+    }
+
+    // 6. Applicant Age
+    if (!newAnswers.applicantAgeGroup) {
+      const benDob = profile.beneficiary?.dateOfBirth;
+      if (benDob) {
+        const birthDate = new Date(benDob);
+        const ageDiffMs = Date.now() - birthDate.getTime();
+        const ageDate = new Date(ageDiffMs);
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        newAnswers.applicantAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
+      }
+    }
+
+    if (Object.keys(newAnswers).length > 0) {
+      setAnswers((prev) => {
+        const finalAnswers = { ...prev, ...newAnswers };
+
+        const hasFamilyBasics = finalAnswers.petitionerStatus && finalAnswers.relationship;
+        const hasEmploymentBasics =
+          finalAnswers.sponsorBase &&
+          ["EMPLOYMENT", "INVESTMENT", "HUMANITARIAN"].includes(finalAnswers.sponsorBase);
+
+        if (finalAnswers.intent && (hasFamilyBasics || hasEmploymentBasics)) {
+          setTimeout(() => setStep(5), 100);
+        }
+
+        return finalAnswers;
+      });
+    }
+  }, [profile, isProfileLoading]);
 
   const handleEdit = () => {
     setStep(1);
@@ -240,31 +210,17 @@ export function VisaEligibilityTool() {
       setSaving(true);
       setSaveMessage("");
 
-      // Get existing profile
-      const { data: profileData } = await supabase
-        .from("user_profiles")
-        .select("profile_details")
-        .eq("id", user.id)
-        .single();
+      // Use context's updateProfile instead of direct Supabase upsert
+      updateProfile(
+        {
+          visaEligibility: {
+            ...(profile?.visaEligibility || {}),
+            ...answers,
+          },
+        } as any,
+        { immediate: true, silent: true }
+      );
 
-      const existingProfile = (profileData?.profile_details as MasterProfile) || {};
-
-      // Update visaEligibility section
-      const updatedProfile: MasterProfile = {
-        ...existingProfile,
-        visaEligibility: {
-          ...existingProfile.visaEligibility,
-          ...answers,
-        },
-      };
-
-      const { error } = await supabase.from("user_profiles").upsert({
-        id: user.id,
-        profile_details: updatedProfile,
-        updated_at: new Date().toISOString(),
-      });
-
-      if (error) throw error;
       setSaveMessage("Successfully saved to your profile!");
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (err) {

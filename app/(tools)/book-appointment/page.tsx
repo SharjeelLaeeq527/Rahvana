@@ -15,9 +15,8 @@ import {
 import IOMInfoStep from "./components/IOMInfoStep";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { createBrowserClient } from "@supabase/ssr";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
-import { MasterProfile } from "@/types/profile";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -1871,56 +1870,35 @@ export default function WilcareAppointmentForm() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
   const { t } = useLanguage();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const { profile, isProfileLoading } = useUserProfile();
 
-  // Auto-fill profile data
+  // Auto-fill profile data (from central context)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || profileLoaded || !profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    // Map profile data to form structure
+    const mappedData = mapProfileToGenericForm(profile, {
+      primaryContact: formData.primaryContact,
+      contactNumber: formData.contactNumber,
+      email: formData.email,
+      surname: formData.surname,
+      givenName: formData.givenName,
+      fullName: formData.fullName,
+      gender: formData.gender,
+      dateOfBirth: formData.dateOfBirth,
+      passportNumber: formData.passportNumber,
+      passportExpiryDate: formData.passportExpiryDate,
+      passportIssueDate: formData.passportIssueDate,
+      caseNumber: formData.caseNumber,
+      destinationCountry: formData.destinationCountry,
+    });
 
-        if (data?.profile_details && !profileLoaded) {
-          const profile = data.profile_details as MasterProfile;
-
-          // Map profile data to form structure
-          const mappedData = mapProfileToGenericForm(profile, {
-            primaryContact: formData.primaryContact,
-            contactNumber: formData.contactNumber,
-            email: formData.email,
-            surname: formData.surname,
-            givenName: formData.givenName,
-            fullName: formData.fullName,
-            gender: formData.gender,
-            dateOfBirth: formData.dateOfBirth,
-            passportNumber: formData.passportNumber,
-            passportExpiryDate: formData.passportExpiryDate,
-            passportIssueDate: formData.passportIssueDate,
-            caseNumber: formData.caseNumber,
-            destinationCountry: formData.destinationCountry,
-          });
-
-          setFormData((prev) => ({
-            ...prev,
-            ...mappedData,
-          }));
-          setProfileLoaded(true);
-        }
-      } catch (err) {
-        console.error("Error auto-filling profile:", err);
-      }
-    };
-
-    fetchProfile();
-  }, [user, profileLoaded, supabase, formData]);
+    setFormData((prev) => ({
+      ...prev,
+      ...mappedData,
+    }));
+    setProfileLoaded(true);
+  }, [profile, isProfileLoading, profileLoaded, formData]);
 
   const isAMC = formData.location === "islamabad" && formData.islamabadProvider === "amc";
   const isIOM = formData.location === "islamabad" && formData.islamabadProvider === "iom";

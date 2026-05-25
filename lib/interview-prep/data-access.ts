@@ -1,8 +1,5 @@
 // lib/interview-prep/data-access.ts
 import { createClient } from "../supabase/server";
-<<<<<<< HEAD
-import { InterviewSession, InterviewAnswer, InterviewResult, InterviewSessionInput } from "./types";
-=======
 import {
   InterviewSession,
   InterviewAnswer,
@@ -11,7 +8,6 @@ import {
   InterviewPrepSessionProgress,
   InterviewPrepSessionProgressInput,
 } from "./types";
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
 
 async function getSupabaseWithUser() {
   const supabase = await createClient();

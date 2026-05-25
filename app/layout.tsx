@@ -10,6 +10,7 @@ import { ToastProvider } from "./components/shared/ToastProvider";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
+import { UserProfileProvider } from "./context/UserProfileContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
 
@@ -71,21 +72,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ToastProvider>
           <AuthProvider>
             <PlanProvider>
-              <LanguageProvider>
-                {/* <ThemeProvider
-            attribute="class"
-            // un comment if you want bydefault device theme
-            // defaultTheme="system"
-            disableTransitionOnChange
-          > */}
-                <ClientHeader />
-                <ToolsGuard>{children}</ToolsGuard>
-                <ClientWidgets />
-                <Footer />
-                {/* </ThemeProvider> */}
-              </LanguageProvider>
-              <PlanTierDevToggle />
-              {/* DEV ONLY — uncomment for local testing */}
+              <UserProfileProvider>
+                <LanguageProvider>
+                  {/* <ThemeProvider
+              attribute="class"
+              // un comment if you want bydefault device theme
+              // defaultTheme="system"
+              disableTransitionOnChange
+            > */}
+                  <ClientHeader />
+                  <ToolsGuard>{children}</ToolsGuard>
+                  <ClientWidgets />
+                  <Footer />
+                  {/* </ThemeProvider> */}
+                </LanguageProvider>
+                <PlanTierDevToggle />
+                {/* DEV ONLY — uncomment for local testing */}
+              </UserProfileProvider>
             </PlanProvider>
           </AuthProvider>
         </ToastProvider>

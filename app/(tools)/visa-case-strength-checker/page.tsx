@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { ResultPage } from "./result/ResultPage";
 import CaseTypeStep from "./components/CaseTypeStep";
 import QuestionStep from "./components/QuestionStep";
 import ReviewStep from "./components/ReviewStep";
 import { Questionnaire } from "@/lib/visa-checker/engine-types";
-import { createBrowserClient } from "@supabase/ssr";
 import { mapProfileToVisaChecker, mapFormToProfile } from "@/lib/autoFill/mapper";
-import type { MasterProfile } from "@/types/profile";
 
 export default function VisaCaseStrengthChecker() {
   const [step, setStep] = useState<number>(0);
@@ -21,11 +20,7 @@ export default function VisaCaseStrengthChecker() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
   const [profileLoaded, setProfileLoaded] = useState(false);
 
@@ -50,50 +45,32 @@ export default function VisaCaseStrengthChecker() {
           setLoading(false);
         });
     }
-  }, [formData.caseType, supabase]);
+  }, [formData.caseType])
 
-  // Auto-fill profile data & Restore saved session
+  // Auto-fill profile data & Restore saved session (from central context)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user?.id) return;
-      if (profileLoaded) return;
+    if (isProfileLoading || profileLoaded) return;
+    if (!profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    // 1. Check for specific Saved Case Strength Session
+    if (profile.caseStrength?.lastSessionId && profile.caseStrength?.answers) {
+      setFormData({
+        caseType: String(profile.caseStrength.caseType || ""),
+        ...profile.caseStrength.answers,
+      });
+      setSessionId(profile.caseStrength.lastSessionId);
+      setProfileLoaded(true);
+      return;
+    }
 
-        if (data?.profile_details) {
-          const profile = data.profile_details as MasterProfile;
-
-          // 1. Check for specific Saved Case Strength Session
-          if (profile.caseStrength?.lastSessionId && profile.caseStrength?.answers) {
-            setFormData({
-              caseType: String(profile.caseStrength.caseType || ""),
-              ...profile.caseStrength.answers,
-            });
-            setSessionId(profile.caseStrength.lastSessionId);
-            setProfileLoaded(true);
-            return;
-          }
-
-          // 2. Fallback: Generic Auto-fill
-          const mappedData = mapProfileToVisaChecker(profile);
-          setFormData((prev) => ({
-            ...prev,
-            ...mappedData,
-          }));
-          setProfileLoaded(true);
-        }
-      } catch (err) {
-        console.error("Error auto-filling profile:", err);
-      }
-    };
-
-    fetchProfile();
-  }, [user?.id, profileLoaded, supabase]);
+    // 2. Fallback: Generic Auto-fill
+    const mappedData = mapProfileToVisaChecker(profile);
+    setFormData((prev) => ({
+      ...prev,
+      ...mappedData,
+    }));
+    setProfileLoaded(true);
+  }, [profile, isProfileLoading, profileLoaded]);
 
   const handleCaseTypeChange = (caseType: string) => {
     setFormData({ caseType });
@@ -101,29 +78,20 @@ export default function VisaCaseStrengthChecker() {
   };
 
   const handleSaveToProfile = async () => {
-    if (!user?.id) return;
     try {
       setLoading(true);
       const profileUpdate = mapFormToProfile(formData);
       const caseStrengthData = {
-        caseType: formData.caseType,
+        caseType: String(formData.caseType || ""),
         answers: formData,
-        lastSessionId: sessionId,
+        lastSessionId: sessionId || undefined,
       };
 
-      const { error } = await supabase.from("user_profiles").upsert(
-        {
-          id: user.id,
-          profile_details: {
-            ...profileUpdate,
-            caseStrength: caseStrengthData,
-          },
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" }
+      // Use context's updateProfile instead of direct Supabase upsert
+      updateProfile(
+        { ...profileUpdate, caseStrength: caseStrengthData },
+        { immediate: true }
       );
-
-      if (error) throw error;
     } catch (err) {
       console.error("Error updating profile:", err);
       setError("Failed to update profile");

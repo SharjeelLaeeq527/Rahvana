@@ -10,9 +10,9 @@ import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
 import { X, ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
-import { autoFillForm } from "@/lib/autoFill/mapper";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { autoFillForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import type { MasterProfile } from "@/types/profile";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentRole } from "@/lib/document-vault/types";
@@ -141,6 +141,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const hasShownInitialIntro = useRef(false);
   const draftJourneyKey = "global";
   const { user } = useAuth();
+  const { profile: userProfile, isProfileLoading: isContextProfileLoading, updateProfile } = useUserProfile();
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -158,10 +159,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     reloadDocuments,
     initialize: initializeVault,
   } = useDocumentVaultStore();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
   const prevStepRef = useRef(currentStep);
   const saveTimerRef = useRef<number | null>(null);
   const draftDataRef = useRef({
@@ -324,49 +321,25 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   // Detect scroll direction for mobile menu visibility - REMOVED (unused)
   // This was previously used but is no longer needed
 
+  // Auto-fill from central UserProfileContext (no direct Supabase call)
   useEffect(() => {
-    let isMounted = true;
+    if (isContextProfileLoading || profileLoaded || !userProfile) return;
 
-    const loadProfile = async () => {
-      if (!user || profileLoaded) return;
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    setFormData((prev) => {
+      // Use current form structure as template for auto-fill
+      const autoData = autoFillForm(userProfile, prev) as Record<string, string>;
+      const merged = { ...prev };
 
-        if (!isMounted) return;
-
-        if (data?.profile_details) {
-          setFormData((prev) => {
-            // Use current form structure as template for auto-fill
-            const autoData = autoFillForm(data.profile_details as MasterProfile, prev) as Record<
-              string,
-              string
-            >;
-            const merged = { ...prev };
-
-            Object.entries(autoData).forEach(([key, value]) => {
-              if (!merged[key]) {
-                merged[key] = value;
-              }
-            });
-
-            return merged;
-          });
-          if (isMounted) setProfileLoaded(true);
+      Object.entries(autoData).forEach(([key, value]) => {
+        if (!merged[key]) {
+          merged[key] = value;
         }
-      } catch (err) {
-        console.error("Auto-fill error:", err);
-      }
-    };
-    loadProfile();
+      });
 
-    return () => {
-      isMounted = false;
-    };
-  }, [user, profileLoaded, supabase]);
+      return merged;
+    });
+    setProfileLoaded(true);
+  }, [userProfile, isContextProfileLoading, profileLoaded]);
 
   const sections = useMemo(() => {
     if (!config) return [];
@@ -679,6 +652,18 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       }
     } finally {
       clearDraftBackup(formCode, draftJourneyKey);
+
+      // Save completed form data back to central profile (auto-fill for other tools)
+      if (userProfile) {
+        try {
+          const profileDelta = mapFormToProfile(formData, userProfile);
+          if (Object.keys(profileDelta).length > 0) {
+            updateProfile(profileDelta, { silent: true });
+          }
+        } catch (e) {
+          console.warn("[MultiStepForm] Profile save-back failed:", e);
+        }
+      }
     }
   }, [
     user,
