@@ -788,17 +788,10 @@ export function MockInterviewModePage({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                onClick={onExit}
-                variant="outline"
-                className="flex-1 h-12 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-              >
-                Cancel
-              </Button>
+            <div className="flex justify-center items-center mx-auto">
               <Button
                 onClick={handleBeginInterviewClick}
-                className="flex-1 h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
+                className="h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
               >
                 <Play className="h-4 w-4 mr-2" />
                 Begin Interview
