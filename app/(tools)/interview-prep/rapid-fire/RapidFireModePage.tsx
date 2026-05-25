@@ -295,11 +295,6 @@ export const RapidFireModePage = ({
     return shuffled;
   };
 
-<<<<<<< HEAD
-  const [shuffledQuestions, setShuffledQuestions] = useState<GeneratedQuestion[]>(() =>
-    shuffleArray(questions.filter((q) => q.applicable))
-  );
-=======
   // NOTE: `buildQuestionRound` moved to server-side; client no longer performs full round computation.
 
   const [shuffledQuestions, setShuffledQuestions] = useState<
@@ -312,7 +307,6 @@ export const RapidFireModePage = ({
   const roundQuestionCount = QUESTIONS_PER_ROUND;
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / roundQuestionCount) * 100;
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
 
   const getProgressGradient = (percent: number) => {
     return {
@@ -584,45 +578,7 @@ export const RapidFireModePage = ({
       setShowAnswer(false);
       setIsFlipped(false);
       setUserResponse(null);
-<<<<<<< HEAD
-    } else {
-      // Ensure all questions have responses recorded
-      const allResponses = [...questionResponses];
-
-      // Add any missing questions as 'missed' (in case they timed out without explicit response)
-      // But don't overwrite skipped questions
-      for (let i = 0; i < shuffledQuestions.length; i++) {
-        const existingResponse = allResponses.find((r) => r.index === i);
-        if (!existingResponse) {
-          allResponses.push({
-            question: shuffledQuestions[i],
-            response: "missed",
-            index: i,
-          });
-        } else if (existingResponse.response === "skipped") {
-          // Keep skipped responses as is
-          continue;
-        }
-      }
-
-      // Calculate final score based on actual responses
-      const coveredCount = allResponses.filter((r) => r.response === "covered").length;
-      const partialCount = allResponses.filter((r) => r.response === "partial").length;
-      const skippedCount = allResponses.filter((r) => r.response === "skipped").length;
-
-      const totalPoints = coveredCount * 10 + partialCount * 5;
-      const maxPossiblePoints = (shuffledQuestions.length - skippedCount) * 10;
-
-      const percentageScore =
-        maxPossiblePoints > 0 ? Math.round((totalPoints / maxPossiblePoints) * 100) : 0;
-
-      // Update the state with complete response data
-      setQuestionResponses(allResponses);
-      setTotalScore(percentageScore);
-      saveReadinessScore(percentageScore);
-=======
       return;
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
     }
 
     finalizeRound();
@@ -819,49 +775,6 @@ export const RapidFireModePage = ({
     );
   };
 
-<<<<<<< HEAD
-  // Track timed-out questions properly
-  useEffect(() => {
-    if (timeLeft === 0 && !showAnswer && userResponse === null) {
-      // Check if this question was already recorded as skipped
-      const isAlreadySkipped = questionResponses.some(
-        (r) => r.index === currentQuestionIndex && r.response === "skipped"
-      );
-
-      if (!isAlreadySkipped) {
-        // Auto-mark as missed when time expires (only if not already skipped)
-        const newResponse: QuestionResponse = {
-          question: currentQuestion,
-          response: "missed",
-          index: currentQuestionIndex,
-        };
-
-        setQuestionResponses((prev) => {
-          const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
-          if (existingIndex >= 0) {
-            // Don't overwrite skipped responses
-            if (prev[existingIndex].response === "skipped") {
-              return prev;
-            }
-            const updated = [...prev];
-            updated[existingIndex] = newResponse;
-            return updated;
-          }
-          return [...prev, newResponse];
-        });
-      }
-    }
-  }, [
-    timeLeft,
-    showAnswer,
-    userResponse,
-    currentQuestion,
-    currentQuestionIndex,
-    questionResponses,
-  ]);
-
-=======
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
   const handleReviewQuestionClick = (question: GeneratedQuestion) => {
     setReviewQuestion(question);
     setIsReviewFlipped(false);
@@ -932,10 +845,6 @@ export const RapidFireModePage = ({
       <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
         <div className="">
           <div className="text-center mb-8">
-<<<<<<< HEAD
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Rapid Fire Completed!</h1>
-            <p className="text-slate-600">Your interview readiness assessment</p>
-=======
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
               {screen === "completed" ? "Training Complete!" : "Round Complete"}
             </h1>
@@ -944,7 +853,6 @@ export const RapidFireModePage = ({
                 ? "Your final readiness assessment"
                 : `Round ${currentRound} performance summary`}
             </p>
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
@@ -953,11 +861,7 @@ export const RapidFireModePage = ({
                 <div className="w-40 h-40 rounded-full border-8 border-teal-200 flex items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
                   <div className="text-center">
                     <span className="text-4xl font-bold text-teal-700">
-<<<<<<< HEAD
-                      {Math.round((score / (shuffledQuestions.length - skippedQuestions)) * 10)}%
-=======
                       {roundScore ?? totalScore ?? 0}%
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
                     </span>
                     <div className="text-sm text-teal-600 font-medium mt-1">Readiness Score</div>
                   </div>
@@ -972,15 +876,11 @@ export const RapidFireModePage = ({
                           : "bg-red-100 text-red-800"
                     }`}
                   >
-<<<<<<< HEAD
-                    {totalScore >= 80 ? "Excellent" : totalScore >= 60 ? "Good" : "Needs Practice"}
-=======
                     {(roundScore ?? totalScore ?? 0) >= 80
                       ? "Excellent"
                       : (roundScore ?? totalScore ?? 0) >= 60
                         ? "Good"
                         : "Needs Practice"}
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
                   </div>
                 </div>
               </div>
@@ -994,16 +894,11 @@ export const RapidFireModePage = ({
                       : "Keep practicing to build confidence"}
                 </p>
                 <p className="text-slate-500">
-<<<<<<< HEAD
-                  You scored <span className="font-semibold text-teal-600">{score}</span> points out
-                  of{" "}
-=======
                   You scored{" "}
                   <span className="font-semibold text-teal-600">
                     {roundSummary?.earnedPoints ?? score}
                   </span>{" "}
                   points out of{" "}
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
                   <span className="font-semibold">
                     {roundSummary?.possiblePoints ??
                       (shuffledQuestions.length - skippedQuestions) * 10}
@@ -1024,37 +919,25 @@ export const RapidFireModePage = ({
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
                 <div className="text-2xl font-bold text-emerald-600">
-<<<<<<< HEAD
-                  {questionResponses.filter((r) => r.response === "covered").length}
-=======
                   {roundSummary?.coveredCount ??
                     questionResponses.filter((r) => r.response === "covered")
                       .length}
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
                 </div>
                 <div className="text-sm text-emerald-700">Covered Well</div>
               </div>
               <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
                 <div className="text-2xl font-bold text-amber-600">
-<<<<<<< HEAD
-                  {questionResponses.filter((r) => r.response === "partial").length}
-=======
                   {roundSummary?.partialCount ??
                     questionResponses.filter((r) => r.response === "partial")
                       .length}
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
                 </div>
                 <div className="text-sm text-amber-700">Partial Coverage</div>
               </div>
               <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
                 <div className="text-2xl font-bold text-rose-600">
-<<<<<<< HEAD
-                  {questionResponses.filter((r) => r.response === "missed").length}
-=======
                   {roundSummary?.missedCount ??
                     questionResponses.filter((r) => r.response === "missed")
                       .length}
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
                 </div>
                 <div className="text-sm text-rose-700">Missed</div>
               </div>
@@ -1245,11 +1128,6 @@ export const RapidFireModePage = ({
               >
                 Start Next Round
               </Button>
-<<<<<<< HEAD
-              <Button onClick={onExit} variant="outline" className="cursor-pointer">
-                Exit
-              </Button>
-=======
               {/* <Button
                 onClick={restartRapidFire}
                 variant="outline"
@@ -1257,7 +1135,6 @@ export const RapidFireModePage = ({
               >
                 Restart Training
               </Button> */}
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
             </div>
           </div>
         </div>
