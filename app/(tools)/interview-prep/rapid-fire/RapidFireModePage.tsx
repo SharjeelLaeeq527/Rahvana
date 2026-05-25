@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -19,6 +19,9 @@ import {
   QuestionCooldownMap,
   reduceCooldowns,
 } from "@/lib/interview-prep/round-engine";
+import {
+  RapidFireTrainingView,
+} from "./RapidFireModePage.views";
 
 const QUESTIONS_PER_ROUND = 12;
 
@@ -177,17 +180,6 @@ const savePersistedAdaptiveTraining = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    });
-  } catch {
-    // best-effort persistence
-  }
-};
-
-const clearPersistedAdaptiveTraining = async (sessionId: string) => {
-  try {
-    await fetch(buildProgressEndpoint(sessionId), {
-      method: "DELETE",
-      credentials: "include",
     });
   } catch {
     // best-effort persistence
@@ -753,32 +745,6 @@ export const RapidFireModePage = ({
     );
   };
 
-  const _restartRapidFire = () => {
-    void clearPersistedAdaptiveTraining(sessionId);
-    setCurrentQuestionIndex(0);
-    setTimeLeft(10);
-    setScore(0);
-    setRoundScore(null);
-    setShowAnswer(false);
-    setIsFlipped(false);
-    setUserResponse(null);
-    setTotalScore(null);
-    setScreen("training");
-    setRoundSummary(null);
-    setResumeProgress(null);
-    setIsStorageReady(false);
-    setSkippedQuestions(0);
-    setQuestionResponses([]);
-    setReviewQuestion(null);
-    setIsReviewFlipped(false);
-    setCurrentRound(1);
-    setUsedQuestionIds([]);
-    setRetryQuestionIds([]);
-    setMasteredQuestionIds([]);
-    setTotalRoundsCompleted(0);
-    setShuffledQuestions(shuffleArray(questions).filter((q) => q.applicable).slice(0, questionsPerRound));
-  };
-
   const handleReviewQuestionClick = (question: GeneratedQuestion) => {
     setReviewQuestion(question);
     setIsReviewFlipped(false);
@@ -1175,302 +1141,23 @@ export const RapidFireModePage = ({
   }
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-teal-50 min-h-screen w-full">
-      <div className="site-main-px py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Zap className="w-6 h-6 text-orange-500" />
-              Rapid Fire Mode
-            </h1>
-            <p className="text-slate-600">
-              Round {currentRound} • Question {currentQuestionIndex + 1} of{" "}
-              {roundQuestionCount}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="text-right flex gap-2">
-              <div className="text-slate-900 font-bold">Score</div>
-              <div className="text-lg font-bold text-teal-600">{score} pts</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-slate-600 mb-2">
-            <span>Progress</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300 ease-out"
-              style={getProgressGradient(progress)}
-            />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-87.5 sm:h-100 lg:h-112.5 mb-8">
-          <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
-            <div
-              className={`relative w-full h-full cursor-pointer transition-transform duration-700 ease-out-cubic ${
-                isFlipped ? "transform rotate-y-180" : ""
-              }`}
-              style={{
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
-            >
-              <div
-                className={`absolute inset-0 backface-hidden bg-white rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-2xl border-4 ${
-                  !showAnswer
-                    ? timeLeft <= 3
-                      ? "border-red-500 animate-pulse"
-                      : "border-emerald-500"
-                    : "border-slate-200"
-                }`}
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-3 sm:mb-4">
-                    <span className="bg-teal-100 text-teal-800 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
-                      {currentQuestion.category}
-                    </span>
-                  </div>
-                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-slate-800 mb-4 sm:mb-6 line-clamp-5 sm:line-clamp-4">
-                    {currentQuestion.selectedQuestion ||
-                      currentQuestion.question}
-                  </h2>
-
-                  {!showAnswer && (
-                    <div className="flex justify-center mt-2 sm:mt-4">
-                      <div className="relative w-28 h-28 sm:w-32 sm:h-32">
-                        {/* Subtle outer ring for depth */}
-                        <div
-                          className={`absolute inset-0 rounded-full ${timeLeft <= 3 ? "ring-2 ring-red-100" : "ring-2 ring-teal-100"} opacity-50`}
-                        ></div>
-
-                        {/* Enhanced circular timer */}
-                        <svg
-                          className="w-full h-full drop-shadow-sm"
-                          viewBox="0 0 176 176"
-                        >
-                          {/* Background ring with subtle gradient */}
-                          <circle
-                            cx="88"
-                            cy="88"
-                            r="76"
-                            fill="none"
-                            stroke="url(#timerBg)"
-                            strokeWidth="6"
-                          />
-
-                          {/* Progress ring with smooth animation */}
-                          <circle
-                            cx="88"
-                            cy="88"
-                            r="76"
-                            fill="none"
-                            stroke={
-                              timeLeft <= 3
-                                ? "url(#timerDanger)"
-                                : "url(#timerSuccess)"
-                            }
-                            strokeWidth="6"
-                            strokeDasharray={`${2 * Math.PI * 76}`}
-                            strokeDashoffset={`${2 * Math.PI * 76 * (1 - timeLeft / 10)}`}
-                            strokeLinecap="round"
-                            className="transition-all duration-1000 ease-out"
-                            transform="rotate(-90 88 88)"
-                          />
-
-                          {/* Gradient definitions */}
-                          <defs>
-                            <linearGradient
-                              id="timerBg"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#f1f5f9" />
-                              <stop offset="100%" stopColor="#e2e8f0" />
-                            </linearGradient>
-                            <linearGradient
-                              id="timerSuccess"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#0d9488" />
-                              <stop offset="100%" stopColor="#0f766e" />
-                            </linearGradient>
-                            <linearGradient
-                              id="timerDanger"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#ef4444" />
-                              <stop offset="100%" stopColor="#dc2626" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-
-                        {/* Enhanced timer display */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl px-2 sm:px-4 py-1 sm:py-2">
-                            <div
-                              className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-red-600" : "text-teal-600"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
-                            >
-                              {timeLeft}
-                            </div>
-                            <div className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5 sm:mt-1">
-                              sec
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="text-center">
-                  {!showAnswer ? (
-                    <div className="inline-flex items-center gap-2 text-slate-600 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
-                      <span>Preparing response...</span>
-                    </div>
-                  ) : (
-                    <p className="text-slate-600 text-xs sm:text-sm">
-                      Click to see answer
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col text-white shadow-2xl border border-teal-500/40">
-                <div className="flex justify-between items-start mb-2 sm:mb-3 pb-2 border-b border-white/10">
-                  <span className="bg-white/20 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium">
-                    Answer & Guidance
-                  </span>
-                </div>
-
-                <div className="flex-1 overflow-y-auto pr-2 sm:pr-3 scrollbar-premium">
-                  <div className="space-y-3 sm:space-y-4">
-                    {savedAnswers[currentQuestion.id] && (
-                      <div>
-                        <h4 className="text-emerald-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                          <span className="w-1.5 h-1.5 bg-emerald-200 rounded-full"></span>
-                          Your Saved Answer
-                        </h4>
-                        <p className="text-slate-100 leading-relaxed text-xs sm:text-sm line-clamp-3">
-                          {savedAnswers[currentQuestion.id]}
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <h4 className="text-teal-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                        <span className="w-1.5 h-1.5 bg-teal-200 rounded-full"></span>
-                        Sample
-                      </h4>
-                      <p className="text-slate-100 leading-snug text-xs sm:text-sm line-clamp-3">
-                        {currentQuestion.sampleAnswer}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="text-blue-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                        <span className="w-1.5 h-1.5 bg-blue-200 rounded-full"></span>
-                        Guidance
-                      </h4>
-                      <p className="text-slate-200 leading-snug text-xs sm:text-sm line-clamp-3">
-                        {currentQuestion.guidance}
-                      </p>
-                    </div>
-
-                    {currentQuestion.tooltip && (
-                      <div>
-                        <h4 className="text-amber-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                          <span className="w-1.5 h-1.5 bg-amber-200 rounded-full"></span>
-                          Tip
-                        </h4>
-                        <p className="text-slate-300 text-xs sm:text-sm italic line-clamp-2">
-                          {currentQuestion.tooltip}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-2 sm:mt-4">
-                  <Button
-                    onClick={() => handleResponse("covered")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "covered"
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-emerald-500 hover:bg-emerald-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Covered</span>
-                    <span className="text-xs">+10</span>
-                  </Button>
-
-                  <Button
-                    onClick={() => handleResponse("partial")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "partial"
-                        ? "bg-amber-600 hover:bg-amber-700"
-                        : "bg-amber-500 hover:bg-amber-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Partial</span>
-                    <span className="text-xs">+5</span>
-                  </Button>
-
-                  <Button
-                    onClick={() => handleResponse("missed")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "missed"
-                        ? "bg-rose-600 hover:bg-rose-700"
-                        : "bg-rose-500 hover:bg-rose-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Missed</span>
-                    <span className="text-xs">+0</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center gap-3 mt-4">
-          {!showAnswer ? (
-            <Button
-              onClick={skipQuestion}
-              variant="outline"
-              className="bg-white hover:bg-slate-50"
-            >
-              Skip Question
-            </Button>
-          ) : (
-            <Button
-              onClick={nextQuestion}
-              className="bg-orange-600 hover:bg-orange-700"
-              disabled={userResponse === null}
-            >
-              {currentQuestionIndex < shuffledQuestions.length - 1
-                ? "Next Question"
-                : "Finish"}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
+    <RapidFireTrainingView
+      currentRound={currentRound}
+      currentQuestionIndex={currentQuestionIndex}
+      roundQuestionCount={roundQuestionCount}
+      score={score}
+      progress={progress}
+      currentQuestion={currentQuestion}
+      timeLeft={timeLeft}
+      showAnswer={showAnswer}
+      isFlipped={isFlipped}
+      userResponse={userResponse}
+      savedAnswers={savedAnswers}
+      onHandleResponse={handleResponse}
+      onSkipQuestion={skipQuestion}
+      onNextQuestion={nextQuestion}
+      getProgressGradient={getProgressGradient}
+    />
   );
 };
+
