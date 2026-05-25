@@ -20,9 +20,7 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
 
   const s = (currentStep.tool_data as any).tutorial[medicalGuideIdx];
   const isFirst = medicalGuideIdx === 0;
-  const isLast =
-    medicalGuideIdx ===
-    (currentStep.tool_data as any).tutorial.length - 1;
+  const isLast = medicalGuideIdx === (currentStep.tool_data as any).tutorial.length - 1;
 
   return (
     <div className="fixed inset-0 z-200 bg-white flex flex-col animate-in slide-in-from-bottom duration-280 font-sans">
@@ -32,11 +30,7 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
           onClick={onClose}
           className="w-[36px] h-[36px] rounded-full bg-[#f4f7fb] flex items-center justify-center transition-colors hover:bg-sky-100 group"
         >
-          <X
-            size={16}
-            strokeWidth={2}
-            className="text-[#3a4f63] group-hover:text-[#1c2b3a]"
-          />
+          <X size={16} strokeWidth={2} className="text-[#3a4f63] group-hover:text-[#1c2b3a]" />
         </button>
         <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
           <div
@@ -47,8 +41,7 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
           />
         </div>
         <div className="text-[12px] font-medium text-[#6b8097] shrink-0">
-          {medicalGuideIdx + 1} /{" "}
-          {(currentStep.tool_data as any).tutorial.length}
+          {medicalGuideIdx + 1} / {(currentStep.tool_data as any).tutorial.length}
         </div>
       </div>
 
@@ -61,9 +54,7 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
           <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] mb-[8px] leading-[1.3]">
             {s.heading}
           </h2>
-          <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[22px]">
-            {s.instruction}
-          </p>
+          <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[22px]">{s.instruction}</p>
 
           <div className="w-full border-[1.5px] border-[#d0e4f7] rounded-xl overflow-hidden mb-[18px] bg-[#f4f7fb] shadow-sm">
             <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-[6px]">
@@ -82,22 +73,15 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
 
           {s.note && (
             <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-lg p-[11px_14px] flex gap-2.5 mb-[18px]">
-              <Info
-                size={16}
-                className="text-[#8a6200] shrink-0 mt-[2px]"
-              />
-              <span className="text-[13px] text-[#8a6200] leading-[1.55]">
-                {s.note}
-              </span>
+              <Info size={16} className="text-[#8a6200] shrink-0 mt-[2px]" />
+              <span className="text-[13px] text-[#8a6200] leading-[1.55]">{s.note}</span>
             </div>
           )}
 
           <div className="flex gap-[10px]">
             {!isFirst && (
               <button
-                onClick={() =>
-                  setMedicalGuideIdx(medicalGuideIdx - 1)
-                }
+                onClick={() => setMedicalGuideIdx(medicalGuideIdx - 1)}
                 className="p-[12px_20px] bg-white border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] font-medium text-[#3a4f63] hover:border-[#3a4f63] transition-all flex items-center gap-2"
               >
                 <ChevronLeft size={16} /> Back
@@ -112,9 +96,7 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
                 }
               }}
               className={`flex-1 p-[12px_20px] text-white border-none rounded-lg text-[14px] font-bold transition-all flex items-center justify-center gap-2 ${
-                isLast
-                  ? "bg-[#15744f] hover:bg-[#0e5c3c]"
-                  : "bg-primary hover:bg-primary/90"
+                isLast ? "bg-[#15744f] hover:bg-[#0e5c3c]" : "bg-primary hover:bg-primary/90"
               }`}
             >
               {isLast ? (

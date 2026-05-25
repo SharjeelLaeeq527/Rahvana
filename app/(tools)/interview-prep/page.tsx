@@ -3,13 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
@@ -18,15 +12,13 @@ import { Loader } from "@/components/ui/spinner";
 import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
 
 import { useAuth } from "@/app/context/AuthContext";
-import { createBrowserClient } from "@supabase/ssr";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
-import { MasterProfile } from "@/types/profile";
 import { ReviewStep } from "@/app/components/interview-prep/review-step";
 import { CategorySelectionStep } from "@/app/components/interview-prep/category-selection-step";
 import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
 import CountrySelectionModal from "../../components/interview-prep/CountrySelectionModal";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { ToastProvider } from "@/app/components/shared/ToastProvider";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
@@ -36,13 +28,9 @@ import type {
 } from "@/data/interview-categories/schema";
 
 export default function InterviewPreparation() {
-  const [selectedCategory, setSelectedCategory] =
-    useState<InterviewCategoryConfig | null>(null);
-  const [questionnaire, setQuestionnaire] =
-    useState<DynamicQuestionnaire | null>(null);
-  const [availableCategories, setAvailableCategories] = useState<
-    InterviewCategoryConfig[]
-  >([]);
+  const [selectedCategory, setSelectedCategory] = useState<InterviewCategoryConfig | null>(null);
+  const [questionnaire, setQuestionnaire] = useState<DynamicQuestionnaire | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<InterviewCategoryConfig[]>([]);
   const [showCountryModal, setShowCountryModal] = useState<boolean>(true);
   const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
 
@@ -55,99 +43,82 @@ export default function InterviewPreparation() {
   const [loadingMessage, setLoadingMessage] = useState<string>("");
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [generatedResults, setGeneratedResults] =
-    useState<InterviewPrepOutput | null>(null);
+  const [generatedResults, setGeneratedResults] = useState<InterviewPrepOutput | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const [profileLoaded, setProfileLoaded] = useState(false);
-  const [sessionRestorationAttempted, setSessionRestorationAttempted] =
-    useState(false);
+  const [sessionRestorationAttempted, setSessionRestorationAttempted] = useState(false);
+
+  type RestorableSession = {
+    id: string;
+    category_slug: string;
+    updated_at?: string;
+    answers?: Array<{ question_key: string; answer_value: unknown }>;
+    results?: InterviewPrepOutput;
+  };
 
   // NEW: Confirmation modal state for session restoration
   const [restoreSessionModalOpen, setRestoreSessionModalOpen] = useState(false);
-  const [pendingRestoreSession, setPendingRestoreSession] = useState<
-    any | null
-  >(null);
+  const [pendingRestoreSession, setPendingRestoreSession] =
+    useState<RestorableSession | null>(null);
+  const [isRedirectingSession, setIsRedirectingSession] = useState(false);
 
   const { user } = useAuth();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const { profile, isProfileLoading } = useUserProfile();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  // Auto-fill profile data
+  // Auto-fill profile data (from central context)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || profileLoaded || !profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    // Map profile data to form structure
+    const mappedData = mapProfileToGenericForm(profile, {
+      caseType: formData.caseType,
+      beneficiary_country: formData.beneficiary_country,
+      age_range: formData.age_range,
+      highest_education: formData.highest_education,
+      marriage_date: formData.marriage_date,
+      marriage_location: formData.marriage_location,
+      previous_marriages: formData.previous_marriages,
+      relationship_origin_type: formData.relationship_origin_type,
+      current_living_arrangement: formData.current_living_arrangement,
+      spouse_address: formData.spouse_address,
+      communication_frequency: formData.communication_frequency,
+      daily_communication: formData.daily_communication,
+      shared_activities: formData.shared_activities,
+      important_dates_knowledge: formData.important_dates_knowledge,
+      met_spouse_family: formData.met_spouse_family,
+      family_reaction_to_marriage: formData.family_reaction_to_marriage,
+      wedding_attendees: formData.wedding_attendees,
+      marriage_type: formData.marriage_type,
+      mutual_friends: formData.mutual_friends,
+      petitioner_status: formData.petitioner_status,
+      petitioner_income_level: formData.petitioner_income_level,
+      household_size: formData.household_size,
+      beneficiary_employment: formData.beneficiary_employment,
+      sponsor_employment: formData.sponsor_employment,
+      military_or_defense_background: formData.military_or_defense_background,
+      previous_us_visits: formData.previous_us_visits,
+      previous_visa_refusal: formData.previous_visa_refusal,
+      visa_overstay_history: formData.visa_overstay_history,
+      criminal_history: formData.criminal_history,
+      english_proficiency: formData.english_proficiency,
+      intended_us_state: formData.intended_us_state,
+      living_arrangements_in_us: formData.living_arrangements_in_us,
+      future_plans: formData.future_plans,
+      joint_finances: formData.joint_finances,
+      financial_arrangement_description: formData.financial_arrangement_description,
+    });
 
-        if (data?.profile_details && !profileLoaded) {
-          const profile = data.profile_details as MasterProfile;
-
-          // Map profile data to form structure
-          const mappedData = mapProfileToGenericForm(profile, {
-            caseType: formData.caseType,
-            beneficiary_country: formData.beneficiary_country,
-            age_range: formData.age_range,
-            highest_education: formData.highest_education,
-            marriage_date: formData.marriage_date,
-            marriage_location: formData.marriage_location,
-            previous_marriages: formData.previous_marriages,
-            relationship_origin_type: formData.relationship_origin_type,
-            current_living_arrangement: formData.current_living_arrangement,
-            spouse_address: formData.spouse_address,
-            communication_frequency: formData.communication_frequency,
-            daily_communication: formData.daily_communication,
-            shared_activities: formData.shared_activities,
-            important_dates_knowledge: formData.important_dates_knowledge,
-            met_spouse_family: formData.met_spouse_family,
-            family_reaction_to_marriage: formData.family_reaction_to_marriage,
-            wedding_attendees: formData.wedding_attendees,
-            marriage_type: formData.marriage_type,
-            mutual_friends: formData.mutual_friends,
-            petitioner_status: formData.petitioner_status,
-            petitioner_income_level: formData.petitioner_income_level,
-            household_size: formData.household_size,
-            beneficiary_employment: formData.beneficiary_employment,
-            sponsor_employment: formData.sponsor_employment,
-            military_or_defense_background:
-              formData.military_or_defense_background,
-            previous_us_visits: formData.previous_us_visits,
-            previous_visa_refusal: formData.previous_visa_refusal,
-            visa_overstay_history: formData.visa_overstay_history,
-            criminal_history: formData.criminal_history,
-            english_proficiency: formData.english_proficiency,
-            intended_us_state: formData.intended_us_state,
-            living_arrangements_in_us: formData.living_arrangements_in_us,
-            future_plans: formData.future_plans,
-            joint_finances: formData.joint_finances,
-            financial_arrangement_description:
-              formData.financial_arrangement_description,
-          });
-
-          setFormData((prev) => ({
-            ...prev,
-            ...mappedData,
-          }));
-          setProfileLoaded(true);
-        }
-      } catch (err) {
-        console.error("Error auto-filling profile:", err);
-      }
-    };
-
-    fetchProfile();
-  }, [user, profileLoaded, supabase, formData]);
+    setFormData((prev) => ({
+      ...prev,
+      ...mappedData,
+    }));
+    setProfileLoaded(true);
+  }, [profile, isProfileLoading, profileLoaded, formData]);
 
   // Load available categories based on selected country
   const loadCategories = async (country: string) => {
@@ -155,7 +126,7 @@ export default function InterviewPreparation() {
       setLoadingMessage("Loading visa categories...");
       setLoading(true);
       const response = await fetch(
-        `/api/interview-prep/categories?country=${encodeURIComponent(country)}`,
+        `/api/interview-prep/categories?country=${encodeURIComponent(country)}`
       );
       const data = await response.json();
 
@@ -166,15 +137,11 @@ export default function InterviewPreparation() {
           setShowCountryModal(false);
         } else {
           setAvailableCategories([]);
-          setNoDataMessage(
-            "No Visa Categories available for your selected country right now.",
-          );
+          setNoDataMessage("No Visa Categories available for your selected country right now.");
         }
       } else {
         setAvailableCategories([]);
-        setNoDataMessage(
-          "No Visa Categories available for your selected country right now.",
-        );
+        setNoDataMessage("No Visa Categories available for your selected country right now.");
       }
     } catch (err) {
       console.error("Error loading categories:", err);
@@ -189,6 +156,65 @@ export default function InterviewPreparation() {
   // Handle country selection from modal
   const handleCountrySelected = (country: string) => {
     loadCategories(country);
+  };
+
+  const restoreSessionData = async (
+    session: RestorableSession,
+    getCategoryFn: (slug: string) => InterviewCategoryConfig | undefined,
+  ) => {
+    try {
+      setSessionId(session.id);
+      const categorySlug = session.category_slug;
+      const category = getCategoryFn(categorySlug);
+
+      if (!category && availableCategories.length > 0) {
+        localStorage.removeItem("interviewPrepSessionId");
+        return;
+      }
+
+      if (category) {
+        setSelectedCategory(category);
+
+        // Load questionnaire for the restored category
+        const catDataResponse = await fetch(
+          `/api/interview-prep?category_slug=${categorySlug}`,
+        );
+        const catData = await catDataResponse.json();
+
+        if (catData.success) {
+          setQuestionnaire({
+            categorySlug: category.categorySlug,
+            version: catData.questionnaire?.version || "1.0.0",
+            lastUpdated: new Date().toISOString(),
+            sections: catData.questionnaire?.sections || [],
+          });
+
+          // Restore form data (questionnaire answers)
+          if (session.answers && Array.isArray(session.answers)) {
+            const answersMap: Record<string, unknown> = {};
+            session.answers.forEach(
+              (answer: { question_key: string; answer_value: unknown }) => {
+                answersMap[answer.question_key] = answer.answer_value;
+              },
+            );
+            setFormData((prev) => ({
+              ...prev,
+              ...answersMap,
+            }));
+          }
+
+          // If results were already generated, restore them and jump to results step
+          if (session.results) {
+            setGeneratedResults(session.results);
+            setStep((catData.questionnaire?.sections?.length || 0) + 3); // Show results
+          } else {
+            setStep(1); // Show first question section
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error restoring session data:", err);
+    }
   };
 
   // Check for existing/incomplete session on initial mount only
@@ -209,20 +235,14 @@ export default function InterviewPreparation() {
               ? localStorage.getItem("userEmail") || "test@example.com"
               : "test@example.com";
           const response = await fetch(
-            `/api/interview-prep/sessions/${sessionIdParam}?userEmail=${encodeURIComponent(userEmail)}`,
+            `/api/interview-prep/sessions/${sessionIdParam}?userEmail=${encodeURIComponent(userEmail)}`
           );
           const sessionData = await response.json();
 
-          if (
-            response.ok &&
-            sessionData.session &&
-            sessionData.session.interview_prep_results
-          ) {
+          if (response.ok && sessionData.session && sessionData.session.interview_prep_results) {
             // Found a completed session, load results directly
             setSessionId(sessionIdParam);
-            setGeneratedResults(
-              sessionData.session.interview_prep_results.generated_questions,
-            );
+            setGeneratedResults(sessionData.session.interview_prep_results.generated_questions);
             setStep(questionnaire ? questionnaire.sections.length + 3 : 4);
             setLoading(false);
             setLoadingMessage("");
@@ -234,20 +254,12 @@ export default function InterviewPreparation() {
         // Check for saved session in localStorage first (current browser/session)
         const savedSessionId = localStorage.getItem("interviewPrepSessionId");
         if (savedSessionId && step === 0) {
-          const response = await fetch(
-            `/api/interview-prep/sessions/${savedSessionId}`,
-          );
+          const response = await fetch(`/api/interview-prep/sessions/${savedSessionId}`);
           const sessionData = await response.json();
 
-          if (
-            response.ok &&
-            sessionData.session &&
-            sessionData.session.completed === false
-          ) {
+          if (response.ok && sessionData.session && sessionData.session.completed === false) {
             await restoreSessionData(sessionData.session, (categorySlug) => {
-              const category = availableCategories.find(
-                (c) => c.categorySlug === categorySlug,
-              );
+              const category = availableCategories.find((c) => c.categorySlug === categorySlug);
               return category;
             });
             setLoading(false);
@@ -261,17 +273,11 @@ export default function InterviewPreparation() {
         // Check for latest incomplete session from database (cross-device/browser recovery)
         // This runs automatically if no saved session in localStorage
         if (!savedSessionId && step === 0 && typeof window !== "undefined") {
-          const latestResponse = await fetch(
-            `/api/interview-prep/latest-incomplete-session`,
-          );
+          const latestResponse = await fetch(`/api/interview-prep/latest-incomplete-session`);
           const latestData = await latestResponse.json();
 
           // Only restore if session has NO generated results (truly at questionnaire stage)
-          if (
-            latestData.success &&
-            latestData.session &&
-            !latestData.session.results
-          ) {
+          if (latestData.success && latestData.session && !latestData.session.results) {
             // Found an incomplete session - offer to restore it via modal
             setPendingRestoreSession(latestData.session);
             setRestoreSessionModalOpen(true);
@@ -282,71 +288,6 @@ export default function InterviewPreparation() {
       } catch (err) {
         console.error("Error checking for incomplete session:", err);
         setSessionRestorationAttempted(true);
-      }
-    };
-
-    // Helper function to restore session data
-    const restoreSessionData = async (
-      session: {
-        id: string;
-        category_slug: string;
-        answers?: Array<{ question_key: string; answer_value: unknown }>;
-        results?: InterviewPrepOutput;
-      },
-      getCategoryFn: (slug: string) => InterviewCategoryConfig | undefined,
-    ) => {
-      try {
-        setSessionId(session.id);
-        const categorySlug = session.category_slug;
-        const category = getCategoryFn(categorySlug);
-
-        if (!category && availableCategories.length > 0) {
-          localStorage.removeItem("interviewPrepSessionId");
-          return;
-        }
-
-        if (category) {
-          setSelectedCategory(category);
-
-          // Load questionnaire for the restored category
-          const catDataResponse = await fetch(
-            `/api/interview-prep?category_slug=${categorySlug}`,
-          );
-          const catData = await catDataResponse.json();
-
-          if (catData.success) {
-            setQuestionnaire({
-              categorySlug: category.categorySlug,
-              version: catData.questionnaire?.version || "1.0.0",
-              lastUpdated: new Date().toISOString(),
-              sections: catData.questionnaire?.sections || [],
-            });
-
-            // Restore form data (questionnaire answers)
-            if (session.answers && Array.isArray(session.answers)) {
-              const answersMap: Record<string, unknown> = {};
-              session.answers.forEach(
-                (answer: { question_key: string; answer_value: unknown }) => {
-                  answersMap[answer.question_key] = answer.answer_value;
-                },
-              );
-              setFormData((prev) => ({
-                ...prev,
-                ...answersMap,
-              }));
-            }
-
-            // If results were already generated, restore them and jump to results step
-            if (session.results) {
-              setGeneratedResults(session.results);
-              setStep((catData.questionnaire?.sections?.length || 0) + 3); // Show results
-            } else {
-              setStep(1); // Show first question section
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error restoring session data:", err);
       }
     };
 
@@ -381,25 +322,19 @@ export default function InterviewPreparation() {
           });
           answers[key] = value;
 
-          const answersResponse = await fetch(
-            `/api/interview-prep/sessions/${sessionId}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                action: "update-answers",
-                answers,
-              }),
+          const answersResponse = await fetch(`/api/interview-prep/sessions/${sessionId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-          );
+            body: JSON.stringify({
+              action: "update-answers",
+              answers,
+            }),
+          });
 
           if (!answersResponse.ok) {
-            console.error(
-              "Failed to save answer:",
-              await answersResponse.text(),
-            );
+            console.error("Failed to save answer:", await answersResponse.text());
           }
         } catch (err) {
           console.error("Error saving answer:", err);
@@ -423,117 +358,73 @@ export default function InterviewPreparation() {
 
     try {
       setLoading(true);
-      setLoadingMessage("Creating your interview session...");
 
       const categorySlug = selectedCategory.categorySlug;
 
-      // Check if there's an incomplete session for this category in localStorage
-      const savedSessionId = localStorage.getItem("interviewPrepSessionId");
-      let sessionId = savedSessionId;
-      let isRestoring = false;
+      // Always ask backend first
+      const sessionResponse = await fetch("/api/interview-prep", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          category_slug: categorySlug,
+          user_email: localStorage.getItem("userEmail") || "test@example.com",
+          user_name: localStorage.getItem("userName") || "User",
+        }),
+      });
 
-      if (savedSessionId) {
-        try {
-          const response = await fetch(
-            `/api/interview-prep/sessions/${savedSessionId}`,
-          );
-          const sessionData = await response.json();
+      const sessionResult = await sessionResponse.json();
 
-          if (
-            response.ok &&
-            sessionData.session &&
-            sessionData.session.completed === false &&
-            sessionData.session.category_slug === categorySlug
-          ) {
-            // Found an incomplete session for the same category - restore it!
-            isRestoring = true;
-            setLoadingMessage("Restoring your interview session...");
-            setSessionId(savedSessionId);
-          } else {
-            // Session doesn't match or is completed, clear it and create new
-            localStorage.removeItem("interviewPrepSessionId");
-            sessionId = null;
-          }
-        } catch (err) {
-          console.error("Error checking existing session:", err);
-          localStorage.removeItem("interviewPrepSessionId");
-          sessionId = null;
-        }
+      if (!sessionResponse.ok || !sessionResult.success) {
+        setError("Failed to create interview session");
+        return;
       }
 
-      // If not restoring, create a new session
-      if (!isRestoring) {
-        const sessionResponse = await fetch("/api/interview-prep", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            category_slug: categorySlug,
-            user_email: localStorage.getItem("userEmail") || "test@example.com",
-            user_name: localStorage.getItem("userName") || "User",
-          }),
-        });
+      // SESSION ALREADY EXISTS
+      // Redirect user to My Sessions page
+      if (sessionResult.alreadyExists) {
+        setIsRedirectingSession(true);
+        setLoadingMessage("Redirecting to your existing session...");
 
-        const sessionResult = await sessionResponse.json();
-        if (!sessionResult.success) {
-          setError("Failed to create interview session");
-          setLoading(false);
-          return;
-        }
-        sessionId = sessionResult.session.id;
-        setSessionId(sessionResult.session.id);
-        localStorage.setItem(
-          "interviewPrepSessionId",
-          sessionResult.session.id,
-        );
+        router.push("/interview-prep/my-sessions");
+        return;
       }
 
-      // Load questionnaire for this category via API
+      // NEW SESSION CREATED
+      const newSessionId = sessionResult.session.id;
+
+      setSessionId(newSessionId);
+
+      // Optional convenience cache
+      localStorage.setItem("interviewPrepSessionId", newSessionId);
+
+      // Load questionnaire
       const catDataResponse = await fetch(
         `/api/interview-prep?category_slug=${categorySlug}`,
       );
+
       const catData = await catDataResponse.json();
 
-      if (catData.success) {
-        setQuestionnaire({
-          categorySlug: selectedCategory.categorySlug,
-          version: catData.questionnaire?.version || "1.0.0",
-          lastUpdated: new Date().toISOString(),
-          sections: catData.questionnaire?.sections || [],
-        });
-
-        // If restoring, also restore the form data
-        if (isRestoring && sessionId) {
-          try {
-            const answersResponse = await fetch(
-              `/api/interview-prep/sessions/${sessionId}`,
-            );
-            const sessionDetails = await answersResponse.json();
-
-            if (sessionDetails.session && sessionDetails.session.answers) {
-              const restoredAnswers: Record<string, unknown> = {};
-              sessionDetails.session.answers.forEach(
-                (answer: { question_key: string; answer_value: unknown }) => {
-                  restoredAnswers[answer.question_key] = answer.answer_value;
-                },
-              );
-
-              setFormData((prev) => ({
-                ...prev,
-                ...restoredAnswers,
-              }));
-            }
-          } catch (err) {
-            console.error("Error restoring answers:", err);
-          }
-        }
-
-        setError(null);
-        setStep(1); // Move to first question section
-      } else {
+      if (!catData.success) {
         setError("Failed to load questionnaire");
+        return;
       }
+
+      setQuestionnaire({
+        categorySlug: selectedCategory.categorySlug,
+        version: catData.questionnaire?.version || "1.0.0",
+        lastUpdated: new Date().toISOString(),
+        sections: catData.questionnaire?.sections || [],
+      });
+
+      setError(null);
+
+      // Move to first section
+      setStep(1);
     } catch (err) {
       console.error("Error in category selection next:", err);
+
       setError(err instanceof Error ? err.message : "Failed to proceed");
     } finally {
       setLoading(false);
@@ -568,25 +459,19 @@ export default function InterviewPreparation() {
           }
         });
 
-        const answersResponse = await fetch(
-          `/api/interview-prep/sessions/${sessionId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              action: "update-answers",
-              answers,
-            }),
+        const answersResponse = await fetch(`/api/interview-prep/sessions/${sessionId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            action: "update-answers",
+            answers,
+          }),
+        });
 
         if (!answersResponse.ok) {
-          console.error(
-            "Failed to save answers on step change:",
-            await answersResponse.text(),
-          );
+          console.error("Failed to save answers on step change:", await answersResponse.text());
         }
       } catch (err) {
         console.error("Error saving answers on step change:", err);
@@ -610,18 +495,15 @@ export default function InterviewPreparation() {
 
     try {
       // Submit for generating interview prep
-      const submitResponse = await fetch(
-        `/api/interview-prep/sessions/${sessionId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "generate",
-          }),
+      const submitResponse = await fetch(`/api/interview-prep/sessions/${sessionId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          action: "generate",
+        }),
+      });
 
       if (submitResponse.ok) {
         const responseData = await submitResponse.json();
@@ -633,18 +515,15 @@ export default function InterviewPreparation() {
         setGeneratedResults(responseData.output);
 
         // Mark the session as completed
-        const completeResponse = await fetch(
-          `/api/interview-prep/sessions/${sessionId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              action: "complete",
-            }),
+        const completeResponse = await fetch(`/api/interview-prep/sessions/${sessionId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            action: "complete",
+          }),
+        });
 
         if (!completeResponse.ok) {
           console.error("Failed to mark session as completed");
@@ -669,7 +548,7 @@ export default function InterviewPreparation() {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to generate interview prep materials. Please try again.",
+          : "Failed to generate interview prep materials. Please try again."
       );
     } finally {
       setLoading(false);
@@ -678,6 +557,15 @@ export default function InterviewPreparation() {
 
   // Render the appropriate step
   const renderStep = () => {
+    if (isRedirectingSession) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <Loader size="md" />
+          <p className="text-slate-600">Redirecting to my sessions...</p>
+        </div>
+      );
+    }
+
     // Loading state with context-aware messages
     if (loading) {
       return (
@@ -717,7 +605,6 @@ export default function InterviewPreparation() {
           onChange={handleInputChange}
           onNext={nextStep}
           onBack={prevStep}
-          error={error}
           setError={setError}
         />
       );
@@ -785,9 +672,7 @@ export default function InterviewPreparation() {
           <span className="text-sm font-medium text-slate-700">
             Step {step} of {totalSteps}
           </span>
-          <span className="text-sm font-medium text-slate-700">
-            {progressPercentage}% Complete
-          </span>
+          <span className="text-sm font-medium text-slate-700">{progressPercentage}% Complete</span>
         </div>
 
         <div className="w-full bg-slate-200 rounded-full h-3">
@@ -906,9 +791,7 @@ export default function InterviewPreparation() {
                   }`}
                 >
                   <div className="font-semibold">Review</div>
-                  <div className="text-[10px] mt-1">
-                    Step {sections.length + 1}
-                  </div>
+                  <div className="text-[10px] mt-1">Step {sections.length + 1}</div>
                 </div>
 
                 {/* Results Step Indicator */}
@@ -920,9 +803,7 @@ export default function InterviewPreparation() {
                   }`}
                 >
                   <div className="font-semibold">Results</div>
-                  <div className="text-[10px] mt-1">
-                    Step {sections.length + 2}
-                  </div>
+                  <div className="text-[10px] mt-1">Step {sections.length + 2}</div>
                 </div>
               </div>
             </SheetContent>
@@ -943,9 +824,7 @@ export default function InterviewPreparation() {
 
       <div className="site-main-px site-main-py mt-12">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Interview Preparation Tool
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Preparation Tool</h1>
           <p className="text-slate-600">
             {selectedCategory
               ? selectedCategory.description
@@ -953,9 +832,7 @@ export default function InterviewPreparation() {
           </p>
 
           <button
-            onClick={() =>
-              (window.location.href = "/interview-prep/my-sessions")
-            }
+            onClick={() => (window.location.href = "/interview-prep/my-sessions")}
             suppressHydrationWarning
             className="text-teal-600 hover:text-teal-700 mt-4 cursor-pointer hover:underline text-base font-medium"
           >
@@ -969,9 +846,7 @@ export default function InterviewPreparation() {
           {loading && !sessionId ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <Loader size="md" />
-              <p className="text-slate-600">
-                {step === 0 ? "Loading categories..." : "Loading..."}
-              </p>
+              <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
             </div>
           ) : (
             renderStep()
@@ -987,7 +862,7 @@ export default function InterviewPreparation() {
           if (!open) setPendingRestoreSession(null);
         }}
         title="Resume Interview Session"
-        description={`We found an incomplete interview session from ${pendingRestoreSession ? new Date(pendingRestoreSession.updated_at).toLocaleDateString() : ""}. Would you like to continue where you left off?`}
+        description={`We found an incomplete interview session from ${pendingRestoreSession?.updated_at ? new Date(pendingRestoreSession.updated_at).toLocaleDateString() : ""}. Would you like to continue where you left off?`}
         confirmText="Resume Session"
         confirmVariant="primary"
         onConfirm={async () => {
@@ -995,14 +870,11 @@ export default function InterviewPreparation() {
             try {
               setLoading(true);
               setLoadingMessage("Restoring your interview session...");
-              localStorage.setItem(
-                "interviewPrepSessionId",
-                pendingRestoreSession.id,
-              );
+              localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
 
               await restoreSessionData(
                 pendingRestoreSession,
-                (categorySlug) => {
+                (categorySlug: string) => {
                   const category = availableCategories.find(
                     (c) => c.categorySlug === categorySlug,
                   );

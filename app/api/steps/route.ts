@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
           error: "chapter_id is required (as query param or in body)",
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -27,28 +27,28 @@ export async function POST(request: NextRequest) {
     if (!body.step_key) {
       return NextResponse.json(
         { error: "step_key is required", code: "VALIDATION_ERROR" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (body.step_number === undefined || body.step_number === null) {
       return NextResponse.json(
         { error: "step_number is required", code: "VALIDATION_ERROR" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!body.step_name) {
       return NextResponse.json(
         { error: "step_name is required", code: "VALIDATION_ERROR" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (!body.step_type) {
       return NextResponse.json(
         { error: "step_type is required", code: "VALIDATION_ERROR" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -60,16 +60,13 @@ export async function POST(request: NextRequest) {
     console.error("Error in POST /api/steps:", error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("Chapter not found")) {
       return NextResponse.json(
         { error: "Chapter not found or not owned", code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -79,7 +76,7 @@ export async function POST(request: NextRequest) {
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -91,12 +88,8 @@ export async function GET(request: NextRequest) {
     const chapterId = searchParams.get("chapter_id");
     const status = searchParams.get("status");
     const stepType = searchParams.get("step_type");
-    const limit = searchParams.get("limit")
-      ? parseInt(searchParams.get("limit")!)
-      : undefined;
-    const offset = searchParams.get("offset")
-      ? parseInt(searchParams.get("offset")!)
-      : undefined;
+    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined;
+    const offset = searchParams.get("offset") ? parseInt(searchParams.get("offset")!) : undefined;
 
     if (!chapterId) {
       return NextResponse.json(
@@ -104,7 +97,7 @@ export async function GET(request: NextRequest) {
           error: "chapter_id query parameter is required",
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -121,16 +114,13 @@ export async function GET(request: NextRequest) {
     console.error("Error in GET /api/steps:", error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("Chapter not found")) {
       return NextResponse.json(
         { error: "Chapter not found or not owned", code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -140,7 +130,7 @@ export async function GET(request: NextRequest) {
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

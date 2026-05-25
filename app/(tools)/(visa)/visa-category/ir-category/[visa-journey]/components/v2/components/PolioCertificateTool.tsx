@@ -57,9 +57,7 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
         <div className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-1">
           {data.launchModule.eyebrow}
         </div>
-        <div className="text-xl text-white/95 font-bold mb-6">
-          {data.launchModule.heading}
-        </div>
+        <div className="text-xl text-white/95 font-bold mb-6">{data.launchModule.heading}</div>
         <button
           onClick={() => {
             if (guard && !guard()) return;
@@ -71,18 +69,12 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
           {polioLaunched
             ? data.launchModule.buttonLabels.completed
             : data.launchModule.buttonLabels.initial}
-          {polioLaunched ? (
-            <CheckCircle2 size={18} />
-          ) : (
-            <ArrowRight size={18} />
-          )}
+          {polioLaunched ? <CheckCircle2 size={18} /> : <ArrowRight size={18} />}
         </button>
       </div>
 
       <div className="bg-white border-[1.5px] border-slate-200 p-6 rounded-2xl shadow-sm">
-        <div className="text-sm font-bold mb-4">
-          {data.completionCard.title}
-        </div>
+        <div className="text-sm font-bold mb-4">{data.completionCard.title}</div>
         <div className="flex flex-col gap-3">
           {data.completionCard.items.map((item: string, i: number) => (
             <label
@@ -135,8 +127,7 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-w-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {polioGuideStep + 1} —{" "}
-                {data.guideSteps[polioGuideStep].label}
+                Step {polioGuideStep + 1} — {data.guideSteps[polioGuideStep].label}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
                 {data.guideSteps[polioGuideStep].heading}

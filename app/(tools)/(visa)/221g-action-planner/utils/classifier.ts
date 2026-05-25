@@ -74,7 +74,7 @@ function formatDocList(items: string[], filterFn: (key: string) => boolean): str
  */
 export function classifySituation(
   formData: FormData,
-  parsedItems: string[] = [],
+  parsedItems: string[] = []
 ): ClassificationResult[] {
   const ceac = formData.ceacStatus?.toLowerCase() ?? "";
   const results: ClassificationResult[] = [];
@@ -99,15 +99,11 @@ export function classifySituation(
     parsedItems.length === 0 ||
     (parsedItems.length === 1 && parsedItems[0] === "admin_processing")
   ) {
-    if (
-      ceac.includes("administrative") ||
-      parsedItems.includes("admin_processing")
-    ) {
+    if (ceac.includes("administrative") || parsedItems.includes("admin_processing")) {
       results.push({
         scenarioCode: "AP_ONLY_NO_DOCS",
         confidence: "high",
-        description:
-          "Administrative Processing Only – No Additional Documents Requested",
+        description: "Administrative Processing Only – No Additional Documents Requested",
         nextSteps: [
           "Wait for processing to complete",
           "Monitor CEAC status regularly",
@@ -126,7 +122,7 @@ export function classifySituation(
       r.includes("w2") ||
       r.includes("irs") ||
       r.includes("proof_citizenship") ||
-      r.includes("domicile"),
+      r.includes("domicile")
   );
   if (financialDocs.length > 0) {
     const isCourier = parsedItems.includes("i864_courier");
@@ -142,7 +138,17 @@ export function classifySituation(
     }
 
     const docString = formatDocList(parsedItems, (r) =>
-      ["i864_affidavit", "tax_1040", "w2", "irs_transcript", "proof_citizenship", "domicile", "i864a", "i134", "i864w"].includes(r)
+      [
+        "i864_affidavit",
+        "tax_1040",
+        "w2",
+        "irs_transcript",
+        "proof_citizenship",
+        "domicile",
+        "i864a",
+        "i134",
+        "i864w",
+      ].includes(r)
     );
 
     results.push({
@@ -160,14 +166,13 @@ export function classifySituation(
   // Civil documents (NADRA, birth, marriage, nikah)
   const civilDocs = parsedItems.filter(
     (r) =>
-      r.includes("nadra") ||
-      r.includes("birth") ||
-      r.includes("marriage") ||
-      r.includes("nikah"),
+      r.includes("nadra") || r.includes("birth") || r.includes("marriage") || r.includes("nikah")
   );
   if (civilDocs.length > 0) {
-    const docString = formatDocList(parsedItems, (r) =>
-      r.includes("nadra") || r.includes("birth") || r.includes("marriage") || r.includes("nikah")
+    const docString = formatDocList(
+      parsedItems,
+      (r) =>
+        r.includes("nadra") || r.includes("birth") || r.includes("marriage") || r.includes("nikah")
     );
 
     results.push({
@@ -184,12 +189,12 @@ export function classifySituation(
 
   // Legal & Court documents (divorce, police, death)
   const legalDocs = parsedItems.filter(
-    (r) =>
-      r.includes("divorce") || r.includes("police") || r.includes("death"),
+    (r) => r.includes("divorce") || r.includes("police") || r.includes("death")
   );
   if (legalDocs.length > 0) {
-    const docString = formatDocList(parsedItems, (r) =>
-      r.includes("divorce") || r.includes("police") || r.includes("death")
+    const docString = formatDocList(
+      parsedItems,
+      (r) => r.includes("divorce") || r.includes("police") || r.includes("death")
     );
 
     results.push({
@@ -265,10 +270,7 @@ export function classifySituation(
   }
 
   // Other / generic
-  if (
-    parsedItems.includes("other") ||
-    (parsedItems.length > 0 && results.length === 0)
-  ) {
+  if (parsedItems.includes("other") || (parsedItems.length > 0 && results.length === 0)) {
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "medium",
@@ -299,9 +301,7 @@ export function classifySituation(
 
   // Filter out duplicates (specifically DOCS_REQUESTED_OTHER can overlap with itself if user ticked multiple custom things)
   const uniqueResults = Array.from(
-    new Map(
-      results.map((item) => [item.scenarioCode + "|" + item.description, item]),
-    ).values(),
+    new Map(results.map((item) => [item.scenarioCode + "|" + item.description, item])).values()
   );
   return uniqueResults;
 }

@@ -1,5 +1,5 @@
-import { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,18 +7,18 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     // Extract the appointment ID and file type
-    const appointmentId = formData.get('appointmentId') as string;
-    const fileType = formData.get('fileType') as string;
-    const file = formData.get('file') as File | null;
+    const appointmentId = formData.get("appointmentId") as string;
+    const fileType = formData.get("fileType") as string;
+    const file = formData.get("file") as File | null;
 
     if (!appointmentId || !fileType || !file) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     // Validate file type
-    const validFileTypes = ['scannedPassport', 'kOneLetter', 'appointmentConfirmationLetter'];
+    const validFileTypes = ["scannedPassport", "kOneLetter", "appointmentConfirmationLetter"];
     if (!validFileTypes.includes(fileType)) {
-      return Response.json({ error: 'Invalid file type' }, { status: 400 });
+      return Response.json({ error: "Invalid file type" }, { status: 400 });
     }
 
     // Use service role client to bypass RLS policies
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
           setAll() {
             // Do nothing for server-side operations
           },
-        }
+        },
       }
     );
 
@@ -45,55 +45,55 @@ export async function POST(req: NextRequest) {
 
     // Upload file to Supabase Storage using the existing document-vault bucket
     const { error: uploadError } = await supabase.storage
-      .from('document-vault') // Using existing document-vault bucket
+      .from("document-vault") // Using existing document-vault bucket
       .upload(fileName, buffer, {
         contentType: file.type,
         upsert: true, // Overwrite if file exists
       });
 
     if (uploadError) {
-      console.error('Error uploading file:', uploadError);
-      return Response.json({ error: 'Failed to upload file' }, { status: 500 });
+      console.error("Error uploading file:", uploadError);
+      return Response.json({ error: "Failed to upload file" }, { status: 500 });
     }
 
     // Get the public URL of the uploaded file
-    const { data: { publicUrl } } = supabase.storage
-      .from('document-vault')
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("document-vault").getPublicUrl(fileName);
 
     // Update the appointment record with the file URL
-    let updateField = '';
+    let updateField = "";
     switch (fileType) {
-      case 'scannedPassport':
-        updateField = 'scanned_passport_url';
+      case "scannedPassport":
+        updateField = "scanned_passport_url";
         break;
-      case 'kOneLetter':
-        updateField = 'k_one_letter_url';
+      case "kOneLetter":
+        updateField = "k_one_letter_url";
         break;
-      case 'appointmentConfirmationLetter':
-        updateField = 'appointment_confirmation_letter_url';
+      case "appointmentConfirmationLetter":
+        updateField = "appointment_confirmation_letter_url";
         break;
       default:
-        return Response.json({ error: 'Invalid file type' }, { status: 400 });
+        return Response.json({ error: "Invalid file type" }, { status: 400 });
     }
 
     const { error: updateError } = await supabase
-      .from('appointments')
+      .from("appointments")
       .update({ [updateField]: publicUrl })
-      .eq('id', appointmentId);
+      .eq("id", appointmentId);
 
     if (updateError) {
-      console.error('Error updating appointment with file URL:', updateError);
-      return Response.json({ error: 'Failed to update appointment record' }, { status: 500 });
+      console.error("Error updating appointment with file URL:", updateError);
+      return Response.json({ error: "Failed to update appointment record" }, { status: 500 });
     }
 
     return Response.json({
       success: true,
       url: publicUrl,
-      fileName
+      fileName,
     });
   } catch (error) {
-    console.error('Unexpected error in file upload:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Unexpected error in file upload:", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

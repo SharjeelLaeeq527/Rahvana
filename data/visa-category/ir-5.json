@@ -44,7 +44,12 @@
           ],
           "success": "Petitioner confirmed as U.S. citizen age 21 or older",
           "relevantTools": [
-            { "label": "Visa Path Finder", "labelUr": "ویزہ پاتھ فائنڈر", "href": "/visa-eligibility", "type": "tool" }
+            {
+              "label": "Visa Path Finder",
+              "labelUr": "ویزہ پاتھ فائنڈر",
+              "href": "/visa-eligibility",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -75,8 +80,18 @@
           ],
           "success": "All required civil documents assembled and translated as needed",
           "relevantTools": [
-            { "label": "Document Translation", "labelUr": "دستاویز کا ترجمہ", "href": "/document-translation", "type": "service" },
-            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+            {
+              "label": "Document Translation",
+              "labelUr": "دستاویز کا ترجمہ",
+              "href": "/document-translation",
+              "type": "service"
+            },
+            {
+              "label": "PDF Toolkit",
+              "labelUr": "پی ڈی ایف ٹول کٹ",
+              "href": "/pdf-processing",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -92,7 +107,12 @@
           ],
           "success": "Form I-130 completed, reviewed, and ready for filing",
           "relevantTools": [
-            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+            {
+              "label": "Smart Form Filler",
+              "labelUr": "سمارٹ فارم فلر",
+              "href": "/visa-forms",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -133,7 +153,12 @@
           ],
           "success": "I-797C receipt notice received with correct case information",
           "relevantTools": [
-            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" }
+            {
+              "label": "Case Status Tracker",
+              "labelUr": "کیس اسٹیٹس ٹریکر",
+              "href": "/case-status",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -162,7 +187,12 @@
           ],
           "success": "USCIS processing complete; no additional requests outstanding",
           "relevantTools": [
-            { "label": "Case Status Tracker", "labelUr": "کیس اسٹیٹس ٹریکر", "href": "/case-status", "type": "tool" }
+            {
+              "label": "Case Status Tracker",
+              "labelUr": "کیس اسٹیٹس ٹریکر",
+              "href": "/case-status",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -200,7 +230,12 @@
           ],
           "success": "NVC case number and invoice ID received; CEAC account accessible",
           "relevantTools": [
-            { "label": "DQ Status Tracker", "labelUr": "ڈی کیو اسٹیٹس ٹریکر", "href": "/iv-tool", "type": "tool" }
+            {
+              "label": "DQ Status Tracker",
+              "labelUr": "ڈی کیو اسٹیٹس ٹریکر",
+              "href": "/iv-tool",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -241,7 +276,12 @@
           ],
           "success": "DS-260 submitted in CEAC; confirmation number recorded",
           "relevantTools": [
-            { "label": "Smart Form Filler", "labelUr": "سمارٹ فارم فلر", "href": "/visa-forms", "type": "tool" }
+            {
+              "label": "Smart Form Filler",
+              "labelUr": "سمارٹ فارم فلر",
+              "href": "/visa-forms",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -260,7 +300,12 @@
           ],
           "success": "All required civil documents uploaded to CEAC",
           "relevantTools": [
-            { "label": "PDF Toolkit", "labelUr": "پی ڈی ایف ٹول کٹ", "href": "/pdf-processing", "type": "tool" }
+            {
+              "label": "PDF Toolkit",
+              "labelUr": "پی ڈی ایف ٹول کٹ",
+              "href": "/pdf-processing",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -279,7 +324,12 @@
           ],
           "success": "Form I-864 and supporting financial documents uploaded to CEAC",
           "relevantTools": [
-            { "label": "Sponsorship Calculator", "labelUr": "سپانسرشپ کیلکولیٹر", "href": "/affidavit-support-calculator", "type": "tool" }
+            {
+              "label": "Sponsorship Calculator",
+              "labelUr": "سپانسرشپ کیلکولیٹر",
+              "href": "/affidavit-support-calculator",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -387,7 +437,12 @@
           ],
           "success": "Visa interview completed; consular officer issues a decision",
           "relevantTools": [
-            { "label": "Interview Prep Tool", "labelUr": "انٹرویو کی تیاری", "href": "/interview-prep", "type": "tool" }
+            {
+              "label": "Interview Prep Tool",
+              "labelUr": "انٹرویو کی تیاری",
+              "href": "/interview-prep",
+              "type": "tool"
+            }
           ]
         },
         {
@@ -403,7 +458,12 @@
           ],
           "success": "Administrative processing completed and resolved (or not required)",
           "relevantTools": [
-            { "label": "221(g) Action Planner", "labelUr": "221(g) ایکشن پلانر", "href": "/221g-action-planner", "type": "tool" }
+            {
+              "label": "221(g) Action Planner",
+              "labelUr": "221(g) ایکشن پلانر",
+              "href": "/221g-action-planner",
+              "type": "tool"
+            }
           ]
         }
       ]

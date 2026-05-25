@@ -14,8 +14,7 @@ export default function VisaSuggestionPage() {
           Visa Eligibility Checker
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Check your eligibility for visa based on your profile and
-          circumstances
+          Check your eligibility for visa based on your profile and circumstances
         </p>
       </header>
 

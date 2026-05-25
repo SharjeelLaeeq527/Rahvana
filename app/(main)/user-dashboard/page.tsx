@@ -54,27 +54,26 @@ const UserDashboard = () => {
 
     const fetchJourneyType = async () => {
       try {
-        const journeyTypeValue = "IR1"; 
-  
+        const journeyTypeValue = "IR1";
+
         const res = await fetch(
           `/api/journeys?journey_type=${encodeURIComponent(journeyTypeValue)}`
         );
-  
+
         if (!res.ok) throw new Error("Failed to fetch journeys");
-  
+
         const data = await res.json();
         console.log(data);
-  
+
         // Extract just the journey type string, not the entire object
         setJourneyType(journeyTypeValue);
-  
       } catch (error) {
         console.error(error);
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchAnalytics();
     fetchJourneyType();
   }, []);
@@ -83,9 +82,7 @@ const UserDashboard = () => {
     return (
       <div className="flex flex-col items-center justify-center h-screen gap-4">
         <Loader size="lg" />
-        <p className="text-[#0d7377] text-sm font-medium mt-2">
-          Preparing your dashboard...
-        </p>
+        <p className="text-[#0d7377] text-sm font-medium mt-2">Preparing your dashboard...</p>
       </div>
     );
   }
@@ -93,9 +90,7 @@ const UserDashboard = () => {
   const services = [
     {
       title: "My Journeys",
-      icon: (
-        <Briefcase className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-      ),
+      icon: <Briefcase className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
       status: "live" as const,
       count: analytics?.journeys.total || 0,
       journeyType: journeyType,
@@ -136,22 +131,18 @@ const UserDashboard = () => {
     },
     {
       title: "Interview Prep",
-      icon: (
-        <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-      ),
+      icon: <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
       status: "live" as const,
       count: analytics?.interview_prep.total || 0,
       countLabel: "sessions completed",
-      description:
-        "Prepare smarter and deliver confident answers when it matters most.",
+      description: "Prepare smarter and deliver confident answers when it matters most.",
       href: "/interview-prep/my-sessions",
     },
     {
       title: "Expert Case Review",
       icon: <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
       status: "coming-soon" as const,
-      description:
-        "Human review of your documents + a tailored improvement plan.",
+      description: "Human review of your documents + a tailored improvement plan.",
       href: "#",
     },
   ];
@@ -171,8 +162,7 @@ const UserDashboard = () => {
     },
     {
       title: "Explore all services",
-      subtitle:
-        "View our services for preparing yourself for immigration process",
+      subtitle: "View our services for preparing yourself for immigration process",
       icon: <FileText size={18} />,
       href: "/services",
     },
@@ -180,13 +170,11 @@ const UserDashboard = () => {
 
   return (
     <div className="bg-[#f8fafa]">
-      <div className="w-full site-main-px site-main-py">
+      <div className="w-full site-main-px site-main-py mt-14">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-center mb-2">
-            <h2 className="text-[28px] font-bold text-[#0a1128] mb-2">
-              Dashboard
-            </h2>
+            <h2 className="text-[28px] font-bold text-[#0a1128] mb-2">Dashboard</h2>
           </div>
 
           <h1 className="text-[28px] font-bold text-[#0a1128] mb-2">
@@ -194,8 +182,8 @@ const UserDashboard = () => {
           </h1>
 
           <p className="text-[15px] text-[#67737e]">
-            Track your immigration progress, manage requests, and access tools
-            that help you prepare every step of your journey.
+            Track your immigration progress, manage requests, and access tools that help you prepare
+            every step of your journey.
           </p>
         </div>
 
@@ -203,9 +191,7 @@ const UserDashboard = () => {
           {/* MAIN CONTENT */}
           <div className="flex-1">
             <div className="mb-8">
-              <h2 className="text-[17px] font-semibold text-[#0a1128] mb-4">
-                Your Services
-              </h2>
+              <h2 className="text-[17px] font-semibold text-[#0a1128] mb-4">Your Services</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {services.map((service, index) => (
@@ -229,9 +215,7 @@ const UserDashboard = () => {
           <div className="w-full lg:w-70 shrink-0 space-y-6">
             {/* Quick Actions */}
             <div>
-              <h3 className="text-[15px] font-semibold text-[#0a1128] mb-3">
-                Quick Actions
-              </h3>
+              <h3 className="text-[15px] font-semibold text-[#0a1128] mb-3">Quick Actions</h3>
 
               <div className="space-y-2.5">
                 {quickActions.map((action, i) => (
@@ -248,15 +232,10 @@ const UserDashboard = () => {
                       <span className="block text-[13px] font-semibold text-[#0a1128]">
                         {action.title}
                       </span>
-                      <span className="block text-[11px] text-[#9ca3af]">
-                        {action.subtitle}
-                      </span>
+                      <span className="block text-[11px] text-[#9ca3af]">{action.subtitle}</span>
                     </div>
 
-                    <ArrowRight
-                      size={14}
-                      className="text-[#d1d5db] group-hover:text-[#0d7377]"
-                    />
+                    <ArrowRight size={14} className="text-[#d1d5db] group-hover:text-[#0d7377]" />
                   </button>
                 ))}
               </div>
@@ -272,8 +251,7 @@ const UserDashboard = () => {
               </div>
 
               <p className="text-[12px] text-[#67737e] mb-4 leading-relaxed">
-                Explore how Rahvana helps you to understand any step of your
-                immigration process.
+                Explore how Rahvana helps you to understand any step of your immigration process.
               </p>
 
               <button

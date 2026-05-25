@@ -5,29 +5,20 @@ import type { StepUpdate } from "@/lib/journey/types";
 import { stepCompletionEngine } from "@/lib/journey/service";
 
 // GET /api/steps/[id] - Get step details with metadata and visibility context
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const stepId = (await params).id;
 
     // Get step
     const step = await db.getStepDB(stepId);
     if (!step) {
-      return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Step not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     // Get chapter to access journey
     const chapter = await db.getChapterDB(step.chapter_id);
     if (!chapter) {
-      return NextResponse.json(
-        { error: "Chapter not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Chapter not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     // Get case data for the journey (needed for visibility/dependency evaluation)
@@ -37,7 +28,7 @@ export async function GET(
         acc[cd.data_key] = cd.data_value;
         return acc;
       },
-      {} as Record<string, unknown>,
+      {} as Record<string, unknown>
     );
 
     // Get step details with visibility info
@@ -46,10 +37,7 @@ export async function GET(
     // Get dependent steps (if this step is completed, what unlocks)
     const dependentSteps =
       step.status === "completed"
-        ? await stepCompletionEngine.getDependentSteps(
-            stepId,
-            step.chapter_id,
-          )
+        ? await stepCompletionEngine.getDependentSteps(stepId, step.chapter_id)
         : [];
 
     return NextResponse.json(
@@ -61,23 +49,17 @@ export async function GET(
           case_data_context: caseDataMap,
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error(`Error in GET /api/steps/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("not found")) {
-      return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Step not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -86,16 +68,13 @@ export async function GET(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 // PATCH /api/steps/[id] - Update step details
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const stepId = (await params).id;
     const updates: StepUpdate = await request.json();
@@ -107,17 +86,11 @@ export async function PATCH(
     console.error(`Error in PATCH /api/steps/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("not found")) {
-      return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Step not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -126,16 +99,13 @@ export async function PATCH(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 // POST /api/steps/[id]/complete - Mark step as completed
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const stepId = (await params).id;
     const action = request.nextUrl.searchParams.get("action");
@@ -143,7 +113,7 @@ export async function POST(
     if (action !== "complete") {
       return NextResponse.json(
         { error: "Unknown action", code: "VALIDATION_ERROR" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -152,37 +122,24 @@ export async function POST(
     // Get step to find its journey context
     const step = await db.getStepDB(stepId);
     if (!step) {
-      return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Step not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     // Get chapter to find journey
     const chapter = await db.getChapterDB(step.chapter_id);
     if (!chapter) {
-      return NextResponse.json(
-        { error: "Chapter not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Chapter not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     // Complete step with journey context
-    const result = await stepService.completeStep(
-      stepId,
-      chapter.journey_id,
-      body,
-    );
+    const result = await stepService.completeStep(stepId, chapter.journey_id, body);
 
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
     console.error(`Error in POST /api/steps/[id]/complete:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("already completed")) {
@@ -191,20 +148,17 @@ export async function POST(
           error: "Step is already completed",
           code: "INVALID_STATE",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    if (
-      error instanceof Error &&
-      error.message?.includes("Cannot complete step")
-    ) {
+    if (error instanceof Error && error.message?.includes("Cannot complete step")) {
       return NextResponse.json(
         {
           error: error.message,
           code: "DEPENDENCY_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -214,7 +168,7 @@ export async function POST(
           error: error.message,
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -224,7 +178,7 @@ export async function POST(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -232,7 +186,7 @@ export async function POST(
 // DELETE /api/steps/[id] - Delete a step
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const stepId = (await params).id;
@@ -240,10 +194,7 @@ export async function DELETE(
     // Check if step exists
     const step = await db.getStepDB(stepId);
     if (!step) {
-      return NextResponse.json(
-        { error: "Step not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Step not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     // Delete step
@@ -257,16 +208,13 @@ export async function DELETE(
           message: "Step deleted successfully",
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error(`Error in DELETE /api/steps/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     return NextResponse.json(
@@ -275,7 +223,7 @@ export async function DELETE(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

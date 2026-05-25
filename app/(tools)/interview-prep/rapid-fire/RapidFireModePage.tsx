@@ -1,11 +1,30 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { GeneratedQuestion } from "@/lib/interview-prep";
+import {
+  GeneratedQuestion,
+  InterviewPrepQuestionResponse,
+  InterviewPrepRoundSummary,
+  InterviewPrepSessionProgressInput,
+  InterviewPrepProgressScreen,
+} from "@/lib/interview-prep";
 import confetti from "canvas-confetti";
-import { X, RotateCcw, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
+import { usePlan } from "@/app/context/PlanContext";
+import { Loader } from "@/components/ui/spinner";
+import {
+  computeQuestionCooldowns,
+  QuestionCooldownMap,
+  reduceCooldowns,
+} from "@/lib/interview-prep/round-engine";
+import {
+  RapidFireTrainingView,
+} from "./RapidFireModePage.views";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+
+const QUESTIONS_PER_ROUND = 12;
 
 interface RapidFireModeProps {
   sessionId: string;
@@ -15,11 +34,158 @@ interface RapidFireModeProps {
   savedAnswers?: Record<string, string>;
 }
 
-interface QuestionResponse {
-  question: GeneratedQuestion;
-  response: "covered" | "partial" | "missed" | "skipped" | null;
-  index: number;
+type QuestionResponse = InterviewPrepQuestionResponse;
+type AdaptiveScreen = InterviewPrepProgressScreen;
+type RoundSummary = InterviewPrepRoundSummary;
+
+interface PersistedAdaptiveTraining {
+  sessionId: string;
+  currentRound: number;
+  completedQuestionIds: string[];
+  retryQuestionIds: string[];
+  masteredQuestionIds: string[];
+  lastRoundScore: number;
+  totalRoundsCompleted: number;
+  completed: boolean;
+  currentQuestionIndex: number;
+  timeLeft: number;
+  score: number;
+  showAnswer: boolean;
+  isFlipped: boolean;
+  userResponse: QuestionResponse["response"] | null;
+  questionResponses: QuestionResponse[];
+  shuffledQuestionIds: string[];
+  screen: AdaptiveScreen;
+  roundSummary: RoundSummary | null;
+  skippedQuestions: number;
 }
+
+const buildProgressEndpoint = (sessionId: string) =>
+  `/api/interview-prep/sessions/${sessionId}/progress`;
+
+const computeRoundSummary = (responses: QuestionResponse[]): RoundSummary => {
+  const coveredCount = responses.filter(
+    (response) => response.response === "covered",
+  ).length;
+  const partialCount = responses.filter(
+    (response) => response.response === "partial",
+  ).length;
+  const missedCount = responses.filter(
+    (response) => response.response === "missed",
+  ).length;
+  const skippedCount = responses.filter(
+    (response) => response.response === "skipped",
+  ).length;
+
+  const earnedPoints = coveredCount * 10 + partialCount * 5;
+  const possiblePoints = (coveredCount + partialCount + missedCount) * 10;
+  return {
+    coveredCount,
+    partialCount,
+    missedCount,
+    skippedCount,
+    earnedPoints,
+    possiblePoints,
+    readinessScore:
+      possiblePoints > 0
+        ? Math.round((earnedPoints / possiblePoints) * 100)
+        : 0,
+    weakQuestionIds: responses
+      .filter(
+        (response) =>
+          response.response === "missed" || response.response === "skipped",
+      )
+      .map((response) => response.question.id),
+  };
+};
+
+// Round-selection and retry/mastered computation moved to server.
+// Client no longer derives retry lists; server endpoint computes next-round payload.
+
+const loadPersistedAdaptiveTraining = async (
+  sessionId: string,
+): Promise<PersistedAdaptiveTraining | null> => {
+  try {
+    const response = await fetch(buildProgressEndpoint(sessionId), {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = await response.json();
+    const progress = payload?.progress;
+
+    if (!progress) {
+      return null;
+    }
+
+    return {
+      sessionId,
+      currentRound: progress.current_round,
+      completedQuestionIds: progress.completed_question_ids || [],
+      retryQuestionIds: progress.retry_question_ids || [],
+      masteredQuestionIds: progress.mastered_question_ids || [],
+      lastRoundScore: progress.last_round_score || 0,
+      totalRoundsCompleted: progress.total_rounds_completed || 0,
+      completed: progress.completed || false,
+      currentQuestionIndex: progress.current_question_index || 0,
+      timeLeft: progress.time_left || 10,
+      score: progress.score || 0,
+      showAnswer: progress.show_answer || false,
+      isFlipped: progress.is_flipped || false,
+      userResponse: progress.user_response || null,
+      questionResponses: progress.question_responses || [],
+      shuffledQuestionIds: progress.round_question_ids || [],
+      screen: progress.screen || "training",
+      roundSummary: progress.round_summary || null,
+      skippedQuestions: progress.skipped_questions || 0,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const savePersistedAdaptiveTraining = async (
+  state: PersistedAdaptiveTraining,
+) => {
+  const payload: Partial<InterviewPrepSessionProgressInput> = {
+    current_round: state.currentRound,
+    current_question_index: state.currentQuestionIndex,
+    round_question_ids: state.shuffledQuestionIds,
+    completed_question_ids: state.completedQuestionIds,
+    retry_question_ids: state.retryQuestionIds,
+    mastered_question_ids: state.masteredQuestionIds,
+    question_responses: state.questionResponses,
+    round_summary: state.roundSummary,
+    last_round_score: state.lastRoundScore,
+    total_rounds_completed: state.totalRoundsCompleted,
+    score: state.score,
+    time_left: state.timeLeft,
+    show_answer: state.showAnswer,
+    is_flipped: state.isFlipped,
+    user_response: state.userResponse ?? undefined,
+    skipped_questions: state.skippedQuestions,
+    screen: state.screen,
+    completed: state.completed,
+  };
+
+  try {
+    await fetch(buildProgressEndpoint(state.sessionId), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // best-effort persistence
+  }
+};
 
 type ConfettiLevel = "excellent" | "good";
 
@@ -63,27 +229,46 @@ export const RapidFireModePage = ({
   onSwitchToPrep,
   savedAnswers = {},
 }: RapidFireModeProps) => {
+  const plan = usePlan();
+  const isFreeTier = plan.tier === "free";
+
+  const questionsPerRound = isFreeTier ? 5 : QUESTIONS_PER_ROUND;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [score, setScore] = useState(0);
+  const [roundScore, setRoundScore] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [userResponse, setUserResponse] = useState<
     "covered" | "partial" | "missed" | "skipped" | null
   >(null);
   const [totalScore, setTotalScore] = useState<number | null>(null);
+  const [screen, setScreen] = useState<AdaptiveScreen>("training");
+  const [roundSummary, setRoundSummary] = useState<RoundSummary | null>(null);
+  const [resumeProgress, setResumeProgress] =
+    useState<PersistedAdaptiveTraining | null>(null);
+  const [isStorageReady, setIsStorageReady] = useState(false);
+  const [isHydratingProgress, setIsHydratingProgress] = useState(true);
   const [skippedQuestions, setSkippedQuestions] = useState<number>(0);
-  const [questionResponses, setQuestionResponses] = useState<
-    QuestionResponse[]
-  >([]);
-  const [reviewQuestion, setReviewQuestion] =
-    useState<GeneratedQuestion | null>(null);
+  const [questionResponses, setQuestionResponses] = useState<QuestionResponse[]>([]);
+  const [reviewQuestion, setReviewQuestion] = useState<GeneratedQuestion | null>(null);
   const [isReviewFlipped, setIsReviewFlipped] = useState(false);
+  const [questionCooldowns, setQuestionCooldowns] =
+    useState<QuestionCooldownMap>({});
+
+  // States for retry rounds
+  const [currentRound, setCurrentRound] = useState(1);
+  const [usedQuestionIds, setUsedQuestionIds] = useState<string[]>([]);
+  const [completedQuestionIds, setCompletedQuestionIds] = useState<string[]>(
+    [],
+  );
+  const [retryQuestionIds, setRetryQuestionIds] = useState<string[]>([]);
+  const [masteredQuestionIds, setMasteredQuestionIds] = useState<string[]>([]);
+  const [totalRoundsCompleted, setTotalRoundsCompleted] = useState(0);
+  const hasHydratedProgressRef = useRef(false);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const currentQuestion = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   const confettiFiredRef = useRef(false);
 
@@ -108,9 +293,14 @@ export const RapidFireModePage = ({
     return shuffled;
   };
 
-  const [shuffledQuestions, setShuffledQuestions] = useState<
-    GeneratedQuestion[]
-  >(() => shuffleArray(questions.filter((q) => q.applicable)));
+  // NOTE: `buildQuestionRound` moved to server-side; client no longer performs full round computation.
+
+  const [shuffledQuestions, setShuffledQuestions] = useState<GeneratedQuestion[]>(() =>
+    shuffleArray(questions).filter((q) => q.applicable).slice(0, questionsPerRound),
+  );
+  const roundQuestionCount = questionsPerRound;
+  const currentQuestion = shuffledQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / roundQuestionCount) * 100;
 
   const getProgressGradient = (percent: number) => {
     return {
@@ -118,7 +308,173 @@ export const RapidFireModePage = ({
     };
   };
 
+  // Track used questions
   useEffect(() => {
+    const ids = shuffledQuestions.map((q) => q.id);
+
+    setUsedQuestionIds((prev) => [...new Set([...prev, ...ids])]);
+    setCompletedQuestionIds((prev) => [...new Set([...prev, ...ids])]);
+  }, [shuffledQuestions]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const hydrateProgress = async () => {
+      setIsHydratingProgress(true);
+      const savedProgress = await loadPersistedAdaptiveTraining(sessionId);
+
+      if (cancelled) return;
+
+      if (savedProgress && !savedProgress.completed) {
+        // ROUND ALREADY FINISHED -> AUTO START NEXT ROUND
+        if (savedProgress.screen === "results") {
+          try {
+            const resp = await fetch(
+              `/api/interview-prep/sessions/${sessionId}/next-round`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  questionResponses: savedProgress.questionResponses,
+                  allQuestions: questions,
+                  completedQuestionIds: savedProgress.completedQuestionIds,
+                  currentRound: savedProgress.currentRound,
+                }),
+              },
+            );
+
+            if (resp.ok) {
+              const data = await resp.json();
+
+              setCurrentRound(data.currentRound);
+              setShuffledQuestions(data.shuffledQuestions ?? []);
+              setRetryQuestionIds(data.retryQuestionIds ?? []);
+              setMasteredQuestionIds(data.masteredQuestionIds ?? []);
+              setCompletedQuestionIds(data.completedQuestionIds ?? []);
+              setQuestionResponses([]);
+              setRoundScore(null);
+              setScore(0);
+              setShowAnswer(false);
+              setIsFlipped(false);
+              setUserResponse(null);
+              setSkippedQuestions(0);
+              setCurrentQuestionIndex(0);
+              setResumeProgress(null);
+              setScreen("training");
+
+              hasHydratedProgressRef.current = true;
+              setIsStorageReady(true);
+              setIsHydratingProgress(false);
+
+              return;
+            }
+          } catch (err) {
+            console.error("Failed to auto-start next round", err);
+          }
+        }
+
+        setResumeProgress(savedProgress);
+        setScreen(savedProgress.screen);
+        setCurrentRound(savedProgress.currentRound);
+        setUsedQuestionIds(savedProgress.completedQuestionIds);
+        setCompletedQuestionIds(savedProgress.completedQuestionIds);
+        setRetryQuestionIds(savedProgress.retryQuestionIds);
+        setMasteredQuestionIds(savedProgress.masteredQuestionIds);
+        setTotalRoundsCompleted(savedProgress.totalRoundsCompleted);
+        setRoundScore(savedProgress.lastRoundScore);
+        setTotalScore(savedProgress.lastRoundScore);
+        setRoundSummary(savedProgress.roundSummary);
+        setSkippedQuestions(savedProgress.skippedQuestions);
+        setCurrentQuestionIndex(savedProgress.currentQuestionIndex);
+        setTimeLeft(savedProgress.timeLeft);
+        setScore(savedProgress.score);
+        setShowAnswer(savedProgress.showAnswer);
+        setIsFlipped(savedProgress.isFlipped);
+        setUserResponse(savedProgress.userResponse);
+        setQuestionResponses(savedProgress.questionResponses);
+
+        const restoredQuestions = savedProgress.shuffledQuestionIds
+          .map((questionId) =>
+            questions.find((question) => question.id === questionId),
+          )
+          .filter(Boolean) as GeneratedQuestion[];
+
+        if (restoredQuestions.length > 0) {
+          setShuffledQuestions(restoredQuestions);
+        }
+      }
+
+      hasHydratedProgressRef.current = true;
+      setIsStorageReady(true);
+      setIsHydratingProgress(false);
+    };
+
+    void hydrateProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [questions, sessionId]);
+
+  useEffect(() => {
+    if (!isStorageReady || !hasHydratedProgressRef.current) {
+      return;
+    }
+
+    const adaptiveState: PersistedAdaptiveTraining = {
+      sessionId,
+      currentRound,
+      completedQuestionIds,
+      retryQuestionIds,
+      masteredQuestionIds,
+      lastRoundScore: roundScore ?? totalScore ?? 0,
+      totalRoundsCompleted,
+      completed: screen === "completed",
+      currentQuestionIndex,
+      timeLeft,
+      score,
+      showAnswer,
+      isFlipped,
+      userResponse,
+      questionResponses,
+      shuffledQuestionIds: shuffledQuestions.map((question) => question.id),
+      screen,
+      roundSummary,
+      skippedQuestions,
+    };
+
+    void savePersistedAdaptiveTraining(adaptiveState);
+  }, [
+    currentQuestionIndex,
+    currentRound,
+    isFlipped,
+    isStorageReady,
+    masteredQuestionIds,
+    questionResponses,
+    roundScore,
+    roundSummary,
+    retryQuestionIds,
+    screen,
+    score,
+    sessionId,
+    shuffledQuestions,
+    showAnswer,
+    skippedQuestions,
+    timeLeft,
+    totalRoundsCompleted,
+    totalScore,
+    userResponse,
+    usedQuestionIds,
+    completedQuestionIds,
+  ]);
+
+  useEffect(() => {
+    if (screen !== "training" || isHydratingProgress || !isStorageReady) {
+      return;
+    }
+
     if (timeLeft > 0 && !showAnswer) {
       intervalRef.current = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -133,7 +489,16 @@ export const RapidFireModePage = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [timeLeft, showAnswer]);
+  }, [
+    currentQuestion,
+    currentQuestionIndex,
+    isHydratingProgress,
+    isStorageReady,
+    screen,
+    showAnswer,
+    timeLeft,
+    userResponse,
+  ]);
 
   const handleResponse = (response: "covered" | "partial" | "missed") => {
     if (timerRef.current) {
@@ -154,10 +519,11 @@ export const RapidFireModePage = ({
       index: currentQuestionIndex,
     };
 
+    const responsePoints =
+      response === "covered" ? 10 : response === "partial" ? 5 : 0;
+
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -166,20 +532,36 @@ export const RapidFireModePage = ({
       return [...prev, newResponse];
     });
 
-    let points = 0;
-    switch (response) {
-      case "covered":
-        points = 10;
-        break;
-      case "partial":
-        points = 5;
-        break;
-      case "missed":
-        points = 0;
-        break;
+    setUsedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
+    setCompletedQuestionIds((prev) => [
+      ...new Set([...prev, currentQuestion.id]),
+    ]);
+
+    if (response === "covered" || response === "partial") {
+      setMasteredQuestionIds((prev) => [
+        ...new Set([...prev, currentQuestion.id]),
+      ]);
+
+      setRetryQuestionIds((prev) =>
+        prev.filter((id) => id !== currentQuestion.id),
+      );
+    } else if (response === "missed") {
+      setRetryQuestionIds((prev) => [
+        ...new Set([...prev, currentQuestion.id]),
+      ]);
     }
 
-    const newScore = score + points;
+    const previousResponse = questionResponses.find(
+      (item) => item.index === currentQuestionIndex,
+    );
+    const previousPoints =
+      previousResponse?.response === "covered"
+        ? 10
+        : previousResponse?.response === "partial"
+          ? 5
+          : 0;
+
+    const newScore = score - previousPoints + responsePoints;
     setScore(newScore);
   };
 
@@ -190,53 +572,13 @@ export const RapidFireModePage = ({
       setShowAnswer(false);
       setIsFlipped(false);
       setUserResponse(null);
-    } else {
-      // Ensure all questions have responses recorded
-      const allResponses = [...questionResponses];
-
-      // Add any missing questions as 'missed' (in case they timed out without explicit response)
-      // But don't overwrite skipped questions
-      for (let i = 0; i < shuffledQuestions.length; i++) {
-        const existingResponse = allResponses.find((r) => r.index === i);
-        if (!existingResponse) {
-          allResponses.push({
-            question: shuffledQuestions[i],
-            response: "missed",
-            index: i,
-          });
-        } else if (existingResponse.response === "skipped") {
-          // Keep skipped responses as is
-          continue;
-        }
-      }
-
-      // Calculate final score based on actual responses
-      const coveredCount = allResponses.filter(
-        (r) => r.response === "covered",
-      ).length;
-      const partialCount = allResponses.filter(
-        (r) => r.response === "partial",
-      ).length;
-      const skippedCount = allResponses.filter(
-        (r) => r.response === "skipped",
-      ).length;
-
-      const totalPoints = coveredCount * 10 + partialCount * 5;
-      const maxPossiblePoints = (shuffledQuestions.length - skippedCount) * 10;
-
-      const percentageScore =
-        maxPossiblePoints > 0
-          ? Math.round((totalPoints / maxPossiblePoints) * 100)
-          : 0;
-
-      // Update the state with complete response data
-      setQuestionResponses(allResponses);
-      setTotalScore(percentageScore);
-      saveReadinessScore(percentageScore);
+      return;
     }
+
+    finalizeRound();
   };
 
-  const saveReadinessScore = async (score: number) => {
+  const saveReadinessScore = async (scoreToSave: number) => {
     try {
       const userEmail =
         typeof window !== "undefined"
@@ -250,7 +592,7 @@ export const RapidFireModePage = ({
         body: JSON.stringify({
           action: "update-readiness-score",
           userEmail,
-          score,
+          score: scoreToSave,
         }),
       });
     } catch (error) {
@@ -258,10 +600,115 @@ export const RapidFireModePage = ({
     }
   };
 
+  const finalizeRound = () => {
+    const normalizedResponses: QuestionResponse[] = shuffledQuestions.map(
+      (question, index) => {
+        const existingResponse = questionResponses.find(
+          (response) => response.index === index,
+        );
+
+        return (existingResponse ?? {
+          question,
+          response: "missed",
+          index,
+        }) as QuestionResponse;
+      },
+    );
+
+    const summary = computeRoundSummary(normalizedResponses);
+
+    const reducedCooldowns = reduceCooldowns(questionCooldowns);
+
+    const updatedCooldowns = computeQuestionCooldowns(
+      normalizedResponses,
+      reducedCooldowns,
+    );
+
+    setQuestionCooldowns(updatedCooldowns);
+
+    const completedIds = [
+      ...new Set([
+        ...completedQuestionIds,
+        ...normalizedResponses.map((response) => response.question.id),
+      ]),
+    ];
+
+    const isTrainingComplete =
+      summary.weakQuestionIds.length === 0 &&
+      questions.filter((q) => q.applicable && !completedIds.includes(q.id))
+        .length === 0;
+
+    setQuestionResponses(normalizedResponses);
+    setRoundSummary(summary);
+    setRoundScore(summary.readinessScore);
+    setTotalScore(summary.readinessScore);
+    setCompletedQuestionIds(completedIds);
+    setSkippedQuestions(summary.skippedCount);
+    setScreen(isTrainingComplete ? "completed" : "results");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+    setTotalRoundsCompleted((prev) => Math.max(prev, currentRound));
+
+    if (isTrainingComplete) {
+      fireConfetti(summary.readinessScore >= 80 ? "excellent" : "good");
+    }
+
+    saveReadinessScore(summary.readinessScore);
+  };
+
+  const startNextRound = async () => {
+    if (screen === "completed") return;
+
+    const resp = await fetch(
+      `/api/interview-prep/sessions/${sessionId}/next-round`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionResponses,
+          allQuestions: questions,
+          completedQuestionIds,
+          currentRound,
+        }),
+      },
+    );
+
+    if (!resp.ok) {
+      console.error("Failed to fetch next round", await resp.text());
+      return;
+    }
+
+    const data = await resp.json();
+
+    setCurrentRound(data.currentRound ?? currentRound + 1);
+    setShuffledQuestions(data.shuffledQuestions ?? []);
+    setRetryQuestionIds(data.retryQuestionIds ?? []);
+    setMasteredQuestionIds(data.masteredQuestionIds ?? []);
+    setCompletedQuestionIds(data.completedQuestionIds ?? []);
+    setRoundSummary(data.roundSummary ?? null);
+    setTotalScore(data.totalScore ?? totalScore);
+
+    setQuestionResponses([]);
+    setRoundScore(null);
+    setScore(0);
+    setShowAnswer(false);
+    setIsFlipped(false);
+    setUserResponse(null);
+    setSkippedQuestions(0);
+    setCurrentQuestionIndex(0);
+    setResumeProgress(null);
+    setTotalRoundsCompleted((prev) =>
+      Math.max(prev, data.currentRound ?? currentRound + 1),
+    );
+
+    setScreen(data.isTrainingComplete ? "completed" : "training");
+  };
+
   const skipQuestion = () => {
     setSkippedQuestions((prev) => prev + 1);
 
-    // Store skipped question response
     const newResponse: QuestionResponse = {
       question: currentQuestion,
       response: "skipped",
@@ -269,9 +716,7 @@ export const RapidFireModePage = ({
     };
 
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -280,68 +725,19 @@ export const RapidFireModePage = ({
       return [...prev, newResponse];
     });
 
-    // Reset state and go to next question
     setUserResponse("skipped");
     setShowAnswer(true);
     setIsFlipped(true);
+    setUsedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
+    setCompletedQuestionIds((prev) => [
+      ...new Set([...prev, currentQuestion.id]),
+    ]);
+    setRetryQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
+
+    setMasteredQuestionIds((prev) =>
+      prev.filter((id) => id !== currentQuestion.id),
+    );
   };
-
-  const restartRapidFire = () => {
-    setCurrentQuestionIndex(0);
-    setTimeLeft(10);
-    setScore(0);
-    setShowAnswer(false);
-    setIsFlipped(false);
-    setUserResponse(null);
-    setTotalScore(null);
-    setSkippedQuestions(0);
-    setQuestionResponses([]);
-    setReviewQuestion(null);
-    setIsReviewFlipped(false);
-    setShuffledQuestions(shuffleArray(questions.filter((q) => q.applicable)));
-  };
-
-  // Track timed-out questions properly
-  useEffect(() => {
-    if (timeLeft === 0 && !showAnswer && userResponse === null) {
-      // Check if this question was already recorded as skipped
-      const isAlreadySkipped = questionResponses.some(
-        (r) => r.index === currentQuestionIndex && r.response === "skipped",
-      );
-
-      if (!isAlreadySkipped) {
-        // Auto-mark as missed when time expires (only if not already skipped)
-        const newResponse: QuestionResponse = {
-          question: currentQuestion,
-          response: "missed",
-          index: currentQuestionIndex,
-        };
-
-        setQuestionResponses((prev) => {
-          const existingIndex = prev.findIndex(
-            (r) => r.index === currentQuestionIndex,
-          );
-          if (existingIndex >= 0) {
-            // Don't overwrite skipped responses
-            if (prev[existingIndex].response === "skipped") {
-              return prev;
-            }
-            const updated = [...prev];
-            updated[existingIndex] = newResponse;
-            return updated;
-          }
-          return [...prev, newResponse];
-        });
-      }
-    }
-  }, [
-    timeLeft,
-    showAnswer,
-    userResponse,
-    currentQuestion,
-    currentQuestionIndex,
-    questionResponses,
-  ]);
 
   const handleReviewQuestionClick = (question: GeneratedQuestion) => {
     setReviewQuestion(question);
@@ -351,6 +747,14 @@ export const RapidFireModePage = ({
   const handleReviewCardClick = () => {
     setIsReviewFlipped(!isReviewFlipped);
   };
+
+  if (isHydratingProgress) {
+    return (
+      <div className="flex justify-center items-center my-48">
+        <Loader size="md" text="Restoring session..." />
+      </div>
+    );
+  }
 
   if (!currentQuestion) {
     return (
@@ -362,15 +766,10 @@ export const RapidFireModePage = ({
               No applicable questions found for rapid fire mode.
             </p>
             <div className="flex gap-3 justify-center">
-              <Button
-                onClick={onSwitchToPrep}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
+              <Button onClick={onSwitchToPrep} className="bg-teal-600 hover:bg-teal-700">
                 Switch to Prep Mode
               </Button>
-              <Button onClick={onExit} variant="outline">
-                Exit Rapid Fire
-              </Button>
+              <Button onClick={onExit} variant="outline"></Button>
             </div>
           </div>
         </div>
@@ -378,7 +777,34 @@ export const RapidFireModePage = ({
     );
   }
 
-  if (totalScore !== null) {
+  if (resumeProgress && isHydratingProgress) {
+    return (
+      <div className="fixed inset-0 z-9999 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
+        />
+        <motion.div
+          initial={{ scale: 0.94, opacity: 0, y: 16 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] text-center"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-[#0d7377]/10 text-[#0d7377] flex items-center justify-center mx-auto mb-6">
+            <Zap className="w-8 h-8" />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-3">
+            Restoring Rapid Fire
+          </h3>
+          <p className="text-slate-500 leading-relaxed">
+            Resuming your last round and restoring timer state.
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (screen === "results" || screen === "completed") {
     return (
       <ResultGate
         feature="interview_rapid_fire"
@@ -390,10 +816,12 @@ export const RapidFireModePage = ({
           <div className="">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Rapid Fire Completed!
+              {screen === "completed" ? "Training Complete!" : "Round Complete"}
             </h1>
             <p className="text-slate-600">
-              Your interview readiness assessment
+              {screen === "completed"
+                ? "Your final readiness assessment"
+                : `Round ${currentRound} performance summary`}
             </p>
           </div>
 
@@ -403,31 +831,24 @@ export const RapidFireModePage = ({
                 <div className="w-40 h-40 rounded-full border-8 border-teal-200 flex items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
                   <div className="text-center">
                     <span className="text-4xl font-bold text-teal-700">
-                      {Math.round(
-                        (score /
-                          (shuffledQuestions.length - skippedQuestions)) *
-                          10,
-                      )}
-                      %
+                      {roundScore ?? totalScore ?? 0}%
                     </span>
-                    <div className="text-sm text-teal-600 font-medium mt-1">
-                      Readiness Score
-                    </div>
+                    <div className="text-sm text-teal-600 font-medium mt-1">Readiness Score</div>
                   </div>
                 </div>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                   <div
                     className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                      totalScore >= 80
+                      (roundScore ?? totalScore ?? 0) >= 80
                         ? "bg-green-100 text-green-800"
-                        : totalScore >= 60
+                        : (roundScore ?? totalScore ?? 0) >= 60
                           ? "bg-amber-100 text-amber-800"
                           : "bg-red-100 text-red-800"
                     }`}
                   >
-                    {totalScore >= 80
+                    {(roundScore ?? totalScore ?? 0) >= 80
                       ? "Excellent"
-                      : totalScore >= 60
+                      : (roundScore ?? totalScore ?? 0) >= 60
                         ? "Good"
                         : "Needs Practice"}
                   </div>
@@ -436,18 +857,21 @@ export const RapidFireModePage = ({
 
               <div className="space-y-3">
                 <p className="text-lg text-slate-700 font-medium">
-                  {totalScore >= 80
+                  {(roundScore ?? totalScore ?? 0) >= 80
                     ? "Outstanding interview preparation!"
-                    : totalScore >= 60
+                    : (roundScore ?? totalScore ?? 0) >= 60
                       ? "Solid foundation established!"
                       : "Keep practicing to build confidence"}
                 </p>
                 <p className="text-slate-500">
                   You scored{" "}
-                  <span className="font-semibold text-teal-600">{score}</span>{" "}
+                  <span className="font-semibold text-teal-600">
+                    {roundSummary?.earnedPoints ?? score}
+                  </span>{" "}
                   points out of{" "}
                   <span className="font-semibold">
-                    {(shuffledQuestions.length - skippedQuestions) * 10}
+                    {roundSummary?.possiblePoints ??
+                      (shuffledQuestions.length - skippedQuestions) * 10}
                   </span>{" "}
                   possible
                 </p>
@@ -462,247 +886,248 @@ export const RapidFireModePage = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-                <div className="text-2xl font-bold text-emerald-600">
-                  {
-                    questionResponses.filter((r) => r.response === "covered")
-                      .length
-                  }
-                </div>
-                <div className="text-sm text-emerald-700">Covered Well</div>
-              </div>
-              <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
-                <div className="text-2xl font-bold text-amber-600">
-                  {
-                    questionResponses.filter((r) => r.response === "partial")
-                      .length
-                  }
-                </div>
-                <div className="text-sm text-amber-700">Partial Coverage</div>
-              </div>
-              <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
-                <div className="text-2xl font-bold text-rose-600">
-                  {
-                    questionResponses.filter((r) => r.response === "missed")
-                      .length
-                  }
-                </div>
-                <div className="text-sm text-rose-700">Missed</div>
-              </div>
-            </div>
-
-            {skippedQuestions > 0 && (
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                  <span className="text-slate-600">Questions skipped:</span>
-                  <span className="font-bold text-slate-800">
-                    {skippedQuestions}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Reviewable Progress Bar */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Performance Review
-              </h3>
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <span className="font-medium">Note:</span> Click on any of the
-                  color-coded tabs to review the Q&A.
-                </p>
-              </div>
-              <div className="flex gap-1 mb-4 mt-2">
-                {shuffledQuestions.map((_, index) => {
-                  const response = questionResponses.find(
-                    (r) => r.index === index,
-                  );
-                  let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
-
-                  if (response) {
-                    switch (response.response) {
-                      case "covered":
-                        bgColor = "bg-green-500";
-                        break;
-                      case "partial":
-                        bgColor = "bg-amber-500";
-                        break;
-                      case "missed":
-                        bgColor = "bg-red-500";
-                        break;
-                      case "skipped":
-                        bgColor = "bg-gray-400";
-                        break;
-                    }
-                  }
-
-                  return (
-                    <div
-                      key={index}
-                      className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
-                      onClick={() => {
-                        const questionResp = questionResponses.find(
-                          (r) => r.index === index,
-                        );
-                        if (questionResp) {
-                          handleReviewQuestionClick(questionResp.question);
-                        }
-                      }}
-                      title={`Question ${index + 1}: ${response?.response || "Unanswered"}`}
-                    />
-                  );
-                })}
-              </div>
-              <div className="flex justify-center gap-6 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-                  <span>Covered Well</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
-                  <span>Partial Coverage</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                  <span>Missed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-400 rounded-sm"></div>
-                  <span>Skipped</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Review Question Card */}
-            {reviewQuestion && (
-              <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-slate-900 text-lg">
-                    Question Review
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReviewQuestion(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
-
-                <div
-                  className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
-                    isReviewFlipped ? "transform rotate-y-180" : ""
-                  }`}
-                  style={{
-                    transformStyle: "preserve-3d",
-                    perspective: "1000px",
-                  }}
-                  onClick={handleReviewCardClick}
-                >
-                  {/* Front of Card - Question */}
-                  <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
-                    <div>
-                      <div className="flex justify-between items-start mb-4">
-                        <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
-                          {reviewQuestion.category}
-                        </span>
-                        <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
-                          Review Mode
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-bold leading-tight">
-                        {reviewQuestion.selectedQuestion ||
-                          reviewQuestion.question}
-                      </h3>
+            {!isFreeTier && (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                    <div className="text-2xl font-bold text-emerald-600">
+                      {roundSummary?.coveredCount ??
+                        questionResponses.filter((r) => r.response === "covered")
+                          .length}
                     </div>
-                    <div className="text-center">
-                      <p className="text-teal-100 text-sm">
-                        Click to see answer and guidance
-                      </p>
-                      <div className="flex justify-center mt-2">
-                        <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
+                    <div className="text-sm text-emerald-700">Covered Well</div>
                   </div>
+                  <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
+                    <div className="text-2xl font-bold text-amber-600">
+                      {roundSummary?.partialCount ??
+                        questionResponses.filter((r) => r.response === "partial")
+                          .length}
+                    </div>
+                    <div className="text-sm text-amber-700">Partial Coverage</div>
+                  </div>
+                  <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
+                    <div className="text-2xl font-bold text-rose-600">
+                      {roundSummary?.missedCount ??
+                        questionResponses.filter((r) => r.response === "missed")
+                          .length}
+                    </div>
+                    <div className="text-sm text-rose-700">Missed</div>
+                  </div>
+                </div>
 
-                  {/* Back of Card - Answer & Guidance */}
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
-                    <div className="flex justify-between items-start mb-4">
-                      <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
-                        Answer & Guidance
+                {skippedQuestions > 0 && (
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                      <span className="text-slate-600">Questions skipped:</span>
+                      <span className="font-bold text-slate-800">
+                        {skippedQuestions}
                       </span>
                     </div>
+                  </div>
+                )}
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
-                      {savedAnswers[reviewQuestion.id] && (
-                        <div>
-                          <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                            <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
-                            Your Saved Answer
-                          </h4>
-                          <p className="text-slate-100 text-sm leading-relaxed">
-                            {savedAnswers[reviewQuestion.id]}
-                          </p>
-                        </div>
-                      )}
+                {/* Reviewable Progress Bar */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                    Performance Review
+                  </h3>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-medium">Note:</span> Click on any of the
+                      color-coded tabs to review the Q&A.
+                    </p>
+                  </div>
+                  <div className="flex gap-1 mb-4 mt-2">
+                    {shuffledQuestions.map((_, index) => {
+                      const response = questionResponses.find(
+                        (r) => r.index === index,
+                      );
+                      let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
 
-                      <div>
-                        <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                          <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                          Sample Answer
-                        </h4>
-                        <p className="text-slate-100 text-sm leading-relaxed">
-                          {reviewQuestion.sampleAnswer}
-                        </p>
-                      </div>
+                      if (response) {
+                        switch (response.response) {
+                          case "covered":
+                            bgColor = "bg-green-500";
+                            break;
+                          case "partial":
+                            bgColor = "bg-amber-500";
+                            break;
+                          case "missed":
+                            bgColor = "bg-red-500";
+                            break;
+                          case "skipped":
+                            bgColor = "bg-gray-400";
+                            break;
+                        }
+                      }
 
-                      <div>
-                        <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                          <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
-                          Guidance
-                        </h4>
-                        <p className="text-slate-200 text-sm leading-relaxed">
-                          {reviewQuestion.guidance}
-                        </p>
-                      </div>
+                      return (
+                        <div
+                          key={index}
+                          className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
+                          onClick={() => {
+                            const questionResp = questionResponses.find(
+                              (r) => r.index === index,
+                            );
+                            if (questionResp) {
+                              handleReviewQuestionClick(questionResp.question);
+                            }
+                          }}
+                          title={`Question ${index + 1}: ${response?.response || "Unanswered"}`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-center gap-6 text-sm text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                      <span>Covered Well</span>
                     </div>
-
-                    <div className="text-center mt-4">
-                      <p className="text-slate-300 text-xs">
-                        Click to flip back
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
+                      <span>Partial Coverage</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                      <span>Missed</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-gray-400 rounded-sm"></div>
+                      <span>Skipped</span>
                     </div>
                   </div>
                 </div>
-              </div>
+
+                {/* Review Question Card */}
+                {reviewQuestion && (
+                  <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="font-semibold text-slate-900 text-lg">
+                        Question Review
+                      </h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReviewQuestion(null)}
+                      >
+                        Close
+                      </Button>
+                    </div>
+                    <div
+                      className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+                        isReviewFlipped ? "transform rotate-y-180" : ""
+                      }`}
+                      style={{
+                        transformStyle: "preserve-3d",
+                        perspective: "1000px",
+                      }}
+                      onClick={handleReviewCardClick}
+                    >
+                      {/* Front of Card - Question */}
+                      <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
+                        <div>
+                          <div className="flex justify-between items-start mb-4">
+                            <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
+                              {reviewQuestion.category}
+                            </span>
+                            <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
+                              Review Mode
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold leading-tight">
+                            {reviewQuestion.selectedQuestion ||
+                              reviewQuestion.question}
+                          </h3>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-teal-100 text-sm">
+                            Click to see answer and guidance
+                          </p>
+                          <div className="flex justify-center mt-2">
+                            <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Back of Card - Answer & Guidance */}
+                      <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
+                        <div className="flex justify-between items-start mb-4">
+                          <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
+                            Answer & Guidance
+                          </span>
+                        </div>
+
+                        <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
+                          {savedAnswers[reviewQuestion.id] && (
+                            <div>
+                              <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                                <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
+                                Your Saved Answer
+                              </h4>
+                              <p className="text-slate-100 text-sm leading-relaxed">
+                                {savedAnswers[reviewQuestion.id]}
+                              </p>
+                            </div>
+                          )}
+
+                          <div>
+                            <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                              <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
+                              Sample Answer
+                            </h4>
+                            <p className="text-slate-100 text-sm leading-relaxed">
+                              {reviewQuestion.sampleAnswer}
+                            </p>
+                          </div>
+
+                          <div>
+                            <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                              <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
+                              Guidance
+                            </h4>
+                            <p className="text-slate-200 text-sm leading-relaxed">
+                              {reviewQuestion.guidance}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-center mt-4">
+                          <p className="text-slate-300 text-xs">
+                            Click to flip back
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex gap-3 justify-center">
               <Button
-                onClick={restartRapidFire}
+                onClick={() => {
+                  onExit();
+                }}
                 className="bg-teal-600 hover:bg-teal-700 cursor-pointer"
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Try Again
+                Continue Training Later
               </Button>
               <Button
-                onClick={onSwitchToPrep}
+                onClick={startNextRound}
                 className="bg-orange-600 hover:bg-orange-700 cursor-pointer"
+                disabled={screen === "completed"}
               >
-                <Zap className="w-4 h-4 mr-2" />
-                Switch to Prep Mode
+                Start Next Round
               </Button>
-              <Button
-                onClick={onExit}
+              {/* <Button
+                onClick={restartRapidFire}
                 variant="outline"
                 className="cursor-pointer"
               >
-                Exit
-              </Button>
+                Restart Training
+              </Button> */}
             </div>
           </div>
         </div>
@@ -712,306 +1137,23 @@ export const RapidFireModePage = ({
   }
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-teal-50 min-h-screen w-full">
-      <div className="site-main-px py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Zap className="w-6 h-6 text-orange-500" />
-              Rapid Fire Mode
-            </h1>
-            <p className="text-slate-600">
-              Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="text-right flex gap-2">
-              <div className="text-slate-900 font-bold">Score</div>
-              <div className="text-lg font-bold text-teal-600">{score} pts</div>
-            </div>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onExit}
-              className="text-slate-500 hover:text-slate-700"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-slate-600 mb-2">
-            <span>Progress</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300 ease-out"
-              style={getProgressGradient(progress)}
-            />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-[350px] sm:h-[400px] lg:h-[450px] mb-8">
-          <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
-            <div
-              className={`relative w-full h-full cursor-pointer transition-transform duration-700 ease-out-cubic ${
-                isFlipped ? "transform rotate-y-180" : ""
-              }`}
-              style={{
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
-            >
-              <div
-                className={`absolute inset-0 backface-hidden bg-white rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-2xl border-4 ${
-                  !showAnswer
-                    ? timeLeft <= 3
-                      ? "border-red-500 animate-pulse"
-                      : "border-emerald-500"
-                    : "border-slate-200"
-                }`}
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-3 sm:mb-4">
-                    <span className="bg-teal-100 text-teal-800 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
-                      {currentQuestion.category}
-                    </span>
-                  </div>
-                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-slate-800 mb-4 sm:mb-6 line-clamp-5 sm:line-clamp-4">
-                    {currentQuestion.selectedQuestion ||
-                      currentQuestion.question}
-                  </h2>
-
-                  {!showAnswer && (
-                    <div className="flex justify-center mt-2 sm:mt-4">
-                      <div className="relative w-28 h-28 sm:w-32 sm:h-32">
-                        {/* Subtle outer ring for depth */}
-                        <div
-                          className={`absolute inset-0 rounded-full ${timeLeft <= 3 ? "ring-2 ring-red-100" : "ring-2 ring-teal-100"} opacity-50`}
-                        ></div>
-
-                        {/* Enhanced circular timer */}
-                        <svg
-                          className="w-full h-full drop-shadow-sm"
-                          viewBox="0 0 176 176"
-                        >
-                          {/* Background ring with subtle gradient */}
-                          <circle
-                            cx="88"
-                            cy="88"
-                            r="76"
-                            fill="none"
-                            stroke="url(#timerBg)"
-                            strokeWidth="6"
-                          />
-
-                          {/* Progress ring with smooth animation */}
-                          <circle
-                            cx="88"
-                            cy="88"
-                            r="76"
-                            fill="none"
-                            stroke={
-                              timeLeft <= 3
-                                ? "url(#timerDanger)"
-                                : "url(#timerSuccess)"
-                            }
-                            strokeWidth="6"
-                            strokeDasharray={`${2 * Math.PI * 76}`}
-                            strokeDashoffset={`${2 * Math.PI * 76 * (1 - timeLeft / 10)}`}
-                            strokeLinecap="round"
-                            className="transition-all duration-1000 ease-out"
-                            transform="rotate(-90 88 88)"
-                          />
-
-                          {/* Gradient definitions */}
-                          <defs>
-                            <linearGradient
-                              id="timerBg"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#f1f5f9" />
-                              <stop offset="100%" stopColor="#e2e8f0" />
-                            </linearGradient>
-                            <linearGradient
-                              id="timerSuccess"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#0d9488" />
-                              <stop offset="100%" stopColor="#0f766e" />
-                            </linearGradient>
-                            <linearGradient
-                              id="timerDanger"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#ef4444" />
-                              <stop offset="100%" stopColor="#dc2626" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-
-                        {/* Enhanced timer display */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl px-2 sm:px-4 py-1 sm:py-2">
-                            <div
-                              className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-red-600" : "text-teal-600"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
-                            >
-                              {timeLeft}
-                            </div>
-                            <div className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5 sm:mt-1">
-                              sec
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="text-center">
-                  {!showAnswer ? (
-                    <div className="inline-flex items-center gap-2 text-slate-600 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
-                      <span>Preparing response...</span>
-                    </div>
-                  ) : (
-                    <p className="text-slate-600 text-xs sm:text-sm">
-                      Click to see answer
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col text-white shadow-2xl border border-teal-500/40">
-                <div className="flex justify-between items-start mb-2 sm:mb-3 pb-2 border-b border-white/10">
-                  <span className="bg-white/20 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium">
-                    Answer & Guidance
-                  </span>
-                </div>
-
-                <div className="flex-1 overflow-y-auto pr-2 sm:pr-3 scrollbar-premium">
-                  <div className="space-y-3 sm:space-y-4">
-                    {savedAnswers[currentQuestion.id] && (
-                      <div>
-                        <h4 className="text-emerald-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                          <span className="w-1.5 h-1.5 bg-emerald-200 rounded-full"></span>
-                          Your Saved Answer
-                        </h4>
-                        <p className="text-slate-100 leading-relaxed text-xs sm:text-sm line-clamp-3">
-                          {savedAnswers[currentQuestion.id]}
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <h4 className="text-teal-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                        <span className="w-1.5 h-1.5 bg-teal-200 rounded-full"></span>
-                        Sample
-                      </h4>
-                      <p className="text-slate-100 leading-snug text-xs sm:text-sm line-clamp-3">
-                        {currentQuestion.sampleAnswer}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="text-blue-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                        <span className="w-1.5 h-1.5 bg-blue-200 rounded-full"></span>
-                        Guidance
-                      </h4>
-                      <p className="text-slate-200 leading-snug text-xs sm:text-sm line-clamp-3">
-                        {currentQuestion.guidance}
-                      </p>
-                    </div>
-
-                    {currentQuestion.tooltip && (
-                      <div>
-                        <h4 className="text-amber-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                          <span className="w-1.5 h-1.5 bg-amber-200 rounded-full"></span>
-                          Tip
-                        </h4>
-                        <p className="text-slate-300 text-xs sm:text-sm italic line-clamp-2">
-                          {currentQuestion.tooltip}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-2 sm:mt-4">
-                  <Button
-                    onClick={() => handleResponse("covered")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "covered"
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-emerald-500 hover:bg-emerald-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Covered</span>
-                    <span className="text-xs">+10</span>
-                  </Button>
-
-                  <Button
-                    onClick={() => handleResponse("partial")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "partial"
-                        ? "bg-amber-600 hover:bg-amber-700"
-                        : "bg-amber-500 hover:bg-amber-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Partial</span>
-                    <span className="text-xs">+5</span>
-                  </Button>
-
-                  <Button
-                    onClick={() => handleResponse("missed")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "missed"
-                        ? "bg-rose-600 hover:bg-rose-700"
-                        : "bg-rose-500 hover:bg-rose-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Missed</span>
-                    <span className="text-xs">+0</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center gap-3 mt-4">
-          {!showAnswer ? (
-            <Button onClick={skipQuestion} variant="outline" className="bg-white hover:bg-slate-50">
-              Skip Question
-            </Button>
-          ) : (
-            <Button
-              onClick={nextQuestion}
-              className="bg-orange-600 hover:bg-orange-700"
-              disabled={userResponse === null}
-            >
-              {currentQuestionIndex < shuffledQuestions.length - 1
-                ? "Next Question"
-                : "Finish"}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
+    <RapidFireTrainingView
+      currentRound={currentRound}
+      currentQuestionIndex={currentQuestionIndex}
+      roundQuestionCount={roundQuestionCount}
+      score={score}
+      progress={progress}
+      currentQuestion={currentQuestion}
+      timeLeft={timeLeft}
+      showAnswer={showAnswer}
+      isFlipped={isFlipped}
+      userResponse={userResponse}
+      savedAnswers={savedAnswers}
+      onHandleResponse={handleResponse}
+      onSkipQuestion={skipQuestion}
+      onNextQuestion={nextQuestion}
+      getProgressGradient={getProgressGradient}
+    />
   );
 };
+

@@ -87,9 +87,7 @@ export default function DocumentTranslationTool({
     }
 
     if (!file || !documentType) {
-      setError(
-        t("documentTranslation.uploadPage.validation.missingFileOrType"),
-      );
+      setError(t("documentTranslation.uploadPage.validation.missingFileOrType"));
       return;
     }
 
@@ -112,10 +110,7 @@ export default function DocumentTranslationTool({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error ||
-            t("documentTranslation.uploadPage.validation.uploadFailed"),
-        );
+        throw new Error(data.error || t("documentTranslation.uploadPage.validation.uploadFailed"));
       }
 
       setUploadSuccess(true);
@@ -129,7 +124,7 @@ export default function DocumentTranslationTool({
       setError(
         err instanceof Error
           ? err.message
-          : t("documentTranslation.uploadPage.validation.unexpectedError"),
+          : t("documentTranslation.uploadPage.validation.unexpectedError")
       );
     } finally {
       setUploading(false);
@@ -203,9 +198,7 @@ export default function DocumentTranslationTool({
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <FileText className="w-10 h-10 text-indigo-600 shrink-0" />
                     <div className="text-center sm:text-left overflow-hidden">
-                      <p className="font-medium truncate max-w-[250px]">
-                        {file.name}
-                      </p>
+                      <p className="font-medium truncate max-w-[250px]">{file.name}</p>
                       <p className="text-xs sm:text-sm text-gray-500">
                         {(file.size / 1024 / 1024).toFixed(2)} MB
                       </p>
@@ -217,9 +210,7 @@ export default function DocumentTranslationTool({
                     <p className="text-sm font-medium">
                       {t("documentTranslation.uploadPage.clickDragDrop")}
                     </p>
-                    <p className="text-xs mt-1">
-                      {t("documentTranslation.uploadPage.pdfOnlyMax")}
-                    </p>
+                    <p className="text-xs mt-1">{t("documentTranslation.uploadPage.pdfOnlyMax")}</p>
                   </div>
                 )}
               </div>
@@ -232,8 +223,7 @@ export default function DocumentTranslationTool({
                   }}
                   className="mt-3 text-sm text-white flex items-center gap-1 mx-auto bg-red-500 rounded-md p-2 cursor-pointer hover:bg-red-600 border-none outline-hidden"
                 >
-                  <X className="w-4 h-4" />{" "}
-                  {t("documentTranslation.uploadPage.removeDocument")}
+                  <X className="w-4 h-4" /> {t("documentTranslation.uploadPage.removeDocument")}
                 </button>
               )}
 
@@ -245,9 +235,7 @@ export default function DocumentTranslationTool({
                 <Select value={documentType} onValueChange={setDocumentType}>
                   <SelectTrigger className="w-full">
                     <SelectValue
-                      placeholder={t(
-                        "documentTranslation.uploadPage.selectTypePlaceholder",
-                      )}
+                      placeholder={t("documentTranslation.uploadPage.selectTypePlaceholder")}
                     />
                   </SelectTrigger>
                   <SelectContent className="z-[200]">
@@ -275,9 +263,7 @@ export default function DocumentTranslationTool({
                 <textarea
                   value={userNotes}
                   onChange={(e) => setUserNotes(e.target.value)}
-                  placeholder={t(
-                    "documentTranslation.uploadPage.notesPlaceholder",
-                  )}
+                  placeholder={t("documentTranslation.uploadPage.notesPlaceholder")}
                   className="w-full border rounded-md p-2 min-h-[80px] focus:ring-2 focus:ring-primary focus:border-transparent outline-hidden"
                   maxLength={500}
                 />
@@ -337,9 +323,7 @@ export default function DocumentTranslationTool({
       ) : (
         <div className="w-full flex justify-center">
           <SuccessState
-            onGoToRequests={() =>
-              (window.location.href = "/document-translation/my-requests")
-            }
+            onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
           />
         </div>
       )}

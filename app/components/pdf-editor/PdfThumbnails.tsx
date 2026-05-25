@@ -19,13 +19,7 @@ async function initPdfJs() {
 }
 
 export function PDFThumbnails() {
-  const {
-    currentPage,
-    setCurrentPage,
-    pdfFile,
-    totalPages,
-    pageModifications,
-  } = usePDFStore();
+  const { currentPage, setCurrentPage, pdfFile, totalPages, pageModifications } = usePDFStore();
   const [isLoading, setIsLoading] = useState(false);
   const [thumbnails, setThumbnails] = useState<
     Array<{ thumbnail: string; rotation: number; originalIndex: number }>
@@ -38,8 +32,7 @@ export function PDFThumbnails() {
       try {
         setIsLoading(true);
         const pdfjs = await initPdfJs();
-        const pdf = await pdfjs.getDocument(await pdfFile.arrayBuffer())
-          .promise;
+        const pdf = await pdfjs.getDocument(await pdfFile.arrayBuffer()).promise;
 
         // If no modifications yet, generate from original pages
         if (pageModifications.length === 0) {
@@ -129,9 +122,7 @@ export function PDFThumbnails() {
           onClick={() => setCurrentPage(index)}
           className={cn(
             "relative rounded border overflow-hidden transition-all hover:border-blue-400 shrink-0",
-            currentPage === index
-              ? "border-2 border-blue-600 shadow-md"
-              : "border border-gray-300",
+            currentPage === index ? "border-2 border-blue-600 shadow-md" : "border border-gray-300"
           )}
           style={{ width: "104px", height: "140px" }}
         >

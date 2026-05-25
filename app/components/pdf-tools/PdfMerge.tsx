@@ -121,15 +121,12 @@ export default function PDFMergeAdvanced() {
       }
       // Word & Excel conversion (same as before)
       else if (
-        file.type ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       ) {
         const mammoth = await import("mammoth");
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
-        const cleanText = result.value
-          .replace(/[^\x00-\x7F]/g, "")
-          .replace(/\r\n/g, "\n");
+        const cleanText = result.value.replace(/[^\x00-\x7F]/g, "").replace(/\r\n/g, "\n");
 
         const A4_WIDTH = 595,
           A4_HEIGHT = 842,
@@ -152,8 +149,7 @@ export default function PDFMergeAdvanced() {
           yPosition -= 16;
         }
       } else if (
-        file.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       ) {
         const XLSX = await import("xlsx");
         const arrayBuffer = await file.arrayBuffer();
@@ -196,7 +192,7 @@ export default function PDFMergeAdvanced() {
       return new File(
         [new Blob([new Uint8Array(pdfBytes)])],
         file.name.replace(/\.[^/.]+$/, "") + ".pdf",
-        { type: "application/pdf" },
+        { type: "application/pdf" }
       );
     } catch (error) {
       console.error("Conversion Error:", error);
@@ -204,10 +200,7 @@ export default function PDFMergeAdvanced() {
     }
   };
 
-  const loadPDFPages = async (
-    file: File,
-    fileId: string,
-  ): Promise<PDFPage[]> => {
+  const loadPDFPages = async (file: File, fileId: string): Promise<PDFPage[]> => {
     try {
       const pdfjs = await import("pdfjs-dist");
       pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -226,8 +219,7 @@ export default function PDFMergeAdvanced() {
         if (
           initialError instanceof Error &&
           (initialError.name === "PasswordException" ||
-            (initialError.message &&
-              initialError.message.includes("requires a password")))
+            (initialError.message && initialError.message.includes("requires a password")))
         ) {
           console.warn("Encrypted PDF detected:", file.name);
           // Return placeholder page for encrypted PDF
@@ -271,10 +263,7 @@ export default function PDFMergeAdvanced() {
             });
           }
         } catch (pageError) {
-          console.error(
-            `Error loading page ${i} from file ${file.name}:`,
-            pageError,
-          );
+          console.error(`Error loading page ${i} from file ${file.name}:`, pageError);
           // Skip this page and continue with others
           continue;
         }
@@ -314,10 +303,7 @@ export default function PDFMergeAdvanced() {
 
         // Add file even if it's encrypted
         if (pages.length > 0) {
-          setFiles((prev) => [
-            ...prev,
-            { id: fileId, file: pdfFile, name: pdfFile.name, pages },
-          ]);
+          setFiles((prev) => [...prev, { id: fileId, file: pdfFile, name: pdfFile.name, pages }]);
           setAllPages((prev) => [...prev, ...pages]);
         }
       }
@@ -333,17 +319,14 @@ export default function PDFMergeAdvanced() {
     if (e.target.value) e.target.value = "";
   };
 
-  const removePage = (pageId: string) =>
-    setAllPages((prev) => prev.filter((p) => p.id !== pageId));
+  const removePage = (pageId: string) => setAllPages((prev) => prev.filter((p) => p.id !== pageId));
 
   // Function to rotate a single page (used in Preview Mode)
   const rotateSinglePage = (pageId: string) => {
     setAllPages((prev) =>
       prev.map((page) =>
-        page.id === pageId
-          ? { ...page, rotation: (page.rotation + 90) % 360 }
-          : page,
-      ),
+        page.id === pageId ? { ...page, rotation: (page.rotation + 90) % 360 } : page
+      )
     );
   };
 
@@ -351,10 +334,8 @@ export default function PDFMergeAdvanced() {
   const rotateFilePages = (fileId: string) => {
     setAllPages((prev) =>
       prev.map((page) =>
-        page.fileId === fileId
-          ? { ...page, rotation: (page.rotation + 90) % 360 }
-          : page,
-      ),
+        page.fileId === fileId ? { ...page, rotation: (page.rotation + 90) % 360 } : page
+      )
     );
   };
 
@@ -491,17 +472,12 @@ export default function PDFMergeAdvanced() {
                 // Convert canvas to PNG and embed in new PDF
                 const imageDataUrl = canvas.toDataURL("image/png", 1.0);
                 const base64Data = imageDataUrl.split(",")[1];
-                const imageBytes = Uint8Array.from(atob(base64Data), (c) =>
-                  c.charCodeAt(0),
-                );
+                const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
                 const image = await mergedPdf.embedPng(imageBytes);
 
                 // Create page with same dimensions
-                const newPage = mergedPdf.addPage([
-                  viewport.width,
-                  viewport.height,
-                ]);
+                const newPage = mergedPdf.addPage([viewport.width, viewport.height]);
 
                 // Apply rotation if needed
                 if (page.rotation !== 0) {
@@ -517,7 +493,7 @@ export default function PDFMergeAdvanced() {
 
                 successCount++;
                 console.log(
-                  `✓ Successfully rendered encrypted page ${page.pageNumber} from ${fileInfo.name}`,
+                  `✓ Successfully rendered encrypted page ${page.pageNumber} from ${fileInfo.name}`
                 );
               }
             } catch (renderError) {
@@ -547,22 +523,18 @@ export default function PDFMergeAdvanced() {
                 const pageIndex = page.pageNumber - 1;
 
                 if (pageIndex >= 0 && pageIndex < sourcePdf.getPageCount()) {
-                  const [copiedPage] = await mergedPdf.copyPages(sourcePdf, [
-                    pageIndex,
-                  ]);
+                  const [copiedPage] = await mergedPdf.copyPages(sourcePdf, [pageIndex]);
 
                   // Apply rotation
                   if (page.rotation !== 0) {
                     const existingRotation = copiedPage.getRotation().angle;
-                    copiedPage.setRotation(
-                      pdfLib.degrees(existingRotation + page.rotation),
-                    );
+                    copiedPage.setRotation(pdfLib.degrees(existingRotation + page.rotation));
                   }
 
                   mergedPdf.addPage(copiedPage);
                   successCount++;
                   console.log(
-                    `✓ Successfully copied page ${page.pageNumber} from ${fileInfo.name}`,
+                    `✓ Successfully copied page ${page.pageNumber} from ${fileInfo.name}`
                   );
                 }
               }
@@ -573,20 +545,18 @@ export default function PDFMergeAdvanced() {
         } catch (pageError) {
           console.error(
             `Error processing page ${page.pageNumber} from ${fileInfo.name}:`,
-            pageError,
+            pageError
           );
           continue;
         }
       }
 
-      console.log(
-        `Total pages successfully merged: ${successCount} out of ${allPages.length}`,
-      );
+      console.log(`Total pages successfully merged: ${successCount} out of ${allPages.length}`);
 
       // Check if we successfully merged any pages
       if (mergedPdf.getPageCount() === 0 || successCount === 0) {
         setError(
-          `Could not merge any pages (0/${allPages.length} successful). Check browser console for details. Encrypted PDFs with passwords are not supported.`,
+          `Could not merge any pages (0/${allPages.length} successful). Check browser console for details. Encrypted PDFs with passwords are not supported.`
         );
         setLoading(false);
         return;
@@ -602,10 +572,7 @@ export default function PDFMergeAdvanced() {
       setMergedPdfUrl(newUrl);
 
       // Calculate result stats
-      const totalOriginalSize = files.reduce(
-        (sum, file) => sum + file.file.size,
-        0,
-      );
+      const totalOriginalSize = files.reduce((sum, file) => sum + file.file.size, 0);
       const mergedSize = blob.size;
 
       setResult({
@@ -619,12 +586,11 @@ export default function PDFMergeAdvanced() {
       // Show warning if some pages failed
       if (successCount < allPages.length) {
         console.warn(
-          `Warning: Only ${successCount} out of ${allPages.length} pages were merged successfully.`,
+          `Warning: Only ${successCount} out of ${allPages.length} pages were merged successfully.`
         );
       }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
+      const message = err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
       setError(message);
       console.error("Merge error:", err);
     }
@@ -667,10 +633,7 @@ export default function PDFMergeAdvanced() {
               ? t("pdfProcessing.merge.encrypted")
               : `${file.pages.length} ${t("pdfProcessing.merge.pages")}`}
           </span>
-          <GripHorizontal
-            className="text-gray-300 cursor-grab active:cursor-grabbing"
-            size={16}
-          />
+          <GripHorizontal className="text-gray-300 cursor-grab active:cursor-grabbing" size={16} />
         </div>
 
         {/* Thumbnail Section */}
@@ -698,9 +661,7 @@ export default function PDFMergeAdvanced() {
               <p className="text-red-500 text-sm font-medium">
                 {t("pdfProcessing.merge.noPreview")}
               </p>
-              <p className="text-gray-500 text-xs mt-1">
-                Cannot display content
-              </p>
+              <p className="text-gray-500 text-xs mt-1">Cannot display content</p>
             </div>
           )}
           {/* Hover Overlay */}
@@ -758,10 +719,7 @@ export default function PDFMergeAdvanced() {
         </div>
 
         {/* Footer */}
-        <div
-          className="p-2 border-t bg-gray-50 rounded-b-xl text-xs truncate"
-          title={file.name}
-        >
+        <div className="p-2 border-t bg-gray-50 rounded-b-xl text-xs truncate" title={file.name}>
           {file.name}
         </div>
       </div>
@@ -787,10 +745,7 @@ export default function PDFMergeAdvanced() {
         <span className="text-xs font-bold text-gray-500 bg-white px-2 py-0.5 rounded border">
           {index + 1}
         </span>
-        <GripHorizontal
-          className="text-gray-300 cursor-grab active:cursor-grabbing"
-          size={16}
-        />
+        <GripHorizontal className="text-gray-300 cursor-grab active:cursor-grabbing" size={16} />
       </div>
 
       {/* Thumbnail */}
@@ -865,9 +820,7 @@ export default function PDFMergeAdvanced() {
             {loading ? (
               <Loader size="sm" text="Updating preview..." />
             ) : (
-              <span className="text-sm text-green-600">
-                ✓ Real-time updates
-              </span>
+              <span className="text-sm text-green-600">✓ Real-time updates</span>
             )}
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
@@ -971,12 +924,7 @@ export default function PDFMergeAdvanced() {
                 </p>
                 <p className="text-sm text-gray-500">
                   {files.reduce((total, file) => total + file.file.size, 0) > 0
-                    ? formatBytes(
-                        files.reduce(
-                          (total, file) => total + file.file.size,
-                          0,
-                        ),
-                      )
+                    ? formatBytes(files.reduce((total, file) => total + file.file.size, 0))
                     : "0 Bytes"}
                 </p>
                 <p className="text-xs text-gray-400 mt-2">
@@ -988,9 +936,7 @@ export default function PDFMergeAdvanced() {
                 <p className="text-gray-700 font-medium mb-1">
                   {t("pdfProcessing.merge.clickOrDrag")}
                 </p>
-                <p className="text-sm text-gray-500">
-                  {t("pdfProcessing.merge.supportedFormats")}
-                </p>
+                <p className="text-sm text-gray-500">{t("pdfProcessing.merge.supportedFormats")}</p>
               </div>
             )}
           </label>
@@ -1017,9 +963,7 @@ export default function PDFMergeAdvanced() {
           className="w-full lg:w-1/2 mx-auto bg-primary/90 text-white py-4 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {loading ? (
-            <>
-              {t("pdfProcessing.merge.merging")}
-            </>
+            <>{t("pdfProcessing.merge.merging")}</>
           ) : (
             <>
               <Download className="mr-2 h-6 w-6" />
@@ -1050,28 +994,18 @@ export default function PDFMergeAdvanced() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  Files Merged
-                </p>
-                <p className="text-gray-800 font-bold text-xl">
-                  {result.filesCount}
-                </p>
+                <p className="text-gray-500 text-xs font-medium mb-1">Files Merged</p>
+                <p className="text-gray-800 font-bold text-xl">{result.filesCount}</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  Original Size
-                </p>
+                <p className="text-gray-500 text-xs font-medium mb-1">Original Size</p>
                 <p className="text-gray-800 font-bold text-xl">
                   {formatBytes(result.originalSize)}
                 </p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  Merged Size
-                </p>
-                <p className="text-gray-800 font-bold text-xl">
-                  {formatBytes(result.mergedSize)}
-                </p>
+                <p className="text-gray-500 text-xs font-medium mb-1">Merged Size</p>
+                <p className="text-gray-800 font-bold text-xl">{formatBytes(result.mergedSize)}</p>
               </div>
             </div>
           </div>

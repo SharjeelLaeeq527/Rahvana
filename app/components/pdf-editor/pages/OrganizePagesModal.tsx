@@ -23,12 +23,8 @@ interface OrganizePagesModalProps {
   onClose: () => void;
 }
 
-export function OrganizePagesModal({
-  isOpen,
-  onClose,
-}: OrganizePagesModalProps) {
-  const { pdfFile, pageModifications, setPageModifications, setCurrentPage } =
-    usePDFStore();
+export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps) {
+  const { pdfFile, pageModifications, setPageModifications, setCurrentPage } = usePDFStore();
   const { t } = useLanguage();
   const { showToast } = useToast();
   const [pages, setPages] = useState<PageItem[]>([]);
@@ -147,9 +143,7 @@ export function OrganizePagesModal({
     const newRotation = (page.rotation + 90) % 360;
 
     // Update rotation immediately for instant feedback
-    setPages(
-      pages.map((p, i) => (i === index ? { ...p, rotation: newRotation } : p)),
-    );
+    setPages(pages.map((p, i) => (i === index ? { ...p, rotation: newRotation } : p)));
 
     // Regenerate thumbnail with new rotation
     try {
@@ -171,10 +165,8 @@ export function OrganizePagesModal({
         // Update thumbnail with rotated version
         setPages((prev) =>
           prev.map((p, i) =>
-            i === index
-              ? { ...p, thumbnail: canvas.toDataURL(), rotation: newRotation }
-              : p,
-          ),
+            i === index ? { ...p, thumbnail: canvas.toDataURL(), rotation: newRotation } : p
+          )
         );
       }
     } catch (error) {
@@ -232,17 +224,14 @@ export function OrganizePagesModal({
   const handleBulkDelete = () => {
     if (selectedPages.size === 0) return;
     if (selectedPages.size >= pages.length) {
-      showToast(
-        t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"),
-        "error",
-      );
+      showToast(t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"), "error");
       return;
     }
     if (
       confirm(
         t("pdfProcessing.editor.organizePages.bulkDeleteConfirm", {
           count: selectedPages.size,
-        }),
+        })
       )
     ) {
       setPages(pages.filter((_, i) => !selectedPages.has(i)));
@@ -284,10 +273,7 @@ export function OrganizePagesModal({
           <DialogTitle className="text-2xl font-bold">
             {t("pdfProcessing.editor.organizePages.title")}
           </DialogTitle>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -325,7 +311,7 @@ export function OrganizePagesModal({
                   "relative group cursor-move rounded-lg overflow-hidden transition-all hover:scale-105 aspect-3/4",
                   selectedPages.has(index)
                     ? "ring-4 ring-blue-500 shadow-lg"
-                    : "hover:shadow-lg border-2 border-gray-200",
+                    : "hover:shadow-lg border-2 border-gray-200"
                 )}
               >
                 {/* Thumbnail */}

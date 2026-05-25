@@ -33,23 +33,25 @@ async function main() {
     range: `${SHEET_NAME}!A1:H1`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
-      values: [[
-        "User Email",
-        "Page / Section",
-        "Page URL",
-        "Feedback Type",
-        "Description",
-        "Attachment",
-        "Status",
-        "Submitted At (PKT)",
-      ]],
+      values: [
+        [
+          "User Email",
+          "Page / Section",
+          "Page URL",
+          "Feedback Type",
+          "Description",
+          "Attachment",
+          "Status",
+          "Submitted At (PKT)",
+        ],
+      ],
     },
   });
   console.log("✅ Headers written");
 
   // 3. Get sheet tab ID
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
-  const tab  = meta.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
+  const tab = meta.data.sheets?.find((s) => s.properties?.title === SHEET_NAME);
   const sheetId = tab?.properties?.sheetId ?? 0;
 
   // 4. Apply formatting
@@ -63,13 +65,18 @@ async function main() {
             range: { sheetId, startRowIndex: 0, endRowIndex: 1 },
             cell: {
               userEnteredFormat: {
-                textFormat: { bold: true, fontSize: 11, foregroundColor: { red: 1, green: 1, blue: 1 } },
-                backgroundColor: { red: 0.05, green: 0.60, blue: 0.60 },
+                textFormat: {
+                  bold: true,
+                  fontSize: 11,
+                  foregroundColor: { red: 1, green: 1, blue: 1 },
+                },
+                backgroundColor: { red: 0.05, green: 0.6, blue: 0.6 },
                 horizontalAlignment: "CENTER",
                 verticalAlignment: "MIDDLE",
               },
             },
-            fields: "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)",
+            fields:
+              "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)",
           },
         },
         // Freeze row 1
@@ -80,19 +87,28 @@ async function main() {
           },
         },
         // Column widths: Email, Page/Section, Page URL, Type, Description, Attachment, Status, Timestamp
-        ...([220, 180, 320, 160, 380, 220, 130, 200] as const).map(
-          (pixelSize, columnIndex) => ({
-            updateDimensionProperties: {
-              range: { sheetId, dimension: "COLUMNS", startIndex: columnIndex, endIndex: columnIndex + 1 },
-              properties: { pixelSize },
-              fields: "pixelSize",
+        ...([220, 180, 320, 160, 380, 220, 130, 200] as const).map((pixelSize, columnIndex) => ({
+          updateDimensionProperties: {
+            range: {
+              sheetId,
+              dimension: "COLUMNS",
+              startIndex: columnIndex,
+              endIndex: columnIndex + 1,
             },
-          }),
-        ),
+            properties: { pixelSize },
+            fields: "pixelSize",
+          },
+        })),
         // Status dropdown for all data rows
         {
           setDataValidation: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 6, endColumnIndex: 7 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 1000,
+              startColumnIndex: 6,
+              endColumnIndex: 7,
+            },
             rule: {
               condition: {
                 type: "ONE_OF_LIST",
@@ -118,7 +134,13 @@ async function main() {
         // Wrap description column (E = index 4)
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 4, endColumnIndex: 5 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 1000,
+              startColumnIndex: 4,
+              endColumnIndex: 5,
+            },
             cell: { userEnteredFormat: { wrapStrategy: "WRAP", verticalAlignment: "TOP" } },
             fields: "userEnteredFormat(wrapStrategy,verticalAlignment)",
           },

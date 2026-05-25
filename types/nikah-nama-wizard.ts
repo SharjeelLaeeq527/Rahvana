@@ -1,9 +1,4 @@
-export type NikahStepId =
-  | "case_type"
-  | "location"
-  | "roadmap"
-  | "office_finder"
-  | "validation";
+export type NikahStepId = "case_type" | "location" | "roadmap" | "office_finder" | "validation";
 
 export interface NikahWizardState {
   caseType: string | null;

@@ -9,11 +9,7 @@ interface Props {
   onRemindLater: () => void;
 }
 
-export const MfaPromptModal = ({
-  open,
-  onEnable,
-  onRemindLater,
-}: Props) => {
+export const MfaPromptModal = ({ open, onEnable, onRemindLater }: Props) => {
   return (
     <AnimatePresence>
       {open && (
@@ -45,8 +41,7 @@ export const MfaPromptModal = ({
 
             {/* Description */}
             <p className="text-muted-foreground text-center mb-8 leading-relaxed">
-              Add an extra layer of security to your account by enabling
-              two-factor authentication.
+              Add an extra layer of security to your account by enabling two-factor authentication.
             </p>
 
             {/* Buttons */}

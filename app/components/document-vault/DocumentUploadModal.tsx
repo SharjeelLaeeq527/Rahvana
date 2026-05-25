@@ -4,12 +4,7 @@ import { useState, useRef } from "react";
 import { DocumentDefinition, DocumentRole } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -45,24 +40,14 @@ export function DocumentUploadModal({
     if (file) {
       // Validate file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error(
-          t("documentVaultPage.components.uploadModal.fileSizeError"),
-        );
+        toast.error(t("documentVaultPage.components.uploadModal.fileSizeError"));
         return;
       }
 
       // Validate file type
-      const allowedTypes = [
-        "application/pdf",
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-      ];
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
       if (!allowedTypes.includes(file.type)) {
-        toast.error(
-          t("documentVaultPage.components.uploadModal.fileTypeError"),
-        );
+        toast.error(t("documentVaultPage.components.uploadModal.fileTypeError"));
         return;
       }
 
@@ -91,24 +76,14 @@ export function DocumentUploadModal({
     if (file) {
       // Validate file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error(
-          t("documentVaultPage.components.uploadModal.fileSizeError"),
-        );
+        toast.error(t("documentVaultPage.components.uploadModal.fileSizeError"));
         return;
       }
 
       // Validate file type
-      const allowedTypes = [
-        "application/pdf",
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-      ];
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
       if (!allowedTypes.includes(file.type)) {
-        toast.error(
-          t("documentVaultPage.components.uploadModal.fileTypeError"),
-        );
+        toast.error(t("documentVaultPage.components.uploadModal.fileTypeError"));
         return;
       }
 
@@ -119,9 +94,7 @@ export function DocumentUploadModal({
   const handleUpload = async () => {
     if (!selectedFile) return;
     if (!config) {
-      toast.error(
-        "Document Vault is not configured. Please refresh the page and try again.",
-      );
+      toast.error("Document Vault is not configured. Please refresh the page and try again.");
       console.error("[DocumentUploadModal] Upload blocked: config is null");
       return;
     }
@@ -171,10 +144,7 @@ export function DocumentUploadModal({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error ||
-            t("documentVaultPage.components.uploadModal.uploadFailed"),
-        );
+        throw new Error(data.error || t("documentVaultPage.components.uploadModal.uploadFailed"));
       }
 
       toast.success(
@@ -183,7 +153,7 @@ export function DocumentUploadModal({
           : t("documentVaultPage.components.uploadModal.uploadSuccess"),
         {
           id: "upload-progress",
-        },
+        }
       );
 
       // If this was a replacement, delete the old document
@@ -193,7 +163,7 @@ export function DocumentUploadModal({
           await deleteDocument(replaceDocumentId);
         } catch (delError) {
           console.error("Failed to delete replaced document:", delError);
-          // Don't fail the whole upload if just the deletion fails, 
+          // Don't fail the whole upload if just the deletion fails,
           // but maybe warn the user
         }
       }
@@ -210,7 +180,7 @@ export function DocumentUploadModal({
           : t("documentVaultPage.components.uploadModal.uploadFailed"),
         {
           id: "upload-progress",
-        },
+        }
       );
     } finally {
       setUploading(false);
@@ -226,8 +196,7 @@ export function DocumentUploadModal({
   };
 
   const needsExpirationDate =
-    documentDef.validityType === "user_set" ||
-    documentDef.validityType === "policy_variable";
+    documentDef.validityType === "user_set" || documentDef.validityType === "policy_variable";
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -248,9 +217,7 @@ export function DocumentUploadModal({
               onClick={handleClose}
             >
               <X className="w-4 h-4 text-slate-500" />
-              <span className="sr-only">
-                {t("documentVaultPage.components.uploadModal.close")}
-              </span>
+              <span className="sr-only">{t("documentVaultPage.components.uploadModal.close")}</span>
             </Button>
           </DialogHeader>
 
@@ -259,8 +226,7 @@ export function DocumentUploadModal({
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3 text-sm text-amber-800 shadow-sm">
               <span className="text-lg leading-none mt-0.5">⏳</span>
               <span className="leading-relaxed">
-                Document Vault is initializing&hellip; please wait a moment
-                before uploading.
+                Document Vault is initializing&hellip; please wait a moment before uploading.
               </span>
             </div>
           )}
@@ -288,9 +254,7 @@ export function DocumentUploadModal({
                       <Upload className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <p className="font-bold text-[#0c1b33] break-all">
-                        {selectedFile.name}
-                      </p>
+                      <p className="font-bold text-[#0c1b33] break-all">{selectedFile.name}</p>
                       <p className="text-xs text-brand/80">
                         ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                       </p>
@@ -317,9 +281,7 @@ export function DocumentUploadModal({
                       Click to Upload or Drag and Drop
                     </p>
                     <p className="text-xs text-[#6b8097]">
-                      {t(
-                        "documentVaultPage.components.uploadModal.allowedTypes",
-                      )}
+                      {t("documentVaultPage.components.uploadModal.allowedTypes")}
                     </p>
                   </div>
                 )}
@@ -369,12 +331,8 @@ export function DocumentUploadModal({
                 />
                 <p className="text-[11px] text-[#6b8097] italic">
                   {documentDef.validityType === "user_set"
-                    ? t(
-                        "documentVaultPage.components.uploadModal.expirationRequired",
-                      )
-                    : t(
-                        "documentVaultPage.components.uploadModal.expirationOptional",
-                      )}
+                    ? t("documentVaultPage.components.uploadModal.expirationRequired")
+                    : t("documentVaultPage.components.uploadModal.expirationOptional")}
                 </p>
               </div>
             )}
@@ -387,9 +345,7 @@ export function DocumentUploadModal({
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder={t(
-                  "documentVaultPage.components.uploadModal.notesPlaceholder",
-                )}
+                placeholder={t("documentVaultPage.components.uploadModal.notesPlaceholder")}
                 rows={3}
                 className="rounded-lg border-[#d0e4f7] focus:ring-brand/20 resize-none"
               />
@@ -401,9 +357,7 @@ export function DocumentUploadModal({
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-brand" />
                   <p className="text-xs font-bold uppercase tracking-wider text-blue-900/60">
-                    {t(
-                      "documentVaultPage.components.uploadModal.namingPreview",
-                    )}
+                    {t("documentVaultPage.components.uploadModal.namingPreview")}
                   </p>
                 </div>
 
@@ -423,22 +377,16 @@ export function DocumentUploadModal({
                         t("documentVaultPage.components.uploadModal.petitioner")
                       : role === "BENEFICIARY"
                         ? config.beneficiaryName ||
-                          t(
-                            "documentVaultPage.components.uploadModal.beneficiary",
-                          )
+                          t("documentVaultPage.components.uploadModal.beneficiary")
                         : config.jointSponsorName ||
-                          t(
-                            "documentVaultPage.components.uploadModal.jointSponsor",
-                          )}
+                          t("documentVaultPage.components.uploadModal.jointSponsor")}
                   </p>
                 </div>
 
                 {/* Standardized filename */}
                 <div className="grid grid-cols-1 gap-2">
                   <p className="text-[11px] font-bold text-blue-800/50 uppercase tracking-tight">
-                    {t(
-                      "documentVaultPage.components.uploadModal.standardizedFilename",
-                    )}
+                    {t("documentVaultPage.components.uploadModal.standardizedFilename")}
                   </p>
                   <div className="bg-white/80 border border-blue-100 p-3 rounded-lg shadow-inner group">
                     <code className="text-xs text-blue-900 font-mono break-all leading-relaxed">
@@ -466,9 +414,7 @@ export function DocumentUploadModal({
                   </span>
                 </div>
 
-                {(!config.caseId ||
-                  !config.petitionerName ||
-                  !config.beneficiaryName) && (
+                {(!config.caseId || !config.petitionerName || !config.beneficiaryName) && (
                   <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-start gap-2 shadow-sm">
                     <span className="text-xs">⚠️</span>
                     <p className="text-[11px] text-red-800 leading-relaxed font-medium">
@@ -482,9 +428,7 @@ export function DocumentUploadModal({
             {/* Security Guarantee */}
             <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 border border-[#d0e4f7]/40 rounded-xl text-[#3a4f63] text-xs font-semibold shadow-sm">
               <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>
-                {t("documentVaultPage.components.uploadModal.securityNotice")}
-              </span>
+              <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
             </div>
 
             {/* Actions */}
@@ -515,8 +459,10 @@ export function DocumentUploadModal({
                   </div>
                 ) : !config ? (
                   "Initializing..."
+                ) : replaceDocumentId ? (
+                  "Replace Version"
                 ) : (
-                  replaceDocumentId ? "Replace Version" : "Upload Document"
+                  "Upload Document"
                 )}
               </Button>
             </div>

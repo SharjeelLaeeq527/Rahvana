@@ -3,23 +3,11 @@
 import React, { useState } from "react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  TestTube,
-  RefreshCw,
-  Calendar,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
+import { TestTube, RefreshCw, Calendar, Clock, AlertCircle } from "lucide-react";
 
 /**
  * Testing panel for notification system - only shows in development
@@ -28,12 +16,8 @@ import {
 export function NotificationTestPanel() {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const {
-    uploadedDocuments,
-    updateDocument,
-    refreshNotifications,
-    getNotifications,
-  } = useDocumentVaultStore();
+  const { uploadedDocuments, updateDocument, refreshNotifications, getNotifications } =
+    useDocumentVaultStore();
 
   // Only show in development
   if (process.env.NODE_ENV === "production") {
@@ -83,9 +67,7 @@ export function NotificationTestPanel() {
     });
 
     refreshNotifications(t);
-    toast.success(
-      t("documentVaultPage.components.notificationTestPanel.testExpiryApplied"),
-    );
+    toast.success(t("documentVaultPage.components.notificationTestPanel.testExpiryApplied"));
   };
 
   const resetExpiryDates = () => {
@@ -102,18 +84,12 @@ export function NotificationTestPanel() {
     });
 
     refreshNotifications(t);
-    toast.success(
-      t(
-        "documentVaultPage.components.notificationTestPanel.expiryResetSuccess",
-      ),
-    );
+    toast.success(t("documentVaultPage.components.notificationTestPanel.expiryResetSuccess"));
   };
 
   const setSpecificExpiry = (days: number) => {
     if (uploadedDocuments.length === 0) {
-      toast.error(
-        t("documentVaultPage.components.notificationTestPanel.noDocsError"),
-      );
+      toast.error(t("documentVaultPage.components.notificationTestPanel.noDocsError"));
       return;
     }
 
@@ -127,17 +103,12 @@ export function NotificationTestPanel() {
       updateDocument(docWithExpiry.id, { expirationDate: newExpiry });
       refreshNotifications(t);
       toast.success(
-        t(
-          "documentVaultPage.components.notificationTestPanel.setExpirySuccess",
-          { days: days.toString() },
-        ),
+        t("documentVaultPage.components.notificationTestPanel.setExpirySuccess", {
+          days: days.toString(),
+        })
       );
     } else {
-      toast.error(
-        t(
-          "documentVaultPage.components.notificationTestPanel.noDocsWithExpiryError",
-        ),
-      );
+      toast.error(t("documentVaultPage.components.notificationTestPanel.noDocsWithExpiryError"));
     }
   };
 
@@ -153,9 +124,7 @@ export function NotificationTestPanel() {
           className="bg-purple-600 text-white hover:bg-purple-700 border-purple-600"
         >
           <TestTube className="h-4 w-4 mr-2" />
-          {t(
-            "documentVaultPage.components.notificationTestPanel.testNotifications",
-          )}
+          {t("documentVaultPage.components.notificationTestPanel.testNotifications")}
         </Button>
       </div>
     );
@@ -177,9 +146,7 @@ export function NotificationTestPanel() {
             </Button>
           </div>
           <CardDescription>
-            {t(
-              "documentVaultPage.components.notificationTestPanel.devModeDesc",
-            )}
+            {t("documentVaultPage.components.notificationTestPanel.devModeDesc")}
           </CardDescription>
         </CardHeader>
 
@@ -188,9 +155,7 @@ export function NotificationTestPanel() {
           <div className="p-3 bg-muted rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">
-                {t(
-                  "documentVaultPage.components.notificationTestPanel.activeNotifications",
-                )}
+                {t("documentVaultPage.components.notificationTestPanel.activeNotifications")}
               </span>
               <Badge variant="secondary">{notifications.length}</Badge>
             </div>
@@ -205,9 +170,7 @@ export function NotificationTestPanel() {
                 <span className="text-yellow-600 font-semibold">
                   {notifications.filter((n) => n.severity === "warning").length}
                 </span>{" "}
-                {t(
-                  "documentVaultPage.components.notificationTestPanel.warnings",
-                )}
+                {t("documentVaultPage.components.notificationTestPanel.warnings")}
               </div>
               <div>
                 <span className="text-blue-600 font-semibold">
@@ -221,9 +184,7 @@ export function NotificationTestPanel() {
           {/* Quick Actions */}
           <div>
             <h4 className="text-sm font-semibold mb-2">
-              {t(
-                "documentVaultPage.components.notificationTestPanel.quickActions",
-              )}
+              {t("documentVaultPage.components.notificationTestPanel.quickActions")}
             </h4>
             <div className="space-y-2">
               <Button
@@ -233,14 +194,10 @@ export function NotificationTestPanel() {
                 onClick={simulateExpiryScenarios}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t(
-                  "documentVaultPage.components.notificationTestPanel.simulateAll",
-                )}
+                {t("documentVaultPage.components.notificationTestPanel.simulateAll")}
               </Button>
               <div className="text-xs text-muted-foreground pl-6">
-                {t(
-                  "documentVaultPage.components.notificationTestPanel.simulateDesc",
-                )}
+                {t("documentVaultPage.components.notificationTestPanel.simulateDesc")}
               </div>
             </div>
           </div>
@@ -248,42 +205,22 @@ export function NotificationTestPanel() {
           {/* Set Specific Expiry */}
           <div>
             <h4 className="text-sm font-semibold mb-2">
-              {t(
-                "documentVaultPage.components.notificationTestPanel.setSpecific",
-              )}
+              {t("documentVaultPage.components.notificationTestPanel.setSpecific")}
             </h4>
             <div className="grid grid-cols-2 gap-2">
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setSpecificExpiry(-5)}
-              >
+              <Button size="sm" variant="destructive" onClick={() => setSpecificExpiry(-5)}>
                 <AlertCircle className="h-3 w-3 mr-1" />
-                {t(
-                  "documentVaultPage.components.notificationTestPanel.expiredDays",
-                )}
+                {t("documentVaultPage.components.notificationTestPanel.expiredDays")}
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setSpecificExpiry(3)}
-              >
+              <Button size="sm" variant="destructive" onClick={() => setSpecificExpiry(3)}>
                 <Clock className="h-3 w-3 mr-1" />
                 {t("documentVaultPage.components.notificationTestPanel.3days")}
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setSpecificExpiry(15)}
-              >
+              <Button size="sm" variant="outline" onClick={() => setSpecificExpiry(15)}>
                 <Calendar className="h-3 w-3 mr-1" />
                 {t("documentVaultPage.components.notificationTestPanel.15days")}
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setSpecificExpiry(45)}
-              >
+              <Button size="sm" variant="outline" onClick={() => setSpecificExpiry(45)}>
                 <Calendar className="h-3 w-3 mr-1" />
                 {t("documentVaultPage.components.notificationTestPanel.45days")}
               </Button>
@@ -292,27 +229,16 @@ export function NotificationTestPanel() {
 
           {/* Reset */}
           <div>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="w-full"
-              onClick={resetExpiryDates}
-            >
+            <Button size="sm" variant="secondary" className="w-full" onClick={resetExpiryDates}>
               {t("documentVaultPage.components.notificationTestPanel.resetAll")}
             </Button>
           </div>
 
           {/* Info */}
           <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
-            <strong>
-              {t("documentVaultPage.components.notificationTestPanel.note")}
-            </strong>{" "}
-            {t(
-              "documentVaultPage.components.notificationTestPanel.tempChangeDesc",
-            )}{" "}
-            {t(
-              "documentVaultPage.components.notificationTestPanel.refreshRestore",
-            )}
+            <strong>{t("documentVaultPage.components.notificationTestPanel.note")}</strong>{" "}
+            {t("documentVaultPage.components.notificationTestPanel.tempChangeDesc")}{" "}
+            {t("documentVaultPage.components.notificationTestPanel.refreshRestore")}
           </div>
         </CardContent>
       </Card>

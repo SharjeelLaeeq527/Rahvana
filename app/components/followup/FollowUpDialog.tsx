@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -25,10 +20,7 @@ interface FollowUpDialogProps {
   isOpen: boolean;
   onClose: () => void;
   selectedItems: FormSelections;
-  onResponse: (response: {
-    difficultyDoc: string;
-    answers: Record<string, boolean>;
-  }) => void;
+  onResponse: (response: { difficultyDoc: string; answers: Record<string, boolean> }) => void;
 }
 
 const GUIDE_MAPPING: Record<string, string> = {
@@ -51,9 +43,9 @@ export function FollowUpDialog({
   onResponse,
 }: FollowUpDialogProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [difficultyType, setDifficultyType] = useState<
-    "gathering" | "uploading" | "other" | ""
-  >("");
+  const [difficultyType, setDifficultyType] = useState<"gathering" | "uploading" | "other" | "">(
+    ""
+  );
   const [difficultyDoc, setDifficultyDoc] = useState<string>("");
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
 
@@ -82,7 +74,7 @@ export function FollowUpDialog({
           startX: rect.left + rect.width / 2,
           startY: rect.top + rect.height / 2,
         },
-      }),
+      })
     );
 
     // Actively save the guide via backend
@@ -108,8 +100,7 @@ export function FollowUpDialog({
     // Step 0: Upload Check
     list.push({
       type: "boolean",
-      question:
-        "Have you uploaded all the requested documents to the portal or submitted them?",
+      question: "Have you uploaded all the requested documents to the portal or submitted them?",
       key: "has_uploaded",
       yesLabel: "Yes, I have",
       noLabel: "No, not yet",
@@ -149,8 +140,7 @@ export function FollowUpDialog({
     } else if (answers["has_uploaded"] === false) {
       list.push({
         type: "boolean",
-        question:
-          "Are you finding any difficulty in gathering or submitting your documents?",
+        question: "Are you finding any difficulty in gathering or submitting your documents?",
         key: "has_difficulty",
         yesLabel: "Yes, I need help",
         noLabel: "No, I'm good",
@@ -204,8 +194,7 @@ export function FollowUpDialog({
   }, [answers, difficultyType]);
 
   const activeStep = steps[currentStep] || steps[steps.length - 1];
-  const isLastStep =
-    currentStep === steps.length - 1 && activeStep?.type === "cta";
+  const isLastStep = currentStep === steps.length - 1 && activeStep?.type === "cta";
 
   // Filter and deduplicate selected items to show only those marked as true
   const relevantDocs = useMemo(() => {
@@ -218,17 +207,12 @@ export function FollowUpDialog({
       if (value !== true || key === "admin_processing") return;
 
       let baseKey = key;
-      let label = key
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
+      let label = key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
       if (key.includes("birth_cert")) {
         baseKey = "birth_certificate";
         label = "Birth Certificate";
-      } else if (
-        key.includes("divorce_cert") ||
-        key.includes("divorce_decree")
-      ) {
+      } else if (key.includes("divorce_cert") || key.includes("divorce_decree")) {
         baseKey = "divorce_certificate";
         label = "Divorce Certificate";
       } else if (key.includes("i864")) {
@@ -236,11 +220,7 @@ export function FollowUpDialog({
         label = "Affidavit of Support (I-864)";
       }
 
-      const guideKey = GUIDE_MAPPING[key]
-        ? key
-        : GUIDE_MAPPING[baseKey]
-          ? baseKey
-          : key;
+      const guideKey = GUIDE_MAPPING[key] ? key : GUIDE_MAPPING[baseKey] ? baseKey : key;
       const isMapped = !!GUIDE_MAPPING[guideKey];
 
       if (!docsMap.has(baseKey)) {
@@ -322,14 +302,12 @@ export function FollowUpDialog({
                   </p>
                   <div className="flex gap-4 max-w-sm mx-auto w-full">
                     <Button
-                      variant={
-                        answers[activeStep.key] === true ? "default" : "outline"
-                      }
+                      variant={answers[activeStep.key] === true ? "default" : "outline"}
                       className={cn(
                         "flex-1 h-20 text-lg font-medium transition-all",
                         answers[activeStep.key] === true
                           ? "bg-primary hover:bg-primary/90 border-primary shadow-md scale-105"
-                          : "border-slate-200 text-slate-600 hover:border-primary hover:text-primary",
+                          : "border-slate-200 text-slate-600 hover:border-primary hover:text-primary"
                       )}
                       onClick={() => {
                         handleAnswerChange(activeStep.key, true);
@@ -339,16 +317,12 @@ export function FollowUpDialog({
                       {activeStep.yesLabel || "Yes, I need help"}
                     </Button>
                     <Button
-                      variant={
-                        answers[activeStep.key] === false
-                          ? "default"
-                          : "outline"
-                      }
+                      variant={answers[activeStep.key] === false ? "default" : "outline"}
                       className={cn(
                         "flex-1 h-20 text-lg font-medium transition-all",
                         answers[activeStep.key] === false
                           ? "bg-primary hover:bg-primary/90 border-primary shadow-md scale-105"
-                          : "border-slate-200 text-slate-600 hover:border-primary hover:text-primary",
+                          : "border-slate-200 text-slate-600 hover:border-primary hover:text-primary"
                       )}
                       onClick={() => {
                         handleAnswerChange(activeStep.key, false);
@@ -374,7 +348,7 @@ export function FollowUpDialog({
                         className={cn(
                           "h-14 justify-start px-6 text-base font-medium transition-all border-slate-200 hover:border-primary hover:bg-primary/10",
                           difficultyType === opt.value &&
-                            "border-primary bg-primary/10 text-primary font-bold",
+                            "border-primary bg-primary/10 text-primary font-bold"
                         )}
                         onClick={() => selectDifficultyType(opt.value)}
                       >
@@ -398,10 +372,7 @@ export function FollowUpDialog({
                   </div>
 
                   <div className="max-w-md mx-auto w-full space-y-4">
-                    <Select
-                      value={difficultyDoc}
-                      onValueChange={setDifficultyDoc}
-                    >
+                    <Select value={difficultyDoc} onValueChange={setDifficultyDoc}>
                       <SelectTrigger className="h-14 bg-white border-slate-200 shadow-sm text-base">
                         <SelectValue placeholder="Select a document..." />
                       </SelectTrigger>
@@ -415,9 +386,7 @@ export function FollowUpDialog({
                             {doc.label}
                           </SelectItem>
                         ))}
-                        <SelectItem value="other">
-                          Other / Not in list
-                        </SelectItem>
+                        <SelectItem value="other">Other / Not in list</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -427,16 +396,12 @@ export function FollowUpDialog({
                         const selectedDocObj = isOther
                           ? null
                           : relevantDocs.find((d) => d.id === difficultyDoc);
-                        const hasGuide = isOther
-                          ? true
-                          : !!selectedDocObj?.hasGuide;
+                        const hasGuide = isOther ? true : !!selectedDocObj?.hasGuide;
 
                         return (
                           <div className="p-5 bg-primary/10 border border-primary/20 rounded-xl animate-in zoom-in-95 duration-200 shadow-sm">
                             <p className="text-base text-primary font-medium mb-1">
-                              {hasGuide
-                                ? "We have a guide for this!"
-                                : "Guide Not Available Yet"}
+                              {hasGuide ? "We have a guide for this!" : "Guide Not Available Yet"}
                             </p>
                             <p className="text-sm text-primary leading-relaxed mb-3">
                               {isOther
@@ -452,16 +417,12 @@ export function FollowUpDialog({
                             >
                               <Link
                                 href={
-                                  hasGuide &&
-                                  selectedDocObj?.href &&
-                                  selectedDocObj.href !== "#"
+                                  hasGuide && selectedDocObj?.href && selectedDocObj.href !== "#"
                                     ? selectedDocObj.href
                                     : "/guides"
                                 }
                               >
-                                {hasGuide
-                                  ? "View Guide"
-                                  : "Browse Available Guides"}
+                                {hasGuide ? "View Guide" : "Browse Available Guides"}
                               </Link>
                             </Button>
 
@@ -483,128 +444,107 @@ export function FollowUpDialog({
                 </div>
               )}
 
-              {activeStep.type === "info" &&
-                activeStep.key === "ceac_instructions" && (
-                  <div className="space-y-6 max-w-lg mx-auto w-full">
-                    <div className="text-center">
-                      <p className="text-xl font-bold text-slate-900">
-                        {activeStep.question}
-                      </p>
-                      <p className="text-sm text-slate-500 mt-1">
-                        If your case is still under administrative processing,
-                        here is what you can do.
-                      </p>
+              {activeStep.type === "info" && activeStep.key === "ceac_instructions" && (
+                <div className="space-y-6 max-w-lg mx-auto w-full">
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-slate-900">{activeStep.question}</p>
+                    <p className="text-sm text-slate-500 mt-1">
+                      If your case is still under administrative processing, here is what you can
+                      do.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        1
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">Check CEAC Portal</p>
+                        <p className="text-sm text-slate-600">
+                          Visit the Consular Electronic Application Center (CEAC) website to check
+                          your exact visa status using your case number.
+                        </p>
+                        <Link
+                          href="https://ceac.state.gov/CEACStatTracker/Status.aspx"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-bold text-primary hover:underline mt-1 inline-block"
+                        >
+                          Go to CEAC Portal →
+                        </Link>
+                      </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                          1
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800">
-                            Check CEAC Portal
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            Visit the Consular Electronic Application Center
-                            (CEAC) website to check your exact visa status using
-                            your case number.
-                          </p>
-                          <Link
-                            href="https://ceac.state.gov/CEACStatTracker/Status.aspx"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm font-bold text-primary hover:underline mt-1 inline-block"
-                          >
-                            Go to CEAC Portal →
-                          </Link>
-                        </div>
+                    <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        2
                       </div>
-
-                      <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                          2
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800">
-                            Be Patient
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            Administrative processing typically takes 60 days
-                            but can vary.
-                          </p>
-                        </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">Be Patient</p>
+                        <p className="text-sm text-slate-600">
+                          Administrative processing typically takes 60 days but can vary.
+                        </p>
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-              {activeStep.type === "info" &&
-                activeStep.key === "uploading_instructions" && (
-                  <div className="space-y-6 max-w-lg mx-auto w-full">
-                    <div className="text-center">
-                      <p className="text-xl font-bold text-slate-900">
-                        {activeStep.question}
-                      </p>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Follow these steps to submit your documents correctly.
-                      </p>
+              {activeStep.type === "info" && activeStep.key === "uploading_instructions" && (
+                <div className="space-y-6 max-w-lg mx-auto w-full">
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-slate-900">{activeStep.question}</p>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Follow these steps to submit your documents correctly.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        1
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">Check Your Refusal Letter</p>
+                        <p className="text-sm text-slate-600">
+                          The letter specifies if you should upload to CEAC or send via Courier.
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                          1
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800">
-                            Check Your Refusal Letter
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            The letter specifies if you should upload to CEAC or
-                            send via Courier.
-                          </p>
-                        </div>
+                    <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        2
                       </div>
-
-                      <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                          2
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800">
-                            Prepare Your Scans
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            PDF is best. Ensure files are under 2MB and clearly
-                            readable.
-                          </p>
-                        </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">Prepare Your Scans</p>
+                        <p className="text-sm text-slate-600">
+                          PDF is best. Ensure files are under 2MB and clearly readable.
+                        </p>
                       </div>
+                    </div>
 
-                      <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                          3
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800">
-                            Detailed Instructions
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            Need a detailed walkthrough of the CEAC upload
-                            process?
-                          </p>
-                          <Link
-                            href="/guides/how-to-upload-ceac"
-                            className="text-sm font-bold text-primary hover:underline mt-1 inline-block"
-                          >
-                            View Uploading Guide →
-                          </Link>
-                        </div>
+                    <div className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                      <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        3
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">Detailed Instructions</p>
+                        <p className="text-sm text-slate-600">
+                          Need a detailed walkthrough of the CEAC upload process?
+                        </p>
+                        <Link
+                          href="/guides/how-to-upload-ceac"
+                          className="text-sm font-bold text-primary hover:underline mt-1 inline-block"
+                        >
+                          View Uploading Guide →
+                        </Link>
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
               {activeStep.type === "cta" && (
                 <div className="space-y-6">
@@ -617,12 +557,8 @@ export function FollowUpDialog({
                         // <XIcon className="w-10 h-10" />
                       )}
                     </div>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {activeStep.title}
-                    </p>
-                    <p className="text-slate-600 px-8 text-lg">
-                      {activeStep.question}
-                    </p>
+                    <p className="text-2xl font-bold text-slate-900">{activeStep.title}</p>
+                    <p className="text-slate-600 px-8 text-lg">{activeStep.question}</p>
                   </div>
 
                   {activeStep.key !== "encourage_upload" && (
@@ -659,7 +595,7 @@ export function FollowUpDialog({
             disabled={currentStep === 0}
             className={cn(
               "sm:flex-1 text-slate-500 hover:text-slate-700",
-              currentStep === 0 && "opacity-0 invisible",
+              currentStep === 0 && "opacity-0 invisible"
             )}
           >
             Back
@@ -668,14 +604,11 @@ export function FollowUpDialog({
           <Button
             className={cn(
               "sm:flex-1 text-white shadow-sm transition-all h-12 text-base",
-              isLastStep
-                ? "bg-primary hover:bg-primary/90"
-                : "bg-primary hover:bg-primary/90",
+              isLastStep ? "bg-primary hover:bg-primary/90" : "bg-primary hover:bg-primary/90"
             )}
             onClick={handleNext}
             disabled={
-              (activeStep.type === "boolean" &&
-                answers[activeStep.key] === undefined) ||
+              (activeStep.type === "boolean" && answers[activeStep.key] === undefined) ||
               (activeStep.type === "choice" && difficultyType === "")
             }
           >

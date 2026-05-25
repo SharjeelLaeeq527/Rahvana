@@ -9,11 +9,13 @@ Document Vault ek **immigration document management system** hai jo **Pakistan s
 ## Main Features (Kya kya features hain?)
 
 ### 1. **Personalized Document Checklist**
+
 - Aapki visa category (jaise IR-1, CR-1, F1, etc.) ke mutabiq documents ki list banata hai
 - Agar pehle marriage hui thi, joint sponsor hai, ya koi aur special case hai toh usske mutabiq documents add ho jate hain
 - Total **30+ different types of documents** track hote hain
 
 ### 2. **Smart Document Organization**
+
 - Documents ko **8 categories** mein organize karta hai:
   - Civil Documents (Birth Certificate, Nikah Nama, CNIC, etc.)
   - Financial Documents (Tax Returns, Employment Letter, Bank Statements)
@@ -25,12 +27,14 @@ Document Vault ek **immigration document management system** hai jo **Pakistan s
   - Miscellaneous (DS-260, I-130 Approval, etc.)
 
 ### 3. **Automatic File Naming**
+
 - Har file ka naam automatically standardized format mein save hota hai
 - Format: `CASE_ID_ROLE_PERSON_NAME_DOCUMENT_KEY_DATE_VERSION.extension`
 - Example: `IOE123456789_BENEFICIARY_AHMED_KHAN_NIKAH_NAMA_2025-12-23_v1.pdf`
 - Ye naming convention se sab documents organized rehte hain
 
 ### 4. **Expiration Tracking**
+
 - Automatically track karta hai ke konsi document kab expire ho rahi hai
 - Color-coded warnings:
   - 🔴 Red: Expired documents
@@ -39,6 +43,7 @@ Document Vault ek **immigration document management system** hai jo **Pakistan s
 - Notifications deta hai agar koi document expire hone wali ho
 
 ### 5. **Document Acquisition Wizard**
+
 - Har document ke liye **step-by-step guide** hai
 - Pakistan-specific information:
   - Kahan se milegi ye document?
@@ -48,11 +53,13 @@ Document Vault ek **immigration document management system** hai jo **Pakistan s
 - Links to NADRA, U.S. Embassy, aur other resources
 
 ### 6. **Export Functionality**
+
 - Ek click mein saari documents **ZIP file** mein download ho jati hain
 - Category-wise folders mein organized
 - Metadata file bhi include hoti hai
 
 ### 7. **Progress Tracking**
+
 - Real-time dashboard dikhata hai:
   - Kitni documents upload hui hain
   - Kitni missing hain
@@ -64,6 +71,7 @@ Document Vault ek **immigration document management system** hai jo **Pakistan s
 ## Database Structure (Database mein kya store hota hai?)
 
 ### Table 1: `document_vault_config`
+
 **Ye table user ki configuration store karta hai**
 
 ```sql
@@ -82,6 +90,7 @@ CREATE TABLE document_vault_config (
 ```
 
 **Example data:**
+
 ```json
 {
   "user_id": "abc-123",
@@ -97,6 +106,7 @@ CREATE TABLE document_vault_config (
 ```
 
 ### Table 2: `documents`
+
 **Ye table har uploaded document ki details store karta hai**
 
 ```sql
@@ -122,6 +132,7 @@ CREATE TABLE documents (
 ```
 
 **Example data:**
+
 ```json
 {
   "id": "doc-xyz-789",
@@ -149,6 +160,7 @@ CREATE TABLE documents (
 ### 1. **Types aur Definitions** (`lib/document-vault/`)
 
 #### `types.ts` - Saare TypeScript types
+
 - `VisaCategory`: Visa types (IR-1, CR-1, F1, etc.)
 - `DocumentCategory`: Document categories (CIVIL, FINANCIAL, etc.)
 - `DocumentRole`: Kaun upload kar raha hai (PETITIONER, BENEFICIARY, etc.)
@@ -157,7 +169,9 @@ CREATE TABLE documents (
 - `DocumentVaultConfig`: User ki configuration ka structure
 
 #### `document-definitions.ts` - 30+ Document Definitions
+
 Har document ki puri details:
+
 ```typescript
 {
   id: 'nikah-nama',
@@ -188,6 +202,7 @@ Har document ki puri details:
 ```
 
 #### `personalization-engine.ts` - Rules Engine
+
 Ye decide karta hai ke kis user ko konsi documents chahiye:
 
 ```typescript
@@ -202,7 +217,7 @@ function isDocumentRequired(doc, visaCategory, scenarioFlags) {
   // Check scenario flags
   if (doc.requiredWhen.scenarioFlags) {
     // Agar pehle marriage hui thi toh divorce papers chahiye
-    if (doc.key === 'DIVORCE_DECREE') {
+    if (doc.key === "DIVORCE_DECREE") {
       return scenarioFlags.prior_marriage_beneficiary === true;
     }
   }
@@ -212,6 +227,7 @@ function isDocumentRequired(doc, visaCategory, scenarioFlags) {
 ```
 
 #### `file-utils.ts` - File Naming aur Validation
+
 ```typescript
 function generateStandardizedFilename(params) {
   // CASE_ID_ROLE_NAME_DOCTYPE_DATE_VERSION.ext
@@ -221,18 +237,18 @@ function generateStandardizedFilename(params) {
     sanitizeName(params.personName),
     params.docKey,
     formatDate(params.date),
-    `v${params.version}`
+    `v${params.version}`,
   ];
 
-  return parts.join('_') + '.' + params.originalExtension;
+  return parts.join("_") + "." + params.originalExtension;
 }
 
 function isValidFileType(filename, mimeType) {
-  const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+  const allowed = ["pdf", "jpg", "jpeg", "png", "doc", "docx"];
   const ext = getExtension(filename);
 
   if (!allowed.includes(ext)) {
-    return { valid: false, message: 'File type not supported' };
+    return { valid: false, message: "File type not supported" };
   }
 
   return { valid: true };
@@ -240,22 +256,21 @@ function isValidFileType(filename, mimeType) {
 ```
 
 #### `storage-database.ts` - Database Operations (SERVER-SIDE)
+
 Supabase database ke saath interaction:
 
 ```typescript
 class DocumentDatabaseStorage {
   // Document save karna database mein
   async saveDocument(document: UploadedDocument) {
-    const result = await supabase
-      .from('documents')
-      .upsert({
-        id: document.id,
-        user_id: document.userId,
-        document_def_id: document.documentDefId,
-        original_filename: document.originalFilename,
-        standardized_filename: document.standardizedFilename,
-        // ... aur sab fields
-      });
+    const result = await supabase.from("documents").upsert({
+      id: document.id,
+      user_id: document.userId,
+      document_def_id: document.documentDefId,
+      original_filename: document.originalFilename,
+      standardized_filename: document.standardizedFilename,
+      // ... aur sab fields
+    });
 
     return result;
   }
@@ -263,38 +278,33 @@ class DocumentDatabaseStorage {
   // User ki saari documents lana
   async getAllDocuments(userId: string) {
     const { data } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('user_id', userId)
-      .order('uploaded_at', { ascending: false });
+      .from("documents")
+      .select("*")
+      .eq("user_id", userId)
+      .order("uploaded_at", { ascending: false });
 
     return data;
   }
 
   // Document delete karna
   async deleteDocument(documentId: string, userId: string) {
-    await supabase
-      .from('documents')
-      .delete()
-      .eq('id', documentId)
-      .eq('user_id', userId);
+    await supabase.from("documents").delete().eq("id", documentId).eq("user_id", userId);
   }
 
   // Config save karna
   async saveVaultConfig(config: DocumentVaultConfig) {
-    await supabase
-      .from('document_vault_config')
-      .upsert({
-        user_id: config.userId,
-        visa_category: config.visaCategory,
-        scenario_flags: config.scenarioFlags,
-        // ... baqi fields
-      });
+    await supabase.from("document_vault_config").upsert({
+      user_id: config.userId,
+      visa_category: config.visaCategory,
+      scenario_flags: config.scenarioFlags,
+      // ... baqi fields
+    });
   }
 }
 ```
 
 #### `storage-server.ts` - File System Storage
+
 Files ko actually hard disk pe save karna:
 
 ```typescript
@@ -302,7 +312,7 @@ class DocumentFileManager {
   // File save karna
   async saveFile(buffer, userId, documentId, filename) {
     // Path: uploads/document-vault/{userId}/{documentId}/{filename}
-    const dir = path.join('uploads', 'document-vault', userId, documentId);
+    const dir = path.join("uploads", "document-vault", userId, documentId);
 
     // Directory banao agar nahi hai
     await fs.mkdir(dir, { recursive: true });
@@ -316,30 +326,31 @@ class DocumentFileManager {
 
   // File read karna (download ke liye)
   async getFile(userId, documentId, filename) {
-    const filePath = path.join('uploads', 'document-vault', userId, documentId, filename);
+    const filePath = path.join("uploads", "document-vault", userId, documentId, filename);
     const buffer = await fs.readFile(filePath);
     return buffer;
   }
 
   // File delete karna
   async deleteFile(userId, documentId) {
-    const dir = path.join('uploads', 'document-vault', userId, documentId);
+    const dir = path.join("uploads", "document-vault", userId, documentId);
     await fs.rm(dir, { recursive: true });
   }
 }
 ```
 
 #### `expiration-tracker.ts` - Expiry Tracking
+
 ```typescript
 function calculateExpirationDate(documentDef, uploadDate) {
-  if (documentDef.validityType === 'fixed_days') {
+  if (documentDef.validityType === "fixed_days") {
     // Fixed validity period
     const expiryDate = new Date(uploadDate);
     expiryDate.setDate(expiryDate.getDate() + documentDef.validityDays);
     return expiryDate;
   }
 
-  if (documentDef.validityType === 'user_set') {
+  if (documentDef.validityType === "user_set") {
     // User manually set karega
     return null;
   }
@@ -348,24 +359,25 @@ function calculateExpirationDate(documentDef, uploadDate) {
 }
 
 function updateDocumentStatuses(documents, documentDefs) {
-  return documents.map(doc => {
+  return documents.map((doc) => {
     if (doc.expirationDate) {
       const now = new Date();
       const daysUntilExpiry = daysBetween(now, doc.expirationDate);
 
       if (daysUntilExpiry < 0) {
-        return { ...doc, status: 'EXPIRED', isExpired: true };
+        return { ...doc, status: "EXPIRED", isExpired: true };
       } else if (daysUntilExpiry <= 30) {
-        return { ...doc, status: 'NEEDS_ATTENTION' };
+        return { ...doc, status: "NEEDS_ATTENTION" };
       }
     }
 
-    return { ...doc, status: 'UPLOADED' };
+    return { ...doc, status: "UPLOADED" };
   });
 }
 ```
 
 #### `store.ts` - Zustand State Management (CLIENT-SIDE)
+
 Frontend state management:
 
 ```typescript
@@ -377,11 +389,11 @@ const useDocumentVaultStore = create((set, get) => ({
   // Initialize karna - pehli baar load pe
   initialize: async (userId) => {
     // Config load karo API se
-    const configResponse = await fetch('/api/documents/config');
+    const configResponse = await fetch("/api/documents/config");
     const config = await configResponse.json();
 
     // Documents load karo API se
-    const docsResponse = await fetch('/api/documents/list');
+    const docsResponse = await fetch("/api/documents/list");
     const documents = await docsResponse.json();
 
     // Required documents calculate karo
@@ -395,12 +407,12 @@ const useDocumentVaultStore = create((set, get) => ({
     const { uploadedDocuments, requiredDocuments } = get();
 
     const total = requiredDocuments.length;
-    const uploaded = uploadedDocuments.filter(d => d.status === 'UPLOADED').length;
+    const uploaded = uploadedDocuments.filter((d) => d.status === "UPLOADED").length;
     const missing = total - uploaded;
-    const expiring = uploadedDocuments.filter(d => d.status === 'NEEDS_ATTENTION').length;
+    const expiring = uploadedDocuments.filter((d) => d.status === "NEEDS_ATTENTION").length;
 
-    return { total, uploaded, missing, expiring, percentComplete: (uploaded/total)*100 };
-  }
+    return { total, uploaded, missing, expiring, percentComplete: (uploaded / total) * 100 };
+  },
 }));
 ```
 
@@ -409,34 +421,36 @@ const useDocumentVaultStore = create((set, get) => ({
 ### 2. **API Routes** (`app/api/documents/`)
 
 #### `upload/route.ts` - Document Upload API
+
 **Ye API document upload karta hai**
 
 ```typescript
-POST /api/documents/upload
+POST / api / documents / upload;
 
 // Step-by-step flow:
 async function POST(request) {
   // 1. User authenticate karo
   const user = await supabase.auth.getUser();
-  if (!user) return error('Unauthorized');
+  if (!user) return error("Unauthorized");
 
   // 2. Form data parse karo
   const formData = await request.formData();
-  const file = formData.get('file');
-  const documentDefId = formData.get('documentDefId');
-  const role = formData.get('role'); // BENEFICIARY/PETITIONER
-  const personName = formData.get('personName');
+  const file = formData.get("file");
+  const documentDefId = formData.get("documentDefId");
+  const role = formData.get("role"); // BENEFICIARY/PETITIONER
+  const personName = formData.get("personName");
 
   // 3. File validate karo
   if (!isValidFileType(file.name, file.type)) {
-    return error('Invalid file type');
+    return error("Invalid file type");
   }
-  if (!isValidFileSize(file.size, 10)) { // 10MB limit
-    return error('File too large');
+  if (!isValidFileSize(file.size, 10)) {
+    // 10MB limit
+    return error("File too large");
   }
 
   // 4. Document definition dhundo
-  const documentDef = ALL_DOCUMENTS.find(d => d.id === documentDefId);
+  const documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
 
   // 5. Version number calculate karo
   const existingDocs = await db.getDocumentsByDefId(documentDefId, user.id);
@@ -444,13 +458,13 @@ async function POST(request) {
 
   // 6. Standardized filename banao
   const filename = generateStandardizedFilename({
-    caseId: 'IOE123456789',
-    role: 'BENEFICIARY',
-    personName: 'Ahmed Khan',
-    docKey: 'NIKAH_NAMA',
+    caseId: "IOE123456789",
+    role: "BENEFICIARY",
+    personName: "Ahmed Khan",
+    docKey: "NIKAH_NAMA",
     date: new Date(),
     version: 1,
-    originalExtension: 'pdf'
+    originalExtension: "pdf",
   });
   // Result: IOE123456789_BENEFICIARY_AHMED_KHAN_NIKAH_NAMA_2025-12-23_v1.pdf
 
@@ -478,7 +492,7 @@ async function POST(request) {
     version,
     expirationDate,
     isExpired: false,
-    status: 'UPLOADED',
+    status: "UPLOADED",
   };
 
   // 10. Database mein save karo
@@ -490,8 +504,9 @@ async function POST(request) {
 ```
 
 #### `[id]/download/route.ts` - Document Download API
+
 ```typescript
-GET /api/documents/{id}/download
+GET / api / documents / { id } / download;
 
 async function GET(request, { params }) {
   // 1. User authenticate karo
@@ -501,7 +516,7 @@ async function GET(request, { params }) {
   const db = new DocumentDatabaseStorage(supabase);
   const document = await db.getDocument(params.id, user.id);
 
-  if (!document) return error('Document not found');
+  if (!document) return error("Document not found");
 
   // 3. File read karo filesystem se
   const fileManager = new DocumentFileManager();
@@ -514,17 +529,18 @@ async function GET(request, { params }) {
   // 4. File download response bhejo
   return new Response(buffer, {
     headers: {
-      'Content-Type': document.mimeType,
-      'Content-Disposition': `attachment; filename="${document.standardizedFilename}"`
-    }
+      "Content-Type": document.mimeType,
+      "Content-Disposition": `attachment; filename="${document.standardizedFilename}"`,
+    },
   });
 }
 ```
 
 #### `[id]/route.ts` - Delete aur Update
+
 ```typescript
 // Delete document
-DELETE /api/documents/{id}
+DELETE / api / documents / { id };
 
 async function DELETE(request, { params }) {
   const user = await supabase.auth.getUser();
@@ -538,11 +554,11 @@ async function DELETE(request, { params }) {
   // Database se delete karo
   await db.deleteDocument(params.id, user.id);
 
-  return success({ message: 'Deleted' });
+  return success({ message: "Deleted" });
 }
 
 // Update document
-PATCH /api/documents/{id}
+PATCH / api / documents / { id };
 
 async function PATCH(request, { params }) {
   const updates = await request.json();
@@ -551,14 +567,15 @@ async function PATCH(request, { params }) {
   await db.updateDocument(params.id, user.id, {
     expirationDate: updates.expirationDate,
     notes: updates.notes,
-    status: updates.status
+    status: updates.status,
   });
 
-  return success({ message: 'Updated' });
+  return success({ message: "Updated" });
 }
 ```
 
 #### `export/route.ts` - Export All Documents as ZIP
+
 ```typescript
 GET /api/documents/export
 
@@ -607,9 +624,10 @@ async function GET(request) {
 ```
 
 #### `config/route.ts` - Configuration API
+
 ```typescript
 // Get config
-GET /api/documents/config
+GET / api / documents / config;
 
 async function GET(request) {
   const user = await supabase.auth.getUser();
@@ -619,7 +637,7 @@ async function GET(request) {
 }
 
 // Save config
-POST /api/documents/config
+POST / api / documents / config;
 
 async function POST(request) {
   const user = await supabase.auth.getUser();
@@ -632,16 +650,17 @@ async function POST(request) {
     scenarioFlags: config.scenarioFlags,
     caseId: config.caseId,
     petitionerName: config.petitionerName,
-    beneficiaryName: config.beneficiaryName
+    beneficiaryName: config.beneficiaryName,
   });
 
-  return success({ message: 'Config saved' });
+  return success({ message: "Config saved" });
 }
 ```
 
 #### `list/route.ts` - List All Documents
+
 ```typescript
-GET /api/documents/list
+GET / api / documents / list;
 
 async function GET(request) {
   const user = await supabase.auth.getUser();
@@ -656,6 +675,7 @@ async function GET(request) {
 ### 3. **React Components** (`app/components/document-vault/`)
 
 #### `ConfigurationWizard.tsx` - Initial Setup
+
 **User pehli baar jab document vault kholta hai toh ye wizard dikhti hai**
 
 ```typescript
@@ -719,6 +739,7 @@ function ConfigurationWizard({ userId, onComplete }) {
 ```
 
 #### `DocumentCard.tsx` - Document Display Card
+
 ```typescript
 function DocumentCard({ documentDef, uploadedDoc, onUpload, onDownload, onDelete }) {
   // Status color decide karo
@@ -772,6 +793,7 @@ function DocumentCard({ documentDef, uploadedDoc, onUpload, onDownload, onDelete
 ```
 
 #### `DocumentUploadModal.tsx` - Upload Modal
+
 ```typescript
 function DocumentUploadModal({ open, onClose, documentDef, onUploadComplete }) {
   const [file, setFile] = useState(null);
@@ -833,6 +855,7 @@ function DocumentUploadModal({ open, onClose, documentDef, onUploadComplete }) {
 ```
 
 #### `DocumentWizard.tsx` - Acquisition Guide
+
 ```typescript
 function DocumentWizard({ open, onClose, documentDef }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -979,6 +1002,7 @@ function DocumentVaultPage() {
 ## Complete User Flow (User experience kaise hai?)
 
 ### Flow 1: Initial Setup
+
 ```
 1. User login karta hai
 2. Document Vault page pe jata hai (/document-vault)
@@ -999,6 +1023,7 @@ function DocumentVaultPage() {
 ```
 
 ### Flow 2: Document Upload
+
 ```
 1. Dashboard pe user ko missing documents dikhtihain (red cards)
 2. User "Birth Certificate" card pe click karta hai
@@ -1028,6 +1053,7 @@ function DocumentVaultPage() {
 ```
 
 ### Flow 3: Document Expiry Tracking
+
 ```
 1. Background mein har minute expiration checker chalta hai
 2. Police Certificate ke liye:
@@ -1043,6 +1069,7 @@ function DocumentVaultPage() {
 ```
 
 ### Flow 4: Document Download
+
 ```
 1. User uploaded document card pe "Download" button click karta hai
 2. Frontend API call karta hai: GET /api/documents/{id}/download
@@ -1056,6 +1083,7 @@ function DocumentVaultPage() {
 ```
 
 ### Flow 5: Export All Documents
+
 ```
 1. User "Export All" button click karta hai
 2. Frontend API call karta hai: GET /api/documents/export
@@ -1083,6 +1111,7 @@ function DocumentVaultPage() {
 **Problem:** Har visa type ke liye alag documents chahiye. Plus special cases mein extra documents bhi chahiye.
 
 **Solution:**
+
 ```typescript
 // User ka config
 const config = {
@@ -1117,6 +1146,7 @@ generateRequiredDocuments(config);
 **Problem:** Users different names dete hain files ko. Organization mushkil ho jati hai.
 
 **Solution:** Standardized naming convention
+
 ```
 Format:
 {CASE_ID}_{ROLE}_{PERSON_NAME}_{DOCUMENT_KEY}_{DATE}_{VERSION}.{extension}
@@ -1140,6 +1170,7 @@ Benefits:
 **4 types of validity:**
 
 **Type 1: None (Kabhi expire nahi hoti)**
+
 ```typescript
 Birth Certificate, Nikah Nama, Divorce Decree
 validityType: 'none'
@@ -1147,6 +1178,7 @@ expirationDate: null
 ```
 
 **Type 2: Fixed Days (Fixed period validity)**
+
 ```typescript
 Police Certificate:
   validityType: 'fixed_days'
@@ -1162,6 +1194,7 @@ Police Certificate:
 ```
 
 **Type 3: User Set (User khud set karega)**
+
 ```typescript
 CNIC:
   validityType: 'user_set'
@@ -1170,6 +1203,7 @@ CNIC:
 ```
 
 **Type 4: Policy Variable (Case-specific)**
+
 ```typescript
 I-864 Affidavit:
   validityType: 'policy_variable'
@@ -1203,6 +1237,7 @@ But purane versions bhi accessible hain
 **Solution:** Step-by-step guide har document ke liye
 
 **Example: Police Certificate Wizard**
+
 ```typescript
 Step 1: Apply at Local Police Station
   Description: Visit your local police station or apply through NADRA...
@@ -1244,38 +1279,39 @@ Step 2: Get English Translation
 ```
 
 **Notification generation:**
+
 ```typescript
 function generateNotifications(uploadedDocs, requiredDocs) {
   const notifications = [];
 
   // Check missing documents
-  requiredDocs.forEach(reqDoc => {
-    const uploaded = uploadedDocs.find(ud => ud.documentDefId === reqDoc.id);
+  requiredDocs.forEach((reqDoc) => {
+    const uploaded = uploadedDocs.find((ud) => ud.documentDefId === reqDoc.id);
     if (!uploaded) {
       notifications.push({
-        type: 'DOC_MISSING',
-        severity: 'warning',
-        message: `${reqDoc.name} is required but not yet uploaded.`
+        type: "DOC_MISSING",
+        severity: "warning",
+        message: `${reqDoc.name} is required but not yet uploaded.`,
       });
     }
   });
 
   // Check expiring documents
-  uploadedDocs.forEach(doc => {
+  uploadedDocs.forEach((doc) => {
     if (doc.expirationDate) {
       const daysLeft = daysBetween(new Date(), doc.expirationDate);
 
       if (daysLeft < 0) {
         notifications.push({
-          type: 'DOC_EXPIRED',
-          severity: 'error',
-          message: `${doc.name} has expired.`
+          type: "DOC_EXPIRED",
+          severity: "error",
+          message: `${doc.name} has expired.`,
         });
       } else if (daysLeft <= 30) {
         notifications.push({
-          type: 'DOC_EXPIRING_SOON',
-          severity: 'warning',
-          message: `${doc.name} will expire in ${daysLeft} days.`
+          type: "DOC_EXPIRING_SOON",
+          severity: "warning",
+          message: `${doc.name} will expire in ${daysLeft} days.`,
         });
       }
     }
@@ -1312,6 +1348,7 @@ CREATE POLICY "Users can view their own documents"
 ```
 
 **Indexes for Performance:**
+
 ```sql
 -- Fast queries ke liye indexes
 CREATE INDEX idx_documents_user_id ON documents(user_id);
@@ -1329,6 +1366,7 @@ CREATE INDEX idx_documents_status ON documents(status);
 ## File Storage Architecture
 
 **Local Filesystem Storage:**
+
 ```
 uploads/
 └── document-vault/
@@ -1347,6 +1385,7 @@ uploads/
 ```
 
 **Why this structure?**
+
 - **Isolation:** Har user ki files alag directory mein
 - **Organization:** Har document ki apni directory
 - **Scalability:** Easily migrate kar sakte hain cloud storage pe later
@@ -1357,6 +1396,7 @@ uploads/
 ## Summary (Kya seekha?)
 
 ### Document Vault kya karta hai?
+
 1. ✓ User ki visa category ke mutabiq documents list banata hai
 2. ✓ Documents upload, download, delete kar sakte ho
 3. ✓ Automatic standardized filename banata hai
@@ -1366,6 +1406,7 @@ uploads/
 7. ✓ Export kar sakte ho ZIP file mein
 
 ### Kahan kya store hota hai?
+
 1. **Database (Supabase):**
    - `document_vault_config`: User ki configuration
    - `documents`: Document metadata (filename, size, expiry date, etc.)
@@ -1374,6 +1415,7 @@ uploads/
    - Actual files: `uploads/document-vault/{userId}/{documentId}/{filename}`
 
 ### Code kahan likha hai?
+
 1. **Backend (API Routes):** `app/api/documents/`
    - `upload/route.ts`: Upload document
    - `[id]/download/route.ts`: Download document
@@ -1401,6 +1443,7 @@ uploads/
 4. **Main Page:** `app/(main)/document-vault/page.tsx`
 
 ### Feature kaise kaam karta hai?
+
 ```
 User Login
   ↓
@@ -1434,6 +1477,7 @@ Export All (ZIP with category folders)
 ---
 
 **Yaad rakho:**
+
 - Ye feature **Pakistan se U.S. visa applicants** ke liye hai
 - Documents **automatically organized** rehti hain
 - **Expiry tracking** automatic hai

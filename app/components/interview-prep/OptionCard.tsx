@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface OptionCardProps {
   value: string;
@@ -10,22 +10,14 @@ interface OptionCardProps {
   className?: string;
 }
 
-export const OptionCard = ({
-  value,
-  label,
-  isSelected,
-  onSelect,
-  className,
-}: OptionCardProps) => {
+export const OptionCard = ({ value, label, isSelected, onSelect, className }: OptionCardProps) => {
   return (
     <div
       onClick={() => onSelect(value)}
       className={cn(
-        'cursor-pointer rounded-lg border-2 p-4 min-h-[80px] flex items-center justify-center transition-all duration-200',
-        'hover:border-teal-400 hover:bg-teal-50',
-        isSelected
-          ? 'border-teal-600 bg-teal-50'
-          : 'border-gray-200',
+        "cursor-pointer rounded-lg border-2 p-4 min-h-[80px] flex items-center justify-center transition-all duration-200",
+        "hover:border-teal-400 hover:bg-teal-50",
+        isSelected ? "border-teal-600 bg-teal-50" : "border-gray-200",
         className
       )}
     >

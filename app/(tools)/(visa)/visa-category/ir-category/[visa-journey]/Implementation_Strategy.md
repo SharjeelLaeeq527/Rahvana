@@ -23,6 +23,7 @@ CONFIG FILE STORES (NOT in DB):
 ## **📊 Example to Clarify**
 
 ### **WITHOUT Config Approach (❌ Heavy DB)**
+
 ```
 If 1000 users all do IR1:
 - 1000 journey records
@@ -33,6 +34,7 @@ DB size: HUGE, redundant data 🚫
 ```
 
 ### **WITH Config Approach (✅ Lean DB)**
+
 ```
 Config file in backend memory:
 - 1 copy of IR1 structure (3 chapters, 14 steps)
@@ -50,13 +52,15 @@ DB size: SMALL, only unique user data ✅
 ## **🔄 The Correct Flow**
 
 ### **Step 1: Load Config (Server Startup)**
+
 ```typescript
 // Backend loads config ONCE
-const ir1Config = require('config/journeys/ir1-roadmap.json');
+const ir1Config = require("config/journeys/ir1-roadmap.json");
 // Kept in backend memory (not in DB)
 ```
 
 ### **Step 2: User Creates Journey**
+
 ```typescript
 // User clicks "Start IR1 Journey"
 // Backend:
@@ -67,6 +71,7 @@ const ir1Config = require('config/journeys/ir1-roadmap.json');
 ```
 
 ### **Step 3: Database Contains Only This**
+
 ```
 journeys table:
 ├── id: journey-1, user_id: user-1, journey_type: IR1, status: in_progress
@@ -87,6 +92,7 @@ steps table (only for user-1's chapters):
 ---
 
 ### **Approach: Backend Config + DB (RECOMMENDED)**
+
 ```
 Backend config file (not in DB):
 {
@@ -113,23 +119,25 @@ Database (only user-specific):
 - Real-time updates
 - Consistency across all devices
 ```
+
 ---
 
 ## **📈 Database Size Comparison**
 
 ### **For 1000 users, 100 doing IR1, 50 doing F1, 50 doing H1B:**
 
-| Approach | journeys | chapters | steps | Total Records | DB Size |
-|----------|----------|----------|-------|---------------|---------|
-| **Config + DB** | 200 | 450 | 2,800 | **3,450** | **~2 MB** ✅ |
-| **Frontend JSON** | 200 | 450 | 2,800 | **3,450** | **~2 MB** + JSON duplication | ❌ |
-| **Pure DB** | 200 | 450 | 2,800 | **3,450** | **~5 MB** + redundant | ❌ |
+| Approach          | journeys | chapters | steps | Total Records | DB Size                      |
+| ----------------- | -------- | -------- | ----- | ------------- | ---------------------------- | --- |
+| **Config + DB**   | 200      | 450      | 2,800 | **3,450**     | **~2 MB** ✅                 |
+| **Frontend JSON** | 200      | 450      | 2,800 | **3,450**     | **~2 MB** + JSON duplication | ❌  |
+| **Pure DB**       | 200      | 450      | 2,800 | **3,450**     | **~5 MB** + redundant        | ❌  |
 
 ---
 
 ## **🎯 What You Should Do**
 
 ### **Create JSON**
+
 ```
 /config/journeys/
 ├── ir1-roadmap.json (structure only, NOT in DB)
@@ -137,6 +145,7 @@ Database (only user-specific):
 ```
 
 ### **Store in Database**
+
 ```
 journeys → user-specific journey records
 chapters → instances created from config
@@ -148,16 +157,16 @@ case_data → user's decisions & inputs
 
 ## **💡 Why This is Better Than Frontend JSON**
 
-| Concern | Frontend JSON | Backend Config + DB |
-|---------|---------------|-------------------|
-| User data separation | ❌ All on client | ✅ Secure on server |
-| Real-time changes | ❌ Stale cache | ✅ Live updates |
-| Customization | ❌ All users same | ✅ Per-user rules |
-| Validation | ❌ Client-side | ✅ Server-side |
-| Audit trail | ❌ None | ✅ Full history |
-| Adding journey types | ❌ Need redeploy | ✅ Just add config |
-| Performance | ❌ Download JSON | ✅ One API call |
-| Data consistency | ❌ Device-dependent | ✅ Single source |
+| Concern              | Frontend JSON       | Backend Config + DB |
+| -------------------- | ------------------- | ------------------- |
+| User data separation | ❌ All on client    | ✅ Secure on server |
+| Real-time changes    | ❌ Stale cache      | ✅ Live updates     |
+| Customization        | ❌ All users same   | ✅ Per-user rules   |
+| Validation           | ❌ Client-side      | ✅ Server-side      |
+| Audit trail          | ❌ None             | ✅ Full history     |
+| Adding journey types | ❌ Need redeploy    | ✅ Just add config  |
+| Performance          | ❌ Download JSON    | ✅ One API call     |
+| Data consistency     | ❌ Device-dependent | ✅ Single source    |
 
 ---
 
@@ -250,29 +259,29 @@ case_data → user's decisions & inputs
 
 ## **📋 Field Definitions**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `journey_type` | string | ✅ | 'IR1', 'F1', 'H1B', etc. |
-| `journey_name` | string | ✅ | Human-friendly name |
-| `journey_description` | string | ✅ | What this journey is about |
-| `total_estimated_months` | number | ✅ | Overall duration estimate |
-| `chapters[].chapter_key` | string | ✅ | Unique ID: 'chapter_1', 'chapter_2' |
-| `chapters[].chapter_number` | number | ✅ | Sequential: 1, 2, 3 |
-| `chapters[].chapter_name` | string | ✅ | Display name |
-| `chapters[].chapter_description` | string | ✅ | What happens in this chapter |
-| `chapters[].estimated_duration_months` | number | ✅ | How long this chapter takes |
-| `chapters[].display_order` | number | ✅ | Order to show (1, 2, 3, ...) |
-| `chapters[].steps[].step_key` | string | ✅ | Unique ID: 'step_1_1', 'step_1_2' |
-| `chapters[].steps[].step_number` | number | ✅ | Sequential within chapter: 1, 2, 3 |
-| `chapters[].steps[].step_name` | string | ✅ | Display name |
-| `chapters[].steps[].step_description` | string | ✅ | What user needs to do |
-| `chapters[].steps[].step_type` | string | ✅ | 'informational', 'form_fillable', 'form_submit', 'awaiting_response', 'document_upload', 'appointment_scheduling', 'review', 'decision' |
-| `chapters[].steps[].tool_integration` | string\|null | ❌ | Tool to launch: 'autofill_i130', 'interview_prep', 'case_strength', or null |
-| `chapters[].steps[].dependencies` | array | ✅ | [step_keys] that must complete first: `["step_1_1"]` or `[]` for none |
-| `chapters[].steps[].visible_when` | object | ✅ | Conditions for visibility: `{}` (always visible) or `{"filing_method": "online"}` |
-| `chapters[].steps[].estimated_duration_days` | number | ✅ | How many days this step takes |
-| `chapters[].steps[].is_required` | boolean | ✅ | Can user skip this step? |
-| `chapters[].steps[].display_order` | number | ✅ | Order within chapter |
+| Field                                        | Type         | Required | Description                                                                                                                             |
+| -------------------------------------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `journey_type`                               | string       | ✅       | 'IR1', 'F1', 'H1B', etc.                                                                                                                |
+| `journey_name`                               | string       | ✅       | Human-friendly name                                                                                                                     |
+| `journey_description`                        | string       | ✅       | What this journey is about                                                                                                              |
+| `total_estimated_months`                     | number       | ✅       | Overall duration estimate                                                                                                               |
+| `chapters[].chapter_key`                     | string       | ✅       | Unique ID: 'chapter_1', 'chapter_2'                                                                                                     |
+| `chapters[].chapter_number`                  | number       | ✅       | Sequential: 1, 2, 3                                                                                                                     |
+| `chapters[].chapter_name`                    | string       | ✅       | Display name                                                                                                                            |
+| `chapters[].chapter_description`             | string       | ✅       | What happens in this chapter                                                                                                            |
+| `chapters[].estimated_duration_months`       | number       | ✅       | How long this chapter takes                                                                                                             |
+| `chapters[].display_order`                   | number       | ✅       | Order to show (1, 2, 3, ...)                                                                                                            |
+| `chapters[].steps[].step_key`                | string       | ✅       | Unique ID: 'step_1_1', 'step_1_2'                                                                                                       |
+| `chapters[].steps[].step_number`             | number       | ✅       | Sequential within chapter: 1, 2, 3                                                                                                      |
+| `chapters[].steps[].step_name`               | string       | ✅       | Display name                                                                                                                            |
+| `chapters[].steps[].step_description`        | string       | ✅       | What user needs to do                                                                                                                   |
+| `chapters[].steps[].step_type`               | string       | ✅       | 'informational', 'form_fillable', 'form_submit', 'awaiting_response', 'document_upload', 'appointment_scheduling', 'review', 'decision' |
+| `chapters[].steps[].tool_integration`        | string\|null | ❌       | Tool to launch: 'autofill_i130', 'interview_prep', 'case_strength', or null                                                             |
+| `chapters[].steps[].dependencies`            | array        | ✅       | [step_keys] that must complete first: `["step_1_1"]` or `[]` for none                                                                   |
+| `chapters[].steps[].visible_when`            | object       | ✅       | Conditions for visibility: `{}` (always visible) or `{"filing_method": "online"}`                                                       |
+| `chapters[].steps[].estimated_duration_days` | number       | ✅       | How many days this step takes                                                                                                           |
+| `chapters[].steps[].is_required`             | boolean      | ✅       | Can user skip this step?                                                                                                                |
+| `chapters[].steps[].display_order`           | number       | ✅       | Order within chapter                                                                                                                    |
 
 ---
 
@@ -288,7 +297,7 @@ case_data → user's decisions & inputs
 
 2. **Format Rules:**
    - All field names are `snake_case` (not camelCase)
-   - `chapter_key`: must start with "chapter_" (e.g., "chapter_1")
+   - `chapter_key`: must start with "chapter\_" (e.g., "chapter_1")
    - `step_key`: must follow pattern "step_X_Y" where X=chapter#, Y=step# (e.g., "step_1_1")
    - `dependencies`: array of step_keys that must be completed first
    - `visible_when`: empty object `{}` = always visible, or conditions like `{"filing_method": "online"}`

@@ -12,14 +12,8 @@ import {
   ScenarioFlags,
   VisaCategory,
 } from "./types";
-import { 
-  generateRequiredDocuments,
-  getCategoryDisplayName 
-} from "./personalization-engine";
-import {
-  updateDocumentStatuses,
-  generateNotifications,
-} from "./expiration-tracker";
+import { generateRequiredDocuments, getCategoryDisplayName } from "./personalization-engine";
+import { updateDocumentStatuses, generateNotifications } from "./expiration-tracker";
 import { ALL_DOCUMENTS } from "./document-definitions";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
@@ -59,20 +53,13 @@ interface DocumentVaultStore {
 
   // Document operations
   addDocument: (document: UploadedDocument) => void;
-  updateDocument: (
-    documentId: string,
-    updates: Partial<UploadedDocument>,
-  ) => void;
+  updateDocument: (documentId: string, updates: Partial<UploadedDocument>) => void;
   deleteDocument: (documentId: string) => void;
   refreshDocumentStatuses: () => void;
   reloadDocuments: () => Promise<void>;
   addDynamicSlot: (category: string) => void;
   addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
-  renameDynamicSlot: (
-    categoryId: string,
-    slotId: string,
-    newName: string,
-  ) => void;
+  renameDynamicSlot: (categoryId: string, slotId: string, newName: string) => void;
 
   // UI actions
   setSelectedDocument: (documentDefId: string | null) => void;
@@ -84,9 +71,7 @@ interface DocumentVaultStore {
 
   // Notification settings
   updateNotificationConfig: (config: Partial<NotificationConfig>) => void;
-  updateNotificationPreferences: (
-    prefs: Partial<NotificationPreferences>,
-  ) => void;
+  updateNotificationPreferences: (prefs: Partial<NotificationPreferences>) => void;
 
   // Notification actions
   snoozeAllNotifications: (hours: number) => void;
@@ -117,12 +102,8 @@ interface DocumentVaultStore {
   getUnreadNotificationCount: () => number;
   getPendingNotificationCount: () => number;
   getUploadedNotificationCount: () => number;
-  isNotificationDocumentUploaded: (
-    notification: NotificationMessage,
-  ) => boolean;
-  getNotificationStatus: (
-    notification: NotificationMessage,
-  ) => "pending" | "uploaded";
+  isNotificationDocumentUploaded: (notification: NotificationMessage) => boolean;
+  getNotificationStatus: (notification: NotificationMessage) => "pending" | "uploaded";
 
   // Reset
   reset: () => void;
@@ -147,751 +128,698 @@ const initialState = {
   notificationCenterOpen: false,
 };
 
-export const useDocumentVaultStore = create<DocumentVaultStore>()(
-  (set, get) => ({
-    ...initialState,
+export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => ({
+  ...initialState,
 
-    initialize: async (userId: string, t?: TranslateFn) => {
-      set({ isLoading: true });
+  initialize: async (userId: string, t?: TranslateFn) => {
+    set({ isLoading: true });
 
-      try {
-        // Load completed steps from localStorage
-        let completedSteps = {};
-        let notificationConfig = null;
-        let notificationPreferences = null;
+    try {
+      // Load completed steps from localStorage
+      let completedSteps = {};
+      let notificationConfig = null;
+      let notificationPreferences = null;
 
-        if (typeof window !== "undefined") {
-          const stored = localStorage.getItem("document_vault_completed_steps");
-          if (stored) {
-            try {
-              completedSteps = JSON.parse(stored);
-            } catch (e) {
-              console.error("Failed to parse completed steps:", e);
-            }
-          }
-
-          // Load notification config
-          const notifConfigStored = localStorage.getItem(
-            `notification_config_${userId}`,
-          );
-          if (notifConfigStored) {
-            try {
-              notificationConfig = JSON.parse(notifConfigStored);
-            } catch (e) {
-              console.error("Failed to parse notification config:", e);
-            }
-          }
-
-          // Load notification preferences
-          const notifPrefsStored = localStorage.getItem(
-            `notification_preferences_${userId}`,
-          );
-          if (notifPrefsStored) {
-            try {
-              notificationPreferences = JSON.parse(notifPrefsStored);
-            } catch (e) {
-              console.error("Failed to parse notification preferences:", e);
-            }
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("document_vault_completed_steps");
+        if (stored) {
+          try {
+            completedSteps = JSON.parse(stored);
+          } catch (e) {
+            console.error("Failed to parse completed steps:", e);
           }
         }
 
-        // Fetch config from API
-        const configResponse = await fetch("/api/documents/config");
-        const configData = await configResponse.json();
-        const config = configData.config;
-
-        // Fetch documents from API
-        const docsResponse = await fetch("/api/documents/list");
-        const docsData = await docsResponse.json();
-        const documents = docsData.documents || [];
-
-        if (config) {
-          const requiredDocs = generateRequiredDocuments(
-            config,
-            true,
-            documents,
-          ); // Include optional documents
-
-          // Create document definitions map
-          const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
-
-          // Update document statuses
-          const updatedDocs = updateDocumentStatuses(documents, defsMap);
-
-          set({
-            config,
-            uploadedDocuments: updatedDocs,
-            requiredDocuments: requiredDocs,
-            completedSteps,
-            notificationConfig,
-            notificationPreferences,
-            isLoading: false,
-          });
-
-          // Generate initial notifications
-          get().refreshNotifications(t);
-        } else {
-          // No config yet — but still store any documents that already exist
-          const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
-          const updatedDocs = updateDocumentStatuses(documents, defsMap);
-          set({
-            uploadedDocuments: updatedDocs,
-            isLoading: false,
-            completedSteps,
-            notificationConfig,
-            notificationPreferences,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to initialize document vault:", error);
-        set({ isLoading: false });
-      }
-    },
-
-    setConfig: async (config: DocumentVaultConfig) => {
-      // Automatic Consolidation: Merge any duplicate slots with the same name/category
-      if (config.dynamicDocuments) {
-        const cleanedDynamicDocs: Record<string, any[]> = {};
-        
-        Object.entries(config.dynamicDocuments).forEach(([category, slots]) => {
-          const seenNames = new Map<string, string>(); // name -> id
-          const uniqueSlots: any[] = [];
-          
-          slots.forEach(slot => {
-            const normalized = slot.name.trim().toLowerCase();
-            if (seenNames.has(normalized)) {
-              // Duplicate found! Skip adding the duplicate slot
-              return;
-            }
-            seenNames.set(normalized, slot.id);
-            uniqueSlots.push(slot);
-          });
-          
-          cleanedDynamicDocs[category] = uniqueSlots;
-        });
-        
-        config.dynamicDocuments = cleanedDynamicDocs;
-      }
-
-      const { uploadedDocuments } = get();
-      const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
-      const requiredDocs = generateRequiredDocuments(
-        config,
-        true,
-        uploadedDocuments,
-      ); // Include optional documents
-
-      // Set config in store IMMEDIATELY — don't wait for DB
-      set({
-        config,
-        requiredDocuments: requiredDocs,
-      });
-
-      try {
-        // Try to persist to DB (best effort — store is already updated above)
-        await fetch("/api/documents/config", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(config),
-        });
-      } catch (error) {
-        console.error(
-          "Failed to persist config to DB (config still active for session):",
-          error,
-        );
-      }
-    },
-
-    updateScenarioFlags: (flags: Partial<ScenarioFlags>) => {
-      const { config } = get();
-      if (!config) return;
-
-      const updatedConfig = {
-        ...config,
-        scenarioFlags: {
-          ...config.scenarioFlags,
-          ...flags,
-        },
-      };
-
-      get().setConfig(updatedConfig);
-    },
-
-    setVisaCategory: (category: VisaCategory) => {
-      const { config } = get();
-      if (!config) return;
-
-      const updatedConfig = {
-        ...config,
-        visaCategory: category,
-      };
-
-      get().setConfig(updatedConfig);
-    },
-
-    addDocument: (document: UploadedDocument) => {
-      const { uploadedDocuments } = get();
-
-      set({
-        uploadedDocuments: [...uploadedDocuments, document],
-      });
-
-      // Refresh statuses
-      get().refreshDocumentStatuses();
-      // Refresh notifications to include the newly uploaded document
-      get().refreshNotifications();
-    },
-
-    updateDocument: (
-      documentId: string,
-      updates: Partial<UploadedDocument>,
-    ) => {
-      const { uploadedDocuments } = get();
-
-      const updatedDocs = uploadedDocuments.map((doc) =>
-        doc.id === documentId ? { ...doc, ...updates } : doc,
-      );
-
-      set({ uploadedDocuments: updatedDocs });
-
-      // Refresh statuses
-      get().refreshDocumentStatuses();
-      // Refresh notifications
-      get().refreshNotifications();
-    },
-
-    deleteDocument: async (documentId: string) => {
-      set({ isDeletingIds: [...get().isDeletingIds, documentId] });
-      try {
-        const response = await fetch(`/api/documents/${documentId}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to delete document from server");
+        // Load notification config
+        const notifConfigStored = localStorage.getItem(`notification_config_${userId}`);
+        if (notifConfigStored) {
+          try {
+            notificationConfig = JSON.parse(notifConfigStored);
+          } catch (e) {
+            console.error("Failed to parse notification config:", e);
+          }
         }
 
-        const { uploadedDocuments, isDeletingIds } = get();
-        set({
-          uploadedDocuments: uploadedDocuments.filter(
-            (doc) => doc.id !== documentId,
-          ),
-          isDeletingIds: isDeletingIds.filter((id) => id !== documentId),
-        });
-
-        // Refresh statuses and notifications
-        get().refreshDocumentStatuses();
-        get().refreshNotifications();
-      } catch (error) {
-        console.error("Failed to delete document:", error);
-        set({
-          isDeletingIds: get().isDeletingIds.filter((id) => id !== documentId),
-        });
-        throw error; // Re-throw so UI can handle it (e.g. toast)
+        // Load notification preferences
+        const notifPrefsStored = localStorage.getItem(`notification_preferences_${userId}`);
+        if (notifPrefsStored) {
+          try {
+            notificationPreferences = JSON.parse(notifPrefsStored);
+          } catch (e) {
+            console.error("Failed to parse notification preferences:", e);
+          }
+        }
       }
-    },
 
-    refreshDocumentStatuses: () => {
-      const { uploadedDocuments } = get();
-      const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
+      // Fetch config from API
+      const configResponse = await fetch("/api/documents/config");
+      const configData = await configResponse.json();
+      const config = configData.config;
 
-      const updatedDocs = updateDocumentStatuses(uploadedDocuments, defsMap);
+      // Fetch documents from API
+      const docsResponse = await fetch("/api/documents/list");
+      const docsData = await docsResponse.json();
+      const documents = docsData.documents || [];
 
-      set({ uploadedDocuments: updatedDocs });
-    },
+      if (config) {
+        const requiredDocs = generateRequiredDocuments(config, true, documents); // Include optional documents
 
-    reloadDocuments: async () => {
-      const { hasLoadedDocsInitial } = get();
-      if (!hasLoadedDocsInitial) {
-        set({ isReloadingDocs: true });
-      }
-      try {
-        // Fetch documents from API
-        const response = await fetch("/api/documents/list");
-        const data = await response.json();
-        const documents = (data.documents || []).map(
-          (doc: Record<string, unknown>) => ({
-            ...doc,
-            uploadedAt: new Date(doc.uploadedAt as string),
-            expirationDate: doc.expirationDate
-              ? new Date(doc.expirationDate as string)
-              : undefined,
-          }),
-        );
-
+        // Create document definitions map
         const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
+
+        // Update document statuses
         const updatedDocs = updateDocumentStatuses(documents, defsMap);
 
-        // Also regenerate requiredDocuments if config is available
-        const { config } = get();
-        if (config) {
-          const requiredDocs = generateRequiredDocuments(
-            config,
-            true,
-            updatedDocs,
-          );
-          set({
-            uploadedDocuments: updatedDocs,
-            requiredDocuments: requiredDocs,
-            isReloadingDocs: false,
-            hasLoadedDocsInitial: true,
-          });
-        } else {
-          set({
-            uploadedDocuments: updatedDocs,
-            isReloadingDocs: false,
-            hasLoadedDocsInitial: true,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to reload documents:", error);
-        set({ isReloadingDocs: false });
-      }
-    },
-
-    addDynamicSlot: (category: string) => {
-      const { config } = get();
-      if (!config) return;
-
-      const dynamicDocs = config.dynamicDocuments || {};
-      const slots = dynamicDocs[category] || [];
-      const updatedSlots = [...slots];
-
-      // Get consistent naming from personalization-engine
-      const displayName = getCategoryDisplayName(category);
-      const baseName = displayName.replace(/ (Documents|Evidence)$/, "");
-
-      if (updatedSlots.length === 0) {
-        // If empty, materialize the first virtual slot (ID matching the engine's default)
-        // AND add the second one so the user sees a new card immediately.
-        updatedSlots.push({
-          id: `dynamic-${category}-1`,
-          name: `${baseName} Document (1)`,
+        set({
+          config,
+          uploadedDocuments: updatedDocs,
+          requiredDocuments: requiredDocs,
+          completedSteps,
+          notificationConfig,
+          notificationPreferences,
+          isLoading: false,
         });
-        updatedSlots.push({
-          id: `dynamic-${category}-${Date.now()}-2`,
-          name: `${baseName} Document (2)`,
-        });
+
+        // Generate initial notifications
+        get().refreshNotifications(t);
       } else {
-        // Standard addition
-        const newIndex = updatedSlots.length + 1;
-        updatedSlots.push({
-          id: `dynamic-${category}-${Date.now()}`,
-          name: `${baseName} Document (${newIndex})`,
+        // No config yet — but still store any documents that already exist
+        const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
+        const updatedDocs = updateDocumentStatuses(documents, defsMap);
+        set({
+          uploadedDocuments: updatedDocs,
+          isLoading: false,
+          completedSteps,
+          notificationConfig,
+          notificationPreferences,
         });
       }
+    } catch (error) {
+      console.error("Failed to initialize document vault:", error);
+      set({ isLoading: false });
+    }
+  },
 
-      const updatedDynamicDocs = {
-        ...dynamicDocs,
-        [category]: updatedSlots,
-      };
+  setConfig: async (config: DocumentVaultConfig) => {
+    // Automatic Consolidation: Merge any duplicate slots with the same name/category
+    if (config.dynamicDocuments) {
+      const cleanedDynamicDocs: Record<string, any[]> = {};
 
-      const updatedConfig = {
-        ...config,
-        dynamicDocuments: updatedDynamicDocs,
-      };
+      Object.entries(config.dynamicDocuments).forEach(([category, slots]) => {
+        const seenNames = new Map<string, string>(); // name -> id
+        const uniqueSlots: any[] = [];
 
-      get().setConfig(updatedConfig);
-    },
+        slots.forEach((slot) => {
+          const normalized = slot.name.trim().toLowerCase();
+          if (seenNames.has(normalized)) {
+            // Duplicate found! Skip adding the duplicate slot
+            return;
+          }
+          seenNames.set(normalized, slot.id);
+          uniqueSlots.push(slot);
+        });
 
-    addNamedDynamicSlot: async (category: string, name: string) => {
-      const { config } = get();
-      if (!config) return "";
-
-      const dynamicDocs = config.dynamicDocuments || {};
-      const slots = dynamicDocs[category] || [];
-      
-      const normalizedName = name.trim().toLowerCase();
-      
-      // Check if a slot with this name already exists to avoid duplicates
-      const existingSlot = slots.find(s => s.name.trim().toLowerCase() === normalizedName);
-      if (existingSlot) return existingSlot.id;
-
-      const newId = `dynamic-${category}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const updatedSlots = [...slots, { id: newId, name }];
-
-      const updatedDynamicDocs = {
-        ...dynamicDocs,
-        [category]: updatedSlots,
-      };
-
-      const updatedConfig = {
-        ...config,
-        dynamicDocuments: updatedDynamicDocs,
-      };
-
-      await get().setConfig(updatedConfig);
-      return newId;
-    },
-
-    renameDynamicSlot: (category: string, slotId: string, newName: string) => {
-      const { config } = get();
-      if (!config) return;
-
-      const dynamicDocs = config.dynamicDocuments || {};
-      const slots = dynamicDocs[category] || [];
-
-      const updatedSlots = slots.map((slot) =>
-        slot.id === slotId ? { ...slot, name: newName } : slot,
-      );
-
-      const updatedDynamicDocs = {
-        ...dynamicDocs,
-        [category]: updatedSlots,
-      };
-
-      const updatedConfig = {
-        ...config,
-        dynamicDocuments: updatedDynamicDocs,
-      };
-
-      get().setConfig(updatedConfig);
-    },
-
-    setSelectedDocument: (documentDefId: string | null) => {
-      set({ selectedDocumentDefId: documentDefId });
-    },
-
-    openWizard: (documentDefId: string) => {
-      set({
-        selectedDocumentDefId: documentDefId,
-        wizardOpen: true,
+        cleanedDynamicDocs[category] = uniqueSlots;
       });
-    },
 
-    closeWizard: () => {
-      set({
-        wizardOpen: false,
+      config.dynamicDocuments = cleanedDynamicDocs;
+    }
+
+    const { uploadedDocuments } = get();
+    const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
+    const requiredDocs = generateRequiredDocuments(config, true, uploadedDocuments); // Include optional documents
+
+    // Set config in store IMMEDIATELY — don't wait for DB
+    set({
+      config,
+      requiredDocuments: requiredDocs,
+    });
+
+    try {
+      // Try to persist to DB (best effort — store is already updated above)
+      await fetch("/api/documents/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
       });
-    },
+    } catch (error) {
+      console.error("Failed to persist config to DB (config still active for session):", error);
+    }
+  },
 
-    openUploadModal: (documentDefId: string, replaceDocumentId?: string) => {
-      set({
-        selectedDocumentDefId: documentDefId,
-        replaceDocumentId: replaceDocumentId || null,
-        uploadModalOpen: true,
+  updateScenarioFlags: (flags: Partial<ScenarioFlags>) => {
+    const { config } = get();
+    if (!config) return;
+
+    const updatedConfig = {
+      ...config,
+      scenarioFlags: {
+        ...config.scenarioFlags,
+        ...flags,
+      },
+    };
+
+    get().setConfig(updatedConfig);
+  },
+
+  setVisaCategory: (category: VisaCategory) => {
+    const { config } = get();
+    if (!config) return;
+
+    const updatedConfig = {
+      ...config,
+      visaCategory: category,
+    };
+
+    get().setConfig(updatedConfig);
+  },
+
+  addDocument: (document: UploadedDocument) => {
+    const { uploadedDocuments } = get();
+
+    set({
+      uploadedDocuments: [...uploadedDocuments, document],
+    });
+
+    // Refresh statuses
+    get().refreshDocumentStatuses();
+    // Refresh notifications to include the newly uploaded document
+    get().refreshNotifications();
+  },
+
+  updateDocument: (documentId: string, updates: Partial<UploadedDocument>) => {
+    const { uploadedDocuments } = get();
+
+    const updatedDocs = uploadedDocuments.map((doc) =>
+      doc.id === documentId ? { ...doc, ...updates } : doc
+    );
+
+    set({ uploadedDocuments: updatedDocs });
+
+    // Refresh statuses
+    get().refreshDocumentStatuses();
+    // Refresh notifications
+    get().refreshNotifications();
+  },
+
+  deleteDocument: async (documentId: string) => {
+    set({ isDeletingIds: [...get().isDeletingIds, documentId] });
+    try {
+      const response = await fetch(`/api/documents/${documentId}`, {
+        method: "DELETE",
       });
-    },
 
-    closeUploadModal: () => {
-      set({
-        uploadModalOpen: false,
-        replaceDocumentId: null,
-      });
-    },
-
-    toggleNotificationCenter: () => {
-      const { notificationCenterOpen } = get();
-      set({ notificationCenterOpen: !notificationCenterOpen });
-    },
-
-    updateNotificationConfig: (updates: Partial<NotificationConfig>) => {
-      const { notificationConfig, config } = get();
-
-      if (!config) return;
-
-      const updatedConfig: NotificationConfig = {
-        userId: config.userId,
-        emailEnabled: false,
-        missingDocReminderDays: 7,
-        expiryReminderDays: [90, 60, 30, 7],
-        ...notificationConfig,
-        ...updates,
-      };
-
-      set({ notificationConfig: updatedConfig });
-
-      // Save to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          `notification_config_${config.userId}`,
-          JSON.stringify(updatedConfig),
-        );
+      if (!response.ok) {
+        throw new Error("Failed to delete document from server");
       }
 
-      // Refresh notifications after config update
+      const { uploadedDocuments, isDeletingIds } = get();
+      set({
+        uploadedDocuments: uploadedDocuments.filter((doc) => doc.id !== documentId),
+        isDeletingIds: isDeletingIds.filter((id) => id !== documentId),
+      });
+
+      // Refresh statuses and notifications
+      get().refreshDocumentStatuses();
       get().refreshNotifications();
-    },
+    } catch (error) {
+      console.error("Failed to delete document:", error);
+      set({
+        isDeletingIds: get().isDeletingIds.filter((id) => id !== documentId),
+      });
+      throw error; // Re-throw so UI can handle it (e.g. toast)
+    }
+  },
 
-    updateNotificationPreferences: (
-      updates: Partial<NotificationPreferences>,
-    ) => {
-      const { notificationPreferences, config } = get();
+  refreshDocumentStatuses: () => {
+    const { uploadedDocuments } = get();
+    const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
 
-      if (!config) return;
+    const updatedDocs = updateDocumentStatuses(uploadedDocuments, defsMap);
 
-      const updatedPrefs: NotificationPreferences = {
-        enableMissingDocNotifications: true,
-        enableExpiringNotifications: true,
-        enableExpiredNotifications: true,
-        missingDocReminderCadence: "weekly",
-        expiryReminderThresholds: [90, 60, 30, 7],
-        ...notificationPreferences,
-        ...updates,
-      };
+    set({ uploadedDocuments: updatedDocs });
+  },
 
-      set({ notificationPreferences: updatedPrefs });
-
-      // Save to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          `notification_preferences_${config.userId}`,
-          JSON.stringify(updatedPrefs),
-        );
-      }
-
-      // Refresh notifications after preferences update
-      get().refreshNotifications();
-    },
-
-    snoozeAllNotifications: (hours: number) => {
-      const { config } = get();
-      if (!config) return;
-
-      const snoozedUntil = new Date();
-      snoozedUntil.setHours(snoozedUntil.getHours() + hours);
-
-      get().updateNotificationConfig({ snoozedUntil });
-    },
-
-    snoozeNotification: (notificationId: string, hours: number) => {
-      const { notifications } = get();
-      const snoozedUntil = new Date();
-      snoozedUntil.setHours(snoozedUntil.getHours() + hours);
-
-      const updatedNotifications = notifications.map((notif) =>
-        notif.id === notificationId ? { ...notif, snoozedUntil } : notif,
-      );
-
-      set({ notifications: updatedNotifications });
-    },
-
-    markNotificationAsRead: (notificationId: string) => {
-      const { notifications } = get();
-
-      const updatedNotifications = notifications.map((notif) =>
-        notif.id === notificationId ? { ...notif, read: true } : notif,
-      );
-
-      set({ notifications: updatedNotifications });
-    },
-
-    markAllNotificationsAsRead: () => {
-      const { notifications } = get();
-
-      const updatedNotifications = notifications.map((notif) => ({
-        ...notif,
-        read: true,
+  reloadDocuments: async () => {
+    const { hasLoadedDocsInitial } = get();
+    if (!hasLoadedDocsInitial) {
+      set({ isReloadingDocs: true });
+    }
+    try {
+      // Fetch documents from API
+      const response = await fetch("/api/documents/list");
+      const data = await response.json();
+      const documents = (data.documents || []).map((doc: Record<string, unknown>) => ({
+        ...doc,
+        uploadedAt: new Date(doc.uploadedAt as string),
+        expirationDate: doc.expirationDate ? new Date(doc.expirationDate as string) : undefined,
       }));
 
-      set({ notifications: updatedNotifications });
-    },
-
-    dismissNotification: (notificationId: string) => {
-      const { notifications } = get();
-
-      const updatedNotifications = notifications.filter(
-        (notif) => notif.id !== notificationId,
-      );
-
-      set({ notifications: updatedNotifications });
-    },
-
-    refreshNotifications: (t?: TranslateFn) => {
-      const {
-        uploadedDocuments,
-        requiredDocuments,
-        notificationConfig,
-        notificationPreferences,
-      } = get();
       const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
-      const requiredDocIds = requiredDocuments.map((d) => d.id);
+      const updatedDocs = updateDocumentStatuses(documents, defsMap);
 
-      const newNotifications = generateNotifications(
-        uploadedDocuments,
-        defsMap,
-        requiredDocIds,
-        notificationConfig || undefined,
-        notificationPreferences || undefined,
-        t,
-      );
+      // Also regenerate requiredDocuments if config is available
+      const { config } = get();
+      if (config) {
+        const requiredDocs = generateRequiredDocuments(config, true, updatedDocs);
+        set({
+          uploadedDocuments: updatedDocs,
+          requiredDocuments: requiredDocs,
+          isReloadingDocs: false,
+          hasLoadedDocsInitial: true,
+        });
+      } else {
+        set({
+          uploadedDocuments: updatedDocs,
+          isReloadingDocs: false,
+          hasLoadedDocsInitial: true,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to reload documents:", error);
+      set({ isReloadingDocs: false });
+    }
+  },
 
-      // Filter out snoozed notifications
-      const now = new Date();
-      const activeNotifications = newNotifications.filter((notif) => {
-        if (notif.snoozedUntil && now < notif.snoozedUntil) {
-          return false;
-        }
-        return true;
+  addDynamicSlot: (category: string) => {
+    const { config } = get();
+    if (!config) return;
+
+    const dynamicDocs = config.dynamicDocuments || {};
+    const slots = dynamicDocs[category] || [];
+    const updatedSlots = [...slots];
+
+    // Get consistent naming from personalization-engine
+    const displayName = getCategoryDisplayName(category);
+    const baseName = displayName.replace(/ (Documents|Evidence)$/, "");
+
+    if (updatedSlots.length === 0) {
+      // If empty, materialize the first virtual slot (ID matching the engine's default)
+      // AND add the second one so the user sees a new card immediately.
+      updatedSlots.push({
+        id: `dynamic-${category}-1`,
+        name: `${baseName} Document (1)`,
       });
+      updatedSlots.push({
+        id: `dynamic-${category}-${Date.now()}-2`,
+        name: `${baseName} Document (2)`,
+      });
+    } else {
+      // Standard addition
+      const newIndex = updatedSlots.length + 1;
+      updatedSlots.push({
+        id: `dynamic-${category}-${Date.now()}`,
+        name: `${baseName} Document (${newIndex})`,
+      });
+    }
 
-      set({ notifications: activeNotifications });
-    },
+    const updatedDynamicDocs = {
+      ...dynamicDocs,
+      [category]: updatedSlots,
+    };
 
-    getStats: () => {
-      const { uploadedDocuments, requiredDocuments } = get();
+    const updatedConfig = {
+      ...config,
+      dynamicDocuments: updatedDynamicDocs,
+    };
 
-      // Only count mandatory documents for progress percentage
-      const mandatoryDocs = requiredDocuments.filter((doc) => doc.required);
-      const total = mandatoryDocs.length;
+    get().setConfig(updatedConfig);
+  },
 
-      const uploaded = mandatoryDocs.filter((md) =>
-        uploadedDocuments.some(
-          (ud) =>
-            ud.documentDefId === md.id &&
-            (ud.status === "UPLOADED" || ud.status === "NEEDS_ATTENTION"),
-        ),
-      ).length;
+  addNamedDynamicSlot: async (category: string, name: string) => {
+    const { config } = get();
+    if (!config) return "";
 
-      const missing = mandatoryDocs.filter(
-        (md) => !uploadedDocuments.some((ud) => ud.documentDefId === md.id),
-      ).length;
+    const dynamicDocs = config.dynamicDocuments || {};
+    const slots = dynamicDocs[category] || [];
 
-      const expiring = uploadedDocuments.filter(
-        (d) => d.status === "NEEDS_ATTENTION",
-      ).length;
+    const normalizedName = name.trim().toLowerCase();
 
-      const expired = uploadedDocuments.filter(
-        (d) => d.status === "EXPIRED",
-      ).length;
+    // Check if a slot with this name already exists to avoid duplicates
+    const existingSlot = slots.find((s) => s.name.trim().toLowerCase() === normalizedName);
+    if (existingSlot) return existingSlot.id;
 
-      return {
-        total,
-        uploaded,
-        missing,
-        expiring,
-        expired,
-        percentComplete: total > 0 ? Math.round((uploaded / total) * 100) : 0,
-      };
-    },
+    const newId = `dynamic-${category}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const updatedSlots = [...slots, { id: newId, name }];
 
-    getNotifications: () => {
-      const { notifications } = get();
-      return notifications;
-    },
+    const updatedDynamicDocs = {
+      ...dynamicDocs,
+      [category]: updatedSlots,
+    };
 
-    getUnreadNotificationCount: () => {
-      const { notifications } = get();
-      return notifications.filter((notif) => !notif.read).length;
-    },
+    const updatedConfig = {
+      ...config,
+      dynamicDocuments: updatedDynamicDocs,
+    };
 
-    getPendingNotificationCount: () => {
-      const { notifications, uploadedDocuments } = get();
-      return notifications.filter((notif) => {
-        // Pending if document is not uploaded (DOC_MISSING type)
-        if (notif.type === "DOC_MISSING") {
-          return true;
-        }
-        // Or if document exists but has no uploaded version
-        if (notif.documentDefId) {
-          const isUploaded = uploadedDocuments.some(
-            (doc) =>
-              doc.documentDefId === notif.documentDefId &&
-              (doc.status === "UPLOADED" ||
-                doc.status === "NEEDS_ATTENTION" ||
-                doc.status === "EXPIRED"),
-          );
-          return !isUploaded;
-        }
-        return false;
-      }).length;
-    },
+    await get().setConfig(updatedConfig);
+    return newId;
+  },
 
-    getUploadedNotificationCount: () => {
-      const { notifications, uploadedDocuments } = get();
-      return notifications.filter((notif) => {
-        // Uploaded if document exists and has been uploaded
-        if (notif.documentDefId) {
-          const isUploaded = uploadedDocuments.some(
-            (doc) =>
-              doc.documentDefId === notif.documentDefId &&
-              (doc.status === "UPLOADED" ||
-                doc.status === "NEEDS_ATTENTION" ||
-                doc.status === "EXPIRED"),
-          );
-          return isUploaded;
-        }
-        return false;
-      }).length;
-    },
+  renameDynamicSlot: (category: string, slotId: string, newName: string) => {
+    const { config } = get();
+    if (!config) return;
 
-    isNotificationDocumentUploaded: (notification: NotificationMessage) => {
-      const { uploadedDocuments } = get();
-      if (!notification.documentDefId) return false;
+    const dynamicDocs = config.dynamicDocuments || {};
+    const slots = dynamicDocs[category] || [];
 
-      return uploadedDocuments.some(
-        (doc) =>
-          doc.documentDefId === notification.documentDefId &&
-          (doc.status === "UPLOADED" ||
-            doc.status === "NEEDS_ATTENTION" ||
-            doc.status === "EXPIRED"),
+    const updatedSlots = slots.map((slot) =>
+      slot.id === slotId ? { ...slot, name: newName } : slot
+    );
+
+    const updatedDynamicDocs = {
+      ...dynamicDocs,
+      [category]: updatedSlots,
+    };
+
+    const updatedConfig = {
+      ...config,
+      dynamicDocuments: updatedDynamicDocs,
+    };
+
+    get().setConfig(updatedConfig);
+  },
+
+  setSelectedDocument: (documentDefId: string | null) => {
+    set({ selectedDocumentDefId: documentDefId });
+  },
+
+  openWizard: (documentDefId: string) => {
+    set({
+      selectedDocumentDefId: documentDefId,
+      wizardOpen: true,
+    });
+  },
+
+  closeWizard: () => {
+    set({
+      wizardOpen: false,
+    });
+  },
+
+  openUploadModal: (documentDefId: string, replaceDocumentId?: string) => {
+    set({
+      selectedDocumentDefId: documentDefId,
+      replaceDocumentId: replaceDocumentId || null,
+      uploadModalOpen: true,
+    });
+  },
+
+  closeUploadModal: () => {
+    set({
+      uploadModalOpen: false,
+      replaceDocumentId: null,
+    });
+  },
+
+  toggleNotificationCenter: () => {
+    const { notificationCenterOpen } = get();
+    set({ notificationCenterOpen: !notificationCenterOpen });
+  },
+
+  updateNotificationConfig: (updates: Partial<NotificationConfig>) => {
+    const { notificationConfig, config } = get();
+
+    if (!config) return;
+
+    const updatedConfig: NotificationConfig = {
+      userId: config.userId,
+      emailEnabled: false,
+      missingDocReminderDays: 7,
+      expiryReminderDays: [90, 60, 30, 7],
+      ...notificationConfig,
+      ...updates,
+    };
+
+    set({ notificationConfig: updatedConfig });
+
+    // Save to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`notification_config_${config.userId}`, JSON.stringify(updatedConfig));
+    }
+
+    // Refresh notifications after config update
+    get().refreshNotifications();
+  },
+
+  updateNotificationPreferences: (updates: Partial<NotificationPreferences>) => {
+    const { notificationPreferences, config } = get();
+
+    if (!config) return;
+
+    const updatedPrefs: NotificationPreferences = {
+      enableMissingDocNotifications: true,
+      enableExpiringNotifications: true,
+      enableExpiredNotifications: true,
+      missingDocReminderCadence: "weekly",
+      expiryReminderThresholds: [90, 60, 30, 7],
+      ...notificationPreferences,
+      ...updates,
+    };
+
+    set({ notificationPreferences: updatedPrefs });
+
+    // Save to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        `notification_preferences_${config.userId}`,
+        JSON.stringify(updatedPrefs)
       );
-    },
+    }
 
-    getNotificationStatus: (notification: NotificationMessage) => {
-      const isUploaded = get().isNotificationDocumentUploaded(notification);
-      return isUploaded ? "uploaded" : "pending";
-    },
+    // Refresh notifications after preferences update
+    get().refreshNotifications();
+  },
 
-    toggleStepCompletion: (documentDefId: string, stepId: string) => {
-      const { completedSteps } = get();
-      const docSteps = completedSteps[documentDefId] || [];
+  snoozeAllNotifications: (hours: number) => {
+    const { config } = get();
+    if (!config) return;
 
-      const isCompleted = docSteps.includes(stepId);
-      const updatedSteps = isCompleted
-        ? docSteps.filter((id) => id !== stepId)
-        : [...docSteps, stepId];
+    const snoozedUntil = new Date();
+    snoozedUntil.setHours(snoozedUntil.getHours() + hours);
 
-      const newCompletedSteps = {
-        ...completedSteps,
-        [documentDefId]: updatedSteps,
-      };
+    get().updateNotificationConfig({ snoozedUntil });
+  },
 
-      set({ completedSteps: newCompletedSteps });
+  snoozeNotification: (notificationId: string, hours: number) => {
+    const { notifications } = get();
+    const snoozedUntil = new Date();
+    snoozedUntil.setHours(snoozedUntil.getHours() + hours);
 
-      // Save to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          "document_vault_completed_steps",
-          JSON.stringify(newCompletedSteps),
-        );
+    const updatedNotifications = notifications.map((notif) =>
+      notif.id === notificationId ? { ...notif, snoozedUntil } : notif
+    );
+
+    set({ notifications: updatedNotifications });
+  },
+
+  markNotificationAsRead: (notificationId: string) => {
+    const { notifications } = get();
+
+    const updatedNotifications = notifications.map((notif) =>
+      notif.id === notificationId ? { ...notif, read: true } : notif
+    );
+
+    set({ notifications: updatedNotifications });
+  },
+
+  markAllNotificationsAsRead: () => {
+    const { notifications } = get();
+
+    const updatedNotifications = notifications.map((notif) => ({
+      ...notif,
+      read: true,
+    }));
+
+    set({ notifications: updatedNotifications });
+  },
+
+  dismissNotification: (notificationId: string) => {
+    const { notifications } = get();
+
+    const updatedNotifications = notifications.filter((notif) => notif.id !== notificationId);
+
+    set({ notifications: updatedNotifications });
+  },
+
+  refreshNotifications: (t?: TranslateFn) => {
+    const { uploadedDocuments, requiredDocuments, notificationConfig, notificationPreferences } =
+      get();
+    const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
+    const requiredDocIds = requiredDocuments.map((d) => d.id);
+
+    const newNotifications = generateNotifications(
+      uploadedDocuments,
+      defsMap,
+      requiredDocIds,
+      notificationConfig || undefined,
+      notificationPreferences || undefined,
+      t
+    );
+
+    // Filter out snoozed notifications
+    const now = new Date();
+    const activeNotifications = newNotifications.filter((notif) => {
+      if (notif.snoozedUntil && now < notif.snoozedUntil) {
+        return false;
       }
-    },
+      return true;
+    });
 
-    isStepCompleted: (documentDefId: string, stepId: string) => {
-      const { completedSteps } = get();
-      const docSteps = completedSteps[documentDefId] || [];
-      return docSteps.includes(stepId);
-    },
+    set({ notifications: activeNotifications });
+  },
 
-    getCompletedSteps: (documentDefId: string) => {
-      const { completedSteps } = get();
-      return completedSteps[documentDefId] || [];
-    },
+  getStats: () => {
+    const { uploadedDocuments, requiredDocuments } = get();
 
-    resetDocumentProgress: (documentDefId: string) => {
-      const { completedSteps } = get();
-      const newCompletedSteps = {
-        ...completedSteps,
-        [documentDefId]: [],
-      };
+    // Only count mandatory documents for progress percentage
+    const mandatoryDocs = requiredDocuments.filter((doc) => doc.required);
+    const total = mandatoryDocs.length;
 
-      set({ completedSteps: newCompletedSteps });
+    const uploaded = mandatoryDocs.filter((md) =>
+      uploadedDocuments.some(
+        (ud) =>
+          ud.documentDefId === md.id &&
+          (ud.status === "UPLOADED" || ud.status === "NEEDS_ATTENTION")
+      )
+    ).length;
 
-      // Save to localStorage
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          "document_vault_completed_steps",
-          JSON.stringify(newCompletedSteps),
-        );
+    const missing = mandatoryDocs.filter(
+      (md) => !uploadedDocuments.some((ud) => ud.documentDefId === md.id)
+    ).length;
+
+    const expiring = uploadedDocuments.filter((d) => d.status === "NEEDS_ATTENTION").length;
+
+    const expired = uploadedDocuments.filter((d) => d.status === "EXPIRED").length;
+
+    return {
+      total,
+      uploaded,
+      missing,
+      expiring,
+      expired,
+      percentComplete: total > 0 ? Math.round((uploaded / total) * 100) : 0,
+    };
+  },
+
+  getNotifications: () => {
+    const { notifications } = get();
+    return notifications;
+  },
+
+  getUnreadNotificationCount: () => {
+    const { notifications } = get();
+    return notifications.filter((notif) => !notif.read).length;
+  },
+
+  getPendingNotificationCount: () => {
+    const { notifications, uploadedDocuments } = get();
+    return notifications.filter((notif) => {
+      // Pending if document is not uploaded (DOC_MISSING type)
+      if (notif.type === "DOC_MISSING") {
+        return true;
       }
-    },
+      // Or if document exists but has no uploaded version
+      if (notif.documentDefId) {
+        const isUploaded = uploadedDocuments.some(
+          (doc) =>
+            doc.documentDefId === notif.documentDefId &&
+            (doc.status === "UPLOADED" ||
+              doc.status === "NEEDS_ATTENTION" ||
+              doc.status === "EXPIRED")
+        );
+        return !isUploaded;
+      }
+      return false;
+    }).length;
+  },
 
-    reset: async () => {
-      set(initialState);
-    },
-  }),
-);
+  getUploadedNotificationCount: () => {
+    const { notifications, uploadedDocuments } = get();
+    return notifications.filter((notif) => {
+      // Uploaded if document exists and has been uploaded
+      if (notif.documentDefId) {
+        const isUploaded = uploadedDocuments.some(
+          (doc) =>
+            doc.documentDefId === notif.documentDefId &&
+            (doc.status === "UPLOADED" ||
+              doc.status === "NEEDS_ATTENTION" ||
+              doc.status === "EXPIRED")
+        );
+        return isUploaded;
+      }
+      return false;
+    }).length;
+  },
+
+  isNotificationDocumentUploaded: (notification: NotificationMessage) => {
+    const { uploadedDocuments } = get();
+    if (!notification.documentDefId) return false;
+
+    return uploadedDocuments.some(
+      (doc) =>
+        doc.documentDefId === notification.documentDefId &&
+        (doc.status === "UPLOADED" || doc.status === "NEEDS_ATTENTION" || doc.status === "EXPIRED")
+    );
+  },
+
+  getNotificationStatus: (notification: NotificationMessage) => {
+    const isUploaded = get().isNotificationDocumentUploaded(notification);
+    return isUploaded ? "uploaded" : "pending";
+  },
+
+  toggleStepCompletion: (documentDefId: string, stepId: string) => {
+    const { completedSteps } = get();
+    const docSteps = completedSteps[documentDefId] || [];
+
+    const isCompleted = docSteps.includes(stepId);
+    const updatedSteps = isCompleted
+      ? docSteps.filter((id) => id !== stepId)
+      : [...docSteps, stepId];
+
+    const newCompletedSteps = {
+      ...completedSteps,
+      [documentDefId]: updatedSteps,
+    };
+
+    set({ completedSteps: newCompletedSteps });
+
+    // Save to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("document_vault_completed_steps", JSON.stringify(newCompletedSteps));
+    }
+  },
+
+  isStepCompleted: (documentDefId: string, stepId: string) => {
+    const { completedSteps } = get();
+    const docSteps = completedSteps[documentDefId] || [];
+    return docSteps.includes(stepId);
+  },
+
+  getCompletedSteps: (documentDefId: string) => {
+    const { completedSteps } = get();
+    return completedSteps[documentDefId] || [];
+  },
+
+  resetDocumentProgress: (documentDefId: string) => {
+    const { completedSteps } = get();
+    const newCompletedSteps = {
+      ...completedSteps,
+      [documentDefId]: [],
+    };
+
+    set({ completedSteps: newCompletedSteps });
+
+    // Save to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("document_vault_completed_steps", JSON.stringify(newCompletedSteps));
+    }
+  },
+
+  reset: async () => {
+    set(initialState);
+  },
+}));
 
 // Helper function to create initial config
 export function createInitialConfig(userId: string): DocumentVaultConfig {

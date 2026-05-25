@@ -113,9 +113,7 @@ export default function ForgotPasswordPage() {
                 </svg>
               </div>
 
-              <h1 className="text-2xl font-semibold text-foreground mb-2">
-                Check your email
-              </h1>
+              <h1 className="text-2xl font-semibold text-foreground mb-2">Check your email</h1>
               <p className="text-muted-foreground text-[15px] leading-relaxed">
                 We sent a password reset link to
               </p>
@@ -140,17 +138,13 @@ export default function ForgotPasswordPage() {
                   <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
                     2
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Click the reset link in the email
-                  </p>
+                  <p className="text-sm text-muted-foreground">Click the reset link in the email</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
                     3
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Create your new password
-                  </p>
+                  <p className="text-sm text-muted-foreground">Create your new password</p>
                 </div>
               </div>
             </div>
@@ -245,12 +239,10 @@ export default function ForgotPasswordPage() {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-semibold text-foreground mb-2">
-              Forgot your password?
-            </h1>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">Forgot your password?</h1>
             <p className="text-muted-foreground text-[15px] leading-relaxed">
-              No worries! Enter your email address and we&apos;ll send you a
-              link to reset your password.
+              No worries! Enter your email address and we&apos;ll send you a link to reset your
+              password.
             </p>
           </div>
 
@@ -258,9 +250,7 @@ export default function ForgotPasswordPage() {
           <div className="px-6 sm:px-8 py-6 sm:py-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
-                  Email address
-                </label>
+                <label className="block text-sm font-medium text-foreground">Email address</label>
                 <Input
                   type="email"
                   value={email}
@@ -293,9 +283,7 @@ export default function ForgotPasswordPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-red-800">
-                      Unable to send reset email
-                    </p>
+                    <p className="text-sm font-medium text-red-800">Unable to send reset email</p>
                     <p className="text-sm text-red-600 mt-0.5">{error}</p>
                   </div>
                 </div>
@@ -322,12 +310,7 @@ export default function ForgotPasswordPage() {
               href="/login"
               className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -342,12 +325,7 @@ export default function ForgotPasswordPage() {
 
         {/* Security Note */}
         <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

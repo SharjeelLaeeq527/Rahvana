@@ -4,9 +4,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { Loader } from "@/components/ui/spinner";
@@ -22,14 +20,7 @@ import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
 import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 import guideDataRaw from "@/data/police-verification-guide-data.json";
-import {
-  ArrowLeft,
-  ArrowRight,
-  FileText,
-  MapPin,
-  Building2,
-  UserCheck,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, MapPin, Building2, UserCheck } from "lucide-react";
 import { WizardStepId, WizardState } from "@/types/guide-wizard";
 
 // Modals
@@ -59,10 +50,7 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  string,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> = {
   province_selection: "province_selection",
   roadmap: "roadmap",
   validation: "validation",
@@ -102,7 +90,7 @@ export default function PoliceVerificationGuide() {
       checkedDocuments: stepsData.roadmap?.checked || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -166,26 +154,13 @@ export default function PoliceVerificationGuide() {
     });
   };
 
-  const handleSubmitFeedback = async (
-    type: string,
-    desc: string,
-    attachment?: File,
-  ) => {
-    await submitFeedbackHook(
-      "police-verification-guide",
-      currentStepId,
-      type,
-      desc,
-      attachment,
-    );
+  const handleSubmitFeedback = async (type: string, desc: string, attachment?: File) => {
+    await submitFeedbackHook("police-verification-guide", currentStepId, type, desc, attachment);
   };
 
   const hasProgress = useMemo(() => {
     return (
-      currentStep > 0 ||
-      !!state.province ||
-      state.validationChecks.length > 0 ||
-      state.uploadedFile
+      currentStep > 0 || !!state.province || state.validationChecks.length > 0 || state.uploadedFile
     );
   }, [currentStep, state]);
 
@@ -228,7 +203,7 @@ export default function PoliceVerificationGuide() {
       setIsSaved(true);
     },
     navigationHandled,
-    setNavigationHandled,
+    setNavigationHandled
   );
 
   useEffect(() => {
@@ -245,9 +220,7 @@ export default function PoliceVerificationGuide() {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId as string];
-  let infoPanelData = guideData.wizard.info_panel[
-    infoPanelKey
-  ] as InfoPanelData;
+  let infoPanelData = guideData.wizard.info_panel[infoPanelKey] as InfoPanelData;
 
   // Conditionally hide links and Sindh-specific pitfalls for non-Sindh provinces
   if (state.province !== "Sindh") {
@@ -269,7 +242,7 @@ export default function PoliceVerificationGuide() {
     const feeStructure = guideData.wizard.fee_structure;
     // Type definition for tier
     const filteredTiers = feeStructure.tiers.filter(
-      (tier: { type: string }) => tier.type === state.province,
+      (tier: { type: string }) => tier.type === state.province
     );
 
     if (filteredTiers.length > 0) {
@@ -297,8 +270,7 @@ export default function PoliceVerificationGuide() {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -378,10 +350,7 @@ export default function PoliceVerificationGuide() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
@@ -514,10 +483,7 @@ export default function PoliceVerificationGuide() {
                   <span className="font-bold flex items-center gap-2">
                     <Building2 size={18} /> Apply Now (Sindh)
                   </span>
-                  <ArrowRight
-                    size={18}
-                    className="group-hover:translate-x-1 transition-all"
-                  />
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-all" />
                 </button>
               )}
             </div>

@@ -107,11 +107,11 @@ function getCandidateCodes(a: VisaExplorationAnswers): string[] {
   if (!a.purpose) return [];
 
   if (a.purpose === "WORK_REMOTE") c.push("IT-DIGITAL-NOMAD");
-  if (a.purpose === "STUDY")       c.push("IT-STUDY-D");
-  if (a.purpose === "WORK")        c.push("IT-WORK-FLUSSI");
-  if (a.purpose === "ELECTIVE")    c.push("IT-ELECTIVE-RES");
-  if (a.purpose === "FAMILY")      c.push("IT-FAMILY-REUNION");
-  if (a.purpose === "VISIT")       c.push("IT-SCHENGEN-C");
+  if (a.purpose === "STUDY") c.push("IT-STUDY-D");
+  if (a.purpose === "WORK") c.push("IT-WORK-FLUSSI");
+  if (a.purpose === "ELECTIVE") c.push("IT-ELECTIVE-RES");
+  if (a.purpose === "FAMILY") c.push("IT-FAMILY-REUNION");
+  if (a.purpose === "VISIT") c.push("IT-SCHENGEN-C");
 
   return [...new Set(c)];
 }
@@ -385,8 +385,7 @@ export const ITALY_DATA: CountryData = {
           "Is your gross annual income from remote work or freelancing at least €28,000? (Most Italian consulates apply this as their working threshold — some require more.)",
         source:
           "Ministerial Decree No. 79 of 5 April 2024 — Digital Nomad income threshold (3× healthcare co-payment exemption)",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["YES"],
         failMsg:
           "The statutory minimum is approximately €24,789/year (3× the healthcare threshold), but in practice most consulates require €28,000–€30,000 as the working minimum. If your income is below €28,000, your application is likely to be refused. Note: if you are applying with a spouse, the required income rises to approximately €34,087/year.",
@@ -401,15 +400,23 @@ export const ITALY_DATA: CountryData = {
           "Do you meet the 'highly qualified' requirement? (a) 3-year university degree or licensed professional; OR (b) 5 years of documented professional experience; OR (c) ICT specialist / senior manager with 3 years of experience in the last 7 years?",
         source:
           "Ministerial Decree No. 79 of 5 April 2024 — Art. 27-quater: 'highly qualified' definition",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["DEGREE", "EXPERIENCE_5", "ICT_3"],
         failMsg:
           "This visa is exclusively for 'highly qualified' workers under Article 27-quater of Italian immigration law. You need either a 3-year university degree, a licensed professional qualification, 5 years of equivalent experience (3 years if you are an ICT specialist or senior manager). Consulates apply this requirement strictly — undocumented experience claims are typically rejected.",
         options: [
-          { label: "Yes — I hold a 3-year university degree or professional license", value: "DEGREE" },
-          { label: "Yes — I have 5+ years of relevant professional experience (non-ICT)", value: "EXPERIENCE_5" },
-          { label: "Yes — I am an ICT specialist or senior manager with 3+ years experience", value: "ICT_3" },
+          {
+            label: "Yes — I hold a 3-year university degree or professional license",
+            value: "DEGREE",
+          },
+          {
+            label: "Yes — I have 5+ years of relevant professional experience (non-ICT)",
+            value: "EXPERIENCE_5",
+          },
+          {
+            label: "Yes — I am an ICT specialist or senior manager with 3+ years experience",
+            value: "ICT_3",
+          },
           { label: "No — I don't currently meet any of these criteria", value: "NO" },
         ],
       },
@@ -419,8 +426,7 @@ export const ITALY_DATA: CountryData = {
           "Do you have at least 6 months of documented experience working remotely or freelancing in the same field as you intend to work in Italy?",
         source:
           "Ministerial Decree No. 79 of 5 April 2024 — 6 months of remote work experience required",
-        sourceUrl:
-          "https://citizenremote.com/visas/italy-digital-nomad-visa/",
+        sourceUrl: "https://citizenremote.com/visas/italy-digital-nomad-visa/",
         passWith: ["YES"],
         failMsg:
           "At least 6 months of prior remote/freelance work experience in the same field is required. You must document this with employment contracts, client agreements, pay slips, or reference letters. Undocumented claims are not accepted. The 6-month period must be in the same field/profession you intend to practice in Italy.",
@@ -433,10 +439,8 @@ export const ITALY_DATA: CountryData = {
         id: "foreign_clients",
         question:
           "Will you be working exclusively for employers or clients based OUTSIDE Italy? (The visa does not permit working for Italian companies or clients.)",
-        source:
-          "Italian Digital Nomad Visa law — income must come from sources outside Italy",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        source: "Italian Digital Nomad Visa law — income must come from sources outside Italy",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["YES"],
         failMsg:
           "The Digital Nomad Visa is specifically for work performed for employers or clients based outside Italy. If any part of your income comes from Italian companies or Italian-based clients, you would need a different work visa (e.g. a work permit under Decreto Flussi). All contracts or service agreements must clearly show the foreign employer or client.",
@@ -452,10 +456,8 @@ export const ITALY_DATA: CountryData = {
         id: "universitaly",
         question:
           "If applying for a public university degree program: have you completed the pre-enrollment on the Universitaly portal (universitaly.it)?",
-        source:
-          "Universitaly — mandatory pre-enrollment portal for Italian public universities",
-        sourceUrl:
-          "https://www.universitaly.it/",
+        source: "Universitaly — mandatory pre-enrollment portal for Italian public universities",
+        sourceUrl: "https://www.universitaly.it/",
         passWith: ["YES", "NOT_REQUIRED"],
         failMsg:
           "Pre-enrollment on Universitaly is mandatory for all students applying to public Italian universities for degree programs. The portal opens annually (usually February–April for the following academic year). Without this, your visa application will be incomplete. Private universities and language schools have their own enrollment processes — check directly with your institution.",
@@ -465,7 +467,8 @@ export const ITALY_DATA: CountryData = {
             value: "YES",
           },
           {
-            label: "My institution is private or a language school — Universitaly pre-enrollment is not required",
+            label:
+              "My institution is private or a language school — Universitaly pre-enrollment is not required",
             value: "NOT_REQUIRED",
           },
           { label: "No — I haven't done this yet", value: "NO" },
@@ -475,10 +478,8 @@ export const ITALY_DATA: CountryData = {
         id: "enrollment_letter",
         question:
           "Do you have an official Letter of Enrollment or Conditional Admission from your Italian educational institution?",
-        source:
-          "Italian Study Visa (Type D) — enrollment letter mandatory",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        source: "Italian Study Visa (Type D) — enrollment letter mandatory",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["YES"],
         failMsg:
           "An official enrollment letter or conditional admission letter from the Italian institution is required before applying for the study visa. Contact your institution's international students office to obtain this document after paying the enrollment deposit.",
@@ -523,7 +524,8 @@ export const ITALY_DATA: CountryData = {
             value: "YES",
           },
           {
-            label: "In progress — my employer submitted during a click day and is awaiting approval",
+            label:
+              "In progress — my employer submitted during a click day and is awaiting approval",
             value: "IN_PROGRESS",
           },
           {
@@ -541,8 +543,7 @@ export const ITALY_DATA: CountryData = {
           "Do you have regular, stable passive income of at least approximately €31,000/year from sources such as pensions, dividends, rental income, or investments — with NO employment or freelance income?",
         source:
           "Italian Elective Residence Visa — passive income requirement and absolute work prohibition",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["YES"],
         failMsg:
           "The Elective Residence Visa requires stable passive income (pensions, dividends, rental income) of at least ~€31,000/year for a single applicant (~€38,000 for couples). Critically, ALL forms of work are prohibited — including remote freelancing for foreign clients. If you plan to work remotely, apply for the Digital Nomad Visa instead. Employment income, even from abroad, is incompatible with this visa.",
@@ -561,8 +562,7 @@ export const ITALY_DATA: CountryData = {
           "Do you have confirmed accommodation in Italy — either a property you own or a signed long-term registered lease?",
         source:
           "Italian Elective Residence Visa — confirmed accommodation required before application",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["YES"],
         failMsg:
           "Confirmed accommodation in Italy is mandatory before you can apply. This means either a property title deed or a registered rental lease (contratto di locazione registrato). Hotel bookings or short-term rentals are not sufficient.",
@@ -580,8 +580,7 @@ export const ITALY_DATA: CountryData = {
           "Does your family member in Italy hold a valid Italian Residence Permit (Permesso di Soggiorno) for at least 1 year, and have they applied for the Nulla Osta for Family Reunification at the Sportello Unico per l'Immigrazione?",
         source:
           "Italian Family Reunification — sponsor must have valid permit + obtain Nulla Osta first",
-        sourceUrl:
-          "https://www.portaleimmigrazione.it/",
+        sourceUrl: "https://www.portaleimmigrazione.it/",
         passWith: ["YES", "IN_PROGRESS"],
         failMsg:
           "The sponsor in Italy must have a valid Residence Permit of at least 1 year and must first apply for and receive the Nulla Osta for Family Reunification from the local Sportello Unico per l'Immigrazione. This process can take 90–180 days. Only after receiving the Nulla Osta can you apply for the Family Reunion Visa at the Italian consulate in your country.",
@@ -606,13 +605,15 @@ export const ITALY_DATA: CountryData = {
           "Does your sponsor meet the minimum income requirement (approximately €9,360/year for 1 family member) and have suitable housing (with a municipal habitability certificate)?",
         source:
           "Italian Family Reunification — Table A income threshold + Art. 29 TUI housing requirement",
-        sourceUrl:
-          "https://www.portaleimmigrazione.it/",
+        sourceUrl: "https://www.portaleimmigrazione.it/",
         passWith: ["YES"],
         failMsg:
           "The sponsor must meet the minimum income threshold (approximately €9,360.33/year for 1 family member — updated annually under Table A, Article 29 of the Italian Immigration Code) and have suitable accommodation. Housing must meet minimum size requirements (at least 14m² per additional person) and the sponsor must obtain a habitability certificate (certificato di idoneità alloggiativa) from the local municipality (Comune).",
         options: [
-          { label: "Yes — sponsor meets the income threshold and has suitable housing", value: "YES" },
+          {
+            label: "Yes — sponsor meets the income threshold and has suitable housing",
+            value: "YES",
+          },
           { label: "No — income or housing does not yet meet requirements", value: "NO" },
         ],
       },
@@ -623,10 +624,8 @@ export const ITALY_DATA: CountryData = {
         id: "visa_needed",
         question:
           "Does your passport nationality require a Schengen visa to enter Italy? (Many nationalities are visa-free for up to 90 days — check before applying.)",
-        source:
-          "EU Schengen visa policy — check your country's visa-free access status",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        source: "EU Schengen visa policy — check your country's visa-free access status",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["YES"],
         failMsg:
           "Many countries have visa-free access to the Schengen Area for up to 90 days. Check the Italian Ministry of Foreign Affairs website or the EU visa policy list. If your country is visa-free, you do NOT need to apply for this visa — you can travel freely within Schengen for 90 days in any 180-day period without a visa.",
@@ -645,10 +644,8 @@ export const ITALY_DATA: CountryData = {
         id: "temp_intent",
         question:
           "Is the purpose of your visit genuinely temporary (tourism, family visit, or short business trip) — with a clear plan to leave Italy and the Schengen Area before your 90-day allowance expires?",
-        source:
-          "Schengen Visa Code — genuine temporary intent and non-immigrant intent required",
-        sourceUrl:
-          "https://vistoperitalia.esteri.it/home/en",
+        source: "Schengen Visa Code — genuine temporary intent and non-immigrant intent required",
+        sourceUrl: "https://vistoperitalia.esteri.it/home/en",
         passWith: ["YES"],
         failMsg:
           "The Schengen Type C visa is strictly for temporary visits. If you intend to stay longer than 90 days, work, or study in Italy, you need a different visa (Type D national visa). Applying for a Schengen visa with the intent to overstay or convert it to a long-stay permit is a serious violation that can result in entry bans.",

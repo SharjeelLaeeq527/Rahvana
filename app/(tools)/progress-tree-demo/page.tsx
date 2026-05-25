@@ -5,7 +5,14 @@ import { ProgressTree, TreeStep } from "@/app/components/progress-tree/ProgressT
 import { useProgressTreeStore } from "@/lib/progress-tree-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { RotateCcw } from "lucide-react";
 
 // Sample data structure for immigration process
@@ -135,7 +142,8 @@ const immigrationSteps: TreeStep[] = [
 ];
 
 export default function ProgressTreeDemoPage() {
-  const { steps, setSteps, toggleStepCompletion, resetProgress, getStepById } = useProgressTreeStore();
+  const { steps, setSteps, toggleStepCompletion, resetProgress, getStepById } =
+    useProgressTreeStore();
   const [selectedStep, setSelectedStep] = useState<TreeStep | null>(null);
   const [showDialog, setShowDialog] = useState(false);
 
@@ -176,11 +184,7 @@ export default function ProgressTreeDemoPage() {
               Track your spousal visa application progress step by step
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            className="flex items-center gap-2"
-          >
+          <Button variant="outline" onClick={handleReset} className="flex items-center gap-2">
             <RotateCcw className="w-4 h-4" />
             Reset Progress
           </Button>
@@ -216,19 +220,19 @@ export default function ProgressTreeDemoPage() {
                   selectedStep?.status === "completed"
                     ? "bg-green-100 text-green-800"
                     : selectedStep?.status === "in-progress"
-                    ? "bg-blue-100 text-blue-800"
-                    : selectedStep?.status === "locked"
-                    ? "bg-gray-100 text-gray-800"
-                    : "bg-gray-100 text-gray-600"
+                      ? "bg-blue-100 text-blue-800"
+                      : selectedStep?.status === "locked"
+                        ? "bg-gray-100 text-gray-800"
+                        : "bg-gray-100 text-gray-600"
                 }`}
               >
                 {selectedStep?.status === "completed"
                   ? "Completed"
                   : selectedStep?.status === "in-progress"
-                  ? "In Progress"
-                  : selectedStep?.status === "locked"
-                  ? "Locked"
-                  : "Pending"}
+                    ? "In Progress"
+                    : selectedStep?.status === "locked"
+                      ? "Locked"
+                      : "Pending"}
               </span>
             </div>
 
@@ -238,17 +242,14 @@ export default function ProgressTreeDemoPage() {
                 <h4 className="font-semibold text-gray-900 mb-3">Sub-steps:</h4>
                 <ul className="space-y-2">
                   {selectedStep.children.map((child) => (
-                    <li
-                      key={child.id}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50"
-                    >
+                    <li key={child.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
                       <div
                         className={`w-2 h-2 rounded-full mt-1.5 ${
                           child.status === "completed"
                             ? "bg-green-500"
                             : child.status === "in-progress"
-                            ? "bg-blue-500"
-                            : "bg-gray-300"
+                              ? "bg-blue-500"
+                              : "bg-gray-300"
                         }`}
                       />
                       <div>
@@ -279,9 +280,7 @@ export default function ProgressTreeDemoPage() {
                 onClick={handleToggleCompletion}
                 variant={selectedStep?.status === "completed" ? "outline" : "default"}
               >
-                {selectedStep?.status === "completed"
-                  ? "Mark as Incomplete"
-                  : "Mark as Complete"}
+                {selectedStep?.status === "completed" ? "Mark as Incomplete" : "Mark as Complete"}
               </Button>
             )}
             <Button variant="outline" onClick={() => setShowDialog(false)}>

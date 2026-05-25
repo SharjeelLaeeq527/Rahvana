@@ -4,16 +4,13 @@
 // PATCH /api/documents/[id] - Update document metadata
 // Uses Supabase Storage (works on BOTH local AND Vercel)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
-import { createClient as createClientJs } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { createClient as createClientJs } from "@supabase/supabase-js";
 
 // GET - Get document metadata
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
     const {
@@ -22,7 +19,7 @@ export async function GET(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -31,16 +28,13 @@ export async function GET(
     const document = await dbStorage.getDocument(documentId, user.id);
 
     if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     return NextResponse.json({ document });
   } catch (error) {
-    console.error('Get document error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Get document error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -57,7 +51,7 @@ export async function DELETE(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -66,7 +60,7 @@ export async function DELETE(
     const document = await dbStorage.getDocument(documentId, user.id);
 
     if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     // Delete files from Supabase Storage (using service role)
@@ -80,29 +74,23 @@ export async function DELETE(
       filesToDelete.push(document.compressedStoragePath);
     }
 
-    await storageSupabase.storage.from('document-vault').remove(filesToDelete);
+    await storageSupabase.storage.from("document-vault").remove(filesToDelete);
 
     // Delete metadata
     await dbStorage.deleteDocument(documentId, user.id);
 
     return NextResponse.json({
       success: true,
-      message: 'Document deleted successfully',
+      message: "Document deleted successfully",
     });
   } catch (error) {
-    console.error('Delete document error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Delete document error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 // PATCH - Update document metadata
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
     const {
@@ -111,7 +99,7 @@ export async function PATCH(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -123,7 +111,7 @@ export async function PATCH(
     const document = await dbStorage.getDocument(documentId, user.id);
 
     if (!document) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     // Update document
@@ -143,13 +131,10 @@ export async function PATCH(
     return NextResponse.json({
       success: true,
       document: updatedDocument,
-      message: 'Document updated successfully',
+      message: "Document updated successfully",
     });
   } catch (error) {
-    console.error('Update document error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Update document error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

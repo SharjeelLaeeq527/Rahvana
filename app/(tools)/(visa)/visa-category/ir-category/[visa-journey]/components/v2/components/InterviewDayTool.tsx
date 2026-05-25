@@ -1,7 +1,14 @@
 "use client";
 
 import React from "react";
-import { Briefcase, ArrowRight, AlertTriangle, CheckCircle2, Clipboard, XCircle } from "lucide-react";
+import {
+  Briefcase,
+  ArrowRight,
+  AlertTriangle,
+  CheckCircle2,
+  Clipboard,
+  XCircle,
+} from "lucide-react";
 
 interface InterviewDayToolProps {
   tool: any;
@@ -25,11 +32,7 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
         <div className="p-7 sm:p-8">
           <div className="flex items-start gap-4 mb-5">
             <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-              <Briefcase
-                className="text-white/75"
-                size={21}
-                strokeWidth={1.6}
-              />
+              <Briefcase className="text-white/75" size={21} strokeWidth={1.6} />
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
@@ -50,9 +53,7 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
                 className="bg-white/5 border border-white/10 rounded-[10px] p-2.5 flex items-start gap-2"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-400/50 mt-[5.5px] shrink-0" />
-                <span className="text-[13px] text-white/55 leading-tight">
-                  {cue}
-                </span>
+                <span className="text-[13px] text-white/55 leading-tight">{cue}</span>
               </div>
             ))}
           </div>
@@ -91,22 +92,17 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
                 list.type === "bring" ? (
                   <div key={i} className="flex items-start gap-2">
                     <div className="w-1 h-1 rounded-full bg-primary mt-[6px] shrink-0" />
-                    <span className="text-[13px] text-[#3a4f63] leading-tight">
-                      {item}
-                    </span>
+                    <span className="text-[13px] text-[#3a4f63] leading-tight">{item}</span>
                   </div>
                 ) : (
                   <div
                     key={i}
                     className="flex items-start gap-2 p-2 bg-red-50 rounded-lg text-red-700 text-[13px] leading-tight"
                   >
-                    <AlertTriangle
-                      size={14}
-                      className="mt-0.5 shrink-0"
-                    />
+                    <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                     <span>{item}</span>
                   </div>
-                ),
+                )
               )}
             </div>
           </div>
@@ -125,9 +121,7 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
           {tool.tips?.map((tip: string, i: number) => (
             <div key={i} className="flex items-start gap-2">
               <div className="w-1 h-1 rounded-full bg-[#15744f] mt-[6px] shrink-0" />
-              <span className="text-[13px] text-[#3a4f63] leading-tight">
-                {tip}
-              </span>
+              <span className="text-[13px] text-[#3a4f63] leading-tight">{tip}</span>
             </div>
           ))}
         </div>
@@ -154,20 +148,12 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
                 {outcome.icon === "check-circle" && (
                   <CheckCircle2 size={18} className="text-[#15744f]" />
                 )}
-                {outcome.icon === "clipboard" && (
-                  <Clipboard size={18} className="text-[#8a6200]" />
-                )}
-                {outcome.icon === "x-circle" && (
-                  <XCircle size={18} className="text-red-600" />
-                )}
+                {outcome.icon === "clipboard" && <Clipboard size={18} className="text-[#8a6200]" />}
+                {outcome.icon === "x-circle" && <XCircle size={18} className="text-red-600" />}
               </div>
               <div>
-                <div className="text-[13px] font-bold text-[#0c1b33]">
-                  {outcome.label}
-                </div>
-                <div className="text-[12px] text-[#6b8097] leading-relaxed">
-                  {outcome.sub}
-                </div>
+                <div className="text-[13px] font-bold text-[#0c1b33]">{outcome.label}</div>
+                <div className="text-[12px] text-[#6b8097] leading-relaxed">{outcome.sub}</div>
               </div>
             </div>
           ))}

@@ -20,9 +20,9 @@
   ],
   "scenarioNotes": {
     "bio": "You are petitioning your biological child. Steps will include birth certificate documentation.",
-    
+
     "step": "You are petitioning a stepchild. A qualifying marriage between the U.S. citizen petitioner and the child's biological parent must have occurred before the child turned 18. See INA § 101(b)(1)(B).",
-    
+
     "adopted": "You are petitioning an adopted child. The adoption must generally have been finalized before the child turned 16, and the child must have been in the petitioner’s legal custody for at least 2 years. See INA § 101(b)(1)(E). Consult an immigration attorney for complex adoption cases."
   },
   "stages": [
@@ -408,11 +408,7 @@
             "If approved, the consulate will advise on visa issuance and passport return"
           ],
           "output": "Visa interview completed; consular officer issues a decision",
-          "possibleOutcomes": [
-            "Approved ✓",
-            "Administrative Processing 221(g) ⚠",
-            "Denied ✗"
-          ]
+          "possibleOutcomes": ["Approved ✓", "Administrative Processing 221(g) ⚠", "Denied ✗"]
         },
         {
           "id": "III-07",

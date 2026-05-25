@@ -31,12 +31,7 @@
           "type": "select",
           "required": true,
           "helpText": "Select how you first met your spouse",
-          "options": [
-            "Met Online First",
-            "Met In Person",
-            "Arranged/Family",
-            "Work/School"
-          ]
+          "options": ["Met Online First", "Met In Person", "Arranged/Family", "Work/School"]
         }
       ]
     },
@@ -68,12 +63,7 @@
           "type": "select",
           "required": true,
           "helpText": "Select your primary method(s) of communication",
-          "options": [
-            "Phone calls",
-            "Video calls",
-            "Text messages",
-            "All of the above"
-          ]
+          "options": ["Phone calls", "Video calls", "Text messages", "All of the above"]
         }
       ]
     },

@@ -31,10 +31,7 @@ const VISA_CATEGORIES: VisaCategory[] = [
   // "F4",
 ];
 
-export function ConfigurationWizard({
-  userId,
-  onComplete,
-}: ConfigurationWizardProps) {
+export function ConfigurationWizard({ userId, onComplete }: ConfigurationWizardProps) {
   const [step, setStep] = useState(1);
   const { t } = useLanguage();
   const [visaCategory, setVisaCategory] = useState<VisaCategory>("IR-1");
@@ -87,9 +84,7 @@ export function ConfigurationWizard({
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-2 flex-1 rounded ${
-                  s <= step ? "bg-brand" : "bg-muted"
-                }`}
+                className={`h-2 flex-1 rounded ${s <= step ? "bg-brand" : "bg-muted"}`}
               />
             ))}
           </div>
@@ -116,25 +111,15 @@ export function ConfigurationWizard({
                       name="visaCategory"
                       value={category}
                       checked={visaCategory === category}
-                      onChange={(e) =>
-                        setVisaCategory(e.target.value as VisaCategory)
-                      }
+                      onChange={(e) => setVisaCategory(e.target.value as VisaCategory)}
                       className="mr-3"
                     />
                     <div>
                       <div className="font-medium">
-                        {
-                          t(
-                            `documentVaultPage.visaCategories.${category}`,
-                          ).split(": ")[0]
-                        }
+                        {t(`documentVaultPage.visaCategories.${category}`).split(": ")[0]}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {
-                          t(
-                            `documentVaultPage.visaCategories.${category}`,
-                          ).split(": ")[1]
-                        }
+                        {t(`documentVaultPage.visaCategories.${category}`).split(": ")[1]}
                       </div>
                     </div>
                   </label>
@@ -164,58 +149,38 @@ export function ConfigurationWizard({
                   <>
                     <div className="space-y-3">
                       <h4 className="font-medium text-sm">
-                        {t(
-                          "documentVaultPage.components.configWizard.marriageHistory",
-                        )}
+                        {t("documentVaultPage.components.configWizard.marriageHistory")}
                       </h4>
                       <label className="flex items-start space-x-3">
                         <Checkbox
-                          checked={
-                            scenarioFlags.prior_marriage_petitioner || false
-                          }
+                          checked={scenarioFlags.prior_marriage_petitioner || false}
                           onCheckedChange={(checked) =>
-                            handleFlagChange(
-                              "prior_marriage_petitioner",
-                              checked as boolean,
-                            )
+                            handleFlagChange("prior_marriage_petitioner", checked as boolean)
                           }
                         />
                         <div>
                           <div className="font-medium">
-                            {t(
-                              "documentVaultPage.components.configWizard.petitionerMarried",
-                            )}
+                            {t("documentVaultPage.components.configWizard.petitionerMarried")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {t(
-                              "documentVaultPage.components.configWizard.petitionerMarriedDesc",
-                            )}
+                            {t("documentVaultPage.components.configWizard.petitionerMarriedDesc")}
                           </div>
                         </div>
                       </label>
 
                       <label className="flex items-start space-x-3">
                         <Checkbox
-                          checked={
-                            scenarioFlags.prior_marriage_beneficiary || false
-                          }
+                          checked={scenarioFlags.prior_marriage_beneficiary || false}
                           onCheckedChange={(checked) =>
-                            handleFlagChange(
-                              "prior_marriage_beneficiary",
-                              checked as boolean,
-                            )
+                            handleFlagChange("prior_marriage_beneficiary", checked as boolean)
                           }
                         />
                         <div>
                           <div className="font-medium">
-                            {t(
-                              "documentVaultPage.components.configWizard.beneficiaryMarried",
-                            )}
+                            {t("documentVaultPage.components.configWizard.beneficiaryMarried")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {t(
-                              "documentVaultPage.components.configWizard.beneficiaryMarriedDesc",
-                            )}
+                            {t("documentVaultPage.components.configWizard.beneficiaryMarriedDesc")}
                           </div>
                         </div>
                       </label>
@@ -224,22 +189,15 @@ export function ConfigurationWizard({
                         <Checkbox
                           checked={scenarioFlags.name_change_any_party || false}
                           onCheckedChange={(checked) =>
-                            handleFlagChange(
-                              "name_change_any_party",
-                              checked as boolean,
-                            )
+                            handleFlagChange("name_change_any_party", checked as boolean)
                           }
                         />
                         <div>
                           <div className="font-medium">
-                            {t(
-                              "documentVaultPage.components.configWizard.nameChange",
-                            )}
+                            {t("documentVaultPage.components.configWizard.nameChange")}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {t(
-                              "documentVaultPage.components.configWizard.nameChangeDesc",
-                            )}
+                            {t("documentVaultPage.components.configWizard.nameChangeDesc")}
                           </div>
                         </div>
                       </label>
@@ -262,14 +220,10 @@ export function ConfigurationWizard({
                       />
                       <div>
                         <div className="font-medium">
-                          {t(
-                            "documentVaultPage.components.configWizard.adoptedChild",
-                          )}
+                          {t("documentVaultPage.components.configWizard.adoptedChild")}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {t(
-                            "documentVaultPage.components.configWizard.adoptedChildDesc",
-                          )}
+                          {t("documentVaultPage.components.configWizard.adoptedChildDesc")}
                         </div>
                       </div>
                     </label>
@@ -278,22 +232,15 @@ export function ConfigurationWizard({
                       <Checkbox
                         checked={scenarioFlags.child_stepchild || false}
                         onCheckedChange={(checked) =>
-                          handleFlagChange(
-                            "child_stepchild",
-                            checked as boolean,
-                          )
+                          handleFlagChange("child_stepchild", checked as boolean)
                         }
                       />
                       <div>
                         <div className="font-medium">
-                          {t(
-                            "documentVaultPage.components.configWizard.stepchild",
-                          )}
+                          {t("documentVaultPage.components.configWizard.stepchild")}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {t(
-                            "documentVaultPage.components.configWizard.stepchildDesc",
-                          )}
+                          {t("documentVaultPage.components.configWizard.stepchildDesc")}
                         </div>
                       </div>
                     </label>
@@ -303,30 +250,21 @@ export function ConfigurationWizard({
                 {/* Financial flags */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm">
-                    {t(
-                      "documentVaultPage.components.configWizard.financialSupport",
-                    )}
+                    {t("documentVaultPage.components.configWizard.financialSupport")}
                   </h4>
                   <label className="flex items-start space-x-3">
                     <Checkbox
                       checked={scenarioFlags.joint_sponsor_used || false}
                       onCheckedChange={(checked) =>
-                        handleFlagChange(
-                          "joint_sponsor_used",
-                          checked as boolean,
-                        )
+                        handleFlagChange("joint_sponsor_used", checked as boolean)
                       }
                     />
                     <div>
                       <div className="font-medium">
-                        {t(
-                          "documentVaultPage.components.configWizard.jointSponsor",
-                        )}
+                        {t("documentVaultPage.components.configWizard.jointSponsor")}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {t(
-                          "documentVaultPage.components.configWizard.jointSponsorDesc",
-                        )}
+                        {t("documentVaultPage.components.configWizard.jointSponsorDesc")}
                       </div>
                     </div>
                   </label>
@@ -335,22 +273,15 @@ export function ConfigurationWizard({
                     <Checkbox
                       checked={scenarioFlags.household_member_used || false}
                       onCheckedChange={(checked) =>
-                        handleFlagChange(
-                          "household_member_used",
-                          checked as boolean,
-                        )
+                        handleFlagChange("household_member_used", checked as boolean)
                       }
                     />
                     <div>
                       <div className="font-medium">
-                        {t(
-                          "documentVaultPage.components.configWizard.householdMember",
-                        )}
+                        {t("documentVaultPage.components.configWizard.householdMember")}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {t(
-                          "documentVaultPage.components.configWizard.householdMemberDesc",
-                        )}
+                        {t("documentVaultPage.components.configWizard.householdMemberDesc")}
                       </div>
                     </div>
                   </label>
@@ -370,14 +301,10 @@ export function ConfigurationWizard({
                     />
                     <div>
                       <div className="font-medium">
-                        {t(
-                          "documentVaultPage.components.configWizard.militaryService",
-                        )}
+                        {t("documentVaultPage.components.configWizard.militaryService")}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {t(
-                          "documentVaultPage.components.configWizard.militaryServiceDesc",
-                        )}
+                        {t("documentVaultPage.components.configWizard.militaryServiceDesc")}
                       </div>
                     </div>
                   </label>
@@ -391,14 +318,10 @@ export function ConfigurationWizard({
                     />
                     <div>
                       <div className="font-medium">
-                        {t(
-                          "documentVaultPage.components.configWizard.criminalHistory",
-                        )}
+                        {t("documentVaultPage.components.configWizard.criminalHistory")}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {t(
-                          "documentVaultPage.components.configWizard.criminalHistoryDesc",
-                        )}
+                        {t("documentVaultPage.components.configWizard.criminalHistoryDesc")}
                       </div>
                     </div>
                   </label>
@@ -407,11 +330,7 @@ export function ConfigurationWizard({
             </div>
 
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setStep(1)}
-                className="flex-1"
-              >
+              <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                 {t("documentVaultPage.components.configWizard.back")}
               </Button>
               <Button onClick={() => setStep(3)} className="flex-1">
@@ -449,9 +368,7 @@ export function ConfigurationWizard({
 
                 <div>
                   <Label htmlFor="petitionerName">
-                    {t(
-                      "documentVaultPage.components.configWizard.petitionerName",
-                    )}
+                    {t("documentVaultPage.components.configWizard.petitionerName")}
                   </Label>
                   <Input
                     id="petitionerName"
@@ -463,9 +380,7 @@ export function ConfigurationWizard({
 
                 <div>
                   <Label htmlFor="beneficiaryName">
-                    {t(
-                      "documentVaultPage.components.configWizard.beneficiaryName",
-                    )}
+                    {t("documentVaultPage.components.configWizard.beneficiaryName")}
                   </Label>
                   <Input
                     id="beneficiaryName"
@@ -478,9 +393,7 @@ export function ConfigurationWizard({
                 {scenarioFlags.joint_sponsor_used && (
                   <div>
                     <Label htmlFor="jointSponsorName">
-                      {t(
-                        "documentVaultPage.components.configWizard.jointSponsorName",
-                      )}
+                      {t("documentVaultPage.components.configWizard.jointSponsorName")}
                     </Label>
                     <Input
                       id="jointSponsorName"
@@ -494,11 +407,7 @@ export function ConfigurationWizard({
             </div>
 
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setStep(2)}
-                className="flex-1"
-              >
+              <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
                 {t("documentVaultPage.components.configWizard.back")}
               </Button>
               <Button onClick={handleComplete} className="flex-1">

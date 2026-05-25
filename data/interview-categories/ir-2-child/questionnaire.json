@@ -153,12 +153,7 @@
           "label": "How do you communicate with them?",
           "type": "select",
           "required": true,
-          "options": [
-            "Phone calls",
-            "Video calls",
-            "Text messages",
-            "All of the above"
-          ]
+          "options": ["Phone calls", "Video calls", "Text messages", "All of the above"]
         },
         {
           "key": "has_photos_with_parent",

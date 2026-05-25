@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
-
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -110,9 +109,7 @@ export default function SignupPage() {
       const result = await signUp(email, password);
       if (result.error) {
         if (result.error.message.includes("already exists")) {
-          setError(
-            "An account with this email already exists. Please sign in.",
-          );
+          setError("An account with this email already exists. Please sign in.");
         } else if (result.error.message.includes("password")) {
           setError("Password is too weak. Please use a stronger password.");
         } else {
@@ -175,18 +172,14 @@ export default function SignupPage() {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              Check your email
-            </h1>
-            <p className="text-muted-foreground mb-2">
-              We sent a confirmation link to:
-            </p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
+            <p className="text-muted-foreground mb-2">We sent a confirmation link to:</p>
             <p className="text-primary font-semibold mb-6">{email}</p>
 
             <div className="bg-muted/20 rounded-xl p-4 mb-6">
               <p className="text-sm text-muted-foreground">
-                Click the link in your email to confirm your account. The link
-                will expire in 24 hours.
+                Click the link in your email to confirm your account. The link will expire in 24
+                hours.
               </p>
             </div>
 
@@ -235,9 +228,7 @@ export default function SignupPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-foreground">Create Account</h1>
-          <p className="text-muted-foreground mt-2">
-            Get started with Rahvana today
-          </p>
+          <p className="text-muted-foreground mt-2">Get started with Rahvana today</p>
         </div>
 
         {/* Google Sign Up Button */}
@@ -273,9 +264,7 @@ export default function SignupPage() {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-background text-muted-foreground">
-              or sign up with email
-            </span>
+            <span className="px-4 bg-background text-muted-foreground">or sign up with email</span>
           </div>
         </div>
 
@@ -283,9 +272,7 @@ export default function SignupPage() {
         <Card className="p-6 bg-card shadow-lg border-border rounded-2xl">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-foreground">Email Address</label>
               <Input
                 type="email"
                 value={email}
@@ -298,9 +285,7 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-foreground">Password</label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
@@ -317,12 +302,7 @@ export default function SignupPage() {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -337,12 +317,7 @@ export default function SignupPage() {
                       />
                     </svg>
                   ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -361,25 +336,20 @@ export default function SignupPage() {
                       <div
                         key={level}
                         className={`h-1 flex-1 rounded-full transition-colors ${
-                          level <= passwordStrength
-                            ? getStrengthColor()
-                            : "bg-muted"
+                          level <= passwordStrength ? getStrengthColor() : "bg-muted"
                         }`}
                       />
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Password strength:{" "}
-                    <span className="font-medium">{getStrengthText()}</span>
+                    Password strength: <span className="font-medium">{getStrengthText()}</span>
                   </p>
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Confirm Password
-              </label>
+              <label className="block text-sm font-medium text-foreground">Confirm Password</label>
               <div className="relative">
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
@@ -402,12 +372,7 @@ export default function SignupPage() {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showConfirmPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -422,12 +387,7 @@ export default function SignupPage() {
                       />
                     </svg>
                   ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -469,10 +429,7 @@ export default function SignupPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={
-                isSubmitting ||
-                (confirmPassword !== "" && password !== confirmPassword)
-              }
+              disabled={isSubmitting || (confirmPassword !== "" && password !== confirmPassword)}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? "Creating account..." : "Create Account"}
@@ -483,10 +440,7 @@ export default function SignupPage() {
         {/* Sign In Link */}
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-primary hover:underline"
-          >
+          <Link href="/login" className="font-semibold text-primary hover:underline">
             Sign in
           </Link>
         </p>
@@ -494,11 +448,11 @@ export default function SignupPage() {
 
       {/* Full-screen Loading Overlay */}
       {isSubmitting && (
-        <Loader 
-          fullScreen 
-          size="xl" 
-          text="Creating Account..." 
-          subText="Setting up your secure workspace" 
+        <Loader
+          fullScreen
+          size="xl"
+          text="Creating Account..."
+          subText="Setting up your secure workspace"
         />
       )}
     </div>

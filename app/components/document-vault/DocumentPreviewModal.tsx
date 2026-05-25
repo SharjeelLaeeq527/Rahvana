@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  DocumentDefinition,
-  UploadedDocument,
-} from "@/lib/document-vault/types";
+import { DocumentDefinition, UploadedDocument } from "@/lib/document-vault/types";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, ZoomIn, ZoomOut, X } from "lucide-react";
@@ -39,10 +36,7 @@ export function DocumentPreviewModal({
 
     // If it's a multi-upload document, the specific type is stored in notes
     if (uploadedDoc?.notes?.startsWith("Type: ")) {
-      const specificType = uploadedDoc.notes
-        .split("\n")[0]
-        .replace("Type: ", "")
-        .trim();
+      const specificType = uploadedDoc.notes.split("\n")[0].replace("Type: ", "").trim();
       return `${specificType} / ${categoryName}`;
     }
 
@@ -109,9 +103,7 @@ export function DocumentPreviewModal({
 
         {/* Header with Title */}
         <div className="relative z-20 p-4 sm:p-6 border-b bg-slate-50 dark:bg-slate-900 flex justify-between items-center gap-4 shrink-0">
-          <h2 className="text-lg sm:text-xl font-semibold line-clamp-1">
-            {displayTitle}
-          </h2>
+          <h2 className="text-lg sm:text-xl font-semibold line-clamp-1">{displayTitle}</h2>
           <Button
             variant="ghost"
             size="icon"
@@ -119,9 +111,7 @@ export function DocumentPreviewModal({
             onClick={onClose}
           >
             <X className="h-4 w-4" />
-            <span className="sr-only">
-              {t("documentVaultPage.components.previewModal.close")}
-            </span>
+            <span className="sr-only">{t("documentVaultPage.components.previewModal.close")}</span>
           </Button>
         </div>
 
@@ -129,10 +119,7 @@ export function DocumentPreviewModal({
         <div className="relative flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4">
           {isLoading && (
             <div className="text-center">
-              <Loader
-                size="md"
-                text={t("documentVaultPage.components.previewModal.loading")}
-              />
+              <Loader size="md" text={t("documentVaultPage.components.previewModal.loading")} />
             </div>
           )}
 
@@ -171,26 +158,18 @@ export function DocumentPreviewModal({
               {!isPdf && !isImage && (
                 <div className="text-center p-8">
                   <div className="text-6xl mb-4">📄</div>
-                  <p className="text-muted-foreground text-lg mb-2">
-                    {displayTitle}
-                  </p>
+                  <p className="text-muted-foreground text-lg mb-2">{displayTitle}</p>
                   <p className="text-sm text-muted-foreground mb-4">
                     {t("documentVaultPage.components.previewModal.fileType")}
-                    {uploadedDoc.mimeType ||
-                      t("documentVaultPage.components.previewModal.unknown")}
+                    {uploadedDoc.mimeType || t("documentVaultPage.components.previewModal.unknown")}
                   </p>
                   <Button
                     onClick={() =>
-                      window.open(
-                        `/api/documents/${uploadedDoc.id}/download`,
-                        "_blank",
-                      )
+                      window.open(`/api/documents/${uploadedDoc.id}/download`, "_blank")
                     }
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    {t(
-                      "documentVaultPage.components.previewModal.downloadToView",
-                    )}
+                    {t("documentVaultPage.components.previewModal.downloadToView")}
                   </Button>
                 </div>
               )}
@@ -201,23 +180,11 @@ export function DocumentPreviewModal({
         {/* Footer with Zoom controls (only for PDF) */}
         {!isLoading && previewUrl && isPdf && (
           <div className="flex items-center justify-center gap-2 p-4 border-t bg-slate-50 dark:bg-slate-900 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleZoomOut}
-              disabled={zoom <= 50}
-            >
+            <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={zoom <= 50}>
               <ZoomOut className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-medium min-w-[60px] text-center">
-              {zoom}%
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleZoomIn}
-              disabled={zoom >= 200}
-            >
+            <span className="text-sm font-medium min-w-[60px] text-center">{zoom}%</span>
+            <Button variant="outline" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
               <ZoomIn className="h-4 w-4" />
             </Button>
           </div>

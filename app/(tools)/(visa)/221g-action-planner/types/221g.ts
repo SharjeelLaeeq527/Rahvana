@@ -34,7 +34,11 @@ export interface FormSelections {
   irs_transcript?: boolean;
   proof_citizenship?: boolean;
   domicile?: boolean;
-  i864_sponsor_structure?: "petitioner-only" | "petitioner-hm" | "joint-sponsor" | "joint-sponsor-hm";
+  i864_sponsor_structure?:
+    | "petitioner-only"
+    | "petitioner-hm"
+    | "joint-sponsor"
+    | "joint-sponsor-hm";
   i864_petitioner_name?: string;
   i864_joint_sponsor_name?: string;
   i864_household_member_name?: string;
@@ -48,14 +52,14 @@ export interface FormSelections {
 
 export interface FormData {
   // Step 1: Case Basics (matching reference HTML)
-  visaType: string;         // immigrant | nonimmigrant
-  visaCategory: string;     // IR-1, CR-1, F-1, etc.
-  visaTypeOther: string;    // when visaCategory === 'other'
+  visaType: string; // immigrant | nonimmigrant
+  visaCategory: string; // IR-1, CR-1, F-1, etc.
+  visaTypeOther: string; // when visaCategory === 'other'
   interviewDate: string;
-  consularPost: string;     // e.g. "U.S. Embassy Islamabad"
-  ceacStatus: string;       // refused | administrative-processing | issued | ready | other
+  consularPost: string; // e.g. "U.S. Embassy Islamabad"
+  ceacStatus: string; // refused | administrative-processing | issued | ready | other
   caseNumber: string;
   beneficiaryName: string;
   passportNumber: string;
-  dateOfBirth: string;      // beneficiary DOB (YYYY-MM-DD)
+  dateOfBirth: string; // beneficiary DOB (YYYY-MM-DD)
 }

@@ -29,7 +29,8 @@ export default function PoliceCertificateGuidePage() {
       steps: [
         {
           title: "Visit Police Khidmat Markaz",
-          description: "Go to the Police Facilitation Center in your district (based on CNIC address).",
+          description:
+            "Go to the Police Facilitation Center in your district (based on CNIC address).",
         },
         {
           title: "Submit Application",
@@ -170,7 +171,9 @@ export default function PoliceCertificateGuidePage() {
               <Shield className="h-10 w-10" />
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">Police Character Certificate (PCC)</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                Police Character Certificate (PCC)
+              </h1>
               <p className="text-xl text-blue-100">
                 Required for every country you've lived in for 6+ months since age 16
               </p>
@@ -228,7 +231,8 @@ export default function PoliceCertificateGuidePage() {
               </h2>
               <p className="text-slate-600 leading-relaxed mb-4">
                 The Police Character Certificate (PCC) is a document that certifies you have{" "}
-                <strong>no criminal record</strong> in Pakistan. It's a mandatory requirement for US visa applications.
+                <strong>no criminal record</strong> in Pakistan. It's a mandatory requirement for US
+                visa applications.
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
@@ -238,9 +242,15 @@ export default function PoliceCertificateGuidePage() {
                       <strong>Important:</strong> You need a PCC from:
                     </p>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• <strong>Current residence</strong> (Pakistan)</li>
-                      <li>• <strong>Every country</strong> you've lived in for 6+ months since age 16</li>
-                      <li>• <strong>Every province</strong> in Pakistan where you've lived 6+ months</li>
+                      <li>
+                        • <strong>Current residence</strong> (Pakistan)
+                      </li>
+                      <li>
+                        • <strong>Every country</strong> you've lived in for 6+ months since age 16
+                      </li>
+                      <li>
+                        • <strong>Every province</strong> in Pakistan where you've lived 6+ months
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -285,7 +295,9 @@ export default function PoliceCertificateGuidePage() {
 
               {/* Province-Specific Info */}
               <div className="bg-gradient-to-br from-primary/5 to-blue-50 rounded-lg p-6 border border-primary/20">
-                <h3 className="font-semibold text-lg text-slate-800 mb-4">{currentProvince.name} - Quick Info</h3>
+                <h3 className="font-semibold text-lg text-slate-800 mb-4">
+                  {currentProvince.name} - Quick Info
+                </h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-slate-600 mb-1">Office</p>
@@ -316,7 +328,10 @@ export default function PoliceCertificateGuidePage() {
 
               <div className="space-y-6">
                 {currentProvince.steps.map((step, index) => (
-                  <div key={index} className="relative pl-8 pb-6 border-l-2 border-primary/30 last:border-0 last:pb-0">
+                  <div
+                    key={index}
+                    className="relative pl-8 pb-6 border-l-2 border-primary/30 last:border-0 last:pb-0"
+                  >
                     <div className="absolute -left-[9px] top-0 w-4 h-4 bg-primary rounded-full"></div>
                     <h3 className="font-semibold text-lg text-slate-800 mb-2">
                       Step {index + 1}: {step.title}
@@ -338,7 +353,9 @@ export default function PoliceCertificateGuidePage() {
                   <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-semibold text-slate-800 mb-1">Original CNIC</h3>
-                    <p className="text-slate-600">Bring your original Computerized National Identity Card</p>
+                    <p className="text-slate-600">
+                      Bring your original Computerized National Identity Card
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -384,7 +401,8 @@ export default function PoliceCertificateGuidePage() {
                   <div>
                     <h3 className="font-semibold text-red-800 mb-1">Wrong Province</h3>
                     <p className="text-sm text-red-700">
-                      Applying in the wrong province. You MUST apply based on your CNIC address, not current residence.
+                      Applying in the wrong province. You MUST apply based on your CNIC address, not
+                      current residence.
                     </p>
                   </div>
                 </div>
@@ -393,7 +411,8 @@ export default function PoliceCertificateGuidePage() {
                   <div>
                     <h3 className="font-semibold text-red-800 mb-1">Expired PCC</h3>
                     <p className="text-sm text-red-700">
-                      Using an old PCC. Most embassies require it to be issued within 6-12 months of your interview.
+                      Using an old PCC. Most embassies require it to be issued within 6-12 months of
+                      your interview.
                     </p>
                   </div>
                 </div>
@@ -402,7 +421,8 @@ export default function PoliceCertificateGuidePage() {
                   <div>
                     <h3 className="font-semibold text-red-800 mb-1">Missing Previous Residences</h3>
                     <p className="text-sm text-red-700">
-                      Not obtaining PCCs from all countries/provinces where you lived 6+ months. This is mandatory!
+                      Not obtaining PCCs from all countries/provinces where you lived 6+ months.
+                      This is mandatory!
                     </p>
                   </div>
                 </div>
@@ -430,7 +450,8 @@ export default function PoliceCertificateGuidePage() {
                   <div>
                     <h3 className="font-semibold text-green-800 mb-1">Apply Early</h3>
                     <p className="text-sm text-green-700">
-                      Start the PCC process as soon as possible. Processing times can vary, especially during busy periods.
+                      Start the PCC process as soon as possible. Processing times can vary,
+                      especially during busy periods.
                     </p>
                   </div>
                 </div>
@@ -439,7 +460,8 @@ export default function PoliceCertificateGuidePage() {
                   <div>
                     <h3 className="font-semibold text-green-800 mb-1">Visit Early Morning</h3>
                     <p className="text-sm text-green-700">
-                      Go to the police office early in the morning to avoid long queues and ensure same-day processing.
+                      Go to the police office early in the morning to avoid long queues and ensure
+                      same-day processing.
                     </p>
                   </div>
                 </div>
@@ -448,7 +470,8 @@ export default function PoliceCertificateGuidePage() {
                   <div>
                     <h3 className="font-semibold text-green-800 mb-1">Keep Receipt Safe</h3>
                     <p className="text-sm text-green-700">
-                      Your receipt is essential for collecting the PCC. Keep it in a safe place and bring it when collecting.
+                      Your receipt is essential for collecting the PCC. Keep it in a safe place and
+                      bring it when collecting.
                     </p>
                   </div>
                 </div>
@@ -457,7 +480,8 @@ export default function PoliceCertificateGuidePage() {
                   <div>
                     <h3 className="font-semibold text-green-800 mb-1">Get Multiple Copies</h3>
                     <p className="text-sm text-green-700">
-                      Request 2-3 certified copies of your PCC. You may need extras for NVC, embassy, or backup purposes.
+                      Request 2-3 certified copies of your PCC. You may need extras for NVC,
+                      embassy, or backup purposes.
                     </p>
                   </div>
                 </div>
@@ -507,14 +531,18 @@ export default function PoliceCertificateGuidePage() {
                   href="/guides/court-records"
                   className="block p-3 hover:bg-slate-50 rounded-lg transition-colors group"
                 >
-                  <h4 className="font-medium text-slate-700 group-hover:text-primary mb-1">Court Records</h4>
+                  <h4 className="font-medium text-slate-700 group-hover:text-primary mb-1">
+                    Court Records
+                  </h4>
                   <p className="text-xs text-slate-500">If you have legal history</p>
                 </Link>
                 <Link
                   href="/guides/interview-documents"
                   className="block p-3 hover:bg-slate-50 rounded-lg transition-colors group"
                 >
-                  <h4 className="font-medium text-slate-700 group-hover:text-primary mb-1">Interview Documents</h4>
+                  <h4 className="font-medium text-slate-700 group-hover:text-primary mb-1">
+                    Interview Documents
+                  </h4>
                   <p className="text-xs text-slate-500">What to bring to embassy</p>
                 </Link>
               </div>

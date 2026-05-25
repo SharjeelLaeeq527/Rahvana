@@ -7,7 +7,10 @@ import { UpgradeModal } from "./UpgradeModal";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 
 // ── Human-readable labels per feature key ────────────────────────────────────
-const FEATURE_LABELS: Record<string, { title: string; what: string; icon: "lock" | "crown" | "zap" | "shield" }> = {
+const FEATURE_LABELS: Record<
+  string,
+  { title: string; what: string; icon: "lock" | "crown" | "zap" | "shield" }
+> = {
   step_guides: {
     title: "Step-by-Step Guides Locked",
     what: "Guides, document upload buttons, and the document vault are not included in your current plan. You can still view the checklist and save manual entries.",
@@ -60,18 +63,21 @@ const FEATURE_LABELS: Record<string, { title: string; what: string; icon: "lock"
 // premium:   silver icon      → periwinkle-grey tones
 // executive: gold icon        → amber-cream tones
 // fallback:  lock             → cool slate-blue tones
-const TIER_THEME: Record<string, {
-  banner: string;        // banner background
-  border: string;        // banner border
-  iconCircle: string;    // circular icon wrapper bg
-  iconCircleBorder: string;
-  iconColor: string;     // icon / plan-icon tint
-  badge: string;         // hint pill classes
-  ctaColor: string;      // CTA link color
-  ctaHover: string;
-  titleColor: string;
-  descColor: string;
-}> = {
+const TIER_THEME: Record<
+  string,
+  {
+    banner: string; // banner background
+    border: string; // banner border
+    iconCircle: string; // circular icon wrapper bg
+    iconCircleBorder: string;
+    iconColor: string; // icon / plan-icon tint
+    badge: string; // hint pill classes
+    ctaColor: string; // CTA link color
+    ctaHover: string;
+    titleColor: string;
+    descColor: string;
+  }
+> = {
   basic: {
     banner: "bg-[#e4f4f2]",
     border: "border-[#98d0ca]",
@@ -128,10 +134,7 @@ interface StepEntitlementBannerProps {
   defaultOpen?: boolean;
 }
 
-export function StepEntitlementBanner({
-  stepKey,
-  defaultOpen = true,
-}: StepEntitlementBannerProps) {
+export function StepEntitlementBanner({ stepKey, defaultOpen = true }: StepEntitlementBannerProps) {
   const plan = usePlan();
   const [dismissed, setDismissed] = useState(false);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
@@ -168,10 +171,7 @@ export function StepEntitlementBanner({
   return (
     <>
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
       <div
@@ -191,10 +191,7 @@ export function StepEntitlementBanner({
           `}
         >
           {tierIconClass ? (
-            <span
-              className={`plan-icon ${tierIconClass}`}
-              style={{ width: 22, height: 22 }}
-            />
+            <span className={`plan-icon ${tierIconClass}`} style={{ width: 22, height: 22 }} />
           ) : (
             <IconEl size={15} strokeWidth={2.3} className={theme.iconColor} />
           )}
@@ -208,16 +205,16 @@ export function StepEntitlementBanner({
               {meta.title}
             </span>
             {hint && (
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${theme.badge}`}>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${theme.badge}`}
+              >
                 {hint}
               </span>
             )}
           </div>
 
           {/* Description */}
-          <p className={`text-[12px] leading-[1.65] ${theme.descColor}`}>
-            {meta.what}
-          </p>
+          <p className={`text-[12px] leading-[1.65] ${theme.descColor}`}>{meta.what}</p>
 
           {/* CTA */}
           {cta && (

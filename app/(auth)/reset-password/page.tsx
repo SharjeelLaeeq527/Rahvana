@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
-
 function ResetPasswordContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,8 +30,7 @@ function ResetPasswordContent() {
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   const hasSpecialCharacter = /[\W_]/.test(password);
-  const passwordsMatch =
-    password === confirmPassword && confirmPassword.length > 0;
+  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
 
   const passwordStrength = [
     hasMinLength,
@@ -107,7 +105,7 @@ function ResetPasswordContent() {
   if (!isValidToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
+        <div className="w-full max-w-md">
           <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
             <div className="px-8 py-12 text-center">
               {/* Error Icon */}
@@ -131,8 +129,8 @@ function ResetPasswordContent() {
                 Link expired or invalid
               </h1>
               <p className="text-muted-foreground text-[15px] leading-relaxed mb-8">
-                This password reset link has expired or is invalid. Please
-                request a new one to continue.
+                This password reset link has expired or is invalid. Please request a new one to
+                continue.
               </p>
 
               <div className="space-y-3">
@@ -161,7 +159,7 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
+        <div className="w-full max-w-md">
           <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
             <div className="px-8 py-12 text-center">
               {/* Success Icon */}
@@ -181,12 +179,10 @@ function ResetPasswordContent() {
                 </svg>
               </div>
 
-              <h1 className="text-2xl font-semibold text-foreground mb-2">
-                Password updated!
-              </h1>
+              <h1 className="text-2xl font-semibold text-foreground mb-2">Password updated!</h1>
               <p className="text-muted-foreground text-[15px] leading-relaxed mb-8">
-                Your password has been successfully reset. You can now sign in
-                with your new password.
+                Your password has been successfully reset. You can now sign in with your new
+                password.
               </p>
 
               <Button
@@ -217,12 +213,9 @@ function ResetPasswordContent() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-medium text-blue-900">
-                  Security tip
-                </p>
+                <p className="text-sm font-medium text-blue-900">Security tip</p>
                 <p className="text-sm text-blue-700 mt-0.5">
-                  If you didn&apos;t request this change, please contact support
-                  immediately.
+                  If you didn&apos;t request this change, please contact support immediately.
                 </p>
               </div>
             </div>
@@ -272,12 +265,9 @@ function ResetPasswordContent() {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-semibold text-foreground mb-2">
-              Create new password
-            </h1>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">Create new password</h1>
             <p className="text-muted-foreground text-[15px] leading-relaxed">
-              Your new password must be different from previously used
-              passwords.
+              Your new password must be different from previously used passwords.
             </p>
           </div>
 
@@ -286,9 +276,7 @@ function ResetPasswordContent() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* New Password */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
-                  New password
-                </label>
+                <label className="block text-sm font-medium text-foreground">New password</label>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
@@ -372,11 +360,7 @@ function ResetPasswordContent() {
                         className={`flex items-center gap-2 text-xs ${hasMinLength ? "text-emerald-600" : "text-muted-foreground"}`}
                       >
                         {hasMinLength ? (
-                          <svg
-                            className="w-3.5 h-3.5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                             <path
                               fillRule="evenodd"
                               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -399,11 +383,7 @@ function ResetPasswordContent() {
                         className={`flex items-center gap-2 text-xs ${hasUppercase ? "text-emerald-600" : "text-muted-foreground"}`}
                       >
                         {hasUppercase ? (
-                          <svg
-                            className="w-3.5 h-3.5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                             <path
                               fillRule="evenodd"
                               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -426,11 +406,7 @@ function ResetPasswordContent() {
                         className={`flex items-center gap-2 text-xs ${hasLowercase ? "text-emerald-600" : "text-muted-foreground"}`}
                       >
                         {hasLowercase ? (
-                          <svg
-                            className="w-3.5 h-3.5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                             <path
                               fillRule="evenodd"
                               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -453,11 +429,7 @@ function ResetPasswordContent() {
                         className={`flex items-center gap-2 text-xs ${hasNumber ? "text-emerald-600" : "text-muted-foreground"}`}
                       >
                         {hasNumber ? (
-                          <svg
-                            className="w-3.5 h-3.5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                             <path
                               fillRule="evenodd"
                               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -564,11 +536,7 @@ function ResetPasswordContent() {
                 )}
                 {passwordsMatch && (
                   <p className="text-xs text-emerald-600 flex items-center gap-1">
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -608,9 +576,7 @@ function ResetPasswordContent() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={
-                  isSubmitting || !passwordsMatch || passwordStrength < 2
-                }
+                disabled={isSubmitting || !passwordsMatch || passwordStrength < 2}
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/10"
               >
                 {isSubmitting ? "Updating password..." : "Reset password"}
@@ -627,12 +593,7 @@ function ResetPasswordContent() {
               href="/login"
               className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -647,12 +608,7 @@ function ResetPasswordContent() {
 
         {/* Security Note */}
         <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

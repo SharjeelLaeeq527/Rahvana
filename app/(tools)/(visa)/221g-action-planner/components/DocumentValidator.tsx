@@ -1,22 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { useState, useRef, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Upload, CheckCircle, AlertTriangle, XCircle, FileText, Eye, Scan } from "lucide-react";
+import Image from "next/image";
 import {
-  Upload,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  FileText,
-  Eye,
-  Scan
-} from 'lucide-react';
-import Image from 'next/image';
-import { DocumentType, DocumentValidationResult, validateByDocumentType } from '../utils/documentValidation';
+  DocumentType,
+  DocumentValidationResult,
+  validateByDocumentType,
+} from "../utils/documentValidation";
 
 interface DocumentValidatorProps {
   documentType: DocumentType;
@@ -29,7 +25,7 @@ const DocumentValidator = ({
   documentType,
   onValidationComplete,
   title = "Document Validator",
-  description = "Upload your document for validation"
+  description = "Upload your document for validation",
 }: DocumentValidatorProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,14 +47,14 @@ const DocumentValidator = ({
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
-      
+
       // Create preview URL
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
       const url = URL.createObjectURL(selectedFile);
       setPreviewUrl(url);
-      
+
       // Reset previous results
       setValidationResult(null);
     }
@@ -68,12 +64,14 @@ const DocumentValidator = ({
     if (!file) {
       return {
         isValid: false,
-        issues: [{
-          severity: 'critical',
-          message: 'No document uploaded',
-          suggestion: 'Please upload a document to validate'
-        }],
-        score: 0
+        issues: [
+          {
+            severity: "critical",
+            message: "No document uploaded",
+            suggestion: "Please upload a document to validate",
+          },
+        ],
+        score: 0,
       };
     }
 
@@ -83,17 +81,19 @@ const DocumentValidator = ({
     try {
       // Check if file is valid before processing
       if (file.size === 0) {
-        throw new Error('File is empty');
+        throw new Error("File is empty");
       }
 
       // Validate file type before processing
-      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        throw new Error(`Unsupported file type: ${file.type}. Please upload an image (JPG, PNG) or PDF.`);
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+        throw new Error(
+          `Unsupported file type: ${file.type}. Please upload an image (JPG, PNG) or PDF.`
+        );
       }
 
       // Use the new OCR processor that handles both images and PDFs
-      const { processDocumentOCR } = await import('../utils/ocrProcessor');
-      
+      const { processDocumentOCR } = await import("../utils/ocrProcessor");
+
       const text = await processDocumentOCR(file, (progressInfo) => {
         setProgress(progressInfo.current);
       });
@@ -104,29 +104,41 @@ const DocumentValidator = ({
       onValidationComplete(result);
       return result;
     } catch (error: unknown) {
-      console.error('OCR processing failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+      console.error("OCR processing failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
       // Check if it's a file format issue
-      let suggestion = 'Try uploading a clearer image or PDF file';
-      if (errorMessage.includes('image') || errorMessage.includes('read') || errorMessage.includes('decode')) {
-        suggestion = 'File format not supported or corrupted. Try JPG, PNG, or PDF format.';
-      } else if (errorMessage.includes('empty')) {
-        suggestion = 'File is empty. Please select a valid document.';
-      } else if (errorMessage.includes('PDF')) {
-        suggestion = 'PDF processing failed. Ensure the PDF is not password-protected or corrupted.';
-      } else if (file && file.type && !file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        suggestion = 'Unsupported file type. Please upload an image (JPG, PNG) or PDF file.';
+      let suggestion = "Try uploading a clearer image or PDF file";
+      if (
+        errorMessage.includes("image") ||
+        errorMessage.includes("read") ||
+        errorMessage.includes("decode")
+      ) {
+        suggestion = "File format not supported or corrupted. Try JPG, PNG, or PDF format.";
+      } else if (errorMessage.includes("empty")) {
+        suggestion = "File is empty. Please select a valid document.";
+      } else if (errorMessage.includes("PDF")) {
+        suggestion =
+          "PDF processing failed. Ensure the PDF is not password-protected or corrupted.";
+      } else if (
+        file &&
+        file.type &&
+        !file.type.startsWith("image/") &&
+        file.type !== "application/pdf"
+      ) {
+        suggestion = "Unsupported file type. Please upload an image (JPG, PNG) or PDF file.";
       }
-      
+
       const errorResult: DocumentValidationResult = {
         isValid: false,
-        issues: [{
-          severity: 'critical',
-          message: `Failed to process document: ${errorMessage}`,
-          suggestion
-        }],
-        score: 0
+        issues: [
+          {
+            severity: "critical",
+            message: `Failed to process document: ${errorMessage}`,
+            suggestion,
+          },
+        ],
+        score: 0,
       };
       setValidationResult(errorResult);
       onValidationComplete(errorResult);
@@ -136,13 +148,16 @@ const DocumentValidator = ({
     }
   };
 
-
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return <XCircle className="h-4 w-4" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4" />;
-      case 'info': return <Eye className="h-4 w-4" />;
-      default: return <CheckCircle className="h-4 w-4" />;
+      case "critical":
+        return <XCircle className="h-4 w-4" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4" />;
+      case "info":
+        return <Eye className="h-4 w-4" />;
+      default:
+        return <CheckCircle className="h-4 w-4" />;
     }
   };
 
@@ -153,7 +168,7 @@ const DocumentValidator = ({
           <CardTitle className="text-xl font-bold text-primary">{title}</CardTitle>
           {file && (
             <Badge variant="outline" className="capitalize">
-              {documentType.replace('_', ' ')}
+              {documentType.replace("_", " ")}
             </Badge>
           )}
         </div>
@@ -165,9 +180,7 @@ const DocumentValidator = ({
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <Upload className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">Upload document</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              PNG, JPG, PDF up to 10MB
-            </p>
+            <p className="mt-1 text-sm text-gray-500">PNG, JPG, PDF up to 10MB</p>
             <div className="mt-4">
               <Input
                 type="file"
@@ -177,33 +190,29 @@ const DocumentValidator = ({
                 className="hidden"
                 id="document-upload"
               />
-              <Label 
-                htmlFor="document-upload" 
+              <Label
+                htmlFor="document-upload"
                 className="cursor-pointer inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Select File
               </Label>
             </div>
-            {file && (
-              <p className="mt-2 text-sm text-gray-600 truncate">
-                Selected: {file.name}
-              </p>
-            )}
+            {file && <p className="mt-2 text-sm text-gray-600 truncate">Selected: {file.name}</p>}
           </div>
 
           {/* Preview section */}
           {previewUrl && file && (
             <div className="border rounded-lg p-4">
               <h4 className="font-medium mb-2">Document Preview</h4>
-              {file.type.startsWith('image/') ? (
+              {file.type.startsWith("image/") ? (
                 <Image
                   src={previewUrl!}
                   alt="Document preview"
                   width={0}
                   height={0}
                   sizes="100vw"
-                  style={{ width: '100%', height: 'auto' }}
+                  style={{ width: "100%", height: "auto" }}
                   className="max-w-full rounded border"
                 />
               ) : (
@@ -217,13 +226,13 @@ const DocumentValidator = ({
 
           {/* Process button */}
           <div className="flex justify-center">
-            <Button 
-              onClick={validateDocument} 
+            <Button
+              onClick={validateDocument}
               disabled={!file || isProcessing}
               className="bg-primary hover:bg-primary/70"
             >
               <Scan className="h-4 w-4 mr-2" />
-              {isProcessing ? 'Validating...' : 'Validate Document'}
+              {isProcessing ? "Validating..." : "Validate Document"}
             </Button>
           </div>
 
@@ -244,11 +253,13 @@ const DocumentValidator = ({
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
                   <h4 className="font-medium">Validation Result</h4>
-                  <p className={`text-sm ${validationResult.isValid ? 'text-green-600' : 'text-red-600'}`}>
-                    {validationResult.isValid ? 'Document appears valid' : 'Issues detected'}
+                  <p
+                    className={`text-sm ${validationResult.isValid ? "text-green-600" : "text-red-600"}`}
+                  >
+                    {validationResult.isValid ? "Document appears valid" : "Issues detected"}
                   </p>
                 </div>
-                <Badge variant={validationResult.isValid ? 'default' : 'destructive'}>
+                <Badge variant={validationResult.isValid ? "default" : "destructive"}>
                   {validationResult.score}% Quality
                 </Badge>
               </div>
@@ -260,9 +271,11 @@ const DocumentValidator = ({
                     <Alert
                       key={idx}
                       className={`${
-                        issue.severity === 'critical' ? 'bg-red-50 border-red-200' :
-                        issue.severity === 'warning' ? 'bg-yellow-50 border-yellow-200' :
-                        'bg-primary/10 border-primary/30'
+                        issue.severity === "critical"
+                          ? "bg-red-50 border-red-200"
+                          : issue.severity === "warning"
+                            ? "bg-yellow-50 border-yellow-200"
+                            : "bg-primary/10 border-primary/30"
                       }`}
                     >
                       <div className="flex items-start space-x-2">
@@ -295,14 +308,16 @@ const DocumentValidator = ({
               Document-Specific Guidance
             </h4>
             <ul className="mt-2 space-y-1 text-sm text-primary">
-              {documentType === 'passport' && (
+              {documentType === "passport" && (
                 <>
-                  <li>• Ensure passport is valid for at least 6 months beyond your intended stay</li>
+                  <li>
+                    • Ensure passport is valid for at least 6 months beyond your intended stay
+                  </li>
                   <li>• Check that all personal information is clearly visible</li>
                   <li>• Verify that the photo is clear and recognizable</li>
                 </>
               )}
-              {documentType === 'nikah_nama' && (
+              {documentType === "nikah_nama" && (
                 <>
                   <li>• Verify names match other documents exactly</li>
                   <li>• Check that the Nikah Khwan&apos;s signature and seal are present</li>
@@ -310,35 +325,35 @@ const DocumentValidator = ({
                   <li>• For Urdu documents, manual verification is recommended</li>
                 </>
               )}
-              {documentType === 'birth_certificate' && (
+              {documentType === "birth_certificate" && (
                 <>
                   <li>• Ensure it&apos;s a certified copy from the vital records office</li>
                   <li>• Verify all names and dates match other documents</li>
                   <li>• Check that official seal and signature are present</li>
                 </>
               )}
-              {documentType === 'marriage_certificate' && (
+              {documentType === "marriage_certificate" && (
                 <>
                   <li>• Ensure it&apos;s a certified copy from the vital records office</li>
                   <li>• Verify both spouses&apos; names are correct</li>
                   <li>• Check that officiant and witness signatures are present</li>
                 </>
               )}
-              {documentType === 'police_certificate' && (
+              {documentType === "police_certificate" && (
                 <>
                   <li>• Ensure it covers all required periods of residence</li>
                   <li>• Verify it&apos;s not older than 1 year from submission date</li>
                   <li>• Check that it&apos;s from the appropriate authority</li>
                 </>
               )}
-              {documentType === 'medical_examination' && (
+              {documentType === "medical_examination" && (
                 <>
                   <li>• Ensure it&apos;s Form I-693 completed by a panel physician</li>
                   <li>• Verify all required vaccinations are documented</li>
                   <li>• Check that the medical officer&apos;s determination is clear</li>
                 </>
               )}
-              {documentType === 'translation' && (
+              {documentType === "translation" && (
                 <>
                   <li>• Ensure it&apos;s a certified translation by a qualified translator</li>
                   <li>• Verify the translator&apos;s signature and credentials are present</li>

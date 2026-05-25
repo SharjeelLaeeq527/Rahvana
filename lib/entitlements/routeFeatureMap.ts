@@ -17,7 +17,6 @@ export interface RouteGate {
 }
 
 export const ROUTE_FEATURE_MAP: Record<string, RouteGate> = {
-
   // ── Basic+ (locked for Free only) ─────────────────────────────────────────
   //
   // NOTE (Result-Lock strategy): The tools below have been switched from

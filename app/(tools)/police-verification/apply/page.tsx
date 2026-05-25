@@ -110,9 +110,7 @@ function PoliceApplyContent() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -134,10 +132,7 @@ function PoliceApplyContent() {
       }
     }
 
-    if (
-      name.toLowerCase().includes("mobile") ||
-      name.toLowerCase().includes("contact")
-    ) {
+    if (name.toLowerCase().includes("mobile") || name.toLowerCase().includes("contact")) {
       newValue = formatMobile(value);
       const digits = newValue.replace(/\D/g, "");
       if (digits.length < 11) {
@@ -169,10 +164,7 @@ function PoliceApplyContent() {
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
-  const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    name: string,
-  ) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
     const file = e.target.files?.[0];
     if (file) {
       const ext = file.name.split(".").pop()?.toLowerCase();
@@ -180,10 +172,7 @@ function PoliceApplyContent() {
       // Photograph and Passport Copy: JPG, PNG
       if (name === "photograph" || name === "passportCopy") {
         if (!["jpg", "jpeg", "png"].includes(ext || "")) {
-          showToast(
-            "Only JPG and PNG formats are allowed for this field.",
-            "error",
-          );
+          showToast("Only JPG and PNG formats are allowed for this field.", "error");
           return;
         }
       }
@@ -225,8 +214,7 @@ function PoliceApplyContent() {
       if (!formData.stayFrom) isValid = false;
       if (!formData.stayTo) isValid = false;
       if (!formData.district) isValid = false;
-      if (formData.residingIn === "Abroad" && !formData.residingCountry)
-        isValid = false;
+      if (formData.residingIn === "Abroad" && !formData.residingCountry) isValid = false;
       if (!formData.targetCountry) isValid = false;
 
       // Passport checks (assuming required)
@@ -234,8 +222,7 @@ function PoliceApplyContent() {
       if (!formData.passportIssue) isValid = false;
       if (!formData.passportExpiry) isValid = false;
 
-      if (!isValid)
-        showToast("Please fill all required fields in Step 1", "error");
+      if (!isValid) showToast("Please fill all required fields in Step 1", "error");
     }
 
     if (step === 2) {
@@ -257,11 +244,7 @@ function PoliceApplyContent() {
       )
         isValid = false;
 
-      if (!isValid)
-        showToast(
-          "Please fill all details for both witnesses in Step 2",
-          "error",
-        );
+      if (!isValid) showToast("Please fill all details for both witnesses in Step 2", "error");
     }
 
     if (step === 3) {
@@ -282,7 +265,7 @@ function PoliceApplyContent() {
         showToast(
           "Please upload all required documents" +
             (formData.arrested === "Yes" ? " including arrest details." : "."),
-          "error",
+          "error"
         );
     }
 
@@ -317,31 +300,29 @@ function PoliceApplyContent() {
         const { id, requestId } = result;
 
         // 2. Upload files
-        const fileUploadPromises = Object.entries(files).map(
-          async ([key, file]) => {
-            if (!file) return;
+        const fileUploadPromises = Object.entries(files).map(async ([key, file]) => {
+          if (!file) return;
 
-            const uploadFormData = new FormData();
-            uploadFormData.append("file", file);
-            uploadFormData.append("requestId", id);
-            uploadFormData.append("fileType", key);
+          const uploadFormData = new FormData();
+          uploadFormData.append("file", file);
+          uploadFormData.append("requestId", id);
+          uploadFormData.append("fileType", key);
 
-            const uploadRes = await fetch("/api/police-verification/upload", {
-              method: "POST",
-              body: uploadFormData,
-            });
+          const uploadRes = await fetch("/api/police-verification/upload", {
+            method: "POST",
+            body: uploadFormData,
+          });
 
-            if (!uploadRes.ok) {
-              console.error(`Failed to upload ${key}`);
-            }
-          },
-        );
+          if (!uploadRes.ok) {
+            console.error(`Failed to upload ${key}`);
+          }
+        });
 
         await Promise.all(fileUploadPromises);
 
         showToast(
           `Application Submitted Successfully! Your Request ID is: ${requestId}`,
-          "success",
+          "success"
         );
         // router.push("/user-dashboard");
       } catch (error) {
@@ -349,7 +330,7 @@ function PoliceApplyContent() {
         showToast(
           "Failed to submit application: " +
             (error instanceof Error ? error.message : "Unknown error"),
-          "error",
+          "error"
         );
       } finally {
         setIsSubmitting(false);
@@ -404,20 +385,12 @@ function PoliceApplyContent() {
             <div className="flex items-center gap-2 text-sm shrink-0">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                  currentStep >= 1
-                    ? "bg-primary text-white"
-                    : "bg-gray-100 text-gray-500"
+                  currentStep >= 1 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
                 }`}
               >
                 1
               </span>
-              <span
-                className={
-                  currentStep >= 1
-                    ? "text-gray-900 font-semibold"
-                    : "text-gray-400"
-                }
-              >
+              <span className={currentStep >= 1 ? "text-gray-900 font-semibold" : "text-gray-400"}>
                 Personal Info
               </span>
             </div>
@@ -425,20 +398,12 @@ function PoliceApplyContent() {
             <div className="flex items-center gap-2 text-sm shrink-0">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                  currentStep >= 2
-                    ? "bg-primary text-white"
-                    : "bg-gray-100 text-gray-500"
+                  currentStep >= 2 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
                 }`}
               >
                 2
               </span>
-              <span
-                className={
-                  currentStep >= 2
-                    ? "text-gray-900 font-semibold"
-                    : "text-gray-400"
-                }
-              >
+              <span className={currentStep >= 2 ? "text-gray-900 font-semibold" : "text-gray-400"}>
                 Details of Deponents/Guarantor
               </span>
             </div>
@@ -446,20 +411,12 @@ function PoliceApplyContent() {
             <div className="flex items-center gap-2 text-sm shrink-0">
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                  currentStep >= 3
-                    ? "bg-primary text-white"
-                    : "bg-gray-100 text-gray-500"
+                  currentStep >= 3 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
                 }`}
               >
                 3
               </span>
-              <span
-                className={
-                  currentStep >= 3
-                    ? "text-gray-900 font-semibold"
-                    : "text-gray-400"
-                }
-              >
+              <span className={currentStep >= 3 ? "text-gray-900 font-semibold" : "text-gray-400"}>
                 Documents Required
               </span>
             </div>
@@ -470,16 +427,10 @@ function PoliceApplyContent() {
         <div className="flex-1 p-6 md:p-12 overflow-y-auto">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                {...fadeIn}
-                className="space-y-6 md:space-y-8"
-              >
+              <motion.div key="step1" {...fadeIn} className="space-y-6 md:space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">
-                      Purpose
-                    </label>
+                    <label className="text-sm font-bold text-gray-700 ml-1">Purpose</label>
                     <select
                       name="purpose"
                       value={formData.purpose}
@@ -501,20 +452,14 @@ function PoliceApplyContent() {
                       className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none cursor-pointer"
                     >
                       <option value="">Select Type</option>
-                      <option value="Hard Copy">
-                        Hard Copy (Sign with Stamp)
-                      </option>
-                      <option value="Digital">
-                        Delivered via Email (Digital copy)
-                      </option>
+                      <option value="Hard Copy">Hard Copy (Sign with Stamp)</option>
+                      <option value="Digital">Delivered via Email (Digital copy)</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">
-                    Email Address
-                  </label>
+                  <label className="text-sm font-bold text-gray-700 ml-1">Email Address</label>
                   <div className="relative">
                     <Mail
                       className={`absolute left-4 top-1/2 -translate-y-1/2 ${
@@ -533,24 +478,18 @@ function PoliceApplyContent() {
                           ? "border-red-300 bg-red-50/30 focus:bg-white focus:border-red-500"
                           : "border-transparent focus:bg-white focus:border-primary"
                       } outline-none focus:ring-4 ${
-                        errors.email
-                          ? "focus:ring-red-500/5"
-                          : "focus:ring-primary/5"
+                        errors.email ? "focus:ring-red-500/5" : "focus:ring-primary/5"
                       }`}
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-xs text-red-500 ml-1 font-medium">
-                      {errors.email}
-                    </p>
+                    <p className="text-xs text-red-500 ml-1 font-medium">{errors.email}</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">
-                      Full Name
-                    </label>
+                    <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
                     <div className="relative">
                       <User
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -588,9 +527,7 @@ function PoliceApplyContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">
-                    Date Of Birth
-                  </label>
+                  <label className="text-sm font-bold text-gray-700 ml-1">Date Of Birth</label>
                   <div className="relative">
                     <Calendar
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -608,8 +545,7 @@ function PoliceApplyContent() {
 
                 <div className="bg-gray-50 p-6 rounded-4xl border border-gray-100 space-y-6">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <CreditCard size={20} className="text-primary" /> CNIC
-                    Details
+                    <CreditCard size={20} className="text-primary" /> CNIC Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -629,9 +565,7 @@ function PoliceApplyContent() {
                         }`}
                       />
                       {errors.cnic && (
-                        <p className="text-[10px] text-red-500 ml-1 font-bold">
-                          {errors.cnic}
-                        </p>
+                        <p className="text-[10px] text-red-500 ml-1 font-bold">{errors.cnic}</p>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -663,8 +597,7 @@ function PoliceApplyContent() {
 
                 <div className="bg-gray-50 p-6 rounded-4xl border border-gray-100 space-y-6">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <Globe size={20} className="text-primary" /> Passport
-                    Details
+                    <Globe size={20} className="text-primary" /> Passport Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -729,16 +662,12 @@ function PoliceApplyContent() {
                           ? "border-red-300 bg-red-50/30 focus:bg-white focus:border-red-500"
                           : "border-transparent focus:bg-white focus:border-primary"
                       } outline-none focus:ring-4 ${
-                        errors.mobile
-                          ? "focus:ring-red-500/5"
-                          : "focus:ring-primary/5"
+                        errors.mobile ? "focus:ring-red-500/5" : "focus:ring-primary/5"
                       }`}
                     />
                   </div>
                   {errors.mobile && (
-                    <p className="text-xs text-red-500 ml-1 font-medium">
-                      {errors.mobile}
-                    </p>
+                    <p className="text-xs text-red-500 ml-1 font-medium">{errors.mobile}</p>
                   )}
                 </div>
 
@@ -747,10 +676,7 @@ function PoliceApplyContent() {
                     Current Address (Verification for Pakistan)
                   </label>
                   <div className="relative">
-                    <Home
-                      className="absolute left-4 top-6 text-gray-400"
-                      size={20}
-                    />
+                    <Home className="absolute left-4 top-6 text-gray-400" size={20} />
                     <textarea
                       name="address"
                       value={formData.address}
@@ -812,15 +738,11 @@ function PoliceApplyContent() {
                 </div>
 
                 <div className="bg-gray-50 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 space-y-6">
-                  <label className="text-sm font-bold text-gray-700 ml-1">
-                    Presently Residing
-                  </label>
+                  <label className="text-sm font-bold text-gray-700 ml-1">Presently Residing</label>
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                     <button
                       type="button"
-                      onClick={() =>
-                        setFormData((p) => ({ ...p, residingIn: "Pakistan" }))
-                      }
+                      onClick={() => setFormData((p) => ({ ...p, residingIn: "Pakistan" }))}
                       className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all ${
                         formData.residingIn === "Pakistan"
                           ? "border-primary bg-white shadow-lg shadow-primary/10 text-primary font-bold"
@@ -838,9 +760,7 @@ function PoliceApplyContent() {
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        setFormData((p) => ({ ...p, residingIn: "Abroad" }))
-                      }
+                      onClick={() => setFormData((p) => ({ ...p, residingIn: "Abroad" }))}
                       className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all ${
                         formData.residingIn === "Abroad"
                           ? "border-primary bg-white shadow-lg shadow-primary/10 text-primary font-bold"
@@ -864,9 +784,7 @@ function PoliceApplyContent() {
                       animate={{ opacity: 1, y: 0 }}
                       className="space-y-2"
                     >
-                      <label className="text-sm font-bold text-gray-700 ml-1">
-                        Select Country
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 ml-1">Select Country</label>
                       <select
                         name="residingCountry"
                         value={formData.residingCountry}
@@ -912,12 +830,9 @@ function PoliceApplyContent() {
                       <AlertCircle className="text-orange-600" size={24} />
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900">
-                        Arrest History
-                      </h3>
+                      <h3 className="font-bold text-gray-900">Arrest History</h3>
                       <p className="text-xs sm:text-sm text-gray-500">
-                        In case you were arrested by Police. Please attach
-                        documents if applicable.
+                        In case you were arrested by Police. Please attach documents if applicable.
                       </p>
                     </div>
                   </div>
@@ -925,9 +840,7 @@ function PoliceApplyContent() {
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 px-1">
                     <button
                       type="button"
-                      onClick={() =>
-                        setFormData((p) => ({ ...p, arrested: "Yes" }))
-                      }
+                      onClick={() => setFormData((p) => ({ ...p, arrested: "Yes" }))}
                       className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all ${
                         formData.arrested === "Yes"
                           ? "border-orange-500 bg-white shadow-lg shadow-orange-500/10 text-orange-600 font-bold"
@@ -945,9 +858,7 @@ function PoliceApplyContent() {
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        setFormData((p) => ({ ...p, arrested: "No" }))
-                      }
+                      onClick={() => setFormData((p) => ({ ...p, arrested: "No" }))}
                       className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all ${
                         formData.arrested === "No"
                           ? "border-gray-700 bg-white shadow-lg text-gray-700 font-bold"
@@ -1023,9 +934,7 @@ function PoliceApplyContent() {
                         <div className="relative group">
                           <input
                             type="file"
-                            onChange={(e) =>
-                              handleFileChange(e, "judgmentCopy")
-                            }
+                            onChange={(e) => handleFileChange(e, "judgmentCopy")}
                             className="hidden"
                             id="judgementUpload"
                           />
@@ -1038,13 +947,9 @@ function PoliceApplyContent() {
                             </div>
                             <div className="flex-1 overflow-hidden">
                               <p className="text-sm font-bold text-gray-800 truncate">
-                                {files.judgmentCopy
-                                  ? files.judgmentCopy.name
-                                  : "Choose File"}
+                                {files.judgmentCopy ? files.judgmentCopy.name : "Choose File"}
                               </p>
-                              <p className="text-xs text-gray-400">
-                                PDF, JPG, PNG (Max 5MB)
-                              </p>
+                              <p className="text-xs text-gray-400">PDF, JPG, PNG (Max 5MB)</p>
                             </div>
                             {files.judgmentCopy && (
                               <button
@@ -1057,7 +962,7 @@ function PoliceApplyContent() {
                                     judgmentCopy: null,
                                   }));
                                   const inputEl = document.getElementById(
-                                    "judgementUpload",
+                                    "judgementUpload"
                                   ) as HTMLInputElement;
                                   if (inputEl) inputEl.value = "";
                                 }}
@@ -1082,9 +987,7 @@ function PoliceApplyContent() {
                         >
                           <option value="">Select Status</option>
                           <option value="Acquitted">Acquitted</option>
-                          <option value="Released">
-                            Released US 169/497 crpc
-                          </option>
+                          <option value="Released">Released US 169/497 crpc</option>
                           <option value="Pending">Pending Trial</option>
                         </select>
                       </div>
@@ -1095,11 +998,7 @@ function PoliceApplyContent() {
             )}
 
             {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                {...fadeIn}
-                className="space-y-6 md:space-y-8"
-              >
+              <motion.div key="step2" {...fadeIn} className="space-y-6 md:space-y-8">
                 {/* Witness 1 */}
                 <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6">
                   <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
@@ -1118,9 +1017,7 @@ function PoliceApplyContent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 ml-1">
-                        Name
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 ml-1">Name</label>
                       <input
                         type="text"
                         name="witness1Name"
@@ -1147,9 +1044,7 @@ function PoliceApplyContent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 ml-1">
-                        CNIC
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 ml-1">CNIC</label>
                       <input
                         type="text"
                         name="witness1Cnic"
@@ -1169,9 +1064,7 @@ function PoliceApplyContent() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 ml-1">
-                        Contact No
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 ml-1">Contact No</label>
                       <input
                         type="text"
                         name="witness1Contact"
@@ -1193,9 +1086,7 @@ function PoliceApplyContent() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">
-                      Address
-                    </label>
+                    <label className="text-sm font-bold text-gray-700 ml-1">Address</label>
                     <textarea
                       name="witness1Address"
                       value={formData.witness1Address}
@@ -1225,9 +1116,7 @@ function PoliceApplyContent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 ml-1">
-                        Name
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 ml-1">Name</label>
                       <input
                         type="text"
                         name="witness2Name"
@@ -1254,9 +1143,7 @@ function PoliceApplyContent() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 ml-1">
-                        CNIC
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 ml-1">CNIC</label>
                       <input
                         type="text"
                         name="witness2Cnic"
@@ -1276,9 +1163,7 @@ function PoliceApplyContent() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-gray-700 ml-1">
-                        Contact No
-                      </label>
+                      <label className="text-sm font-bold text-gray-700 ml-1">Contact No</label>
                       <input
                         type="text"
                         name="witness2Contact"
@@ -1300,9 +1185,7 @@ function PoliceApplyContent() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">
-                      Address
-                    </label>
+                    <label className="text-sm font-bold text-gray-700 ml-1">Address</label>
                     <textarea
                       name="witness2Address"
                       value={formData.witness2Address}
@@ -1317,11 +1200,7 @@ function PoliceApplyContent() {
             )}
 
             {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                {...fadeIn}
-                className="space-y-6 md:space-y-8"
-              >
+              <motion.div key="step3" {...fadeIn} className="space-y-6 md:space-y-8">
                 <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
                   <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
                     <div className="p-2.5 bg-primary/10 rounded-2xl shrink-0">
@@ -1356,20 +1235,13 @@ function PoliceApplyContent() {
                           className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-dashed border-gray-200 hover:border-primary cursor-pointer transition-all group-hover:bg-primary/5"
                         >
                           <div className="p-3 bg-white rounded-xl shadow-sm group-hover:bg-primary/10 transition-colors">
-                            <Upload
-                              className="text-gray-400 group-hover:text-primary"
-                              size={20}
-                            />
+                            <Upload className="text-gray-400 group-hover:text-primary" size={20} />
                           </div>
                           <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-bold text-gray-800 truncate">
-                              {files.photograph
-                                ? files.photograph.name
-                                : "Choose File"}
+                              {files.photograph ? files.photograph.name : "Choose File"}
                             </p>
-                            <p className="text-xs text-gray-400">
-                              Max size 2MB
-                            </p>
+                            <p className="text-xs text-gray-400">Max size 2MB</p>
                           </div>
                           {files.photograph && (
                             <button
@@ -1382,7 +1254,7 @@ function PoliceApplyContent() {
                                   photograph: null,
                                 }));
                                 const inputEl = document.getElementById(
-                                  "photographUpload",
+                                  "photographUpload"
                                 ) as HTMLInputElement;
                                 if (inputEl) inputEl.value = "";
                               }}
@@ -1413,20 +1285,13 @@ function PoliceApplyContent() {
                           className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-dashed border-gray-200 hover:border-primary cursor-pointer transition-all group-hover:bg-primary/5"
                         >
                           <div className="p-3 bg-white rounded-xl shadow-sm group-hover:bg-primary/10 transition-colors">
-                            <Upload
-                              className="text-gray-400 group-hover:text-primary"
-                              size={20}
-                            />
+                            <Upload className="text-gray-400 group-hover:text-primary" size={20} />
                           </div>
                           <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-bold text-gray-800 truncate">
-                              {files.passportCopy
-                                ? files.passportCopy.name
-                                : "Choose File"}
+                              {files.passportCopy ? files.passportCopy.name : "Choose File"}
                             </p>
-                            <p className="text-xs text-gray-400">
-                              Max size 5MB
-                            </p>
+                            <p className="text-xs text-gray-400">Max size 5MB</p>
                           </div>
                           {files.passportCopy && (
                             <button
@@ -1439,7 +1304,7 @@ function PoliceApplyContent() {
                                   passportCopy: null,
                                 }));
                                 const inputEl = document.getElementById(
-                                  "passportUpload",
+                                  "passportUpload"
                                 ) as HTMLInputElement;
                                 if (inputEl) inputEl.value = "";
                               }}
@@ -1470,20 +1335,13 @@ function PoliceApplyContent() {
                           className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-dashed border-gray-200 hover:border-primary cursor-pointer transition-all group-hover:bg-primary/5"
                         >
                           <div className="p-3 bg-white rounded-xl shadow-sm group-hover:bg-primary/10 transition-colors">
-                            <Upload
-                              className="text-gray-400 group-hover:text-primary"
-                              size={20}
-                            />
+                            <Upload className="text-gray-400 group-hover:text-primary" size={20} />
                           </div>
                           <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-bold text-gray-800 truncate">
-                              {files.utilityBill
-                                ? files.utilityBill.name
-                                : "Choose File"}
+                              {files.utilityBill ? files.utilityBill.name : "Choose File"}
                             </p>
-                            <p className="text-xs text-gray-400">
-                              PDF format required
-                            </p>
+                            <p className="text-xs text-gray-400">PDF format required</p>
                           </div>
                           {files.utilityBill && (
                             <button
@@ -1496,7 +1354,7 @@ function PoliceApplyContent() {
                                   utilityBill: null,
                                 }));
                                 const inputEl = document.getElementById(
-                                  "billUpload",
+                                  "billUpload"
                                 ) as HTMLInputElement;
                                 if (inputEl) inputEl.value = "";
                               }}
@@ -1527,20 +1385,13 @@ function PoliceApplyContent() {
                           className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-dashed border-gray-200 hover:border-primary cursor-pointer transition-all group-hover:bg-primary/5"
                         >
                           <div className="p-3 bg-white rounded-xl shadow-sm group-hover:bg-primary/10 transition-colors">
-                            <Upload
-                              className="text-gray-400 group-hover:text-primary"
-                              size={20}
-                            />
+                            <Upload className="text-gray-400 group-hover:text-primary" size={20} />
                           </div>
                           <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-bold text-gray-800 truncate">
-                              {files.policeLetter
-                                ? files.policeLetter.name
-                                : "Choose File"}
+                              {files.policeLetter ? files.policeLetter.name : "Choose File"}
                             </p>
-                            <p className="text-xs text-gray-400">
-                              PDF format required
-                            </p>
+                            <p className="text-xs text-gray-400">PDF format required</p>
                           </div>
                           {files.policeLetter && (
                             <button
@@ -1553,7 +1404,7 @@ function PoliceApplyContent() {
                                   policeLetter: null,
                                 }));
                                 const inputEl = document.getElementById(
-                                  "letterUpload",
+                                  "letterUpload"
                                 ) as HTMLInputElement;
                                 if (inputEl) inputEl.value = "";
                               }}
@@ -1611,9 +1462,8 @@ function PoliceApplyContent() {
                       <Clock className="text-primary" size={20} />
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      By submitting, I confirm that all provided information is
-                      accurate and matches my legal documents. Processing takes
-                      3-7 working days.
+                      By submitting, I confirm that all provided information is accurate and matches
+                      my legal documents. Processing takes 3-7 working days.
                     </p>
                   </div>
                 </div>
@@ -1628,10 +1478,7 @@ function PoliceApplyContent() {
             onClick={handleBack}
             className="w-full sm:w-auto justify-center px-8 py-4 rounded-2xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 transition-all flex items-center gap-2 group"
           >
-            <ChevronLeft
-              size={20}
-              className="group-hover:-translate-x-1 transition-transform"
-            />{" "}
+            <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />{" "}
             Back
           </button>
           {currentStep < 3 ? (
@@ -1641,10 +1488,7 @@ function PoliceApplyContent() {
               className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-primary/25"
             >
               Continue{" "}
-              <ChevronRight
-                size={20}
-                className="group-hover:translate-x-1 transition-transform"
-              />
+              <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </button>
           ) : (
             <>

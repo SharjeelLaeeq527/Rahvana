@@ -23,27 +23,18 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { OrganizePagesModal } from "./pages/OrganizePagesModal";
 import { EditTextModal } from "./text/EditTextModal";
 import { createEditedPDF, downloadPDF } from "@/lib/pdf-utils";
-import {
-  TextFormattingToolbar,
-  TextFormat,
-} from "./text/TextFormattingToolbar";
+import { TextFormattingToolbar, TextFormat } from "./text/TextFormattingToolbar";
 import { Square, X } from "lucide-react";
 // Dynamic Components
-const PDFViewer = dynamic(
-  () => import("./PdfViewer").then((m) => m.PDFViewer),
-  { ssr: false },
-);
-const PDFThumbnails = dynamic(
-  () => import("./PdfThumbnails").then((m) => m.PDFThumbnails),
-  { ssr: false },
-);
+const PDFViewer = dynamic(() => import("./PdfViewer").then((m) => m.PDFViewer), { ssr: false });
+const PDFThumbnails = dynamic(() => import("./PdfThumbnails").then((m) => m.PDFThumbnails), {
+  ssr: false,
+});
 
 export function PDFEditor() {
   const { t } = useLanguage();
   const { showToast } = useToast();
-  const [activeTool, setActiveTool] = useState<
-    "text" | "signature" | "shapes" | null
-  >(null);
+  const [activeTool, setActiveTool] = useState<"text" | "signature" | "shapes" | null>(null);
   const [inputText, setInputText] = useState("");
   const [signature, setSignature] = useState<string | null>(null);
 
@@ -59,9 +50,7 @@ export function PDFEditor() {
   const [isShapeFloating, setIsShapeFloating] = useState(false);
 
   // === SELECTION STATE ===
-  const [selectedAnnotationId, setSelectedAnnotationId] = useState<
-    string | null
-  >(null);
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
 
   // === UI STATE ===
   const [showSidebar, setShowSidebar] = useState(true);
@@ -149,8 +138,7 @@ export function PDFEditor() {
       if (newFormat.opacity !== undefined) updates.opacity = newFormat.opacity;
       if (newFormat.bold !== undefined) updates.bold = newFormat.bold;
       if (newFormat.italic !== undefined) updates.italic = newFormat.italic;
-      if (newFormat.underline !== undefined)
-        updates.underline = newFormat.underline;
+      if (newFormat.underline !== undefined) updates.underline = newFormat.underline;
       if (newFormat.align !== undefined) updates.align = newFormat.align;
 
       updateAnnotation(selectedAnnotationId, updates);
@@ -184,7 +172,7 @@ export function PDFEditor() {
         pdfFile,
         pageModifications,
         annotations,
-        signatureAnnotations,
+        signatureAnnotations
       );
       await downloadPDF(editedPdf, "edited-document.pdf");
       showToast(t("pdfProcessing.editor.downloadSuccess"), "success");
@@ -297,7 +285,9 @@ export function PDFEditor() {
                   onClick={() => handleShapeSelect("arrow")}
                   className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
                 >
-                  <span className="text-lg leading-none h-4 w-4 flex items-center justify-center">↗</span>
+                  <span className="text-lg leading-none h-4 w-4 flex items-center justify-center">
+                    ↗
+                  </span>
                   <span>{t("pdfProcessing.editor.shapes.arrow")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -347,8 +337,7 @@ export function PDFEditor() {
       {/* ===== TEXT FORMATTING TOOLBAR ===== */}
       {/* SHOW IF: activeTool is "text" OR any text annotation is currently selected */}
       {(activeTool === "text" ||
-        (selectedAnnotationId &&
-          annotations.find((a) => a.id === selectedAnnotationId))) && (
+        (selectedAnnotationId && annotations.find((a) => a.id === selectedAnnotationId))) && (
         <div className="absolute top-[70px] left-1/2 -translate-x-1/2 z-50">
           <TextFormattingToolbar
             format={currentToolbarFormat}
@@ -410,14 +399,8 @@ export function PDFEditor() {
         </div>
       </div>
 
-      <OrganizePagesModal
-        isOpen={showOrganizeModal}
-        onClose={() => setShowOrganizeModal(false)}
-      />
-      <EditTextModal
-        isOpen={showEditTextModal}
-        onClose={() => setShowEditTextModal(false)}
-      />
+      <OrganizePagesModal isOpen={showOrganizeModal} onClose={() => setShowOrganizeModal(false)} />
+      <EditTextModal isOpen={showEditTextModal} onClose={() => setShowEditTextModal(false)} />
     </div>
   );
 }

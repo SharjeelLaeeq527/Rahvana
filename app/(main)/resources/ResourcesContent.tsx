@@ -16,11 +16,7 @@ const tabs: { id: ResourceTab; icon: React.ElementType; label: string }[] = [
   { id: "services", icon: Briefcase, label: "Services" },
 ];
 
-export default function ResourcesContent({
-  initialTab,
-}: {
-  initialTab: ResourceTab;
-}) {
+export default function ResourcesContent({ initialTab }: { initialTab: ResourceTab }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ResourceTab>(initialTab);
 
@@ -43,7 +39,7 @@ export default function ResourcesContent({
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
-            
+
             return (
               <button
                 key={tab.id}

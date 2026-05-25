@@ -52,30 +52,20 @@ const HydrationSafeButton = (
   props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: string;
     size?: string;
-  },
+  }
 ) => {
   const { className, ...rest } = props;
 
   // Filter out problematic attributes that might be added by extensions
   const filteredRest = { ...rest };
-  const extensionAttributes = [
-    "fdprocessedid",
-    "data-extension",
-    "data-extension-id",
-  ];
+  const extensionAttributes = ["fdprocessedid", "data-extension", "data-extension-id"];
   extensionAttributes.forEach((attr) => {
     if (filteredRest[attr as keyof typeof filteredRest]) {
       delete filteredRest[attr as keyof typeof filteredRest];
     }
   });
 
-  return (
-    <button
-      {...filteredRest}
-      className={className}
-      suppressHydrationWarning={true}
-    />
-  );
+  return <button {...filteredRest} className={className} suppressHydrationWarning={true} />;
 };
 
 // --------------------------------------------------------------------------
@@ -94,9 +84,7 @@ const useExtensionCleanup = () => {
       ];
 
       extensionAttrs.forEach((attr) => {
-        document
-          .querySelectorAll(`[${attr}]`)
-          .forEach((el) => el.removeAttribute(attr));
+        document.querySelectorAll(`[${attr}]`).forEach((el) => el.removeAttribute(attr));
       });
     }, 0);
     return () => clearTimeout(timer);
@@ -230,10 +218,8 @@ export function SiteHeader({
             setActiveMenu(null);
           }
         } else {
-          const isInsideMegaMenu =
-            megaMenuContainerRef.current?.contains(target);
-          const isInsideNavTrigger =
-            navRefs.current[activeMenu]?.contains(target);
+          const isInsideMegaMenu = megaMenuContainerRef.current?.contains(target);
+          const isInsideNavTrigger = navRefs.current[activeMenu]?.contains(target);
           if (!isInsideMegaMenu && !isInsideNavTrigger) {
             setActiveMenu(null);
           }
@@ -250,8 +236,7 @@ export function SiteHeader({
       setActiveMenu("profile");
     };
     window.addEventListener("open-profile-menu", handleOpenMenu);
-    return () =>
-      window.removeEventListener("open-profile-menu", handleOpenMenu);
+    return () => window.removeEventListener("open-profile-menu", handleOpenMenu);
   }, []);
 
   // Close menus on route change
@@ -272,8 +257,7 @@ export function SiteHeader({
         if (res.ok) {
           const data = await res.json();
           const active =
-            data?.data?.find((j: any) => j.journey?.status === "in_progress") ||
-            data?.data?.[0];
+            data?.data?.find((j: any) => j.journey?.status === "in_progress") || data?.data?.[0];
           jId = active?.journey?.id ?? null;
           if (jId) setNotifJourneyId(jId);
         }
@@ -303,8 +287,7 @@ export function SiteHeader({
   useEffect(() => {
     if (!resolvedUser) return;
     window.addEventListener("refresh-reminders", fetchNotifications);
-    return () =>
-      window.removeEventListener("refresh-reminders", fetchNotifications);
+    return () => window.removeEventListener("refresh-reminders", fetchNotifications);
   }, [resolvedUser, fetchNotifications]);
 
   const markAllRead = (ids: string[]) => {
@@ -480,19 +463,12 @@ export function SiteHeader({
           {/* Mobile Menu Trigger */}
           <HydrationSafeButton
             className={`lg:hidden p-1 rounded-md transition-colors ${
-              isHomeHeroState
-                ? "text-TEAL hover:bg-white/15"
-                : "text-foreground hover:bg-muted"
+              isHomeHeroState ? "text-TEAL hover:bg-white/15" : "text-foreground hover:bg-muted"
             }`}
             onClick={() => setIsMenuOpen(true)}
             aria-label="Open menu"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -518,9 +494,7 @@ export function SiteHeader({
                     ? "!text-[#0d7377]"
                     : "text-rahvana-primary"
               }`}
-              style={
-                isHomeHeroP2State ? { color: "#0d7377", fill: "#0d7377" } : {}
-              }
+              style={isHomeHeroP2State ? { color: "#0d7377", fill: "#0d7377" } : {}}
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
               <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -539,18 +513,12 @@ export function SiteHeader({
                 onClick={(e) => handleNav("ir1-journey", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive(
-                        "ir1-journey",
-                        "/visa-category/ir-category/ir1-journey",
-                      )
+                    ? isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
                       ? "bg-white/20 text-white"
                       : "text-white/90 hover:bg-white/15 hover:text-white"
                     : isHomeHeroP2State
                       ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive(
-                            "ir1-journey",
-                            "/visa-category/ir-category/ir1-journey",
-                          )
+                      : isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
@@ -961,9 +929,7 @@ export function SiteHeader({
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
                           <div className="flex items-center gap-2">
                             <Bell className="w-4 h-4 text-[#0d7377]" />
-                            <span className="text-sm font-bold text-foreground">
-                              Notifications
-                            </span>
+                            <span className="text-sm font-bold text-foreground">Notifications</span>
                           </div>
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                             {unreadCount > 0 ? `${unreadCount} New` : "0 New"}
@@ -997,8 +963,7 @@ export function SiteHeader({
                                     key={n.id}
                                     className={`px-4 py-3 flex gap-3 items-start transition-colors ${
                                       !isRead
-                                        ? n.priority === "critical" ||
-                                          n.priority === "high"
+                                        ? n.priority === "critical" || n.priority === "high"
                                           ? "bg-orange-50 hover:bg-orange-100/60"
                                           : "bg-[#f0f7ff] hover:bg-[#e8f2fb]"
                                         : "bg-white hover:bg-muted/30"
@@ -1028,9 +993,7 @@ export function SiteHeader({
                                           onClick={() => toggleExpand(n.id)}
                                           className="text-[10px] font-bold text-[#0d7377] hover:underline mt-0.5"
                                         >
-                                          {isExpanded
-                                            ? "Show less ↑"
-                                            : "Read more ↓"}
+                                          {isExpanded ? "Show less ↑" : "Read more ↓"}
                                         </button>
                                       )}
                                       {!isRead && (
@@ -1071,11 +1034,7 @@ export function SiteHeader({
                           {notifList.length > 0 && (
                             <button
                               className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
-                              onClick={() =>
-                                notifList.forEach((n: any) =>
-                                  dismissNotif(n.id),
-                                )
-                              }
+                              onClick={() => notifList.forEach((n: any) => dismissNotif(n.id))}
                             >
                               Delete all
                             </button>
@@ -1104,8 +1063,7 @@ export function SiteHeader({
               <HydrationSafeButton
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (menuTimeoutRef.current)
-                    clearTimeout(menuTimeoutRef.current);
+                  if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
                 className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 mb-2 ${
@@ -1276,9 +1234,7 @@ export function SiteHeader({
       {/* ------------------------------------------------------------------ */}
       <div
         className={`fixed inset-0 z-100 h-dvh lg:hidden transition-all duration-300 ${
-          isMenuOpen
-            ? "opacity-100 visible"
-            : "opacity-0 invisible pointer-events-none"
+          isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
         }`}
       >
         {/* Backdrop */}
@@ -1330,12 +1286,7 @@ export function SiteHeader({
               onClick={() => setIsMenuOpen(false)}
               aria-label="Close menu"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1352,10 +1303,7 @@ export function SiteHeader({
               <HydrationSafeButton
                 onClick={() => handleNav("ir1-journey")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive(
-                    "ir1-journey",
-                    "/visa-category/ir-category/ir1-journey",
-                  )
+                  isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
                     ? "bg-[#0d7377]/10 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
@@ -1394,7 +1342,7 @@ export function SiteHeader({
                     setExpandedSections((prev) =>
                       prev.includes("resources")
                         ? prev.filter((s) => s !== "resources")
-                        : [...prev, "resources"],
+                        : [...prev, "resources"]
                     );
                   }}
                   className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
@@ -1472,7 +1420,7 @@ export function SiteHeader({
                         setExpandedSections((prev) =>
                           prev.includes(section.id)
                             ? prev.filter((s) => s !== section.id)
-                            : [...prev, section.id],
+                            : [...prev, section.id]
                         );
                       }}
                       className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
@@ -1485,9 +1433,7 @@ export function SiteHeader({
                       </div>
                       <ChevronDown
                         className={`h-4 w-4 transition-transform duration-400 ${
-                          expandedSections.includes(section.id)
-                            ? "rotate-180"
-                            : ""
+                          expandedSections.includes(section.id) ? "rotate-180" : ""
                         }`}
                       />
                     </HydrationSafeButton>
@@ -1511,10 +1457,7 @@ export function SiteHeader({
 
                                 {/* Render Categories if present */}
                                 {tab.categories?.map((cat, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex flex-col gap-1"
-                                  >
+                                  <div key={idx} className="flex flex-col gap-1">
                                     <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                                       {cat.label}
                                     </div>

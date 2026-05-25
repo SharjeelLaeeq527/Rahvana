@@ -20,14 +20,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Pagination from "@/components/ui/pagination";
 
 export function NotificationBell() {
-  const notifications = useDocumentVaultStore((state) =>
-    state.getNotifications(),
-  );
-  const getNotificationStatus = useDocumentVaultStore(
-    (state) => state.getNotificationStatus,
-  );
-  const { notificationCenterOpen, toggleNotificationCenter } =
-    useDocumentVaultStore();
+  const notifications = useDocumentVaultStore((state) => state.getNotifications());
+  const getNotificationStatus = useDocumentVaultStore((state) => state.getNotificationStatus);
+  const { notificationCenterOpen, toggleNotificationCenter } = useDocumentVaultStore();
 
   // Calculate count of pending required documents
   const pendingRequiredCount = notifications.filter((notif) => {
@@ -43,10 +38,7 @@ export function NotificationBell() {
   }).length;
 
   return (
-    <Sheet
-      open={notificationCenterOpen}
-      onOpenChange={toggleNotificationCenter}
-    >
+    <Sheet open={notificationCenterOpen} onOpenChange={toggleNotificationCenter}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="relative">
           <div className="relative inline-flex">
@@ -71,12 +63,8 @@ export function NotificationBell() {
 
 export function NotificationCenter() {
   const { t } = useLanguage();
-  const notifications = useDocumentVaultStore((state) =>
-    state.getNotifications(),
-  );
-  const getNotificationStatus = useDocumentVaultStore(
-    (state) => state.getNotificationStatus,
-  );
+  const notifications = useDocumentVaultStore((state) => state.getNotifications());
+  const getNotificationStatus = useDocumentVaultStore((state) => state.getNotificationStatus);
 
   // Pagination
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -99,7 +87,7 @@ export function NotificationCenter() {
 
   const paginatedNotifications = sortedNotifications.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   return (
@@ -107,9 +95,7 @@ export function NotificationCenter() {
       {/* Header with Title and Counts */}
       <SheetHeader className="px-1 text-left">
         <div className="flex items-center justify-between gap-3 mb-4">
-          <SheetTitle className="text-xl sm:text-2xl">
-            Pending Documents
-          </SheetTitle>
+          <SheetTitle className="text-xl sm:text-2xl">Pending Documents</SheetTitle>
         </div>
         <SheetDescription className="text-sm sm:text-base">
           {t("documentVaultPage.components.notificationCenter.subtitle")}
@@ -146,10 +132,7 @@ export function NotificationCenter() {
         ) : (
           <div className="space-y-3 pb-4">
             {paginatedNotifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-              />
+              <NotificationItem key={notification.id} notification={notification} />
             ))}
           </div>
         )}
@@ -168,17 +151,9 @@ export function NotificationCenter() {
   );
 }
 
-function NotificationItem({
-  notification,
-}: {
-  notification: NotificationMessage;
-}) {
-  const openUploadModal = useDocumentVaultStore(
-    (state) => state.openUploadModal,
-  );
-  const getNotificationStatus = useDocumentVaultStore(
-    (state) => state.getNotificationStatus,
-  );
+function NotificationItem({ notification }: { notification: NotificationMessage }) {
+  const openUploadModal = useDocumentVaultStore((state) => state.openUploadModal);
+  const getNotificationStatus = useDocumentVaultStore((state) => state.getNotificationStatus);
   const { t } = useLanguage();
 
   const status = getNotificationStatus(notification);
@@ -214,9 +189,7 @@ function NotificationItem({
         <div className="flex-1 min-w-0">
           {/* Title and Message */}
           <div className="mb-3">
-            <h4 className="text-sm font-semibold leading-tight">
-              {notification.title}
-            </h4>
+            <h4 className="text-sm font-semibold leading-tight">{notification.title}</h4>
             <p className="text-sm text-muted-foreground mt-1 leading-tight">
               {notification.message}
             </p>
@@ -225,20 +198,16 @@ function NotificationItem({
           {/* Actions Row with justify-between */}
           <div className="flex items-center justify-between gap-3">
             {/* Upload Document Button - Only show if pending */}
-            {!isUploaded &&
-              notification.actionRequired &&
-              notification.documentDefId && (
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={handleClick}
-                  className="h-8 text-xs font-bold"
-                >
-                  {t(
-                    "documentVaultPage.components.notificationCenter.uploadDocument",
-                  )}
-                </Button>
-              )}
+            {!isUploaded && notification.actionRequired && notification.documentDefId && (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleClick}
+                className="h-8 text-xs font-bold"
+              >
+                {t("documentVaultPage.components.notificationCenter.uploadDocument")}
+              </Button>
+            )}
 
             {/* Spacer when no button to maintain alignment */}
             {isUploaded && <div />}

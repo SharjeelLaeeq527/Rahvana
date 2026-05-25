@@ -4,9 +4,7 @@ const RESOURCE_TABS: ResourceTab[] = ["toolbox", "guides", "services"];
 
 const getResourceTab = (tab?: string | string[]): ResourceTab => {
   const value = Array.isArray(tab) ? tab[0] : tab;
-  return RESOURCE_TABS.includes(value as ResourceTab)
-    ? (value as ResourceTab)
-    : "toolbox";
+  return RESOURCE_TABS.includes(value as ResourceTab) ? (value as ResourceTab) : "toolbox";
 };
 
 export default async function ResourcesPage({

@@ -63,8 +63,7 @@ const TOOLS: Tool[] = [
   {
     id: "case-strength-analyzer",
     title: "Case Strength Analyzer",
-    description:
-      "Instant AI case strength score + gaps to fix before NVC/Interview.",
+    description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
     category: "AI & Planning",
     href: "/visa-case-strength-checker",
     icon: Brain,
@@ -75,15 +74,13 @@ const TOOLS: Tool[] = [
   {
     id: "221g-planner",
     title: "221(g) Action Planner",
-    description:
-      "Step-by-step next moves after 221(g) or Administrative Processing.",
+    description: "Step-by-step next moves after 221(g) or Administrative Processing.",
     category: "AI & Planning",
     href: "/221g-action-planner",
     icon: LifeBuoy,
     iconSrc: "/icons/221g-action-plan.svg",
     badge: "Live",
     entitlementFeature: "action_221g",
-
   },
   // {
   //   id: "visa-path",
@@ -100,8 +97,7 @@ const TOOLS: Tool[] = [
   {
     id: "interview-prep",
     title: "Interview Prep",
-    description:
-      "Prepare smarter and deliver confident answers when it matters most.",
+    description: "Prepare smarter and deliver confident answers when it matters most.",
     category: "AI & Planning",
     href: "/interview-prep",
     icon: MessageSquare,
@@ -198,8 +194,7 @@ const TOOLS: Tool[] = [
   {
     id: "form-forge",
     title: "Smart Form Filler",
-    description:
-      "Auto-fills your official form and generates a ready-to-upload PDF.",
+    description: "Auto-fills your official form and generates a ready-to-upload PDF.",
     category: "Forms & Automation",
     href: "/visa-forms",
     icon: Wand2,
@@ -220,19 +215,11 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
 
 // ─── Page component ───────────────────────────────────────────────────────────
 
-export default function ToolsPage({
-  isEmbedded = false,
-}: {
-  isEmbedded?: boolean;
-}) {
+export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    "All" | ToolCategory
-  >("All");
+  const [selectedCategory, setSelectedCategory] = useState<"All" | ToolCategory>("All");
   const [visibleCount, setVisibleCount] = useState(7);
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
-    null,
-  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const { t } = useLanguage();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -242,9 +229,7 @@ export default function ToolsPage({
     const calculateVisible = () => {
       if (!containerRef.current || !measureRef.current) return;
       const containerWidth = containerRef.current.clientWidth;
-      const measureItems = Array.from(
-        measureRef.current.children,
-      ) as HTMLDivElement[];
+      const measureItems = Array.from(measureRef.current.children) as HTMLDivElement[];
       const moreButtonEl = measureItems[measureItems.length - 1];
       const categoryEls = measureItems.slice(0, measureItems.length - 1);
       const moreButtonWidth = moreButtonEl.offsetWidth;
@@ -293,8 +278,7 @@ export default function ToolsPage({
     const matchesSearch =
       tool.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tool.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || tool.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || tool.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
@@ -304,10 +288,7 @@ export default function ToolsPage({
     >
       {/* UpgradeModal */}
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
       {/* Ambient Glow */}
@@ -340,22 +321,15 @@ export default function ToolsPage({
           />
         </div>
 
-
         {/* Category tabs */}
-        <div
-          ref={containerRef}
-          className="relative w-full mb-8 flex justify-center"
-        >
+        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           <div
             ref={measureRef}
             aria-hidden="true"
             className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
           >
             {CATEGORIES.map((cat) => (
-              <div
-                key={cat}
-                className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border"
-              >
+              <div key={cat} className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border">
                 {t(`toolsPage.categories.${cat}`) || cat}
               </div>
             ))}
@@ -363,8 +337,7 @@ export default function ToolsPage({
               data-more-button="true"
               className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
             >
-              {t("toolsPage.more") || "More"}{" "}
-              <ChevronDown className="w-4 h-4 ml-1" />
+              {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
             </div>
           </div>
           <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
@@ -383,8 +356,7 @@ export default function ToolsPage({
                   <button
                     className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
                   >
-                    {t("toolsPage.more") || "More"}{" "}
-                    <ChevronDown className="w-4 h-4 ml-1" />
+                    {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-[200px]">
@@ -416,8 +388,7 @@ export default function ToolsPage({
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">
-              {t("toolsPage.noToolsFound") ||
-                "No tools found matching your search."}
+              {t("toolsPage.noToolsFound") || "No tools found matching your search."}
             </div>
           )}
         </div>
@@ -616,8 +587,7 @@ function ToolCard({
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >
-            {t("toolsPage.openTool") || "Open Tool"}{" "}
-            <ArrowRight className="w-4 h-4" />
+            {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="w-4 h-4" />
           </span>
         ) : (
           <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">

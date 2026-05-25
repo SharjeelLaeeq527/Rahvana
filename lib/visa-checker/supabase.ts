@@ -78,9 +78,7 @@ export class VisaCheckerSupabaseService {
     }));
 
     if (answerRecords.length > 0) {
-      const { error: insertError } = await supabase
-        .from("user_case_answers")
-        .insert(answerRecords);
+      const { error: insertError } = await supabase.from("user_case_answers").insert(answerRecords);
       if (insertError) throw new Error(`Failed to save answers: ${insertError.message}`);
     }
 
@@ -104,10 +102,14 @@ export class VisaCheckerSupabaseService {
       .select("*")
       .eq("id", sessionId)
       .maybeSingle();
-    
+
     if (sessionError) throw new Error(`Failed to get session: ${sessionError.message}`);
-    if (!sessionData) throw new Error("Assessment session not found. It might have been deleted or not created correctly.");
-    if (sessionData.user_id !== user.id) throw new Error("Unauthorized: You do not have permission to view this session.");
+    if (!sessionData)
+      throw new Error(
+        "Assessment session not found. It might have been deleted or not created correctly."
+      );
+    if (sessionData.user_id !== user.id)
+      throw new Error("Unauthorized: You do not have permission to view this session.");
 
     const { data: answersData, error: answersError } = await supabase
       .from("user_case_answers")
@@ -146,7 +148,14 @@ export class VisaCheckerSupabaseService {
     // 1. Load Category Rules from JSON
     let categoryRules;
     try {
-      const rulesPath = path.join(process.cwd(), "data", "visa-checker", "categories", caseTypeSlug, "rules.json");
+      const rulesPath = path.join(
+        process.cwd(),
+        "data",
+        "visa-checker",
+        "categories",
+        caseTypeSlug,
+        "rules.json"
+      );
       if (!fs.existsSync(rulesPath)) {
         throw new Error(`Rules configuration not found for case type: ${sessionDetails.caseType}`);
       }
@@ -180,7 +189,8 @@ export class VisaCheckerSupabaseService {
       .from("risk_flags")
       .delete()
       .eq("session_id", sessionId);
-    if (deleteFlagsError) throw new Error(`Failed to clear risk flags: ${deleteFlagsError.message}`);
+    if (deleteFlagsError)
+      throw new Error(`Failed to clear risk flags: ${deleteFlagsError.message}`);
 
     if (results.riskFlags.length > 0) {
       const flagRecords = results.riskFlags.map((flag) => ({
@@ -193,10 +203,9 @@ export class VisaCheckerSupabaseService {
         improvement_priority: this.getPriorityNumber(flag.severity),
       }));
 
-      const { error: insertFlagsError } = await supabase
-        .from("risk_flags")
-        .insert(flagRecords);
-      if (insertFlagsError) throw new Error(`Failed to save risk flags: ${insertFlagsError.message}`);
+      const { error: insertFlagsError } = await supabase.from("risk_flags").insert(flagRecords);
+      if (insertFlagsError)
+        throw new Error(`Failed to save risk flags: ${insertFlagsError.message}`);
     }
 
     return {
@@ -220,7 +229,7 @@ export class VisaCheckerSupabaseService {
     const { data: sessionData, error: sessionError } = await supabase
       .from("user_case_sessions")
       .select(
-        "id, user_id, overall_score, risk_level, summary_reasons, improvement_suggestions, updated_at, completed",
+        "id, user_id, overall_score, risk_level, summary_reasons, improvement_suggestions, updated_at, completed"
       )
       .eq("id", sessionId)
       .maybeSingle();
@@ -238,7 +247,9 @@ export class VisaCheckerSupabaseService {
     }
 
     if (!sessionData.completed) {
-      throw new Error("This session has not been submitted for analysis yet. Please complete the review step.");
+      throw new Error(
+        "This session has not been submitted for analysis yet. Please complete the review step."
+      );
     }
 
     const { data: riskFlagsData, error: flagsError } = await supabase

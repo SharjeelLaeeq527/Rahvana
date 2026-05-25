@@ -22,16 +22,12 @@ export function Dashboard({
   const { t } = useLanguage();
 
   const getTotalSteps = () => {
-    return roadmapData.stages.reduce(
-      (acc, stage) => acc + stage.steps.length,
-      0,
-    );
+    return roadmapData.stages.reduce((acc, stage) => acc + stage.steps.length, 0);
   };
 
   const totalSteps = getTotalSteps();
   const completed = state.completedSteps.size;
-  const progress =
-    totalSteps === 0 ? 0 : Math.round((completed / totalSteps) * 100);
+  const progress = totalSteps === 0 ? 0 : Math.round((completed / totalSteps) * 100);
 
   return (
     <section id="dashboard" className="block">
@@ -58,9 +54,7 @@ export function Dashboard({
           <div id="signed-in-dashboard">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
               <div className="lg:col-span-2">
-                <h3 className="text-xl font-bold mb-5">
-                  {t("dashboard.activeJourneys.title")}
-                </h3>
+                <h3 className="text-xl font-bold mb-5">{t("dashboard.activeJourneys.title")}</h3>
                 <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                   <h4 className="text-lg font-bold mb-2">
                     {t("dashboard.activeJourneys.ir1Title")}
@@ -89,9 +83,7 @@ export function Dashboard({
                 </div>
 
                 <div className="mt-6 bg-white border border-slate-200 rounded-xl p-6 shadow-sm opacity-60">
-                  <h4 className="font-bold mb-2">
-                    {t("dashboard.activeJourneys.startAnother")}
-                  </h4>
+                  <h4 className="font-bold mb-2">{t("dashboard.activeJourneys.startAnother")}</h4>
                   <p className="text-slate-500 text-sm mb-3">
                     {t("dashboard.activeJourneys.startAnotherDesc")}
                   </p>
@@ -105,9 +97,7 @@ export function Dashboard({
               </div>
 
               <div>
-                <h3 className="text-xl font-bold mb-5">
-                  {t("dashboard.documentVault.title")}
-                </h3>
+                <h3 className="text-xl font-bold mb-5">{t("dashboard.documentVault.title")}</h3>
                 <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm text-center">
                   <div className="text-4xl mb-2">📁</div>
                   <p
@@ -115,7 +105,7 @@ export function Dashboard({
                     dangerouslySetInnerHTML={{
                       __html: t("dashboard.documentVault.description").replace(
                         "{{count}}",
-                        String(Object.keys(state.docUploads || {}).length),
+                        String(Object.keys(state.docUploads || {}).length)
                       ),
                     }}
                   />
@@ -149,9 +139,7 @@ export function Dashboard({
             </div>
 
             <div className="mt-12">
-              <h3 className="text-xl font-bold mb-5">
-                {t("dashboard.quickActions.title")}
-              </h3>
+              <h3 className="text-xl font-bold mb-5">{t("dashboard.quickActions.title")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button
                   className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm text-center hover:shadow-md transition-all group"

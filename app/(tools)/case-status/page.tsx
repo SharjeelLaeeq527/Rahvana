@@ -76,27 +76,89 @@ type StatusTheme = {
 function getStatusTheme(status: string): StatusTheme {
   const s = status.toLowerCase();
   if (s.includes("approved"))
-    return { label: "Approved", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", dot: "bg-emerald-500" };
+    return {
+      label: "Approved",
+      color: "text-emerald-700",
+      bg: "bg-emerald-50",
+      border: "border-emerald-200",
+      dot: "bg-emerald-500",
+    };
   if (s.includes("card was produced") || s.includes("mailed"))
-    return { label: "Card Mailed", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", dot: "bg-emerald-500" };
-  if (s.includes("denied") || s.includes("rejected") || s.includes("revoked") || s.includes("terminated"))
-    return { label: "Denied", color: "text-red-700", bg: "bg-red-50", border: "border-red-200", dot: "bg-red-500" };
+    return {
+      label: "Card Mailed",
+      color: "text-emerald-700",
+      bg: "bg-emerald-50",
+      border: "border-emerald-200",
+      dot: "bg-emerald-500",
+    };
+  if (
+    s.includes("denied") ||
+    s.includes("rejected") ||
+    s.includes("revoked") ||
+    s.includes("terminated")
+  )
+    return {
+      label: "Denied",
+      color: "text-red-700",
+      bg: "bg-red-50",
+      border: "border-red-200",
+      dot: "bg-red-500",
+    };
   if (s.includes("interview"))
-    return { label: "Interview Scheduled", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500" };
+    return {
+      label: "Interview Scheduled",
+      color: "text-amber-700",
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      dot: "bg-amber-500",
+    };
   if (s.includes("rfe") || s.includes("request for evidence"))
-    return { label: "RFE Issued", color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200", dot: "bg-orange-500" };
+    return {
+      label: "RFE Issued",
+      color: "text-orange-700",
+      bg: "bg-orange-50",
+      border: "border-orange-200",
+      dot: "bg-orange-500",
+    };
   if (s.includes("received") || s.includes("initial review"))
-    return { label: "Received", color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-200", dot: "bg-blue-500" };
+    return {
+      label: "Received",
+      color: "text-blue-700",
+      bg: "bg-blue-50",
+      border: "border-blue-200",
+      dot: "bg-blue-500",
+    };
   if (s.includes("pending"))
-    return { label: "Pending", color: "text-sky-700", bg: "bg-sky-50", border: "border-sky-200", dot: "bg-sky-500" };
+    return {
+      label: "Pending",
+      color: "text-sky-700",
+      bg: "bg-sky-50",
+      border: "border-sky-200",
+      dot: "bg-sky-500",
+    };
   if (s.includes("transfer"))
-    return { label: "Transferred", color: "text-purple-700", bg: "bg-purple-50", border: "border-purple-200", dot: "bg-purple-500" };
-  return { label: "In Progress", color: "text-teal-700", bg: "bg-teal-50", border: "border-teal-200", dot: "bg-teal-500" };
+    return {
+      label: "Transferred",
+      color: "text-purple-700",
+      bg: "bg-purple-50",
+      border: "border-purple-200",
+      dot: "bg-purple-500",
+    };
+  return {
+    label: "In Progress",
+    color: "text-teal-700",
+    bg: "bg-teal-50",
+    border: "border-teal-200",
+    dot: "bg-teal-500",
+  };
 }
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 function formatReceiptInput(value: string): string {
-  return value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 13);
+  return value
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase()
+    .slice(0, 13);
 }
 
 function decodePrefix(receipt: string) {
@@ -148,22 +210,34 @@ export default function CaseStatusPage() {
     try {
       const s = localStorage.getItem("uscis_history");
       if (s) setHistory(JSON.parse(s));
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, []);
 
   const saveHistory = (item: CaseResult) => {
     setHistory((prev) => {
       const filtered = prev.filter((h) => h.receiptNumber !== item.receiptNumber);
       const next = [item, ...filtered].slice(0, 10);
-      try { localStorage.setItem("uscis_history", JSON.stringify(next)); } catch { /* noop */ }
+      try {
+        localStorage.setItem("uscis_history", JSON.stringify(next));
+      } catch {
+        /* noop */
+      }
       return next;
     });
   };
 
   const handleCheck = async () => {
     const normalized = receipt.trim().toUpperCase().replace(/[-\s]/g, "");
-    if (!normalized) { setError("Please enter your USCIS receipt number."); return; }
-    if (normalized.length !== 13) { setError("Receipt number must be 13 characters — 3 letters followed by 10 digits."); return; }
+    if (!normalized) {
+      setError("Please enter your USCIS receipt number.");
+      return;
+    }
+    if (normalized.length !== 13) {
+      setError("Receipt number must be 13 characters — 3 letters followed by 10 digits.");
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -188,7 +262,11 @@ export default function CaseStatusPage() {
       setResult(parsed);
       saveHistory(parsed);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Network error. Please check your connection and try again.");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Network error. Please check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -201,7 +279,12 @@ export default function CaseStatusPage() {
     setShowHistory(false);
   };
 
-  const reset = () => { setReceipt(""); setResult(null); setError(null); inputRef.current?.focus(); };
+  const reset = () => {
+    setReceipt("");
+    setResult(null);
+    setError(null);
+    inputRef.current?.focus();
+  };
 
   const decoded = decodePrefix(receipt);
   const theme = result ? getStatusTheme(result.status) : null;
@@ -219,7 +302,8 @@ export default function CaseStatusPage() {
             USCIS Case Status
           </h1>
           <p className="text-gray-600 max-w-2xl leading-relaxed">
-            Enter your 13-character receipt number for an instant case update. Track your immigration progress with official data in real-time.
+            Enter your 13-character receipt number for an instant case update. Track your
+            immigration progress with official data in real-time.
           </p>
         </div>
 
@@ -242,20 +326,36 @@ export default function CaseStatusPage() {
           {showHistory && (
             <div className="mb-6 rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Searches</span>
-                <button onClick={() => { setHistory([]); localStorage.removeItem("uscis_history"); }}
-                  className="text-xs text-red-500 hover:text-red-600 font-bold">Clear All</button>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Recent Searches
+                </span>
+                <button
+                  onClick={() => {
+                    setHistory([]);
+                    localStorage.removeItem("uscis_history");
+                  }}
+                  className="text-xs text-red-500 hover:text-red-600 font-bold"
+                >
+                  Clear All
+                </button>
               </div>
               {history.map((h) => {
                 const t = getStatusTheme(h.status);
                 return (
-                  <button key={h.receiptNumber} onClick={() => loadHistory(h)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-white transition-all border-b border-slate-100 last:border-0 text-left group">
+                  <button
+                    key={h.receiptNumber}
+                    onClick={() => loadHistory(h)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-white transition-all border-b border-slate-100 last:border-0 text-left group"
+                  >
                     <div className="flex items-center gap-3">
                       <span className={`w-2 h-2 rounded-full shrink-0 ${t.dot}`} />
                       <div>
-                        <p className="text-sm font-bold text-slate-800 font-mono tracking-wider group-hover:text-primary transition-colors">{h.receiptNumber}</p>
-                        <p className="text-[11px] text-slate-400 font-medium">Checked {new Date(h.checkedAt).toLocaleDateString()}</p>
+                        <p className="text-sm font-bold text-slate-800 font-mono tracking-wider group-hover:text-primary transition-colors">
+                          {h.receiptNumber}
+                        </p>
+                        <p className="text-[11px] text-slate-400 font-medium">
+                          Checked {new Date(h.checkedAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -276,7 +376,10 @@ export default function CaseStatusPage() {
                   ref={inputRef}
                   type="text"
                   value={receipt}
-                  onChange={(e) => { setReceipt(formatReceiptInput(e.target.value)); setError(null); }}
+                  onChange={(e) => {
+                    setReceipt(formatReceiptInput(e.target.value));
+                    setError(null);
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleCheck()}
                   placeholder="e.g. MSC2490000001"
                   maxLength={13}
@@ -284,18 +387,21 @@ export default function CaseStatusPage() {
                     focus:ring-4 focus:ring-primary/5
                     ${error ? "border-red-300 bg-red-50/20 focus:border-red-400" : "border-slate-100 hover:border-slate-200 bg-slate-50 focus:border-primary focus:bg-white"}`}
                 />
-                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-black font-mono tabular-nums px-2 py-0.5 rounded bg-white shadow-sm border
-                  ${receipt.length === 13 ? "text-emerald-500 border-emerald-100" : "text-slate-400 border-slate-100"}`}>
+                <span
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-black font-mono tabular-nums px-2 py-0.5 rounded bg-white shadow-sm border
+                  ${receipt.length === 13 ? "text-emerald-500 border-emerald-100" : "text-slate-400 border-slate-100"}`}
+                >
                   {receipt.length}/13
                 </span>
               </div>
-              
+
               {/* Prefix Decoder */}
               {decoded && receipt.length >= 3 && (
                 <div className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/5 w-fit">
                   <Building2 className="w-3.5 h-3.5 text-primary/60" />
                   <span className="text-[11px] font-bold text-primary tracking-tight">
-                    {decoded.center} {decoded.year && <span className="text-primary/40 ml-1">({decoded.year})</span>}
+                    {decoded.center}{" "}
+                    {decoded.year && <span className="text-primary/40 ml-1">({decoded.year})</span>}
                   </span>
                 </div>
               )}
@@ -442,13 +548,25 @@ export default function CaseStatusPage() {
   );
 }
 
-function ResultCell({ label, value, icon, mono }: { label: string; value: React.ReactNode; icon: React.ReactNode; mono?: boolean }) {
+function ResultCell({
+  label,
+  value,
+  icon,
+  mono,
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon: React.ReactNode;
+  mono?: boolean;
+}) {
   return (
     <div className="space-y-1.5">
       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
         {icon} {label}
       </p>
-      <p className={`text-[15px] font-extrabold text-slate-900 ${mono ? 'font-mono tracking-wider' : ''}`}>
+      <p
+        className={`text-[15px] font-extrabold text-slate-900 ${mono ? "font-mono tracking-wider" : ""}`}
+      >
         {value}
       </p>
     </div>

@@ -47,7 +47,7 @@ export function getStepLockStatus(
   stepId: string,
   tier: PlanTier,
   chapterIdx: number,
-  localIdx: number,
+  localIdx: number
 ): StepLockStatus {
   const isFreeTier = tier === "free";
   const isChapter1 = chapterIdx === 0;
@@ -67,8 +67,7 @@ export function getStepLockStatus(
     // Find the minimum required tier to access this step
     const allTiers: PlanTier[] = ["free", "basic", "premium", "executive"];
     const requiredPlan =
-      (allTiers.find((t) => !restrictedTiers.includes(t)) as PlanTier) ||
-      "premium";
+      (allTiers.find((t) => !restrictedTiers.includes(t)) as PlanTier) || "premium";
     return { isLocked: true, requiredPlan, reason: "tier" };
   }
 

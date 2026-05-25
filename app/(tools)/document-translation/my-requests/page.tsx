@@ -37,13 +37,7 @@ interface Requests {
   version: number;
 }
 
-const StatusBadge = ({
-  status,
-  version,
-}: {
-  status: TranslationStatus;
-  version: number;
-}) => {
+const StatusBadge = ({ status, version }: { status: TranslationStatus; version: number }) => {
   const { t } = useLanguage();
 
   const statusConfig: Record<
@@ -85,8 +79,7 @@ const StatusBadge = ({
   const config = statusConfig[status];
   const Icon = config.icon;
 
-  const displayLabel =
-    status === "TRANSLATED" ? `Proof_V${version}` : config.label;
+  const displayLabel = status === "TRANSLATED" ? `Proof_V${version}` : config.label;
 
   return (
     <span
@@ -165,10 +158,7 @@ export default function MyTranslationRequests() {
 
   // Filter requests based on active filters
   const filteredRequests = requests.filter((request) => {
-    if (
-      filters.document_type !== "all" &&
-      request.document_type !== filters.document_type
-    ) {
+    if (filters.document_type !== "all" && request.document_type !== filters.document_type) {
       return false;
     }
     if (filters.status !== "all" && request.status !== filters.status) {
@@ -289,9 +279,7 @@ export default function MyTranslationRequests() {
       className: "text-right",
       render: (request: Requests) => (
         <ActionMenu
-          onView={() =>
-            (window.location.href = `/document-translation/request/${request.id}`)
-          }
+          onView={() => (window.location.href = `/document-translation/request/${request.id}`)}
         />
       ),
     },

@@ -49,10 +49,11 @@ export default function CaseRegistrationForm({
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    
+
     // NVC Case Number: 3 letters + 10 digits
     if (!/^[A-Z]{3}[0-9]{10}$/i.test(nvcCaseNum)) {
-      newErrors.nvcCaseNum = "Invalid format. Use 3 letters followed by 10 digits (e.g. ISL2024123456).";
+      newErrors.nvcCaseNum =
+        "Invalid format. Use 3 letters followed by 10 digits (e.g. ISL2024123456).";
     }
 
     // Invoice ID: Simple alphanumeric check
@@ -123,8 +124,9 @@ export default function CaseRegistrationForm({
             <div className="text-sm text-blue-900">
               <p className="font-semibold mb-1">Why do we need this?</p>
               <p className="opacity-80">
-                These details allow our admin team to track your case progress through the NVC and CEAC systems. 
-                This information is stored securely and only used to update your dashboard with real-time status.
+                These details allow our admin team to track your case progress through the NVC and
+                CEAC systems. This information is stored securely and only used to update your
+                dashboard with real-time status.
               </p>
             </div>
           </div>
@@ -141,7 +143,7 @@ export default function CaseRegistrationForm({
             value={nvcCaseNum}
             onChange={(e) => {
               setNvcCaseNum(e.target.value.toUpperCase());
-              if (errors.nvcCaseNum) setErrors(prev => ({ ...prev, nvcCaseNum: "" }));
+              if (errors.nvcCaseNum) setErrors((prev) => ({ ...prev, nvcCaseNum: "" }));
             }}
             className={`mt-1 ${errors.nvcCaseNum ? "border-red-500" : ""}`}
           />
@@ -165,7 +167,7 @@ export default function CaseRegistrationForm({
             value={nvcInvoice}
             onChange={(e) => {
               setNvcInvoice(e.target.value.toUpperCase());
-              if (errors.nvcInvoice) setErrors(prev => ({ ...prev, nvcInvoice: "" }));
+              if (errors.nvcInvoice) setErrors((prev) => ({ ...prev, nvcInvoice: "" }));
             }}
             className={`mt-1 ${errors.nvcInvoice ? "border-red-500" : ""}`}
           />
@@ -228,7 +230,7 @@ export default function CaseRegistrationForm({
             value={passportNumber}
             onChange={(e) => {
               setPassportNumber(e.target.value.toUpperCase());
-              if (errors.passportNumber) setErrors(prev => ({ ...prev, passportNumber: "" }));
+              if (errors.passportNumber) setErrors((prev) => ({ ...prev, passportNumber: "" }));
             }}
             className={`mt-1 uppercase ${errors.passportNumber ? "border-red-500" : ""}`}
           />
@@ -252,7 +254,7 @@ export default function CaseRegistrationForm({
             value={surname}
             onChange={(e) => {
               setSurname(e.target.value.substring(0, 5).toUpperCase());
-              if (errors.surname) setErrors(prev => ({ ...prev, surname: "" }));
+              if (errors.surname) setErrors((prev) => ({ ...prev, surname: "" }));
             }}
             className={`mt-1 uppercase ${errors.surname ? "border-red-500" : ""}`}
             maxLength={5}
@@ -268,11 +270,7 @@ export default function CaseRegistrationForm({
 
         {/* Save Button */}
         <div className="pt-2">
-          <Button
-            onClick={handleSave}
-            disabled={!isComplete || isSaved}
-            className="w-full"
-          >
+          <Button onClick={handleSave} disabled={!isComplete || isSaved} className="w-full">
             {isSaved ? (
               <>
                 <CheckCircle className="mr-2 h-4 w-4" />

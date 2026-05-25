@@ -353,9 +353,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                   <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#6b8097] mb-[3px]">
                     {k}
                   </div>
-                  <div className="text-[13px] font-semibold text-[#0c1b33]">
-                    {v}
-                  </div>
+                  <div className="text-[13px] font-semibold text-[#0c1b33]">{v}</div>
                 </div>
               ))}
             </div>
@@ -366,17 +364,12 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
       {/* Progress Bar */}
       {(() => {
         const docs = getFinancialDocs(selectedScenario);
-        const allItems = [
-          ...docs.required,
-          ...docs.conditional,
-          ...docs.recommended,
-        ];
+        const allItems = [...docs.required, ...docs.conditional, ...docs.recommended];
         const reviewedCount = allItems.filter(
-          (d) => financialDocsStatus[d.id] === "reviewed",
+          (d) => financialDocsStatus[d.id] === "reviewed"
         ).length;
         const totalCount = allItems.length;
-        const pct =
-          totalCount > 0 ? Math.round((reviewedCount / totalCount) * 100) : 0;
+        const pct = totalCount > 0 ? Math.round((reviewedCount / totalCount) * 100) : 0;
 
         return (
           <div className="flex flex-col mb-[24px]">
@@ -436,11 +429,9 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                     const st = financialDocsStatus[doc.id] || "not-started";
                     const defId = mapDocumentNameToId(doc.title);
                     const isUploadedInVault = uploadedDocuments.some(
-                      (ud) => ud.documentDefId === defId,
+                      (ud) => ud.documentDefId === defId
                     );
-                    const uploadedDoc = uploadedDocuments.find(
-                      (ud) => ud.documentDefId === defId,
-                    );
+                    const uploadedDoc = uploadedDocuments.find((ud) => ud.documentDefId === defId);
                     const isReviewed = st === "reviewed";
                     const isInProgress = st === "in-progress";
 

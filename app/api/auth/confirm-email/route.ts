@@ -22,33 +22,24 @@ export async function GET(request: NextRequest) {
     const email = searchParams.get("email");
 
     if (!token || !email) {
-      return NextResponse.redirect(
-        new URL("/login?error=invalid_link", request.url)
-      );
+      return NextResponse.redirect(new URL("/login?error=invalid_link", request.url));
     }
 
     // Hash the provided token
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
     // Find the user
-    const { data: users, error: listError } =
-      await supabaseAdmin.auth.admin.listUsers();
+    const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
 
     if (listError) {
       console.error("Error listing users:", listError);
-      return NextResponse.redirect(
-        new URL("/login?error=server_error", request.url)
-      );
+      return NextResponse.redirect(new URL("/login?error=server_error", request.url));
     }
 
-    const user = users.users.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
-    );
+    const user = users.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
 
     if (!user) {
-      return NextResponse.redirect(
-        new URL("/login?error=user_not_found", request.url)
-      );
+      return NextResponse.redirect(new URL("/login?error=user_not_found", request.url));
     }
 
     // Verify token
@@ -56,54 +47,39 @@ export async function GET(request: NextRequest) {
     const tokenExpiry = user.user_metadata?.confirm_token_expiry;
 
     if (!storedTokenHash || !tokenExpiry) {
-      return NextResponse.redirect(
-        new URL("/login?error=invalid_link", request.url)
-      );
+      return NextResponse.redirect(new URL("/login?error=invalid_link", request.url));
     }
 
     // Check if token matches
     if (tokenHash !== storedTokenHash) {
-      return NextResponse.redirect(
-        new URL("/login?error=invalid_link", request.url)
-      );
+      return NextResponse.redirect(new URL("/login?error=invalid_link", request.url));
     }
 
     // Check if token expired
     if (new Date() > new Date(tokenExpiry)) {
-      return NextResponse.redirect(
-        new URL("/login?error=link_expired", request.url)
-      );
+      return NextResponse.redirect(new URL("/login?error=link_expired", request.url));
     }
 
     // Confirm the email
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-      user.id,
-      {
-        email_confirm: true,
-        user_metadata: {
-          ...user.user_metadata,
-          confirm_token_hash: null,
-          confirm_token_expiry: null,
-          email_verified: true,
-        },
-      }
-    );
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      email_confirm: true,
+      user_metadata: {
+        ...user.user_metadata,
+        confirm_token_hash: null,
+        confirm_token_expiry: null,
+        email_verified: true,
+      },
+    });
 
     if (updateError) {
       console.error("Error confirming email:", updateError);
-      return NextResponse.redirect(
-        new URL("/login?error=confirmation_failed", request.url)
-      );
+      return NextResponse.redirect(new URL("/login?error=confirmation_failed", request.url));
     }
 
     // Redirect to login with success message
-    return NextResponse.redirect(
-      new URL("/login?confirmed=true", request.url)
-    );
+    return NextResponse.redirect(new URL("/login?confirmed=true", request.url));
   } catch (error) {
     console.error("Email confirmation error:", error);
-    return NextResponse.redirect(
-      new URL("/login?error=server_error", request.url)
-    );
+    return NextResponse.redirect(new URL("/login?error=server_error", request.url));
   }
 }

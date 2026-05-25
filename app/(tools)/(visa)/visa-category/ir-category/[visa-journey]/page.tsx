@@ -22,12 +22,7 @@ function resolveJourneyData(visaJourney: string): any | null {
 }
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -55,9 +50,24 @@ import {
 
 /** Curated icon lookup for stage cards — avoids `import * as icons` which bundles ALL 1000+ Lucide icons */
 const STAGE_ICON_MAP: Record<string, LucideIcon> = {
-  FileText, Globe, Heart, Briefcase, ShieldCheck, Star,
-  Building2, Activity, Cpu, BookOpen, Users, Clock,
-  MapPin, Scale, AlertCircle, ArrowRight, Folder, Save,
+  FileText,
+  Globe,
+  Heart,
+  Briefcase,
+  ShieldCheck,
+  Star,
+  Building2,
+  Activity,
+  Cpu,
+  BookOpen,
+  Users,
+  Clock,
+  MapPin,
+  Scale,
+  AlertCircle,
+  ArrowRight,
+  Folder,
+  Save,
 };
 import { Loader } from "@/components/ui/spinner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -92,25 +102,24 @@ export default function IR1JourneyPage() {
   // Static lookup — resolves synchronously, no network call needed
   const roadmapData = resolveJourneyData(visaJourney) as RoadmapData | null;
   const dataLoaded = true;
-  const hasScenarios = !!(roadmapData && (
+  const hasScenarios = !!(
+    roadmapData &&
     (roadmapData.chapters || (roadmapData as any).stages || []).some((s: any) =>
       (s.steps || []).some((st: any) => st.scenarioSpecific)
     )
-  ));
+  );
 
-  const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } =
-    useWizard({
-      userId,
-      journeyId: visaJourney,
-      roadmapData,
-    });
+  const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } = useWizard({
+    userId,
+    journeyId: visaJourney,
+    roadmapData,
+  });
 
   const isSignedIn = !!user;
   const [journeyDecisionMade, setJourneyDecisionMade] = useState(false);
   const [startFreshModalOpen, setStartFreshModalOpen] = useState(false);
 
-  const showDecisionScreen =
-    isLoaded && isSignedIn && hasExistingProgress && !journeyDecisionMade;
+  const showDecisionScreen = isLoaded && isSignedIn && hasExistingProgress && !journeyDecisionMade;
 
   const confirmStartFresh = async () => {
     await actions.resetProgress();
@@ -191,9 +200,10 @@ export default function IR1JourneyPage() {
         </div>
         <h2 className="text-2xl font-bold text-slate-800">Connection Error</h2>
         <p className="text-slate-500 text-center max-w-md">
-          {error.message || "Failed to synchronize your journey. This usually happens when the configuration file for your visa type is missing or inaccessible."}
+          {error.message ||
+            "Failed to synchronize your journey. This usually happens when the configuration file for your visa type is missing or inaccessible."}
         </p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="mt-4 px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
         >
@@ -215,13 +225,7 @@ export default function IR1JourneyPage() {
 
   // Use V2 for IR-1/CR-1 journeys
   if (visaJourney === "ir-1" || visaJourney === "cr-1") {
-    return (
-      <RoadmapLayoutV2
-        data={roadmapData}
-        state={state}
-        actions={actions as any}
-      />
-    );
+    return <RoadmapLayoutV2 data={roadmapData} state={state} actions={actions as any} />;
   }
 
   // Fallback for other journeys (Old UI)
@@ -236,14 +240,18 @@ export default function IR1JourneyPage() {
                 <h1 className="text-3xl md:text-5xl font-bold">
                   {language === "ur" && (roadmapData as any).titleUr
                     ? (roadmapData as any).titleUr
-                    : (roadmapData as any).journey_name || (roadmapData as any).title || t("ir1Journey.title")}
+                    : (roadmapData as any).journey_name ||
+                      (roadmapData as any).title ||
+                      t("ir1Journey.title")}
                 </h1>
                 <VisaCategoryTooltip roadmapData={roadmapData} language={language} />
               </div>
               <p className="text-slate-500 mb-6 md:mb-8 text-base md:text-lg max-w-2xl">
                 {language === "ur" && (roadmapData as any).descriptionUr
                   ? (roadmapData as any).descriptionUr
-                  : (roadmapData as any).journey_description || (roadmapData as any).description || t("ir1Journey.description")}
+                  : (roadmapData as any).journey_description ||
+                    (roadmapData as any).description ||
+                    t("ir1Journey.description")}
               </p>
             </div>
             {isSignedIn && (
@@ -256,7 +264,9 @@ export default function IR1JourneyPage() {
                 ) : (
                   <>
                     <Save className="w-4 h-4 text-emerald-500" />
-                    <span className="text-emerald-600 font-medium">{t("visaJourney.autoSaved")}</span>
+                    <span className="text-emerald-600 font-medium">
+                      {t("visaJourney.autoSaved")}
+                    </span>
                   </>
                 )}
               </div>
@@ -279,7 +289,8 @@ export default function IR1JourneyPage() {
                         </p>
                         <p className="font-semibold text-primary">
                           {roadmapData.scenarios ? (
-                            roadmapData.scenarios.find((s: any) => s.id === state.scenarioType)?.title
+                            roadmapData.scenarios.find((s: any) => s.id === state.scenarioType)
+                              ?.title
                           ) : (
                             <>
                               {state.scenarioType === "bio" && "Biological Child"}
@@ -292,7 +303,10 @@ export default function IR1JourneyPage() {
                       <div className="flex items-center gap-3">
                         <span
                           role="button"
-                          onClick={(e) => { e.stopPropagation(); setShowScenarioModal(true); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowScenarioModal(true);
+                          }}
                           className="text-sm font-medium text-primary hover:underline cursor-pointer"
                         >
                           Change
@@ -303,12 +317,16 @@ export default function IR1JourneyPage() {
                       </div>
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>{relationshipNotesOpen ? "Click to collapse" : "Click to expand"}</TooltipContent>
-                  {relationshipNotesOpen && (roadmapData as any).scenarioNotes && (roadmapData as any).scenarioNotes[state.scenarioType] && (
-                    <div className="px-4 pb-4 text-sm text-muted-foreground border-t border-primary/10">
-                      {(roadmapData as any).scenarioNotes[state.scenarioType]}
-                    </div>
-                  )}
+                  <TooltipContent>
+                    {relationshipNotesOpen ? "Click to collapse" : "Click to expand"}
+                  </TooltipContent>
+                  {relationshipNotesOpen &&
+                    (roadmapData as any).scenarioNotes &&
+                    (roadmapData as any).scenarioNotes[state.scenarioType] && (
+                      <div className="px-4 pb-4 text-sm text-muted-foreground border-t border-primary/10">
+                        {(roadmapData as any).scenarioNotes[state.scenarioType]}
+                      </div>
+                    )}
                 </div>
               </Tooltip>
             </TooltipProvider>
@@ -322,7 +340,10 @@ export default function IR1JourneyPage() {
                 {(() => {
                   const chapters = roadmapData.chapters || (roadmapData as any).stages || [];
                   const visibleStagesCount = chapters.filter(
-                    (s: any) => !hasScenarios || !s.scenarioSpecific || s.scenarioSpecific === state.scenarioType,
+                    (s: any) =>
+                      !hasScenarios ||
+                      !s.scenarioSpecific ||
+                      s.scenarioSpecific === state.scenarioType
                   ).length;
                   return `The ${visibleStagesCount} Stages of Your Journey`;
                 })()}
@@ -330,9 +351,14 @@ export default function IR1JourneyPage() {
             </div>
             <div className="flex overflow-x-auto w-full justify-start gap-4 pb-6 pt-2 snap-x snap-mandatory px-4">
               {(roadmapData.chapters || (roadmapData as any).stages || [])
-                .filter((stage: any) => !hasScenarios || !stage.scenarioSpecific || stage.scenarioSpecific === state.scenarioType)
+                .filter(
+                  (stage: any) =>
+                    !hasScenarios ||
+                    !stage.scenarioSpecific ||
+                    stage.scenarioSpecific === state.scenarioType
+                )
                 .map((stage: any, sIdx: number, filteredStages: any[]) => {
-                  const iconName = (stage.icon || (stage as any).chapter_icon) || "FileText";
+                  const iconName = stage.icon || (stage as any).chapter_icon || "FileText";
                   const Icon = STAGE_ICON_MAP[iconName] || FileText;
                   const isLast = sIdx === filteredStages.length - 1;
                   const stageId = stage.chapter_key || stage.id;
@@ -403,61 +429,76 @@ interface WizardProps {
   hasScenarios: boolean;
 }
 
-function Wizard({ roadmapData, state, actions, isLoaded, selectedScenario, hasScenarios }: WizardProps) {
+function Wizard({
+  roadmapData,
+  state,
+  actions,
+  isLoaded,
+  selectedScenario,
+  hasScenarios,
+}: WizardProps) {
   const [isVaultOpen, setIsVaultOpen] = useState(false);
   const { t } = useLanguage();
 
   if (!isLoaded) return null;
 
-  const currentStage = (roadmapData.chapters || (roadmapData as any).stages || [])[state.currentStage];
+  const currentStage = (roadmapData.chapters || (roadmapData as any).stages || [])[
+    state.currentStage
+  ];
   const currentStep = currentStage?.steps[state.currentStep || 0];
 
   if (!currentStep || !currentStage) return null;
 
   return (
     <div className="flex flex-col gap-6">
-       <button onClick={() => setIsVaultOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold">
-          <Folder className="w-5 h-5 text-amber-500" />
-          {t("ir1Journey.documentVault")}
-       </button>
+      <button
+        onClick={() => setIsVaultOpen(true)}
+        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold"
+      >
+        <Folder className="w-5 h-5 text-amber-500" />
+        {t("ir1Journey.documentVault")}
+      </button>
 
-       <div className="flex flex-col md:flex-row gap-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-          <aside className="w-full md:w-[320px] bg-slate-50 border-r border-slate-200">
-             <ProgressTree
-               roadmapData={roadmapData}
-               state={state}
-               onSelectStep={(st, sp) => { actions.setStage(st); actions.setCurrentStep(sp); }}
-               onToggleComplete={actions.toggleComplete}
-               selectedScenario={selectedScenario}
-               hasScenarios={hasScenarios}
-             />
-          </aside>
-          <main className="flex-1 p-8">
-             {currentStep && (
-               <StepDetail
-                 step={currentStep}
-                 stage={currentStage}
-                 state={state}
-                 onToggleComplete={actions.toggleComplete}
-                 onNext={() => {}}
-                 onPrev={() => {}}
-                 isFirst={false}
-                 isLast={false}
-               />
-             )}
-          </main>
-       </div>
+      <div className="flex flex-col md:flex-row gap-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <aside className="w-full md:w-[320px] bg-slate-50 border-r border-slate-200">
+          <ProgressTree
+            roadmapData={roadmapData}
+            state={state}
+            onSelectStep={(st, sp) => {
+              actions.setStage(st);
+              actions.setCurrentStep(sp);
+            }}
+            onToggleComplete={actions.toggleComplete}
+            selectedScenario={selectedScenario}
+            hasScenarios={hasScenarios}
+          />
+        </aside>
+        <main className="flex-1 p-8">
+          {currentStep && (
+            <StepDetail
+              step={currentStep}
+              stage={currentStage}
+              state={state}
+              onToggleComplete={actions.toggleComplete}
+              onNext={() => {}}
+              onPrev={() => {}}
+              isFirst={false}
+              isLast={false}
+            />
+          )}
+        </main>
+      </div>
 
-       <DocumentVault
-         roadmapData={roadmapData}
-         isOpen={isVaultOpen}
-         onClose={() => setIsVaultOpen(false)}
-         state={state}
-         onToggleDocument={actions.toggleDocument}
-         onUpdateNote={actions.updateNote}
-         onUpload={actions.uploadDocument}
-         onClearUpload={actions.clearDocument}
-       />
+      <DocumentVault
+        roadmapData={roadmapData}
+        isOpen={isVaultOpen}
+        onClose={() => setIsVaultOpen(false)}
+        state={state}
+        onToggleDocument={actions.toggleDocument}
+        onUpdateNote={actions.updateNote}
+        onUpload={actions.uploadDocument}
+        onClearUpload={actions.clearDocument}
+      />
     </div>
   );
 }

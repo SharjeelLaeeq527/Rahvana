@@ -1,18 +1,10 @@
 "use client";
 
 import { useState, useRef, useMemo, useEffect } from "react";
-import {
-  DocumentDefinition,
-  DocumentRole,
-} from "@/lib/document-vault/types";
+import { DocumentDefinition, DocumentRole } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -71,9 +63,7 @@ export function MultipleDocumentUploadModal({
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [dragActiveId, setDragActiveId] = useState<string | null>(null);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const {
     config,
     uploadedDocuments: vaultDocuments,
@@ -103,10 +93,7 @@ export function MultipleDocumentUploadModal({
 
   // Derive already uploaded documents and their types for this category
   const uploadedDocuments = useMemo(() => {
-    const allowedIds = [
-      categoryId,
-      ...options.map((opt) => mapDocumentNameToId(opt)),
-    ];
+    const allowedIds = [categoryId, ...options.map((opt) => mapDocumentNameToId(opt))];
     const currentCategory = (documentDef as any).category || categoryId;
 
     return vaultDocuments.filter((d) => {
@@ -118,11 +105,7 @@ export function MultipleDocumentUploadModal({
         const docCategory = d.documentDefId.split("-")[1];
 
         // Match current category OR generic categories
-        return (
-          docCategory === currentCategory ||
-          docCategory === "OTHER" ||
-          docCategory === "MISC"
-        );
+        return docCategory === currentCategory || docCategory === "OTHER" || docCategory === "MISC";
       }
 
       return false;
@@ -152,14 +135,12 @@ export function MultipleDocumentUploadModal({
 
       // Fallback for dynamic documents without explicit type in notes
       if (
-        (typeLabel === OTHER_OPTION ||
-          !typeLabel ||
-          typeLabel === "Document") &&
+        (typeLabel === OTHER_OPTION || !typeLabel || typeLabel === "Document") &&
         doc.documentDefId?.startsWith("dynamic-")
       ) {
         const category = doc.documentDefId.split("-")[1];
         const dynamicDoc = config?.dynamicDocuments?.[category]?.find(
-          (d) => d.id === doc.documentDefId,
+          (d) => d.id === doc.documentDefId
         );
         if (dynamicDoc) {
           typeLabel = dynamicDoc.name;
@@ -173,22 +154,22 @@ export function MultipleDocumentUploadModal({
     });
 
     // Apply Virtual Versioning to each group
-    Object.keys(groups).forEach(typeLabel => {
-       const rawDocs = groups[typeLabel].sort((a, b) => 
-         new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
-       );
-       
-       const hasDuplicateVersions = rawDocs.some((v, i) => 
-         rawDocs.some((v2, i2) => i !== i2 && v.version === v2.version)
-       );
+    Object.keys(groups).forEach((typeLabel) => {
+      const rawDocs = groups[typeLabel].sort(
+        (a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
+      );
 
-       groups[typeLabel] = rawDocs.map((v, idx) => ({
-          ...v,
-          displayVersion: hasDuplicateVersions ? idx + 1 : v.version
-       })) as any;
+      const hasDuplicateVersions = rawDocs.some((v, i) =>
+        rawDocs.some((v2, i2) => i !== i2 && v.version === v2.version)
+      );
 
-       // Sort by displayVersion descending for the UI
-       groups[typeLabel].sort((a: any, b: any) => (b.displayVersion || 0) - (a.displayVersion || 0));
+      groups[typeLabel] = rawDocs.map((v, idx) => ({
+        ...v,
+        displayVersion: hasDuplicateVersions ? idx + 1 : v.version,
+      })) as any;
+
+      // Sort by displayVersion descending for the UI
+      groups[typeLabel].sort((a: any, b: any) => (b.displayVersion || 0) - (a.displayVersion || 0));
     });
 
     return groups as Record<string, (UploadedDocument & { displayVersion: number })[]>;
@@ -241,9 +222,7 @@ export function MultipleDocumentUploadModal({
   };
 
   const updatePendingUpload = (id: string, updates: Partial<PendingUpload>) => {
-    setPendingUploads((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-    );
+    setPendingUploads((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
   };
 
   const processFile = (id: string, file: File) => {
@@ -251,13 +230,7 @@ export function MultipleDocumentUploadModal({
       toast.error("File size must be less than 10MB");
       return;
     }
-    const allowedTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-    ];
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
       toast.error("Invalid file type. Please upload PDF or image.");
       return;
@@ -265,10 +238,7 @@ export function MultipleDocumentUploadModal({
     updatePendingUpload(id, { file });
   };
 
-  const handleFileSelect = (
-    id: string,
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileSelect = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       processFile(id, file);
@@ -304,9 +274,7 @@ export function MultipleDocumentUploadModal({
 
   const getAvailableOptions = (currentSlotId: string) => {
     const usedPendingTypes = pendingUploads
-      .filter(
-        (p) => p.id !== currentSlotId && p.type && p.type !== OTHER_OPTION,
-      )
+      .filter((p) => p.id !== currentSlotId && p.type && p.type !== OTHER_OPTION)
       .map((p) => p.type);
 
     // Per user request: don't filter out uploaded types, just filter out types used in other rows
@@ -334,20 +302,15 @@ export function MultipleDocumentUploadModal({
 
       for (const uploadItem of validUploads) {
         let specificDefId: string;
-        const currentCategory =
-          (documentDef as any).category || categoryId || "CIVIL";
+        const currentCategory = (documentDef as any).category || categoryId || "CIVIL";
         const normalizedType =
-          (uploadItem.type === OTHER_OPTION
-            ? uploadItem.customName
-            : uploadItem.type
-          )
+          (uploadItem.type === OTHER_OPTION ? uploadItem.customName : uploadItem.type)
             ?.trim()
             .toLowerCase() || "";
 
         // Check our local batch cache first to ensure consistency within this upload session
         if (batchSpecificDefIds[normalizedType]) {
-          uploadItemToDefId[uploadItem.id] =
-            batchSpecificDefIds[normalizedType];
+          uploadItemToDefId[uploadItem.id] = batchSpecificDefIds[normalizedType];
           continue;
         }
 
@@ -365,13 +328,15 @@ export function MultipleDocumentUploadModal({
         const latestConfig = useDocumentVaultStore.getState().config;
 
         // Check if we already have a slot for this name in the target category (Case-insensitive)
-        const existingSlot = latestConfig?.dynamicDocuments?.[
-          targetCategory
-        ]?.find((s: any) => s.name.trim().toLowerCase() === normalizedType);
+        const existingSlot = latestConfig?.dynamicDocuments?.[targetCategory]?.find(
+          (s: any) => s.name.trim().toLowerCase() === normalizedType
+        );
 
         const mappedId = mapDocumentNameToId(uploadItem.type);
-        const staticMatch = mappedId && mappedId !== "misc-document" && 
-                            ALL_DOCUMENTS.find(d => d.id === mappedId)?.category === targetCategory;
+        const staticMatch =
+          mappedId &&
+          mappedId !== "misc-document" &&
+          ALL_DOCUMENTS.find((d) => d.id === mappedId)?.category === targetCategory;
 
         if (existingSlot) {
           specificDefId = existingSlot.id;
@@ -380,15 +345,9 @@ export function MultipleDocumentUploadModal({
         } else {
           // Create new slot
           if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
-            specificDefId = await addNamedDynamicSlot(
-              targetCategory,
-              uploadItem.customName,
-            );
+            specificDefId = await addNamedDynamicSlot(targetCategory, uploadItem.customName);
           } else if ((documentDef as any).isDynamicCategory) {
-            specificDefId = await addNamedDynamicSlot(
-              targetCategory,
-              uploadItem.type,
-            );
+            specificDefId = await addNamedDynamicSlot(targetCategory, uploadItem.type);
           } else {
             specificDefId = mapDocumentNameToId(uploadItem.type);
           }
@@ -420,10 +379,7 @@ export function MultipleDocumentUploadModal({
 
         if (specificDefId.startsWith("dynamic-")) {
           const docCategory = specificDefId.split("-")[1];
-          formData.append(
-            "dynamicName",
-            uploadItem.customName || uploadItem.type,
-          );
+          formData.append("dynamicName", uploadItem.customName || uploadItem.type);
           formData.append("dynamicCategory", docCategory);
         }
         formData.append("role", parentRole);
@@ -453,12 +409,9 @@ export function MultipleDocumentUploadModal({
         }
       }
 
-      toast.success(
-        `Successfully uploaded ${validUploads.length} document(s)`,
-        {
-          id: "multi-upload-progress",
-        },
-      );
+      toast.success(`Successfully uploaded ${validUploads.length} document(s)`, {
+        id: "multi-upload-progress",
+      });
 
       // Provide completion callbacks
       await onUploadComplete();
@@ -468,12 +421,9 @@ export function MultipleDocumentUploadModal({
       addPendingUpload();
     } catch (error) {
       console.error("Multi-upload error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to upload all documents",
-        { id: "multi-upload-progress" },
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to upload all documents", {
+        id: "multi-upload-progress",
+      });
     } finally {
       setUploading(false);
     }
@@ -555,9 +505,7 @@ export function MultipleDocumentUploadModal({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <h4 className="font-bold text-[#0f1f38] text-[15px]">
-                              {typeLabel}
-                            </h4>
+                            <h4 className="font-bold text-[#0f1f38] text-[15px]">{typeLabel}</h4>
                             <Badge className="h-4 px-1.5 text-[9px] bg-primary text-white border-none hover:bg-primary/70 font-black tracking-wider">
                               Latest
                             </Badge>
@@ -636,11 +584,8 @@ export function MultipleDocumentUploadModal({
                                       {doc.originalFilename}
                                     </p>
                                     <p className="text-[10px] text-[#6b8097] font-medium">
-                                      {(doc.fileSize / 1024 / 1024).toFixed(2)}{" "}
-                                      MB •{" "}
-                                      {new Date(
-                                        doc.uploadedAt,
-                                      ).toLocaleDateString()}
+                                      {(doc.fileSize / 1024 / 1024).toFixed(2)} MB •{" "}
+                                      {new Date(doc.uploadedAt).toLocaleDateString()}
                                     </p>
                                   </div>
                                 </div>
@@ -746,16 +691,12 @@ export function MultipleDocumentUploadModal({
                         new Set([
                           ...(uploadItem.type ? [uploadItem.type] : []),
                           ...availableOptions,
-                          ...(!options.includes(OTHER_OPTION)
-                            ? [OTHER_OPTION]
-                            : []),
-                        ]),
+                          ...(!options.includes(OTHER_OPTION) ? [OTHER_OPTION] : []),
+                        ])
                       ).map((opt) => ({
                         label: opt,
                         value: opt,
-                        status: uploadedTypes.includes(opt)
-                          ? "uploaded"
-                          : "none",
+                        status: uploadedTypes.includes(opt) ? "uploaded" : "none",
                       }))}
                       placeholder="Select type..."
                       className="rounded-xl border-2 border-[#e8f1fb] focus:ring-4 focus:ring-primary/10 focus:border-primary bg-slate-50/50"
@@ -801,10 +742,7 @@ export function MultipleDocumentUploadModal({
                                 {uploadItem.file.name}
                               </span>
                               <span className="text-[11px] text-[#6b8097]">
-                                {(uploadItem.file.size / 1024 / 1024).toFixed(
-                                  2,
-                                )}{" "}
-                                MB
+                                {(uploadItem.file.size / 1024 / 1024).toFixed(2)} MB
                               </span>
                             </div>
                           </div>
@@ -924,9 +862,7 @@ export function MultipleDocumentUploadModal({
           {/* Security Guarantee */}
           <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 border border-[#d0e4f7]/40 rounded-xl text-[#3a4f63] text-xs font-semibold shadow-sm mt-4">
             <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span>
-              {t("documentVaultPage.components.uploadModal.securityNotice")}
-            </span>
+            <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
           </div>
         </div>
 
@@ -942,10 +878,7 @@ export function MultipleDocumentUploadModal({
           </Button>
           <Button
             onClick={handleUploadAll}
-            disabled={
-              uploading ||
-              pendingUploads.filter((p) => p.file && p.type).length === 0
-            }
+            disabled={uploading || pendingUploads.filter((p) => p.file && p.type).length === 0}
             className="flex-1 py-6 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all font-semibold disabled:bg-primary/60 text-base"
           >
             {uploading ? (

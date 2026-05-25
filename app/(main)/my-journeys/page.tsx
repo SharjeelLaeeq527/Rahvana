@@ -9,15 +9,7 @@ import {
   deleteAllUserJourneys,
   JourneyProgressRecord,
 } from "@/lib/journey/journeyProgressService";
-import {
-  Briefcase,
-  Trash2,
-  ChevronRight,
-  Plus,
-  ArrowRight,
-  Clock,
-  Shield,
-} from "lucide-react";
+import { Briefcase, Trash2, ChevronRight, Plus, ArrowRight, Clock, Shield } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -129,9 +121,7 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
 };
 
 // Resolve metadata for any raw journey_id from DB
-const resolveJourneyMeta = (
-  rawId: string,
-): JourneyMeta & { canonicalId: string } => {
+const resolveJourneyMeta = (rawId: string): JourneyMeta & { canonicalId: string } => {
   const canonical = normalizeJourneyId(rawId);
   const meta = JOURNEY_META[canonical];
   if (meta) return { ...meta, canonicalId: canonical };
@@ -161,9 +151,7 @@ export default function MyJourneysPage() {
   // Modal states
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteAllModalOpen, setDeleteAllModalOpen] = useState(false);
-  const [selectedJourneyId, setSelectedJourneyId] = useState<string | null>(
-    null,
-  );
+  const [selectedJourneyId, setSelectedJourneyId] = useState<string | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -207,7 +195,7 @@ export default function MyJourneysPage() {
 
     if (!user) {
       router.push(
-        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
       );
       return;
     }
@@ -231,7 +219,7 @@ export default function MyJourneysPage() {
       const success = await deleteJourneyProgress(user.id, selectedJourneyId);
       if (success) {
         setJourneys((prev: JourneyProgressRecord[]) =>
-          prev.filter((j) => j.journey_id !== selectedJourneyId),
+          prev.filter((j) => j.journey_id !== selectedJourneyId)
         );
       }
     } catch (error) {
@@ -282,8 +270,7 @@ export default function MyJourneysPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
-                  <Shield className="w-3 h-3" />{" "}
-                  {t("myJourneys.header.badges.securePortal")}
+                  <Shield className="w-3 h-3" /> {t("myJourneys.header.badges.securePortal")}
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />{" "}
@@ -336,10 +323,7 @@ export default function MyJourneysPage() {
           {loading && journeys.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((i) => (
-                <Card
-                  key={i}
-                  className="overflow-hidden border-slate-200 shadow-sm animate-pulse"
-                >
+                <Card key={i} className="overflow-hidden border-slate-200 shadow-sm animate-pulse">
                   <CardContent className="p-8">
                     <div className="flex items-start gap-4 mb-6">
                       <div className="w-14 h-14 rounded-2xl bg-slate-100 shrink-0" />
@@ -385,8 +369,7 @@ export default function MyJourneysPage() {
                     onClick={() => router.push("/visa-category/ir-category")}
                     className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg shadow-primary/20"
                   >
-                    {t("myJourneys.emptyState.button")}{" "}
-                    <ChevronRight className="ml-2 w-5 h-5" />
+                    {t("myJourneys.emptyState.button")} <ChevronRight className="ml-2 w-5 h-5" />
                   </Button>
                 </motion.div>
               ) : (
@@ -394,10 +377,8 @@ export default function MyJourneysPage() {
                   {journeys.map((j) => {
                     const totalSteps = j.total_steps_count || 1; // fallback safety
                     const completedSteps = j.completed_steps_count ?? j.completed_steps.length;
-                    
-                    const progress = Math.round(
-                      (completedSteps / totalSteps) * 100
-                    );
+
+                    const progress = Math.round((completedSteps / totalSteps) * 100);
                     const {
                       name: journeyName,
                       description,
@@ -453,16 +434,10 @@ export default function MyJourneysPage() {
                               <div className="flex items-center justify-between text-sm font-bold">
                                 <span className="text-slate-600 uppercase tracking-tighter flex items-center gap-1.5">
                                   <Clock className="w-3.5 h-3.5" />
-                                  {t(
-                                    "myJourneys.journeyCard.lastActivity",
-                                  )}{" "}
-                                  {new Date(
-                                    j.last_updated_at,
-                                  ).toLocaleDateString()}
+                                  {t("myJourneys.journeyCard.lastActivity")}{" "}
+                                  {new Date(j.last_updated_at).toLocaleDateString()}
                                 </span>
-                                <span className="text-primary">
-                                  {progress}%
-                                </span>
+                                <span className="text-primary">{progress}%</span>
                               </div>
 
                               <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">

@@ -23,14 +23,7 @@ function LoginContent() {
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const {
-    user,
-    signIn,
-    signInWithGoogle,
-    isLoading,
-    mfaPending,
-    verifyMFALogin,
-  } = useAuth();
+  const { user, signIn, signInWithGoogle, isLoading, mfaPending, verifyMFALogin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [mfaRequired, setMfaRequired] = useState(false);
@@ -76,12 +69,9 @@ function LoginContent() {
     }
   }, [searchParams]);
 
-  const redirectParam =
-    searchParams.get("redirect") || searchParams.get("redirectTo");
+  const redirectParam = searchParams.get("redirect") || searchParams.get("redirectTo");
   const redirect =
-    redirectParam &&
-    redirectParam.startsWith("/") &&
-    !redirectParam.startsWith("//")
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
       ? redirectParam
       : null;
 
@@ -104,7 +94,7 @@ function LoginContent() {
         if (session?.user) {
           fetchProfile(session.user.id);
         }
-      },
+      }
     );
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -162,11 +152,7 @@ function LoginContent() {
         setSuccess("Please enter your authentication code");
         setIsSubmitting(false);
         // Add ?mfa=true to URL so refresh doesn't cause redirect
-        window.history.replaceState(
-          null,
-          "",
-          `${window.location.pathname}?mfa=true`,
-        );
+        window.history.replaceState(null, "", `${window.location.pathname}?mfa=true`);
         return;
       }
 
@@ -188,11 +174,7 @@ function LoginContent() {
     setIsSubmitting(true);
 
     try {
-      const { success, error: mfaError } = await verifyMFALogin(
-        factorId,
-        challengeId,
-        mfaCode,
-      );
+      const { success, error: mfaError } = await verifyMFALogin(factorId, challengeId, mfaCode);
 
       if (success) {
         // Clear MFA data
@@ -261,9 +243,7 @@ function LoginContent() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
-          <p className="text-muted-foreground mt-2">
-            Sign in to continue to Rahvana
-          </p>
+          <p className="text-muted-foreground mt-2">Sign in to continue to Rahvana</p>
         </div>
 
         {/* Google Sign In Button */}
@@ -299,9 +279,7 @@ function LoginContent() {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-muted/20 text-muted-foreground">
-              or sign in with email
-            </span>
+            <span className="px-4 bg-muted/20 text-muted-foreground">or sign in with email</span>
           </div>
         </div>
 
@@ -359,9 +337,7 @@ function LoginContent() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
-                  Email Address
-                </label>
+                <label className="block text-sm font-medium text-foreground">Email Address</label>
                 <Input
                   type="email"
                   value={email}
@@ -375,9 +351,7 @@ function LoginContent() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium text-foreground">
-                    Password
-                  </label>
+                  <label className="block text-sm font-medium text-foreground">Password</label>
                   <Link
                     href="/forgot-password"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -494,10 +468,7 @@ function LoginContent() {
         {/* Sign Up Link */}
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-semibold text-primary hover:underline"
-          >
+          <Link href="/signup" className="font-semibold text-primary hover:underline">
             Create account
           </Link>
         </p>

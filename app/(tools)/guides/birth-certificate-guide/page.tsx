@@ -4,9 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
@@ -56,11 +54,10 @@ const BirthCertificateGuidePage = () => {
     (prev, stepsData) => ({
       ...prev,
       documentNeed: stepsData.document_need || prev.documentNeed,
-      checkedDocuments:
-        stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
+      checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -81,14 +78,14 @@ const BirthCertificateGuidePage = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
     await submitFeedbackHook(
       "birth-certificate-guide",
       currentStepId,
       feedbackType,
       description,
-      attachment,
+      attachment
     );
   };
 
@@ -141,7 +138,7 @@ const BirthCertificateGuidePage = () => {
       setIsSaved(true); // mark as saved
     },
     navigationHandled,
-    setNavigationHandled,
+    setNavigationHandled
   );
 
   // Before unload confirmation
@@ -170,17 +167,13 @@ const BirthCertificateGuidePage = () => {
   const localizedBirthCertData = tRaw("birthCertificate");
   const wizardData = localizedBirthCertData.wizard;
 
-  const infoPanelData = (wizardData.infoPanel as any)?.[
-    currentStepId
-  ] as unknown as InfoPanelData;
+  const infoPanelData = (wizardData.infoPanel as any)?.[currentStepId] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
       case "document_need":
         if (wizardData.documentNeed?.questions) {
-          const numQuestions = Object.keys(
-            wizardData.documentNeed.questions,
-          ).length;
+          const numQuestions = Object.keys(wizardData.documentNeed.questions).length;
           const answers = state.documentNeed;
           if (typeof answers === "object" && answers !== null) {
             return Object.keys(answers).length === numQuestions;
@@ -198,8 +191,7 @@ const BirthCertificateGuidePage = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -211,16 +203,13 @@ const BirthCertificateGuidePage = () => {
       setState((s) => ({
         ...s,
         documentNeed: {
-          ...(typeof s.documentNeed === "object" && s.documentNeed !== null
-            ? s.documentNeed
-            : {}),
+          ...(typeof s.documentNeed === "object" && s.documentNeed !== null ? s.documentNeed : {}),
           [questionId]: id,
         },
       }));
       // Save progress to backend
       saveWizardStep("document_need", {
-        ...(typeof state.documentNeed === "object" &&
-        state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -309,10 +298,7 @@ const BirthCertificateGuidePage = () => {
       className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
       dir={isUrdu ? "rtl" : "ltr"}
     >
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={wizardData.title}
-      />
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={wizardData.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
@@ -365,9 +351,7 @@ const BirthCertificateGuidePage = () => {
                     onClick={goBack}
                     className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer ${isUrdu ? "font-urdu-body" : ""}`}
                   >
-                    <ArrowLeft
-                      className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`}
-                    />{" "}
+                    <ArrowLeft className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />{" "}
                     {t("wizard.common.back")}
                   </motion.button>
                 ) : (
@@ -404,9 +388,7 @@ const BirthCertificateGuidePage = () => {
                   `}
                     >
                       {t("wizard.common.continue")}{" "}
-                      <ArrowRight
-                        className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`}
-                      />
+                      <ArrowRight className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />
                     </motion.button>
                   )}
               </div>

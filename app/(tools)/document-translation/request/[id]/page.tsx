@@ -55,13 +55,7 @@ interface TranslationRequest {
 }
 
 // Status badge component
-const StatusBadge = ({
-  status,
-  version = 1,
-}: {
-  status: string;
-  version?: number;
-}) => {
+const StatusBadge = ({ status, version = 1 }: { status: string; version?: number }) => {
   const { t } = useLanguage();
 
   const statusConfig: Record<
@@ -108,8 +102,7 @@ const StatusBadge = ({
   const Icon = config.icon;
 
   // For TRANSLATED status, display version (e.g., Proof_V1, Proof_V1.1)
-  const displayLabel =
-    status === "TRANSLATED" ? `Proof_V${version}` : config.label;
+  const displayLabel = status === "TRANSLATED" ? `Proof_V${version}` : config.label;
 
   return (
     <span
@@ -121,11 +114,7 @@ const StatusBadge = ({
   );
 };
 
-export default function TranslationRequestDetails({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function TranslationRequestDetails({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useLanguage();
   const [request, setRequest] = useState<TranslationRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -136,9 +125,7 @@ export default function TranslationRequestDetails({
     const fetchRequest = async () => {
       try {
         const paramsId = await params;
-        const response = await fetch(
-          `/api/document-translation/${paramsId.id}/status`,
-        );
+        const response = await fetch(`/api/document-translation/${paramsId.id}/status`);
         const data = await response.json();
 
         if (response.ok) {
@@ -168,24 +155,19 @@ export default function TranslationRequestDetails({
     if (!request) return;
 
     try {
-      const response = await fetch(
-        `/api/document-translation/${request.id}/confirm`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
+      const response = await fetch(`/api/document-translation/${request.id}/confirm`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({}),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         // Show success toast
-        toast.success(
-          t("documentTranslation.requestDetailsPage.messages.confirmSuccess"),
-        );
+        toast.success(t("documentTranslation.requestDetailsPage.messages.confirmSuccess"));
 
         // Update the request status with a forced update
         setRequest((prevRequest) => ({
@@ -195,8 +177,7 @@ export default function TranslationRequestDetails({
       } else {
         console.error("Error confirming translation:", data.error);
         toast.error(
-          data.error ||
-            t("documentTranslation.requestDetailsPage.messages.confirmFailed"),
+          data.error || t("documentTranslation.requestDetailsPage.messages.confirmFailed")
         );
       }
     } catch (error) {
@@ -210,24 +191,19 @@ export default function TranslationRequestDetails({
     if (!request || !changeRequestReason.trim()) return;
 
     try {
-      const response = await fetch(
-        `/api/document-translation/${request.id}/request-changes`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ reason: changeRequestReason }),
+      const response = await fetch(`/api/document-translation/${request.id}/request-changes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ reason: changeRequestReason }),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         // Show success toast
-        toast.success(
-          t("documentTranslation.requestDetailsPage.messages.changeSuccess"),
-        );
+        toast.success(t("documentTranslation.requestDetailsPage.messages.changeSuccess"));
 
         // Update the request status
         setRequest((prevRequest) => ({
@@ -237,8 +213,7 @@ export default function TranslationRequestDetails({
       } else {
         console.error("Error requesting changes:", data.error);
         toast.error(
-          data.error ||
-            t("documentTranslation.requestDetailsPage.messages.changeFailed"),
+          data.error || t("documentTranslation.requestDetailsPage.messages.changeFailed")
         );
       }
     } catch (error) {
@@ -274,9 +249,7 @@ export default function TranslationRequestDetails({
               {t("documentTranslation.requestDetailsPage.notFound.desc")}
             </p>
             <Button
-              onClick={() =>
-                (window.location.href = "/document-translation/my-requests")
-              }
+              onClick={() => (window.location.href = "/document-translation/my-requests")}
               className="bg-primary hover:bg-primary/90"
             >
               {t("documentTranslation.requestDetailsPage.notFound.backBtn")}
@@ -350,6 +323,7 @@ export default function TranslationRequestDetails({
                           `documentTranslation.uploadPage.types.${request.document_type}`,
                         )}
                       </p>
+                      <p className="font-medium">{formatDate(request.translatedUploadedAt)}</p>
                     </div>
                   </div>
 
@@ -425,9 +399,7 @@ export default function TranslationRequestDetails({
                       </div>
                       <div className="flex items-center gap-2 text-blue-600">
                         <span className="text-sm font-medium">
-                          {t(
-                            "documentTranslation.requestDetailsPage.statusAndActions.download",
-                          )}
+                          {t("documentTranslation.requestDetailsPage.statusAndActions.download")}
                         </span>
                         <Download className="w-4 h-4" />
                       </div>

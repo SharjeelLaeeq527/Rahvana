@@ -10,10 +10,7 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (!factorId || !code) {
-      return NextResponse.json(
-        { error: "Missing factorId or code" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing factorId or code" }, { status: 400 });
     }
 
     // Check if user is authenticated
@@ -26,26 +23,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Create challenge
-    const { data: challengeData, error: challengeError } =
-      await supabase.auth.mfa.challenge({
-        factorId,
-      });
+    const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+      factorId,
+    });
 
     if (challengeError) {
       console.error("MFA challenge error:", challengeError);
-      return NextResponse.json(
-        { error: challengeError.message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: challengeError.message }, { status: 400 });
     }
 
     // Verify the code
-    const { data: verifyData, error: verifyError } =
-      await supabase.auth.mfa.verify({
-        factorId,
-        challengeId: challengeData.id,
-        code,
-      });
+    const { data: verifyData, error: verifyError } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId: challengeData.id,
+      code,
+    });
 
     if (verifyError) {
       console.error("MFA verify error:", verifyError);
@@ -59,14 +51,17 @@ export async function POST(request: NextRequest) {
       console.error("Error listing factors after verification:", listError);
       return NextResponse.json({ error: "Failed to verify factor enrollment" }, { status: 500 });
     }
-    
+
     console.log("Factors after verification:", updatedFactors);
-    
+
     // Verify that we have at least one verified factor
-    const verifiedFactor = updatedFactors?.totp?.find(factor => factor.status === "verified");
+    const verifiedFactor = updatedFactors?.totp?.find((factor) => factor.status === "verified");
     if (!verifiedFactor) {
       console.error("No verified factor found after verification");
-      return NextResponse.json({ error: "Factor verification failed - no verified factor found" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Factor verification failed - no verified factor found" },
+        { status: 500 }
+      );
     }
 
     // Update user profile to mark MFA as enabled
@@ -90,16 +85,21 @@ export async function POST(request: NextRequest) {
     // Send MFA enabled notification email
     try {
       console.log("Attempting to send MFA enabled email to:", user.email);
-      console.log("Environment variables check - RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY, "EMAIL_FROM:", process.env.EMAIL_FROM);
-      
+      console.log(
+        "Environment variables check - RESEND_API_KEY exists:",
+        !!process.env.RESEND_API_KEY,
+        "EMAIL_FROM:",
+        process.env.EMAIL_FROM
+      );
+
       const emailResult = await sendEmail({
         to: user.email!,
         subject: "Two-Factor Authentication Enabled Successfully - Rahvana",
         html: getMFAEnabledEmailHtml(),
       });
-      
+
       console.log("Email send result:", emailResult);
-      
+
       if (!emailResult.success) {
         console.error("MFA enabled email failed to send:", emailResult.error);
       } else {
@@ -116,9 +116,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("MFA verify enrollment error:", error);
-    return NextResponse.json(
-      { error: "Failed to verify MFA setup" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to verify MFA setup" }, { status: 500 });
   }
 }

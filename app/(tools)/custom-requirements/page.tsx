@@ -16,13 +16,7 @@ import {
   HandHelping,
   ArrowRight,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -66,8 +60,8 @@ export default function ArrivalGuidePage() {
               Arrival at <span className="text-primary">Port of Entry</span>
             </h1>
             <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto font-medium px-2">
-              A comprehensive guide on documents required and questions asked
-              when you land in the United States.
+              A comprehensive guide on documents required and questions asked when you land in the
+              United States.
             </p>
           </div>
         </motion.div>
@@ -82,15 +76,13 @@ export default function ArrivalGuidePage() {
                     value="documents"
                     className="px-4 md:px-8 py-2.5 md:py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-xs sm:text-sm font-bold gap-1.5 md:gap-2 whitespace-nowrap"
                   >
-                    <FileText size={16} className="sm:block hidden" /> Required
-                    Documents
+                    <FileText size={16} className="sm:block hidden" /> Required Documents
                   </TabsTrigger>
                   <TabsTrigger
                     value="questions"
                     className="px-4 md:px-8 py-2.5 md:py-3 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white transition-all text-xs sm:text-sm font-bold gap-1.5 md:gap-2 whitespace-nowrap"
                   >
-                    <HelpCircle size={16} className="sm:block hidden" /> Common
-                    Questions
+                    <HelpCircle size={16} className="sm:block hidden" /> Common Questions
                   </TabsTrigger>
                   <TabsTrigger
                     value="inspection"
@@ -227,9 +219,7 @@ export default function ArrivalGuidePage() {
                       <QuestionSection
                         value="immigrant"
                         title="Immigrant Visa Specific (CR/IR)"
-                        icon={
-                          <PassportIcon className="w-5 h-5 text-purple-500" />
-                        }
+                        icon={<PassportIcon className="w-5 h-5 text-purple-500" />}
                         questions={[
                           "Are you entering on an immigrant visa?",
                           "Who is your petitioner in the U.S.?",
@@ -252,9 +242,7 @@ export default function ArrivalGuidePage() {
                       <QuestionSection
                         value="student"
                         title="Students (F-1, J-1)"
-                        icon={
-                          <GraduationCap className="w-5 h-5 text-emerald-500" />
-                        }
+                        icon={<GraduationCap className="w-5 h-5 text-emerald-500" />}
                         questions={[
                           "Which school will you attend?",
                           "What program of study are you in?",
@@ -265,9 +253,7 @@ export default function ArrivalGuidePage() {
                       <QuestionSection
                         value="customs"
                         title="Customs & Agricultural"
-                        icon={
-                          <BadgeDollarSign className="w-5 h-5 text-amber-500" />
-                        }
+                        icon={<BadgeDollarSign className="w-5 h-5 text-amber-500" />}
                         questions={[
                           "Are you carrying any agricultural products or food?",
                           "How much cash are you carrying? (Limit is $10k without reporting)",
@@ -300,13 +286,10 @@ export default function ArrivalGuidePage() {
                   </CardHeader>
                   <CardContent className="p-4 md:pt-6 space-y-6">
                     <p className="text-sm md:text-base text-slate-600 leading-relaxed">
-                      If the officer requires more information, they may send
-                      you to secondary inspection.
-                      <strong>
-                        {" "}
-                        This is not unusual and not automatically bad.
-                      </strong>{" "}
-                      It is simply a deeper review of your case.
+                      If the officer requires more information, they may send you to secondary
+                      inspection.
+                      <strong> This is not unusual and not automatically bad.</strong> It is simply
+                      a deeper review of your case.
                     </p>
 
                     <div className="bg-slate-50 rounded-2xl p-4 md:p-6 space-y-4 border border-slate-100">
@@ -317,13 +300,11 @@ export default function ArrivalGuidePage() {
                       <ul className="space-y-3">
                         <li className="flex gap-2 text-xs md:text-sm text-slate-600">
                           <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                          Requests for additional documentation (financials,
-                          contracts, etc.)
+                          Requests for additional documentation (financials, contracts, etc.)
                         </li>
                         <li className="flex gap-2 text-xs md:text-sm text-slate-600">
                           <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                          Detailed questions about ties, finances, and
-                          intentions
+                          Detailed questions about ties, finances, and intentions
                         </li>
                         <li className="flex gap-2 text-xs md:text-sm text-slate-600">
                           <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
@@ -345,8 +326,7 @@ export default function ArrivalGuidePage() {
                         Hand-Carry Everything
                       </p>
                       <p className="text-[11px] md:text-xs text-amber-800">
-                        Keep all originals and supporting docs in your carry-on,
-                        not checked bags.
+                        Keep all originals and supporting docs in your carry-on, not checked bags.
                       </p>
                     </div>
                     <div className="bg-white/50 p-4 rounded-xl border border-amber-200/50">
@@ -354,17 +334,15 @@ export default function ArrivalGuidePage() {
                         Contacts Ready
                       </p>
                       <p className="text-[11px] md:text-xs text-amber-800">
-                        Have names and numbers of your sponsor, employer, or
-                        school easily accessible.
+                        Have names and numbers of your sponsor, employer, or school easily
+                        accessible.
                       </p>
                     </div>
                     <div className="bg-white/50 p-4 rounded-xl border border-amber-200/50">
-                      <p className="text-sm font-bold text-amber-900 mb-1 underline">
-                        Be Precise
-                      </p>
+                      <p className="text-sm font-bold text-amber-900 mb-1 underline">Be Precise</p>
                       <p className="text-[11px] md:text-xs text-amber-800">
-                        Answer clearly, honestly, and politely. Don&lsquo;t
-                        volunteer info not asked for.
+                        Answer clearly, honestly, and politely. Don&lsquo;t volunteer info not asked
+                        for.
                       </p>
                     </div>
                     <div className="bg-white/50 p-4 rounded-xl border border-amber-200/50">
@@ -372,8 +350,7 @@ export default function ArrivalGuidePage() {
                         Address Access
                       </p>
                       <p className="text-[11px] md:text-xs text-amber-800">
-                        Know exactly where you&lsquo;re staying. Write it down
-                        if necessary.
+                        Know exactly where you&lsquo;re staying. Write it down if necessary.
                       </p>
                     </div>
                   </div>
@@ -405,9 +382,7 @@ function DocumentItem({
       </div>
       <div className="space-y-1 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="font-bold text-sm md:text-base text-slate-900">
-            {title}
-          </h4>
+          <h4 className="font-bold text-sm md:text-base text-slate-900">{title}</h4>
           {badge && (
             <Badge
               variant="secondary"
@@ -417,9 +392,7 @@ function DocumentItem({
             </Badge>
           )}
         </div>
-        <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
-          {description}
-        </p>
+        <p className="text-xs md:text-sm text-slate-500 leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -437,10 +410,7 @@ function QuestionSection({
   questions: string[];
 }) {
   return (
-    <AccordionItem
-      value={value}
-      className="border-b border-slate-50 last:border-0 overflow-hidden"
-    >
+    <AccordionItem value={value} className="border-b border-slate-50 last:border-0 overflow-hidden">
       <AccordionTrigger className="px-5 md:px-6 py-3.5 md:py-4 hover:bg-slate-50 transition-all hover:no-underline group">
         <div className="flex items-center gap-3">
           <div className="p-1.5 md:p-2 rounded-lg bg-white shadow-sm group-hover:scale-110 transition-transform">
@@ -454,10 +424,7 @@ function QuestionSection({
       <AccordionContent className="bg-slate-50/50 px-5 md:px-6 py-3.5 md:py-4">
         <ul className="space-y-2.5 md:space-y-3">
           {questions.map((q, i) => (
-            <li
-              key={i}
-              className="flex gap-3 text-xs md:text-sm text-slate-600"
-            >
+            <li key={i} className="flex gap-3 text-xs md:text-sm text-slate-600">
               <span className="shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-slate-400">
                 {i + 1}
               </span>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { ResultPage } from "./result/ResultPage";
 import CaseTypeStep from "./components/CaseTypeStep";
 import QuestionStep from "./components/QuestionStep";
@@ -20,18 +21,12 @@ export default function VisaCaseStrengthChecker() {
   const [formData, setFormData] = useState<Record<string, unknown>>({
     caseType: "",
   });
-  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(
-    null,
-  );
+  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
   const [profileLoaded, setProfileLoaded] = useState(false);
 
@@ -56,53 +51,32 @@ export default function VisaCaseStrengthChecker() {
           setLoading(false);
         });
     }
-  }, [formData.caseType, supabase]);
+  }, [formData.caseType])
 
-  // Auto-fill profile data & Restore saved session
+  // Auto-fill profile data & Restore saved session (from central context)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user?.id) return;
-      if (profileLoaded) return;
+    if (isProfileLoading || profileLoaded) return;
+    if (!profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    // 1. Check for specific Saved Case Strength Session
+    if (profile.caseStrength?.lastSessionId && profile.caseStrength?.answers) {
+      setFormData({
+        caseType: String(profile.caseStrength.caseType || ""),
+        ...profile.caseStrength.answers,
+      });
+      setSessionId(profile.caseStrength.lastSessionId);
+      setProfileLoaded(true);
+      return;
+    }
 
-        if (data?.profile_details) {
-          const profile = data.profile_details as MasterProfile;
-
-          // 1. Check for specific Saved Case Strength Session
-          if (
-            profile.caseStrength?.lastSessionId &&
-            profile.caseStrength?.answers
-          ) {
-            setFormData({
-              caseType: String(profile.caseStrength.caseType || ""),
-              ...profile.caseStrength.answers,
-            });
-            setSessionId(profile.caseStrength.lastSessionId);
-            setProfileLoaded(true);
-            return;
-          }
-
-          // 2. Fallback: Generic Auto-fill
-          const mappedData = mapProfileToVisaChecker(profile);
-          setFormData((prev) => ({
-            ...prev,
-            ...mappedData,
-          }));
-          setProfileLoaded(true);
-        }
-      } catch (err) {
-        console.error("Error auto-filling profile:", err);
-      }
-    };
-
-    fetchProfile();
-  }, [user?.id, profileLoaded, supabase]);
+    // 2. Fallback: Generic Auto-fill
+    const mappedData = mapProfileToVisaChecker(profile);
+    setFormData((prev) => ({
+      ...prev,
+      ...mappedData,
+    }));
+    setProfileLoaded(true);
+  }, [profile, isProfileLoading, profileLoaded]);
 
   const handleCaseTypeChange = (caseType: string) => {
     setFormData({ caseType });
@@ -110,29 +84,20 @@ export default function VisaCaseStrengthChecker() {
   };
 
   const handleSaveToProfile = async () => {
-    if (!user?.id) return;
     try {
       setLoading(true);
       const profileUpdate = mapFormToProfile(formData);
       const caseStrengthData = {
-        caseType: formData.caseType,
+        caseType: String(formData.caseType || ""),
         answers: formData,
-        lastSessionId: sessionId,
+        lastSessionId: sessionId || undefined,
       };
 
-      const { error } = await supabase.from("user_profiles").upsert(
-        {
-          id: user.id,
-          profile_details: {
-            ...profileUpdate,
-            caseStrength: caseStrengthData,
-          },
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" },
+      // Use context's updateProfile instead of direct Supabase upsert
+      updateProfile(
+        { ...profileUpdate, caseStrength: caseStrengthData },
+        { immediate: true }
       );
-
-      if (error) throw error;
     } catch (err) {
       console.error("Error updating profile:", err);
       setError("Failed to update profile");
@@ -184,10 +149,7 @@ export default function VisaCaseStrengthChecker() {
         }
 
         const val = formData[q.id];
-        if (
-          q.type !== "boolean" &&
-          (val === undefined || val === null || val === "")
-        ) {
+        if (q.type !== "boolean" && (val === undefined || val === null || val === "")) {
           setError(`Please provide an answer for: ${q.label}`);
           return false;
         }
@@ -250,8 +212,7 @@ export default function VisaCaseStrengthChecker() {
       );
     }
 
-    if (!questionnaire)
-      return <div className="p-20 text-center">Loading...</div>;
+    if (!questionnaire) return <div className="p-20 text-center">Loading...</div>;
 
     if (step <= questionnaire.sections.length) {
       return (
@@ -261,9 +222,7 @@ export default function VisaCaseStrengthChecker() {
           formData={formData}
           error={error || undefined}
           loading={loading}
-          onChange={(id, val) =>
-            setFormData((prev) => ({ ...prev, [id]: val }))
-          }
+          onChange={(id, val) => setFormData((prev) => ({ ...prev, [id]: val }))}
           setFormData={setFormData}
           onNext={nextStep}
           onBack={prevStep}
@@ -291,12 +250,9 @@ export default function VisaCaseStrengthChecker() {
                 body: JSON.stringify({ answers }),
               });
 
-              const res = await fetch(
-                `/api/visa-checker/session/${sessionId}/submit`,
-                {
-                  method: "POST",
-                },
-              );
+              const res = await fetch(`/api/visa-checker/session/${sessionId}/submit`, {
+                method: "POST",
+              });
 
               if (res.ok) {
                 setStep((prev) => prev + 1);

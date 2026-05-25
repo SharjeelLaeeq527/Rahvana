@@ -21,14 +21,9 @@ export interface TrackerData {
 }
 
 // Create a tracker in EasyPost - This registers the tracking with EasyPost for monitoring
-export async function createTracker(
-  trackingCode: string,
-  carrier: string
-): Promise<TrackerData> {
+export async function createTracker(trackingCode: string, carrier: string): Promise<TrackerData> {
   try {
-    console.log(
-      `[EasyPost] Creating tracker for ${carrier}: ${trackingCode}`
-    );
+    console.log(`[EasyPost] Creating tracker for ${carrier}: ${trackingCode}`);
 
     const tracker = await client.Tracker.create({
       tracking_code: trackingCode,
@@ -85,17 +80,12 @@ export async function getTracker(trackerId: string): Promise<TrackerData> {
 }
 
 // Parse tracker status into user-friendly format
-export function getStatusLabel(
-  status: string
-): {
+export function getStatusLabel(status: string): {
   label: string;
   color: string;
   description: string;
 } {
-  const statusMap: Record<
-    string,
-    { label: string; color: string; description: string }
-  > = {
+  const statusMap: Record<string, { label: string; color: string; description: string }> = {
     pre_transit: {
       label: "Pre-Transit",
       color: "bg-yellow-100 text-yellow-800",

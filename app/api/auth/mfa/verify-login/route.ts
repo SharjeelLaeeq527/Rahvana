@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     if (!factorId || !challengeId || !code) {
       return NextResponse.json(
         { error: "Missing factorId, challengeId, or code" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -26,15 +26,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get updated session after MFA verification
-    const { data: sessionData, error: sessionError } =
-      await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
       console.error("Session retrieval error:", sessionError);
-      return NextResponse.json(
-        { error: "Failed to retrieve session" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to retrieve session" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -44,9 +40,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("MFA verify login error:", error);
-    return NextResponse.json(
-      { error: "Failed to verify MFA code" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to verify MFA code" }, { status: 500 });
   }
 }

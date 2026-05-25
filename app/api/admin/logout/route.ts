@@ -29,7 +29,7 @@ export async function POST(_request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Admin logout successful"
+      message: "Admin logout successful",
     });
   } catch (error) {
     console.error("Admin logout API error:", error);

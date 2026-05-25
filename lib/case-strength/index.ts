@@ -11,11 +11,7 @@
  */
 
 export * from "./types";
-export {
-  validateReceiptNumber,
-  checkFileQuality,
-  USCIS_PORTAL_FILE_LIMITS,
-} from "./validators";
+export { validateReceiptNumber, checkFileQuality, USCIS_PORTAL_FILE_LIMITS } from "./validators";
 export { detectRiskFlags, filterFlagsBySeverity } from "./risk-detector";
 export { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 export {

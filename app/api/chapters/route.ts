@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
           error: "journey_id query parameter is required",
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -25,25 +25,16 @@ export async function GET(request: NextRequest) {
       status: status || undefined,
     });
 
-    return NextResponse.json(
-      { success: true, data: chapters },
-      { status: 200 },
-    );
+    return NextResponse.json({ success: true, data: chapters }, { status: 200 });
   } catch (error) {
     console.error("Error in GET /api/chapters:", error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("Journey not found")) {
-      return NextResponse.json(
-        { error: "Journey not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -52,7 +43,7 @@ export async function GET(request: NextRequest) {
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -63,12 +54,7 @@ export async function POST(request: NextRequest) {
     const body: ChapterInput & { journey_id: string } = await request.json();
 
     // Validation
-    const requiredFields = [
-      "journey_id",
-      "chapter_key",
-      "chapter_number",
-      "chapter_name",
-    ];
+    const requiredFields = ["journey_id", "chapter_key", "chapter_number", "chapter_name"];
     for (const field of requiredFields) {
       if (!(field in body)) {
         return NextResponse.json(
@@ -76,7 +62,7 @@ export async function POST(request: NextRequest) {
             error: `${field} is required`,
             code: "VALIDATION_ERROR",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -88,7 +74,7 @@ export async function POST(request: NextRequest) {
           error: "chapter_number must be a positive integer",
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -107,17 +93,11 @@ export async function POST(request: NextRequest) {
     console.error("Error in POST /api/chapters:", error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message.includes("Journey not found")) {
-      return NextResponse.json(
-        { error: "Journey not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -126,7 +106,7 @@ export async function POST(request: NextRequest) {
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

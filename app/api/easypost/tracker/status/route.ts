@@ -12,10 +12,7 @@ export async function GET(request: NextRequest) {
     const caseId = searchParams.get("caseId");
 
     if (!caseId) {
-      return NextResponse.json(
-        { error: "Missing caseId parameter" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing caseId parameter" }, { status: 400 });
     }
 
     console.log(`[EasyPost API] Fetching status for case ${caseId}`);
@@ -24,10 +21,7 @@ export async function GET(request: NextRequest) {
     const trackerIdData = await db.getCaseDataByKeyDB(caseId, "easypost_tracker_id");
 
     if (!trackerIdData || !trackerIdData.data_value) {
-      return NextResponse.json(
-        { error: "No tracker found for this case" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "No tracker found for this case" }, { status: 404 });
     }
 
     const trackerId = trackerIdData.data_value;
@@ -43,42 +37,78 @@ export async function GET(request: NextRequest) {
           error: "Failed to fetch tracker status",
           details: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
-    // Step 3: Update case_data with new status
+    // Step 3: Update case_data with new status only when it changes
     const now = new Date().toISOString();
-    const updates = [
-      db.upsertCaseDataDB(caseId, "tracking_status", {
-        data_key: "tracking_status",
-        data_value: trackerData.status,
-        source: "external_api",
-        source_reference: "status_fetch",
-      }),
+
+    // Idempotency / status-change detection
+    const existingStatusRow = await db.getCaseDataByKeyDB(caseId, "tracking_status");
+    const existingStatus = existingStatusRow?.data_value;
+    const newStatus = trackerData.status;
+
+    // Derive a simple event id for this fetch
+    const eventId = trackerData.id || `${trackerId}:${newStatus}:${trackerData.updated_at}`;
+
+    // Always update last-checked timestamp
+    const updates: Promise<any>[] = [];
+    updates.push(
       db.upsertCaseDataDB(caseId, "tracking_last_checked_at", {
         data_key: "tracking_last_checked_at",
         data_value: now,
         source: "external_api",
         source_reference: "status_fetch",
       }),
-    ];
+    );
 
-    // If delivered, also save delivery timestamp
-    if (trackerData.status === "delivered" && trackerData.updated_at) {
+    if (existingStatus !== newStatus) {
       updates.push(
-        db.upsertCaseDataDB(caseId, "delivered_at", {
-          data_key: "delivered_at",
-          data_value: trackerData.updated_at,
+        db.upsertCaseDataDB(caseId, "tracking_status", {
+          data_key: "tracking_status",
+          data_value: newStatus,
           source: "external_api",
           source_reference: "status_fetch",
         }),
+      );
+
+      // If delivered, also save delivery timestamp
+      if (newStatus === "delivered" && trackerData.updated_at) {
+        updates.push(
+          db.upsertCaseDataDB(caseId, "delivered_at", {
+            data_key: "delivered_at",
+            data_value: trackerData.updated_at,
+            source: "external_api",
+            source_reference: "status_fetch",
+          }),
+        );
+      }
+
+      // Save last processed event id for idempotency
+      updates.push(
+        db.upsertCaseDataDB(caseId, "easypost_last_event_id", {
+          data_key: "easypost_last_event_id",
+          data_value: eventId,
+          source: "external_api",
+          source_reference: "status_fetch",
+        }),
+      );
+    } else {
+      // Even if status didn't change, store last event id so retries are tracked
+      updates.push(
+        db.upsertCaseDataDB(caseId, "easypost_last_event_id", {
+          data_key: "easypost_last_event_id",
+          data_value: eventId,
+          source: "external_api",
+          source_reference: "status_fetch",
+        })
       );
     }
 
     await Promise.all(updates);
 
-    console.log(`[EasyPost API] Status updated: ${trackerData.status}`);
+    console.log(`[EasyPost API] Status fetched: ${trackerData.status} (changed=${existingStatus !== newStatus})`);
 
     return NextResponse.json(
       {
@@ -89,7 +119,7 @@ export async function GET(request: NextRequest) {
         deliveredAt: trackerData.updated_at,
         events: trackerData.events || [],
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("[EasyPost API] Unexpected error:", error);
@@ -98,7 +128,7 @@ export async function GET(request: NextRequest) {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

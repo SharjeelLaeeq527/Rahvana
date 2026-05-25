@@ -14,13 +14,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { guideSessionId, stepKey, data, isCompleted, progressPercent } =
-      await request.json();
+    const { guideSessionId, stepKey, data, isCompleted, progressPercent } = await request.json();
 
     if (!guideSessionId || !stepKey) {
       return NextResponse.json(
         { error: "guideSessionId and stepKey are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -33,10 +32,7 @@ export async function POST(request: Request) {
       .single();
 
     if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found or unauthorized" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "Session not found or unauthorized" }, { status: 403 });
     }
 
     // 2. Upsert step
@@ -49,15 +45,12 @@ export async function POST(request: Request) {
       },
       {
         onConflict: "user_guide_id,step_key",
-      },
+      }
     );
 
     if (stepError) {
       console.error("Error saving step data:", stepError);
-      return NextResponse.json(
-        { error: "Failed to save step data" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to save step data" }, { status: 500 });
     }
 
     // 3. Determine status
@@ -88,18 +81,12 @@ export async function POST(request: Request) {
 
     if (updateError) {
       console.error("Error updating session:", updateError);
-      return NextResponse.json(
-        { error: "Failed to update session" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to update session" }, { status: 500 });
     }
 
     return NextResponse.json({ message: "Step saved successfully" });
   } catch (error) {
     console.error("Unexpected error in /api/guides/save-step:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -139,10 +139,7 @@
             "Bring the payment receipt to your visa interview"
           ],
           "output": "SEVIS I-901 fee paid; payment receipt saved",
-          "documents": [
-            "Form I-20",
-            "SEVIS I-901 fee payment receipt"
-          ]
+          "documents": ["Form I-20", "SEVIS I-901 fee payment receipt"]
         },
         {
           "id": "II-02",
@@ -185,9 +182,7 @@
             "Save your DS-160 application ID in case you need to retrieve or update your application"
           ],
           "output": "DS-160 submitted; confirmation barcode page printed and saved",
-          "documents": [
-            "DS-160 confirmation page"
-          ]
+          "documents": ["DS-160 confirmation page"]
         }
       ]
     },
@@ -225,9 +220,7 @@
             "Note: MRV fees are generally non-refundable and non-transferable; confirm the policy on the payment portal"
           ],
           "output": "MRV visa application fee paid; payment receipt and transaction number saved",
-          "documents": [
-            "MRV fee payment receipt"
-          ]
+          "documents": ["MRV fee payment receipt"]
         },
         {
           "id": "III-02",
@@ -243,9 +236,7 @@
             "Note: you may apply for your F-1 visa up to 120 days before your I-20 program start date \u2014 do not schedule earlier than this window per SEVP guidance"
           ],
           "output": "Visa interview appointment scheduled; appointment confirmation saved",
-          "documents": [
-            "Visa appointment confirmation letter"
-          ]
+          "documents": ["Visa appointment confirmation letter"]
         },
         {
           "id": "III-03",
@@ -416,9 +407,7 @@
             "If there is any error on the I-94, contact CBP promptly to correct it"
           ],
           "output": "I-94 retrieved; confirms F-1 admission and D/S",
-          "documents": [
-            "electronic I-94 Form"
-          ]
+          "documents": ["electronic I-94 Form"]
         },
         {
           "id": "V-03",

@@ -13,7 +13,7 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
+  }
 );
 
 export async function POST(request: NextRequest) {
@@ -26,21 +26,17 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const { data, error: listError } = await supabaseAdmin.auth.admin.listUsers(
-      {
-        page: 1,
-        perPage: 1000,
-      },
-    );
+    const { data, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
 
     if (listError) {
       console.error("List users error:", listError);
       return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 
-    const user = data.users.find(
-      (u) => u.email?.toLowerCase() === normalizedEmail,
-    );
+    const user = data.users.find((u) => u.email?.toLowerCase() === normalizedEmail);
 
     if (!user) {
       return NextResponse.json({ success: true });
@@ -48,35 +44,26 @@ export async function POST(request: NextRequest) {
 
     // Generate password reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenHash = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
+    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
     const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Store token in user metadata
-    const { error: updateError } =
-      await supabaseAdmin.auth.admin.updateUserById(user.id, {
-        user_metadata: {
-          ...user.user_metadata,
-          reset_token_hash: resetTokenHash,
-          reset_token_expiry: resetTokenExpiry.toISOString(),
-        },
-      });
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      user_metadata: {
+        ...user.user_metadata,
+        reset_token_hash: resetTokenHash,
+        reset_token_expiry: resetTokenExpiry.toISOString(),
+      },
+    });
 
     if (updateError) {
       console.error("Error updating user:", updateError);
-      return NextResponse.json(
-        { error: "Failed to generate reset token" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to generate reset token" }, { status: 500 });
     }
 
     // Build reset URL
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      request.headers.get("origin") ||
-      "http://localhost:3000";
+      process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "http://localhost:3000";
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(normalizedEmail)}`;
 
     // Send email via Resend
@@ -89,18 +76,12 @@ export async function POST(request: NextRequest) {
 
     if (!success) {
       console.error("Email send failed:", emailError);
-      return NextResponse.json(
-        { error: "Failed to send reset email" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to send reset email" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Forgot password error:", error);
-    return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }

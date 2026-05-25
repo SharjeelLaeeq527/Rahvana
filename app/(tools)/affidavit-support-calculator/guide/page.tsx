@@ -28,12 +28,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Animation Variants
 const containerVariants = {
@@ -140,8 +135,8 @@ export default function AffidavitGuidePage() {
             </h1>
 
             <p className="text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-medium">
-              Demystifying the financial requirements for US immigration.
-              Simple, accurate, and completely free.
+              Demystifying the financial requirements for US immigration. Simple, accurate, and
+              completely free.
             </p>
 
             <motion.div
@@ -165,9 +160,7 @@ export default function AffidavitGuidePage() {
                 size="lg"
                 className="rounded-full px-8 h-14 text-lg border-2 border-slate-200 hover:border-blue-200 hover:bg-blue-50/50 text-slate-700 w-full sm:w-auto"
                 onClick={() =>
-                  document
-                    .getElementById("core-concepts")
-                    ?.scrollIntoView({ behavior: "smooth" })
+                  document.getElementById("core-concepts")?.scrollIntoView({ behavior: "smooth" })
                 }
               >
                 Learn More
@@ -225,12 +218,10 @@ export default function AffidavitGuidePage() {
             >
               <Briefcase className="w-8 h-8" />
             </motion.div>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-              10 Ways to Qualify
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">10 Ways to Qualify</h2>
             <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
-              No two cases are alike. Our tool intelligently determines which
-              pathway fits your specific situation.
+              No two cases are alike. Our tool intelligently determines which pathway fits your
+              specific situation.
             </p>
           </div>
 
@@ -342,8 +333,7 @@ export default function AffidavitGuidePage() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  , Widow(er)s, and Special Immigrants usually don&apos;t need a
-                  sponsor.
+                  , Widow(er)s, and Special Immigrants usually don&apos;t need a sponsor.
                 </span>
               }
             />
@@ -363,8 +353,8 @@ export default function AffidavitGuidePage() {
               Forms Decoded
             </h2>
             <p className="text-center text-slate-600 max-w-2xl mx-auto text-lg">
-              The calculator will generate your custom checklist, but it&apos;s
-              good to know exactly what each form does.
+              The calculator will generate your custom checklist, but it&apos;s good to know exactly
+              what each form does.
             </p>
           </div>
 
@@ -397,9 +387,8 @@ export default function AffidavitGuidePage() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  ) or applicants who have already earned 40 qualifying quarters
-                  of work in the US, to show they are exempt from the Affidavit
-                  of Support requirement.
+                  ) or applicants who have already earned 40 qualifying quarters of work in the US,
+                  to show they are exempt from the Affidavit of Support requirement.
                 </span>
               }
             />
@@ -440,8 +429,7 @@ export default function AffidavitGuidePage() {
                 Ready to find your path?
               </h2>
               <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-lg mx-auto">
-                Get your personalized assessment and document checklist in under
-                2 minutes.
+                Get your personalized assessment and document checklist in under 2 minutes.
               </p>
 
               <Button
@@ -478,10 +466,8 @@ function ConceptCard({
 }) {
   const colorMap: Record<string, string> = {
     blue: "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
-    emerald:
-      "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white",
-    amber:
-      "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white",
+    emerald: "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white",
+    amber: "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white",
   };
 
   return (
@@ -501,9 +487,7 @@ function ConceptCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600 leading-relaxed text-base md:text-lg">
-            {desc}
-          </p>
+          <p className="text-slate-600 leading-relaxed text-base md:text-lg">{desc}</p>
         </CardContent>
       </Card>
     </motion.div>
@@ -554,9 +538,7 @@ function ScenarioCard({
         <h4 className="text-lg md:text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors">
           {title}
         </h4>
-        <p className="text-slate-600 text-sm md:text-base leading-relaxed">
-          {desc}
-        </p>
+        <p className="text-slate-600 text-sm md:text-base leading-relaxed">{desc}</p>
 
         {/* Decorative corner blob */}
         <div

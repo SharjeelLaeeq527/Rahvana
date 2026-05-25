@@ -1,7 +1,7 @@
 Complete Payment System Documentation
 
     Overview
-    This document provides a comprehensive overview of the payment system integrated into the Rahvana application. The system uses   
+    This document provides a comprehensive overview of the payment system integrated into the Rahvana application. The system uses
     Stripe for payment processing and Supabase for storing payment records and user subscriptions.
 
     Architecture
@@ -26,9 +26,9 @@ Complete Payment System Documentation
       7 │           ├── checkout/
       8 │           │   └── route.ts            # Handles checkout session creation
       9 │           ├── webhook/
-     10 │           │   └── route.ts            # Processes Stripe webhook events  
+     10 │           │   └── route.ts            # Processes Stripe webhook events
      11 │           └── portal/
-     12 │               └── route.ts            # (Not covered in this document)   
+     12 │               └── route.ts            # (Not covered in this document)
      13 ├── lib/
      14 │   ├── stripe/
      15 │   │   └── config.ts                   # Stripe configuration and product definitions
@@ -152,7 +152,7 @@ Complete Payment System Documentation
     The system implements comprehensive error handling:
 
      - Price ID Validation: Prevents using placeholder values like 'price_...'
-     - Mode Selection: Automatically selects 'subscription' mode for recurring prices and 'payment' mode for one-time charges 
+     - Mode Selection: Automatically selects 'subscription' mode for recurring prices and 'payment' mode for one-time charges
      - Duplicate Prevention: Handles the unique constraint on stripe_payment_id by only setting it after receiving from Stripe
      - Webhook Security: Verifies webhook signatures to prevent unauthorized requests
 
@@ -187,16 +187,16 @@ Complete Payment System Documentation
       4 STRIPE_WEBHOOK_SECRET=whsec_...
       5 STRIPE_PRICE_ID_PLUS=price_... (actual price ID from Stripe dashboard)
       6 STRIPE_PRICE_ID_PRO=price_... (actual price ID from Stripe dashboard)
-      7 
+      7
       8 # Supabase Configuration
       9 NEXT_PUBLIC_SUPABASE_URL=https://...
      10 SUPABASE_SERVICE_ROLE_KEY=...
      11 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-     12 
+     12
      13 # Email Configuration
      14 RESEND_API_KEY=...
      15 EMAIL_FROM="Name <email@domain.com>"
-     16 
+     16
      17 # Application URL
      18 NEXT_PUBLIC_APP_URL=http://localhost:3000 (dev) or https://yourdomain.com (prod)
 

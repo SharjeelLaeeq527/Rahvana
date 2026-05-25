@@ -4,7 +4,18 @@ import { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { User, Mail, Phone, MapPin, Building2, Calendar, Briefcase, GraduationCap, FileText, Globe } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  Calendar,
+  Briefcase,
+  GraduationCap,
+  FileText,
+  Globe,
+} from "lucide-react";
 
 // Icon mapping for different field types
 const iconMap: Record<string, ReactNode> = {
@@ -77,9 +88,7 @@ export function FormField({
           )}
         />
       </div>
-      {helpText && (
-        <p className="text-xs text-slate-400">{helpText}</p>
-      )}
+      {helpText && <p className="text-xs text-slate-400">{helpText}</p>}
     </div>
   );
 }
@@ -133,9 +142,7 @@ export function FormSelect({
           </option>
         ))}
       </select>
-      {helpText && (
-        <p className="text-xs text-slate-400">{helpText}</p>
-      )}
+      {helpText && <p className="text-xs text-slate-400">{helpText}</p>}
     </div>
   );
 }
@@ -152,13 +159,9 @@ export function FormSection({ title, description, children, className }: FormSec
     <div className={cn("space-y-4", className)}>
       <div className="pb-2">
         <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-        {description && (
-          <p className="text-xs text-slate-500 mt-0.5">{description}</p>
-        )}
+        {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
       </div>
-      <div className="space-y-4">
-        {children}
-      </div>
+      <div className="space-y-4">{children}</div>
     </div>
   );
 }
@@ -183,10 +186,10 @@ export function FormCheckbox({
   disabled = false,
 }: FormCheckboxProps) {
   return (
-    <label 
-      htmlFor={id} 
+    <label
+      htmlFor={id}
       className={cn(
-        "flex items-center gap-2.5 cursor-pointer group", 
+        "flex items-center gap-2.5 cursor-pointer group",
         disabled && "opacity-60 cursor-not-allowed pointer-events-none",
         className
       )}

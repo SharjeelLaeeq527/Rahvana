@@ -73,11 +73,7 @@ const getBrowserSpeechRecognition = () => {
       webkitSpeechRecognition?: SpeechRecognitionConstructor;
     };
 
-  return (
-    browserWindow.SpeechRecognition ||
-    browserWindow.webkitSpeechRecognition ||
-    null
-  );
+  return browserWindow.SpeechRecognition || browserWindow.webkitSpeechRecognition || null;
 };
 
 const defaultVadConfig = {
@@ -97,10 +93,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
     vadConfig = {},
   } = options;
 
-  const mergedVadConfig = useMemo(
-    () => ({ ...defaultVadConfig, ...vadConfig }),
-    [vadConfig],
-  );
+  const mergedVadConfig = useMemo(() => ({ ...defaultVadConfig, ...vadConfig }), [vadConfig]);
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -136,7 +129,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
 
       micErrorTimerRef.current = setTimeout(() => setMicError(null), 4000);
     },
-    [onMicError],
+    [onMicError]
   );
 
   const stopRecognition = useCallback(() => {
@@ -234,9 +227,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
 
     recognition.onerror = (event) => {
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        flashMicError(
-          "Microphone access was blocked. Please allow mic permission and try again.",
-        );
+        flashMicError("Microphone access was blocked. Please allow mic permission and try again.");
         stopRecognition();
         return;
       }
@@ -247,7 +238,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
 
       if (event.error === "audio-capture") {
         flashMicError(
-          "No microphone input detected. Please connect or enable your microphone and retry.",
+          "No microphone input detected. Please connect or enable your microphone and retry."
         );
         stopRecognition();
         return;
@@ -261,11 +252,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
 
       if (listeningRef.current && !stopRequestedRef.current && voiceState !== "idle") {
         setTimeout(() => {
-          if (
-            !listeningRef.current ||
-            stopRequestedRef.current ||
-            recognitionActiveRef.current
-          ) {
+          if (!listeningRef.current || stopRequestedRef.current || recognitionActiveRef.current) {
             return;
           }
 
@@ -285,22 +272,13 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
   const updateVadState = useCallback(
     (normalizedEnergy: number) => {
       const floor = noiseFloorRef.current;
-      const dynamicThreshold = Math.max(
-        mergedVadConfig.speechThreshold,
-        floor * 1.8,
-      );
+      const dynamicThreshold = Math.max(mergedVadConfig.speechThreshold, floor * 1.8);
       const isSpeechCandidate = normalizedEnergy > dynamicThreshold;
 
       if (normalizedEnergy < floor) {
-        noiseFloorRef.current = Math.max(
-          0.01,
-          floor * 0.98 + normalizedEnergy * 0.02,
-        );
+        noiseFloorRef.current = Math.max(0.01, floor * 0.98 + normalizedEnergy * 0.02);
       } else {
-        noiseFloorRef.current = Math.min(
-          0.08,
-          floor * 0.995 + normalizedEnergy * 0.005,
-        );
+        noiseFloorRef.current = Math.min(0.08, floor * 0.995 + normalizedEnergy * 0.005);
       }
 
       if (isSpeechCandidate) {
@@ -308,8 +286,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
           speechCandidateStartRef.current = Date.now();
         }
 
-        const candidateDuration =
-          Date.now() - speechCandidateStartRef.current;
+        const candidateDuration = Date.now() - speechCandidateStartRef.current;
 
         if (candidateDuration < mergedVadConfig.minSpeechDurationMs) {
           return;
@@ -355,7 +332,14 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
         setSilenceNotice(true);
       }
     },
-    [mergedVadConfig.silenceActionDelayMs, mergedVadConfig.silenceDelayMs, mergedVadConfig.speechThreshold, onSpeechEnd, onSpeechStart, voiceState],
+    [
+      mergedVadConfig.silenceActionDelayMs,
+      mergedVadConfig.silenceDelayMs,
+      mergedVadConfig.speechThreshold,
+      onSpeechEnd,
+      onSpeechStart,
+      voiceState,
+    ]
   );
 
   const setupAudioPipeline = useCallback(async () => {
@@ -369,8 +353,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
 
       const AudioContextCtor =
         window.AudioContext ||
-        (window as Window & { webkitAudioContext?: typeof AudioContext })
-          .webkitAudioContext;
+        (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
       if (!AudioContextCtor) {
         return;
@@ -410,7 +393,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
               sum += dataArray[index];
             }
 
-            const normalized = (sum / bufferLength) / 255;
+            const normalized = sum / bufferLength / 255;
             updateVadState(normalized);
 
             context.clearRect(0, 0, width, height);
@@ -445,7 +428,7 @@ export function useVoiceEngine(options: VoiceEngineOptions = {}) {
                 x + barWidth,
                 y + barHeight,
                 x + barWidth - radius,
-                y + barHeight,
+                y + barHeight
               );
               context.lineTo(x + radius, y + barHeight);
               context.quadraticCurveTo(x, y + barHeight, x, y + barHeight - radius);

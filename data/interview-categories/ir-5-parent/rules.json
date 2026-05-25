@@ -807,7 +807,15 @@
         ]
       },
       "actions": {
-        "includeCategories": ["Identity", "Petitioner", "Relationship", "Financial", "Living Plan", "Intent", "Immigration & Background"],
+        "includeCategories": [
+          "Identity",
+          "Petitioner",
+          "Relationship",
+          "Financial",
+          "Living Plan",
+          "Intent",
+          "Immigration & Background"
+        ],
         "priorityBoost": ["high"],
         "reason": "IR-5 parent visa requires comprehensive evaluation of identity, family relationship genuineness, financial capacity, and security background; no single factor is dispositive, but combination creates overall eligibility assessment"
       }

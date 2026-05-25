@@ -33,7 +33,7 @@ interface IOMInfoStepProps {
       email?: string;
       preferredLocation?: string;
       destinationCountry?: string;
-    },
+    }
   ) => (value: string) => void;
   onNext: () => void;
   onBack: () => void;
@@ -67,9 +67,7 @@ const IOMInfoStep = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="fullName">
-              {t("bookAppointment.iomInfoStep.fullName")}
-            </Label>
+            <Label htmlFor="fullName">{t("bookAppointment.iomInfoStep.fullName")}</Label>
             <Input
               id="fullName"
               name="fullName"
@@ -88,16 +86,12 @@ const IOMInfoStep = ({
               name="passportNumber"
               value={formData.passportNumber || ""}
               onChange={onChange}
-              placeholder={t(
-                "bookAppointment.iomInfoStep.passportNumberPlaceholder",
-              )}
+              placeholder={t("bookAppointment.iomInfoStep.passportNumberPlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">
-              {t("bookAppointment.iomInfoStep.dateOfBirth")}
-            </Label>
+            <Label htmlFor="dateOfBirth">{t("bookAppointment.iomInfoStep.dateOfBirth")}</Label>
             <Input
               id="dateOfBirth"
               name="dateOfBirth"
@@ -108,17 +102,10 @@ const IOMInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="visaType">
-              {t("bookAppointment.iomInfoStep.visaType")}
-            </Label>
-            <Select
-              value={formData.visaType || ""}
-              onValueChange={onSelectChange("visaType")}
-            >
+            <Label htmlFor="visaType">{t("bookAppointment.iomInfoStep.visaType")}</Label>
+            <Select value={formData.visaType || ""} onValueChange={onSelectChange("visaType")}>
               <SelectTrigger id="visaType">
-                <SelectValue
-                  placeholder={t("bookAppointment.iomInfoStep.selectVisaType")}
-                />
+                <SelectValue placeholder={t("bookAppointment.iomInfoStep.selectVisaType")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Immigrant Visa">
@@ -147,9 +134,7 @@ const IOMInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contactNumber">
-              {t("bookAppointment.iomInfoStep.contactNumber")}
-            </Label>
+            <Label htmlFor="contactNumber">{t("bookAppointment.iomInfoStep.contactNumber")}</Label>
             <div className="flex gap-2">
               <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
                 🇵🇰 92
@@ -175,9 +160,7 @@ const IOMInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">
-              {t("bookAppointment.iomInfoStep.email")}
-            </Label>
+            <Label htmlFor="email">{t("bookAppointment.iomInfoStep.email")}</Label>
             <Input
               id="email"
               name="email"
@@ -197,9 +180,7 @@ const IOMInfoStep = ({
               onValueChange={onSelectChange("preferredLocation")}
             >
               <SelectTrigger id="preferredLocation">
-                <SelectValue
-                  placeholder={t("bookAppointment.iomInfoStep.selectLocation")}
-                />
+                <SelectValue placeholder={t("bookAppointment.iomInfoStep.selectLocation")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="islamabad">
@@ -219,9 +200,7 @@ const IOMInfoStep = ({
             >
               <SelectTrigger id="destinationCountry">
                 <SelectValue
-                  placeholder={t(
-                    "bookAppointment.iomInfoStep.selectDestinationCountry",
-                  )}
+                  placeholder={t("bookAppointment.iomInfoStep.selectDestinationCountry")}
                 />
               </SelectTrigger>
               <SelectContent>
@@ -262,10 +241,7 @@ const IOMInfoStep = ({
           >
             {t("bookAppointment.iomInfoStep.backBtn")}
           </Button>
-          <Button
-            onClick={onNext}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
-          >
+          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
             {t("bookAppointment.iomInfoStep.submitBtn")}
           </Button>
         </div>

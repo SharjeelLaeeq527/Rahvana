@@ -6,7 +6,6 @@ import uvicorn
 
 # Routers
 from app.api.v1.remove_bg import router as remove_bg_router
-from app.api.v1.iv_schedule import router as iv_schedule_router
 from app.api.v1.visa_checker import router as visa_checker_router
 from app.api.v1.pdf_routes import router as pdf_router
 # from app.api.v1.whatsapp import router as whatsapp_router
@@ -46,7 +45,6 @@ def health():
 
 # Register All Routes
 app.include_router(remove_bg_router, prefix="/api/v1", tags=["remove-bg"])
-app.include_router(iv_schedule_router, prefix="/api/v1", tags=["iv-schedule"])
 app.include_router(pdf_router, prefix="/api/v1", tags=["pdf-forms"])
 app.include_router(visa_checker_router, prefix="/api/v1/visa-checker", tags=["visa-checker"])
 # app.include_router(whatsapp_router, prefix="/api/v1", tags=["whatsapp-ai"])

@@ -5,20 +5,14 @@ import { progressService } from "@/lib/journey/service";
 import type { JourneyUpdate } from "@/lib/journey/types";
 
 // GET /api/journeys/[id] - Get journey details with chapters, steps, and case_data
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const journeyId = (await params).id;
 
     // Get journey
     const journey = await db.getJourneyDB(journeyId);
     if (!journey) {
-      return NextResponse.json(
-        { error: "Journey not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     // Get chapters
@@ -31,8 +25,7 @@ export async function GET(
     const caseData = await db.getCaseDataForJourneyDB(journeyId);
 
     // Get progress summary
-    const progressSummary =
-      await progressService.getJourneyProgressSummary(journeyId);
+    const progressSummary = await progressService.getJourneyProgressSummary(journeyId);
 
     return NextResponse.json(
       {
@@ -45,16 +38,13 @@ export async function GET(
           progress_summary: progressSummary,
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error(`Error in GET /api/journeys/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     return NextResponse.json(
@@ -63,35 +53,27 @@ export async function GET(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 // PATCH /api/journeys/[id] - Update journey details
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const journeyId = (await params).id;
     const updates: JourneyUpdate = await request.json();
 
     // Validate status if provided
     if (updates.status) {
-      const validStatuses = [
-        "not_started",
-        "in_progress",
-        "completed",
-        "paused",
-      ];
+      const validStatuses = ["not_started", "in_progress", "completed", "paused"];
       if (!validStatuses.includes(updates.status)) {
         return NextResponse.json(
           {
             error: `status must be one of: ${validStatuses.join(", ")}`,
             code: "VALIDATION_ERROR",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -105,7 +87,7 @@ export async function PATCH(
             error: `filing_method must be one of: ${validFilingMethods.join(", ")}`,
             code: "VALIDATION_ERROR",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -118,17 +100,11 @@ export async function PATCH(
     console.error(`Error in PATCH /api/journeys/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message?.includes("Journey not found")) {
-      return NextResponse.json(
-        { error: "Journey not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -137,7 +113,7 @@ export async function PATCH(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -145,7 +121,7 @@ export async function PATCH(
 // DELETE /api/journeys/[id] - Delete a journey
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const journeyId = (await params).id;
@@ -157,17 +133,11 @@ export async function DELETE(
     console.error(`Error in DELETE /api/journeys/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json(
-        { error: "Unauthorized", code: "UNAUTHORIZED" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
     }
 
     if (error instanceof Error && error.message?.includes("Journey not found")) {
-      return NextResponse.json(
-        { error: "Journey not found", code: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -176,7 +146,7 @@ export async function DELETE(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

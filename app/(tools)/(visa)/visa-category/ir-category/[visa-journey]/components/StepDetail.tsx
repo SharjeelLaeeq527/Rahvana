@@ -29,12 +29,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import * as icons from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { RoadmapStep, RoadmapChapter } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -56,35 +51,25 @@ interface StepDetailProps {
 const getToolIcon = (href: string) => {
   const h = href.toLowerCase();
 
-  if (h.includes("visa-case-strength-checker"))
-    return <icons.Brain className="w-3.5 h-3.5" />;
-  if (h.includes("221g-action-planner"))
-    return <icons.LifeBuoy className="w-3.5 h-3.5" />;
-  if (h.includes("visa-eligibility"))
-    return <icons.Compass className="w-3.5 h-3.5" />;
-  if (h.includes("interview-prep"))
-    return <icons.MessageSquare className="w-3.5 h-3.5" />;
+  if (h.includes("visa-case-strength-checker")) return <icons.Brain className="w-3.5 h-3.5" />;
+  if (h.includes("221g-action-planner")) return <icons.LifeBuoy className="w-3.5 h-3.5" />;
+  if (h.includes("visa-eligibility")) return <icons.Compass className="w-3.5 h-3.5" />;
+  if (h.includes("interview-prep")) return <icons.MessageSquare className="w-3.5 h-3.5" />;
   if (h.includes("affidavit-support-calculator"))
     return <icons.Calculator className="w-3.5 h-3.5" />;
   if (h.includes("iv-tool")) return <icons.Clock className="w-3.5 h-3.5" />;
-  if (h.includes("visa-checker"))
-    return <icons.Calendar className="w-3.5 h-3.5" />;
-  if (h.includes("passport") && h.includes("guide"))
-    return <icons.Globe className="w-3.5 h-3.5" />;
+  if (h.includes("visa-checker")) return <icons.Calendar className="w-3.5 h-3.5" />;
+  if (h.includes("passport") && h.includes("guide")) return <icons.Globe className="w-3.5 h-3.5" />;
   if (h.includes("passport")) return <icons.Camera className="w-3.5 h-3.5" />;
-  if (h.includes("pdf-processing"))
-    return <icons.Files className="w-3.5 h-3.5" />;
-  if (h.includes("signature-image-processing"))
-    return <icons.PenTool className="w-3.5 h-3.5" />;
+  if (h.includes("pdf-processing")) return <icons.Files className="w-3.5 h-3.5" />;
+  if (h.includes("signature-image-processing")) return <icons.PenTool className="w-3.5 h-3.5" />;
   if (h.includes("visa-forms")) return <icons.Wand2 className="w-3.5 h-3.5" />;
-  if (h.includes("document-vault"))
-    return <icons.FolderLock className="w-3.5 h-3.5" />;
+  if (h.includes("document-vault")) return <icons.FolderLock className="w-3.5 h-3.5" />;
 
   if (h.includes("cnic-guide") || h.includes("birth-certificate-guide"))
     return <icons.FileText className="w-3.5 h-3.5" />;
   if (h.includes("frc-guide")) return <icons.Globe className="w-3.5 h-3.5" />;
-  if (h.includes("marriage") || h.includes("nikah"))
-    return <icons.Heart className="w-3.5 h-3.5" />;
+  if (h.includes("marriage") || h.includes("nikah")) return <icons.Heart className="w-3.5 h-3.5" />;
   if (h.includes("police")) return <icons.Shield className="w-3.5 h-3.5" />;
   if (h.includes("services")) return <icons.Zap className="w-3.5 h-3.5" />;
   if (h.includes("guide")) return <icons.BookOpen className="w-3.5 h-3.5" />;
@@ -113,10 +98,7 @@ export function StepDetail({
   const matchedToolLabels = new Set<string>();
   const toolAssignments: Record<string, any[]> = {};
 
-  const checkMatch = (
-    text: string | undefined,
-    toolLabel: string | undefined,
-  ) => {
+  const checkMatch = (text: string | undefined, toolLabel: string | undefined) => {
     if (!text || !toolLabel) return false;
 
     const textLower = text.toLowerCase();
@@ -182,7 +164,7 @@ export function StepDetail({
         checkMatch(actionEn, tool.label) ||
         (tool.labelUr && checkMatch(actionEn, tool.labelUr)) ||
         (actionUr && checkMatch(actionUr, tool.label)) ||
-        (actionUr && tool.labelUr && checkMatch(actionUr, tool.labelUr)),
+        (actionUr && tool.labelUr && checkMatch(actionUr, tool.labelUr))
     );
     if (matches.length > 0) {
       toolAssignments[`action-${idx}`] = matches;
@@ -199,7 +181,7 @@ export function StepDetail({
         checkMatch(docEn, tool.label) ||
         (tool.labelUr && checkMatch(docEn, tool.labelUr)) ||
         (docUr && checkMatch(docUr, tool.label)) ||
-        (docUr && tool.labelUr && checkMatch(docUr, tool.labelUr)),
+        (docUr && tool.labelUr && checkMatch(docUr, tool.labelUr))
     );
     if (matches.length > 0) {
       toolAssignments[`doc-${idx}`] = matches;
@@ -208,10 +190,7 @@ export function StepDetail({
   });
 
   return (
-    <div
-      id="step-content"
-      className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-    >
+    <div id="step-content" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/80 text-slate-500 rounded-full text-[12px] font-bold uppercase tracking-wider border border-slate-200/50">
@@ -222,9 +201,7 @@ export function StepDetail({
             })}
           </div>
 
-          {(isUrdu && step.outputUr
-            ? step.outputUr
-            : step.output || step.success) && (
+          {(isUrdu && step.outputUr ? step.outputUr : step.output || step.success) && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -244,9 +221,8 @@ export function StepDetail({
                       className="text-indigo-900 text-sm font-bold leading-relaxed"
                       dangerouslySetInnerHTML={{
                         __html:
-                          (isUrdu && step.outputUr
-                            ? step.outputUr
-                            : step.output || step.success) || "",
+                          (isUrdu && step.outputUr ? step.outputUr : step.output || step.success) ||
+                          "",
                       }}
                     />
                   </div>
@@ -294,9 +270,7 @@ export function StepDetail({
             {step.info && (
               <div className="flex items-start gap-3 p-4 bg-sky-50 rounded-xl border border-sky-100">
                 <Info className="w-5 h-5 text-sky-500 mt-0.5 shrink-0" />
-                <p className="text-[15px] font-medium text-sky-900 leading-relaxed">
-                  {step.info}
-                </p>
+                <p className="text-[15px] font-medium text-sky-900 leading-relaxed">{step.info}</p>
               </div>
             )}
             {step.warn && (
@@ -323,79 +297,77 @@ export function StepDetail({
               {t("visaJourney.actionsRequired")}
             </h4>
             <ul className="space-y-4">
-              {(isUrdu && step.actionsUr
-                ? step.actionsUr
-                : step.actions || []
-              )?.map((action: string, idx: number) => {
-                const relatedTools = toolAssignments[`action-${idx}`] || [];
-                return (
-                  <li
-                    key={`action-${idx}`}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-100 group transition-all hover:border-primary/20 hover:shadow-sm"
-                  >
-                    <div className="flex gap-4 items-start text-[16px] text-slate-700 font-medium flex-1">
-                      <div className="w-6 h-6 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center shrink-0 mt-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              {(isUrdu && step.actionsUr ? step.actionsUr : step.actions || [])?.map(
+                (action: string, idx: number) => {
+                  const relatedTools = toolAssignments[`action-${idx}`] || [];
+                  return (
+                    <li
+                      key={`action-${idx}`}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-100 group transition-all hover:border-primary/20 hover:shadow-sm"
+                    >
+                      <div className="flex gap-4 items-start text-[16px] text-slate-700 font-medium flex-1">
+                        <div className="w-6 h-6 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                        </div>
+                        <div className="leading-snug">{action}</div>
                       </div>
-                      <div className="leading-snug">{action}</div>
-                    </div>
 
-                    {relatedTools.length > 0 && (
-                      <div className="flex flex-wrap gap-2 sm:ml-4">
-                        {relatedTools.map((tool, tIdx) => (
-                          <button
-                            key={`act-tool-${idx}-${tIdx}`}
-                            onClick={() => router.push(tool.href)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
-                          >
-                            {getToolIcon(tool.href)}
-                            {isUrdu && tool.labelUr ? tool.labelUr : tool.label}
-                          </button>
-                        ))}
+                      {relatedTools.length > 0 && (
+                        <div className="flex flex-wrap gap-2 sm:ml-4">
+                          {relatedTools.map((tool, tIdx) => (
+                            <button
+                              key={`act-tool-${idx}-${tIdx}`}
+                              onClick={() => router.push(tool.href)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
+                            >
+                              {getToolIcon(tool.href)}
+                              {isUrdu && tool.labelUr ? tool.labelUr : tool.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  );
+                }
+              )}
+              {(isUrdu && step.documentsUr ? step.documentsUr : step.documents || [])?.map(
+                (doc: string, idx: number) => {
+                  const relatedTools = toolAssignments[`doc-${idx}`] || [];
+                  return (
+                    <li
+                      key={`doc-${idx}`}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-100 group transition-all hover:border-primary/20 hover:shadow-sm"
+                    >
+                      <div className="flex gap-4 items-start text-[16px] text-slate-700 font-medium flex-1">
+                        <div className="w-6 h-6 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                        </div>
+                        <div className="leading-snug">
+                          {doc}{" "}
+                          <span className="text-primary/50 text-[10px] font-black uppercase tracking-tighter ml-2 px-1.5 py-0.5 bg-primary/5 rounded border border-primary/10 whitespace-nowrap">
+                            {t("visaJourney.documentRequired")}
+                          </span>
+                        </div>
                       </div>
-                    )}
-                  </li>
-                );
-              })}
-              {(isUrdu && step.documentsUr
-                ? step.documentsUr
-                : step.documents || []
-              )?.map((doc: string, idx: number) => {
-                const relatedTools = toolAssignments[`doc-${idx}`] || [];
-                return (
-                  <li
-                    key={`doc-${idx}`}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-100 group transition-all hover:border-primary/20 hover:shadow-sm"
-                  >
-                    <div className="flex gap-4 items-start text-[16px] text-slate-700 font-medium flex-1">
-                      <div className="w-6 h-6 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center shrink-0 mt-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                      </div>
-                      <div className="leading-snug">
-                        {doc}{" "}
-                        <span className="text-primary/50 text-[10px] font-black uppercase tracking-tighter ml-2 px-1.5 py-0.5 bg-primary/5 rounded border border-primary/10 whitespace-nowrap">
-                          {t("visaJourney.documentRequired")}
-                        </span>
-                      </div>
-                    </div>
 
-                    {relatedTools.length > 0 && (
-                      <div className="flex flex-wrap gap-2 sm:ml-4">
-                        {relatedTools.map((tool, tIdx) => (
-                          <button
-                            key={`doc-tool-${idx}-${tIdx}`}
-                            onClick={() => router.push(tool.href)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
-                          >
-                            {getToolIcon(tool.href)}
-                            {isUrdu && tool.labelUr ? tool.labelUr : tool.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
+                      {relatedTools.length > 0 && (
+                        <div className="flex flex-wrap gap-2 sm:ml-4">
+                          {relatedTools.map((tool, tIdx) => (
+                            <button
+                              key={`doc-tool-${idx}-${tIdx}`}
+                              onClick={() => router.push(tool.href)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 text-primary border border-primary/10 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
+                            >
+                              {getToolIcon(tool.href)}
+                              {isUrdu && tool.labelUr ? tool.labelUr : tool.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  );
+                }
+              )}
             </ul>
           </div>
         )}
@@ -447,7 +419,7 @@ export function StepDetail({
       {/* Relevant Tools & Services */}
       {(() => {
         const remainingTools = (step.relevantTools || []).filter(
-          (t) => !matchedToolLabels.has(t.label),
+          (t) => !matchedToolLabels.has(t.label)
         );
         if (remainingTools.length === 0) return null;
 
@@ -496,24 +468,17 @@ export function StepDetail({
 
         <div className="flex justify-center mt-4">
           {(() => {
-            const hasOutput =
-              isUrdu && step.outputUr
-                ? step.outputUr
-                : step.output || step.success;
+            const hasOutput = isUrdu && step.outputUr ? step.outputUr : step.output || step.success;
             const toggleButton = (
               <div
                 className="flex items-center gap-4 cursor-pointer select-none group"
-                onClick={(e) =>
-                  onToggleComplete(step.step_key || (step as any).id, e)
-                }
+                onClick={(e) => onToggleComplete(step.step_key || (step as any).id, e)}
               >
                 <div className="flex flex-col text-left rtl:text-right">
                   <span
                     className={`text-lg md:text-xl font-bold transition-colors ${isCompleted ? "text-emerald-600" : "text-slate-700"}`}
                   >
-                    {isCompleted
-                      ? t("visaJourney.completed")
-                      : t("visaJourney.markAsComplete")}
+                    {isCompleted ? t("visaJourney.completed") : t("visaJourney.markAsComplete")}
                   </span>
                   {!isCompleted && (
                     <span className="text-[11px] md:text-xs font-medium text-slate-400 uppercase tracking-widest mt-0.5">
@@ -536,9 +501,7 @@ export function StepDetail({
                     }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   >
-                    {isCompleted && (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    )}
+                    {isCompleted && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                   </motion.div>
                 </div>
               </div>

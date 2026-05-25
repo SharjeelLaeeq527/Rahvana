@@ -13,8 +13,19 @@
         "SCENARIO_SPECIFIC - Triggered for special circumstances (visa history, employment status, language proficiency, etc.)",
         "FIELD_SPECIFIC - Adapted question focus based on program and field of study"
       ],
-      "operatorTypes": ["equals", "notEquals", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual"],
-      "conditionTypes": ["AND (all conditions must be true)", "OR (at least one condition must be true)", "NOT (condition must be false)"],
+      "operatorTypes": [
+        "equals",
+        "notEquals",
+        "greaterThan",
+        "lessThan",
+        "greaterThanOrEqual",
+        "lessThanOrEqual"
+      ],
+      "conditionTypes": [
+        "AND (all conditions must be true)",
+        "OR (at least one condition must be true)",
+        "NOT (condition must be false)"
+      ],
       "priorityLevels": ["high", "medium", "low"]
     }
   },

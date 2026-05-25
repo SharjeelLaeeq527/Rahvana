@@ -1,1109 +1,1461 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rahvana — Checkout</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rahvana — Checkout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-  :root {
-    --cream: #F8F5EF;
-    --cream-mid: #F0EBE1;
-    --cream-dark: #E4DDD1;
-    --ink: #1C1917;
-    --ink-mid: #6B6560;
-    --ink-light: #A09990;
-    --ink-faint: #C8C2B8;
-    --gold: #B8934A;
-    --gold-light: #F2E8D5;
-    --green: #3A6E4A;
-    --green-light: #EAF3EC;
-    --green-mid: #8DC49A;
-    --white: #FFFEFB;
-    --border: #E4DDD1;
-    --border-light: #EDE8DF;
-    --radius: 14px;
-    --radius-sm: 8px;
-  }
+      :root {
+        --cream: #f8f5ef;
+        --cream-mid: #f0ebe1;
+        --cream-dark: #e4ddd1;
+        --ink: #1c1917;
+        --ink-mid: #6b6560;
+        --ink-light: #a09990;
+        --ink-faint: #c8c2b8;
+        --gold: #b8934a;
+        --gold-light: #f2e8d5;
+        --green: #3a6e4a;
+        --green-light: #eaf3ec;
+        --green-mid: #8dc49a;
+        --white: #fffefb;
+        --border: #e4ddd1;
+        --border-light: #ede8df;
+        --radius: 14px;
+        --radius-sm: 8px;
+      }
 
-  html, body {
-    background: var(--cream);
-    font-family: 'Jost', sans-serif;
-    font-weight: 300;
-    color: var(--ink);
-    min-height: 100vh;
-    line-height: 1;
-  }
+      html,
+      body {
+        background: var(--cream);
+        font-family: "Jost", sans-serif;
+        font-weight: 300;
+        color: var(--ink);
+        min-height: 100vh;
+        line-height: 1;
+      }
 
-  /* NAV */
-  nav {
-    background: var(--white);
-    border-bottom: 1px solid var(--border-light);
-    padding: 0 40px;
-    height: 58px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+      /* NAV */
+      nav {
+        background: var(--white);
+        border-bottom: 1px solid var(--border-light);
+        padding: 0 40px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-  .logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 500;
-    color: var(--ink);
-    letter-spacing: 0.06em;
-  }
-  .logo span { color: var(--gold); }
+      .logo {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 22px;
+        font-weight: 500;
+        color: var(--ink);
+        letter-spacing: 0.06em;
+      }
+      .logo span {
+        color: var(--gold);
+      }
 
-  .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
 
-  .steps {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
-  .step-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 11.5px;
-    color: var(--ink-faint);
-    letter-spacing: 0.02em;
-  }
-  .step-item.done { color: var(--green); }
-  .step-item.active { color: var(--ink); font-weight: 400; }
-  .step-num {
-    width: 19px; height: 19px;
-    border-radius: 50%;
-    border: 1px solid currentColor;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px;
-    flex-shrink: 0;
-  }
-  .step-item.done .step-num {
-    background: var(--green-light);
-    border-color: var(--green-mid);
-    color: var(--green);
-  }
-  .step-item.active .step-num {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--white);
-  }
-  .step-sep {
-    width: 24px; height: 1px;
-    background: var(--border);
-    margin: 0 10px;
-  }
+      .steps {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+      .step-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11.5px;
+        color: var(--ink-faint);
+        letter-spacing: 0.02em;
+      }
+      .step-item.done {
+        color: var(--green);
+      }
+      .step-item.active {
+        color: var(--ink);
+        font-weight: 400;
+      }
+      .step-num {
+        width: 19px;
+        height: 19px;
+        border-radius: 50%;
+        border: 1px solid currentColor;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        flex-shrink: 0;
+      }
+      .step-item.done .step-num {
+        background: var(--green-light);
+        border-color: var(--green-mid);
+        color: var(--green);
+      }
+      .step-item.active .step-num {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: var(--white);
+      }
+      .step-sep {
+        width: 24px;
+        height: 1px;
+        background: var(--border);
+        margin: 0 10px;
+      }
 
-  .back-link {
-    font-size: 12px;
-    color: var(--ink-light);
-    display: flex; align-items: center; gap: 5px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: color .15s;
-  }
-  .back-link:hover { color: var(--ink); }
+      .back-link {
+        font-size: 12px;
+        color: var(--ink-light);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .back-link:hover {
+        color: var(--ink);
+      }
 
-  /* LAYOUT */
-  .page {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 40px;
-    align-items: start;
-  }
+      /* LAYOUT */
+      .page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 40px;
+        align-items: start;
+      }
 
-  /* LEFT — MAIN FORM AREA */
-  .main h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 30px;
-    font-weight: 400;
-    color: var(--ink);
-    line-height: 1.2;
-    margin-bottom: 6px;
-  }
-  .main h1 em { font-style: italic; color: var(--gold); }
+      /* LEFT — MAIN FORM AREA */
+      .main h1 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 30px;
+        font-weight: 400;
+        color: var(--ink);
+        line-height: 1.2;
+        margin-bottom: 6px;
+      }
+      .main h1 em {
+        font-style: italic;
+        color: var(--gold);
+      }
 
-  .main .subtitle {
-    font-size: 13px;
-    color: var(--ink-mid);
-    line-height: 1.65;
-    margin-bottom: 32px;
-    font-weight: 300;
-  }
+      .main .subtitle {
+        font-size: 13px;
+        color: var(--ink-mid);
+        line-height: 1.65;
+        margin-bottom: 32px;
+        font-weight: 300;
+      }
 
-  /* SECTION LABEL */
-  .section-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 12px;
-    font-weight: 400;
-  }
+      /* SECTION LABEL */
+      .section-label {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin-bottom: 12px;
+        font-weight: 400;
+      }
 
-  /* PLAN DETAIL CARD */
-  .plan-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-    margin-bottom: 32px;
-  }
+      /* PLAN DETAIL CARD */
+      .plan-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+        margin-bottom: 32px;
+      }
 
-  .plan-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
+      .plan-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+      }
 
-  .plan-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--ink);
-  }
+      .plan-name {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--ink);
+      }
 
-  .plan-tag {
-    font-size: 10.5px;
-    padding: 3px 11px;
-    border-radius: 20px;
-    background: var(--green-light);
-    color: var(--green);
-    font-weight: 400;
-    letter-spacing: 0.02em;
-  }
+      .plan-tag {
+        font-size: 10.5px;
+        padding: 3px 11px;
+        border-radius: 20px;
+        background: var(--green-light);
+        color: var(--green);
+        font-weight: 400;
+        letter-spacing: 0.02em;
+      }
 
-  .plan-features {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 18px;
-  }
+      .plan-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 18px;
+      }
 
-  .plan-feat {
-    font-size: 11px;
-    padding: 4px 11px;
-    background: var(--cream);
-    border: 1px solid var(--border-light);
-    border-radius: 20px;
-    color: var(--ink-mid);
-    display: flex; align-items: center; gap: 5px;
-    font-weight: 300;
-  }
-  .plan-feat i { font-size: 11px; color: var(--green); }
+      .plan-feat {
+        font-size: 11px;
+        padding: 4px 11px;
+        background: var(--cream);
+        border: 1px solid var(--border-light);
+        border-radius: 20px;
+        color: var(--ink-mid);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 300;
+      }
+      .plan-feat i {
+        font-size: 11px;
+        color: var(--green);
+      }
 
-  .plan-footer {
-    border-top: 1px solid var(--border-light);
-    padding-top: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
+      .plan-footer {
+        border-top: 1px solid var(--border-light);
+        padding-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
 
-  .plan-billing {
-    font-size: 12px;
-    color: var(--ink-mid);
-    line-height: 1.7;
-    font-weight: 300;
-  }
-  .plan-billing strong { color: var(--ink); font-weight: 400; }
+      .plan-billing {
+        font-size: 12px;
+        color: var(--ink-mid);
+        line-height: 1.7;
+        font-weight: 300;
+      }
+      .plan-billing strong {
+        color: var(--ink);
+        font-weight: 400;
+      }
 
-  .plan-price-block { text-align: right; }
-  .plan-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 32px;
-    color: var(--ink);
-    line-height: 1;
-  }
-  .plan-price-note {
-    font-size: 10.5px;
-    color: var(--ink-faint);
-    margin-top: 3px;
-  }
+      .plan-price-block {
+        text-align: right;
+      }
+      .plan-price {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 32px;
+        color: var(--ink);
+        line-height: 1;
+      }
+      .plan-price-note {
+        font-size: 10.5px;
+        color: var(--ink-faint);
+        margin-top: 3px;
+      }
 
-  /* CONTACT / ACCOUNT INFO */
-  .info-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-    margin-bottom: 32px;
-  }
+      /* CONTACT / ACCOUNT INFO */
+      .info-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+        margin-bottom: 32px;
+      }
 
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border-light);
-    font-size: 13px;
-  }
-  .info-row:last-child { border-bottom: none; }
-  .info-label { color: var(--ink-light); font-weight: 300; }
-  .info-value { color: var(--ink); font-weight: 400; }
-  .info-edit {
-    font-size: 11px;
-    color: var(--gold);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 13px;
+      }
+      .info-row:last-child {
+        border-bottom: none;
+      }
+      .info-label {
+        color: var(--ink-light);
+        font-weight: 300;
+      }
+      .info-value {
+        color: var(--ink);
+        font-weight: 400;
+      }
+      .info-edit {
+        font-size: 11px;
+        color: var(--gold);
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
 
-  /* PAYMENT SECTION */
-  .payment-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-  }
+      /* PAYMENT SECTION */
+      .payment-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+      }
 
-  .payment-methods {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
+      .payment-methods {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
 
-  .pm {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-    color: var(--ink-mid);
-    transition: all .15s;
-    background: var(--cream);
-  }
-  .pm.active {
-    border-color: var(--ink);
-    background: var(--white);
-    color: var(--ink);
-  }
-  .pm i { font-size: 16px; }
+      .pm {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        color: var(--ink-mid);
+        transition: all 0.15s;
+        background: var(--cream);
+      }
+      .pm.active {
+        border-color: var(--ink);
+        background: var(--white);
+        color: var(--ink);
+      }
+      .pm i {
+        font-size: 16px;
+      }
 
-  .input-group { margin-bottom: 14px; }
-  .input-label {
-    font-size: 11px;
-    color: var(--ink-light);
-    letter-spacing: 0.04em;
-    margin-bottom: 6px;
-    display: block;
-    font-weight: 400;
-  }
-  .input-field {
-    width: 100%;
-    padding: 10px 13px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--cream);
-    font-family: 'Jost', sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    color: var(--ink);
-    outline: none;
-    transition: border-color .15s;
-  }
-  .input-field::placeholder { color: var(--ink-faint); }
-  .input-field:focus { border-color: var(--ink); background: var(--white); }
+      .input-group {
+        margin-bottom: 14px;
+      }
+      .input-label {
+        font-size: 11px;
+        color: var(--ink-light);
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+        display: block;
+        font-weight: 400;
+      }
+      .input-field {
+        width: 100%;
+        padding: 10px 13px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--cream);
+        font-family: "Jost", sans-serif;
+        font-size: 13px;
+        font-weight: 300;
+        color: var(--ink);
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .input-field::placeholder {
+        color: var(--ink-faint);
+      }
+      .input-field:focus {
+        border-color: var(--ink);
+        background: var(--white);
+      }
 
-  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .input-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
 
-  /* =====================
+      /* =====================
      RIGHT — ORDER SUMMARY
      This is WHERE it matters
      ===================== */
-  .summary {
-    position: sticky;
-    top: 32px;
-  }
+      .summary {
+        position: sticky;
+        top: 32px;
+      }
 
-  .summary-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
+      .summary-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
 
-  .summary-head {
-    padding: 18px 20px 16px;
-    border-bottom: 1px solid var(--border-light);
-  }
+      .summary-head {
+        padding: 18px 20px 16px;
+        border-bottom: 1px solid var(--border-light);
+      }
 
-  .summary-head h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 17px;
-    font-weight: 500;
-    color: var(--ink);
-  }
+      .summary-head h2 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--ink);
+      }
 
-  .summary-route {
-    font-size: 11px;
-    color: var(--ink-light);
-    margin-top: 3px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .summary-route i { font-size: 11px; color: var(--gold); }
+      .summary-route {
+        font-size: 11px;
+        color: var(--ink-light);
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .summary-route i {
+        font-size: 11px;
+        color: var(--gold);
+      }
 
-  .summary-items { padding: 14px 20px; border-bottom: 1px solid var(--border-light); }
+      .summary-items {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border-light);
+      }
 
-  .s-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 13px;
-    padding: 5px 0;
-    color: var(--ink-mid);
-  }
-  .s-line .s-name { color: var(--ink); font-weight: 400; }
-  .s-line.addon .s-name { color: var(--ink-mid); font-size: 12.5px; }
-  .s-line.addon .s-price { font-size: 12.5px; }
+      .s-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 13px;
+        padding: 5px 0;
+        color: var(--ink-mid);
+      }
+      .s-line .s-name {
+        color: var(--ink);
+        font-weight: 400;
+      }
+      .s-line.addon .s-name {
+        color: var(--ink-mid);
+        font-size: 12.5px;
+      }
+      .s-line.addon .s-price {
+        font-size: 12.5px;
+      }
 
-  .addon-remove {
-    font-size: 10px;
-    color: var(--ink-faint);
-    cursor: pointer;
-    margin-left: 5px;
-    transition: color .1s;
-  }
-  .addon-remove:hover { color: #C04040; }
+      .addon-remove {
+        font-size: 10px;
+        color: var(--ink-faint);
+        cursor: pointer;
+        margin-left: 5px;
+        transition: color 0.1s;
+      }
+      .addon-remove:hover {
+        color: #c04040;
+      }
 
-  /* THE NUDGE — lives right here in the summary */
-  .nudge-strip {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border-light);
-    background: var(--cream);
-  }
+      /* THE NUDGE — lives right here in the summary */
+      .nudge-strip {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--cream);
+      }
 
-  .nudge-inner {
-    display: flex;
-    align-items: flex-start;
-    gap: 11px;
-  }
+      .nudge-inner {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+      }
 
-  .nudge-icon-wrap {
-    width: 32px; height: 32px;
-    border-radius: var(--radius-sm);
-    background: var(--white);
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    color: var(--ink-mid);
-    font-size: 15px;
-  }
+      .nudge-icon-wrap {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        background: var(--white);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: var(--ink-mid);
+        font-size: 15px;
+      }
 
-  .nudge-text-block { flex: 1; min-width: 0; }
+      .nudge-text-block {
+        flex: 1;
+        min-width: 0;
+      }
 
-  .nudge-title {
-    font-size: 12.5px;
-    font-weight: 400;
-    color: var(--ink);
-    margin-bottom: 2px;
-  }
+      .nudge-title {
+        font-size: 12.5px;
+        font-weight: 400;
+        color: var(--ink);
+        margin-bottom: 2px;
+      }
 
-  .nudge-desc {
-    font-size: 11px;
-    color: var(--ink-light);
-    line-height: 1.5;
-  }
+      .nudge-desc {
+        font-size: 11px;
+        color: var(--ink-light);
+        line-height: 1.5;
+      }
 
-  .nudge-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    flex-shrink: 0;
-  }
+      .nudge-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        flex-shrink: 0;
+      }
 
-  .nudge-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    color: var(--ink);
-    line-height: 1;
-  }
+      .nudge-price {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 16px;
+        color: var(--ink);
+        line-height: 1;
+      }
 
-  .nudge-add-btn {
-    font-size: 11px;
-    padding: 4px 12px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--white);
-    color: var(--ink-mid);
-    cursor: pointer;
-    font-family: 'Jost', sans-serif;
-    font-weight: 400;
-    transition: all .15s;
-    white-space: nowrap;
-  }
-  .nudge-add-btn:hover {
-    border-color: var(--green-mid);
-    color: var(--green);
-    background: var(--green-light);
-  }
-  .nudge-add-btn.added {
-    background: var(--green-light);
-    border-color: var(--green-mid);
-    color: var(--green);
-  }
+      .nudge-add-btn {
+        font-size: 11px;
+        padding: 4px 12px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--white);
+        color: var(--ink-mid);
+        cursor: pointer;
+        font-family: "Jost", sans-serif;
+        font-weight: 400;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .nudge-add-btn:hover {
+        border-color: var(--green-mid);
+        color: var(--green);
+        background: var(--green-light);
+      }
+      .nudge-add-btn.added {
+        background: var(--green-light);
+        border-color: var(--green-mid);
+        color: var(--green);
+      }
 
-  .nudge-next {
-    font-size: 10.5px;
-    color: var(--ink-faint);
-    text-align: center;
-    margin-top: 10px;
-    cursor: pointer;
-    transition: color .15s;
-  }
-  .nudge-next:hover { color: var(--ink-light); }
+      .nudge-next {
+        font-size: 10.5px;
+        color: var(--ink-faint);
+        text-align: center;
+        margin-top: 10px;
+        cursor: pointer;
+        transition: color 0.15s;
+      }
+      .nudge-next:hover {
+        color: var(--ink-light);
+      }
 
-  /* TOTAL */
-  .summary-total {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border-light);
-  }
+      /* TOTAL */
+      .summary-total {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border-light);
+      }
 
-  .total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
 
-  .total-label {
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--ink);
-  }
+      .total-label {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--ink);
+      }
 
-  .total-amount {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
-    color: var(--ink);
-    transition: all .2s;
-  }
+      .total-amount {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 28px;
+        color: var(--ink);
+        transition: all 0.2s;
+      }
 
-  .total-note {
-    font-size: 10.5px;
-    color: var(--ink-faint);
-    margin-top: 5px;
-    line-height: 1.55;
-  }
+      .total-note {
+        font-size: 10.5px;
+        color: var(--ink-faint);
+        margin-top: 5px;
+        line-height: 1.55;
+      }
 
-  /* CTA */
-  .summary-cta { padding: 16px 20px; }
+      /* CTA */
+      .summary-cta {
+        padding: 16px 20px;
+      }
 
-  .pay-btn {
-    width: 100%;
-    padding: 13px;
-    background: var(--ink);
-    color: var(--cream);
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: 'Jost', sans-serif;
-    font-size: 13.5px;
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: background .15s, transform .1s;
-  }
-  .pay-btn:hover { background: #2C2926; }
-  .pay-btn:active { transform: scale(0.99); }
+      .pay-btn {
+        width: 100%;
+        padding: 13px;
+        background: var(--ink);
+        color: var(--cream);
+        border: none;
+        border-radius: var(--radius-sm);
+        font-family: "Jost", sans-serif;
+        font-size: 13.5px;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition:
+          background 0.15s,
+          transform 0.1s;
+      }
+      .pay-btn:hover {
+        background: #2c2926;
+      }
+      .pay-btn:active {
+        transform: scale(0.99);
+      }
 
-  .secure-line {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    font-size: 11px;
-    color: var(--ink-faint);
-    margin-top: 10px;
-  }
-  .secure-line i { font-size: 11px; }
+      .secure-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--ink-faint);
+        margin-top: 10px;
+      }
+      .secure-line i {
+        font-size: 11px;
+      }
 
-  /* FILM STRIP — below checkout, collapsible */
-  .more-section {
-    margin-top: 12px;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
+      /* FILM STRIP — below checkout, collapsible */
+      .more-section {
+        margin-top: 12px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
 
-  .more-toggle {
-    width: 100%;
-    padding: 13px 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-family: 'Jost', sans-serif;
-    font-size: 12px;
-    color: var(--ink-mid);
-    font-weight: 400;
-    transition: color .15s;
-  }
-  .more-toggle:hover { color: var(--ink); }
-  .more-toggle i { font-size: 14px; transition: transform .2s; }
-  .more-toggle.open i { transform: rotate(180deg); }
+      .more-toggle {
+        width: 100%;
+        padding: 13px 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-family: "Jost", sans-serif;
+        font-size: 12px;
+        color: var(--ink-mid);
+        font-weight: 400;
+        transition: color 0.15s;
+      }
+      .more-toggle:hover {
+        color: var(--ink);
+      }
+      .more-toggle i {
+        font-size: 14px;
+        transition: transform 0.2s;
+      }
+      .more-toggle.open i {
+        transform: rotate(180deg);
+      }
 
-  .film-panel {
-    display: none;
-    border-top: 1px solid var(--border-light);
-    padding: 14px 16px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    cursor: grab;
-  }
-  .film-panel.open { display: block; }
-  .film-panel:active { cursor: grabbing; }
-  .film-panel::-webkit-scrollbar { height: 3px; }
-  .film-panel::-webkit-scrollbar-track { background: var(--cream); }
-  .film-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+      .film-panel {
+        display: none;
+        border-top: 1px solid var(--border-light);
+        padding: 14px 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        cursor: grab;
+      }
+      .film-panel.open {
+        display: block;
+      }
+      .film-panel:active {
+        cursor: grabbing;
+      }
+      .film-panel::-webkit-scrollbar {
+        height: 3px;
+      }
+      .film-panel::-webkit-scrollbar-track {
+        background: var(--cream);
+      }
+      .film-panel::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 4px;
+      }
 
-  .film-track {
-    display: flex;
-    gap: 10px;
-    width: max-content;
-  }
+      .film-track {
+        display: flex;
+        gap: 10px;
+        width: max-content;
+      }
 
-  .fcard {
-    width: 168px;
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color .2s, background .15s;
-    flex-shrink: 0;
-  }
-  .fcard:hover { border-color: var(--gold); }
-  .fcard.on { border-color: var(--green-mid); background: var(--green-light); }
+      .fcard {
+        width: 168px;
+        background: var(--cream);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.15s;
+        flex-shrink: 0;
+      }
+      .fcard:hover {
+        border-color: var(--gold);
+      }
+      .fcard.on {
+        border-color: var(--green-mid);
+        background: var(--green-light);
+      }
 
-  .fcard-frame {
-    height: 74px;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .fcard-frame i { font-size: 26px; opacity: 0.6; }
-  .frame-g { background: #EEF6F0; color: #3A6E4A; }
-  .frame-b { background: #EAF1FB; color: #1A5FA3; }
-  .frame-a { background: #FBF2E3; color: #9B6220; }
-  .frame-p { background: #F3EFFE; color: #5C3DAA; }
-  .frame-r { background: #FEF0F0; color: #903030; }
+      .fcard-frame {
+        height: 74px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .fcard-frame i {
+        font-size: 26px;
+        opacity: 0.6;
+      }
+      .frame-g {
+        background: #eef6f0;
+        color: #3a6e4a;
+      }
+      .frame-b {
+        background: #eaf1fb;
+        color: #1a5fa3;
+      }
+      .frame-a {
+        background: #fbf2e3;
+        color: #9b6220;
+      }
+      .frame-p {
+        background: #f3effe;
+        color: #5c3daa;
+      }
+      .frame-r {
+        background: #fef0f0;
+        color: #903030;
+      }
 
-  .fhole-row {
-    position: absolute;
-    left: 0; right: 0;
-    display: flex;
-    justify-content: space-around;
-    padding: 0 6px;
-  }
-  .fhole-row.top { top: 5px; }
-  .fhole-row.bot { bottom: 5px; }
-  .fhole {
-    width: 6px; height: 6px;
-    border-radius: 1.5px;
-    background: rgba(255,255,255,0.5);
-    border: 0.5px solid rgba(255,255,255,0.25);
-  }
+      .fhole-row {
+        position: absolute;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-around;
+        padding: 0 6px;
+      }
+      .fhole-row.top {
+        top: 5px;
+      }
+      .fhole-row.bot {
+        bottom: 5px;
+      }
+      .fhole {
+        width: 6px;
+        height: 6px;
+        border-radius: 1.5px;
+        background: rgba(255, 255, 255, 0.5);
+        border: 0.5px solid rgba(255, 255, 255, 0.25);
+      }
 
-  .fcard-body { padding: 10px 12px 12px; }
-  .fcard-name {
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--ink);
-    margin-bottom: 3px;
-    line-height: 1.3;
-  }
-  .fcard-desc {
-    font-size: 10.5px;
-    color: var(--ink-light);
-    line-height: 1.45;
-    margin-bottom: 10px;
-  }
-  .fcard-foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .fcard-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    color: var(--ink);
-  }
-  .fcard-note { font-size: 10px; color: var(--ink-faint); }
-  .fbtn {
-    font-size: 10.5px;
-    padding: 4px 11px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: var(--white);
-    color: var(--ink-mid);
-    cursor: pointer;
-    font-family: 'Jost', sans-serif;
-    transition: all .15s;
-  }
-  .fbtn:hover { border-color: var(--green-mid); color: var(--green); background: var(--green-light); }
-  .fbtn.on { background: var(--green-light); border-color: var(--green-mid); color: var(--green); }
+      .fcard-body {
+        padding: 10px 12px 12px;
+      }
+      .fcard-name {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--ink);
+        margin-bottom: 3px;
+        line-height: 1.3;
+      }
+      .fcard-desc {
+        font-size: 10.5px;
+        color: var(--ink-light);
+        line-height: 1.45;
+        margin-bottom: 10px;
+      }
+      .fcard-foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .fcard-price {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 16px;
+        color: var(--ink);
+      }
+      .fcard-note {
+        font-size: 10px;
+        color: var(--ink-faint);
+      }
+      .fbtn {
+        font-size: 10.5px;
+        padding: 4px 11px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--white);
+        color: var(--ink-mid);
+        cursor: pointer;
+        font-family: "Jost", sans-serif;
+        transition: all 0.15s;
+      }
+      .fbtn:hover {
+        border-color: var(--green-mid);
+        color: var(--green);
+        background: var(--green-light);
+      }
+      .fbtn.on {
+        background: var(--green-light);
+        border-color: var(--green-mid);
+        color: var(--green);
+      }
 
-  /* fade edges of film */
-  .film-fade-right {
-    position: absolute;
-    right: 0; top: 0; bottom: 0;
-    width: 32px;
-    background: linear-gradient(to right, transparent, var(--white));
-    pointer-events: none;
-  }
+      /* fade edges of film */
+      .film-fade-right {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 32px;
+        background: linear-gradient(to right, transparent, var(--white));
+        pointer-events: none;
+      }
 
-  /* subtle pulse on total when it changes */
-  @keyframes pulse-amt {
-    0% { opacity: 1; }
-    30% { opacity: 0.5; }
-    100% { opacity: 1; }
-  }
-  .total-amount.flash { animation: pulse-amt 0.3s ease; }
-</style>
-</head>
-<body>
-
-<nav>
-  <div class="logo">Rah<span>vana</span></div>
-  <div class="nav-right">
-    <div class="steps">
-      <div class="step-item done">
-        <div class="step-num"><i class="ti ti-check" style="font-size:9px"></i></div>
-        Choose plan
-      </div>
-      <div class="step-sep"></div>
-      <div class="step-item active">
-        <div class="step-num">2</div>
-        Checkout
-      </div>
-      <div class="step-sep"></div>
-      <div class="step-item">
-        <div class="step-num">3</div>
-        Confirmation
-      </div>
-    </div>
-    <a class="back-link" href="#"><i class="ti ti-arrow-left" style="font-size:12px"></i> Back</a>
-  </div>
-</nav>
-
-<div class="page">
-
-  <!-- LEFT: MAIN CHECKOUT FORM -->
-  <div class="main">
-
-    <h1>Almost there —<br><em>confirm your order.</em></h1>
-    <p class="subtitle">Review your plan and complete payment to begin your journey.</p>
-
-    <!-- PLAN -->
-    <div class="section-label">Your plan</div>
-    <div class="plan-card">
-      <div class="plan-header">
-        <span class="plan-name">Premium</span>
-        <span class="plan-tag">Selected</span>
-      </div>
-      <div class="plan-features">
-        <span class="plan-feat"><i class="ti ti-check"></i> Full case guidance</span>
-        <span class="plan-feat"><i class="ti ti-check"></i> NVC support</span>
-        <span class="plan-feat"><i class="ti ti-check"></i> Embassy prep</span>
-        <span class="plan-feat"><i class="ti ti-check"></i> Document checklist</span>
-        <span class="plan-feat"><i class="ti ti-check"></i> Unlimited questions</span>
-      </div>
-      <div class="plan-footer">
-        <div class="plan-billing">
-          Billed <strong>$58 / month</strong><br>
-          Est. 12-month journey
-        </div>
-        <div class="plan-price-block">
-          <div class="plan-price">$699</div>
-          <div class="plan-price-note">total commitment</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACCOUNT -->
-    <div class="section-label">Account details</div>
-    <div class="info-card">
-      <div class="info-row">
-        <span class="info-label">Full name</span>
-        <input class="info-input" type="text" placeholder="As on your passport">
-      </div>
-      <div class="info-row">
-        <span class="info-label">Email</span>
-        <input class="info-input" type="email" placeholder="For order confirmation">
-      </div>
-      <div class="info-row" style="border-bottom:none">
-        <span class="info-label">Journey</span>
-        <span class="info-value">Pakistan → United States &nbsp;·&nbsp; IR-1 / CR-1</span>
-      </div>
-    </div>
-
-    <!-- PAYMENT -->
-    <div class="section-label">Payment</div>
-    <div class="payment-card">
-      <div class="payment-methods">
-        <div class="pm active">
-          <i class="ti ti-credit-card"></i> Card
-        </div>
-        <div class="pm">
-          <i class="ti ti-brand-paypal"></i> PayPal
-        </div>
-        <div class="pm">
-          <i class="ti ti-building-bank"></i> Bank transfer
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Card number</label>
-        <input class="input-field" type="text" placeholder="1234  5678  9012  3456">
-      </div>
-
-      <div class="input-row">
-        <div class="input-group">
-          <label class="input-label">Expiry date</label>
-          <input class="input-field" type="text" placeholder="MM / YY">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Security code</label>
-          <input class="input-field" type="text" placeholder="CVC">
-        </div>
-      </div>
-
-      <div class="input-group" style="margin-bottom:0">
-        <label class="input-label">Name on card</label>
-        <input class="input-field" type="text" placeholder="As it appears on your card">
-      </div>
-    </div>
-
-  </div>
-
-  <!-- RIGHT: ORDER SUMMARY -->
-  <div class="summary">
-    <div class="summary-card">
-
-      <div class="summary-head">
-        <h2>Order summary</h2>
-        <div class="summary-route">
-          <i class="ti ti-plane-departure"></i>
-          Pakistan → United States · IR-1 / CR-1
-        </div>
-      </div>
-
-      <!-- LINE ITEMS -->
-      <div class="summary-items" id="summary-items">
-        <div class="s-line">
-          <span class="s-name">Premium plan</span>
-          <span>$699</span>
-        </div>
-        <!-- addon lines injected here -->
-      </div>
-
-      <!-- THE NUDGE STRIP — one suggestion, lives inside the summary naturally -->
-      <div class="nudge-strip" id="nudge-strip">
-        <div class="nudge-inner">
-          <div class="nudge-icon-wrap">
-            <i class="ti ti-microphone" id="nudge-icon"></i>
+      /* subtle pulse on total when it changes */
+      @keyframes pulse-amt {
+        0% {
+          opacity: 1;
+        }
+        30% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      .total-amount.flash {
+        animation: pulse-amt 0.3s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">Rah<span>vana</span></div>
+      <div class="nav-right">
+        <div class="steps">
+          <div class="step-item done">
+            <div class="step-num"><i class="ti ti-check" style="font-size: 9px"></i></div>
+            Choose plan
           </div>
-          <div class="nudge-text-block">
-            <div class="nudge-title" id="nudge-title">Add a mock interview session?</div>
-            <div class="nudge-desc" id="nudge-desc">Live practice before your embassy date. One full session.</div>
+          <div class="step-sep"></div>
+          <div class="step-item active">
+            <div class="step-num">2</div>
+            Checkout
           </div>
-          <div class="nudge-actions">
-            <div class="nudge-price" id="nudge-price">$39</div>
-            <button class="nudge-add-btn" id="nudge-btn" onclick="addNudge()">Add</button>
+          <div class="step-sep"></div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            Confirmation
           </div>
         </div>
-        <div class="nudge-next" id="nudge-next" onclick="nextNudge()">
-          See next suggestion →
-        </div>
+        <a class="back-link" href="#"
+          ><i class="ti ti-arrow-left" style="font-size: 12px"></i> Back</a
+        >
       </div>
+    </nav>
 
-      <!-- TOTAL -->
-      <div class="summary-total">
-        <div class="total-row">
-          <span class="total-label">Total due</span>
-          <span class="total-amount" id="total-display">$699</span>
-        </div>
-        <div class="total-note" id="total-note">
-          Billed monthly at $58/mo. Government fees are separate.
-        </div>
-      </div>
+    <div class="page">
+      <!-- LEFT: MAIN CHECKOUT FORM -->
+      <div class="main">
+        <h1>Almost there —<br /><em>confirm your order.</em></h1>
+        <p class="subtitle">Review your plan and complete payment to begin your journey.</p>
 
-      <!-- CTA -->
-      <div class="summary-cta">
-        <button class="pay-btn">
-          Pay now <i class="ti ti-arrow-right" style="font-size:14px"></i>
-        </button>
-        <div class="secure-line">
-          <i class="ti ti-lock"></i>
-          Secured by Stripe · Billed monthly
-        </div>
-      </div>
-
-    </div>
-
-    <!-- MORE ADD-ONS: collapsed by default, user has to discover it -->
-    <div class="more-section">
-      <button class="more-toggle" id="more-toggle" onclick="toggleFilm()">
-        <span>Browse all add-ons</span>
-        <i class="ti ti-chevron-down"></i>
-      </button>
-      <div class="film-panel" id="film-panel">
-        <div class="film-track" id="film-track">
-
-          <div class="fcard" id="fc-mock" onclick="toggleFilmAddon('mock','Mock interview','39','mock')">
-            <div class="fcard-frame frame-g">
-              <div class="fhole-row top"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-              <i class="ti ti-microphone"></i>
-              <div class="fhole-row bot"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
+        <!-- PLAN -->
+        <div class="section-label">Your plan</div>
+        <div class="plan-card">
+          <div class="plan-header">
+            <span class="plan-name">Premium</span>
+            <span class="plan-tag">Selected</span>
+          </div>
+          <div class="plan-features">
+            <span class="plan-feat"><i class="ti ti-check"></i> Full case guidance</span>
+            <span class="plan-feat"><i class="ti ti-check"></i> NVC support</span>
+            <span class="plan-feat"><i class="ti ti-check"></i> Embassy prep</span>
+            <span class="plan-feat"><i class="ti ti-check"></i> Document checklist</span>
+            <span class="plan-feat"><i class="ti ti-check"></i> Unlimited questions</span>
+          </div>
+          <div class="plan-footer">
+            <div class="plan-billing">
+              Billed <strong>$58 / month</strong><br />
+              Est. 12-month journey
             </div>
-            <div class="fcard-body">
-              <div class="fcard-name">Mock interview</div>
-              <div class="fcard-desc">Live consular practice before your embassy date.</div>
-              <div class="fcard-foot">
-                <div><div class="fcard-price">$39</div><div class="fcard-note">one-time</div></div>
-                <button class="fbtn" id="fb-mock" onclick="event.stopPropagation();toggleFilmAddon('mock','Mock interview','39','mock')">Add</button>
+            <div class="plan-price-block">
+              <div class="plan-price">$699</div>
+              <div class="plan-price-note">total commitment</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCOUNT -->
+        <div class="section-label">Account details</div>
+        <div class="info-card">
+          <div class="info-row">
+            <span class="info-label">Full name</span>
+            <input class="info-input" type="text" placeholder="As on your passport" />
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <input class="info-input" type="email" placeholder="For order confirmation" />
+          </div>
+          <div class="info-row" style="border-bottom: none">
+            <span class="info-label">Journey</span>
+            <span class="info-value">Pakistan → United States &nbsp;·&nbsp; IR-1 / CR-1</span>
+          </div>
+        </div>
+
+        <!-- PAYMENT -->
+        <div class="section-label">Payment</div>
+        <div class="payment-card">
+          <div class="payment-methods">
+            <div class="pm active"><i class="ti ti-credit-card"></i> Card</div>
+            <div class="pm"><i class="ti ti-brand-paypal"></i> PayPal</div>
+            <div class="pm"><i class="ti ti-building-bank"></i> Bank transfer</div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Card number</label>
+            <input class="input-field" type="text" placeholder="1234  5678  9012  3456" />
+          </div>
+
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">Expiry date</label>
+              <input class="input-field" type="text" placeholder="MM / YY" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">Security code</label>
+              <input class="input-field" type="text" placeholder="CVC" />
+            </div>
+          </div>
+
+          <div class="input-group" style="margin-bottom: 0">
+            <label class="input-label">Name on card</label>
+            <input class="input-field" type="text" placeholder="As it appears on your card" />
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: ORDER SUMMARY -->
+      <div class="summary">
+        <div class="summary-card">
+          <div class="summary-head">
+            <h2>Order summary</h2>
+            <div class="summary-route">
+              <i class="ti ti-plane-departure"></i>
+              Pakistan → United States · IR-1 / CR-1
+            </div>
+          </div>
+
+          <!-- LINE ITEMS -->
+          <div class="summary-items" id="summary-items">
+            <div class="s-line">
+              <span class="s-name">Premium plan</span>
+              <span>$699</span>
+            </div>
+            <!-- addon lines injected here -->
+          </div>
+
+          <!-- THE NUDGE STRIP — one suggestion, lives inside the summary naturally -->
+          <div class="nudge-strip" id="nudge-strip">
+            <div class="nudge-inner">
+              <div class="nudge-icon-wrap">
+                <i class="ti ti-microphone" id="nudge-icon"></i>
+              </div>
+              <div class="nudge-text-block">
+                <div class="nudge-title" id="nudge-title">Add a mock interview session?</div>
+                <div class="nudge-desc" id="nudge-desc">
+                  Live practice before your embassy date. One full session.
+                </div>
+              </div>
+              <div class="nudge-actions">
+                <div class="nudge-price" id="nudge-price">$39</div>
+                <button class="nudge-add-btn" id="nudge-btn" onclick="addNudge()">Add</button>
+              </div>
+            </div>
+            <div class="nudge-next" id="nudge-next" onclick="nextNudge()">
+              See next suggestion →
+            </div>
+          </div>
+
+          <!-- TOTAL -->
+          <div class="summary-total">
+            <div class="total-row">
+              <span class="total-label">Total due</span>
+              <span class="total-amount" id="total-display">$699</span>
+            </div>
+            <div class="total-note" id="total-note">
+              Billed monthly at $58/mo. Government fees are separate.
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div class="summary-cta">
+            <button class="pay-btn">
+              Pay now <i class="ti ti-arrow-right" style="font-size: 14px"></i>
+            </button>
+            <div class="secure-line">
+              <i class="ti ti-lock"></i>
+              Secured by Stripe · Billed monthly
+            </div>
+          </div>
+        </div>
+
+        <!-- MORE ADD-ONS: collapsed by default, user has to discover it -->
+        <div class="more-section">
+          <button class="more-toggle" id="more-toggle" onclick="toggleFilm()">
+            <span>Browse all add-ons</span>
+            <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="film-panel" id="film-panel">
+            <div class="film-track" id="film-track">
+              <div
+                class="fcard"
+                id="fc-mock"
+                onclick="toggleFilmAddon('mock', 'Mock interview', '39', 'mock')"
+              >
+                <div class="fcard-frame frame-g">
+                  <div class="fhole-row top">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                  <i class="ti ti-microphone"></i>
+                  <div class="fhole-row bot">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                </div>
+                <div class="fcard-body">
+                  <div class="fcard-name">Mock interview</div>
+                  <div class="fcard-desc">Live consular practice before your embassy date.</div>
+                  <div class="fcard-foot">
+                    <div>
+                      <div class="fcard-price">$39</div>
+                      <div class="fcard-note">one-time</div>
+                    </div>
+                    <button
+                      class="fbtn"
+                      id="fb-mock"
+                      onclick="
+                        event.stopPropagation();
+                        toggleFilmAddon('mock', 'Mock interview', '39', 'mock');
+                      "
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="fcard"
+                id="fc-strength"
+                onclick="toggleFilmAddon('strength', 'Case strength analysis', '49', 'strength')"
+              >
+                <div class="fcard-frame frame-b">
+                  <div class="fhole-row top">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                  <i class="ti ti-shield-check"></i>
+                  <div class="fhole-row bot">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                </div>
+                <div class="fcard-body">
+                  <div class="fcard-name">Case strength analyzer</div>
+                  <div class="fcard-desc">AI review of your case gaps before the interview.</div>
+                  <div class="fcard-foot">
+                    <div>
+                      <div class="fcard-price">$49</div>
+                      <div class="fcard-note">one-time</div>
+                    </div>
+                    <button
+                      class="fbtn"
+                      id="fb-strength"
+                      onclick="
+                        event.stopPropagation();
+                        toggleFilmAddon('strength', 'Case strength analysis', '49', 'strength');
+                      "
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="fcard"
+                id="fc-rapid"
+                onclick="toggleFilmAddon('rapid', 'Rapid fire Q&A', '39', 'rapid')"
+              >
+                <div class="fcard-frame frame-a">
+                  <div class="fhole-row top">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                  <i class="ti ti-bolt"></i>
+                  <div class="fhole-row bot">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                </div>
+                <div class="fcard-body">
+                  <div class="fcard-name">Rapid fire Q&A</div>
+                  <div class="fcard-desc">
+                    Timed drills to answer questions quickly and clearly.
+                  </div>
+                  <div class="fcard-foot">
+                    <div>
+                      <div class="fcard-price">$39</div>
+                      <div class="fcard-note">one-time</div>
+                    </div>
+                    <button
+                      class="fbtn"
+                      id="fb-rapid"
+                      onclick="
+                        event.stopPropagation();
+                        toggleFilmAddon('rapid', 'Rapid fire Q&A', '39', 'rapid');
+                      "
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="fcard"
+                id="fc-photo"
+                onclick="toggleFilmAddon('photo', 'Passport photo', '15', 'photo')"
+              >
+                <div class="fcard-frame frame-p">
+                  <div class="fhole-row top">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                  <i class="ti ti-camera"></i>
+                  <div class="fhole-row bot">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                </div>
+                <div class="fcard-body">
+                  <div class="fcard-name">Biometric photo</div>
+                  <div class="fcard-desc">
+                    Embassy-compliant photo from your phone in 2 minutes.
+                  </div>
+                  <div class="fcard-foot">
+                    <div>
+                      <div class="fcard-price">$15</div>
+                      <div class="fcard-note">per photo</div>
+                    </div>
+                    <button
+                      class="fbtn"
+                      id="fb-photo"
+                      onclick="
+                        event.stopPropagation();
+                        toggleFilmAddon('photo', 'Passport photo', '15', 'photo');
+                      "
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="fcard"
+                id="fc-221g"
+                onclick="toggleFilmAddon('221g', '221(g) action planner', '199', '221g')"
+              >
+                <div class="fcard-frame frame-r">
+                  <div class="fhole-row top">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                  <i class="ti ti-clipboard-list"></i>
+                  <div class="fhole-row bot">
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                    <div class="fhole"></div>
+                  </div>
+                </div>
+                <div class="fcard-body">
+                  <div class="fcard-name">221(g) action planner</div>
+                  <div class="fcard-desc">
+                    Step-by-step roadmap if you receive admin processing.
+                  </div>
+                  <div class="fcard-foot">
+                    <div>
+                      <div class="fcard-price">$199</div>
+                      <div class="fcard-note">one-time</div>
+                    </div>
+                    <button
+                      class="fbtn"
+                      id="fb-221g"
+                      onclick="
+                        event.stopPropagation();
+                        toggleFilmAddon('221g', '221(g) action planner', '199', '221g');
+                      "
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="fcard" id="fc-strength" onclick="toggleFilmAddon('strength','Case strength analysis','49','strength')">
-            <div class="fcard-frame frame-b">
-              <div class="fhole-row top"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-              <i class="ti ti-shield-check"></i>
-              <div class="fhole-row bot"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-            </div>
-            <div class="fcard-body">
-              <div class="fcard-name">Case strength analyzer</div>
-              <div class="fcard-desc">AI review of your case gaps before the interview.</div>
-              <div class="fcard-foot">
-                <div><div class="fcard-price">$49</div><div class="fcard-note">one-time</div></div>
-                <button class="fbtn" id="fb-strength" onclick="event.stopPropagation();toggleFilmAddon('strength','Case strength analysis','49','strength')">Add</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="fcard" id="fc-rapid" onclick="toggleFilmAddon('rapid','Rapid fire Q&A','39','rapid')">
-            <div class="fcard-frame frame-a">
-              <div class="fhole-row top"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-              <i class="ti ti-bolt"></i>
-              <div class="fhole-row bot"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-            </div>
-            <div class="fcard-body">
-              <div class="fcard-name">Rapid fire Q&A</div>
-              <div class="fcard-desc">Timed drills to answer questions quickly and clearly.</div>
-              <div class="fcard-foot">
-                <div><div class="fcard-price">$39</div><div class="fcard-note">one-time</div></div>
-                <button class="fbtn" id="fb-rapid" onclick="event.stopPropagation();toggleFilmAddon('rapid','Rapid fire Q&A','39','rapid')">Add</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="fcard" id="fc-photo" onclick="toggleFilmAddon('photo','Passport photo','15','photo')">
-            <div class="fcard-frame frame-p">
-              <div class="fhole-row top"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-              <i class="ti ti-camera"></i>
-              <div class="fhole-row bot"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-            </div>
-            <div class="fcard-body">
-              <div class="fcard-name">Biometric photo</div>
-              <div class="fcard-desc">Embassy-compliant photo from your phone in 2 minutes.</div>
-              <div class="fcard-foot">
-                <div><div class="fcard-price">$15</div><div class="fcard-note">per photo</div></div>
-                <button class="fbtn" id="fb-photo" onclick="event.stopPropagation();toggleFilmAddon('photo','Passport photo','15','photo')">Add</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="fcard" id="fc-221g" onclick="toggleFilmAddon('221g','221(g) action planner','199','221g')">
-            <div class="fcard-frame frame-r">
-              <div class="fhole-row top"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-              <i class="ti ti-clipboard-list"></i>
-              <div class="fhole-row bot"><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div><div class="fhole"></div></div>
-            </div>
-            <div class="fcard-body">
-              <div class="fcard-name">221(g) action planner</div>
-              <div class="fcard-desc">Step-by-step roadmap if you receive admin processing.</div>
-              <div class="fcard-foot">
-                <div><div class="fcard-price">$199</div><div class="fcard-note">one-time</div></div>
-                <button class="fbtn" id="fb-221g" onclick="event.stopPropagation();toggleFilmAddon('221g','221(g) action planner','199','221g')">Add</button>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
 
-  </div>
-</div>
+    <script>
+      const BASE = 699;
+      const cart = {};
 
-<script>
-  const BASE = 699;
-  const cart = {};
+      // ── NUDGE QUEUE ──────────────────────────────────────────────
+      // One suggestion at a time. Contextually ordered. No wall.
+      const nudgeQueue = [
+        {
+          id: "mock",
+          icon: "ti-microphone",
+          title: "Add a mock interview session?",
+          desc: "Live practice before your embassy date. One full session.",
+          price: 39,
+          label: "Mock interview",
+        },
+        {
+          id: "strength",
+          icon: "ti-shield-check",
+          title: "Review your case for gaps?",
+          desc: "AI analysis flags issues before your embassy interview.",
+          price: 49,
+          label: "Case strength analysis",
+        },
+        {
+          id: "rapid",
+          icon: "ti-bolt",
+          title: "Practice with rapid fire Q&A?",
+          desc: "Timed drills. Unlimited sessions. Build real confidence.",
+          price: 39,
+          label: "Rapid fire Q&A",
+        },
+        {
+          id: "photo",
+          icon: "ti-camera",
+          title: "Need a biometric passport photo?",
+          desc: "Compliant photo from your phone in under 2 minutes.",
+          price: 15,
+          label: "Passport photo",
+        },
+        {
+          id: "221g",
+          icon: "ti-clipboard-list",
+          title: "Protect against 221(g) processing?",
+          desc: "Roadmap and next steps if you receive an admin notice.",
+          price: 199,
+          label: "221(g) action planner",
+        },
+      ];
 
-  // ── NUDGE QUEUE ──────────────────────────────────────────────
-  // One suggestion at a time. Contextually ordered. No wall.
-  const nudgeQueue = [
-    { id:'mock',     icon:'ti-microphone',    title:'Add a mock interview session?',       desc:'Live practice before your embassy date. One full session.', price:39, label:'Mock interview' },
-    { id:'strength', icon:'ti-shield-check',  title:'Review your case for gaps?',          desc:'AI analysis flags issues before your embassy interview.',    price:49, label:'Case strength analysis' },
-    { id:'rapid',    icon:'ti-bolt',          title:'Practice with rapid fire Q&A?',       desc:'Timed drills. Unlimited sessions. Build real confidence.',    price:39, label:'Rapid fire Q&A' },
-    { id:'photo',    icon:'ti-camera',        title:'Need a biometric passport photo?',    desc:'Compliant photo from your phone in under 2 minutes.',        price:15, label:'Passport photo' },
-    { id:'221g',     icon:'ti-clipboard-list',title:'Protect against 221(g) processing?', desc:'Roadmap and next steps if you receive an admin notice.',      price:199, label:'221(g) action planner' },
-  ];
+      let nudgeIndex = 0;
 
-  let nudgeIndex = 0;
+      function currentNudge() {
+        // skip already-added items
+        while (nudgeIndex < nudgeQueue.length && cart[nudgeQueue[nudgeIndex].id]) {
+          nudgeIndex++;
+        }
+        return nudgeQueue[nudgeIndex] || null;
+      }
 
-  function currentNudge() {
-    // skip already-added items
-    while (nudgeIndex < nudgeQueue.length && cart[nudgeQueue[nudgeIndex].id]) {
-      nudgeIndex++;
-    }
-    return nudgeQueue[nudgeIndex] || null;
-  }
+      function renderNudge() {
+        const n = currentNudge();
+        const strip = document.getElementById("nudge-strip");
+        if (!n) {
+          strip.style.display = "none";
+          return;
+        }
+        strip.style.display = "block";
+        document.getElementById("nudge-icon").className = "ti " + n.icon;
+        document.getElementById("nudge-title").textContent = n.title;
+        document.getElementById("nudge-desc").textContent = n.desc;
+        document.getElementById("nudge-price").textContent = "$" + n.price;
+        const btn = document.getElementById("nudge-btn");
+        btn.textContent = "Add";
+        btn.classList.remove("added");
 
-  function renderNudge() {
-    const n = currentNudge();
-    const strip = document.getElementById('nudge-strip');
-    if (!n) {
-      strip.style.display = 'none';
-      return;
-    }
-    strip.style.display = 'block';
-    document.getElementById('nudge-icon').className = 'ti ' + n.icon;
-    document.getElementById('nudge-title').textContent = n.title;
-    document.getElementById('nudge-desc').textContent = n.desc;
-    document.getElementById('nudge-price').textContent = '$' + n.price;
-    const btn = document.getElementById('nudge-btn');
-    btn.textContent = 'Add';
-    btn.classList.remove('added');
+        // show or hide the "next" link
+        const hasMore = nudgeQueue.slice(nudgeIndex + 1).some((x) => !cart[x.id]);
+        document.getElementById("nudge-next").style.display = hasMore ? "block" : "none";
+      }
 
-    // show or hide the "next" link
-    const hasMore = nudgeQueue.slice(nudgeIndex + 1).some(x => !cart[x.id]);
-    document.getElementById('nudge-next').style.display = hasMore ? 'block' : 'none';
-  }
+      function addNudge() {
+        const n = currentNudge();
+        if (!n) return;
+        if (cart[n.id]) return;
+        cart[n.id] = { name: n.label, price: n.price };
+        // sync film card
+        const fc = document.getElementById("fc-" + n.id);
+        const fb = document.getElementById("fb-" + n.id);
+        if (fc) fc.classList.add("on");
+        if (fb) {
+          fb.textContent = "Added";
+          fb.classList.add("on");
+        }
+        nudgeIndex++;
+        renderSummaryItems();
+        renderTotal();
+        renderNudge();
+      }
 
-  function addNudge() {
-    const n = currentNudge();
-    if (!n) return;
-    if (cart[n.id]) return;
-    cart[n.id] = { name: n.label, price: n.price };
-    // sync film card
-    const fc = document.getElementById('fc-' + n.id);
-    const fb = document.getElementById('fb-' + n.id);
-    if (fc) fc.classList.add('on');
-    if (fb) { fb.textContent = 'Added'; fb.classList.add('on'); }
-    nudgeIndex++;
-    renderSummaryItems();
-    renderTotal();
-    renderNudge();
-  }
+      function nextNudge() {
+        nudgeIndex++;
+        renderNudge();
+      }
 
-  function nextNudge() {
-    nudgeIndex++;
-    renderNudge();
-  }
-
-  // ── SUMMARY ITEMS ────────────────────────────────────────────
-  function renderSummaryItems() {
-    const el = document.getElementById('summary-items');
-    let html = `<div class="s-line"><span class="s-name">Premium plan</span><span>$699</span></div>`;
-    Object.keys(cart).forEach(k => {
-      html += `<div class="s-line addon">
+      // ── SUMMARY ITEMS ────────────────────────────────────────────
+      function renderSummaryItems() {
+        const el = document.getElementById("summary-items");
+        let html = `<div class="s-line"><span class="s-name">Premium plan</span><span>$699</span></div>`;
+        Object.keys(cart).forEach((k) => {
+          html += `<div class="s-line addon">
         <span class="s-name">${cart[k].name} <span class="addon-remove" onclick="removeAddon('${k}')">✕</span></span>
         <span class="s-price">+$${cart[k].price}</span>
       </div>`;
-    });
-    el.innerHTML = html;
-  }
+        });
+        el.innerHTML = html;
+      }
 
-  function removeAddon(id) {
-    delete cart[id];
-    const fc = document.getElementById('fc-' + id);
-    const fb = document.getElementById('fb-' + id);
-    if (fc) fc.classList.remove('on');
-    if (fb) { fb.textContent = 'Add'; fb.classList.remove('on'); }
-    renderSummaryItems();
-    renderTotal();
-    // rewind nudge queue to show removed item again
-    nudgeIndex = 0;
-    renderNudge();
-  }
+      function removeAddon(id) {
+        delete cart[id];
+        const fc = document.getElementById("fc-" + id);
+        const fb = document.getElementById("fb-" + id);
+        if (fc) fc.classList.remove("on");
+        if (fb) {
+          fb.textContent = "Add";
+          fb.classList.remove("on");
+        }
+        renderSummaryItems();
+        renderTotal();
+        // rewind nudge queue to show removed item again
+        nudgeIndex = 0;
+        renderNudge();
+      }
 
-  // ── TOTAL ─────────────────────────────────────────────────────
-  function renderTotal() {
-    const extra = Object.values(cart).reduce((s, x) => s + x.price, 0);
-    const t = document.getElementById('total-display');
-    t.textContent = '$' + (BASE + extra);
-    t.classList.remove('flash');
-    void t.offsetWidth;
-    t.classList.add('flash');
-    const note = document.getElementById('total-note');
-    note.textContent = extra > 0
-      ? `Plan $699 + $${extra} in add-ons · $58/mo · Government fees separate.`
-      : 'Billed monthly at $58/mo. Government fees are separate.';
-  }
+      // ── TOTAL ─────────────────────────────────────────────────────
+      function renderTotal() {
+        const extra = Object.values(cart).reduce((s, x) => s + x.price, 0);
+        const t = document.getElementById("total-display");
+        t.textContent = "$" + (BASE + extra);
+        t.classList.remove("flash");
+        void t.offsetWidth;
+        t.classList.add("flash");
+        const note = document.getElementById("total-note");
+        note.textContent =
+          extra > 0
+            ? `Plan $699 + $${extra} in add-ons · $58/mo · Government fees separate.`
+            : "Billed monthly at $58/mo. Government fees are separate.";
+      }
 
-  // ── FILM STRIP (browse all) ───────────────────────────────────
-  function toggleFilmAddon(id, name, priceStr, _key) {
-    const price = parseInt(priceStr);
-    if (cart[id]) {
-      removeAddon(id);
-    } else {
-      cart[id] = { name, price };
-      const fc = document.getElementById('fc-' + id);
-      const fb = document.getElementById('fb-' + id);
-      if (fc) fc.classList.add('on');
-      if (fb) { fb.textContent = 'Added'; fb.classList.add('on'); }
-      renderSummaryItems();
-      renderTotal();
-      nudgeIndex = 0;
+      // ── FILM STRIP (browse all) ───────────────────────────────────
+      function toggleFilmAddon(id, name, priceStr, _key) {
+        const price = parseInt(priceStr);
+        if (cart[id]) {
+          removeAddon(id);
+        } else {
+          cart[id] = { name, price };
+          const fc = document.getElementById("fc-" + id);
+          const fb = document.getElementById("fb-" + id);
+          if (fc) fc.classList.add("on");
+          if (fb) {
+            fb.textContent = "Added";
+            fb.classList.add("on");
+          }
+          renderSummaryItems();
+          renderTotal();
+          nudgeIndex = 0;
+          renderNudge();
+        }
+      }
+
+      function toggleFilm() {
+        const panel = document.getElementById("film-panel");
+        const toggle = document.getElementById("more-toggle");
+        panel.classList.toggle("open");
+        toggle.classList.toggle("open");
+      }
+
+      // drag-scroll film
+      const fp = document.getElementById("film-panel");
+      let isDown = false,
+        sx,
+        sl;
+      fp.addEventListener("mousedown", (e) => {
+        isDown = true;
+        sx = e.pageX - fp.offsetLeft;
+        sl = fp.scrollLeft;
+      });
+      document.addEventListener("mouseup", () => {
+        isDown = false;
+      });
+      fp.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        fp.scrollLeft = sl - (e.pageX - fp.offsetLeft - sx) * 1.1;
+      });
+
+      // init
       renderNudge();
-    }
-  }
-
-  function toggleFilm() {
-    const panel = document.getElementById('film-panel');
-    const toggle = document.getElementById('more-toggle');
-    panel.classList.toggle('open');
-    toggle.classList.toggle('open');
-  }
-
-  // drag-scroll film
-  const fp = document.getElementById('film-panel');
-  let isDown = false, sx, sl;
-  fp.addEventListener('mousedown', e => { isDown = true; sx = e.pageX - fp.offsetLeft; sl = fp.scrollLeft; });
-  document.addEventListener('mouseup', () => { isDown = false; });
-  fp.addEventListener('mousemove', e => { if (!isDown) return; e.preventDefault(); fp.scrollLeft = sl - (e.pageX - fp.offsetLeft - sx) * 1.1; });
-
-  // init
-  renderNudge();
-</script>
-</body>
+    </script>
+  </body>
 </html>

@@ -2,17 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  BookOpen, 
-  Clock, 
-  CheckCircle2, 
-  PlayCircle, 
+import {
+  BookOpen,
+  Clock,
+  CheckCircle2,
+  PlayCircle,
   ArrowRight,
   LayoutGrid,
   Search,
   ChevronRight,
   Trash2,
-  Trash
+  Trash,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -34,7 +34,7 @@ export default function MyGuidesPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Modal states
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showConfirmClearAll, setShowConfirmClearAll] = useState(false);
@@ -67,7 +67,7 @@ export default function MyGuidesPage() {
         body: JSON.stringify({ sessionId: selectedSessionId }),
       });
       if (res.ok) {
-        setSessions(prev => prev.filter(s => s.id !== selectedSessionId));
+        setSessions((prev) => prev.filter((s) => s.id !== selectedSessionId));
         setShowConfirmDelete(false);
         setSelectedSessionId(null);
       }
@@ -97,7 +97,7 @@ export default function MyGuidesPage() {
     }
   };
 
-  const filteredSessions = sessions.filter(s => 
+  const filteredSessions = sessions.filter((s) =>
     s.guides.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -121,7 +121,8 @@ export default function MyGuidesPage() {
               My <span className="text-teal-600">Guides</span>
             </h1>
             <p className="text-slate-500 mt-2 text-lg max-w-xl">
-              Resume your progress, manage your saved documents, and complete your immigration journeys.
+              Resume your progress, manage your saved documents, and complete your immigration
+              journeys.
             </p>
           </div>
 
@@ -137,8 +138,8 @@ export default function MyGuidesPage() {
             )}
             <div className="relative w-full md:w-72 group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-teal-500 transition-colors" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search your guides..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -150,8 +151,11 @@ export default function MyGuidesPage() {
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm animate-pulse h-64" />
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm animate-pulse h-64"
+              />
             ))}
           </div>
         ) : filteredSessions.length > 0 ? (
@@ -165,8 +169,8 @@ export default function MyGuidesPage() {
                 className="group bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all flex flex-col relative overflow-hidden"
               >
                 {/* Progress bar accent */}
-                <div 
-                  className="absolute top-0 left-0 h-1.5 bg-teal-500 transition-all duration-1000" 
+                <div
+                  className="absolute top-0 left-0 h-1.5 bg-teal-500 transition-all duration-1000"
                   style={{ width: `${session.progress_percent}%` }}
                 />
 
@@ -176,9 +180,11 @@ export default function MyGuidesPage() {
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full 
-                        ${session.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                        {session.status.replace('_', ' ')}
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full 
+                        ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                      >
+                        {session.status.replace("_", " ")}
                       </span>
                       <button
                         onClick={(e) => {
@@ -208,32 +214,42 @@ export default function MyGuidesPage() {
 
                 <div className="mt-auto">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Progress</span>
-                    <span className="text-xs font-black text-teal-600">{session.progress_percent}%</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+                      Progress
+                    </span>
+                    <span className="text-xs font-black text-teal-600">
+                      {session.progress_percent}%
+                    </span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-6">
-                    <div 
-                      className="h-full bg-teal-500 rounded-full transition-all duration-1000" 
+                    <div
+                      className="h-full bg-teal-500 rounded-full transition-all duration-1000"
                       style={{ width: `${session.progress_percent}%` }}
                     />
                   </div>
 
-                  <Link 
+                  <Link
                     href={`/guides/${session.guides.slug}`}
                     className="flex items-center justify-center gap-2 w-full py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-teal-600 transition-all shadow-lg shadow-slate-200 hover:shadow-teal-100 group/btn"
                   >
-                    {session.status === 'completed' ? (
+                    {session.status === "completed" ? (
                       <>
                         <CheckCircle2 size={18} />
                         View Results
                       </>
                     ) : (
                       <>
-                        <PlayCircle size={18} className="group-hover/btn:scale-110 transition-transform" />
+                        <PlayCircle
+                          size={18}
+                          className="group-hover/btn:scale-110 transition-transform"
+                        />
                         Resume Guide
                       </>
                     )}
-                    <ChevronRight size={16} className="ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                    <ChevronRight
+                      size={16}
+                      className="ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
+                    />
                   </Link>
                 </div>
               </motion.div>
@@ -246,9 +262,10 @@ export default function MyGuidesPage() {
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">No guides started yet</h2>
             <p className="text-slate-500 max-w-sm mx-auto mb-10">
-              Explore our collection of step-by-step immigration guides and start your first session today.
+              Explore our collection of step-by-step immigration guides and start your first session
+              today.
             </p>
-            <Link 
+            <Link
               href="/guides"
               className="inline-flex items-center gap-2 px-8 py-4 bg-teal-600 text-white rounded-2xl font-bold hover:bg-teal-700 transition-all shadow-xl shadow-teal-100"
             >

@@ -70,9 +70,7 @@ export function PDFConverter() {
       const originalSize = new Blob([text]).size;
       const convertedSize = blob.size;
       const reduction =
-        originalSize > 0
-          ? (((originalSize - convertedSize) / originalSize) * 100).toFixed(2)
-          : "0";
+        originalSize > 0 ? (((originalSize - convertedSize) / originalSize) * 100).toFixed(2) : "0";
 
       setResult({
         originalSize,
@@ -82,8 +80,7 @@ export function PDFConverter() {
 
       setText(""); // Clear textarea after success
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "An error occurred";
+      const message = error instanceof Error ? error.message : "An error occurred";
       setError(message);
       console.error("[PDF Converter Error]", error);
     } finally {
@@ -189,39 +186,28 @@ export function PDFConverter() {
               <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
                 <div className="flex items-center text-green-700 mb-4">
                   <FileCheck className="h-6 w-6 mr-3" />
-                  <span className="font-bold text-lg">
-                    Conversion Successful!
-                  </span>
+                  <span className="font-bold text-lg">Conversion Successful!</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <p className="text-gray-500 text-xs font-medium mb-1">
-                      Original Size
-                    </p>
+                    <p className="text-gray-500 text-xs font-medium mb-1">Original Size</p>
                     <p className="text-gray-800 font-bold text-xl">
                       {formatBytes(result.originalSize)}
                     </p>
                   </div>
                   <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <p className="text-gray-500 text-xs font-medium mb-1">
-                      Converted Size
-                    </p>
+                    <p className="text-gray-500 text-xs font-medium mb-1">Converted Size</p>
                     <p className="text-gray-800 font-bold text-xl">
                       {formatBytes(result.convertedSize)}
                     </p>
                   </div>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-sm">
-                  <p className="text-gray-500 text-xs font-medium mb-1">
-                    Space Saved
-                  </p>
+                  <p className="text-gray-500 text-xs font-medium mb-1">Space Saved</p>
                   <div className="flex items-baseline">
-                    <p className="text-green-600 font-bold text-3xl">
-                      {result.reduction}%
-                    </p>
+                    <p className="text-green-600 font-bold text-3xl">{result.reduction}%</p>
                     <p className="text-gray-500 text-sm ml-2">
-                      ({formatBytes(result.originalSize - result.convertedSize)}{" "}
-                      saved)
+                      ({formatBytes(result.originalSize - result.convertedSize)} saved)
                     </p>
                   </div>
                 </div>

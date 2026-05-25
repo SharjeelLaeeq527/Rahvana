@@ -12,7 +12,7 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
+  }
 );
 
 // Strong password validation
@@ -39,41 +39,26 @@ export async function POST(request: NextRequest) {
     const password = String(body.password || "");
 
     if (!email || !password)
-      return NextResponse.json(
-        { error: "Invalid signup request" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid signup request" }, { status: 400 });
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email))
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
 
     // Disposable email check
-    const blockedDomains = [
-      "mailinator.com",
-      "tempmail.com",
-      "10minutemail.com",
-      "yopmail.com",
-    ];
+    const blockedDomains = ["mailinator.com", "tempmail.com", "10minutemail.com", "yopmail.com"];
     const domain = email.split("@")[1];
     if (blockedDomains.includes(domain))
-      return NextResponse.json(
-        { error: "Disposable emails are not allowed" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Disposable emails are not allowed" }, { status: 400 });
 
     // Strong password
     if (!validatePassword(password))
       return NextResponse.json(
         {
-          error:
-            "Password must contain uppercase, lowercase, number, symbol and be 8+ characters",
+          error: "Password must contain uppercase, lowercase, number, symbol and be 8+ characters",
         },
-        { status: 400 },
+        { status: 400 }
       );
 
     // List users to check existing
@@ -83,21 +68,16 @@ export async function POST(request: NextRequest) {
     });
 
     const existingUser = users?.users?.find((u) =>
-      safeCompare(u.email?.toLowerCase() || "", email),
+      safeCompare(u.email?.toLowerCase() || "", email)
     );
 
     // Build confirmation token & link (for both new and existing unconfirmed users)
     const confirmToken = crypto.randomBytes(32).toString("hex");
-    const confirmTokenHash = crypto
-      .createHash("sha256")
-      .update(confirmToken)
-      .digest("hex");
+    const confirmTokenHash = crypto.createHash("sha256").update(confirmToken).digest("hex");
     const confirmTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      request.headers.get("origin") ||
-      "http://localhost:3000";
+      process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "http://localhost:3000";
     const confirmLink = `${baseUrl}/api/auth/confirm-email?token=${confirmToken}&email=${encodeURIComponent(email)}`;
 
     const emailHtml = getEmailConfirmationHtml(confirmLink);
@@ -127,23 +107,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new user
-    const { data: newUser, error: createError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: false,
-        user_metadata: {
-          confirm_token_hash: confirmTokenHash,
-          confirm_token_expiry: confirmTokenExpiry.toISOString(),
-        },
-      });
+    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: false,
+      user_metadata: {
+        confirm_token_hash: confirmTokenHash,
+        confirm_token_expiry: confirmTokenExpiry.toISOString(),
+      },
+    });
 
     if (createError) {
       console.error("Create user error:", createError);
-      return NextResponse.json(
-        { error: "Unable to create account" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Unable to create account" }, { status: 500 });
     }
 
     // Wait for DB trigger
@@ -167,7 +143,7 @@ export async function POST(request: NextRequest) {
               role: "user",
             },
           ],
-          { onConflict: "id" },
+          { onConflict: "id" }
         );
       }
     }
@@ -186,9 +162,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Signup error:", error);
-    return NextResponse.json(
-      { error: "Unexpected server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Unexpected server error" }, { status: 500 });
   }
 }

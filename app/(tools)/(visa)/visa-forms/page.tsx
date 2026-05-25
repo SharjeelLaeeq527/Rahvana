@@ -42,8 +42,7 @@ const VISA_FORMS: VisaForm[] = [
     category: ["Family-based"],
     keywords: ["petition", "spouse", "parent", "child", "sibling", "family"],
     type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-130.pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-130.pdf",
     description:
       "Primary petition to establish family relationship for green card eligibility. Required for most family-based immigration.",
   },
@@ -57,8 +56,7 @@ const VISA_FORMS: VisaForm[] = [
     category: ["Family-based"],
     keywords: ["spouse", "biographical", "supplement"],
     type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-130a.pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-130a.pdf",
     description:
       "Required supplement when petitioning for a spouse. Includes biographical information about the beneficiary spouse.",
   },
@@ -138,8 +136,7 @@ const VISA_FORMS: VisaForm[] = [
     category: ["Financial"],
     keywords: ["affidavit", "support", "sponsor", "income", "financial"],
     type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf",
     description:
       "Legally binding contract where sponsor agrees to financially support immigrant. Must meet 125% of poverty guidelines.",
   },
@@ -153,8 +150,7 @@ const VISA_FORMS: VisaForm[] = [
     category: ["Financial"],
     keywords: ["joint sponsor", "household member", "income", "supplement"],
     type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-864a.pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-864a.pdf",
     description:
       "Used when household member combines income with primary sponsor to meet income requirements.",
   },
@@ -168,8 +164,7 @@ const VISA_FORMS: VisaForm[] = [
     category: ["Financial"],
     keywords: ["affidavit", "support", "simplified", "sponsor", "income"],
     type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-864ez.pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-864ez.pdf",
     description:
       "Simplified affidavit of support. Can be used when sponsor meets income requirements solely with current employment.",
   },
@@ -552,8 +547,7 @@ const VISA_FORMS: VisaForm[] = [
     category: ["Financial"],
     keywords: ["fee waiver", "poverty", "financial hardship", "waive fee"],
     type: "pdf",
-    officialLink:
-      "https://www.uscis.gov/sites/default/files/document/forms/i-912.pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-912.pdf",
     description:
       "Request to waive filing fees based on financial hardship. Must demonstrate income at or below 150% of Federal Poverty Guidelines.",
   },
@@ -652,12 +646,7 @@ export default function VisaFormSelector() {
   const filteredForms = VISA_FORMS.filter((form) => {
     // 1. Filter by Journey & Stage (Only in Journey View)
     if (currentView === "journey") {
-      if (
-        currentJourney &&
-        form.journeys &&
-        !form.journeys.includes(currentJourney)
-      )
-        return false;
+      if (currentJourney && form.journeys && !form.journeys.includes(currentJourney)) return false;
 
       if (currentStage && form.stage !== currentStage) return false;
     }
@@ -670,8 +659,7 @@ export default function VisaFormSelector() {
         form.name.toLowerCase().includes(query) ||
         form.description.toLowerCase().includes(query) ||
         (form.agency && form.agency.toLowerCase().includes(query)) ||
-        (form.keywords &&
-          form.keywords.some((k) => k.toLowerCase().includes(query)));
+        (form.keywords && form.keywords.some((k) => k.toLowerCase().includes(query)));
 
       if (!matchesSearch) return false;
     }
@@ -684,8 +672,7 @@ export default function VisaFormSelector() {
     // 4. Filter by Category
     const matchCategory =
       activeFilters.category.length === 0 ||
-      (form.category &&
-        form.category.some((cat) => activeFilters.category.includes(cat)));
+      (form.category && form.category.some((cat) => activeFilters.category.includes(cat)));
 
     return matchAgency && matchCategory;
   }).sort((a, b) => {
@@ -707,8 +694,8 @@ export default function VisaFormSelector() {
             Immigration Forms Library
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-2 max-w-3xl mx-auto">
-            Browse all forms organized by your journey stage, or search
-            instantly to find exactly what you need.
+            Browse all forms organized by your journey stage, or search instantly to find exactly
+            what you need.
           </p>
           {/* <p className="text-gray-500 max-w-2xl mx-auto">
             Fill out official U.S. visa forms with helpful guidance at every
@@ -798,9 +785,7 @@ export default function VisaFormSelector() {
                     >
                       {/* Header */}
                       <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
-                        <h3 className="font-semibold text-gray-900">
-                          Filter Forms
-                        </h3>
+                        <h3 className="font-semibold text-gray-900">Filter Forms</h3>
                         <button
                           onClick={() => setIsFilterPopoverOpen(false)}
                           className="text-gray-600 hover:text-gray-900 transition-colors"
@@ -877,9 +862,7 @@ export default function VisaFormSelector() {
                             {["Family-based", "Financial"].map((category) => (
                               <button
                                 key={category}
-                                onClick={() =>
-                                  toggleFilter("category", category)
-                                }
+                                onClick={() => toggleFilter("category", category)}
                                 className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
                                   activeFilters.category.includes(category)
                                     ? "bg-[#0d7377] text-white border-[#0d7377]"
@@ -922,9 +905,7 @@ export default function VisaFormSelector() {
                             {filteredForms.length}
                           </span>{" "}
                           of{" "}
-                          <span className="font-semibold text-gray-900">
-                            {VISA_FORMS.length}
-                          </span>
+                          <span className="font-semibold text-gray-900">{VISA_FORMS.length}</span>
                         </div>
                       </div>
                     </div>
@@ -998,9 +979,7 @@ export default function VisaFormSelector() {
                         const count = VISA_FORMS.filter(
                           (f) =>
                             f.stage === stage.id &&
-                            (!currentJourney ||
-                              (f.journeys &&
-                                f.journeys.includes(currentJourney))),
+                            (!currentJourney || (f.journeys && f.journeys.includes(currentJourney)))
                         ).length;
 
                         const isActive = currentStage === stage.id;
@@ -1010,9 +989,7 @@ export default function VisaFormSelector() {
                             key={index}
                             suppressHydrationWarning
                             onClick={() =>
-                              setCurrentStage(
-                                currentStage === stage.id ? "" : stage.id,
-                              )
+                              setCurrentStage(currentStage === stage.id ? "" : stage.id)
                             }
                             className="flex flex-col items-center group relative flex-1"
                           >
@@ -1034,9 +1011,7 @@ export default function VisaFormSelector() {
                               >
                                 {stage.label}
                               </div>
-                              <div className="text-xs text-gray-400 mb-2">
-                                {stage.desc}
-                              </div>
+                              <div className="text-xs text-gray-400 mb-2">{stage.desc}</div>
                               <div className="bg-teal-50 text-teal-700 text-xs font-semibold px-3 py-1 rounded-md">
                                 {count} forms
                               </div>
@@ -1108,9 +1083,7 @@ export default function VisaFormSelector() {
                             <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
                             {form.stage}
                           </span>
-                          {form.category && form.category[0] && (
-                            <span>{form.category[0]}</span>
-                          )}
+                          {form.category && form.category[0] && <span>{form.category[0]}</span>}
                         </div>
 
                         {/* Hover Overlay Actions */}
@@ -1141,12 +1114,8 @@ export default function VisaFormSelector() {
                   <div className="flex justify-center mb-4">
                     <FileText className="w-12 h-12 text-gray-300" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    No forms found
-                  </h3>
-                  <p className="text-gray-500">
-                    Try adjusting your filters to see more results
-                  </p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">No forms found</h3>
+                  <p className="text-gray-500">Try adjusting your filters to see more results</p>
                   <button
                     onClick={clearFilters}
                     className="mt-4 text-[#007f8a] hover:underline font-medium"
@@ -1289,9 +1258,7 @@ export default function VisaFormSelector() {
               <div className="relative w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="sticky top-0 bg-white/95 backdrop-blur-md px-5 sm:px-8 py-4 sm:py-6 border-b border-gray-200 flex justify-between items-center z-10 shrink-0">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                    Form Details
-                  </h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Form Details</h2>
                   <button
                     onClick={() => setSelectedForm(null)}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
@@ -1396,13 +1363,10 @@ export default function VisaFormSelector() {
                       <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-4">
                         <ExternalLink className="w-6 h-6 text-blue-600 shrink-0 mt-1" />
                         <div>
-                          <h4 className="text-lg font-bold text-blue-900 mb-2">
-                            Online Form
-                          </h4>
+                          <h4 className="text-lg font-bold text-blue-900 mb-2">Online Form</h4>
                           <p className="text-blue-800">
-                            This form must be completed online and cannot be
-                            downloaded as a PDF. Visit the official government
-                            website to access and submit this form.
+                            This form must be completed online and cannot be downloaded as a PDF.
+                            Visit the official government website to access and submit this form.
                           </p>
                         </div>
                       </div>
@@ -1429,18 +1393,15 @@ export default function VisaFormSelector() {
                         <span className="truncate">Add to AutoFill Queue</span>
                       </button>
 
-                      {selectedForm.officialLink &&
-                        selectedForm.type !== "online" && (
-                          <button
-                            onClick={() =>
-                              window.open(selectedForm.officialLink, "_blank")
-                            }
-                            className="flex-1 w-full py-3 sm:py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-sm lg:text-base shadow-sm transition-all flex items-center justify-center gap-2"
-                          >
-                            <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                            <span className="truncate">Download PDF</span>
-                          </button>
-                        )}
+                      {selectedForm.officialLink && selectedForm.type !== "online" && (
+                        <button
+                          onClick={() => window.open(selectedForm.officialLink, "_blank")}
+                          className="flex-1 w-full py-3 sm:py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-sm lg:text-base shadow-sm transition-all flex items-center justify-center gap-2"
+                        >
+                          <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                          <span className="truncate">Download PDF</span>
+                        </button>
+                      )}
 
                       <button
                         onClick={() => {

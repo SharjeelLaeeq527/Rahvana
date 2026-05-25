@@ -22,11 +22,7 @@ import {
 interface FeedbackButtonProps {
   steps?: string[];
   currentStepName?: string;
-  onSubmit?: (
-    feedbackType: string,
-    description: string,
-    attachment?: File,
-  ) => Promise<unknown>;
+  onSubmit?: (feedbackType: string, description: string, attachment?: File) => Promise<unknown>;
 }
 
 export default function FeedbackButton({
@@ -68,9 +64,7 @@ export default function FeedbackButton({
       Math.round(viewportHeight * 0.45),
     ];
     const candidates = Array.from(
-      new Set(
-        baseCandidates.map((candidate) => Math.min(candidate, maxBottom)),
-      ),
+      new Set(baseCandidates.map((candidate) => Math.min(candidate, maxBottom)))
     ).filter((candidate) => candidate >= edgeOffset);
 
     const right = viewportWidth - edgeOffset;
@@ -111,16 +105,12 @@ export default function FeedbackButton({
 
           const tagName = element.tagName.toLowerCase();
           const isInteractive =
-            ["a", "button", "input", "select", "textarea", "summary"].includes(
-              tagName,
-            ) ||
+            ["a", "button", "input", "select", "textarea", "summary"].includes(tagName) ||
             element.getAttribute("role") === "button" ||
             element.getAttribute("role") === "link" ||
             element.hasAttribute("tabindex");
           const isFloating =
-            style.position === "fixed" ||
-            style.position === "sticky" ||
-            Number(style.zIndex) >= 10;
+            style.position === "fixed" || style.position === "sticky" || Number(style.zIndex) >= 10;
 
           return isInteractive || isFloating;
         });
@@ -135,7 +125,7 @@ export default function FeedbackButton({
         if (score < best.score) return { offset: candidate, score };
         return best;
       },
-      { offset: candidates[0] ?? edgeOffset, score: Number.POSITIVE_INFINITY },
+      { offset: candidates[0] ?? edgeOffset, score: Number.POSITIVE_INFINITY }
     );
 
     setBottomOffset(bestCandidate.offset);
@@ -215,19 +205,14 @@ export default function FeedbackButton({
 
       // If onSubmit callback is provided, use it
       if (onSubmit) {
-        await onSubmit(
-          feedback.category,
-          feedback.description,
-          feedback.attachments[0],
-        );
+        await onSubmit(feedback.category, feedback.description, feedback.attachments[0]);
       } else {
         // Default global submission
         const formData = new FormData();
         const isGuide = pathname.includes("/guides/");
         const slug = isGuide ? pathname.split("/").pop() : "general";
         // Capture the full page URL so the sheet shows exactly where the user was
-        const fullPageUrl =
-          typeof window !== "undefined" ? window.location.href : pathname;
+        const fullPageUrl = typeof window !== "undefined" ? window.location.href : pathname;
 
         formData.append("slug", slug || "general");
         formData.append("stepKey", feedback.step || pathname);
@@ -251,10 +236,7 @@ export default function FeedbackButton({
         }
       }
 
-      showToast(
-        "Feedback submitted successfully! Thank you for helping us improve.",
-        "success",
-      );
+      showToast("Feedback submitted successfully! Thank you for helping us improve.", "success");
       setIsOpen(false);
       setFeedback({
         category: "",
@@ -266,8 +248,7 @@ export default function FeedbackButton({
     } catch (error) {
       console.error("Error submitting feedback:", error);
       setIsSubmitting(false);
-      const message =
-        error instanceof Error ? error.message : "Failed to submit feedback.";
+      const message = error instanceof Error ? error.message : "Failed to submit feedback.";
       showToast(message, "error");
     }
   };
@@ -377,8 +358,7 @@ export default function FeedbackButton({
           backgroundColor: inHero
             ? "var(--feedback-button-hero, #71a1a1)"
             : "var(--feedback-button-bg, #0d7377)",
-          boxShadow:
-            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
+          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
           transform: "translate3d(0,0,0)",
         }}
       >
@@ -410,13 +390,11 @@ export default function FeedbackButton({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-lg w-[95vw] sm:w-full overflow-hidden bg-white p-0 rounded-2xl border-none shadow-2xl flex flex-col max-h-[85vh]">
           <DialogDescription className="sr-only">
-            Provide feedback about incorrect information, UI/UX issues, bugs,
-            suggestions, or other feedback.
+            Provide feedback about incorrect information, UI/UX issues, bugs, suggestions, or other
+            feedback.
           </DialogDescription>
           <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-            <DialogTitle className="text-xl font-bold text-slate-900">
-              Send Feedback
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-slate-900">Send Feedback</DialogTitle>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
@@ -426,10 +404,7 @@ export default function FeedbackButton({
             </button>
           </DialogHeader>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex-1 min-h-0 flex flex-col"
-          >
+          <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-premium px-6 py-4 space-y-5">
               {/* Feedback Type */}
               <div className="mt-1">
@@ -438,22 +413,16 @@ export default function FeedbackButton({
                 </label>
                 <Select
                   value={feedback.category}
-                  onValueChange={(val) =>
-                    setFeedback((prev) => ({ ...prev, category: val }))
-                  }
+                  onValueChange={(val) => setFeedback((prev) => ({ ...prev, category: val }))}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="incorrect_information">
-                      Incorrect information
-                    </SelectItem>
+                    <SelectItem value="incorrect_information">Incorrect information</SelectItem>
                     <SelectItem value="ui_ux_issue">UI/UX issue</SelectItem>
                     <SelectItem value="bug">Bug / Something broken</SelectItem>
-                    <SelectItem value="suggestion">
-                      Suggestion / Improvement
-                    </SelectItem>
+                    <SelectItem value="suggestion">Suggestion / Improvement</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
@@ -467,9 +436,7 @@ export default function FeedbackButton({
                   </label>
                   <Select
                     value={feedback.step}
-                    onValueChange={(val) =>
-                      setFeedback((prev) => ({ ...prev, step: val }))
-                    }
+                    onValueChange={(val) => setFeedback((prev) => ({ ...prev, step: val }))}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a step" />
@@ -487,9 +454,7 @@ export default function FeedbackButton({
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
                 <textarea
                   value={feedback.description}
                   onChange={(e) =>
@@ -522,15 +487,11 @@ export default function FeedbackButton({
                   }`}
                 >
                   <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2 animate-pulse" />
-                  <p className="text-sm text-slate-500 mt-1">
-                    Screenshots help a lot.
-                  </p>
+                  <p className="text-sm text-slate-500 mt-1">Screenshots help a lot.</p>
                   <p className="text-sm font-medium text-slate-700">
                     Drag & drop files here or browse
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Max file size: 10MB.
-                  </p>
+                  <p className="text-xs text-slate-500 mt-1">Max file size: 10MB.</p>
                 </div>
                 <input
                   ref={fileInputRef}
@@ -548,10 +509,7 @@ export default function FeedbackButton({
                         key={`${file.name}-${idx}`}
                         className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-150"
                       >
-                        <span
-                          className="truncate mr-2 flex-1"
-                          title={file.name}
-                        >
+                        <span className="truncate mr-2 flex-1" title={file.name}>
                           {file.name}
                         </span>
                         <span className="text-xs text-slate-400 mr-3 shrink-0">

@@ -25,11 +25,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
         <div className="p-7 sm:p-8">
           <div className="flex items-start gap-4 mb-5">
             <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-              <MessageSquare
-                className="text-white/75"
-                size={21}
-                strokeWidth={1.6}
-              />
+              <MessageSquare className="text-white/75" size={21} strokeWidth={1.6} />
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
@@ -50,9 +46,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
                 className="bg-white/5 border border-white/10 rounded-[10px] p-2.5 flex items-start gap-2"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0]/60 mt-[5.5px] shrink-0" />
-                <span className="text-[13px] text-white/55 leading-tight">
-                  {cue}
-                </span>
+                <span className="text-[13px] text-white/55 leading-tight">{cue}</span>
               </div>
             ))}
           </div>
@@ -64,7 +58,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
               window.open(
                 "https://www.rahvana.com/interview-prep",
                 "_blank",
-                "noopener,noreferrer",
+                "noopener,noreferrer"
               );
             }}
             className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
@@ -76,12 +70,10 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
       </div>
       {isPrepLaunched && (
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[16px_18px] mb-5 animate-in fade-in slide-in-from-top-1">
-          <div className="text-[13px] font-bold text-[#15744f] mb-1">
-            ✓ Prep tool opened
-          </div>
+          <div className="text-[13px] font-bold text-[#15744f] mb-1">✓ Prep tool opened</div>
           <div className="text-[12px] text-[#3a4f63] leading-relaxed">
-            Return here after your prep session. Review the readiness checklist
-            below regularly before interview day.
+            Return here after your prep session. Review the readiness checklist below regularly
+            before interview day.
           </div>
         </div>
       )}
@@ -101,9 +93,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
                 {card.items.map((item: string, i: number) => (
                   <div key={i} className="flex items-start gap-2.5">
                     <div className="w-[5px] h-[5px] rounded-full bg-purple-600 mt-[6.5px] shrink-0 opacity-70" />
-                    <span className="text-[13px] text-[#3a4f63] leading-snug">
-                      {item}
-                    </span>
+                    <span className="text-[13px] text-[#3a4f63] leading-snug">{item}</span>
                   </div>
                 ))}
               </div>

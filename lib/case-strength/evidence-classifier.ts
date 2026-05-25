@@ -8,17 +8,9 @@
  * emphasis on financial co-mingling — it is NOT an official USCIS rubric.
  */
 
-import type {
-  EvidenceClassificationResult,
-  EvidenceTier,
-  EvidenceTierMap,
-} from "./types";
+import type { EvidenceClassificationResult, EvidenceTier, EvidenceTierMap } from "./types";
 
-const ALL_TIERS: EvidenceTier[] = [
-  "tier_1_strong",
-  "tier_2_moderate",
-  "tier_3_supporting",
-];
+const ALL_TIERS: EvidenceTier[] = ["tier_1_strong", "tier_2_moderate", "tier_3_supporting"];
 
 /**
  * Recommended minimum Tier 1 items for a bona-fide marriage filing.
@@ -53,9 +45,7 @@ export function classifyEvidence(
     ...byTier.tier_2_moderate,
     ...byTier.tier_3_supporting,
   ]);
-  const unclassified = uploadedDocumentKeys.filter(
-    (k) => !classified.has(k)
-  );
+  const unclassified = uploadedDocumentKeys.filter((k) => !classified.has(k));
 
   return {
     tier_1_count: byTier.tier_1_strong.length,
@@ -63,8 +53,7 @@ export function classifyEvidence(
     tier_3_count: byTier.tier_3_supporting.length,
     by_tier: byTier,
     unclassified,
-    meets_recommended_tier_1_floor:
-      byTier.tier_1_strong.length >= RECOMMENDED_TIER_1_FLOOR,
+    meets_recommended_tier_1_floor: byTier.tier_1_strong.length >= RECOMMENDED_TIER_1_FLOOR,
   };
 }
 

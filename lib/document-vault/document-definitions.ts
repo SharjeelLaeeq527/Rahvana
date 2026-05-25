@@ -15,9 +15,7 @@ const FAMILY_VISAS: VisaCategory[] = [
   // "F4",
 ];
 const USA_STUDENT_VISAS: VisaCategory[] = ["F-1 Student Visa"];
-const AUSTRALIA_STUDENT_VISAS: VisaCategory[] = [
-  "Australia Student Visa (Subclass 500)",
-];
+const AUSTRALIA_STUDENT_VISAS: VisaCategory[] = ["Australia Student Visa (Subclass 500)"];
 const CHINA_STUDENT_VISAS: VisaCategory[] = ["China Student Visa (X1 & X2)"];
 
 const ALL_STUDENT_VISAS: VisaCategory[] = [
@@ -68,8 +66,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 2,
         title: "Get English Translation",
-        description:
-          "If certificate is in Urdu, get it translated by a certified translator.",
+        description: "If certificate is in Urdu, get it translated by a certified translator.",
         tips: [
           "Translator must certify that translation is accurate",
           "Include translator credentials and stamp",
@@ -99,8 +96,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Locate Original Nikah Nama",
-        description:
-          "Find your original Nikah Nama document issued at the time of marriage.",
+        description: "Find your original Nikah Nama document issued at the time of marriage.",
         tips: [
           "Must be signed by Nikah Registrar",
           "Should have serial number and registration details",
@@ -151,8 +147,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 2,
         title: "Scan Biographical Page",
-        description:
-          "Scan or take a clear photo of the biographical page of your passport.",
+        description: "Scan or take a clear photo of the biographical page of your passport.",
         tips: [
           "Ensure all text is readable",
           "No shadows or reflections",
@@ -165,8 +160,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     id: "nadra-mrc",
     key: "NADRA_MRC",
     name: "Marriage Certificate / Marriage Registration Record",
-    description:
-      "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
+    description: "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
     roles: ["BENEFICIARY"],
@@ -196,8 +190,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Scan Both Sides of CNIC",
-        description:
-          "Make clear scans or photos of both front and back of your CNIC.",
+        description: "Make clear scans or photos of both front and back of your CNIC.",
         tips: [
           "Ensure CNIC is not expired",
           "If expired, renew at NADRA office",
@@ -210,8 +203,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     id: "divorce-decree-beneficiary",
     key: "DIVORCE_DECREE",
     name: "Prior Marriage Termination Documents",
-    description:
-      "Official divorce decree or death certificate with translation",
+    description: "Official divorce decree or death certificate with translation",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
 
@@ -227,8 +219,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Obtain Divorce Certificate",
-        description:
-          "Get certified copy of divorce decree from Family Court or Union Council.",
+        description: "Get certified copy of divorce decree from Family Court or Union Council.",
         resources: [
           {
             name: "Union Council Divorce Certificate Guide",
@@ -260,8 +251,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     id: "death-cert-prior-spouse",
     key: "DEATH_CERT_SPOUSE",
     name: "Death Certificate of Former Spouse",
-    description:
-      "Required if a prior marriage ended because of the death of a spouse.",
+    description: "Required if a prior marriage ended because of the death of a spouse.",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
     roles: ["BENEFICIARY", "PETITIONER"],
@@ -274,18 +264,18 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     },
   },
   {
-  id: "receipt-notice-uscis",
-  key: "RECEIPT_NOTICE",
-  name: "USCIS Receipt Notice (I-797C)",
-  description: "Receipt notice issued by USCIS confirming a petition was received",
-  category: "MISC",
-  applicableVisas: FAMILY_VISAS,
-  roles: ["PETITIONER", "BENEFICIARY"],
-  stages: ["USCIS", "NVC"],
-  required: true,
-  multipleFilesAllowed: false,
-  validityType: "none",
-},
+    id: "receipt-notice-uscis",
+    key: "RECEIPT_NOTICE",
+    name: "USCIS Receipt Notice (I-797C)",
+    description: "Receipt notice issued by USCIS confirming a petition was received",
+    category: "MISC",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["USCIS", "NVC"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
 ];
 
 // ============================================================================
@@ -311,8 +301,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Download Form I-864",
-        description:
-          "Download the latest version of Form I-864 from USCIS website.",
+        description: "Download the latest version of Form I-864 from USCIS website.",
         resources: [
           {
             name: "USCIS Form I-864",
@@ -391,8 +380,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Request Letter from Employer",
-        description:
-          "Contact your HR department to request an employment verification letter.",
+        description: "Contact your HR department to request an employment verification letter.",
         tips: [
           "Letter must be on company letterhead",
           "Include: job title, salary, start date, employment type (full-time/part-time)",
@@ -657,8 +645,7 @@ const POLICE_DOCS: DocumentDefinition[] = [
     id: "police-certificate-pakistan",
     key: "POLICE_CERT_PK",
     name: "Police Certificate",
-    description:
-      "Pakistan Police Character Certificate (PCC) for the beneficiary",
+    description: "Pakistan Police Character Certificate (PCC) for the beneficiary",
     category: "POLICE",
     applicableVisas: UNIVERSAL_VISAS,
 
@@ -759,8 +746,7 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Schedule Medical Exam",
-        description:
-          "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
+        description: "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
         resources: [
           {
             name: "Panel Physicians in Pakistan",
@@ -806,8 +792,7 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
     id: "polio-vaccine-cert",
     key: "POLIO_CERT",
     name: "Polio Vaccination Certificate",
-    description:
-      "Official International Certificate of Vaccination (issued within last 12 months)",
+    description: "Official International Certificate of Vaccination (issued within last 12 months)",
     category: "MEDICAL",
     applicableVisas: FAMILY_VISAS,
 
@@ -891,8 +876,7 @@ const PHOTO_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Get Compliant Photos",
-        description:
-          "Get 2x2 inch photos that meet U.S. visa photo requirements.",
+        description: "Get 2x2 inch photos that meet U.S. visa photo requirements.",
         resources: [
           {
             name: "U.S. Visa Photo Requirements",
@@ -936,8 +920,7 @@ const TRANSLATION_DOCS: DocumentDefinition[] = [
     id: "translator-certification",
     key: "TRANSLATOR_CERT",
     name: "Translator Certification",
-    description:
-      "Certification statement from translator for all translated documents",
+    description: "Certification statement from translator for all translated documents",
     category: "TRANSLATIONS",
     applicableVisas: FAMILY_VISAS,
 
@@ -1078,7 +1061,8 @@ const MISC_DOCS: DocumentDefinition[] = [
     id: "citizenship-proof-petitioner",
     key: "CITIZENSHIP_PROOF",
     name: "Proof of U.S. Citizenship",
-    description: "Proof of U.S. citizenship (Birth Certificate, Naturalization Certificate, or Citizenship Certificate)",
+    description:
+      "Proof of U.S. citizenship (Birth Certificate, Naturalization Certificate, or Citizenship Certificate)",
     category: "CITIZENSHIP_PROOF",
     applicableVisas: FAMILY_VISAS,
     roles: ["PETITIONER"],
@@ -1712,11 +1696,7 @@ const TRAVEL_DOCS: DocumentDefinition[] = [
         stepNumber: 1,
         title: "Collect Old Passports",
         description: "Gather all previous passports showing travel history.",
-        tips: [
-          "Scan biographical pages",
-          "Scan all visa stamps",
-          "Scan entry/exit stamps",
-        ],
+        tips: ["Scan biographical pages", "Scan all visa stamps", "Scan entry/exit stamps"],
       },
     ],
   },
@@ -1798,8 +1778,7 @@ const IDENTITY_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Obtain Domicile Certificate",
-        description:
-          "Get your domicile certificate from the district administration.",
+        description: "Get your domicile certificate from the district administration.",
         resources: [
           {
             name: "Punjab Domicile Guide",
@@ -2138,8 +2117,7 @@ const LEGAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Get Affidavits from Witnesses",
-        description:
-          "Request affidavits from friends/family who can attest to your marriage.",
+        description: "Request affidavits from friends/family who can attest to your marriage.",
         tips: [
           "Notarized by oath commissioner",
           "Include witness contact details",
@@ -2252,8 +2230,7 @@ const HEALTH_INSURANCE_DOCS: DocumentDefinition[] = [
     id: "oshc-australia",
     key: "OSHC_AUSTRALIA",
     name: "Overseas Student Health Cover (OSHC)",
-    description:
-      "Proof of health insurance for the entire duration of stay in Australia",
+    description: "Proof of health insurance for the entire duration of stay in Australia",
     category: "HEALTH_INSURANCE",
     applicableVisas: AUSTRALIA_STUDENT_VISAS,
     roles: ["BENEFICIARY"],
@@ -2465,8 +2442,7 @@ const OTHER_DOCS: DocumentDefinition[] = [
     id: "proof-home-country-ties",
     key: "PROOF_HOME_COUNTRY_TIES",
     name: "Proof of Home Country Ties",
-    description:
-      "Evidence of intent to return to home country (property, family, job offers)",
+    description: "Evidence of intent to return to home country (property, family, job offers)",
     category: "OTHER",
     applicableVisas: USA_STUDENT_VISAS,
 
@@ -2546,8 +2522,7 @@ const OTHER_DOCS: DocumentDefinition[] = [
     id: "i-130a-supplemental",
     key: "I130A_FORM",
     name: "Form I-130A: Supplemental Information for Spouse Beneficiary",
-    description:
-      "Personal information about the spouse beneficiary of a marriage-based petition.",
+    description: "Personal information about the spouse beneficiary of a marriage-based petition.",
     category: "OTHER",
     applicableVisas: ["IR-1", "CR-1"],
     roles: ["BENEFICIARY"],
@@ -2588,8 +2563,7 @@ const OTHER_DOCS: DocumentDefinition[] = [
     id: "i-864a-contract",
     key: "I864A_FORM",
     name: "Form I-864A: Contract Between Sponsor and Household Member",
-    description:
-      "Contract to combine income and/or assets to meet sponsorship requirements.",
+    description: "Contract to combine income and/or assets to meet sponsorship requirements.",
     category: "OTHER",
     applicableVisas: FAMILY_VISAS,
     roles: ["HOUSEHOLD_MEMBER"],
@@ -2665,7 +2639,7 @@ export const DOCUMENTS_BY_KEY = ALL_DOCUMENTS.reduce(
     acc[doc.key] = doc;
     return acc;
   },
-  {} as Record<string, DocumentDefinition>,
+  {} as Record<string, DocumentDefinition>
 );
 
 // Index by category
@@ -2677,5 +2651,5 @@ export const DOCUMENTS_BY_CATEGORY = ALL_DOCUMENTS.reduce(
     acc[doc.category].push(doc);
     return acc;
   },
-  {} as Record<DocumentCategory, DocumentDefinition[]>,
+  {} as Record<DocumentCategory, DocumentDefinition[]>
 );

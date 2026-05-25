@@ -7,9 +7,7 @@ export interface JourneyLockStatus {
   lockDate: Date | null;
 }
 
-export function getJourneyLockStatus(
-  metadata: Record<string, any>,
-): JourneyLockStatus {
+export function getJourneyLockStatus(metadata: Record<string, any>): JourneyLockStatus {
   const ceacIssuedAt = metadata?.ceacIssuedAt as string | undefined;
 
   const neutral: JourneyLockStatus = {
@@ -22,9 +20,7 @@ export function getJourneyLockStatus(
   if (!ceacIssuedAt) return neutral;
 
   const setDate = new Date(ceacIssuedAt);
-  const lockDate = new Date(
-    setDate.getTime() + JOURNEY_LOCK_DAYS * 24 * 60 * 60 * 1000,
-  );
+  const lockDate = new Date(setDate.getTime() + JOURNEY_LOCK_DAYS * 24 * 60 * 60 * 1000);
   const now = new Date();
   const msRemaining = lockDate.getTime() - now.getTime();
   const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));

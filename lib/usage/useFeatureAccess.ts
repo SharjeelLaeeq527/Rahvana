@@ -35,83 +35,93 @@ type FeatureUsageResponse = {
 export function useFeatureAccess() {
   const [loading, setLoading] = useState(false);
 
-  const checkAccess = useCallback(async (feature: string): Promise<{
-    allowed: boolean;
-    data?: FeatureUsageResponse;
-  }> => {
-    try {
-      setLoading(true);
+  const checkAccess = useCallback(
+    async (
+      feature: string
+    ): Promise<{
+      allowed: boolean;
+      data?: FeatureUsageResponse;
+    }> => {
+      try {
+        setLoading(true);
 
-      const res = await fetch(`/api/feature-usage?feature=${encodeURIComponent(feature)}`, {
-        method: "GET",
-      });
+        const res = await fetch(`/api/feature-usage?feature=${encodeURIComponent(feature)}`, {
+          method: "GET",
+        });
 
-      const data = (await res.json()) as FeatureUsageResponse;
+        const data = (await res.json()) as FeatureUsageResponse;
 
-      if (!res.ok || !data.success) {
+        if (!res.ok || !data.success) {
+          return {
+            allowed: false,
+            data,
+          };
+        }
+
         return {
-          allowed: false,
+          allowed: true,
           data,
         };
-      }
-
-      return {
-        allowed: true,
-        data,
-      };
-    } catch (error) {
-      return {
-        allowed: false,
-        data: {
-          success: false,
-          message: error instanceof Error ? error.message : "Unable to check feature access",
-        },
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const consumeAccess = useCallback(async (feature: string): Promise<{
-    allowed: boolean;
-    data?: FeatureUsageResponse;
-  }> => {
-    try {
-      setLoading(true);
-
-      const res = await fetch("/api/feature-usage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ feature }),
-      });
-
-      const data = (await res.json()) as FeatureUsageResponse;
-
-      if (!res.ok || !data.success) {
+      } catch (error) {
         return {
           allowed: false,
+          data: {
+            success: false,
+            message: error instanceof Error ? error.message : "Unable to check feature access",
+          },
+        };
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const consumeAccess = useCallback(
+    async (
+      feature: string
+    ): Promise<{
+      allowed: boolean;
+      data?: FeatureUsageResponse;
+    }> => {
+      try {
+        setLoading(true);
+
+        const res = await fetch("/api/feature-usage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ feature }),
+        });
+
+        const data = (await res.json()) as FeatureUsageResponse;
+
+        if (!res.ok || !data.success) {
+          return {
+            allowed: false,
+            data,
+          };
+        }
+
+        return {
+          allowed: true,
           data,
         };
+      } catch (error) {
+        return {
+          allowed: false,
+          data: {
+            success: false,
+            message: error instanceof Error ? error.message : "Unable to reserve feature access",
+          },
+        };
+      } finally {
+        setLoading(false);
       }
-
-      return {
-        allowed: true,
-        data,
-      };
-    } catch (error) {
-      return {
-        allowed: false,
-        data: {
-          success: false,
-          message: error instanceof Error ? error.message : "Unable to reserve feature access",
-        },
-      };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   return { checkAccess, consumeAccess, loading };
 }

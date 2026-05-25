@@ -87,13 +87,10 @@ export default function TranslationUploadModal({
       formData.append("file", file);
       if (notes) formData.append("adminNotes", notes);
 
-      const response = await fetch(
-        `/api/document-translation/${requestId}/upload-translation`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      const response = await fetch(`/api/document-translation/${requestId}/upload-translation`, {
+        method: "POST",
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -123,9 +120,7 @@ export default function TranslationUploadModal({
       onDrop={(e) => e.preventDefault()}
     >
       <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Upload Translated Document
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Translated Document</h3>
 
         {/* Upload Area */}
         <div className="mb-4">
@@ -139,9 +134,7 @@ export default function TranslationUploadModal({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all ${
-              isDragging
-                ? "border-primary bg-primary/10"
-                : "border-gray-300 hover:border-gray-400"
+              isDragging ? "border-primary bg-primary/10" : "border-gray-300 hover:border-gray-400"
             }`}
           >
             <input
@@ -153,15 +146,10 @@ export default function TranslationUploadModal({
             />
 
             {file ? (
-              <div className="text-sm font-medium text-gray-900 break-all">
-                {file.name}
-              </div>
+              <div className="text-sm font-medium text-gray-900 break-all">{file.name}</div>
             ) : (
               <div className="text-gray-600">
-                <span className="text-primary font-medium">
-                  Click to upload
-                </span>{" "}
-                or drag and drop
+                <span className="text-primary font-medium">Click to upload</span> or drag and drop
               </div>
             )}
           </div>

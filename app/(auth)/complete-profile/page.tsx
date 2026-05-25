@@ -39,8 +39,7 @@ export default function CompleteProfilePage() {
                 Complete Your Profile
               </h1>
               <p className="text-sm sm:text-base text-slate-600 mt-1 sm:mt-2">
-                Provide detailed information to enable auto-fill across all
-                tools
+                Provide detailed information to enable auto-fill across all tools
               </p>
             </div>
             <div className="text-left sm:text-right">
