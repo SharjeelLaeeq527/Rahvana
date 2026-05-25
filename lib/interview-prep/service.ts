@@ -61,11 +61,6 @@ class DynamicQuestionSelectionEngine {
         // Use highest priority from applied rules
         const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
         const maxPriority = Math.max(
-<<<<<<< HEAD
-          ...appliedRules.map((r) => priorityOrder[r.actions.priorityBoost[0] || "low"])
-        );
-        priority = maxPriority === 3 ? "high" : maxPriority === 2 ? "medium" : "low";
-=======
           ...appliedRules.map(
             (r) => {
               const boostedPriority = r.actions.priorityBoost?.[0] || "low";
@@ -74,7 +69,6 @@ class DynamicQuestionSelectionEngine {
           ),
         );
         priority = maxPriority >= 3 ? "high" : maxPriority === 2 ? "medium" : "low";
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
         reason = appliedRules.map((r) => r.actions.reason).join("; ");
       }
 
@@ -230,11 +224,6 @@ class AnswerGenerationEngine {
 
 //  Create a new interview session
 export async function createInterviewSession(
-<<<<<<< HEAD
-  sessionData: Omit<InterviewSessionInput, "user_id">
-): Promise<InterviewSession> {
-  return await createInterviewSessionDB(sessionData);
-=======
   sessionData: Omit<InterviewSessionInput, "user_id">,
 ): Promise<{
   session: InterviewSession;
@@ -260,7 +249,6 @@ export async function createInterviewSession(
     session,
     alreadyExists: false,
   };
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
 }
 
 //  Get an interview session with answers and results

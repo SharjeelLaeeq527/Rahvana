@@ -30,11 +30,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
     }
 
-<<<<<<< HEAD
-    const expectedSignature = crypto.createHmac("sha256", webhookSecret).update(body).digest("hex");
-
-    if (signature !== expectedSignature) {
-=======
     // Build expected signature (hex digest of HMAC-SHA256 over raw body)
     const expectedSignature = crypto.createHmac("sha256", webhookSecret).update(body).digest("hex");
 
@@ -53,7 +48,6 @@ export async function POST(request: NextRequest) {
     const expectedBuf = Buffer.from(expectedSignature, "utf8");
 
     if (incomingBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(incomingBuf, expectedBuf)) {
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
       console.warn("[EasyPost Webhook] Invalid signature - potential security threat");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
@@ -150,9 +144,6 @@ export async function POST(request: NextRequest) {
         );
       }
 
-<<<<<<< HEAD
-      console.log(`[EasyPost Webhook] Updated case ${journeyId} - Status: ${tracker.status}`);
-=======
       // Save last processed event id for idempotency
       updates.push(
         db.upsertCaseDataDB(journeyId, "easypost_last_event_id", {
@@ -166,7 +157,6 @@ export async function POST(request: NextRequest) {
       await Promise.all(updates);
 
       console.log(`[EasyPost Webhook] Updated case ${journeyId} - Status: ${newStatus}`);
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
       // Supabase Realtime will automatically broadcast this DB change to all subscribers
     }
 

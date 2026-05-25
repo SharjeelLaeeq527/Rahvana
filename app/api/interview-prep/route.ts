@@ -46,9 +46,6 @@ export async function POST(request: NextRequest) {
       user_name: user_name,
     });
 
-<<<<<<< HEAD
-    return NextResponse.json({ success: true, session }, { status: 201 });
-=======
     return NextResponse.json(
       {
         success: true,
@@ -59,7 +56,6 @@ export async function POST(request: NextRequest) {
         status: result.alreadyExists ? 200 : 201,
       },
     );
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
   } catch (error) {
     console.error("Error creating interview session:", error);
     return NextResponse.json({ error: "Failed to create interview session" }, { status: 500 });
