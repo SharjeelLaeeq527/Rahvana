@@ -30,17 +30,14 @@ export async function GET() {
           id,
           question
         )
-      `,
+      `
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching credentials:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch portal credentials" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch portal credentials" }, { status: 500 });
     }
 
     const response =
@@ -67,10 +64,7 @@ export async function GET() {
     return NextResponse.json({ credentials: response });
   } catch (error) {
     console.error("Unexpected error in GET portal-wallet:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -89,20 +83,10 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const {
-      portalType,
-      username,
-      password,
-      securityQuestions,
-      nvcCaseNumber,
-      nvcInvoiceId,
-    } = body;
+    const { portalType, username, password, securityQuestions, nvcCaseNumber, nvcInvoiceId } = body;
 
     if (!portalType) {
-      return NextResponse.json(
-        { error: "Portal type required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Portal type required" }, { status: 400 });
     }
 
     const { data: existingCred } = await supabase
@@ -116,16 +100,13 @@ export async function POST(req: Request) {
       if (!nvcCaseNumber || !nvcInvoiceId) {
         return NextResponse.json(
           { error: "NVC Case Number and Invoice ID required" },
-          { status: 400 },
+          { status: 400 }
         );
       }
     } else {
       // For USCIS/COURIER, username is required. Password is required for ADD, optional for EDIT.
       if (!username || (!password && !existingCred)) {
-        return NextResponse.json(
-          { error: "Username and password required" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "Username and password required" }, { status: 400 });
       }
     }
 
@@ -146,17 +127,14 @@ export async function POST(req: Request) {
           nvc_case_number: encryptedCaseNumber,
           nvc_invoice_id: encryptedInvoiceId,
         },
-        { onConflict: "user_id,portal_type" },
+        { onConflict: "user_id,portal_type" }
       )
       .select()
       .single();
 
     if (error) {
       console.error("Error saving credentials:", error);
-      return NextResponse.json(
-        { error: "Failed to save credentials" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to save credentials" }, { status: 500 });
     }
 
     if (portalType !== "NVC" && securityQuestions?.length) {
@@ -186,9 +164,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("Unexpected error in POST portal-wallet:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

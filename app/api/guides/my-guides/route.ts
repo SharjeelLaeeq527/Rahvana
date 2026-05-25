@@ -26,7 +26,7 @@ export async function GET() {
         saved,
         last_updated_at,
         guides(slug, title, description)
-      `,
+      `
       )
       .eq("user_id", user.id)
       .eq("saved", true) // fetch only saved guides
@@ -34,18 +34,12 @@ export async function GET() {
 
     if (sessionsError) {
       console.error("Error fetching user guides:", sessionsError);
-      return NextResponse.json(
-        { error: "Failed to fetch user guides" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch user guides" }, { status: 500 });
     }
 
     return NextResponse.json({ sessions: sessions || [] });
   } catch (error) {
     console.error("Unexpected error in /api/guides/my-guides:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

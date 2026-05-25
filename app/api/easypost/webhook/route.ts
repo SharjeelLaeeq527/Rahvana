@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
  * POST /api/easypost/webhook
  * Receives webhook events from EasyPost
  * Signature verification included
- * 
+ *
  * Note: We update the database and Supabase Realtime automatically
  * broadcasts the change to connected clients on Vercel
  */
@@ -160,10 +160,7 @@ export async function POST(request: NextRequest) {
       // Supabase Realtime will automatically broadcast this DB change to all subscribers
     }
 
-    return NextResponse.json(
-      { success: true, message: "Webhook processed" },
-      { status: 200 },
-    );
+    return NextResponse.json({ success: true, message: "Webhook processed" }, { status: 200 });
   } catch (error) {
     console.error("[EasyPost Webhook] Error processing webhook:", error);
     return NextResponse.json(
@@ -171,7 +168,7 @@ export async function POST(request: NextRequest) {
         error: "Failed to process webhook",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

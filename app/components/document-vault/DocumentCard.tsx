@@ -1,23 +1,14 @@
 import { useState } from "react";
-import {
-  DocumentDefinition,
-  UploadedDocument,
-} from "@/lib/document-vault/types";
+import { DocumentDefinition, UploadedDocument } from "@/lib/document-vault/types";
 
-import {
-  DocumentDefinition,
-  UploadedDocument,
-} from "@/lib/document-vault/types";
+import { DocumentDefinition, UploadedDocument } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import {
   formatExpirationDate,
   getExpirationStatusColor,
   getDaysUntilExpiration,
 } from "@/lib/document-vault/expiration-tracker";
-import {
-  formatFileSize,
-  getShortDisplayName,
-} from "@/lib/document-vault/file-utils";
+import { formatFileSize, getShortDisplayName } from "@/lib/document-vault/file-utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -88,20 +79,14 @@ export function DocumentCard({
     switch (uploadedDoc.status) {
       case "UPLOADED":
         return (
-          <Badge
-            variant="default"
-            className="flex items-center gap-1 bg-green-500"
-          >
+          <Badge variant="default" className="flex items-center gap-1 bg-green-500">
             <CheckCircle className="w-3 h-3" />
             {t("documentVaultPage.components.documentCard.status.uploaded")}
           </Badge>
         );
       case "NEEDS_ATTENTION":
         return (
-          <Badge
-            variant="secondary"
-            className="flex items-center gap-1 bg-yellow-500"
-          >
+          <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-500">
             <Clock className="w-3 h-3" />
             {t("documentVaultPage.components.documentCard.status.expiringSoon")}
           </Badge>
@@ -244,9 +229,8 @@ export function DocumentCard({
               </div>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed font-medium">
-              {t(
-                `documentVaultPage.documents.${documentDef.id}.description`,
-              ) !== `documentVaultPage.documents.${documentDef.id}.description`
+              {t(`documentVaultPage.documents.${documentDef.id}.description`) !==
+              `documentVaultPage.documents.${documentDef.id}.description`
                 ? t(`documentVaultPage.documents.${documentDef.id}.description`)
                 : documentDef.description}
             </p>
@@ -290,17 +274,12 @@ export function DocumentCard({
                 className="text-xs font-extrabold text-slate-900 dark:text-white truncate"
                 title={uploadedDoc.standardizedFilename}
               >
-                {getShortDisplayName(
-                  uploadedDoc.standardizedFilename,
-                  documentDef.name,
-                )}
+                {getShortDisplayName(uploadedDoc.standardizedFilename, documentDef.name)}
               </p>
               <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
                 <span>{formatFileSize(uploadedDoc.fileSize, t)}</span>
                 <span className="h-1 w-1 rounded-full bg-slate-300"></span>
-                <span>
-                  {new Date(uploadedDoc.uploadedAt).toLocaleDateString()}
-                </span>
+                <span>{new Date(uploadedDoc.uploadedAt).toLocaleDateString()}</span>
               </div>
             </div>
 
@@ -366,18 +345,13 @@ export function DocumentCard({
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 w-9 p-0 border-2"
-                    >
+                    <Button variant="outline" size="sm" className="h-9 w-9 p-0 border-2">
                       <MoreVertical className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={() => onUpload()}>
-                      <Plus className="w-4 h-4 mr-2 text-primary" />{" "}
-                      Add New Version
+                      <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onUpload(uploadedDoc.id)}>
                       <Upload className="w-4 h-4 mr-2" />{" "}
@@ -386,16 +360,12 @@ export function DocumentCard({
                     {onExport && (
                       <DropdownMenuItem onClick={onExport}>
                         <Package className="w-4 h-4 mr-2" />{" "}
-                        {t(
-                          "documentVaultPage.components.documentCard.exportZip",
-                        )}
+                        {t("documentVaultPage.components.documentCard.exportZip")}
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem onClick={onOpenWizard}>
                       <Info className="w-4 h-4 mr-2" />{" "}
-                      {t(
-                        "documentVaultPage.components.documentCard.instructions",
-                      )}
+                      {t("documentVaultPage.components.documentCard.instructions")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

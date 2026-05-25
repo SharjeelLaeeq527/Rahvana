@@ -29,11 +29,11 @@ const SENSITIVE_TOP_LEVEL = [
 
 // Sensitive nested fields: { parentKey: [subKey, ...] }
 const SENSITIVE_NESTED: Record<string, string[]> = {
-  currentAddress:     ["street", "city", "state", "zipCode"],
-  mailingAddress:     ["street", "city", "state", "zipCode"],
-  father:             ["dateOfBirth"],
-  mother:             ["dateOfBirth"],
-  sponsor:            ["phone", "email"],
+  currentAddress: ["street", "city", "state", "zipCode"],
+  mailingAddress: ["street", "city", "state", "zipCode"],
+  father: ["dateOfBirth"],
+  mother: ["dateOfBirth"],
+  sponsor: ["phone", "email"],
   naturalizationInfo: ["certificateNumber", "placeOfIssuance", "dateOfIssuance"],
 };
 
@@ -68,7 +68,10 @@ export async function POST(request: Request) {
   try {
     // ── 1. Authenticate user ──────────────────────────────────────────────────
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -86,16 +89,14 @@ export async function POST(request: Request) {
     const encryptedDetails = encryptProfileDetails(profileDetails);
 
     // ── 4. Upsert into user_profiles ──────────────────────────────────────────
-    const { error: upsertError } = await supabase
-      .from("user_profiles")
-      .upsert(
-        {
-          id: user.id,
-          profile_details: encryptedDetails,  // encrypted blob
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" }
-      );
+    const { error: upsertError } = await supabase.from("user_profiles").upsert(
+      {
+        id: user.id,
+        profile_details: encryptedDetails, // encrypted blob
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
 
     if (upsertError) {
       console.error("[profile/complete] Upsert error:", upsertError);

@@ -12,12 +12,7 @@ interface Input221gToolProps {
   guard?: () => boolean;
 }
 
-export const Input221gTool: React.FC<Input221gToolProps> = ({
-  tool,
-  state,
-  actions,
-  guard,
-}) => {
+export const Input221gTool: React.FC<Input221gToolProps> = ({ tool, state, actions, guard }) => {
   const [selectedItems, setSelectedItems] = useState<FormSelections>(
     state.metadata?.twentyTwoOneGSelections || {}
   );
@@ -39,18 +34,17 @@ export const Input221gTool: React.FC<Input221gToolProps> = ({
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300 w-full">
-
       {!isSaved ? (
         <div className="mb-2 sm:mb-4">
-          < div className="bg-white rounded-xl overflow-hidden border border-slate-300">
-          <Actual221GFormChecker
-            selectedItems={selectedItems}
-            onSelectionChange={handleSelectionChange}
-            onNext={() => {}} 
-            smartModeEnabled={true}
-            consularPost={state.metadata?.interviewLocation || "U.S. Embassy"}
-            visaType="Immigrant"
-          />
+          <div className="bg-white rounded-xl overflow-hidden border border-slate-300">
+            <Actual221GFormChecker
+              selectedItems={selectedItems}
+              onSelectionChange={handleSelectionChange}
+              onNext={() => {}}
+              smartModeEnabled={true}
+              consularPost={state.metadata?.interviewLocation || "U.S. Embassy"}
+              visaType="Immigrant"
+            />
           </div>
           <button
             onClick={handleSave}
@@ -78,11 +72,11 @@ export const Input221gTool: React.FC<Input221gToolProps> = ({
             </button>
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            Your 221(g) requirements have been logged. Your personalized action plan is ready in the next step.
+            Your 221(g) requirements have been logged. Your personalized action plan is ready in the
+            next step.
           </div>
         </div>
       )}
-
     </div>
   );
 };

@@ -101,7 +101,10 @@ const scenes221g: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -129,8 +132,14 @@ const scenes221g: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -150,9 +159,8 @@ const scenes221g: Scene[] = [
             Important Note
           </h4>
           <p className="text-[14px] font-medium leading-6" style={{ color: colors.sageGrey }}>
-            This tool provides general guidance for Pakistan-based cases
-            (Islamabad/Karachi) and is not legal advice. Always prioritize your
-            official letter&apos;s instructions.
+            This tool provides general guidance for Pakistan-based cases (Islamabad/Karachi) and is
+            not legal advice. Always prioritize your official letter&apos;s instructions.
           </p>
         </motion.div>
       </div>
@@ -228,7 +236,10 @@ const scenesPassport: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -256,8 +267,14 @@ const scenesPassport: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -277,9 +294,9 @@ const scenesPassport: Scene[] = [
             Important Note
           </h4>
           <p className="text-[14px] font-medium leading-6" style={{ color: colors.sageGrey }}>
-            This guide provides general information based on publicly available
-            DGIP sources. Requirements may vary by case and can change; verify
-            with your RPO/EPO before submission.
+            This guide provides general information based on publicly available DGIP sources.
+            Requirements may vary by case and can change; verify with your RPO/EPO before
+            submission.
           </p>
         </motion.div>
       </div>
@@ -355,7 +372,10 @@ const scenesCnic: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -383,8 +403,14 @@ const scenesCnic: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -463,7 +489,10 @@ const scenesFrc: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -491,8 +520,14 @@ const scenesFrc: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug whitespace-pre-wrap" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug whitespace-pre-wrap"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -566,7 +601,10 @@ const scenesPoliceVerification: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -594,8 +632,14 @@ const scenesPoliceVerification: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -669,7 +713,10 @@ const scenesMarriageRegistration: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -697,8 +744,14 @@ const scenesMarriageRegistration: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -714,8 +767,7 @@ const scenesBirthCertificate: Scene[] = [
   {
     id: "welcome",
     title: "Welcome to Birth Certificate Guide",
-    description:
-      "Use this wizard to prepare a complete birth certificate application workflow.",
+    description: "Use this wizard to prepare a complete birth certificate application workflow.",
     illustration: "welcome",
   },
   {
@@ -772,7 +824,10 @@ const scenesBirthCertificate: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -800,8 +855,14 @@ const scenesBirthCertificate: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -817,8 +878,7 @@ const scenesPolioVaccination: Scene[] = [
   {
     id: "welcome",
     title: "Welcome to Polio Vaccination Guide",
-    description:
-      "Prepare your vaccination and certificate process with a clear, guided checklist.",
+    description: "Prepare your vaccination and certificate process with a clear, guided checklist.",
     illustration: "welcome",
   },
   {
@@ -875,7 +935,10 @@ const scenesPolioVaccination: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -903,8 +966,14 @@ const scenesPolioVaccination: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -1024,7 +1093,7 @@ export function NarrativeModal({
           scale: Math.random() * 0.8 + 0.2,
         };
       }),
-    [],
+    []
   );
 
   const handleNext = () => {
@@ -1117,8 +1186,12 @@ export function NarrativeModal({
       {isOpen && (
         <motion.div
           ref={modalScrollRef}
-          initial={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
-          animate={reduceHeavyEffects ? { opacity: 1 } : { opacity: 1, backdropFilter: "blur(12px)" }}
+          initial={
+            reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }
+          }
+          animate={
+            reduceHeavyEffects ? { opacity: 1 } : { opacity: 1, backdropFilter: "blur(12px)" }
+          }
           exit={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
           transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
           className={[
@@ -1133,44 +1206,60 @@ export function NarrativeModal({
         >
           {!reduceHeavyEffects && (
             <div className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block">
-            {particles.map((particle) => (
-              <motion.div
-                key={particle.id}
-                className="absolute h-1.5 w-1.5 rounded-full blur-[1px]"
-                style={{
-                  backgroundColor: particle.color,
-                  left: particle.left,
-                  top: particle.top,
-                  scale: particle.scale,
-                }}
-                animate={{
-                  x: [0, particle.dx, 0],
-                  y: [0, particle.dy, 0],
-                  opacity: [0, 0.08, 0],
-                }}
-                transition={{
-                  duration: particle.duration,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: particle.delay,
-                }}
-              />
-            ))}
+              {particles.map((particle) => (
+                <motion.div
+                  key={particle.id}
+                  className="absolute h-1.5 w-1.5 rounded-full blur-[1px]"
+                  style={{
+                    backgroundColor: particle.color,
+                    left: particle.left,
+                    top: particle.top,
+                    scale: particle.scale,
+                  }}
+                  animate={{
+                    x: [0, particle.dx, 0],
+                    y: [0, particle.dy, 0],
+                    opacity: [0, 0.08, 0],
+                  }}
+                  transition={{
+                    duration: particle.duration,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: particle.delay,
+                  }}
+                />
+              ))}
             </div>
           )}
 
           <motion.div
-            initial={{ scale: reduceHeavyEffects ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.initialY }}
+            initial={{
+              scale: reduceHeavyEffects ? 0.992 : 0.98,
+              opacity: 0,
+              y: compactModalMotion.initialY,
+            }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: reduceHeavyEffects ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.exitY }}
+            exit={{
+              scale: reduceHeavyEffects ? 0.992 : 0.98,
+              opacity: 0,
+              y: compactModalMotion.exitY,
+            }}
             transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
             className={[
               "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
-              isCompactView ? "!w-[98vw] !h-[98vh] !max-w-full !max-h-[98vh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar" : "rounded-[1.65rem]",
+              isCompactView
+                ? "!w-[98vw] !h-[98vh] !max-w-full !max-h-[98vh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
+                : "rounded-[1.65rem]",
             ].join(" ")}
             style={
               isCompactView
-                ? { scrollbarWidth: "none", width: '98vw', height: '98vh', maxWidth: '100vw', maxHeight: '98vh' }
+                ? {
+                    scrollbarWidth: "none",
+                    width: "98vw",
+                    height: "98vh",
+                    maxWidth: "100vw",
+                    maxHeight: "98vh",
+                  }
                 : undefined
             }
           >
@@ -1218,7 +1307,7 @@ export function NarrativeModal({
                 "relative flex flex-col min-h-0 flex-1 overflow-x-hidden overscroll-contain bg-gradient-to-b from-white via-[#fbfefe] to-[#f3faf9] w-full h-full",
                 isCompactView
                   ? "overflow-y-auto px-3 pt-4 pb-4"
-                  : "items-start justify-center overflow-y-auto px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12"
+                  : "items-start justify-center overflow-y-auto px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12",
               ].join(" ")}
               style={{ scrollbarWidth: "none" }}
             >
@@ -1235,8 +1324,13 @@ export function NarrativeModal({
                     isCompactView
                       ? { opacity: 1, filter: "blur(0px)" }
                       : reduceHeavyEffects
-                      ? { opacity: 0, y: compactModalMotion.sceneInitialY }
-                      : { opacity: 0, filter: "blur(12px)", x: compactModalMotion.sceneInitialX, scale: 0.98 }
+                        ? { opacity: 0, y: compactModalMotion.sceneInitialY }
+                        : {
+                            opacity: 0,
+                            filter: "blur(12px)",
+                            x: compactModalMotion.sceneInitialX,
+                            scale: 0.98,
+                          }
                   }
                   animate={
                     reduceHeavyEffects
@@ -1246,20 +1340,32 @@ export function NarrativeModal({
                   exit={
                     reduceHeavyEffects
                       ? { opacity: 0, y: compactModalMotion.sceneExitY }
-                      : { opacity: 0, filter: "blur(12px)", x: compactModalMotion.sceneExitX, scale: 0.98 }
+                      : {
+                          opacity: 0,
+                          filter: "blur(12px)",
+                          x: compactModalMotion.sceneExitX,
+                          scale: 0.98,
+                        }
                   }
-                  transition={{ duration: compactModalMotion.sceneDuration, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    duration: compactModalMotion.sceneDuration,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                   className={[
                     "flex w-full flex-col gap-3 pb-1 md:flex-row md:justify-center md:gap-12 md:items-center",
                     isCompactView ? "gap-8 px-3" : "",
-                    isCompactView && isCompactFirstScene ? "justify-center items-center text-center mt-4" : "items-center"
+                    isCompactView && isCompactFirstScene
+                      ? "justify-center items-center text-center mt-4"
+                      : "items-center",
                   ].join(" ")}
                 >
                   <div
                     className={[
                       "w-full flex-none sm:max-w-md sm:flex-1 overflow-visible max-w-[200px]",
                       isCompactView ? "flex justify-center mb-2" : "",
-                      isCompactView && isCompactFirstScene ? "justify-center items-center text-center mb-2" : ""
+                      isCompactView && isCompactFirstScene
+                        ? "justify-center items-center text-center mb-2"
+                        : "",
                     ].join(" ")}
                   >
                     <SceneIllustration
@@ -1268,7 +1374,7 @@ export function NarrativeModal({
                       compactMode={isCompactView}
                       documentBadgeText={docBadgeText}
                       outputMode={isGuideVariant ? "guide" : "221g"}
-                      {...((isCompactView && isPagesFourToFiveScene) ? { size: 70 } : {})}
+                      {...(isCompactView && isPagesFourToFiveScene ? { size: 70 } : {})}
                     />
                   </div>
 
@@ -1276,7 +1382,7 @@ export function NarrativeModal({
                     className={[
                       "relative z-20 w-full max-w-lg flex-1",
                       isCompactView ? "text-center mt-6 px-2" : "text-center md:text-left",
-                      isCompactView && isCompactFirstScene ? "text-center mt-2" : ""
+                      isCompactView && isCompactFirstScene ? "text-center mt-2" : "",
                     ].join(" ")}
                   >
                     <motion.h2
@@ -1308,7 +1414,6 @@ export function NarrativeModal({
                           "mx-auto max-w-[60ch] text-[14px] font-medium leading-6 tracking-[0.002em] sm:text-[16px] sm:leading-7 md:mx-0 md:text-[1.12rem] md:leading-[1.65]",
                           isCompactPagesThreeToSix ? "text-[13px] leading-[1.5]" : "",
                         ].join(" ")}
-
                         style={{ color: colors.sageGrey }}
                       >
                         {scene.description}
@@ -1329,9 +1434,7 @@ export function NarrativeModal({
               </AnimatePresence>
             </div>
 
-            <div
-              className="relative z-20 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4"
-            >
+            <div className="relative z-20 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4">
               <img
                 src="/assets/images/mascot.png"
                 alt="Rahvana bird mascot"
@@ -1432,7 +1535,13 @@ function SceneIllustration({
   const isNeedsScene = scene.illustration === "preparation";
 
   if (reduceMotion) {
-    return <SimpleSceneIllustration scene={scene} isNeedsScene={isNeedsScene} compactMode={compactMode} />;
+    return (
+      <SimpleSceneIllustration
+        scene={scene}
+        isNeedsScene={isNeedsScene}
+        compactMode={compactMode}
+      />
+    );
   }
 
   return (
@@ -1443,26 +1552,24 @@ function SceneIllustration({
       ].join(" ")}
     >
       <div className={compactMode ? "h-full w-full scale-[0.82]" : "h-full w-full"}>
-      {!compactMode && (
-        <motion.div
-          animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 rounded-full blur-[70px]"
-          style={{
-            background: `radial-gradient(circle, ${colors.softAqua}40 0%, ${colors.mutedLavender}20 50%, transparent 100%)`,
-          }}
-        />
-      )}
+        {!compactMode && (
+          <motion.div
+            animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 rounded-full blur-[70px]"
+            style={{
+              background: `radial-gradient(circle, ${colors.softAqua}40 0%, ${colors.mutedLavender}20 50%, transparent 100%)`,
+            }}
+          />
+        )}
 
-      {scene.illustration === "welcome" ? (
-        <WelcomeScene compactMode={compactMode} />
-      ) : null}
-      {scene.illustration === "document" && <DocumentScene badgeText={documentBadgeText} />}
-      {scene.illustration === "warning" && <WarningScene />}
-      {scene.illustration === "checklist" && <ChecklistScene />}
-      {scene.illustration === "output" && <OutputScene mode={outputMode} />}
-      {scene.illustration === "wizard" && <WizardScene />}
-      {scene.illustration === "preparation" && <PreparationScene />}
+        {scene.illustration === "welcome" ? <WelcomeScene compactMode={compactMode} /> : null}
+        {scene.illustration === "document" && <DocumentScene badgeText={documentBadgeText} />}
+        {scene.illustration === "warning" && <WarningScene />}
+        {scene.illustration === "checklist" && <ChecklistScene />}
+        {scene.illustration === "output" && <OutputScene mode={outputMode} />}
+        {scene.illustration === "wizard" && <WizardScene />}
+        {scene.illustration === "preparation" && <PreparationScene />}
       </div>
     </div>
   );
@@ -1498,8 +1605,18 @@ function SimpleSceneIllustration({
       ].join(" ")}
     >
       <div className="absolute inset-0 rounded-full bg-[#eaf6f5]" />
-      <div className={compactMode ? "relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm" : "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm md:h-36 md:w-36"}>
-        <Icon className={compactMode ? "h-9 w-9 text-[#0d7377]" : "h-12 w-12 text-[#0d7377] md:h-16 md:w-16"} />
+      <div
+        className={
+          compactMode
+            ? "relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm"
+            : "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm md:h-36 md:w-36"
+        }
+      >
+        <Icon
+          className={
+            compactMode ? "h-9 w-9 text-[#0d7377]" : "h-12 w-12 text-[#0d7377] md:h-16 md:w-16"
+          }
+        />
       </div>
     </div>
   );
@@ -1512,10 +1629,20 @@ function WelcomeScene({ compactMode = false }: { compactMode?: boolean }) {
         initial={{ scale: compactMode ? 0.9 : 0.8, y: compactMode ? 8 : 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: "spring", damping: 20 }}
-        className={compactMode ? "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]" : "relative z-10 flex h-52 w-52 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"}
+        className={
+          compactMode
+            ? "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"
+            : "relative z-10 flex h-52 w-52 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"
+        }
       >
-        <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
-          <BookOpen className={compactMode ? "h-12 w-12" : "h-24 w-24"} style={{ color: colors.deepTeal }} />
+        <motion.div
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <BookOpen
+            className={compactMode ? "h-12 w-12" : "h-24 w-24"}
+            style={{ color: colors.deepTeal }}
+          />
         </motion.div>
       </motion.div>
 
@@ -1531,8 +1658,14 @@ function WelcomeScene({ compactMode = false }: { compactMode?: boolean }) {
             animate={{ rotate: -360 }}
             transition={{ duration: 18 + i * 4, repeat: Infinity, ease: "linear", delay: i * 2 }}
           >
-            <div className="mb-3 h-1.5 w-8 rounded-full" style={{ backgroundColor: colors.softAqua }} />
-            <div className="mb-3 h-1.5 w-10 rounded-full" style={{ backgroundColor: colors.mutedLavender }} />
+            <div
+              className="mb-3 h-1.5 w-8 rounded-full"
+              style={{ backgroundColor: colors.softAqua }}
+            />
+            <div
+              className="mb-3 h-1.5 w-10 rounded-full"
+              style={{ backgroundColor: colors.mutedLavender }}
+            />
             <div className="h-1.5 w-6 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
           </motion.div>
         </motion.div>
@@ -1574,10 +1707,22 @@ function DocumentScene({ badgeText }: { badgeText: string }) {
         </motion.div>
 
         <div className="w-full space-y-5">
-          <div className="h-2.5 w-full rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
-          <div className="h-2.5 w-5/6 rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
-          <div className="h-2.5 w-4/6 rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
-          <div className="h-2.5 w-full rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
+          <div
+            className="h-2.5 w-full rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
+          <div
+            className="h-2.5 w-5/6 rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
+          <div
+            className="h-2.5 w-4/6 rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
+          <div
+            className="h-2.5 w-full rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
         </div>
       </motion.div>
     </div>
@@ -1661,13 +1806,25 @@ function ChecklistScene() {
                 className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg"
                 style={{ backgroundColor: colors.deepTeal }}
               >
-                <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg
+                  className="h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </motion.div>
               <div className="flex-1 space-y-2.5">
-                <div className="h-2.5 w-full rounded-full" style={{ backgroundColor: `${colors.mutedLavender}80` }} />
-                <div className="h-2.5 w-2/3 rounded-full" style={{ backgroundColor: `${colors.mutedLavender}40` }} />
+                <div
+                  className="h-2.5 w-full rounded-full"
+                  style={{ backgroundColor: `${colors.mutedLavender}80` }}
+                />
+                <div
+                  className="h-2.5 w-2/3 rounded-full"
+                  style={{ backgroundColor: `${colors.mutedLavender}40` }}
+                />
               </div>
             </motion.div>
           ))}
@@ -1712,8 +1869,14 @@ function OutputScene({ mode }: { mode: "221g" | "guide" }) {
         <div className="w-full flex-1 space-y-5">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex items-center gap-4">
-              <div className="h-5 w-5 rounded-full" style={{ backgroundColor: colors.mutedLavender }} />
-              <div className="h-2.5 flex-1 rounded-full" style={{ backgroundColor: `${colors.mutedLavender}30` }} />
+              <div
+                className="h-5 w-5 rounded-full"
+                style={{ backgroundColor: colors.mutedLavender }}
+              />
+              <div
+                className="h-2.5 flex-1 rounded-full"
+                style={{ backgroundColor: `${colors.mutedLavender}30` }}
+              />
             </div>
           ))}
         </div>
@@ -1748,7 +1911,11 @@ function WizardScene() {
           <defs>
             <linearGradient id={`wizardGrad${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor={colors.softAqua} stopOpacity={0.8 - index * 0.2} />
-              <stop offset="100%" stopColor={colors.mutedLavender} stopOpacity={0.8 - index * 0.2} />
+              <stop
+                offset="100%"
+                stopColor={colors.mutedLavender}
+                stopOpacity={0.8 - index * 0.2}
+              />
             </linearGradient>
           </defs>
           <motion.circle
@@ -1830,7 +1997,10 @@ function PreparationScene() {
               {item.icon}
             </motion.div>
 
-            <svg className="absolute inset-0 -z-10 h-full w-full" style={{ overflow: "visible", top: "50%", left: "50%" }}>
+            <svg
+              className="absolute inset-0 -z-10 h-full w-full"
+              style={{ overflow: "visible", top: "50%", left: "50%" }}
+            >
               <motion.line
                 x1="0"
                 y1="0"

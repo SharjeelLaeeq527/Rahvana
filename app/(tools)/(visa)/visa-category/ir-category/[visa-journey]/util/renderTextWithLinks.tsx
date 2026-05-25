@@ -12,9 +12,7 @@ export function renderTextWithLinks(
 ) {
   if (!links.length) return text;
 
-  const sortedLinks = [...links].sort(
-    (a, b) => b.text.length - a.text.length
-  );
+  const sortedLinks = [...links].sort((a, b) => b.text.length - a.text.length);
 
   let parts: (string | React.ReactNode)[] = [text];
 

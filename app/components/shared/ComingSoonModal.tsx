@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 
@@ -54,9 +49,7 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
             {/* Title */}
             <div
               className={`transform transition-all duration-1000 ${
-                isVisible
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-8 opacity-0"
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
               }`}
             >
               <DialogTitle className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 tracking-tight">
@@ -66,22 +59,18 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
             {/* Subtitle */}
             <div
               className={`transform transition-all duration-1000 delay-300 ${
-                isVisible
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-8 opacity-0"
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
               }`}
             >
               <DialogDescription className="text-base md:text-lg lg:text-xl text-muted-foreground mb-8 md:mb-10 leading-relaxed px-2 md:px-0">
-                We&apos;re crafting something extraordinary for you. Stay tuned
-                for an experience that redefines excellence.
+                We&apos;re crafting something extraordinary for you. Stay tuned for an experience
+                that redefines excellence.
               </DialogDescription>
             </div>
             {/* Loader */}
             <div
               className={`transform transition-all duration-1000 delay-500 ${
-                isVisible
-                  ? "translate-y-0 opacity-100"
-                  : "translate-y-8 opacity-0"
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
               }`}
             >
               <div className="inline-flex items-center gap-3 md:gap-4 bg-card/60 backdrop-blur-sm rounded-full px-6 py-3 md:px-8 md:py-4 border border-border shadow-lg max-w-[90%] md:max-w-none">
@@ -102,15 +91,12 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
             {!user ? (
               <div
                 className={`transform transition-all duration-1000 delay-700 ${
-                  isVisible
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-8 opacity-0"
+                  isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
                 } mt-8`}
               >
                 <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 leading-relaxed px-2 md:px-0">
-                  Be among the first to experience Rahvana&apos;s full journey
-                  assistant! Sign up now to get early access and never miss an
-                  update.
+                  Be among the first to experience Rahvana&apos;s full journey assistant! Sign up
+                  now to get early access and never miss an update.
                 </p>
                 <button
                   onClick={handleSignupRedirect}
@@ -122,15 +108,13 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
             ) : (
               <div
                 className={`transform transition-all duration-1000 delay-700 ${
-                  isVisible
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-8 opacity-0"
+                  isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
                 } mt-8`}
               >
                 <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 leading-relaxed px-2 md:px-0">
-                  You requested early access to this feature — and we heard you.
-                  Our team is actively working on it. As soon as it goes live,
-                  we&apos;ll notify you. Thanks for being part of the journey!
+                  You requested early access to this feature — and we heard you. Our team is
+                  actively working on it. As soon as it goes live, we&apos;ll notify you. Thanks for
+                  being part of the journey!
                 </p>
                 <button
                   onClick={() => onOpenChange(false)}

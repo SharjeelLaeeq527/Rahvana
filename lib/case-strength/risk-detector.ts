@@ -30,7 +30,7 @@ function monthsBetween(fromIso: string, toIso: string): number | null {
 export function detectRiskFlags(
   input: RiskDetectionInput,
   referenceDate: Date = new Date(),
-  stepRefs: StepRefs = IR1_STEP_REFS,
+  stepRefs: StepRefs = IR1_STEP_REFS
 ): RiskFlag[] {
   const flags: RiskFlag[] = [];
   const refIso = referenceDate.toISOString();
@@ -43,8 +43,7 @@ export function detectRiskFlags(
         id: "short_marriage_duration",
         title: "New marriage — add extra proof",
         severity: "warning",
-        advisory:
-          `Your marriage is recent. Add joint accounts, joint tax filings, or shared lease/property in ${stepRefs.documents} to show the relationship is genuine.`,
+        advisory: `Your marriage is recent. Add joint accounts, joint tax filings, or shared lease/property in ${stepRefs.documents} to show the relationship is genuine.`,
         source_basis: "USCIS Policy Manual",
       });
     }
@@ -56,8 +55,7 @@ export function detectRiskFlags(
       id: "never_met_in_person",
       title: "Never met in person — add chat history",
       severity: "warning",
-      advisory:
-        `Add call logs, message history, video call records, and a relationship timeline to ${stepRefs.documents} (Relationship Evidence).`,
+      advisory: `Add call logs, message history, video call records, and a relationship timeline to ${stepRefs.documents} (Relationship Evidence).`,
       source_basis: "AILA practice advisories",
     });
   }
@@ -68,26 +66,20 @@ export function detectRiskFlags(
       id: "prior_i130_for_different_spouse",
       title: "Past visa filing for ex-spouse",
       severity: "critical",
-      advisory:
-        `Disclose the prior filing in ${stepRefs.mainForm}. Add the prior marriage termination documents in ${stepRefs.documents}.`,
+      advisory: `Disclose the prior filing in ${stepRefs.mainForm}. Add the prior marriage termination documents in ${stepRefs.documents}.`,
       source_basis: "INA 204(c)",
     });
   }
 
   // Pattern 4: Prior marriage termination missing
   const eitherHadPriorMarriage =
-    input.petitioner_had_prior_marriage === true ||
-    input.beneficiary_had_prior_marriage === true;
-  if (
-    eitherHadPriorMarriage &&
-    input.prior_marriage_termination_documents_present === false
-  ) {
+    input.petitioner_had_prior_marriage === true || input.beneficiary_had_prior_marriage === true;
+  if (eitherHadPriorMarriage && input.prior_marriage_termination_documents_present === false) {
     flags.push({
       id: "missing_prior_marriage_termination",
       title: "Old marriage proof missing",
       severity: "critical",
-      advisory:
-        `Add divorce papers or death certificate from the previous marriage in ${stepRefs.documents}. Without this your case will be delayed.`,
+      advisory: `Add divorce papers or death certificate from the previous marriage in ${stepRefs.documents}. Without this your case will be delayed.`,
       source_basis: "8 CFR 204.2(a)(2)",
     });
   }

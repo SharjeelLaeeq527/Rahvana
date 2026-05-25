@@ -61,12 +61,12 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
       const reasons: string[] = [];
       if (sizeMb > MAX_SIZE_MB) {
         reasons.push(
-          `File is ${sizeMb.toFixed(1)} MB — exceeds USCIS portal's ${MAX_SIZE_MB} MB per-file limit.`,
+          `File is ${sizeMb.toFixed(1)} MB — exceeds USCIS portal's ${MAX_SIZE_MB} MB per-file limit.`
         );
       }
       if (!ext || !ACCEPTED_EXTENSIONS.includes(ext)) {
         reasons.push(
-          `Format ".${ext || "(none)"}" is not accepted. USCIS portal accepts: ${ACCEPTED_EXTENSIONS.map((e) => "." + e).join(", ")}.`,
+          `Format ".${ext || "(none)"}" is not accepted. USCIS portal accepts: ${ACCEPTED_EXTENSIONS.map((e) => "." + e).join(", ")}.`
         );
       }
 
@@ -92,11 +92,7 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
   const allPass = issues.length === 0;
 
   return (
-    <div
-      className="mt-[12px]"
-      role="region"
-      aria-label="USCIS portal upload pre-check"
-    >
+    <div className="mt-[12px]" role="region" aria-label="USCIS portal upload pre-check">
       <div
         className="rounded-[12px] border-[1.5px] p-4 sm:p-5"
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}
@@ -121,8 +117,8 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
               USCIS portal upload pre-check
             </h3>
             <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
-              We checked the {total} document{total === 1 ? "" : "s"} in your vault
-              against the USCIS online portal limits ({MAX_SIZE_MB} MB max, formats:{" "}
+              We checked the {total} document{total === 1 ? "" : "s"} in your vault against the
+              USCIS online portal limits ({MAX_SIZE_MB} MB max, formats:{" "}
               {ACCEPTED_EXTENSIONS.map((e) => "." + e).join(", ")}).
             </p>
           </div>
@@ -136,19 +132,12 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
           >
             <FileCheck size={16} color="#065f46" className="shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <h5
-                className="text-[12.5px] font-semibold leading-snug"
-                style={{ color: "#065f46" }}
-              >
+              <h5 className="text-[12.5px] font-semibold leading-snug" style={{ color: "#065f46" }}>
                 All {total} document{total === 1 ? "" : "s"} pass the USCIS portal pre-check
               </h5>
-              <p
-                className="text-[12px] mt-1 leading-relaxed"
-                style={{ color: "#065f46" }}
-              >
-                Your vault documents are within the USCIS portal size and format
-                limits. You can proceed to upload them through the USCIS online
-                portal.
+              <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#065f46" }}>
+                Your vault documents are within the USCIS portal size and format limits. You can
+                proceed to upload them through the USCIS online portal.
               </p>
             </div>
           </div>
@@ -164,14 +153,12 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
                   className="text-[12.5px] font-semibold leading-snug"
                   style={{ color: "#991b1b" }}
                 >
-                  {issues.length} document{issues.length === 1 ? "" : "s"} need attention before USCIS upload
+                  {issues.length} document{issues.length === 1 ? "" : "s"} need attention before
+                  USCIS upload
                 </h5>
-                <p
-                  className="text-[12px] mt-1 leading-relaxed"
-                  style={{ color: "#7f1d1d" }}
-                >
-                  Fix each item below before attempting to upload to USCIS — the
-                  portal will reject these.
+                <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#7f1d1d" }}>
+                  Fix each item below before attempting to upload to USCIS — the portal will reject
+                  these.
                 </p>
               </div>
             </div>
@@ -208,9 +195,8 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
         )}
 
         <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
-          Source: USCIS online filing portal — file requirements published at
-          myaccount.uscis.gov. Pre-check only — final acceptance is determined
-          by USCIS at upload time.
+          Source: USCIS online filing portal — file requirements published at myaccount.uscis.gov.
+          Pre-check only — final acceptance is determined by USCIS at upload time.
         </p>
       </div>
     </div>

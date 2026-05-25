@@ -32,9 +32,7 @@ export interface RulesConfig {
 // Load rules.json file for a specific category
 export async function loadRulesForCategory(categorySlug: string): Promise<RulesConfig | null> {
   try {
-    const response = await import(
-      `@/data/interview-categories/${categorySlug}/rules.json`
-    );
+    const response = await import(`@/data/interview-categories/${categorySlug}/rules.json`);
     return response.default as RulesConfig;
   } catch (error) {
     console.warn(`No rules found for category ${categorySlug}:`, error);
@@ -43,10 +41,7 @@ export async function loadRulesForCategory(categorySlug: string): Promise<RulesC
 }
 
 // Evaluate a condition against user answers
-function evaluateCondition(
-  condition: RuleCondition,
-  answers: Record<string, unknown>,
-): boolean {
+function evaluateCondition(condition: RuleCondition, answers: Record<string, unknown>): boolean {
   const answerValue = answers[condition.field];
 
   switch (condition.operator) {
@@ -68,12 +63,10 @@ function evaluateCondition(
 // Evaluate a condition group (AND/OR) against user answers
 export function evaluateConditionGroup(
   group: RuleConditionGroup,
-  answers: Record<string, unknown>,
+  answers: Record<string, unknown>
 ): boolean {
   if (group.type === "AND") {
-    return group.conditions.every((cond) =>
-      evaluateCondition(cond, answers),
-    );
+    return group.conditions.every((cond) => evaluateCondition(cond, answers));
   } else {
     // OR
     return group.conditions.some((cond) => evaluateCondition(cond, answers));
@@ -84,13 +77,12 @@ export function evaluateConditionGroup(
 export function getAppliedRules(
   questionCategory: string,
   answers: Record<string, unknown>,
-  rules: QuestionSelectionRule[],
+  rules: QuestionSelectionRule[]
 ): QuestionSelectionRule[] {
   return rules.filter((rule) => {
     const ruleMatches = evaluateConditionGroup(rule.condition, answers);
     // Safely check if includeCategories exists and contains the category
-    const categoryMatches =
-      rule.actions.includeCategories?.includes(questionCategory) ?? false;
+    const categoryMatches = rule.actions.includeCategories?.includes(questionCategory) ?? false;
     return ruleMatches && categoryMatches;
   });
 }

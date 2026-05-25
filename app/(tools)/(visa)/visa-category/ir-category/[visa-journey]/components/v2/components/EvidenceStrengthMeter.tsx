@@ -52,13 +52,12 @@ function isDocumentDone(
   documentChecklist: Record<string, boolean> | undefined,
   docReviewStatus: Record<string, string> | undefined,
   docUploads: Record<string, unknown> | undefined,
-  notes: Record<string, string> | undefined,
+  notes: Record<string, string> | undefined
 ): boolean {
   // Manual review / checklist signals (same logic existing rendering uses)
   if (docReviewStatus?.[doc.id] === "reviewed") return true;
   if (documentChecklist?.[doc.name] === true) return true;
-  if (docUploads?.[doc.name] !== undefined && docUploads?.[doc.name] !== null)
-    return true;
+  if (docUploads?.[doc.name] !== undefined && docUploads?.[doc.name] !== null) return true;
   if (notes?.[doc.name]) return true;
 
   // Vault linkage: map the doc name to a vault DocumentDefinition id and
@@ -82,54 +81,46 @@ export function EvidenceStrengthMeter({
   if (!documentItems || documentItems.length === 0) return null;
 
   // Partition into pending vs done while preserving group order
-  const { pendingGroups, totalRequired, requiredDone, totalDocs, doneDocs } =
-    useMemo(() => {
-      let totalRequired = 0;
-      let requiredDone = 0;
-      let totalDocs = 0;
-      let doneDocs = 0;
+  const { pendingGroups, totalRequired, requiredDone, totalDocs, doneDocs } = useMemo(() => {
+    let totalRequired = 0;
+    let requiredDone = 0;
+    let totalDocs = 0;
+    let doneDocs = 0;
 
-      const groupOrder: string[] = [];
-      const byGroup = new Map<string, DocumentItem[]>();
+    const groupOrder: string[] = [];
+    const byGroup = new Map<string, DocumentItem[]>();
 
-      for (const item of documentItems) {
-        totalDocs++;
-        if (item.required) totalRequired++;
-        const done = isDocumentDone(
-          item,
-          uploadedDocuments,
-          documentChecklist,
-          docReviewStatus,
-          docUploads,
-          notes,
-        );
-        if (done) {
-          doneDocs++;
-          if (item.required) requiredDone++;
-          continue; // skip done items — user only wants to see pending
-        }
-        const g = item.group ?? "Other";
-        if (!byGroup.has(g)) {
-          byGroup.set(g, []);
-          groupOrder.push(g);
-        }
-        byGroup.get(g)!.push(item);
+    for (const item of documentItems) {
+      totalDocs++;
+      if (item.required) totalRequired++;
+      const done = isDocumentDone(
+        item,
+        uploadedDocuments,
+        documentChecklist,
+        docReviewStatus,
+        docUploads,
+        notes
+      );
+      if (done) {
+        doneDocs++;
+        if (item.required) requiredDone++;
+        continue; // skip done items — user only wants to see pending
       }
+      const g = item.group ?? "Other";
+      if (!byGroup.has(g)) {
+        byGroup.set(g, []);
+        groupOrder.push(g);
+      }
+      byGroup.get(g)!.push(item);
+    }
 
-      const pendingGroups: GroupSummary[] = groupOrder.map((label) => ({
-        label,
-        pending: byGroup.get(label)!,
-      }));
+    const pendingGroups: GroupSummary[] = groupOrder.map((label) => ({
+      label,
+      pending: byGroup.get(label)!,
+    }));
 
-      return { pendingGroups, totalRequired, requiredDone, totalDocs, doneDocs };
-    }, [
-      documentItems,
-      uploadedDocuments,
-      documentChecklist,
-      docReviewStatus,
-      docUploads,
-      notes,
-    ]);
+    return { pendingGroups, totalRequired, requiredDone, totalDocs, doneDocs };
+  }, [documentItems, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes]);
 
   const requiredPending = totalRequired - requiredDone;
   const allDone = doneDocs === totalDocs && totalDocs > 0;
@@ -143,18 +134,14 @@ export function EvidenceStrengthMeter({
           className="rounded-2xl border-[1.5px] p-4 sm:p-5 flex items-start gap-3"
           style={{ background: "#ecfdf5", borderColor: "#a7f3d0" }}
         >
-          <CheckCircle2
-            size={20}
-            color="#065f46"
-            className="shrink-0 mt-0.5"
-          />
+          <CheckCircle2 size={20} color="#065f46" className="shrink-0 mt-0.5" />
           <div className="min-w-0">
             <h3 className="text-[15px] font-bold text-[#065f46] leading-snug">
               All {totalDocs} documents marked done
             </h3>
             <p className="text-[12px] text-[#065f46] mt-1 leading-relaxed">
-              Every document in this step's checklist is complete. You can
-              proceed to the filing steps with confidence.
+              Every document in this step's checklist is complete. You can proceed to the filing
+              steps with confidence.
             </p>
           </div>
         </div>
@@ -181,10 +168,7 @@ export function EvidenceStrengthMeter({
               border: `1px solid ${allRequiredDone ? "#a7f3d0" : "#fde68a"}`,
             }}
           >
-            <AlertCircle
-              size={18}
-              color={allRequiredDone ? "#065f46" : "#92400e"}
-            />
+            <AlertCircle size={18} color={allRequiredDone ? "#065f46" : "#92400e"} />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-[15px] sm:text-[16px] font-bold text-[#1c1917] leading-snug">
@@ -197,8 +181,7 @@ export function EvidenceStrengthMeter({
                   {requiredPending > 0 && (
                     <>
                       {" "}
-                      — <strong>{requiredPending} required</strong> still
-                      pending.
+                      — <strong>{requiredPending} required</strong> still pending.
                     </>
                   )}
                 </>
@@ -254,15 +237,8 @@ export function EvidenceStrengthMeter({
               </h4>
               <ul className="flex flex-col gap-1.5">
                 {g.pending.map((doc) => (
-                  <li
-                    key={doc.id}
-                    className="flex items-start gap-2 text-[12.5px]"
-                  >
-                    <Circle
-                      size={13}
-                      color="#a8a29e"
-                      className="shrink-0 mt-1"
-                    />
+                  <li key={doc.id} className="flex items-start gap-2 text-[12.5px]">
+                    <Circle size={13} color="#a8a29e" className="shrink-0 mt-1" />
                     <div className="min-w-0">
                       <span className="text-[#1c1917] font-medium">
                         {doc.name}
@@ -286,9 +262,8 @@ export function EvidenceStrengthMeter({
         </div>
 
         <p className="text-[10.5px] text-[#78716c] leading-relaxed italic">
-          Shows only documents still pending. Marked complete when you upload
-          via the document vault, mark as reviewed, or attach a file.
-          Advisory only — not legal advice.
+          Shows only documents still pending. Marked complete when you upload via the document
+          vault, mark as reviewed, or attach a file. Advisory only — not legal advice.
         </p>
       </div>
     </div>

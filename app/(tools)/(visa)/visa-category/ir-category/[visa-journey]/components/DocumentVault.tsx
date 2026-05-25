@@ -48,10 +48,7 @@ export function DocumentVault({
 
   if (!isOpen) return null;
 
-  const handleFileChange = (
-    doc: string,
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileChange = (doc: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       onUpload(doc, e.target.files[0]);
     }
@@ -122,9 +119,7 @@ export function DocumentVault({
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span
                           className={`text-[15px] md:text-[17px] font-bold truncate ${
-                            isChecked
-                              ? "text-slate-900"
-                              : "text-slate-700 font-semibold"
+                            isChecked ? "text-slate-900" : "text-slate-700 font-semibold"
                           }`}
                         >
                           {doc}

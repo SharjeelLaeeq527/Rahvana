@@ -17,10 +17,20 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
 
   // Professional signature fonts - diverse styles
   const fonts = [
-    { name: "Great Vibes", value: "'Great Vibes', cursive", weight: "400", style: "Elegant Script" },
+    {
+      name: "Great Vibes",
+      value: "'Great Vibes', cursive",
+      weight: "400",
+      style: "Elegant Script",
+    },
     { name: "Allura", value: "'Allura', cursive", weight: "400", style: "Formal Cursive" },
     { name: "Alex Brush", value: "'Alex Brush', cursive", weight: "400", style: "Classic Script" },
-    { name: "Pinyon Script", value: "'Pinyon Script', cursive", weight: "400", style: "Traditional" },
+    {
+      name: "Pinyon Script",
+      value: "'Pinyon Script', cursive",
+      weight: "400",
+      style: "Traditional",
+    },
     { name: "Tangerine", value: "'Tangerine', cursive", weight: "700", style: "Refined" },
     { name: "Sacramento", value: "'Sacramento', cursive", weight: "400", style: "Modern Script" },
     { name: "Satisfy", value: "'Satisfy', cursive", weight: "400", style: "Casual Elegant" },
@@ -29,10 +39,10 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
 
   // Load Google Fonts dynamically
   useEffect(() => {
-    const fontFamilies = fonts.map(f => f.name.replace(/ /g, '+')).join('&family=');
-    const link = document.createElement('link');
+    const fontFamilies = fonts.map((f) => f.name.replace(/ /g, "+")).join("&family=");
+    const link = document.createElement("link");
     link.href = `https://fonts.googleapis.com/css2?family=${fontFamilies}&display=swap`;
-    link.rel = 'stylesheet';
+    link.rel = "stylesheet";
     document.head.appendChild(link);
 
     link.onload = () => setFontsLoaded(true);
@@ -40,7 +50,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
     return () => {
       document.head.removeChild(link);
     };
-  }, );
+  });
 
   const handleGenerate = () => {
     if (!name.trim()) {
@@ -48,7 +58,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       return;
     }
 
-    if (typeof onGenerate !== 'function') {
+    if (typeof onGenerate !== "function") {
       console.error("onGenerate is not a function");
       return;
     }
@@ -56,9 +66,9 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
     try {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      
+
       if (!ctx) {
-          showToast("Failed to create signature. Please try again.", "error");
+        showToast("Failed to create signature. Please try again.", "error");
         return;
       }
 
@@ -79,14 +89,14 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
 
       const dataURL = canvas.toDataURL("image/png");
       onGenerate(dataURL);
-      
-      if (typeof closeModal === 'function') {
+
+      if (typeof closeModal === "function") {
         closeModal();
       }
     } catch (error) {
       console.error("Error generating signature:", error);
       alert(t("editor.signature.failed"));
-        showToast(t("editor.signature.failed"), "error");
+      showToast(t("editor.signature.failed"), "error");
     }
   };
 
@@ -122,7 +132,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
               style={{
                 fontFamily: font.value,
                 fontWeight: font.weight,
-                color: selectedFont === index ? "#1E40AF" : "#000000"
+                color: selectedFont === index ? "#1E40AF" : "#000000",
               }}
             >
               {name || t("editor.signature.preview")}
@@ -135,7 +145,9 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       {/* Preview Section */}
       {name && (
         <div className="bg-white border-2 border-gray-200 rounded-lg p-6 text-center">
-          <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide">{t("editor.signature.preview")}</p>
+          <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide">
+            {t("editor.signature.preview")}
+          </p>
           <div className="bg-gray-50 rounded-lg p-8 border border-gray-100 relative overflow-hidden">
             {/* Bottom indicator line */}
             <div className="absolute bottom-8 left-0 right-0 h-0.5 bg-blue-400" />
@@ -157,7 +169,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       <div className="flex gap-3 pt-2">
         <button
           onClick={() => {
-            if (typeof closeModal === 'function') {
+            if (typeof closeModal === "function") {
               closeModal();
             }
           }}
@@ -173,7 +185,6 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
           {t("editor.signature.create")}
         </button>
       </div>
-
     </div>
   );
 }

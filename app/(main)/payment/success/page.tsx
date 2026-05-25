@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle } from 'lucide-react';
-import Link from 'next/link';
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { CheckCircle } from "lucide-react";
+import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
-import { usePlan } from '@/app/context/PlanContext';
+import { usePlan } from "@/app/context/PlanContext";
 
 // Poll /api/stripe/verify-session — first call is immediate (no delay).
 // verify-session directly applies the tier from Stripe so usually one call is enough.
@@ -14,13 +14,13 @@ async function pollUntilActivated(
   onActivated: (tier: string) => void,
   onTimeout: () => void,
   intervalMs = 1500,
-  maxAttempts = 20, // 20 × 1.5s = 30s max
+  maxAttempts = 20 // 20 × 1.5s = 30s max
 ) {
   let attempts = 0;
   const run = async () => {
     attempts++;
     try {
-      const res  = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`);
+      const res = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`);
       const data = await res.json();
       if (data.activated) {
         onActivated(data.tier);
@@ -47,8 +47,9 @@ function AnimatedCard() {
       <div
         className="absolute inset-0 rounded-2xl"
         style={{
-          background: 'linear-gradient(135deg, var(--rahvana-primary) 0%, var(--rahvana-secondary) 100%)',
-          transform: 'rotate(-6deg) translateY(8px)',
+          background:
+            "linear-gradient(135deg, var(--rahvana-primary) 0%, var(--rahvana-secondary) 100%)",
+          transform: "rotate(-6deg) translateY(8px)",
           opacity: 0.25,
           borderRadius: 18,
         }}
@@ -58,20 +59,21 @@ function AnimatedCard() {
       <div
         className="absolute inset-0 rounded-2xl overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, var(--rahvana-primary-dark) 0%, var(--rahvana-primary) 60%, var(--rahvana-primary-light) 100%)',
+          background:
+            "linear-gradient(135deg, var(--rahvana-primary-dark) 0%, var(--rahvana-primary) 60%, var(--rahvana-primary-light) 100%)",
           borderRadius: 18,
-          boxShadow: '0 20px 60px rgba(13,115,119,0.35), 0 4px 16px rgba(0,0,0,0.3)',
-          animation: 'cardFloat 3.5s ease-in-out infinite',
+          boxShadow: "0 20px 60px rgba(13,115,119,0.35), 0 4px 16px rgba(0,0,0,0.3)",
+          animation: "cardFloat 3.5s ease-in-out infinite",
         }}
       >
         {/* Holographic shine overlay */}
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             inset: 0,
             background:
-              'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.07) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 55%, transparent 70%)',
-            animation: 'shimmer 3s ease-in-out infinite',
+              "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.07) 45%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 55%, transparent 70%)",
+            animation: "shimmer 3s ease-in-out infinite",
             borderRadius: 18,
           }}
         />
@@ -79,24 +81,24 @@ function AnimatedCard() {
         {/* Decorative circles */}
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: -40,
             right: -40,
             width: 160,
             height: 160,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.04)',
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.04)",
           }}
         />
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: -20,
             right: -20,
             width: 110,
             height: 110,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)',
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.06)",
           }}
         />
 
@@ -110,14 +112,14 @@ function AnimatedCard() {
                 width: 38,
                 height: 28,
                 borderRadius: 6,
-                background: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #d97706 100%)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gridTemplateRows: '1fr 1fr 1fr',
+                background: "linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #d97706 100%)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gridTemplateRows: "1fr 1fr 1fr",
                 gap: 2,
                 padding: 6,
-                overflow: 'hidden',
+                overflow: "hidden",
               }}
             >
               {/* Chip lines */}
@@ -125,7 +127,7 @@ function AnimatedCard() {
                 <div
                   key={i}
                   style={{
-                    background: i === 4 ? '#b45309' : 'rgba(180,83,9,0.5)',
+                    background: i === 4 ? "#b45309" : "rgba(180,83,9,0.5)",
                     borderRadius: 1,
                   }}
                 />
@@ -138,22 +140,22 @@ function AnimatedCard() {
                 style={{
                   width: 30,
                   height: 30,
-                  borderRadius: '50%',
-                  background: 'var(--rahvana-primary)',
+                  borderRadius: "50%",
+                  background: "var(--rahvana-primary)",
                   marginRight: -10,
                   zIndex: 1,
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                  border: '2px solid rgba(255,255,255,0.2)'
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                  border: "2px solid rgba(255,255,255,0.2)",
                 }}
               />
               <div
                 style={{
                   width: 30,
                   height: 30,
-                  borderRadius: '50%',
-                  background: 'var(--rahvana-secondary)',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                  border: '2px solid rgba(255,255,255,0.2)'
+                  borderRadius: "50%",
+                  background: "var(--rahvana-secondary)",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                  border: "2px solid rgba(255,255,255,0.2)",
                 }}
               />
             </div>
@@ -164,10 +166,10 @@ function AnimatedCard() {
             style={{
               fontFamily: "'Courier New', monospace",
               fontSize: 15,
-              letterSpacing: '0.18em',
-              color: 'rgba(255,255,255,0.85)',
+              letterSpacing: "0.18em",
+              color: "rgba(255,255,255,0.85)",
               fontWeight: 600,
-              textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              textShadow: "0 1px 4px rgba(0,0,0,0.4)",
             }}
           >
             •••• •••• •••• 4242
@@ -176,18 +178,39 @@ function AnimatedCard() {
           {/* Bottom row */}
           <div className="flex items-end justify-between">
             <div>
-              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', marginBottom: 2 }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "rgba(255,255,255,0.5)",
+                  letterSpacing: "0.1em",
+                  marginBottom: 2,
+                }}
+              >
                 CARD HOLDER
               </div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, letterSpacing: '0.04em' }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.9)",
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                }}
+              >
                 JOHN DOE
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.1em', marginBottom: 2 }}>
+            <div style={{ textAlign: "right" }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "rgba(255,255,255,0.5)",
+                  letterSpacing: "0.1em",
+                  marginBottom: 2,
+                }}
+              >
                 EXPIRES
               </div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>
                 12/28
               </div>
             </div>
@@ -198,23 +221,23 @@ function AnimatedCard() {
       {/* Success badge on card */}
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: -14,
           right: -14,
           width: 44,
           height: 44,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--rahvana-secondary), var(--rahvana-primary))',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 14px rgba(50,224,196,0.5)',
-          border: '3px solid white',
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, var(--rahvana-secondary), var(--rahvana-primary))",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 14px rgba(50,224,196,0.5)",
+          border: "3px solid white",
           zIndex: 10,
-          animation: 'badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both',
+          animation: "badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both",
         }}
       >
-        <CheckCircle style={{ width: 22, height: 22, color: 'white' }} strokeWidth={2.5} />
+        <CheckCircle style={{ width: 22, height: 22, color: "white" }} strokeWidth={2.5} />
       </div>
 
       {/* Keyframes */}
@@ -241,14 +264,16 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(true);
-  const [verifyStatus, setVerifyStatus] = useState<'checking' | 'confirmed' | 'timeout'>('checking');
-  const sessionId = searchParams.get('session_id');
+  const [verifyStatus, setVerifyStatus] = useState<"checking" | "confirmed" | "timeout">(
+    "checking"
+  );
+  const sessionId = searchParams.get("session_id");
   const { refresh } = usePlan();
   const pollingStarted = useRef(false);
 
   useEffect(() => {
     if (!sessionId) {
-      router.push('/pricing');
+      router.push("/pricing");
       return;
     }
     if (pollingStarted.current) return;
@@ -259,16 +284,16 @@ function PaymentSuccessContent() {
       (_tier) => {
         // Webhook processed — refresh plan context so UI shows new tier immediately
         refresh();
-        setVerifyStatus('confirmed');
+        setVerifyStatus("confirmed");
         setIsVerifying(false);
       },
       () => {
         // 40s passed — webhook might still come, show success anyway
         // Plan will update on next navigation or manual refresh
         refresh();
-        setVerifyStatus('timeout');
+        setVerifyStatus("timeout");
         setIsVerifying(false);
-      },
+      }
     );
   }, [sessionId, router, refresh]);
 
@@ -290,9 +315,9 @@ function PaymentSuccessContent() {
             Payment Successful!
           </h1>
           <p className="text-slate-500 text-[13px] leading-relaxed mb-4">
-            {verifyStatus === 'confirmed'
-              ? 'Your plan has been activated. Welcome to your new tier!'
-              : 'Your payment was processed. Plan activation may take a few moments — refresh your dashboard if features are not yet unlocked.'}
+            {verifyStatus === "confirmed"
+              ? "Your plan has been activated. Welcome to your new tier!"
+              : "Your payment was processed. Plan activation may take a few moments — refresh your dashboard if features are not yet unlocked."}
           </p>
 
           {/* What's Next */}
@@ -306,10 +331,19 @@ function PaymentSuccessContent() {
                 "Your account has been upgraded with new features",
                 "Access your dashboard to explore premium features",
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-2 text-[13px] text-rahvana-primary-dark">
+                <li
+                  key={i}
+                  className="flex items-center gap-2 text-[13px] text-rahvana-primary-dark"
+                >
                   <span className="flex-shrink-0 w-4 h-4 rounded-full bg-rahvana-primary flex items-center justify-center">
                     <svg viewBox="0 0 12 12" fill="none" className="w-2.5 h-2.5">
-                      <path d="M2 6l2.5 2.5L10 3.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M2 6l2.5 2.5L10 3.5"
+                        stroke="white"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </span>
                   {item}

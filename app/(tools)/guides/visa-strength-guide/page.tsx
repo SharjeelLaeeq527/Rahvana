@@ -83,8 +83,7 @@ const GUIDES: Guide[] = [
   {
     id: "passport",
     title: "Passport Guide",
-    description:
-      "Complete guide to obtaining or renewing your Pakistani passport.",
+    description: "Complete guide to obtaining or renewing your Pakistani passport.",
     category: "Pakistan Docs",
     href: "/guides/passport-guide",
     icon: Globe,
@@ -92,8 +91,7 @@ const GUIDES: Guide[] = [
   {
     id: "pcc-reference",
     title: "PCC Reference Guide",
-    description:
-      "Comprehensive overview of Police Character Certificates for all provinces.",
+    description: "Comprehensive overview of Police Character Certificates for all provinces.",
     category: "Pakistan Docs",
     href: "/guides/police-certificate",
     icon: Shield,
@@ -117,8 +115,7 @@ const GUIDES: Guide[] = [
   {
     id: "frc",
     title: "FRC Guide",
-    description:
-      "Complete guide to obtaining your Family Registration Certificate (FRC).",
+    description: "Complete guide to obtaining your Family Registration Certificate (FRC).",
     category: "Pakistan Docs",
     href: "/guides/frc-guide",
     icon: Globe,
@@ -158,8 +155,7 @@ const GUIDES: Guide[] = [
   {
     id: "courier-passport",
     title: "Courier & Passport Delivery",
-    description:
-      "Register, choose delivery options, and troubleshoot common courier issues.",
+    description: "Register, choose delivery options, and troubleshoot common courier issues.",
     category: "Embassy Logistics",
     href: "/guides/courier-registration",
     icon: Map,
@@ -187,8 +183,7 @@ const GUIDES: Guide[] = [
   {
     id: "customs",
     title: "Customs & Declarations",
-    description:
-      "What to declare, what to avoid, and common pitfalls when traveling.",
+    description: "What to declare, what to avoid, and common pitfalls when traveling.",
     category: "Arrival & Travel",
     href: "/guides/custom-requirements",
     icon: FileCheck,
@@ -288,16 +283,13 @@ const CATEGORIES: ("All" | GuideCategory)[] = [
 
 export default function GuidesPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    "All" | GuideCategory
-  >("All");
+  const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
 
   const filteredGuides = GUIDES.filter((guide) => {
     const matchesSearch =
       guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guide.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || guide.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || guide.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
@@ -316,8 +308,8 @@ export default function GuidesPage() {
             Master the Paperwork.
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            Step-by-step guides for every document you need. Clear instructions,
-            timelines, and common pitfalls to avoid.
+            Step-by-step guides for every document you need. Clear instructions, timelines, and
+            common pitfalls to avoid.
           </p>
         </section>
 
@@ -382,15 +374,13 @@ const CATEGORY_STYLES: Record<
     iconBox: "bg-green-600 text-white border-transparent dark:bg-green-500",
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
-    borderGradient:
-      "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
+    borderGradient: "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
   },
   "Embassy Logistics": {
     iconBox: "bg-blue-600 text-white border-transparent dark:bg-blue-500",
     innerBox: "bg-white/20",
     link: "text-blue-600 dark:text-blue-400",
-    borderGradient:
-      "from-blue-400 to-blue-300 dark:from-blue-400 dark:to-blue-300",
+    borderGradient: "from-blue-400 to-blue-300 dark:from-blue-400 dark:to-blue-300",
   },
   "Arrival & Travel": {
     iconBox: "bg-sky-600 text-white border-transparent dark:bg-sky-500",
@@ -402,29 +392,25 @@ const CATEGORY_STYLES: Record<
     iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
     innerBox: "bg-white/20",
     link: "text-emerald-600 dark:text-emerald-400",
-    borderGradient:
-      "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
+    borderGradient: "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
   },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
     link: "text-teal-600 dark:text-teal-400",
-    borderGradient:
-      "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
+    borderGradient: "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
   },
   "Relationship Evidence": {
     iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
     innerBox: "bg-white/20",
     link: "text-rose-600 dark:text-rose-400",
-    borderGradient:
-      "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
+    borderGradient: "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
   },
   "Visa Strategy": {
     iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
     innerBox: "bg-white/20",
     link: "text-violet-600 dark:text-violet-400",
-    borderGradient:
-      "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
+    borderGradient: "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
   },
 };
 
@@ -470,9 +456,7 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
-        <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
-          {guide.title}
-        </h3>
+        <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">{guide.title}</h3>
         <div className="mb-3">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
             {guide.category}

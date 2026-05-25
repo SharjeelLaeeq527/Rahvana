@@ -20,22 +20,20 @@ export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
       {/* Header Chips */}
       <div className="flex items-center gap-[7px] flex-wrap mb-8">
-        {["Medical Exam", "What to Expect", "Preparation Guide"].map(
-          (label, i) => (
-            <span
-              key={i}
-              className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
-                i === 0
-                  ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                  : i === 1
-                    ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                    : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-              }`}
-            >
-              {label}
-            </span>
-          ),
-        )}
+        {["Medical Exam", "What to Expect", "Preparation Guide"].map((label, i) => (
+          <span
+            key={i}
+            className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
+              i === 0
+                ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                : i === 1
+                  ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                  : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+            }`}
+          >
+            {label}
+          </span>
+        ))}
       </div>
 
       {/* Launch Module */}
@@ -68,9 +66,7 @@ export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
                 className="bg-white/6 border border-white/10 rounded-lg p-[10px_12px] flex items-start gap-2"
               >
                 <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5.5px]" />
-                <span className="text-[13px] text-white/55 leading-[1.4]">
-                  {cue}
-                </span>
+                <span className="text-[13px] text-white/55 leading-[1.4]">{cue}</span>
               </div>
             ))}
           </div>
@@ -102,9 +98,7 @@ export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
             {tool.bring?.map((it: string, i: number) => (
               <div key={i} className="flex items-start gap-2">
                 <div className="w-1 h-1 rounded-full bg-[#2f6fd4] shrink-0 mt-[7px]" />
-                <span className="text-[13px] text-[#3a4f63] leading-[1.45]">
-                  {it}
-                </span>
+                <span className="text-[13px] text-[#3a4f63] leading-[1.45]">{it}</span>
               </div>
             ))}
           </div>
@@ -124,13 +118,8 @@ export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
                 key={i}
                 className="flex items-start gap-2 p-[7px_10px] bg-[#fef2f2] rounded-[10px] border border-[#fecaca]/30"
               >
-                <AlertTriangle
-                  size={13}
-                  className="text-[#b91c1c] shrink-0 mt-[1.5px]"
-                />
-                <span className="text-[13px] text-[#b91c1c] leading-[1.45]">
-                  {it}
-                </span>
+                <AlertTriangle size={13} className="text-[#b91c1c] shrink-0 mt-[1.5px]" />
+                <span className="text-[13px] text-[#b91c1c] leading-[1.45]">{it}</span>
               </div>
             ))}
           </div>
@@ -149,9 +138,7 @@ export const MedicalExamGuideTool: React.FC<MedicalExamGuideToolProps> = ({
           {tool.tips?.map((it: string, i: number) => (
             <div key={i} className="flex items-start gap-2">
               <div className="w-1 h-1 rounded-full bg-[#15744f] shrink-0 mt-[7px]" />
-              <span className="text-[13px] text-[#3a4f63] leading-[1.45]">
-                {it}
-              </span>
+              <span className="text-[13px] text-[#3a4f63] leading-[1.45]">{it}</span>
             </div>
           ))}
         </div>

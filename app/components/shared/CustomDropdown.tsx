@@ -39,12 +39,10 @@ export const CustomDropdown = ({
     onChange(selectedValue);
   };
 
-  const selectedLabel = value
-    ? options.find((opt) => opt.value === value)?.label
-    : null;
+  const selectedLabel = value ? options.find((opt) => opt.value === value)?.label : null;
 
   const filteredOptions = options.filter((opt) =>
-    opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
+    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
   return (
     <div>
@@ -69,9 +67,7 @@ export const CustomDropdown = ({
           }}
         >
           {selectedLabel ? (
-            <span style={{ color: "#1c2b3a", fontSize: "15px" }}>
-              {selectedLabel}
-            </span>
+            <span style={{ color: "#1c2b3a", fontSize: "15px" }}>{selectedLabel}</span>
           ) : (
             <SelectValue placeholder={placeholder} />
           )}
@@ -98,13 +94,7 @@ export const CustomDropdown = ({
               filteredOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   <div className="flex items-center justify-between w-full pr-6">
-                    <span
-                      className={
-                        option.status === "uploaded"
-                          ? "text-primary font-bold"
-                          : ""
-                      }
-                    >
+                    <span className={option.status === "uploaded" ? "text-primary font-bold" : ""}>
                       {option.label}
                     </span>
                     {option.status === "uploaded" && (
@@ -117,9 +107,7 @@ export const CustomDropdown = ({
                 </SelectItem>
               ))
             ) : (
-              <div className="px-3 py-4 text-sm text-center text-slate-500">
-                No options found
-              </div>
+              <div className="px-3 py-4 text-sm text-center text-slate-500">No options found</div>
             )}
           </div>
         </SelectContent>

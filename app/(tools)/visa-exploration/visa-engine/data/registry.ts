@@ -20,11 +20,11 @@ import { ITALY_DATA } from "./italy";
 export const COUNTRY_REGISTRY: Record<string, CountryData> = {
   "United States": US_DATA,
   "United Kingdom": UK_DATA,
-  "Germany": GERMANY_DATA,
-  "Australia": AUSTRALIA_DATA,
-  "China": CHINA_DATA,
-  "Canada": CANADA_DATA,
-  "Italy": ITALY_DATA,
+  Germany: GERMANY_DATA,
+  Australia: AUSTRALIA_DATA,
+  China: CHINA_DATA,
+  Canada: CANADA_DATA,
+  Italy: ITALY_DATA,
 };
 
 export const SUPPORTED_DESTINATIONS = Object.keys(COUNTRY_REGISTRY);

@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  AlertTriangle,
-  ChevronRight,
-  CheckCircle2,
-  XCircle,
-  Info,
-  Circle,
-} from "lucide-react";
+import { AlertTriangle, ChevronRight, CheckCircle2, XCircle, Info, Circle } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestSuite, QuestData } from "../types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
@@ -20,10 +13,7 @@ interface QuestRendererProps {
   state: WizardState;
   actions: {
     updateAnswers: (
-      answers: Record<
-        string,
-        Record<string, Record<string, string | string[]>>
-      >,
+      answers: Record<string, Record<string, Record<string, string | string[]>>>
     ) => void;
     updateMetadata: (data: Record<string, unknown>) => void;
   };
@@ -54,8 +44,8 @@ export function QuestRenderer({
   >(
     // Prefer in-memory answers, fall back to metadata (backend-persisted)
     (state.answers?.[suiteId] as Record<string, Record<string, string | string[]>>) ||
-    (state.metadata?.[metaAnswersKey] as Record<string, Record<string, string | string[]>>) ||
-    {},
+      (state.metadata?.[metaAnswersKey] as Record<string, Record<string, string | string[]>>) ||
+      {}
   );
   const [questResults, setQuestResults] = useState<
     Record<string, { state: string; title: string; body: string }>
@@ -63,12 +53,10 @@ export function QuestRenderer({
     (state.metadata?.questResults as Record<
       string,
       { state: string; title: string; body: string }
-    >) || {},
+    >) || {}
   );
   const [showHint, setShowHint] = useState(false);
-  const [tempAnswers, setTempAnswers] = useState<
-    Record<string, string | string[]>
-  >({});
+  const [tempAnswers, setTempAnswers] = useState<Record<string, string | string[]>>({});
   const [view, setView] = useState<"landing" | "quest" | "result">("landing");
 
   useEffect(() => {
@@ -83,16 +71,12 @@ export function QuestRenderer({
       | Record<string, Record<string, string | string[]>>
       | undefined;
     if (persisted && Object.keys(persisted).length > 0) {
-      setSuiteAnswers((prev) =>
-        Object.keys(prev).length === 0 ? persisted : prev,
-      );
+      setSuiteAnswers((prev) => (Object.keys(prev).length === 0 ? persisted : prev));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.metadata?.[metaAnswersKey]]);
 
-  const activeQuest: QuestData | undefined = suite.quests.find(
-    (q) => q.id === activeQuestId,
-  );
+  const activeQuest: QuestData | undefined = suite.quests.find((q) => q.id === activeQuestId);
 
   useEffect(() => {
     if (Object.keys(questResults).length > 0) {
@@ -108,11 +92,7 @@ export function QuestRenderer({
     setView("quest");
   };
 
-  const handleOptionSelect = (
-    screenId: string,
-    value: string,
-    type: "single" | "multi",
-  ) => {
+  const handleOptionSelect = (screenId: string, value: string, type: "single" | "multi") => {
     if (type === "multi") {
       const current = (tempAnswers[screenId] as string[]) || [];
       const updated = current.includes(value)
@@ -124,10 +104,7 @@ export function QuestRenderer({
     }
   };
 
-  const evaluateLogic = (
-    logicStr: string,
-    answers: Record<string, string | string[]>,
-  ) => {
+  const evaluateLogic = (logicStr: string, answers: Record<string, string | string[]>) => {
     try {
       const fn = new Function("answers", `return ${logicStr}`);
       return fn(answers);
@@ -170,8 +147,7 @@ export function QuestRenderer({
     // Persist answers to backend so risk flags survive page refresh
     actions.updateMetadata({ [metaAnswersKey]: finalAnswers });
 
-    const logic =
-      (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
+    const logic = (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
     const result = evaluateLogic(logic, tempAnswers);
 
     setQuestResults((prev) => {
@@ -192,7 +168,8 @@ export function QuestRenderer({
         bg: "bg-white",
         border: "border-[#d0e4f7]",
         btnSolid: "bg-primary text-white hover:bg-[#0f1f38]",
-        btnOutline: "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary",
+        btnOutline:
+          "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary",
       };
 
     switch (res.state) {
@@ -278,12 +255,24 @@ export function QuestRenderer({
         <div className="mb-6 sm:mb-8">
           <div
             className={`w-full h-[5px] rounded-full overflow-hidden ${
-              isChapter1 ? "bg-[#f3f0fb]" : isChapter2 ? "bg-[#f4e6f3]" : isChapter3 ? "bg-[#e8ecf3]" : "bg-primary/30"
+              isChapter1
+                ? "bg-[#f3f0fb]"
+                : isChapter2
+                  ? "bg-[#f4e6f3]"
+                  : isChapter3
+                    ? "bg-[#e8ecf3]"
+                    : "bg-primary/30"
             }`}
           >
             <div
               className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                isChapter1 ? "bg-[#8284bf]" : isChapter2 ? "bg-[#520a50]" : isChapter3 ? "bg-[#051738]" : "bg-primary"
+                isChapter1
+                  ? "bg-[#8284bf]"
+                  : isChapter2
+                    ? "bg-[#520a50]"
+                    : isChapter3
+                      ? "bg-[#051738]"
+                      : "bg-primary"
               }`}
               style={{ width: `${progressPct}%` }}
             />
@@ -308,18 +297,67 @@ export function QuestRenderer({
 
             if (meta.label === "Passed" || meta.label === "Completed") {
               statusTheme = isChapter1
-                ? { bg: "bg-[#eaf7ed]", border: "border-[#b7e2c1]", iconBg: "bg-[#b7e2c1]", iconBorder: "border-[#b7e2c1]", iconText: "text-[#2e7d32]", badge: "bg-[#b7e2c1] text-[#2e7d32] border-[#b7e2c1] shadow-sm" }
-                : { bg: "bg-[#e3f1fa]", border: "border-[#7bb6e3]", iconBg: "bg-[#7bb6e3]", iconBorder: "border-[#7bb6e3]", iconText: "text-[#174c6f]", badge: "bg-[#7bb6e3] text-[#174c6f] border-[#7bb6e3] shadow-sm" };
+                ? {
+                    bg: "bg-[#eaf7ed]",
+                    border: "border-[#b7e2c1]",
+                    iconBg: "bg-[#b7e2c1]",
+                    iconBorder: "border-[#b7e2c1]",
+                    iconText: "text-[#2e7d32]",
+                    badge: "bg-[#b7e2c1] text-[#2e7d32] border-[#b7e2c1] shadow-sm",
+                  }
+                : {
+                    bg: "bg-[#e3f1fa]",
+                    border: "border-[#7bb6e3]",
+                    iconBg: "bg-[#7bb6e3]",
+                    iconBorder: "border-[#7bb6e3]",
+                    iconText: "text-[#174c6f]",
+                    badge: "bg-[#7bb6e3] text-[#174c6f] border-[#7bb6e3] shadow-sm",
+                  };
             } else if (meta.label === "Caution") {
-              statusTheme = { bg: "bg-[#f3e7d7]", border: "border-[#a97c50]", iconBg: "bg-[#a97c50]/10", iconBorder: "border-[#a97c50]", iconText: "text-[#a97c50]", badge: "bg-[#a97c50]/10 text-[#a97c50] border-[#a97c50] shadow-sm" };
+              statusTheme = {
+                bg: "bg-[#f3e7d7]",
+                border: "border-[#a97c50]",
+                iconBg: "bg-[#a97c50]/10",
+                iconBorder: "border-[#a97c50]",
+                iconText: "text-[#a97c50]",
+                badge: "bg-[#a97c50]/10 text-[#a97c50] border-[#a97c50] shadow-sm",
+              };
             } else if (meta.label === "Review") {
               statusTheme = isChapter1
-                ? { bg: "bg-[#fff6ed]", border: "border-[#ffd8b5]", iconBg: "bg-[#ffd8b5]", iconBorder: "border-[#ffd8b5]", iconText: "text-[#b26a00]", badge: "bg-[#ffd8b5] text-[#b26a00] border-[#ffd8b5] shadow-sm" }
-                : { bg: "bg-[#f9f3e7]", border: "border-[#e6b97b]", iconBg: "bg-[#e6b97b]", iconBorder: "border-[#e6b97b]", iconText: "text-[#7a4c1a]", badge: "bg-[#e6b97b] text-[#7a4c1a] border-[#e6b97b] shadow-sm" };
+                ? {
+                    bg: "bg-[#fff6ed]",
+                    border: "border-[#ffd8b5]",
+                    iconBg: "bg-[#ffd8b5]",
+                    iconBorder: "border-[#ffd8b5]",
+                    iconText: "text-[#b26a00]",
+                    badge: "bg-[#ffd8b5] text-[#b26a00] border-[#ffd8b5] shadow-sm",
+                  }
+                : {
+                    bg: "bg-[#f9f3e7]",
+                    border: "border-[#e6b97b]",
+                    iconBg: "bg-[#e6b97b]",
+                    iconBorder: "border-[#e6b97b]",
+                    iconText: "text-[#7a4c1a]",
+                    badge: "bg-[#e6b97b] text-[#7a4c1a] border-[#e6b97b] shadow-sm",
+                  };
             } else if (meta.label === "Blocked") {
               statusTheme = isChapter1
-                ? { bg: "bg-[#fbeaea]", border: "border-[#f7b8b8]", iconBg: "bg-[#f7b8b8]", iconBorder: "border-[#f7b8b8]", iconText: "text-[#b71c1c]", badge: "bg-[#f7b8b8] text-[#b71c1c] border-[#f7b8b8] shadow-sm" }
-                : { bg: "bg-[#f9e7e7]", border: "border-[#e67b7b]", iconBg: "bg-[#e67b7b]", iconBorder: "border-[#e67b7b]", iconText: "text-[#7a1a1a]", badge: "bg-[#e67b7b] text-[#7a1a1a] border-[#e67b7b] shadow-sm" };
+                ? {
+                    bg: "bg-[#fbeaea]",
+                    border: "border-[#f7b8b8]",
+                    iconBg: "bg-[#f7b8b8]",
+                    iconBorder: "border-[#f7b8b8]",
+                    iconText: "text-[#b71c1c]",
+                    badge: "bg-[#f7b8b8] text-[#b71c1c] border-[#f7b8b8] shadow-sm",
+                  }
+                : {
+                    bg: "bg-[#f9e7e7]",
+                    border: "border-[#e67b7b]",
+                    iconBg: "bg-[#e67b7b]",
+                    iconBorder: "border-[#e67b7b]",
+                    iconText: "text-[#7a1a1a]",
+                    badge: "bg-[#e67b7b] text-[#7a1a1a] border-[#e67b7b] shadow-sm",
+                  };
             }
 
             return (
@@ -350,7 +388,13 @@ export function QuestRenderer({
                   </h3>
                   <p
                     className={`text-xs sm:text-[13px] leading-relaxed mt-0.5 break-words ${
-                      isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
+                      isChapter1
+                        ? "text-[#8284bf]"
+                        : isChapter2
+                          ? "text-[#2f062e]"
+                          : isChapter3
+                            ? "text-[#020a1a]"
+                            : "text-[#3a4f63]"
                     }`}
                   >
                     {q.subtitle}
@@ -366,9 +410,7 @@ export function QuestRenderer({
                 </div>
 
                 {/* xs-only: just the icon */}
-                <div className={`flex sm:hidden shrink-0 ${meta.color}`}>
-                  {meta.icon}
-                </div>
+                <div className={`flex sm:hidden shrink-0 ${meta.color}`}>{meta.icon}</div>
               </button>
             );
           })}
@@ -384,7 +426,7 @@ export function QuestRenderer({
                 answers={
                   Object.keys(suiteAnswers).length > 0
                     ? suiteAnswers
-                    : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+                    : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
                 compact={true}
               />
@@ -396,7 +438,7 @@ export function QuestRenderer({
                 answers={
                   Object.keys(suiteAnswers).length > 0
                     ? suiteAnswers
-                    : (state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers
+                    : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
               />
             </div>
@@ -406,12 +448,16 @@ export function QuestRenderer({
         {/* Disclaimer */}
         <div
           className={`mt-10 sm:mt-12 px-4 py-3.5 rounded-[9px] text-[11px] sm:text-[12px] leading-relaxed text-center ${
-            isChapter1 ? "text-[#8284bf] bg-[#f3f0fb]" : isChapter2 ? "bg-[#f4e6f3] text-[#520a50]" : "bg-[#e8ecf3] text-[#051738]"
+            isChapter1
+              ? "text-[#8284bf] bg-[#f3f0fb]"
+              : isChapter2
+                ? "bg-[#f4e6f3] text-[#520a50]"
+                : "bg-[#e8ecf3] text-[#051738]"
           }`}
         >
           Rahvana provides structured guidance only. This is not legal advice.
-          <br className="hidden sm:block" />
-          {" "}Consult a licensed immigration attorney for case-specific decisions.
+          <br className="hidden sm:block" /> Consult a licensed immigration attorney for
+          case-specific decisions.
         </div>
       </div>
     );
@@ -420,8 +466,7 @@ export function QuestRenderer({
   // ─── RESULT VIEW ───────────────────────────────────────────────────────────
   if (view === "result" && activeQuest) {
     const result =
-      questResults[activeQuest.id] ||
-      (state.metadata?.questResults as any)?.[activeQuest.id];
+      questResults[activeQuest.id] || (state.metadata?.questResults as any)?.[activeQuest.id];
     const meta = getStatusMeta(activeQuest.id, 36);
 
     return (
@@ -446,7 +491,13 @@ export function QuestRenderer({
           </h2>
           <p
             className={`mb-8 sm:mb-10 leading-relaxed max-w-[400px] mx-auto text-[14px] sm:text-[16px] ${
-              isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
+              isChapter1
+                ? "text-[#8284bf]"
+                : isChapter2
+                  ? "text-[#2f062e]"
+                  : isChapter3
+                    ? "text-[#020a1a]"
+                    : "text-[#3a4f63]"
             }`}
           >
             {result?.body || "Please wait while we calculate your status."}
@@ -482,10 +533,34 @@ export function QuestRenderer({
         : true);
 
     const accentColor = isChapter1
-      ? { bar: "bg-[#8284bf]", barBg: "bg-[#f3f0fb]", border: "border-[#8284bf]/40", closeBg: "bg-[#f3f0fb] hover:bg-[#e6d6f5]", closeStroke: "stroke-[#8284bf]", label: "accent-brown", btn: "bg-[#8284bf] text-white shadow-[#8284bf]/20 hover:bg-[#6b6fa8]" }
+      ? {
+          bar: "bg-[#8284bf]",
+          barBg: "bg-[#f3f0fb]",
+          border: "border-[#8284bf]/40",
+          closeBg: "bg-[#f3f0fb] hover:bg-[#e6d6f5]",
+          closeStroke: "stroke-[#8284bf]",
+          label: "accent-brown",
+          btn: "bg-[#8284bf] text-white shadow-[#8284bf]/20 hover:bg-[#6b6fa8]",
+        }
       : isChapter2
-      ? { bar: "bg-[#520a50]", barBg: "bg-[#f4e6f3]", border: "border-[#520a50]", closeBg: "bg-[#f4e6f3] hover:bg-[#520a50]/10", closeStroke: "stroke-[#520a50]", label: "text-[#520a50]", btn: "bg-[#520a50] text-white shadow-[#520a50]/20 hover:bg-[#2f062e]" }
-      : { bar: "bg-[#051738]", barBg: "bg-[#e8ecf3]", border: "border-[#051738]", closeBg: "bg-[#e8ecf3] hover:bg-[#051738]/10", closeStroke: "stroke-[#051738]", label: "text-[#051738]", btn: "bg-[#051738] text-white shadow-[#051738]/20 hover:bg-[#020a1a]" };
+        ? {
+            bar: "bg-[#520a50]",
+            barBg: "bg-[#f4e6f3]",
+            border: "border-[#520a50]",
+            closeBg: "bg-[#f4e6f3] hover:bg-[#520a50]/10",
+            closeStroke: "stroke-[#520a50]",
+            label: "text-[#520a50]",
+            btn: "bg-[#520a50] text-white shadow-[#520a50]/20 hover:bg-[#2f062e]",
+          }
+        : {
+            bar: "bg-[#051738]",
+            barBg: "bg-[#e8ecf3]",
+            border: "border-[#051738]",
+            closeBg: "bg-[#e8ecf3] hover:bg-[#051738]/10",
+            closeStroke: "stroke-[#051738]",
+            label: "text-[#051738]",
+            btn: "bg-[#051738] text-white shadow-[#051738]/20 hover:bg-[#020a1a]",
+          };
 
     return (
       <div className="w-full flex flex-col animate-in slide-in-from-right-4 pt-6 fade-in duration-500">
@@ -515,7 +590,9 @@ export function QuestRenderer({
             />
           </div>
 
-          <span className={`text-[11px] font-medium whitespace-nowrap shrink-0 ${accentColor.label}`}>
+          <span
+            className={`text-[11px] font-medium whitespace-nowrap shrink-0 ${accentColor.label}`}
+          >
             {progressIdx} / {activeQuest.screens.length}
           </span>
         </div>
@@ -524,7 +601,9 @@ export function QuestRenderer({
         <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 sm:px-6 pt-5 sm:pt-8 pb-8 sm:pb-12">
           <div className="w-full max-w-[560px] flex flex-col">
             {/* Quest label */}
-            <div className={`text-[11px] font-semibold uppercase tracking-widest mb-4 sm:mb-5 ${accentColor.label}`}>
+            <div
+              className={`text-[11px] font-semibold uppercase tracking-widest mb-4 sm:mb-5 ${accentColor.label}`}
+            >
               {activeQuest.title}
             </div>
 
@@ -540,7 +619,13 @@ export function QuestRenderer({
             {screen.helper && (
               <p
                 className={`text-sm sm:text-[14px] mb-5 sm:mb-7 leading-relaxed ${
-                  isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#3a4f63]"
+                  isChapter1
+                    ? "text-[#8284bf]"
+                    : isChapter2
+                      ? "text-[#2f062e]"
+                      : isChapter3
+                        ? "text-[#020a1a]"
+                        : "text-[#3a4f63]"
                 }`}
               >
                 {screen.helper}
@@ -559,9 +644,17 @@ export function QuestRenderer({
                   aria-expanded={showHint}
                   aria-controls={`hint-panel-${screen.id}`}
                 >
-                  <span className={`transition-transform duration-300 ${showHint ? "rotate-0" : "-rotate-90"}`}>
+                  <span
+                    className={`transition-transform duration-300 ${showHint ? "rotate-0" : "-rotate-90"}`}
+                  >
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                      <path d="M6 8L10 12L14 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M6 8L10 12L14 8"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </span>
                   <span>Examples</span>
@@ -570,18 +663,29 @@ export function QuestRenderer({
                   <div
                     id={`hint-panel-${screen.id}`}
                     className={`mt-4 p-4 sm:p-5 rounded-[16px] animate-in slide-in-from-top-2 duration-300 ${
-                      isChapter1 ? "bg-[#f7ede5] border-[#a97c50]/40" : isChapter2 ? "bg-[#f4e6f3] border border-[#d5abd2]" : "bg-[#e8ecf3] border border-[#b7c2d4]"
+                      isChapter1
+                        ? "bg-[#f7ede5] border-[#a97c50]/40"
+                        : isChapter2
+                          ? "bg-[#f4e6f3] border border-[#d5abd2]"
+                          : "bg-[#e8ecf3] border border-[#b7c2d4]"
                     }`}
                   >
                     {screen.hint.intro && (
-                      <p className={`text-[13px] font-bold mb-2 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"}`}>
+                      <p
+                        className={`text-[13px] font-bold mb-2 ${isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"}`}
+                      >
                         {screen.hint.intro}
                       </p>
                     )}
                     <ul className="space-y-2">
                       {screen.hint.items.map((it: string, i: number) => (
-                        <li key={i} className={`flex gap-2 text-[13px] sm:text-[13.5px] leading-relaxed ${isChapter1 ? "text-[#8284bf]" : "text-[#3a4f63]"}`}>
-                          <span className={`${isChapter1 ? "accent-brown" : "text-primary"} mt-1`}>•</span>
+                        <li
+                          key={i}
+                          className={`flex gap-2 text-[13px] sm:text-[13.5px] leading-relaxed ${isChapter1 ? "text-[#8284bf]" : "text-[#3a4f63]"}`}
+                        >
+                          <span className={`${isChapter1 ? "accent-brown" : "text-primary"} mt-1`}>
+                            •
+                          </span>
                           <span>{it}</span>
                         </li>
                       ))}
@@ -603,32 +707,50 @@ export function QuestRenderer({
                 const selectedCls = isChapter1
                   ? "border-[#8284bf] bg-[#f0f1fb] shadow-[0_0_0_3px_rgba(130,132,191,0.10)]"
                   : isChapter2
-                  ? "border-[#520a50] bg-[#f4e6f3] shadow-[0_0_0_3px_rgba(82,10,80,0.10)]"
-                  : isChapter3
-                  ? "border-[#051738] bg-[#e8ecf3] shadow-[0_0_0_3px_rgba(5,23,56,0.10)]"
-                  : "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(59,125,216,0.12)]";
+                    ? "border-[#520a50] bg-[#f4e6f3] shadow-[0_0_0_3px_rgba(82,10,80,0.10)]"
+                    : isChapter3
+                      ? "border-[#051738] bg-[#e8ecf3] shadow-[0_0_0_3px_rgba(5,23,56,0.10)]"
+                      : "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(59,125,216,0.12)]";
 
                 const defaultCls = isChapter1
                   ? "border-[#8284bf]/40 bg-white hover:border-[#8284bf] hover:bg-[#f0f1fb]"
                   : isChapter2
-                  ? "border-[#520a50]/40 bg-white hover:border-[#520a50] hover:bg-[#f4e6f3]"
-                  : isChapter3
-                  ? "border-[#051738]/40 bg-white hover:border-[#051738] hover:bg-[#e8ecf3]"
-                  : "border-[#b7c2d4] bg-white hover:border-primary hover:bg-primary/5";
+                    ? "border-[#520a50]/40 bg-white hover:border-[#520a50] hover:bg-[#f4e6f3]"
+                    : isChapter3
+                      ? "border-[#051738]/40 bg-white hover:border-[#051738] hover:bg-[#e8ecf3]"
+                      : "border-[#b7c2d4] bg-white hover:border-primary hover:bg-primary/5";
 
                 const radioCls = isSelected
-                  ? isChapter1 ? "border-[#8284bf] bg-[#8284bf]"
-                    : isChapter2 ? "border-[#520a50] bg-[#520a50]"
-                    : isChapter3 ? "border-[#051738] bg-[#051738]"
-                    : "border-primary bg-primary"
-                  : isChapter1 ? "border-[#8284bf]/40 bg-white"
-                    : isChapter2 ? "border-[#520a50]/40 bg-white"
-                    : isChapter3 ? "border-[#051738]/40 bg-white"
-                    : "border-[#b7c2d4] bg-white";
+                  ? isChapter1
+                    ? "border-[#8284bf] bg-[#8284bf]"
+                    : isChapter2
+                      ? "border-[#520a50] bg-[#520a50]"
+                      : isChapter3
+                        ? "border-[#051738] bg-[#051738]"
+                        : "border-primary bg-primary"
+                  : isChapter1
+                    ? "border-[#8284bf]/40 bg-white"
+                    : isChapter2
+                      ? "border-[#520a50]/40 bg-white"
+                      : isChapter3
+                        ? "border-[#051738]/40 bg-white"
+                        : "border-[#b7c2d4] bg-white";
 
                 const labelCls = isSelected
-                  ? isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : isChapter3 ? "text-[#051738]" : "text-[#051738]"
-                  : isChapter1 ? "accent-brown/80" : isChapter2 ? "text-[#520a50]/80" : isChapter3 ? "text-[#051738]/80" : "text-[#020a1a]";
+                  ? isChapter1
+                    ? "accent-brown"
+                    : isChapter2
+                      ? "text-[#520a50]"
+                      : isChapter3
+                        ? "text-[#051738]"
+                        : "text-[#051738]"
+                  : isChapter1
+                    ? "accent-brown/80"
+                    : isChapter2
+                      ? "text-[#520a50]/80"
+                      : isChapter3
+                        ? "text-[#051738]/80"
+                        : "text-[#020a1a]";
 
                 return (
                   <button
@@ -636,17 +758,23 @@ export function QuestRenderer({
                     onClick={() => handleOptionSelect(screen.id, opt.value, screen.type)}
                     className={`w-full flex items-start gap-3 px-4 sm:px-5 py-3.5 sm:py-4 rounded-[14px] border-[1.5px] text-left transition-all duration-200 ${isSelected ? selectedCls : defaultCls}`}
                   >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 shrink-0 transition-all ${radioCls}`}>
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 shrink-0 transition-all ${radioCls}`}
+                    >
                       {isSelected && (
                         <div className="w-2 h-2 rounded-full bg-white animate-in zoom-in-50" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={`text-sm sm:text-[15px] font-medium leading-snug break-words ${labelCls}`}>
+                      <div
+                        className={`text-sm sm:text-[15px] font-medium leading-snug break-words ${labelCls}`}
+                      >
                         {opt.label}
                       </div>
                       {opt.sub && (
-                        <div className={`text-xs sm:text-[13px] mt-0.5 leading-relaxed break-words ${isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#6b8097]"}`}>
+                        <div
+                          className={`text-xs sm:text-[13px] mt-0.5 leading-relaxed break-words ${isChapter1 ? "text-[#8284bf]" : isChapter2 ? "text-[#2f062e]" : isChapter3 ? "text-[#020a1a]" : "text-[#6b8097]"}`}
+                        >
                           {opt.sub}
                         </div>
                       )}
@@ -664,7 +792,10 @@ export function QuestRenderer({
                 className={`w-full py-3 sm:py-3.5 rounded-lg font-bold text-[15px] sm:text-[16px] transition-all group flex items-center justify-center gap-2 shadow-lg disabled:opacity-30 disabled:cursor-not-allowed ${accentColor.btn}`}
               >
                 {currentScreenIdx === activeQuest.screens.length - 1 ? "Get Results" : "Continue"}
-                <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                <ChevronRight
+                  size={18}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </button>
               {currentScreenIdx > 0 && (
                 <button

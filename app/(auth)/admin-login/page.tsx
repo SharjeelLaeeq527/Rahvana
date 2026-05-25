@@ -10,8 +10,7 @@ import { Loader } from "@/components/ui/spinner";
 
 function AdminLoginPageContent() {
   const router = useRouter();
-  const { signIn, user, isLoading, isAdmin, verifyMFALogin, mfaPending } =
-    useAuth();
+  const { signIn, user, isLoading, isAdmin, verifyMFALogin, mfaPending } = useAuth();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -63,11 +62,7 @@ function AdminLoginPageContent() {
     setIsSubmitting(true);
 
     try {
-      const { success, error: mfaError } = await verifyMFALogin(
-        factorId,
-        challengeId,
-        mfaCode,
-      );
+      const { success, error: mfaError } = await verifyMFALogin(factorId, challengeId, mfaCode);
 
       if (success) {
         router.replace("/admin");
@@ -149,19 +144,13 @@ function AdminLoginPageContent() {
                 disabled={isSubmitting || mfaCode.length !== 6}
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
               >
-                {isSubmitting ? (
-                  <Loader size="sm" text="Verifying..." />
-                ) : (
-                  "Verify Code"
-                )}
+                {isSubmitting ? <Loader size="sm" text="Verifying..." /> : "Verify Code"}
               </Button>
             </form>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
-                  Email Address
-                </label>
+                <label className="block text-sm font-medium text-foreground">Email Address</label>
                 <Input
                   type="email"
                   value={email}
@@ -175,9 +164,7 @@ function AdminLoginPageContent() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium text-foreground">
-                    Password
-                  </label>
+                  <label className="block text-sm font-medium text-foreground">Password</label>
                 </div>
                 <div className="relative">
                   <Input

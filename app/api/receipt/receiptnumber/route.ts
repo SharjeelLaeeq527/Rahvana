@@ -4,10 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { getReceiptRecord } from "@/lib/supabase/receipts";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { receiptNumber: string } }
-) {
+export async function GET(req: Request, { params }: { params: { receiptNumber: string } }) {
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -41,14 +38,14 @@ export async function GET(
   }
 
   return NextResponse.json({
-    receipt_number:    data.receiptNumber,
-    notice_date:       data.noticeDate,
-    priority_date:     data.priorityDate,
-    case_label:        data.caseLabel,
-    source:            data.source,
-    tracking_enabled:  data.trackingEnabled,
+    receipt_number: data.receiptNumber,
+    notice_date: data.noticeDate,
+    priority_date: data.priorityDate,
+    case_label: data.caseLabel,
+    source: data.source,
+    tracking_enabled: data.trackingEnabled,
     last_known_status: data.lastKnownStatus,
-    last_checked_at:   data.lastCheckedAt,
-    saved_at:          data.savedAt,
+    last_checked_at: data.lastCheckedAt,
+    saved_at: data.savedAt,
   });
 }

@@ -66,17 +66,25 @@ export function DocCaseStrengthMeter({
       docReviewStatus,
       docUploads,
       notes,
-      eligibilityAnswers,
+      eligibilityAnswers
     );
-  }, [documentItems, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes, eligibilityAnswers]);
+  }, [
+    documentItems,
+    uploadedDocuments,
+    documentChecklist,
+    docReviewStatus,
+    docUploads,
+    notes,
+    eligibilityAnswers,
+  ]);
 
   if (!documentItems || documentItems.length === 0 || !result) return null;
 
   // What user needs to know — only actionable items
-  const missingRequired = result.completeness.missing;          // 🔴 must-fix
+  const missingRequired = result.completeness.missing; // 🔴 must-fix
   const consistencyIssues = result.consistency.checks.filter((c) => !c.passed);
   const helpfulExtras = documentItems.filter((d) => {
-    if (d.required) return false;                                // skip required (already counted)
+    if (d.required) return false; // skip required (already counted)
     // Not done yet, optional but in the JSON
     const done =
       docReviewStatus?.[d.id] === "reviewed" ||
@@ -113,14 +121,16 @@ export function DocCaseStrengthMeter({
           : "All good";
 
   const HeaderIcon =
-    missingRequired.length > 0 ? AlertTriangle
-    : consistencyIssues.length > 0 ? CircleAlert
-    : hasExtras ? Star
-    : CheckCircle2;
+    missingRequired.length > 0
+      ? AlertTriangle
+      : consistencyIssues.length > 0
+        ? CircleAlert
+        : hasExtras
+          ? Star
+          : CheckCircle2;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-
       {/* Compact header */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -154,14 +164,15 @@ export function DocCaseStrengthMeter({
       {/* Expanded body */}
       {open && (
         <div className="border-t border-slate-100 p-3 flex flex-col gap-3 bg-[#fafbfc]">
-
           {/* All clean state — only when no missing AND no extras */}
           {allClean && (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
               <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
               <div>
                 <div className="text-[12.5px] font-bold text-emerald-900">All documents ready!</div>
-                <div className="text-[11px] text-emerald-700">Your case looks complete for this step.</div>
+                <div className="text-[11px] text-emerald-700">
+                  Your case looks complete for this step.
+                </div>
               </div>
             </div>
           )}
@@ -171,21 +182,26 @@ export function DocCaseStrengthMeter({
             <div className="rounded-xl border border-red-200 bg-red-50 overflow-hidden">
               <div className="px-3 py-2 bg-red-100/60 border-b border-red-200 flex items-center gap-2">
                 <AlertTriangle size={13} className="text-red-600" />
-                <span className="text-[11.5px] font-bold text-red-800">
-                  These are missing
-                </span>
+                <span className="text-[11.5px] font-bold text-red-800">These are missing</span>
               </div>
               <ul className="p-3 flex flex-col gap-2">
                 {missingRequired.map((m) => (
                   <li key={m.id} className="flex items-start gap-2.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 mt-1.5" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold text-slate-900 leading-snug">{m.name}</div>
+                      <div className="text-[12px] font-semibold text-slate-900 leading-snug">
+                        {m.name}
+                      </div>
                       {m.subtitle && (
-                        <div className="text-[10.5px] text-slate-600 leading-snug mt-0.5">{m.subtitle}</div>
+                        <div className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
+                          {m.subtitle}
+                        </div>
                       )}
                       {m.guideUrl && (
-                        <Link href={m.guideUrl} className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline">
+                        <Link
+                          href={m.guideUrl}
+                          className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline"
+                        >
                           How to get this <ExternalLink size={9} />
                         </Link>
                       )}
@@ -210,9 +226,13 @@ export function DocCaseStrengthMeter({
                   <li key={c.id} className="flex items-start gap-2.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold text-slate-900 leading-snug">{c.label}</div>
+                      <div className="text-[12px] font-semibold text-slate-900 leading-snug">
+                        {c.label}
+                      </div>
                       {c.hint && (
-                        <div className="text-[10.5px] text-amber-800 leading-snug mt-0.5">{c.hint}</div>
+                        <div className="text-[10.5px] text-amber-800 leading-snug mt-0.5">
+                          {c.hint}
+                        </div>
                       )}
                     </div>
                   </li>
@@ -235,12 +255,19 @@ export function DocCaseStrengthMeter({
                   <li key={d.id} className="flex items-start gap-2.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-semibold text-slate-900 leading-snug">{d.name}</div>
+                      <div className="text-[12px] font-semibold text-slate-900 leading-snug">
+                        {d.name}
+                      </div>
                       {d.subtitle && (
-                        <div className="text-[10.5px] text-slate-600 leading-snug mt-0.5">{d.subtitle}</div>
+                        <div className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
+                          {d.subtitle}
+                        </div>
                       )}
                       {d.guideUrl && (
-                        <Link href={d.guideUrl} className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline">
+                        <Link
+                          href={d.guideUrl}
+                          className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline"
+                        >
                           Learn more <ExternalLink size={9} />
                         </Link>
                       )}

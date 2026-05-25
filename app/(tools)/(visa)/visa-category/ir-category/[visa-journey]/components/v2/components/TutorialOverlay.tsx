@@ -111,9 +111,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
                 <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
                 <div className="flex-1 h-[20px] bg-[#fafcff] rounded-[5px] border border-[#d0e4f7] ml-[10px] flex items-center px-[10px]">
-                  <span className="text-[10px] text-[#6b8097] font-mono">
-                    ceac.state.gov
-                  </span>
+                  <span className="text-[10px] text-[#6b8097] font-mono">ceac.state.gov</span>
                 </div>
               </div>
 
@@ -134,9 +132,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
             {ceacTutStep.note && (
               <div className="bg-[#e8f5ef] border-l-4 border-[#15744f] p-[12px_14px] rounded-[4px] mb-5">
-                <div className="text-[12px] text-[#3a4f63] leading-[1.6]">
-                  {ceacTutStep.note}
-                </div>
+                <div className="text-[12px] text-[#3a4f63] leading-[1.6]">{ceacTutStep.note}</div>
               </div>
             )}
 
@@ -209,9 +205,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
         <div className="w-full max-w-[580px] flex flex-col">
           <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-            {isDynamic
-              ? currentTutStep.label
-              : (currentTutStep as any).label}
+            {isDynamic ? currentTutStep.label : (currentTutStep as any).label}
           </div>
           <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
             {currentTutStep.heading}
@@ -240,39 +234,20 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               </div>
 
               {/* Content Area — aspectRatio only, no minHeight */}
-              <div
-                className="relative w-full bg-[#f8f9fb]"
-                style={{ aspectRatio: "4/3" }}
-              >
+              <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
                 {(currentTutStep as TutorialStepData).media?.src ? (
-                  (currentTutStep as TutorialStepData).media?.type ===
-                  "video" ? (
+                  (currentTutStep as TutorialStepData).media?.type === "video" ? (
                     <TutorialVideo
-                      key={
-                        (currentTutStep as TutorialStepData).media?.src!
-                      }
-                      src={
-                        (currentTutStep as TutorialStepData).media?.src!
-                      }
-                      poster={
-                        (currentTutStep as TutorialStepData).videoMeta
-                          ?.poster
-                      }
-                      alt={
-                        (currentTutStep as TutorialStepData).screenTitle
-                      }
+                      key={(currentTutStep as TutorialStepData).media?.src!}
+                      src={(currentTutStep as TutorialStepData).media?.src!}
+                      poster={(currentTutStep as TutorialStepData).videoMeta?.poster}
+                      alt={(currentTutStep as TutorialStepData).screenTitle}
                     />
                   ) : (
                     <Image
-                      key={
-                        (currentTutStep as TutorialStepData).media?.src!
-                      }
-                      src={
-                        (currentTutStep as TutorialStepData).media?.src!
-                      }
-                      alt={
-                        (currentTutStep as TutorialStepData).screenTitle
-                      }
+                      key={(currentTutStep as TutorialStepData).media?.src!}
+                      src={(currentTutStep as TutorialStepData).media?.src!}
+                      alt={(currentTutStep as TutorialStepData).screenTitle}
                       fill
                       className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
@@ -283,22 +258,13 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 ) : (currentTutStep as TutorialStepData).video ? (
                   <TutorialVideo
                     src={(currentTutStep as TutorialStepData).video!}
-                    poster={
-                      (currentTutStep as TutorialStepData).videoMeta
-                        ?.poster
-                    }
-                    alt={
-                      (currentTutStep as TutorialStepData).screenTitle
-                    }
+                    poster={(currentTutStep as TutorialStepData).videoMeta?.poster}
+                    alt={(currentTutStep as TutorialStepData).screenTitle}
                   />
                 ) : (currentTutStep as TutorialStepData).screenshot ? (
                   <Image
-                    src={
-                      (currentTutStep as TutorialStepData).screenshot!
-                    }
-                    alt={
-                      (currentTutStep as TutorialStepData).screenTitle
-                    }
+                    src={(currentTutStep as TutorialStepData).screenshot!}
+                    alt={(currentTutStep as TutorialStepData).screenTitle}
                     fill
                     className="object-contain"
                     sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
@@ -313,40 +279,28 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                     </span>
 
                     <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
-                      {(currentTutStep as TutorialStepData)
-                        .ss_headline ||
-                        (currentTutStep as TutorialStepData)
-                          .screenTitle}
+                      {(currentTutStep as TutorialStepData).ss_headline ||
+                        (currentTutStep as TutorialStepData).screenTitle}
                     </div>
 
                     {((currentTutStep as TutorialStepData).ss_desc ||
-                      (currentTutStep as TutorialStepData)
-                        .screenDesc) && (
+                      (currentTutStep as TutorialStepData).screenDesc) && (
                       <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center">
                         {(currentTutStep as TutorialStepData).ss_desc ||
-                          (currentTutStep as TutorialStepData)
-                            .screenDesc}
+                          (currentTutStep as TutorialStepData).screenDesc}
                       </div>
                     )}
 
-                    {(currentTutStep as TutorialStepData)
-                      .ss_highlight && (
+                    {(currentTutStep as TutorialStepData).ss_highlight && (
                       <div className="px-[16px] py-[12px] bg-[rgba(47,111,212,0.12)] border-[1.5px] border-[rgba(47,111,212,0.22)] rounded-[10px] text-[13px] font-semibold text-primary text-center">
-                        ✓{" "}
-                        {
-                          (currentTutStep as TutorialStepData)
-                            .ss_highlight
-                        }
+                        ✓ {(currentTutStep as TutorialStepData).ss_highlight}
                       </div>
                     )}
 
                     {(currentTutStep as TutorialStepData).fields &&
-                      (currentTutStep as TutorialStepData).fields!
-                        .length > 0 && (
+                      (currentTutStep as TutorialStepData).fields!.length > 0 && (
                         <div className="flex flex-col gap-[8px] w-full max-w-[320px]">
-                          {(
-                            currentTutStep as TutorialStepData
-                          ).fields!.map((field, idx) =>
+                          {(currentTutStep as TutorialStepData).fields!.map((field, idx) =>
                             field.type === "btn" ? (
                               <div
                                 key={idx}
@@ -355,27 +309,20 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                                 {field.label}
                               </div>
                             ) : (
-                              <div
-                                key={idx}
-                                className="flex flex-col gap-[4px]"
-                              >
+                              <div key={idx} className="flex flex-col gap-[4px]">
                                 {field.label && (
                                   <label className="text-[12px] font-medium text-[#3a4f63]">
                                     {field.label}
                                   </label>
                                 )}
                                 <input
-                                  type={
-                                    field.isPassword
-                                      ? "password"
-                                      : "text"
-                                  }
+                                  type={field.isPassword ? "password" : "text"}
                                   placeholder={field.placeholder}
                                   disabled
                                   className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
                                 />
                               </div>
-                            ),
+                            )
                           )}
                         </div>
                       )}
@@ -386,8 +333,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               {/* Caption Bar */}
               <div
                 className={`p-[8px_14px_10px] border-t text-[11px] leading-normal ${
-                  (currentTutStep as TutorialStepData).caption_class ===
-                  "success"
+                  (currentTutStep as TutorialStepData).caption_class === "success"
                     ? "bg-[#e8f5ef] border-[#a8d9be] text-[#15744f] font-medium"
                     : "bg-white border-[#d0e4f7] text-[#6b8097]"
                 }`}
@@ -405,40 +351,19 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
                 <div className="flex-1 h-[18px] bg-[#fafcff] rounded-[4px] border border-[#d0e4f7] ml-[8px] flex items-center px-[10px]">
                   <span className="text-[10px] text-[#6b8097] font-mono">
-                    {
-                      (
-                        currentTutStep as any
-                      ).url
-                    }
+                    {(currentTutStep as any).url}
                   </span>
                 </div>
               </div>
 
               {/* Content Area — aspectRatio only, no minHeight */}
-              <div
-                className="relative w-full bg-[#f8f9fb]"
-                style={{ aspectRatio: "4/3" }}
-              >
-                {(currentTutStep as any)
-                  .media?.src ? (
-                  (currentTutStep as any)
-                    .media.type === "img" ? (
+              <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
+                {(currentTutStep as any).media?.src ? (
+                  (currentTutStep as any).media.type === "img" ? (
                     <Image
-                      key={
-                        (
-                          currentTutStep as any
-                        ).media.src
-                      }
-                      src={
-                        (
-                          currentTutStep as any
-                        ).media.src!
-                      }
-                      alt={
-                        (
-                          currentTutStep as any
-                        ).screenTitle
-                      }
+                      key={(currentTutStep as any).media.src}
+                      src={(currentTutStep as any).media.src!}
+                      alt={(currentTutStep as any).screenTitle}
                       fill
                       className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
@@ -447,70 +372,29 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                     />
                   ) : (
                     <TutorialVideo
-                      key={
-                        (
-                          currentTutStep as any
-                        ).media.src
-                      }
-                      src={
-                        (
-                          currentTutStep as any
-                        ).media.src!
-                      }
-                      poster={
-                        (
-                          currentTutStep as any
-                        ).videoMeta?.poster
-                      }
-                      alt={
-                        (
-                          currentTutStep as any
-                        ).screenTitle
-                      }
+                      key={(currentTutStep as any).media.src}
+                      src={(currentTutStep as any).media.src!}
+                      poster={(currentTutStep as any).videoMeta?.poster}
+                      alt={(currentTutStep as any).screenTitle}
                     />
                   )
                 ) : (
                   /* Fallback placeholder — absolute to fill ratio box */
                   <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[12px] items-center justify-center overflow-hidden">
                     <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
-                      {(
-                        currentTutStep as any
-                      ).ss_headline ||
-                        (
-                          currentTutStep as any
-                        ).screenTitle}
+                      {(currentTutStep as any).ss_headline || (currentTutStep as any).screenTitle}
                     </div>
 
-                    {((
-                      currentTutStep as any
-                    ).ss_desc ||
-                      (
-                        currentTutStep as any
-                      ).screenDesc) && (
+                    {((currentTutStep as any).ss_desc || (currentTutStep as any).screenDesc) && (
                       <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center">
-                        {(
-                          currentTutStep as any
-                        ).ss_desc ||
-                          (
-                            currentTutStep as any
-                          ).screenDesc}
+                        {(currentTutStep as any).ss_desc || (currentTutStep as any).screenDesc}
                       </div>
                     )}
 
-                    {Array.isArray(
-                      (
-                        currentTutStep as any
-                      )?.fields,
-                    ) &&
-                      ((
-                        currentTutStep as any
-                      )?.fields?.length ?? 0) > 0 && (
+                    {Array.isArray((currentTutStep as any)?.fields) &&
+                      ((currentTutStep as any)?.fields?.length ?? 0) > 0 && (
                         <div className="flex flex-col gap-[8px] w-full max-w-[320px]">
-                          {(
-                            (
-                              currentTutStep as any
-                            )?.fields ?? []
-                          ).map((field: any, idx: number) =>
+                          {((currentTutStep as any)?.fields ?? []).map((field: any, idx: number) =>
                             field?.type === "btn" ? (
                               <div
                                 key={idx}
@@ -519,27 +403,20 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                                 {field.label}
                               </div>
                             ) : (
-                              <div
-                                key={idx}
-                                className="flex flex-col gap-[4px]"
-                              >
+                              <div key={idx} className="flex flex-col gap-[4px]">
                                 {field.label && (
                                   <label className="text-[12px] font-medium text-[#3a4f63]">
                                     {field.label}
                                   </label>
                                 )}
                                 <input
-                                  type={
-                                    field.isPassword
-                                      ? "password"
-                                      : "text"
-                                  }
+                                  type={field.isPassword ? "password" : "text"}
                                   placeholder={field.placeholder}
                                   disabled
                                   className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
                                 />
                               </div>
-                            ),
+                            )
                           )}
                         </div>
                       )}
@@ -551,9 +428,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
           {/* Note Block */}
           {((isDynamic && (currentTutStep as TutorialStepData).note) ||
-            (!isDynamic &&
-              (currentTutStep as any)
-                .note)) && (
+            (!isDynamic && (currentTutStep as any).note)) && (
             <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[12px_15px] mb-[22px]">
               <div className="text-[13px] text-[#8a6200] leading-[1.55]">
                 {isDynamic ? (
@@ -561,9 +436,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{
-                      __html: (
-                        currentTutStep as any
-                      ).note!,
+                      __html: (currentTutStep as any).note!,
                     }}
                   />
                 )}

@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Search,
-  Clock,
-  Scale,
-  BellRing,
-  Save,
-  ExternalLink,
-} from "lucide-react";
+import { Search, Clock, Scale, BellRing, Save, ExternalLink } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 interface AwaitingReviewStepProps {
@@ -19,9 +12,7 @@ interface AwaitingReviewStepProps {
   };
 }
 
-export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({
-  data,
-}) => {
+export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) => {
   return (
     <div className="flex flex-col items-center w-full min-h-screen">
       <style jsx global>{`
@@ -105,9 +96,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({
                 <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/38">
                   {item.label}
                 </div>
-                <div className="text-[13px] font-semibold text-white/88">
-                  {item.value}
-                </div>
+                <div className="text-[13px] font-semibold text-white/88">{item.value}</div>
               </div>
             ))}
           </div>
@@ -119,9 +108,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({
             <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
               <Search size={17} className="text-[#2f6fd4]" strokeWidth={1.7} />
             </div>
-            <h3 className="text-[14px] font-semibold text-[#0c1b33]">
-              {data.reviewItems.title}
-            </h3>
+            <h3 className="text-[14px] font-semibold text-[#0c1b33]">{data.reviewItems.title}</h3>
           </div>
           <div className="flex flex-col gap-[7px]">
             {data.reviewItems.items.map((item: any, i: number) => (
@@ -167,9 +154,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({
               <div className="w-[36px] h-[36px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
                 <Scale size={17} className="text-[#2f6fd4]" strokeWidth={1.7} />
               </div>
-              <h3 className="text-[14px] font-semibold text-[#0c1b33]">
-                {data.timeline.title}
-              </h3>
+              <h3 className="text-[14px] font-semibold text-[#0c1b33]">{data.timeline.title}</h3>
             </div>
             <div className="flex flex-col gap-0 relative pl-[18px]">
               {/* Vertical Line */}

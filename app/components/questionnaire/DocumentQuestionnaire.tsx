@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import {
-  X,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  FileText,
-  ClipboardList,
-} from "lucide-react";
+import { X, ArrowRight, ArrowLeft, CheckCircle2, FileText, ClipboardList } from "lucide-react";
 
 import type {
   QuestionnaireConfig,
@@ -47,25 +40,20 @@ export function DocumentQuestionnaire({
   onComplete,
   onDismiss,
 }: DocumentQuestionnaireProps) {
-  const [answers, setAnswers] = useState<QuestionnaireAnswers>(
-    () => (initialAnswers ? { ...initialAnswers } : {}),
+  const [answers, setAnswers] = useState<QuestionnaireAnswers>(() =>
+    initialAnswers ? { ...initialAnswers } : {}
   );
   const [currentIdx, setCurrentIdx] = useState(() => {
     const idx = getNextUnansweredIndex(config, initialAnswers || {});
     return idx === -1 ? 0 : idx;
   });
   const [showSummary, setShowSummary] = useState(() => {
-    return initialAnswers
-      ? isQuestionnaireComplete(config, initialAnswers)
-      : false;
+    return initialAnswers ? isQuestionnaireComplete(config, initialAnswers) : false;
   });
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
 
   // Visible questions based on current answers
-  const visibleQuestions = useMemo(
-    () => getVisibleQuestions(config, answers),
-    [config, answers],
-  );
+  const visibleQuestions = useMemo(() => getVisibleQuestions(config, answers), [config, answers]);
 
   const currentQuestion = visibleQuestions[currentIdx] ?? null;
   const selectedValue = currentQuestion ? answers[currentQuestion.id] : null;
@@ -75,7 +63,7 @@ export function DocumentQuestionnaire({
   // Computed document list for the summary screen
   const finalDocuments = useMemo(
     () => (showSummary ? computeDocumentList(config, answers) : []),
-    [config, answers, showSummary],
+    [config, answers, showSummary]
   );
 
   // Progress bar width
@@ -114,7 +102,7 @@ export function DocumentQuestionnaire({
       if (!currentQuestion) return;
       setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
     },
-    [currentQuestion],
+    [currentQuestion]
   );
 
   const handleContinue = useCallback(() => {
@@ -284,8 +272,8 @@ export function DocumentQuestionnaire({
               </h2>
 
               <p className="text-[14px] text-[#3a4f63] mt-2 mb-[28px] text-center max-w-[460px] mx-auto leading-[1.7]">
-                Based on your answers, we&apos;ve built a personalized checklist
-                of {finalDocuments.length} documents for your IR-1 petition.
+                Based on your answers, we&apos;ve built a personalized checklist of{" "}
+                {finalDocuments.length} documents for your IR-1 petition.
               </p>
 
               {/* Document Summary */}
@@ -295,65 +283,60 @@ export function DocumentQuestionnaire({
                 </div>
 
                 {/* Group documents */}
-                {[
-                  "Required Now",
-                  "Required if Applicable",
-                  "Gather Now for Later",
-                ].map((groupName) => {
-                  const groupDocs = finalDocuments.filter(
-                    (d) => d.group === groupName,
-                  );
-                  if (groupDocs.length === 0) return null;
+                {["Required Now", "Required if Applicable", "Gather Now for Later"].map(
+                  (groupName) => {
+                    const groupDocs = finalDocuments.filter((d) => d.group === groupName);
+                    if (groupDocs.length === 0) return null;
 
-                  return (
-                    <div key={groupName} className="mb-[16px] last:mb-0">
-                      <div className="flex items-center gap-[8px] mb-[8px]">
-                        <span className="text-[10px] font-semibold tracking-[0.08em] uppercase text-[#6b8097]">
-                          {groupName}
-                        </span>
-                        <div className="h-px flex-1 bg-[#d0e4f7]" />
-                      </div>
-                      <div className="flex flex-col">
-                        {groupDocs.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="flex items-start gap-[10px] py-[8px] border-b border-[#e8f0f8] last:border-b-0"
-                          >
-                            <div className="mt-[12px] w-[5px] h-[5px] shrink-0 rounded-full bg-[#3a4f63]" />
-                            <div className="flex-1">
-                              <span className="text-[14px] text-[#1c2b3a] font-medium leading-normal">
-                                {doc.name}
-                              </span>
-                              {!doc.required && (
-                                <span className="ml-[8px] text-[11px] text-[#d97706] font-medium">
-                                  Optional
-                                </span>
-                              )}
-                            </div>
-                            <span
-                              className={`text-[10px] font-semibold uppercase tracking-[0.04em] px-[8px] py-[2px] rounded-full ${
-                                doc.tag === "petitioner"
-                                  ? "bg-[#e8f1fb] text-primary/80"
-                                  : doc.tag === "beneficiary"
-                                    ? "bg-[#eaf7f2] text-[#1a7a5e]"
-                                    : doc.tag === "joint_sponsor"
-                                      ? "bg-[#fef8e8] text-[#8a6200]"
-                                      : "bg-[#f3f0fb] text-[#4a2d80]"
-                              }`}
+                    return (
+                      <div key={groupName} className="mb-[16px] last:mb-0">
+                        <div className="flex items-center gap-[8px] mb-[8px]">
+                          <span className="text-[10px] font-semibold tracking-[0.08em] uppercase text-[#6b8097]">
+                            {groupName}
+                          </span>
+                          <div className="h-px flex-1 bg-[#d0e4f7]" />
+                        </div>
+                        <div className="flex flex-col">
+                          {groupDocs.map((doc) => (
+                            <div
+                              key={doc.id}
+                              className="flex items-start gap-[10px] py-[8px] border-b border-[#e8f0f8] last:border-b-0"
                             >
-                              {doc.tag === "third party"
-                                ? "3rd Party"
-                                : doc.tag === "joint_sponsor"
-                                  ? "Joint Sponsor"
-                                  : doc.tag.charAt(0).toUpperCase() +
-                                    doc.tag.slice(1)}
-                            </span>
-                          </div>
-                        ))}
+                              <div className="mt-[12px] w-[5px] h-[5px] shrink-0 rounded-full bg-[#3a4f63]" />
+                              <div className="flex-1">
+                                <span className="text-[14px] text-[#1c2b3a] font-medium leading-normal">
+                                  {doc.name}
+                                </span>
+                                {!doc.required && (
+                                  <span className="ml-[8px] text-[11px] text-[#d97706] font-medium">
+                                    Optional
+                                  </span>
+                                )}
+                              </div>
+                              <span
+                                className={`text-[10px] font-semibold uppercase tracking-[0.04em] px-[8px] py-[2px] rounded-full ${
+                                  doc.tag === "petitioner"
+                                    ? "bg-[#e8f1fb] text-primary/80"
+                                    : doc.tag === "beneficiary"
+                                      ? "bg-[#eaf7f2] text-[#1a7a5e]"
+                                      : doc.tag === "joint_sponsor"
+                                        ? "bg-[#fef8e8] text-[#8a6200]"
+                                        : "bg-[#f3f0fb] text-[#4a2d80]"
+                                }`}
+                              >
+                                {doc.tag === "third party"
+                                  ? "3rd Party"
+                                  : doc.tag === "joint_sponsor"
+                                    ? "Joint Sponsor"
+                                    : doc.tag.charAt(0).toUpperCase() + doc.tag.slice(1)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  }
+                )}
               </div>
 
               {/* Action Buttons */}
@@ -377,9 +360,8 @@ export function DocumentQuestionnaire({
 
               {/* Disclaimer */}
               <p className="text-[11px] text-[#6b8097] leading-[1.6] text-center mt-[20px]">
-                Rahvana provides structured guidance only. This is not legal
-                advice. Consult a licensed immigration attorney for
-                case-specific decisions.
+                Rahvana provides structured guidance only. This is not legal advice. Consult a
+                licensed immigration attorney for case-specific decisions.
               </p>
             </div>
           ) : null}

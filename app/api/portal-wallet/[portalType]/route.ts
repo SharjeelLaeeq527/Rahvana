@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(
-  req: Request,
-  context: { params: Promise<{ portalType: string }> },
-) {
+export async function GET(req: Request, context: { params: Promise<{ portalType: string }> }) {
   try {
     const supabase = await createClient();
 
@@ -29,17 +26,14 @@ export async function GET(
           id,
           question
         )
-      `,
+      `
       )
       .eq("user_id", user.id)
       .eq("portal_type", (await context.params).portalType)
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { error: "Credential not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Credential not found" }, { status: 404 });
     }
 
     const response = {
@@ -58,9 +52,6 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching portal:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

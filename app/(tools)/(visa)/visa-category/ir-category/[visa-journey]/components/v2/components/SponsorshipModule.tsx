@@ -24,19 +24,14 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
         <div className="p-[32px_34px_28px]">
           <div className="flex items-start gap-[16px] mb-[22px]">
             <div className="w-[46px] h-[46px] rounded-[11px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
-              <Calculator
-                size={22}
-                className="text-white"
-                strokeWidth={1.6}
-              />
+              <Calculator size={22} className="text-white" strokeWidth={1.6} />
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-ch2-text)] mb-[4px]">
                 {tool.launch_module.label || "Affidavit Support Calculator"}
               </div>
               <div className="text-[clamp(19px,2.8vw,23px)] text-[var(--rv-ch2-text)] leading-[1.25]">
-                {tool.launch_module.title ||
-                  "Determine your sponsorship setup first"}
+                {tool.launch_module.title || "Determine your sponsorship setup first"}
               </div>
             </div>
           </div>
@@ -48,9 +43,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                 className="bg-[var(--rv-ch2-feature-bg)] border border-[var(--rv-ch2)]/30 rounded-[10px] px-[13px] py-[11px] flex items-start gap-[9px]"
               >
                 <div className="w-[5px] h-[5px] rounded-full bg-[var(--rv-ch2)] shrink-0 mt-[5px]" />
-                <div className="text-[13px] text-[var(--rv-ch2-text)] leading-[1.4]">
-                  {feat}
-                </div>
+                <div className="text-[13px] text-[var(--rv-ch2-text)] leading-[1.4]">{feat}</div>
               </div>
             ))}
           </div>
@@ -71,8 +64,8 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
         {!sponsorshipResult || Object.keys(sponsorshipResult).length === 0 ? (
           <div className="bg-[#fafcff] border-[1.5px] border-dashed border-[#d0e4f7] rounded-[10px] p-[24px] text-center">
             <div className="text-[14px] text-[#6b8097] leading-[1.6]">
-              Complete the sponsorship calculator to generate the correct
-              affidavit forms for your case.
+              Complete the sponsorship calculator to generate the correct affidavit forms for your
+              case.
             </div>
           </div>
         ) : (
@@ -94,10 +87,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
               </div>
               <div className="flex flex-col gap-[6px]">
                 {[
-                  [
-                    "Household Size",
-                    `${sponsorshipResult?.householdSize || 0} persons`,
-                  ],
+                  ["Household Size", `${sponsorshipResult?.householdSize || 0} persons`],
                   [
                     "Required Income",
                     `$${(sponsorshipResult?.requiredIncome || 0).toLocaleString()}`,
@@ -120,9 +110,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                     className="flex justify-between items-start py-[6px] border-b border-[#d0e4f7]/50 last:border-b-0 text-[13px]"
                   >
                     <span className="text-[#6b8097]">{k}</span>
-                    <span className="text-[#0c1b33] font-semibold text-right max-w-[60%]">
-                      {v}
-                    </span>
+                    <span className="text-[#0c1b33] font-semibold text-right max-w-[60%]">{v}</span>
                   </div>
                 ))}
               </div>
@@ -154,12 +142,8 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                         <Scale size={20} />
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-[#0c1b33]">
-                          {f.name}
-                        </div>
-                        <div className="text-xs text-[#6b8097]">
-                          {f.description || f.sub}
-                        </div>
+                        <div className="text-sm font-bold text-[#0c1b33]">{f.name}</div>
+                        <div className="text-xs text-[#6b8097]">{f.description || f.sub}</div>
                       </div>
                     </div>
 
@@ -181,10 +165,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
             </div>
             <p className="mt-5 text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]">
               Form actions are based on your calculator result.
-              <strong
-                className="text-[#3b7dd8] cursor-pointer"
-                onClick={onOpenCalc}
-              >
+              <strong className="text-[#3b7dd8] cursor-pointer" onClick={onOpenCalc}>
                 {" "}
                 Rerun calculator{" "}
               </strong>

@@ -16,7 +16,7 @@ const SignatureUploader = dynamic(
         <Loader size="md" />
       </div>
     ),
-  },
+  }
 );
 const SignaturePreview = dynamic(
   () => import("@/app/components/pdf-editor/signature/SignaturePreview"),
@@ -27,7 +27,7 @@ const SignaturePreview = dynamic(
         <Loader size="md" />
       </div>
     ),
-  },
+  }
 );
 
 // Dynamic import to avoid SSR issues with browser-only APIs
@@ -99,10 +99,7 @@ export default function SignatureRemoverPage() {
   const handleDownload = () => {
     if (processedImage && imageProcessorModule) {
       const timestamp = new Date().getTime();
-      imageProcessorModule.downloadImage(
-        processedImage,
-        `signature-transparent-${timestamp}.png`,
-      );
+      imageProcessorModule.downloadImage(processedImage, `signature-transparent-${timestamp}.png`);
     }
   };
 
@@ -144,12 +141,8 @@ export default function SignatureRemoverPage() {
               },
             ].map((item, idx) => (
               <div key={idx} className="border-l-2 border-slate-300 pl-4">
-                <h3 className="font-medium text-slate-900 mb-1 text-sm">
-                  {item.title}
-                </h3>
-                <p className="text-slate-600 text-xs sm:text-sm">
-                  {item.description}
-                </p>
+                <h3 className="font-medium text-slate-900 mb-1 text-sm">{item.title}</h3>
+                <p className="text-slate-600 text-xs sm:text-sm">{item.description}</p>
               </div>
             ))}
           </div>
@@ -170,10 +163,7 @@ export default function SignatureRemoverPage() {
         {/* Main Content */}
         <div className="max-w-3xl mx-auto">
           {!originalImage && !isProcessing && (
-            <SignatureUploader
-              onFileSelect={handleFileSelect}
-              disabled={isProcessing}
-            />
+            <SignatureUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
           )}
 
           {processedImage && originalImage && !isProcessing && (

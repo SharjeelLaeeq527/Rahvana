@@ -21,11 +21,7 @@ interface StackedCarouselProps {
   onNotify: () => void;
 }
 
-export const StackedCarousel = ({
-  items,
-  onNavigate,
-  onNotify,
-}: StackedCarouselProps) => {
+export const StackedCarousel = ({ items, onNavigate, onNotify }: StackedCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const { t } = useLanguage();
 
@@ -184,8 +180,7 @@ export const StackedCarousel = ({
                   >
                     {journey.live
                       ? t("homePage.carousel.startJourney") || "Start Journey"
-                      : t("homePage.carousel.getEarlyAccess") ||
-                        "Get Early Access"}
+                      : t("homePage.carousel.getEarlyAccess") || "Get Early Access"}
                   </HydrationSafeButton>
                 </div>
               </motion.div>

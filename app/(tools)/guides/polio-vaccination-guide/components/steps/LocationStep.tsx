@@ -21,12 +21,8 @@ import locationsData from "../../data/locations.json";
 export default function LocationStep() {
   const { state, setLocation, setCurrentStep, completeStep } = usePolioWizard();
 
-  const [selectedProvince, setSelectedProvince] = useState(
-    state.location?.province || "",
-  );
-  const [selectedDistrict, setSelectedDistrict] = useState(
-    state.location?.district || "",
-  );
+  const [selectedProvince, setSelectedProvince] = useState(state.location?.province || "");
+  const [selectedDistrict, setSelectedDistrict] = useState(state.location?.district || "");
   const [selectedCity, setSelectedCity] = useState(state.location?.city || "");
 
   const [availableDistricts, setAvailableDistricts] = useState<District[]>([]);
@@ -34,9 +30,7 @@ export default function LocationStep() {
 
   useEffect(() => {
     if (selectedProvince) {
-      const province = locationsData.provinces.find(
-        (p: Province) => p.id === selectedProvince,
-      );
+      const province = locationsData.provinces.find((p: Province) => p.id === selectedProvince);
       setAvailableDistricts(province?.districts || []);
 
       if (state.location?.province !== selectedProvince) {
@@ -48,12 +42,8 @@ export default function LocationStep() {
 
   useEffect(() => {
     if (selectedDistrict) {
-      const province = locationsData.provinces.find(
-        (p: Province) => p.id === selectedProvince,
-      );
-      const district = province?.districts.find(
-        (d: District) => d.id === selectedDistrict,
-      );
+      const province = locationsData.provinces.find((p: Province) => p.id === selectedProvince);
+      const district = province?.districts.find((d: District) => d.id === selectedDistrict);
       setAvailableCities(district?.cities || []);
 
       if (state.location?.district !== selectedDistrict) {
@@ -91,8 +81,7 @@ export default function LocationStep() {
           Where do you live?
         </h2>
         <p className="text-slate-600 text-lg max-w-xl">
-          Your current residential address helps determine the nearest EPI
-          vaccination centers.
+          Your current residential address helps determine the nearest EPI vaccination centers.
         </p>
       </div>
 
@@ -102,9 +91,7 @@ export default function LocationStep() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
-            <label className="block text-sm font-bold text-slate-700 mb-2">
-              Country
-            </label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Country</label>
             <input
               type="text"
               value="Pakistan"
@@ -112,8 +99,7 @@ export default function LocationStep() {
               className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed focus:outline-hidden"
             />
             <p className="text-xs text-slate-500 mt-1.5">
-              This wizard is specifically for the Polio Vaccination Certificate
-              in Pakistan.
+              This wizard is specifically for the Polio Vaccination Certificate in Pakistan.
             </p>
           </div>
 
@@ -170,9 +156,7 @@ export default function LocationStep() {
               required
             >
               <option value="">
-                {selectedDistrict
-                  ? "Select City / Area"
-                  : "Select District First"}
+                {selectedDistrict ? "Select City / Area" : "Select District First"}
               </option>
               {availableCities.map((city: string) => (
                 <option key={city} value={city}>
@@ -188,9 +172,9 @@ export default function LocationStep() {
             <span className="font-bold flex items-center gap-2 mb-1">
               <MapPin className="w-4 h-4" /> Why location matters:
             </span>
-            For a Polio Vaccination Certificate, your residential address
-            dictates the specific vaccination center you must visit. Ensuring
-            this matches your supporting documents can be helpful.
+            For a Polio Vaccination Certificate, your residential address dictates the specific
+            vaccination center you must visit. Ensuring this matches your supporting documents can
+            be helpful.
           </p>
         </div>
 
@@ -200,12 +184,7 @@ export default function LocationStep() {
             onClick={handleBack}
             className="text-slate-500 hover:text-slate-800 font-medium px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

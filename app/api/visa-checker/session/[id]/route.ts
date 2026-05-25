@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const { id: sessionId } = await context.params;
 
-    const response =
-      await VisaCheckerSupabaseService.getSessionDetails(sessionId);
+    const response = await VisaCheckerSupabaseService.getSessionDetails(sessionId);
 
     return NextResponse.json(response);
   } catch (error) {
@@ -17,10 +13,7 @@ export async function GET(
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch session details",
+        error: error instanceof Error ? error.message : "Failed to fetch session details",
       },
       { status: 500 }
     );

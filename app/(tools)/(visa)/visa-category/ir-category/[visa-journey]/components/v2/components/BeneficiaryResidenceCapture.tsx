@@ -50,9 +50,7 @@ export function BeneficiaryResidenceCapture({
 }: BeneficiaryResidenceCaptureProps) {
   const [currentCountry, setCurrentCountry] = useState(baseline?.currentCountry ?? "");
   const [currentCity, setCurrentCity] = useState(baseline?.currentCity ?? "");
-  const [additional, setAdditional] = useState<string[]>(
-    baseline?.additionalCountries ?? [],
-  );
+  const [additional, setAdditional] = useState<string[]>(baseline?.additionalCountries ?? []);
   const [newCountry, setNewCountry] = useState("");
   const [justSaved, setJustSaved] = useState(false);
 
@@ -96,10 +94,7 @@ export function BeneficiaryResidenceCapture({
   // Long-distance marriage indicator
   const longDistance = useMemo(() => {
     if (!baseline?.currentCountry || !petitionerCountry) return false;
-    return (
-      baseline.currentCountry.trim().toLowerCase() !==
-      petitionerCountry.trim().toLowerCase()
-    );
+    return baseline.currentCountry.trim().toLowerCase() !== petitionerCountry.trim().toLowerCase();
   }, [baseline?.currentCountry, petitionerCountry]);
 
   const ruleSummary =
@@ -139,8 +134,7 @@ export function BeneficiaryResidenceCapture({
           className="rounded-[8px] border p-3 mb-4 text-[11.5px] leading-relaxed"
           style={{ background: "#fef9c3", borderColor: "#fde68a", color: "#713f12" }}
         >
-          <strong>Rule:</strong> {ruleSummary}{" "}
-          <em className="opacity-80">Source: {sourceBasis}</em>
+          <strong>Rule:</strong> {ruleSummary} <em className="opacity-80">Source: {sourceBasis}</em>
         </div>
 
         {/* Current country/city */}
@@ -258,10 +252,7 @@ export function BeneficiaryResidenceCapture({
           >
             <FileCheck size={18} color="#155e75" className="shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <h5
-                className="text-[12.5px] font-semibold leading-snug"
-                style={{ color: "#155e75" }}
-              >
+              <h5 className="text-[12.5px] font-semibold leading-snug" style={{ color: "#155e75" }}>
                 Police certificates likely required from {policeCertCountries.length}{" "}
                 {policeCertCountries.length === 1 ? "country" : "countries"}
               </h5>
@@ -273,12 +264,9 @@ export function BeneficiaryResidenceCapture({
                   <li key={c}>{c}</li>
                 ))}
               </ul>
-              <p
-                className="text-[11px] mt-2 leading-relaxed italic"
-                style={{ color: "#0e7490" }}
-              >
-                Refer to the <strong>travel.state.gov Reciprocity Schedule</strong> for
-                each country's police certificate process and any exemptions.
+              <p className="text-[11px] mt-2 leading-relaxed italic" style={{ color: "#0e7490" }}>
+                Refer to the <strong>travel.state.gov Reciprocity Schedule</strong> for each
+                country's police certificate process and any exemptions.
                 {config?.exempt_country_note ? ` ${config.exempt_country_note}` : ""}
               </p>
             </div>
@@ -291,43 +279,28 @@ export function BeneficiaryResidenceCapture({
             className="mt-3 rounded-[10px] border p-3 flex items-start gap-3"
             style={{ background: "#fffbeb", borderColor: "#fde68a" }}
           >
-            <AlertTriangle
-              size={16}
-              color="#92400e"
-              className="shrink-0 mt-0.5"
-            />
+            <AlertTriangle size={16} color="#92400e" className="shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <h5
-                className="text-[12.5px] font-semibold leading-snug"
-                style={{ color: "#92400e" }}
-              >
+              <h5 className="text-[12.5px] font-semibold leading-snug" style={{ color: "#92400e" }}>
                 Long-distance marriage indicator
               </h5>
-              <p
-                className="text-[12px] mt-1 leading-relaxed"
-                style={{ color: "#78350f" }}
-              >
-                Petitioner and beneficiary appear to live in different countries
-                ({petitionerCountry} vs. {baseline?.currentCountry}). USCIS may
-                expect richer communication-history evidence and a relationship
-                timeline. Strengthen the petition with call logs, video-call
-                records, joint travel records, and any in-person visit
+              <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#78350f" }}>
+                Petitioner and beneficiary appear to live in different countries (
+                {petitionerCountry} vs. {baseline?.currentCountry}). USCIS may expect richer
+                communication-history evidence and a relationship timeline. Strengthen the petition
+                with call logs, video-call records, joint travel records, and any in-person visit
                 documentation.
               </p>
-              <p
-                className="text-[11px] mt-1.5 leading-relaxed italic"
-                style={{ color: "#78350f" }}
-              >
-                Source: Practitioner-reported adjudication pattern for
-                consular-process IR-1 cases.
+              <p className="text-[11px] mt-1.5 leading-relaxed italic" style={{ color: "#78350f" }}>
+                Source: Practitioner-reported adjudication pattern for consular-process IR-1 cases.
               </p>
             </div>
           </div>
         )}
 
         <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
-          Advisory only — not legal advice. Rahvana stores these values separately
-          from the I-130A form data.
+          Advisory only — not legal advice. Rahvana stores these values separately from the I-130A
+          form data.
         </p>
       </div>
     </div>

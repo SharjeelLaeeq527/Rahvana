@@ -27,10 +27,7 @@ import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPr
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DOCUMENTS_BY_KEY } from "@/lib/document-vault/document-definitions";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import {
-  UploadedDocument,
-  DocumentDefinition,
-} from "@/lib/document-vault/types";
+import { UploadedDocument, DocumentDefinition } from "@/lib/document-vault/types";
 import { useAuth } from "@/app/context/AuthContext";
 import { PlanTier } from "@/lib/entitlements/config";
 import { usePlan } from "@/app/context/PlanContext";
@@ -157,10 +154,7 @@ const getTrackingStatusDisplay = (status: any) => {
 function PlanTierBadge({ tier }: { tier: PlanTier | null }) {
   if (!tier || tier === "free") return null;
 
-  const styles: Record<
-    string,
-    { wrapper: string; iconClass: string; label: string }
-  > = {
+  const styles: Record<string, { wrapper: string; iconClass: string; label: string }> = {
     basic: {
       wrapper: "border-[#a8d4d4] bg-[#e8f4f4] shadow-sm",
       iconClass: "plan-icon plan-icon--basic",
@@ -246,9 +240,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [showGuide, setShowGuide] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
   const [showGuideChoice, setShowGuideChoice] = useState(false);
-  const [selectedGuideType, setSelectedGuideType] = useState<
-    "print" | "download" | null
-  >(null);
+  const [selectedGuideType, setSelectedGuideType] = useState<"print" | "download" | null>(null);
   const [statusSaved, setStatusSaved] = useState(false);
   const [selectedDropdown, setSelectedDropdown] = useState("");
   const [mailingCarrier, setMailingCarrier] = useState("");
@@ -259,9 +251,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [trackingError, setTrackingError] = useState("");
   const [isEditingMailing, setIsEditingMailing] = useState(false);
   const [trackingStatus, setTrackingStatus] = useState<string>("unknown");
-  const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(
-    null,
-  );
+  const [trackingLastChecked, setTrackingLastChecked] = useState<string | null>(null);
   const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
 
@@ -309,9 +299,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     const docDef = DOCUMENTS_BY_KEY[docKey];
     if (!docDef) return;
 
-    const uploadedDoc = uploadedDocuments.find(
-      (d) => d.documentDefId === docDef.id,
-    );
+    const uploadedDoc = uploadedDocuments.find((d) => d.documentDefId === docDef.id);
 
     if (uploadedDoc) {
       setPreviewConfig({
@@ -320,10 +308,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         uploadedDoc,
       });
     } else {
-      showToast(
-        "This document is not uploaded in the document vault yet",
-        "error",
-      );
+      showToast("This document is not uploaded in the document vault yet", "error");
     }
   };
 
@@ -342,11 +327,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       if (savedTracking) setMailingTracking(savedTracking);
       // statusSaved intentionally NOT set here — banner only shows after a fresh save action
     }
-  }, [
-    step.action_data?.dropdown_card,
-    step.action_data?.mailing_card,
-    state.metadata,
-  ]);
+  }, [step.action_data?.dropdown_card, step.action_data?.mailing_card, state.metadata]);
 
   useEffect(() => {
     if (showGuide || showGuideChoice) {
@@ -391,9 +372,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const fetchTrackingStatus = useCallback(async () => {
     try {
       setIsLoadingTracking(true);
-      const response = await fetch(
-        `/api/easypost/tracker/status?caseId=${state.backendId}`,
-      );
+      const response = await fetch(`/api/easypost/tracker/status?caseId=${state.backendId}`);
 
       if (!response.ok) {
         console.error("[ActionStepRenderer] Failed to fetch tracking status");
@@ -443,9 +422,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
       const delay = getPollDelay(status);
 
-      console.log(
-        `[Tracking] Polling started: ${delay / 1000 / 60} min interval`,
-      );
+      console.log(`[Tracking] Polling started: ${delay / 1000 / 60} min interval`);
 
       pollTimer = setInterval(fetchTrackingStatus, delay);
     };
@@ -498,7 +475,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               if (updatedRow.data_key === "delivered_at") {
                 setDeliveredAt(updatedRow.data_value);
               }
-            },
+            }
           )
           .subscribe();
       } catch (err) {
@@ -525,12 +502,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         clearInterval(pollTimer);
       }
     };
-  }, [
-    state.metadata?.easypost_tracker_id,
-    state.backendId,
-    fetchTrackingStatus,
-    isEditingMailing,
-  ]);
+  }, [state.metadata?.easypost_tracker_id, state.backendId, fetchTrackingStatus, isEditingMailing]);
 
   const handlePrevGuide = () => {
     setGuideStep((prev) => Math.max(0, prev - 1));
@@ -631,9 +603,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
     if (!actionData.guide_steps) return [];
     if (step.step_key === "step_1_11" && selectedGuideType) {
       return actionData.guide_steps.filter((gs: any) =>
-        gs.label?.includes(
-          selectedGuideType === "print" ? "Print" : "Download",
-        ),
+        gs.label?.includes(selectedGuideType === "print" ? "Print" : "Download")
       );
     }
     return actionData.guide_steps || [];
@@ -1345,9 +1315,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         </h1>
 
         {/* Subtitle */}
-        <p
-          className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 text-[#3a4f63]"
-        >
+        <p className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 text-[#3a4f63]">
           {step.step_description}
         </p>
 
@@ -1365,21 +1333,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   borderRadius: "999px",
                   border: "1px solid",
                   whiteSpace: "nowrap",
-                  backgroundColor: isChapter1
-                    ? "#f3f0fb"
-                    : isChapter2
-                      ? "#f4e6f3"
-                      : "#f0f1fb",
-                  borderColor: isChapter1
-                    ? "#c9bef2"
-                    : isChapter2
-                      ? "#d5abd2"
-                      : "#d0e4f7",
-                  color: isChapter1
-                    ? "#4a2d8a"
-                    : isChapter2
-                      ? "#520a50"
-                      : "#2d4a6e",
+                  backgroundColor: isChapter1 ? "#f3f0fb" : isChapter2 ? "#f4e6f3" : "#f0f1fb",
+                  borderColor: isChapter1 ? "#c9bef2" : isChapter2 ? "#d5abd2" : "#d0e4f7",
+                  color: isChapter1 ? "#4a2d8a" : isChapter2 ? "#520a50" : "#2d4a6e",
                 }}
               >
                 {chip.label}
@@ -1391,11 +1347,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         {/* Hero Section */}
         <section
           style={{
-            background: isChapter1
-              ? CHAPTER1.bg
-              : isChapter2
-                ? "#1a0a18"
-                : "#051738",
+            background: isChapter1 ? CHAPTER1.bg : isChapter2 ? "#1a0a18" : "#051738",
             color: "#fff",
             borderRadius: "24px",
             padding: isMobile ? "16px" : "24px",
@@ -1427,11 +1379,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               lineHeight: 1.15,
               marginBottom: "6px",
               fontWeight: 700,
-              color: isChapter1
-                ? CHAPTER1.accent
-                : isChapter2
-                  ? "#d99dcf"
-                  : "#7ba3d9",
+              color: isChapter1 ? CHAPTER1.accent : isChapter2 ? "#d99dcf" : "#7ba3d9",
               textShadow: "none",
             }}
           >
@@ -1444,10 +1392,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               style={{
                 fontSize: "13.5px",
                 lineHeight: 1.55,
-                color:
-                  step.step_key === "step_1_11"
-                    ? CHAPTER1.text
-                    : "rgba(255, 255, 255, 0.74)",
+                color: step.step_key === "step_1_11" ? CHAPTER1.text : "rgba(255, 255, 255, 0.74)",
                 maxWidth: "470px",
               }}
             >
@@ -1463,20 +1408,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 padding: "6px 11px",
                 borderRadius: "999px",
                 background:
-                  step.step_key === "step_1_11"
-                    ? CHAPTER1.feature
-                    : "rgba(255, 255, 255, 0.1)",
+                  step.step_key === "step_1_11" ? CHAPTER1.feature : "rgba(255, 255, 255, 0.1)",
                 fontSize: "10px",
                 fontWeight: 700,
                 letterSpacing: ".1em",
                 textTransform: "uppercase",
                 marginTop: "10px",
                 marginBottom: "12px",
-                color: isChapter1
-                  ? CHAPTER1.text
-                  : isChapter2
-                    ? "#d99dcf"
-                    : "#7ba3d9",
+                color: isChapter1 ? CHAPTER1.text : isChapter2 ? "#d99dcf" : "#7ba3d9",
                 backdropFilter: "blur(4px)",
                 border: `1px solid ${isChapter1 ? "rgba(130,132,191,0.28)" : isChapter2 ? "rgba(217,157,207,0.4)" : "rgba(123,163,217,0.4)"}`,
               }}
@@ -1490,9 +1429,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile
-                  ? "1fr"
-                  : "repeat(2, minmax(0, 1fr))",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
                 gap: "10px",
                 margin: "18px 0",
               }}
@@ -1568,9 +1505,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         : "#051738";
                 }}
               >
-                {stepEntitlement.isLocked && (
-                  <Lock size={18} className="mr-2 opacity-80" />
-                )}
+                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 Print I-130
               </button>
               <button
@@ -1616,9 +1551,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         : "#051738";
                 }}
               >
-                {stepEntitlement.isLocked && (
-                  <Lock size={18} className="mr-2 opacity-80" />
-                )}
+                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 Print I-130A
               </button>
             </div>
@@ -1655,23 +1588,17 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 onMouseEnter={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11"
-                        ? CHAPTER1.accentDark
-                        : COLORS.accent2;
+                      step.step_key === "step_1_11" ? CHAPTER1.accentDark : COLORS.accent2;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11"
-                        ? CHAPTER1.accent
-                        : COLORS.accent;
+                      step.step_key === "step_1_11" ? CHAPTER1.accent : COLORS.accent;
                   }
                 }}
               >
-                {stepEntitlement.isLocked && (
-                  <Lock size={18} className="mr-2 opacity-80" />
-                )}
+                {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 {actionData.cta_button.label}
               </button>
             )
@@ -1681,8 +1608,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           <section
             style={{
               display: "grid",
-              gridTemplateColumns:
-                hasSecondCard && !isMobile ? "1fr 1fr" : "1fr",
+              gridTemplateColumns: hasSecondCard && !isMobile ? "1fr 1fr" : "1fr",
               gap: "12px",
               marginTop: "12px",
             }}
@@ -1730,8 +1656,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   marginBottom: "14px",
                 }}
               >
-                {actionData.guide_card?.subtitle ||
-                  "View guidance for this step"}
+                {actionData.guide_card?.subtitle || "View guidance for this step"}
               </p>
 
               <button
@@ -1798,8 +1723,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     fontWeight: 700,
                   }}
                 >
-                  {actionData.second_card_title ||
-                    actionData.dropdown_card.title}
+                  {actionData.second_card_title || actionData.dropdown_card.title}
                 </h3>
 
                 <p
@@ -1810,14 +1734,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     marginBottom: "14px",
                   }}
                 >
-                  {actionData.second_card_subtitle ||
-                    actionData.dropdown_card.subtitle}
+                  {actionData.second_card_subtitle || actionData.dropdown_card.subtitle}
                 </p>
 
                 <CustomDropdown
-                  options={(
-                    actionData.dropdown_card.dropdown_options || []
-                  ).filter((opt) => opt.value !== "")}
+                  options={(actionData.dropdown_card.dropdown_options || []).filter(
+                    (opt) => opt.value !== ""
+                  )}
                   value={selectedDropdown}
                   onChange={(value) => {
                     if (!value) return;
@@ -1846,7 +1769,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           });
                         } else {
                           throw new Error(
-                            "[ActionStepRenderer] Neither savePaymentMethod nor updateMetadata is available in actions",
+                            "[ActionStepRenderer] Neither savePaymentMethod nor updateMetadata is available in actions"
                           );
                         }
                         setStatusSaved(true);
@@ -1863,10 +1786,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     disabled={!selectedDropdown || isSavingPayment}
                     className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm"
                     style={{
-                      backgroundColor: "var(--rv-ch1)", 
+                      backgroundColor: "var(--rv-ch1)",
                     }}
                   >
-                    {isSavingPayment ? "Saving..." : (actionData.action_button_label || "Save payment method")}
+                    {isSavingPayment
+                      ? "Saving..."
+                      : actionData.action_button_label || "Save payment method"}
                   </button>
                 </div>
               </div>
@@ -1905,8 +1830,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     fontWeight: 700,
                   }}
                 >
-                  {actionData.second_card_title ||
-                    actionData.mailing_card.title}
+                  {actionData.second_card_title || actionData.mailing_card.title}
                 </h3>
 
                 <p
@@ -1917,8 +1841,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     marginBottom: "14px",
                   }}
                 >
-                  {actionData.second_card_subtitle ||
-                    actionData.mailing_card.subtitle}
+                  {actionData.second_card_subtitle || actionData.mailing_card.subtitle}
                 </p>
 
                 <div
@@ -1950,8 +1873,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     <input
                       type="text"
                       placeholder={
-                        actionData.mailing_card.carrier_placeholder ||
-                        "Carrier (USPS, UPS, FedEx)"
+                        actionData.mailing_card.carrier_placeholder || "Carrier (USPS, UPS, FedEx)"
                       }
                       value={mailingCarrier}
                       onChange={(e) => {
@@ -1969,9 +1891,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         color: COLORS.ink,
                         background: "#fff",
                         outline: "none",
-                        boxShadow: carrierError
-                          ? "0 0 0 3px rgba(239, 68, 68, 0.12)"
-                          : "none",
+                        boxShadow: carrierError ? "0 0 0 3px rgba(239, 68, 68, 0.12)" : "none",
                       }}
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = carrierError
@@ -1982,9 +1902,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           : "0 0 0 3px rgba(47, 111, 212, 0.12)";
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.style.borderColor = carrierError
-                          ? "#ef4444"
-                          : COLORS.line;
+                        e.currentTarget.style.borderColor = carrierError ? "#ef4444" : COLORS.line;
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     />
@@ -2025,8 +1943,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     <input
                       type="text"
                       placeholder={
-                        actionData.mailing_card.tracking_placeholder ||
-                        "Tracking number"
+                        actionData.mailing_card.tracking_placeholder || "Tracking number"
                       }
                       value={mailingTracking}
                       onChange={(e) => {
@@ -2044,9 +1961,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                         color: COLORS.ink,
                         background: "#fff",
                         outline: "none",
-                        boxShadow: trackingError
-                          ? "0 0 0 3px rgba(239, 68, 68, 0.12)"
-                          : "none",
+                        boxShadow: trackingError ? "0 0 0 3px rgba(239, 68, 68, 0.12)" : "none",
                       }}
                       onFocus={(e) => {
                         e.currentTarget.style.borderColor = trackingError
@@ -2057,9 +1972,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           : "0 0 0 3px rgba(47, 111, 212, 0.12)";
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.style.borderColor = trackingError
-                          ? "#ef4444"
-                          : COLORS.line;
+                        e.currentTarget.style.borderColor = trackingError ? "#ef4444" : COLORS.line;
                         e.currentTarget.style.boxShadow = "none";
                       }}
                     />
@@ -2117,8 +2030,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   >
                     {isSavingMailing
                       ? "Saving..."
-                      : actionData.action_button_label ||
-                        "Save mailing details"}
+                      : actionData.action_button_label || "Save mailing details"}
                   </button>
                 </div>
               </div>
@@ -2126,113 +2038,101 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           </section>
 
           {/* Status Message (for dropdown or mailing) */}
-          {statusSaved &&
-            (actionData.dropdown_card || actionData.mailing_card) && (
-              <section
-                style={{
-                  display: "flex",
-                  gap: "12px",
-                  alignItems: "flex-start",
-                  background: COLORS.greenbg,
-                  border: "1px solid #b8dbc8",
-                  borderRadius: "14px",
-                  padding: "14px 16px",
-                  color: COLORS.green,
-                  fontSize: "13px",
-                  marginTop: "12px",
-                }}
-              >
-                <CheckCircle size={18} style={{ flexShrink: 0 }} />
+          {statusSaved && (actionData.dropdown_card || actionData.mailing_card) && (
+            <section
+              style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "flex-start",
+                background: COLORS.greenbg,
+                border: "1px solid #b8dbc8",
+                borderRadius: "14px",
+                padding: "14px 16px",
+                color: COLORS.green,
+                fontSize: "13px",
+                marginTop: "12px",
+              }}
+            >
+              <CheckCircle size={18} style={{ flexShrink: 0 }} />
 
-                <div style={{ flex: 1 }}>
-                  {/* Common Heading */}
-                  <strong style={{ display: "block" }}>
-                    {actionData.action_button_status_heading ||
-                      "Selection saved"}
-                  </strong>
+              <div style={{ flex: 1 }}>
+                {/* Common Heading */}
+                <strong style={{ display: "block" }}>
+                  {actionData.action_button_status_heading || "Selection saved"}
+                </strong>
 
-                  {/* Status Message - Different for dropdown vs mailing */}
-                  <span
+                {/* Status Message - Different for dropdown vs mailing */}
+                <span
+                  style={{
+                    fontSize: "12px",
+                    display: "block",
+                    marginBottom: "8px",
+                  }}
+                >
+                  {actionData.mailing_card && mailingTracking
+                    ? (actionData.action_button_status_message || "Delivery details saved.")
+                        .replace("{carrier}", mailingCarrier)
+                        .replace("{tracking}", mailingTracking)
+                    : (actionData.action_button_status_message || "Saved selection: {selected}.")
+                        .replace("{selected}", selectedDropdown)
+                        .replace("{selected_method}", selectedDropdown)}
+                </span>
+
+                {/* Tracking Status Section - Only for mailing with tracker */}
+                {actionData.mailing_card && state.metadata?.easypost_tracker_id && (
+                  <div
                     style={{
-                      fontSize: "12px",
-                      display: "block",
-                      marginBottom: "8px",
+                      marginTop: "10px",
+                      paddingTop: "10px",
+                      borderTop: "1px solid rgba(21, 116, 79, 0.2)",
                     }}
                   >
-                    {actionData.mailing_card && mailingTracking
-                      ? (
-                          actionData.action_button_status_message ||
-                          "Delivery details saved."
-                        )
-                          .replace("{carrier}", mailingCarrier)
-                          .replace("{tracking}", mailingTracking)
-                      : (
-                          actionData.action_button_status_message ||
-                          "Saved selection: {selected}."
-                        )
-                          .replace("{selected}", selectedDropdown)
-                          .replace("{selected_method}", selectedDropdown)}
-                  </span>
-
-                  {/* Tracking Status Section - Only for mailing with tracker */}
-                  {actionData.mailing_card &&
-                    state.metadata?.easypost_tracker_id && (
+                    {/* Top Row */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "8px",
+                        marginBottom: "4px",
+                        fontSize: "12px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {/* Left: Status */}
                       <div
                         style={{
-                          marginTop: "10px",
-                          paddingTop: "10px",
-                          borderTop: "1px solid rgba(21, 116, 79, 0.2)",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
                         }}
                       >
-                        {/* Top Row */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: "8px",
-                            marginBottom: "4px",
-                            fontSize: "12px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          {/* Left: Status */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <strong>Tracking Status:</strong>
+                        <strong>Tracking Status:</strong>
 
-                            {isLoadingTracking && (
-                              <>
-                                <Loader
-                                  size={14}
-                                  style={{
-                                    animation: "spin 1s linear infinite",
-                                  }}
-                                />
-                                <span>Updating...</span>
-                              </>
-                            )}
+                        {isLoadingTracking && (
+                          <>
+                            <Loader
+                              size={14}
+                              style={{
+                                animation: "spin 1s linear infinite",
+                              }}
+                            />
+                            <span>Updating...</span>
+                          </>
+                        )}
 
-                            {!isLoadingTracking && (
-                              <>
-                                {getTrackingStatusDisplay(trackingStatus).icon}
-                                <span style={{ fontWeight: 600 }}>
-                                  {
-                                    getTrackingStatusDisplay(trackingStatus)
-                                      .label
-                                  }
-                                </span>
-                              </>
-                            )}
-                          </div>
+                        {!isLoadingTracking && (
+                          <>
+                            {getTrackingStatusDisplay(trackingStatus).icon}
+                            <span style={{ fontWeight: 600 }}>
+                              {getTrackingStatusDisplay(trackingStatus).label}
+                            </span>
+                          </>
+                        )}
+                      </div>
 
-                          {/* Right: Refresh Button */}
-                          {/* {trackingStatus !== "delivered" && (
+                      {/* Right: Refresh Button */}
+                      {/* {trackingStatus !== "delivered" && (
                             <button
                               onClick={fetchTrackingStatus}
                               style={{
@@ -2261,39 +2161,37 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                               <RefreshCw size={14} color={COLORS.green} />
                             </button>
                           )} */}
-                        </div>
+                    </div>
 
-                        {/* Last Checked */}
-                        {trackingLastChecked && (
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              color: "rgba(21, 116, 79, 0.7)",
-                              marginBottom: "6px",
-                            }}
-                          >
-                            Last checked:{" "}
-                            {formatRelativeTime(trackingLastChecked)}
-                          </div>
-                        )}
+                    {/* Last Checked */}
+                    {trackingLastChecked && (
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "rgba(21, 116, 79, 0.7)",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        Last checked: {formatRelativeTime(trackingLastChecked)}
+                      </div>
+                    )}
 
-                        {/* Update Info */}
-                        {trackingStatus !== "delivered" && (
-                          <div
-                            style={{
-                              fontSize: "12px",
-                              color: "rgba(21, 116, 79, 0.6)",
-                              marginBottom: "4px",
-                              fontWeight: 500,
-                            }}
-                          >
-                            Updates from the carrier are checked in every 24
-                            hours.
-                          </div>
-                        )}
+                    {/* Update Info */}
+                    {trackingStatus !== "delivered" && (
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "rgba(21, 116, 79, 0.6)",
+                          marginBottom: "4px",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Updates from the carrier are checked in every 24 hours.
+                      </div>
+                    )}
 
-                        {/* Delivered Date */}
-                        {/* {deliveredAt && trackingStatus === "delivered" && (
+                    {/* Delivered Date */}
+                    {/* {deliveredAt && trackingStatus === "delivered" && (
                           <div
                             style={{
                               display: "flex",
@@ -2311,11 +2209,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                             </span>
                           </div>
                         )} */}
-                      </div>
-                    )}
-                </div>
-              </section>
-            )}
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Status Message Section End */}
         </section>
@@ -2509,9 +2407,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
                     <h2
                       style={{
-                        fontSize: isMobile
-                          ? "20px"
-                          : "clamp(20px, 3.2vw, 26px)",
+                        fontSize: isMobile ? "20px" : "clamp(20px, 3.2vw, 26px)",
                         fontWeight: 900,
                         color: COLORS.navy,
                         marginBottom: "10px",
@@ -2611,8 +2507,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       <div
                         style={{
                           minHeight: isMobile ? "200px" : "280px",
-                          background:
-                            "linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%)",
+                          background: "linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%)",
                           color: COLORS.muted,
                           fontSize: "13px",
                           display: "flex",
@@ -2629,9 +2524,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                             alignItems: "center",
                           }}
                           dangerouslySetInnerHTML={{
-                            __html:
-                              filteredSteps[guideStep]?.visual ||
-                              "Step visual here",
+                            __html: filteredSteps[guideStep]?.visual || "Step visual here",
                           }}
                         />
                       </div>
@@ -2651,8 +2544,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           marginBottom: "20px",
                         }}
                       >
-                        <strong>Important:</strong>{" "}
-                        {filteredSteps[guideStep]?.note}
+                        <strong>Important:</strong> {filteredSteps[guideStep]?.note}
                       </div>
                     )}
 
@@ -2712,16 +2604,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           }}
                           className="bg-primary"
                           onMouseEnter={(e) => {
-                            (e.target as HTMLElement).style.background =
-                              COLORS.primaryDark;
-                            (e.target as HTMLElement).style.transform =
-                              "translateY(-2px)";
+                            (e.target as HTMLElement).style.background = COLORS.primaryDark;
+                            (e.target as HTMLElement).style.transform = "translateY(-2px)";
                           }}
                           onMouseLeave={(e) => {
-                            (e.target as HTMLElement).style.background =
-                              COLORS.primary;
-                            (e.target as HTMLElement).style.transform =
-                              "translateY(0)";
+                            (e.target as HTMLElement).style.background = COLORS.primary;
+                            (e.target as HTMLElement).style.transform = "translateY(0)";
                           }}
                         >
                           Next →
@@ -2748,16 +2636,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                             textAlign: "center",
                           }}
                           onMouseEnter={(e) => {
-                            (e.target as HTMLElement).style.background =
-                              "#0e5c3c";
-                            (e.target as HTMLElement).style.transform =
-                              "translateY(-2px)";
+                            (e.target as HTMLElement).style.background = "#0e5c3c";
+                            (e.target as HTMLElement).style.transform = "translateY(-2px)";
                           }}
                           onMouseLeave={(e) => {
-                            (e.target as HTMLElement).style.background =
-                              COLORS.green;
-                            (e.target as HTMLElement).style.transform =
-                              "translateY(0)";
+                            (e.target as HTMLElement).style.background = COLORS.green;
+                            (e.target as HTMLElement).style.transform = "translateY(0)";
                           }}
                         >
                           Done — return to step
@@ -2769,7 +2653,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               </div>
             </div>
           </div>,
-          document.body,
+          document.body
         )}
 
       {/* Guide Choice Modal for Step 1.11 */}
@@ -2957,21 +2841,17 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               </div>
             </div>
           </div>,
-          document.body,
+          document.body
         )}
 
-      {previewConfig.isOpen &&
-        previewConfig.docDef &&
-        previewConfig.uploadedDoc && (
-          <DocumentPreviewModal
-            open={previewConfig.isOpen}
-            onClose={() =>
-              setPreviewConfig({ ...previewConfig, isOpen: false })
-            }
-            documentDef={previewConfig.docDef}
-            uploadedDoc={previewConfig.uploadedDoc}
-          />
-        )}
+      {previewConfig.isOpen && previewConfig.docDef && previewConfig.uploadedDoc && (
+        <DocumentPreviewModal
+          open={previewConfig.isOpen}
+          onClose={() => setPreviewConfig({ ...previewConfig, isOpen: false })}
+          documentDef={previewConfig.docDef}
+          uploadedDoc={previewConfig.uploadedDoc}
+        />
+      )}
 
       {stepEntitlement.upgradeModalFeature && (
         <UpgradeModal

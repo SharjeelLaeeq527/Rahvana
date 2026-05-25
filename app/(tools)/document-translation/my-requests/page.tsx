@@ -36,13 +36,7 @@ interface Requests {
   version: number;
 }
 
-const StatusBadge = ({
-  status,
-  version,
-}: {
-  status: TranslationStatus;
-  version: number;
-}) => {
+const StatusBadge = ({ status, version }: { status: TranslationStatus; version: number }) => {
   const { t } = useLanguage();
 
   const statusConfig: Record<
@@ -84,8 +78,7 @@ const StatusBadge = ({
   const config = statusConfig[status];
   const Icon = config.icon;
 
-  const displayLabel =
-    status === "TRANSLATED" ? `Proof_V${version}` : config.label;
+  const displayLabel = status === "TRANSLATED" ? `Proof_V${version}` : config.label;
 
   return (
     <span
@@ -139,7 +132,7 @@ export default function MyTranslationRequests() {
   const getDateRange = (filterValue: string): { start: Date; end: Date } | null => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     switch (filterValue) {
       case "today":
         return { start: today, end: new Date(today.getTime() + 24 * 60 * 60 * 1000) };
@@ -164,10 +157,7 @@ export default function MyTranslationRequests() {
 
   // Filter requests based on active filters
   const filteredRequests = requests.filter((request) => {
-    if (
-      filters.document_type !== "all" &&
-      request.document_type !== filters.document_type
-    ) {
+    if (filters.document_type !== "all" && request.document_type !== filters.document_type) {
       return false;
     }
     if (filters.status !== "all" && request.status !== filters.status) {
@@ -288,9 +278,7 @@ export default function MyTranslationRequests() {
       className: "text-right",
       render: (request: Requests) => (
         <ActionMenu
-          onView={() =>
-            (window.location.href = `/document-translation/request/${request.id}`)
-          }
+          onView={() => (window.location.href = `/document-translation/request/${request.id}`)}
         />
       ),
     },
@@ -351,9 +339,7 @@ export default function MyTranslationRequests() {
                 </p>
                 <div className="mt-6">
                   <Button
-                    onClick={() =>
-                      (window.location.href = "/document-translation")
-                    }
+                    onClick={() => (window.location.href = "/document-translation")}
                     className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
                   >
                     <Upload className="w-4 h-4 mr-2" />

@@ -47,12 +47,12 @@ export const FilterPanel = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      
+
       // Check if click is from a select dropdown trigger/content
       const isSelectDropdown = target.closest(
         '[role="combobox"], [role="listbox"], [role="option"]'
       );
-      
+
       if (
         !isSelectDropdown &&
         popoverRef.current &&
@@ -79,17 +79,12 @@ export const FilterPanel = ({
   };
 
   const handleReset = () => {
-    const resetFilters = fields.reduce(
-      (acc, field) => ({ ...acc, [field.key]: "all" }),
-      {}
-    );
+    const resetFilters = fields.reduce((acc, field) => ({ ...acc, [field.key]: "all" }), {});
     setLocalFilters(resetFilters);
     onFilterChange(resetFilters);
   };
 
-  const activeFiltersCount = Object.values(localFilters).filter(
-    (v) => v !== "all"
-  ).length;
+  const activeFiltersCount = Object.values(localFilters).filter((v) => v !== "all").length;
 
   return (
     <div className="relative inline-block">
@@ -162,9 +157,7 @@ export const FilterPanel = ({
               </button>
             </div>
             <div className="text-xs text-slate-600 text-center">
-              Showing{" "}
-              <span className="font-semibold text-slate-900">{itemCount}</span>{" "}
-              of{" "}
+              Showing <span className="font-semibold text-slate-900">{itemCount}</span> of{" "}
               <span className="font-semibold text-slate-900">{totalCount}</span>
             </div>
           </div>

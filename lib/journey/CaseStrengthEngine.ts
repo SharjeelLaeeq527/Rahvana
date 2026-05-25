@@ -8,7 +8,7 @@ import { CaseDataService } from "./service";
 import * as db from "./data-access";
 
 export interface StrengthScore {
-  total_score: number;       // 0-100%
+  total_score: number; // 0-100%
   risk_level: "STRONG" | "MODERATE" | "WEAK";
   positive_signals: string[];
   risk_flags: Array<{ code: string; severity: "HIGH" | "MEDIUM" | "LOW"; message: string }>;
@@ -36,10 +36,10 @@ export class CaseStrengthEngine {
       // SIGNAL 1: Required Documents Uploaded
       // ─────────────────────────────────────────────────────────────
       const requiredDocs = documents.filter((d: any) => d.is_required);
-      const uploadedDocs = requiredDocs.filter((d: any) => d.status === 'uploaded');
-      
-      const docRatio = requiredDocs.length > 0 ? (uploadedDocs.length / requiredDocs.length) : 0;
-      baseScore += (docRatio * 30); // Worth up to 30 points
+      const uploadedDocs = requiredDocs.filter((d: any) => d.status === "uploaded");
+
+      const docRatio = requiredDocs.length > 0 ? uploadedDocs.length / requiredDocs.length : 0;
+      baseScore += docRatio * 30; // Worth up to 30 points
 
       if (docRatio === 1 && requiredDocs.length > 0) {
         positive_signals.push("All required documentation currently requested has been uploaded.");
@@ -52,9 +52,9 @@ export class CaseStrengthEngine {
       // ─────────────────────────────────────────────────────────────
       const income = Number(caseProfile.all_data?.sponsor_annual_income?.data_value) || 0;
       const householdSize = Number(caseProfile.all_data?.household_size?.data_value) || 2;
-      
+
       // Basic 2025 guideline approx: $25k for 2, +$6k per extra person
-      const guideline = 25500 + (Math.max(0, householdSize - 2) * 6500);
+      const guideline = 25500 + Math.max(0, householdSize - 2) * 6500;
 
       if (income >= guideline * 1.25) {
         baseScore += 10;
@@ -62,14 +62,18 @@ export class CaseStrengthEngine {
       } else if (income >= guideline) {
         baseScore += 5;
         positive_signals.push("Sponsor income meets federal requirements.");
-      } else if (caseProfile.all_data?.joint_sponsor_available?.data_value === 'yes' || caseProfile.all_data?.joint_sponsor_available?.data_value === true) {
+      } else if (
+        caseProfile.all_data?.joint_sponsor_available?.data_value === "yes" ||
+        caseProfile.all_data?.joint_sponsor_available?.data_value === true
+      ) {
         baseScore += 5;
         positive_signals.push("Joint sponsor has been identified to mitigate income shortfall.");
       } else {
-        risk_flags.push({ 
-          code: 'LOW_INCOME', 
-          severity: 'HIGH', 
-          message: 'Sponsor income appears below 125% of the poverty guideline for your household size.' 
+        risk_flags.push({
+          code: "LOW_INCOME",
+          severity: "HIGH",
+          message:
+            "Sponsor income appears below 125% of the poverty guideline for your household size.",
         });
         baseScore -= 15;
       }
@@ -78,21 +82,26 @@ export class CaseStrengthEngine {
       // SIGNAL 3: Relationship Evidence
       // ─────────────────────────────────────────────────────────────
       const hasChildren = caseProfile.all_data?.children_together?.data_value === true;
-      const marriageYears = this.calculateYearsElapsed(caseProfile.all_data?.marriage_date?.data_value);
+      const marriageYears = this.calculateYearsElapsed(
+        caseProfile.all_data?.marriage_date?.data_value
+      );
 
       if (hasChildren) {
         baseScore += 10;
         positive_signals.push("Strong relationship evidence (children together documented).");
       }
-      
+
       if (marriageYears >= 2) {
         baseScore += 5;
-        positive_signals.push(`Long-term marriage stability (> ${Math.floor(marriageYears)} years documented).`);
+        positive_signals.push(
+          `Long-term marriage stability (> ${Math.floor(marriageYears)} years documented).`
+        );
       } else if (marriageYears < 0.5 && marriageYears > 0) {
-         risk_flags.push({ 
-          code: 'SHORT_MARRIAGE', 
-          severity: 'MEDIUM', 
-          message: 'Short marriage duration (< 6 months) may trigger additional relationship scrutiny.' 
+        risk_flags.push({
+          code: "SHORT_MARRIAGE",
+          severity: "MEDIUM",
+          message:
+            "Short marriage duration (< 6 months) may trigger additional relationship scrutiny.",
         });
         baseScore -= 5;
       }
@@ -109,10 +118,10 @@ export class CaseStrengthEngine {
         const ageGap = Math.abs(sponsorAge - beneficiaryAge);
 
         if (ageGap > 15) {
-          risk_flags.push({ 
-            code: 'HIGH_AGE_GAP', 
-            severity: 'MEDIUM', 
-            message: `Large age gap (${ageGap} years) between sponsor and beneficiary may trigger requests for additional bona-fide evidence.` 
+          risk_flags.push({
+            code: "HIGH_AGE_GAP",
+            severity: "MEDIUM",
+            message: `Large age gap (${ageGap} years) between sponsor and beneficiary may trigger requests for additional bona-fide evidence.`,
           });
           baseScore -= 5;
         }
@@ -131,7 +140,7 @@ export class CaseStrengthEngine {
       // FINAL CALCULATION
       // ─────────────────────────────────────────────────────────────
       const finalScore = Math.min(99.99, Math.max(0, baseScore));
-      
+
       let riskLevel: StrengthScore["risk_level"] = "MODERATE";
       if (finalScore >= 80) riskLevel = "STRONG";
       else if (finalScore < 45) riskLevel = "WEAK";
@@ -140,17 +149,16 @@ export class CaseStrengthEngine {
         total_score: finalScore,
         risk_level: riskLevel,
         positive_signals: positive_signals,
-        risk_flags: risk_flags
+        risk_flags: risk_flags,
       };
 
       // Auto-save the score back to case_data so it stays indexed
-      await this.caseDataService.setCaseData(journeyId, 'case_strength_score', finalScore, {
+      await this.caseDataService.setCaseData(journeyId, "case_strength_score", finalScore, {
         is_verified: true,
-        source: 'CaseStrengthEngine'
+        source: "CaseStrengthEngine",
       });
 
       return strengthResult;
-
     } catch (error) {
       console.error("[CaseStrengthEngine] Error:", error);
       throw error;
@@ -161,7 +169,7 @@ export class CaseStrengthEngine {
     if (!dateValue) return 0;
     const date = new Date(String(dateValue));
     if (isNaN(date.getTime())) return 0;
-    
+
     const diff = new Date().getTime() - date.getTime();
     return diff / (1000 * 60 * 60 * 24 * 365.25);
   }

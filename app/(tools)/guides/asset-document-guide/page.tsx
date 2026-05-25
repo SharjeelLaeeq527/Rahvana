@@ -35,13 +35,7 @@ import {
   FileCheck,
   Landmark,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Accordion,
@@ -99,17 +93,13 @@ export default function AssetDocumentGuide() {
           </h1>
 
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 leading-relaxed">
-            The complete guide to obtaining property, vehicle, and inheritance
-            documents in Pakistan. Secure your assets with the right paperwork.
+            The complete guide to obtaining property, vehicle, and inheritance documents in
+            Pakistan. Secure your assets with the right paperwork.
           </p>
         </motion.div>
 
         {/* Main Interface */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-8"
-        >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           {/* Custom Tab Navigation */}
           <div className="flex justify-center overflow-x-auto pb-4">
             <div className="bg-white/80 backdrop-blur-md border border-slate-200 p-1.5 rounded-full inline-flex shadow-xl">
@@ -132,9 +122,7 @@ export default function AssetDocumentGuide() {
                     }
                   `}
                 >
-                  <tab.icon
-                    className={`w-4 h-4 ${activeTab === tab.id ? "text-[#32e0c4]" : ""}`}
-                  />
+                  <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? "text-[#32e0c4]" : ""}`} />
                   <span>{tab.label}</span>
                 </button>
               ))}
@@ -168,9 +156,8 @@ export default function AssetDocumentGuide() {
                       </CardHeader>
                       <CardContent className="relative z-10 text-emerald-50 space-y-6">
                         <p className="text-lg leading-relaxed font-light opacity-90">
-                          Official legal proofs showing ownership of your
-                          assets. Without these, your ownership is not legally
-                          recognized.
+                          Official legal proofs showing ownership of your assets. Without these,
+                          your ownership is not legally recognized.
                         </p>
                         <div className="grid sm:grid-cols-2 gap-4">
                           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/20 transition-colors">
@@ -203,15 +190,13 @@ export default function AssetDocumentGuide() {
                         <CardTitle className="text-xl font-bold text-slate-800">
                           Inheritance?
                         </CardTitle>
-                        <CardDescription>
-                          Transferring assets after death
-                        </CardDescription>
+                        <CardDescription>Transferring assets after death</CardDescription>
                       </CardHeader>
                       <CardContent className="relative z-10 space-y-4">
                         <p className="text-slate-600 text-sm leading-relaxed">
                           Heirs need legal authority to claim assets. The{" "}
-                          <strong>NADRA Succession Certificate</strong> has
-                          replaced complex court procedures.
+                          <strong>NADRA Succession Certificate</strong> has replaced complex court
+                          procedures.
                         </p>
                         <Button
                           onClick={() => setActiveTab("inheritance")}
@@ -267,9 +252,7 @@ export default function AssetDocumentGuide() {
                               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                                 {item.label}
                               </p>
-                              <p className="font-bold text-slate-800">
-                                {item.val}
-                              </p>
+                              <p className="font-bold text-slate-800">{item.val}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -288,11 +271,7 @@ export default function AssetDocumentGuide() {
               </TabsContent>
 
               {/* INHERITANCE TAB */}
-              <TabsContent
-                key="inheritance"
-                value="inheritance"
-                className="mt-0"
-              >
+              <TabsContent key="inheritance" value="inheritance" className="mt-0">
                 <InheritanceSection
                   containerVariants={containerVariants}
                   itemVariants={itemVariants}
@@ -301,18 +280,12 @@ export default function AssetDocumentGuide() {
 
               {/* VEHICLE TAB */}
               <TabsContent key="vehicle" value="vehicle" className="mt-0">
-                <VehicleSection
-                  containerVariants={containerVariants}
-                  itemVariants={itemVariants}
-                />
+                <VehicleSection containerVariants={containerVariants} itemVariants={itemVariants} />
               </TabsContent>
 
               {/* PORTALS TAB */}
               <TabsContent key="portals" value="portals" className="mt-0">
-                <PortalsSection
-                  containerVariants={containerVariants}
-                  itemVariants={itemVariants}
-                />
+                <PortalsSection containerVariants={containerVariants} itemVariants={itemVariants} />
               </TabsContent>
             </AnimatePresence>
           </div>
@@ -334,12 +307,10 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
       className="space-y-8"
     >
       <div className="text-center max-w-2xl mx-auto mb-8">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">
-          Land & Property Records
-        </h2>
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Land & Property Records</h2>
         <p className="text-slate-600">
-          Procedures vary by province. Select your region below to find the
-          specific authority and process.
+          Procedures vary by province. Select your region below to find the specific authority and
+          process.
         </p>
       </div>
 
@@ -394,8 +365,8 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         2
                       </div>
                       <span>
-                        Register/Login using CNIC. Search Property by: District,
-                        Tehsil, Mauza, Plot#, Owner CNIC.
+                        Register/Login using CNIC. Search Property by: District, Tehsil, Mauza,
+                        Plot#, Owner CNIC.
                       </span>
                     </li>
                     <li className="flex gap-3">
@@ -403,18 +374,17 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         3
                       </div>
                       <span>
-                        Pay fee online and download the official{" "}
-                        <strong>Fard</strong> PDF instantly.
+                        Pay fee online and download the official <strong>Fard</strong> PDF
+                        instantly.
                       </span>
                     </li>
                   </ul>
                   <div className="bg-amber-50 p-4 rounded-lg border border-amber-100 text-amber-800 text-sm flex gap-3">
                     <HelpCircle className="w-5 h-5 shrink-0" />
                     <p>
-                      <strong>Note:</strong> Online Fard is for record keeping.
-                      For selling/registry, visit an{" "}
-                      <strong>Arazi Record Center (ARC)</strong> or e-Khidmat
-                      Markaz for verification.
+                      <strong>Note:</strong> Online Fard is for record keeping. For
+                      selling/registry, visit an <strong>Arazi Record Center (ARC)</strong> or
+                      e-Khidmat Markaz for verification.
                     </p>
                   </div>
                 </div>
@@ -437,9 +407,8 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         1
                       </div>
                       <span>
-                        Global Search: Use Name/CNIC to find{" "}
-                        <strong>Form 7A</strong> (Ownership) and{" "}
-                        <strong>Form 7B</strong> on SindhZameen portal.
+                        Global Search: Use Name/CNIC to find <strong>Form 7A</strong> (Ownership)
+                        and <strong>Form 7B</strong> on SindhZameen portal.
                       </span>
                     </li>
                     <li className="flex gap-3">
@@ -447,9 +416,8 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         2
                       </div>
                       <span>
-                        <strong>Certified Copies:</strong> Visit the local
-                        Taluka / Board of Revenue office with your CNIC and
-                        Survey Number.
+                        <strong>Certified Copies:</strong> Visit the local Taluka / Board of Revenue
+                        office with your CNIC and Survey Number.
                       </span>
                     </li>
                   </ul>
@@ -473,8 +441,7 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         1
                       </div>
                       <span>
-                        Visit the local{" "}
-                        <strong>Land Record & Revenue Office</strong> (Patwari).
+                        Visit the local <strong>Land Record & Revenue Office</strong> (Patwari).
                       </span>
                     </li>
                     <li className="flex gap-3">
@@ -482,15 +449,14 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         2
                       </div>
                       <span>
-                        Request Fard or Ownership Record by providing CNIC and
-                        land details.
+                        Request Fard or Ownership Record by providing CNIC and land details.
                       </span>
                     </li>
                     <li className="flex gap-3">
                       <CheckCircle2 className="w-5 h-5 text-[#32e0c4] shrink-0" />
                       <span>
-                        Ask if <strong>e-Registration</strong> is available at
-                        your specific tehsil for faster processing.
+                        Ask if <strong>e-Registration</strong> is available at your specific tehsil
+                        for faster processing.
                       </span>
                     </li>
                   </ul>
@@ -514,8 +480,7 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         1
                       </div>
                       <span>
-                        Visit the <strong>Property Registry</strong> section on
-                        the official portal.
+                        Visit the <strong>Property Registry</strong> section on the official portal.
                       </span>
                     </li>
                     <li className="flex gap-3">
@@ -529,8 +494,8 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                         3
                       </div>
                       <span>
-                        Pay Stamp Duty / Taxes online or at the center to
-                        receive the certified copy.
+                        Pay Stamp Duty / Taxes online or at the center to receive the certified
+                        copy.
                       </span>
                     </li>
                   </ul>
@@ -548,8 +513,7 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                 <div className="space-y-2">
                   <h4 className="font-bold">Fard</h4>
                   <p className="text-sm text-slate-400">
-                    The fundamental proof of land ownership. Shows current owner
-                    status.
+                    The fundamental proof of land ownership. Shows current owner status.
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -561,8 +525,7 @@ function PropertySection({ containerVariants }: GuideSectionProps) {
                 <div className="space-y-2">
                   <h4 className="font-bold">Intiqal (Mutation)</h4>
                   <p className="text-sm text-slate-400">
-                    The process of transferring the ownership in government
-                    records after a sale.
+                    The process of transferring the ownership in government records after a sale.
                   </p>
                 </div>
               </CardContent>
@@ -588,37 +551,32 @@ function InheritanceSection({ containerVariants }: GuideSectionProps) {
           <div className="h-2 bg-[#0d7377] w-full" />
           <CardHeader>
             <CardTitle className="text-2xl font-bold flex items-center gap-2">
-              <Users className="w-6 h-6 text-[#0d7377]" /> NADRA Succession
-              Certificate
+              <Users className="w-6 h-6 text-[#0d7377]" /> NADRA Succession Certificate
             </CardTitle>
             <CardDescription>
-              Replaces old court procedures. Valid for movable assets (Bank
-              accounts, Shares, etc). For Immovable assets (Land), a{" "}
-              <strong>Letter of Administration</strong> is issued.
+              Replaces old court procedures. Valid for movable assets (Bank accounts, Shares, etc).
+              For Immovable assets (Land), a <strong>Letter of Administration</strong> is issued.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <h4 className="font-bold text-[#0d7377] mb-3">
-                  Required Documents
-                </h4>
+                <h4 className="font-bold text-[#0d7377] mb-3">Required Documents</h4>
                 <ul className="space-y-2 text-sm text-slate-600">
                   <li className="flex gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> Death
-                    Certificate of deceased
+                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> Death Certificate of
+                    deceased
                   </li>
                   <li className="flex gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> FRC
-                    (Family Reg Certificate)
+                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> FRC (Family Reg Certificate)
                   </li>
                   <li className="flex gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> CNIC
-                    copies of all legal heirs
+                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> CNIC copies of all legal
+                    heirs
                   </li>
                   <li className="flex gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> List of
-                    assets to be transferred
+                    <CheckCircle2 className="w-4 h-4 text-[#0d7377]" /> List of assets to be
+                    transferred
                   </li>
                 </ul>
               </div>
@@ -626,15 +584,13 @@ function InheritanceSection({ containerVariants }: GuideSectionProps) {
                 <h4 className="font-bold text-[#0d7377] mb-3">The Process</h4>
                 <ul className="space-y-2 text-sm text-slate-600">
                   <li className="flex gap-2">
-                    <div className="font-bold">1.</div> Visit NADRA Succession
-                    Unit
+                    <div className="font-bold">1.</div> Visit NADRA Succession Unit
                   </li>
                   <li className="flex gap-2">
                     <div className="font-bold">2.</div> Submit Docs & Biometrics
                   </li>
                   <li className="flex gap-2">
-                    <div className="font-bold">3.</div> Public Notice
-                    (Newspaper)
+                    <div className="font-bold">3.</div> Public Notice (Newspaper)
                   </li>
                   <li className="flex gap-2">
                     <div className="font-bold">4.</div> Certificate Issuance
@@ -645,9 +601,8 @@ function InheritanceSection({ containerVariants }: GuideSectionProps) {
             <div className="bg-[#e8f6f6] text-[#0d7377] p-4 rounded-lg flex gap-3 text-sm border border-[#32e0c4]/20">
               <ShieldCheck className="w-5 h-5 shrink-0" />
               <p>
-                <strong>Note:</strong> All legal heirs must be present for
-                biometric verification. If any heir is abroad, they can verify
-                remotely via a power of attorney or mission.
+                <strong>Note:</strong> All legal heirs must be present for biometric verification.
+                If any heir is abroad, they can verify remotely via a power of attorney or mission.
               </p>
             </div>
           </CardContent>
@@ -661,8 +616,8 @@ function InheritanceSection({ containerVariants }: GuideSectionProps) {
           </CardHeader>
           <CardContent className="space-y-4 text-slate-300">
             <p>
-              Without a Succession Certificate, banks and authorities will
-              freeze the deceased&apos;s assets.
+              Without a Succession Certificate, banks and authorities will freeze the
+              deceased&apos;s assets.
             </p>
             <p>This document is the legal authority that allows heirs to:</p>
             <ul className="list-disc list-inside space-y-1 ml-2">
@@ -698,26 +653,20 @@ function VehicleSection({ containerVariants }: GuideSectionProps) {
             <div className="p-4 rounded-xl bg-[#e8f6f6] border border-[#32e0c4]/30">
               <h4 className="font-bold text-[#0d7377] mb-1">Smart Card</h4>
               <p className="text-sm text-slate-600">
-                The modern, credit-card sized proof of ownership. Replaced the
-                old &quot;Registration Book&quot;.
+                The modern, credit-card sized proof of ownership. Replaced the old
+                &quot;Registration Book&quot;.
               </p>
             </div>
             <div className="space-y-4 mt-6">
               <h4 className="font-bold text-slate-800">Where to go?</h4>
               <ul className="space-y-3">
                 <li className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <span className="font-medium text-slate-700">
-                    Punjab & ICT
-                  </span>
-                  <Badge className="bg-blue-100 text-blue-700">
-                    Excise & Taxation Dept
-                  </Badge>
+                  <span className="font-medium text-slate-700">Punjab & ICT</span>
+                  <Badge className="bg-blue-100 text-blue-700">Excise & Taxation Dept</Badge>
                 </li>
                 <li className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                   <span className="font-medium text-slate-700">Sindh</span>
-                  <Badge className="bg-blue-100 text-blue-700">
-                    Sindh Excise Dept
-                  </Badge>
+                  <Badge className="bg-blue-100 text-blue-700">Sindh Excise Dept</Badge>
                 </li>
               </ul>
             </div>
@@ -732,8 +681,7 @@ function VehicleSection({ containerVariants }: GuideSectionProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-slate-600 mb-4">
-              Buying or selling a car? You MUST transfer the ownership
-              officially.
+              Buying or selling a car? You MUST transfer the ownership officially.
             </p>
 
             <div className="space-y-3">
@@ -742,12 +690,9 @@ function VehicleSection({ containerVariants }: GuideSectionProps) {
                   REQ
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 text-sm">
-                    Biometric Verification
-                  </p>
+                  <p className="font-bold text-slate-800 text-sm">Biometric Verification</p>
                   <p className="text-xs text-slate-500">
-                    Both Buyer and Seller must verify biometrics at e-Sahulat or
-                    Excise office.
+                    Both Buyer and Seller must verify biometrics at e-Sahulat or Excise office.
                   </p>
                 </div>
               </div>
@@ -756,9 +701,7 @@ function VehicleSection({ containerVariants }: GuideSectionProps) {
                   REQ
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 text-sm">
-                    Transfer Letter
-                  </p>
+                  <p className="font-bold text-slate-800 text-sm">Transfer Letter</p>
                   <p className="text-xs text-slate-500">
                     Sales deed/Transfer letter signed by both parties.
                   </p>
@@ -769,12 +712,9 @@ function VehicleSection({ containerVariants }: GuideSectionProps) {
                   TIP
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 text-sm">
-                    Keep Old Records
-                  </p>
+                  <p className="font-bold text-slate-800 text-sm">Keep Old Records</p>
                   <p className="text-xs text-slate-500">
-                    Always keep the original file/book safe, it increases resale
-                    value.
+                    Always keep the original file/book safe, it increases resale value.
                   </p>
                 </div>
               </div>
@@ -857,9 +797,9 @@ function PortalsSection({ containerVariants }: GuideSectionProps) {
                 Can I get Fard completely online?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600">
-                In Punjab, yes, for record purposes. For selling, you might need
-                an in-person visit for biometric verification at an Arazi Record
-                Center. In other provinces, it is mostly in-person.
+                In Punjab, yes, for record purposes. For selling, you might need an in-person visit
+                for biometric verification at an Arazi Record Center. In other provinces, it is
+                mostly in-person.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2" className="border-b-[#0d7377]/20">
@@ -867,10 +807,9 @@ function PortalsSection({ containerVariants }: GuideSectionProps) {
                 Do I need a lawyer for Inheritance?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600">
-                Not necessarily. The new NADRA Succession Certificate system
-                removes the need for courts/lawyers in simple cases where all
-                heirs agree. If there is a dispute, you will need to go to
-                court.
+                Not necessarily. The new NADRA Succession Certificate system removes the need for
+                courts/lawyers in simple cases where all heirs agree. If there is a dispute, you
+                will need to go to court.
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3" className="border-b-0">
@@ -878,9 +817,9 @@ function PortalsSection({ containerVariants }: GuideSectionProps) {
                 Is the &apos;Smart Card&apos; mandatory for cars?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600">
-                Yes, the old book Registration Books are being phased out. New
-                cars get Smart Cards by default. It is highly recommended to
-                upgrade for easier carrying and verification.
+                Yes, the old book Registration Books are being phased out. New cars get Smart Cards
+                by default. It is highly recommended to upgrade for easier carrying and
+                verification.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -899,12 +838,8 @@ function ProvinceCard({ title, badge, desc, children }: ProvinceCardProps) {
             {badge}
           </Badge>
         </div>
-        <CardTitle className="text-xl font-bold text-slate-900 leading-tight">
-          {title}
-        </CardTitle>
-        <CardDescription className="text-slate-500 mt-2">
-          {desc}
-        </CardDescription>
+        <CardTitle className="text-xl font-bold text-slate-900 leading-tight">{title}</CardTitle>
+        <CardDescription className="text-slate-500 mt-2">{desc}</CardDescription>
       </CardHeader>
       <CardContent className="grow pt-4">{children}</CardContent>
     </Card>

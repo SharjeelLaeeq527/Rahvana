@@ -9,13 +9,11 @@ export async function POST(request: NextRequest) {
     if (!caseId || !carrier || !trackingCode) {
       return NextResponse.json(
         { error: "Missing required fields: caseId, carrier, trackingCode" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    console.log(
-      `[EasyPost API] Creating tracker for case ${caseId}: ${carrier} ${trackingCode}`,
-    );
+    console.log(`[EasyPost API] Creating tracker for case ${caseId}: ${carrier} ${trackingCode}`);
 
     // Step 1: Create tracker in EasyPost
     let trackerData;
@@ -37,7 +35,7 @@ export async function POST(request: NextRequest) {
           error: "Failed to create tracker",
           details: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -108,7 +106,7 @@ export async function POST(request: NextRequest) {
         id: trackerData.id,
         status: trackerData.status,
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("[EasyPost API] Unexpected error:", error);
@@ -117,7 +115,7 @@ export async function POST(request: NextRequest) {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

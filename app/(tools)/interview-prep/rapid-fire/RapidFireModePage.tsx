@@ -249,11 +249,8 @@ export const RapidFireModePage = ({
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isHydratingProgress, setIsHydratingProgress] = useState(true);
   const [skippedQuestions, setSkippedQuestions] = useState<number>(0);
-  const [questionResponses, setQuestionResponses] = useState<
-    QuestionResponse[]
-  >([]);
-  const [reviewQuestion, setReviewQuestion] =
-    useState<GeneratedQuestion | null>(null);
+  const [questionResponses, setQuestionResponses] = useState<QuestionResponse[]>([]);
+  const [reviewQuestion, setReviewQuestion] = useState<GeneratedQuestion | null>(null);
   const [isReviewFlipped, setIsReviewFlipped] = useState(false);
   const [questionCooldowns, setQuestionCooldowns] =
     useState<QuestionCooldownMap>({});
@@ -525,9 +522,7 @@ export const RapidFireModePage = ({
       response === "covered" ? 10 : response === "partial" ? 5 : 0;
 
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -720,9 +715,7 @@ export const RapidFireModePage = ({
     };
 
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -772,10 +765,7 @@ export const RapidFireModePage = ({
               No applicable questions found for rapid fire mode.
             </p>
             <div className="flex gap-3 justify-center">
-              <Button
-                onClick={onSwitchToPrep}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
+              <Button onClick={onSwitchToPrep} className="bg-teal-600 hover:bg-teal-700">
                 Switch to Prep Mode
               </Button>
               <Button onClick={onExit} variant="outline"></Button>
@@ -836,9 +826,7 @@ export const RapidFireModePage = ({
                     <span className="text-4xl font-bold text-teal-700">
                       {roundScore ?? totalScore ?? 0}%
                     </span>
-                    <div className="text-sm text-teal-600 font-medium mt-1">
-                      Readiness Score
-                    </div>
+                    <div className="text-sm text-teal-600 font-medium mt-1">Readiness Score</div>
                   </div>
                 </div>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">

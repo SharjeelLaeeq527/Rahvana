@@ -23,7 +23,9 @@ export default function AffidavitSupportCalculatorPage() {
       {!isOpen && (
         <div className="text-center animate-in fade-in duration-700">
           <h1 className="text-3xl font-black text-[#0f1f38] mb-4">Affidavit Support Calculator</h1>
-          <p className="text-[#3a4f63] mb-8">Determine your sponsorship setup based on USCIS requirements.</p>
+          <p className="text-[#3a4f63] mb-8">
+            Determine your sponsorship setup based on USCIS requirements.
+          </p>
           <button
             onClick={() => setIsOpen(true)}
             className="p-[14px_32px] bg-[#0d7377] text-white rounded-[12px] font-semibold shadow-lg hover:opacity-90 transition-all"
@@ -33,11 +35,7 @@ export default function AffidavitSupportCalculatorPage() {
         </div>
       )}
 
-      <SponsorshipCalculatorTool
-        isOpen={isOpen}
-        onClose={handleClose}
-        onSave={handleSave}
-      />
+      <SponsorshipCalculatorTool isOpen={isOpen} onClose={handleClose} onSave={handleSave} />
     </div>
   );
 }

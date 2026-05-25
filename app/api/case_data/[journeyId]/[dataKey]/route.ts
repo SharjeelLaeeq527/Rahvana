@@ -6,7 +6,7 @@ import type { CaseDataUpdate } from "@/lib/journey/types";
 // GET /api/case_data/[journeyId]/[dataKey] - Retrieve single case data
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ journeyId: string; dataKey: string }> },
+  { params }: { params: Promise<{ journeyId: string; dataKey: string }> }
 ) {
   try {
     const { journeyId, dataKey } = await params;
@@ -22,11 +22,8 @@ export async function GET(
         error: error instanceof Error ? error.message : "Internal server error",
       },
       {
-        status:
-          error instanceof Error && error.message.includes("not found")
-            ? 404
-            : 500,
-      },
+        status: error instanceof Error && error.message.includes("not found") ? 404 : 500,
+      }
     );
   }
 }
@@ -34,7 +31,7 @@ export async function GET(
 // PATCH /api/case_data/[journeyId]/[dataKey] - Update or create single case data
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ journeyId: string; dataKey: string }> },
+  { params }: { params: Promise<{ journeyId: string; dataKey: string }> }
 ) {
   try {
     const { journeyId, dataKey } = await params;
@@ -54,24 +51,18 @@ export async function PATCH(
 
     return NextResponse.json(
       { success: true, data: { ...result, is_editable: true } },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
-    console.error(
-      `Error in PATCH /api/case-data/[journeyId]/[dataKey]:`,
-      error,
-    );
+    console.error(`Error in PATCH /api/case-data/[journeyId]/[dataKey]:`, error);
     return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
       {
-        status:
-          error instanceof Error && error.message.includes("not found")
-            ? 404
-            : 500,
-      },
+        status: error instanceof Error && error.message.includes("not found") ? 404 : 500,
+      }
     );
   }
 }
@@ -79,7 +70,7 @@ export async function PATCH(
 // DELETE /api/case_data/[journeyId]/[dataKey] - Delete single case data
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ journeyId: string; dataKey: string }> },
+  { params }: { params: Promise<{ journeyId: string; dataKey: string }> }
 ) {
   try {
     const { journeyId, dataKey } = await params;
@@ -94,24 +85,18 @@ export async function DELETE(
           message: "Case data deleted successfully",
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
-    console.error(
-      `Error in DELETE /api/case-data/[journeyId]/[dataKey]:`,
-      error,
-    );
+    console.error(`Error in DELETE /api/case-data/[journeyId]/[dataKey]:`, error);
     return NextResponse.json(
       {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
       {
-        status:
-          error instanceof Error && error.message.includes("not found")
-            ? 404
-            : 500,
-      },
+        status: error instanceof Error && error.message.includes("not found") ? 404 : 500,
+      }
     );
   }
 }

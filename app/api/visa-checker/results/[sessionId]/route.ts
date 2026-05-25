@@ -10,8 +10,7 @@ export async function GET(
   try {
     const { sessionId } = await context.params;
 
-    const response =
-      await VisaCheckerSupabaseService.getScoringResults(sessionId);
+    const response = await VisaCheckerSupabaseService.getScoringResults(sessionId);
 
     return NextResponse.json(response);
   } catch (error) {
@@ -19,10 +18,7 @@ export async function GET(
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch scoring results",
+        error: error instanceof Error ? error.message : "Failed to fetch scoring results",
       },
       { status: 500 }
     );

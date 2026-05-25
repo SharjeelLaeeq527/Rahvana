@@ -21,7 +21,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    const { data: documents, error, count } = await supabase
+    const {
+      data: documents,
+      error,
+      count,
+    } = await supabase
       .from("translation_documents")
       .select("*", { count: "exact" })
       .eq("user_id", user.id)
@@ -30,10 +34,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("Query error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch documents" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 });
     }
 
     // Generate signed URLs
@@ -74,9 +75,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("List documents error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

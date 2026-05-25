@@ -7,7 +7,6 @@ export type BirthStepId =
   | "office_finder"
   | "roadmap";
 
-
 export interface BirthWizardState {
   documentNeed: string | null;
   ageCategory: "0-3" | "3-10" | "10-18" | "18+" | null;
@@ -31,4 +30,3 @@ export interface BirthWizardState {
   } | null;
   checkedDocuments: string[];
 }
-

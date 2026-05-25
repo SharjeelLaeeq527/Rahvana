@@ -16,9 +16,7 @@ type Props = {
 export default function SignatureTool({ onSignature, onOpen }: Props) {
   const { t } = useLanguage();
   const [showModal, setShowModal] = useState(false);
-  const [signatureMode, setSignatureMode] = useState<
-    "draw" | "type" | "upload"
-  >("draw");
+  const [signatureMode, setSignatureMode] = useState<"draw" | "type" | "upload">("draw");
 
   const handleCloseModal = () => setShowModal(false);
 
@@ -47,7 +45,12 @@ export default function SignatureTool({ onSignature, onOpen }: Props) {
       </button>
 
       {/* Modal */}
-      <Dialog open={showModal} onOpenChange={(open) => { if (!open) handleCloseModal() }}>
+      <Dialog
+        open={showModal}
+        onOpenChange={(open) => {
+          if (!open) handleCloseModal();
+        }}
+      >
         <DialogContent className="w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden p-0 gap-0 border-none">
           {/* Header */}
           <div className="shrink-0 flex items-center justify-between border-b p-4 sm:px-6 sm:py-4">
@@ -60,12 +63,7 @@ export default function SignatureTool({ onSignature, onOpen }: Props) {
               className="text-gray-400 hover:text-gray-600 transition"
               aria-label="Close modal"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -99,22 +97,13 @@ export default function SignatureTool({ onSignature, onOpen }: Props) {
           {/* Content */}
           <div className="p-4 sm:p-6 min-h-[300px] sm:min-h-96 overflow-y-auto custom-scrollbar">
             {signatureMode === "draw" && (
-              <SignaturePad
-                onSave={onSignature}
-                closeModal={handleCloseModal}
-              />
+              <SignaturePad onSave={onSignature} closeModal={handleCloseModal} />
             )}
             {signatureMode === "type" && (
-              <TextSignature
-                onGenerate={onSignature}
-                closeModal={handleCloseModal}
-              />
+              <TextSignature onGenerate={onSignature} closeModal={handleCloseModal} />
             )}
             {signatureMode === "upload" && (
-              <UploadImage
-                onUpload={onSignature}
-                closeModal={handleCloseModal}
-              />
+              <UploadImage onUpload={onSignature} closeModal={handleCloseModal} />
             )}
           </div>
         </DialogContent>

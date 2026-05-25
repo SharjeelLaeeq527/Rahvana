@@ -54,13 +54,7 @@ interface TranslationRequest {
 }
 
 // Status badge component
-const StatusBadge = ({
-  status,
-  version = 1,
-}: {
-  status: string;
-  version?: number;
-}) => {
+const StatusBadge = ({ status, version = 1 }: { status: string; version?: number }) => {
   const { t } = useLanguage();
 
   const statusConfig: Record<
@@ -107,8 +101,7 @@ const StatusBadge = ({
   const Icon = config.icon;
 
   // For TRANSLATED status, display version (e.g., Proof_V1, Proof_V1.1)
-  const displayLabel =
-    status === "TRANSLATED" ? `Proof_V${version}` : config.label;
+  const displayLabel = status === "TRANSLATED" ? `Proof_V${version}` : config.label;
 
   return (
     <span
@@ -120,11 +113,7 @@ const StatusBadge = ({
   );
 };
 
-export default function TranslationRequestDetails({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function TranslationRequestDetails({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useLanguage();
   const [request, setRequest] = useState<TranslationRequest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,9 +124,7 @@ export default function TranslationRequestDetails({
     const fetchRequest = async () => {
       try {
         const paramsId = await params;
-        const response = await fetch(
-          `/api/document-translation/${paramsId.id}/status`,
-        );
+        const response = await fetch(`/api/document-translation/${paramsId.id}/status`);
         const data = await response.json();
 
         if (response.ok) {
@@ -167,24 +154,19 @@ export default function TranslationRequestDetails({
     if (!request) return;
 
     try {
-      const response = await fetch(
-        `/api/document-translation/${request.id}/confirm`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
+      const response = await fetch(`/api/document-translation/${request.id}/confirm`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({}),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         // Show success toast
-        toast.success(
-          t("documentTranslation.requestDetailsPage.messages.confirmSuccess"),
-        );
+        toast.success(t("documentTranslation.requestDetailsPage.messages.confirmSuccess"));
 
         // Update the request status with a forced update
         setRequest((prevRequest) => ({
@@ -194,8 +176,7 @@ export default function TranslationRequestDetails({
       } else {
         console.error("Error confirming translation:", data.error);
         toast.error(
-          data.error ||
-            t("documentTranslation.requestDetailsPage.messages.confirmFailed"),
+          data.error || t("documentTranslation.requestDetailsPage.messages.confirmFailed")
         );
       }
     } catch (error) {
@@ -209,24 +190,19 @@ export default function TranslationRequestDetails({
     if (!request || !changeRequestReason.trim()) return;
 
     try {
-      const response = await fetch(
-        `/api/document-translation/${request.id}/request-changes`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ reason: changeRequestReason }),
+      const response = await fetch(`/api/document-translation/${request.id}/request-changes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ reason: changeRequestReason }),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         // Show success toast
-        toast.success(
-          t("documentTranslation.requestDetailsPage.messages.changeSuccess"),
-        );
+        toast.success(t("documentTranslation.requestDetailsPage.messages.changeSuccess"));
 
         // Update the request status
         setRequest((prevRequest) => ({
@@ -236,8 +212,7 @@ export default function TranslationRequestDetails({
       } else {
         console.error("Error requesting changes:", data.error);
         toast.error(
-          data.error ||
-            t("documentTranslation.requestDetailsPage.messages.changeFailed"),
+          data.error || t("documentTranslation.requestDetailsPage.messages.changeFailed")
         );
       }
     } catch (error) {
@@ -273,9 +248,7 @@ export default function TranslationRequestDetails({
               {t("documentTranslation.requestDetailsPage.notFound.desc")}
             </p>
             <Button
-              onClick={() =>
-                (window.location.href = "/document-translation/my-requests")
-              }
+              onClick={() => (window.location.href = "/document-translation/my-requests")}
               className="bg-primary hover:bg-primary/90"
             >
               {t("documentTranslation.requestDetailsPage.notFound.backBtn")}
@@ -316,9 +289,7 @@ export default function TranslationRequestDetails({
             <div className="flex items-center justify-center gap-3 mb-2">
               <BadgeCheck className="w-8 h-8" />
               <h2 className="text-2xl font-bold">
-                {t(
-                  "documentTranslation.requestDetailsPage.verifiedBanner.title",
-                )}
+                {t("documentTranslation.requestDetailsPage.verifiedBanner.title")}
               </h2>
             </div>
             <p className="text-green-100">
@@ -339,14 +310,10 @@ export default function TranslationRequestDetails({
                   <FileText className="w-5 h-5 text-primary/80 mt-0.5 mr-3 shrink-0" />
                   <div>
                     <p className="text-sm text-gray-500">
-                      {t(
-                        "documentTranslation.requestDetailsPage.docInfo.typeLabel",
-                      )}
+                      {t("documentTranslation.requestDetailsPage.docInfo.typeLabel")}
                     </p>
                     <p className="font-medium">
-                      {t(
-                        `documentTranslation.uploadPage.types.${request.document_type}`,
-                      )}
+                      {t(`documentTranslation.uploadPage.types.${request.document_type}`)}
                     </p>
                   </div>
                 </div>
@@ -355,13 +322,9 @@ export default function TranslationRequestDetails({
                   <Calendar className="w-5 h-5 text-primary/80 mt-0.5 mr-3 shrink-0" />
                   <div>
                     <p className="text-sm text-gray-500">
-                      {t(
-                        "documentTranslation.requestDetailsPage.docInfo.submittedLabel",
-                      )}
+                      {t("documentTranslation.requestDetailsPage.docInfo.submittedLabel")}
                     </p>
-                    <p className="font-medium">
-                      {formatDate(request.created_at)}
-                    </p>
+                    <p className="font-medium">{formatDate(request.created_at)}</p>
                   </div>
                 </div>
 
@@ -370,13 +333,9 @@ export default function TranslationRequestDetails({
                     <Clock className="w-5 h-5 text-primary/80 mt-0.5 mr-3 shrink-0" />
                     <div>
                       <p className="text-sm text-gray-500">
-                        {t(
-                          "documentTranslation.requestDetailsPage.docInfo.translatedLabel",
-                        )}
+                        {t("documentTranslation.requestDetailsPage.docInfo.translatedLabel")}
                       </p>
-                      <p className="font-medium">
-                        {formatDate(request.translatedUploadedAt)}
-                      </p>
+                      <p className="font-medium">{formatDate(request.translatedUploadedAt)}</p>
                     </div>
                   </div>
                 )}
@@ -385,16 +344,11 @@ export default function TranslationRequestDetails({
 
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                {t(
-                  "documentTranslation.requestDetailsPage.statusAndActions.title",
-                )}
+                {t("documentTranslation.requestDetailsPage.statusAndActions.title")}
               </h3>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center">
-                  <StatusBadge
-                    status={request.status}
-                    version={request.version || 1}
-                  />
+                  <StatusBadge status={request.status} version={request.version || 1} />
                 </div>
 
                 {/* Download buttons */}
@@ -411,21 +365,16 @@ export default function TranslationRequestDetails({
                       </div>
                       <div className="text-left">
                         <p className="font-medium text-gray-900 text-sm">
-                          {t(
-                            "documentTranslation.requestDetailsPage.statusAndActions.originalPdf",
-                          )}
+                          {t("documentTranslation.requestDetailsPage.statusAndActions.originalPdf")}
                         </p>
                         <p className="text-xs text-gray-500 truncate max-w-[150px]">
-                          {request.original_filename ||
-                            request.originalFilename}
+                          {request.original_filename || request.originalFilename}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 text-blue-600">
                       <span className="text-sm font-medium">
-                        {t(
-                          "documentTranslation.requestDetailsPage.statusAndActions.download",
-                        )}
+                        {t("documentTranslation.requestDetailsPage.statusAndActions.download")}
                       </span>
                       <Download className="w-4 h-4" />
                     </div>
@@ -445,20 +394,17 @@ export default function TranslationRequestDetails({
                         <div className="text-left">
                           <p className="font-medium text-gray-900 text-sm">
                             {t(
-                              "documentTranslation.requestDetailsPage.statusAndActions.translatedPdf",
+                              "documentTranslation.requestDetailsPage.statusAndActions.translatedPdf"
                             )}
                           </p>
                           <p className="text-xs text-gray-500 truncate max-w-[150px]">
-                            {request.translated_filename ||
-                              request.translatedFilename}
+                            {request.translated_filename || request.translatedFilename}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-green-600">
                         <span className="text-sm font-medium">
-                          {t(
-                            "documentTranslation.requestDetailsPage.statusAndActions.download",
-                          )}
+                          {t("documentTranslation.requestDetailsPage.statusAndActions.download")}
                         </span>
                         <Download className="w-4 h-4" />
                       </div>
@@ -476,14 +422,11 @@ export default function TranslationRequestDetails({
             <div className="flex items-center mb-4">
               <User className="w-5 h-5 text-primary/80 mr-2" />
               <h3 className="text-lg font-semibold text-gray-800">
-                {t(
-                  "documentTranslation.requestDetailsPage.notes.yourNotesTitle",
-                )}
+                {t("documentTranslation.requestDetailsPage.notes.yourNotesTitle")}
               </h3>
             </div>
             <p className="text-gray-700">
-              {request.user_notes ||
-                t("documentTranslation.requestDetailsPage.notes.noUserNotes")}
+              {request.user_notes || t("documentTranslation.requestDetailsPage.notes.noUserNotes")}
             </p>
           </div>
 
@@ -491,9 +434,7 @@ export default function TranslationRequestDetails({
             <div className="flex items-center mb-4">
               <MessageSquare className="w-5 h-5 text-primary/80 mr-2" />
               <h3 className="text-lg font-semibold text-gray-800">
-                {t(
-                  "documentTranslation.requestDetailsPage.notes.adminNotesTitle",
-                )}
+                {t("documentTranslation.requestDetailsPage.notes.adminNotesTitle")}
               </h3>
             </div>
             <p className="text-gray-700">
@@ -515,55 +456,42 @@ export default function TranslationRequestDetails({
                 className="bg-green-600 hover:bg-green-700 flex items-center gap-2 flex-1 cursor-pointer"
               >
                 <CheckCircle className="w-5 h-5" />
-                {t(
-                  "documentTranslation.requestDetailsPage.actions.confirmCorrectBtn",
-                )}
+                {t("documentTranslation.requestDetailsPage.actions.confirmCorrectBtn")}
               </Button>
 
-              <Dialog
-                open={showChangeRequestModal}
-                onOpenChange={setShowChangeRequestModal}
-              >
+              <Dialog open={showChangeRequestModal} onOpenChange={setShowChangeRequestModal}>
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
                     className="border-red-500 text-red-600 hover:bg-red-50 flex-1 cursor-pointer"
                   >
                     <AlertTriangle className="w-5 h-5" />
-                    {t(
-                      "documentTranslation.requestDetailsPage.actions.requestChangesBtn",
-                    )}
+                    {t("documentTranslation.requestDetailsPage.actions.requestChangesBtn")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900">
-                      {t(
-                        "documentTranslation.requestDetailsPage.actions.modalTitle",
-                      )}
+                      {t("documentTranslation.requestDetailsPage.actions.modalTitle")}
                     </DialogTitle>
                   </DialogHeader>
                   <div className="py-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t(
-                        "documentTranslation.requestDetailsPage.actions.reasonLabel",
-                      )}
+                      {t("documentTranslation.requestDetailsPage.actions.reasonLabel")}
                     </label>
                     <textarea
                       value={changeRequestReason}
                       onChange={(e) => setChangeRequestReason(e.target.value)}
                       placeholder={t(
-                        "documentTranslation.requestDetailsPage.actions.reasonPlaceholder",
+                        "documentTranslation.requestDetailsPage.actions.reasonPlaceholder"
                       )}
                       className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent"
                       maxLength={500}
                     />
                     <p className="text-xs text-gray-500 mt-1 text-right">
-                      {t(
-                        "documentTranslation.requestDetailsPage.actions.characters",
-                      ).replace(
+                      {t("documentTranslation.requestDetailsPage.actions.characters").replace(
                         "{length}",
-                        changeRequestReason.length.toString(),
+                        changeRequestReason.length.toString()
                       )}
                     </p>
                   </div>
@@ -576,18 +504,14 @@ export default function TranslationRequestDetails({
                         setChangeRequestReason("");
                       }}
                     >
-                      {t(
-                        "documentTranslation.requestDetailsPage.actions.cancelBtn",
-                      )}
+                      {t("documentTranslation.requestDetailsPage.actions.cancelBtn")}
                     </Button>
                     <Button
                       onClick={handleRequestChanges}
                       disabled={!changeRequestReason.trim()}
                       className="px-4 bg-red-600 hover:bg-red-700 cursor-pointer"
                     >
-                      {t(
-                        "documentTranslation.requestDetailsPage.actions.submitRequestBtn",
-                      )}
+                      {t("documentTranslation.requestDetailsPage.actions.submitRequestBtn")}
                     </Button>
                   </div>
                 </DialogContent>

@@ -4,9 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
@@ -67,11 +65,10 @@ const NikahNamaGuidePage = () => {
     (prev, stepsData) => ({
       ...prev,
       documentNeed: stepsData.document_need || prev.documentNeed,
-      checkedDocuments:
-        stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
+      checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -92,14 +89,14 @@ const NikahNamaGuidePage = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
     await submitFeedbackHook(
       "nikah-nama-guide",
       currentStepId,
       feedbackType,
       description,
-      attachment,
+      attachment
     );
   };
 
@@ -123,8 +120,7 @@ const NikahNamaGuidePage = () => {
 
     const localHide =
       typeof window !== "undefined" &&
-      localStorage.getItem("dont_show_marriage_registration_welcome") ===
-        "true";
+      localStorage.getItem("dont_show_marriage_registration_welcome") === "true";
 
     if (!session.hide_intro_modal && !localHide) {
       setShowWhatsThis(true);
@@ -153,7 +149,7 @@ const NikahNamaGuidePage = () => {
       setIsSaved(true); // mark as saved
     },
     navigationHandled,
-    setNavigationHandled,
+    setNavigationHandled
   );
 
   // Before unload confirmation
@@ -198,8 +194,7 @@ const NikahNamaGuidePage = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -211,16 +206,13 @@ const NikahNamaGuidePage = () => {
       setState((s) => ({
         ...s,
         documentNeed: {
-          ...(typeof s.documentNeed === "object" && s.documentNeed !== null
-            ? s.documentNeed
-            : {}),
+          ...(typeof s.documentNeed === "object" && s.documentNeed !== null ? s.documentNeed : {}),
           [questionId]: id,
         },
       }));
       // Save progress to backend
       saveWizardStep("document_need", {
-        ...(typeof state.documentNeed === "object" &&
-        state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -274,10 +266,7 @@ const NikahNamaGuidePage = () => {
           />
         );
       case "roadmap":
-        const docNeedRaw = state.documentNeed as
-          | string
-          | Record<string, string>
-          | null;
+        const docNeedRaw = state.documentNeed as string | Record<string, string> | null;
         let selectedCategory: string | undefined;
 
         if (typeof docNeedRaw === "string") {
@@ -290,14 +279,15 @@ const NikahNamaGuidePage = () => {
           selectedCategory = Object.values(docNeedRaw).join(","); // or match specific question
         }
 
-        const filteredChecklist =
-          guideData.wizard.roadmap.documents_checklist.filter((doc: any) => {
+        const filteredChecklist = guideData.wizard.roadmap.documents_checklist.filter(
+          (doc: any) => {
             if (!doc.category) return true;
             if (selectedCategory) {
               return selectedCategory.includes(doc.category);
             }
             return false;
-          });
+          }
+        );
 
         const roadmapWithFilteredDocs = {
           ...guideData.wizard.roadmap,
@@ -336,10 +326,7 @@ const NikahNamaGuidePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-26">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar

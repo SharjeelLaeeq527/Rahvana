@@ -18,10 +18,7 @@
 
 import type { RiskFlag } from "./types";
 
-type EligibilityAnswers = Record<
-  string,
-  Record<string, string | string[]> | undefined
->;
+type EligibilityAnswers = Record<string, Record<string, string | string[]> | undefined>;
 
 /**
  * Step reference config — maps logical step roles to category-specific step labels.
@@ -32,16 +29,16 @@ type EligibilityAnswers = Record<
  * The detector logic itself stays the same — only the labels change per category.
  */
 export interface StepRefs {
-  documents: string;     // doc gathering step
-  mainForm: string;      // primary form (e.g., I-130, I-129F)
-  beneForm?: string;     // secondary beneficiary form (e.g., I-130A)
-  reviewSubmit: string;  // final review/submit step
+  documents: string; // doc gathering step
+  mainForm: string; // primary form (e.g., I-130, I-129F)
+  beneForm?: string; // secondary beneficiary form (e.g., I-130A)
+  reviewSubmit: string; // final review/submit step
 }
 
 export const IR1_STEP_REFS: StepRefs = {
-  documents:    "Chapter 1 Step 2 — Gather Documents",
-  mainForm:     "Chapter 1 Step 4 — Fill I-130",
-  beneForm:     "Chapter 1 Step 5 — Fill I-130A",
+  documents: "Chapter 1 Step 2 — Gather Documents",
+  mainForm: "Chapter 1 Step 4 — Fill I-130",
+  beneForm: "Chapter 1 Step 5 — Fill I-130A",
   reviewSubmit: "Chapter 1 Step 10 — Review & Submit",
 };
 
@@ -56,7 +53,7 @@ function get(answers: EligibilityAnswers, quest: string, screen: string): string
  */
 export function detectRiskFlagsFromEligibilityQuest(
   answers: EligibilityAnswers | null | undefined,
-  stepRefs: StepRefs = IR1_STEP_REFS,
+  stepRefs: StepRefs = IR1_STEP_REFS
 ): RiskFlag[] {
   const flags: RiskFlag[] = [];
   if (!answers) return flags;
@@ -64,15 +61,13 @@ export function detectRiskFlagsFromEligibilityQuest(
   // ── Missing prior-marriage termination evidence ─────────────────────────────
   const q3s1 = get(answers, "q3", "q3s1");
   const q3s3 = get(answers, "q3", "q3s3");
-  const hadPriorMarriage =
-    q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both";
+  const hadPriorMarriage = q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both";
   if (hadPriorMarriage && (q3s3 === "no" || q3s3 === "partial")) {
     flags.push({
       id: "missing_prior_marriage_termination",
       title: "Old marriage proof missing",
       severity: "critical",
-      advisory:
-        `You said there was a previous marriage. Add the divorce papers or death certificate in ${stepRefs.documents}.`,
+      advisory: `You said there was a previous marriage. Add the divorce papers or death certificate in ${stepRefs.documents}.`,
       source_basis: "8 CFR 204.2(a)(2)",
     });
   }
@@ -83,8 +78,7 @@ export function detectRiskFlagsFromEligibilityQuest(
       id: "prior_visa_refusal_or_fraud",
       title: "Past visa issue — disclose it",
       severity: "critical",
-      advisory:
-        `Disclose every past visa refusal or issue in ${stepRefs.mainForm} and add supporting documents in ${stepRefs.documents}. Hiding it will hurt your case.`,
+      advisory: `Disclose every past visa refusal or issue in ${stepRefs.mainForm} and add supporting documents in ${stepRefs.documents}. Hiding it will hurt your case.`,
       source_basis: "INA 212(a)(6)(C)",
     });
   }
@@ -95,8 +89,7 @@ export function detectRiskFlagsFromEligibilityQuest(
       id: "beneficiary_criminal_history",
       title: "Court / police record — disclose it",
       severity: "critical",
-      advisory:
-        `Upload certified court documents and police records in ${stepRefs.documents}. Also mention them in ${stepRefs.mainForm}.`,
+      advisory: `Upload certified court documents and police records in ${stepRefs.documents}. Also mention them in ${stepRefs.mainForm}.`,
       source_basis: "INA 212(a)(2)",
     });
   }
@@ -107,8 +100,7 @@ export function detectRiskFlagsFromEligibilityQuest(
       id: "unlawful_presence_history",
       title: "U.S. overstay — waiver needed",
       severity: "critical",
-      advisory:
-        `A provisional waiver (Form I-601A) will be needed before the interview. Disclose the overstay in ${stepRefs.mainForm} and Rahvana will guide you through the waiver later.`,
+      advisory: `A provisional waiver (Form I-601A) will be needed before the interview. Disclose the overstay in ${stepRefs.mainForm} and Rahvana will guide you through the waiver later.`,
       source_basis: "INA 212(a)(9)(B)",
     });
   }

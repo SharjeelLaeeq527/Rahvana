@@ -32,16 +32,16 @@ export const Compare = ({
   const handleMouseMove = useCallback(
     (e: React.MouseEvent | MouseEvent | React.TouchEvent | TouchEvent) => {
       if (!containerRef.current) return;
-      
+
       const rect = containerRef.current.getBoundingClientRect();
       let x = 0;
-      
+
       if ("touches" in e) {
         x = e.touches[0].clientX - rect.left;
       } else {
         x = (e as MouseEvent).clientX - rect.left;
       }
-      
+
       const percentage = (x / rect.width) * 100;
       setSliderPercentage(Math.min(Math.max(percentage, 0), 100));
     },
@@ -79,7 +79,10 @@ export const Compare = ({
         <img
           src={firstImage}
           alt="first image"
-          className={cn("absolute inset-0 h-full w-auto max-w-none object-cover object-left", firstImageClassName)}
+          className={cn(
+            "absolute inset-0 h-full w-auto max-w-none object-cover object-left",
+            firstImageClassName
+          )}
           style={{ width: containerRef.current?.offsetWidth }}
         />
       </div>

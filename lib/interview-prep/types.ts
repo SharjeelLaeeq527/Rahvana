@@ -142,12 +142,12 @@ export interface GeneratedQuestion {
   category: string;
   question: string;
   variations?: string[];
-  selectedQuestion?: string; 
+  selectedQuestion?: string;
   guidance: string;
   tooltip: string;
   tier?: 'free' | 'basic' | 'premium' | 'executive';
   applicable: boolean;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   mockInterviewOrder?: number;
   reason?: string;
 }
@@ -167,7 +167,7 @@ export interface AIImprovement {
   version: number;
   originalAnswer: string;
   improvedAnswer: string;
-  improvementType: 'clarity' | 'professional' | 'complete' | 'concise';
+  improvementType: "clarity" | "professional" | "complete" | "concise";
   generatedAt: string;
   acceptedAt?: string;
 }
@@ -180,7 +180,7 @@ export interface UserAnswer {
   word_count: number;
   ai_improvements: AIImprovement[];
   confidence_score?: number;
-  status: 'draft' | 'completed' | 'improved';
+  status: "draft" | "completed" | "improved";
   created_at: string;
   updated_at: string;
 }

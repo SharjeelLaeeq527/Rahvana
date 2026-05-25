@@ -9,7 +9,7 @@ export function useGuideFeedback() {
     stepKey: string,
     feedbackType: string,
     description: string,
-    attachment?: File | File[],
+    attachment?: File | File[]
   ) => {
     setSubmitting(true);
     setSubmitError(null);
@@ -20,10 +20,7 @@ export function useGuideFeedback() {
       formData.append("stepKey", stepKey);
       formData.append("feedbackType", feedbackType);
       formData.append("description", description);
-      formData.append(
-        "pageUrl",
-        typeof window !== "undefined" ? window.location.href : `/${slug}`,
-      );
+      formData.append("pageUrl", typeof window !== "undefined" ? window.location.href : `/${slug}`);
 
       if (attachment) {
         if (Array.isArray(attachment)) {
@@ -40,10 +37,7 @@ export function useGuideFeedback() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error ||
-            `Feedback submission failed: ${response.statusText}`,
-        );
+        throw new Error(errorData.error || `Feedback submission failed: ${response.statusText}`);
       }
 
       const result = await response.json();
@@ -51,8 +45,7 @@ export function useGuideFeedback() {
 
       return result;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Feedback submission failed";
+      const errorMessage = error instanceof Error ? error.message : "Feedback submission failed";
       setSubmitError(errorMessage);
       console.error("Feedback submission error:", error);
       throw error;

@@ -80,9 +80,7 @@ export function DocListSection({
   showTags = false,
 }: DocListSectionProps) {
   const totalItems = groups.reduce((acc, g) => acc + g.items.length, 0);
-  const reviewedCount = Object.values(docsStatus).filter(
-    (s) => s === "reviewed",
-  ).length;
+  const reviewedCount = Object.values(docsStatus).filter((s) => s === "reviewed").length;
 
   return (
     <div className="flex flex-col">
@@ -92,10 +90,7 @@ export function DocListSection({
           <div
             className="h-full bg-linear-to-r from-primary to-primary/70 rounded-[10px] transition-all duration-500"
             style={{
-              width:
-                totalItems > 0
-                  ? `${Math.round((reviewedCount / totalItems) * 100)}%`
-                  : "0%",
+              width: totalItems > 0 ? `${Math.round((reviewedCount / totalItems) * 100)}%` : "0%",
             }}
           />
         </div>
@@ -117,8 +112,7 @@ export function DocListSection({
                 className={`text-[9px] sm:text-[10px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
                   group.badge === "req" || group.badge === "Required"
                     ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
-                    : group.badge === "cond" ||
-                        group.badge === "Required if applicable"
+                    : group.badge === "cond" || group.badge === "Required if applicable"
                       ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
                       : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
                 }`}
@@ -137,13 +131,9 @@ export function DocListSection({
               {group.items.map((item) => {
                 const st = docsStatus[item.id] || "not-started";
                 const vaultId = getVaultId(item);
-                const uploadedDoc = uploadedDocuments.find(
-                  (ud) => ud.documentDefId === vaultId,
-                );
+                const uploadedDoc = uploadedDocuments.find((ud) => ud.documentDefId === vaultId);
                 const isUploadedInVault = !!uploadedDoc;
-                const isDeleting = uploadedDoc
-                  ? isDeletingIds.includes(uploadedDoc.id)
-                  : false;
+                const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
 
                 const displayStatus = isUploadedInVault
                   ? "Uploaded"
@@ -189,9 +179,7 @@ export function DocListSection({
                           : "bg-[#e8f1fb] border-[#d0e4f7]"
                       }`}
                     >
-                      <div className="text-primary/70">
-                        {getStepIcon(item.icon || "")}
-                      </div>
+                      <div className="text-primary/70">{getStepIcon(item.icon || "")}</div>
                     </div>
 
                     {/* Content */}

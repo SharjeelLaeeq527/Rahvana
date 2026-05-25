@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       path: storagePath,
-      name: file.name
+      name: file.name,
     });
   } catch (error) {
     console.error("Attachment upload error:", error);

@@ -31,16 +31,11 @@ interface ResultPageProps {
   onRestart: () => void;
 }
 
-export const ResultPage = ({
-  sessionId,
-  results,
-  onRestart,
-}: ResultPageProps) => {
+export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) => {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedQuestion, setSelectedQuestion] =
-    useState<GeneratedQuestion | null>(null);
+  const [selectedQuestion, setSelectedQuestion] = useState<GeneratedQuestion | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -52,13 +47,9 @@ export const ResultPage = ({
 
   // Answer management state
   const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
-  const [savingAnswers, setSavingAnswers] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [savingAnswers, setSavingAnswers] = useState<Record<string, boolean>>({});
   const [aiImproving, setAiImproving] = useState<Record<string, boolean>>({});
-  const [improvedAnswers, setImprovedAnswers] = useState<
-    Record<string, string>
-  >({});
+  const [improvedAnswers, setImprovedAnswers] = useState<Record<string, string>>({});
   const [showAnswerModal, setShowAnswerModal] = useState(false);
 
   // Track which questions have saved answers (loaded from DB)
@@ -95,9 +86,7 @@ export const ResultPage = ({
   };
 
   // Shuffle algorithm
-  const shuffleQuestions = (
-    questions: GeneratedQuestion[],
-  ): GeneratedQuestion[] => {
+  const shuffleQuestions = (questions: GeneratedQuestion[]): GeneratedQuestion[] => {
     const shuffled = [...questions];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -156,20 +145,15 @@ export const ResultPage = ({
 
   const loadAnswers = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/interview-prep/user-answers?sessionId=${sessionId}`,
-      );
+      const response = await fetch(`/api/interview-prep/user-answers?sessionId=${sessionId}`);
       const data = await response.json();
 
       if (data.success && data.answers) {
         const answersMap: Record<string, string> = {};
         data.answers.forEach(
-          (answer: {
-            question_id: string;
-            user_answer_text?: string | null;
-          }) => {
+          (answer: { question_id: string; user_answer_text?: string | null }) => {
             answersMap[answer.question_id] = answer.user_answer_text || "";
-          },
+          }
         );
         setSavedAnswers(answersMap);
         setUserAnswers(answersMap);
@@ -228,10 +212,7 @@ export const ResultPage = ({
 
       showToast("Answer saved successfully!", "success");
     } catch (error: unknown) {
-      showToast(
-        error instanceof Error ? error.message : "Failed to save answer",
-        "error",
-      );
+      showToast(error instanceof Error ? error.message : "Failed to save answer", "error");
     } finally {
       setSavingAnswers((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -241,7 +222,7 @@ export const ResultPage = ({
   const handleImproveAnswer = async (
     questionId: string,
     question: string,
-    type: "clarity" | "professional" | "complete" = "clarity",
+    type: "clarity" | "professional" | "complete" = "clarity"
   ) => {
     const answerText = userAnswers[questionId];
 
@@ -274,10 +255,7 @@ export const ResultPage = ({
       }));
       showToast("Answer improved successfully!", "success");
     } catch (error: unknown) {
-      showToast(
-        error instanceof Error ? error.message : "Failed to improve answer",
-        "error",
-      );
+      showToast(error instanceof Error ? error.message : "Failed to improve answer", "error");
     } finally {
       setAiImproving((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -308,10 +286,7 @@ export const ResultPage = ({
   if (loading) {
     return (
       <div className="text-center py-8">
-        <Loader
-          size="md"
-          text="Generating your interview preparation materials..."
-        />
+        <Loader size="md" text="Generating your interview preparation materials..." />
       </div>
     );
   }
@@ -320,10 +295,7 @@ export const ResultPage = ({
     return (
       <div className="text-center py-8">
         <p className="text-red-600">Error: {error}</p>
-        <Button
-          onClick={onRestart}
-          className="mt-4 bg-teal-600 hover:bg-teal-700 text-white"
-        >
+        <Button onClick={onRestart} className="mt-4 bg-teal-600 hover:bg-teal-700 text-white">
           Restart
         </Button>
       </div>
@@ -566,35 +538,33 @@ export const ResultPage = ({
                   </div>
                   <ScrollArea className="flex-1 pr-4">
                     <div className="space-y-3">
-                      {questionsList.map(
-                        (item: GeneratedQuestion, index: number) => (
-                          <div
-                            key={index}
-                            onClick={() => handleQuestionSelect(item)}
-                            className={`w-full cursor-pointer p-4 rounded-lg transition-all duration-200 border ${
-                              selectedQuestion?.id === item.id
-                                ? "bg-teal-100 border-2 border-teal-500 shadow-md"
-                                : "bg-slate-50 hover:bg-slate-100 border-slate-200 hover:border-slate-300"
-                            }`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <span className="shrink-0 w-6 h-6 rounded-full bg-teal-500 text-white text-xs flex items-center justify-center font-medium mt-1">
-                                {index + 1}
-                              </span>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-slate-800 text-sm">
-                                  {item.selectedQuestion || item.question}
-                                </p>
-                                <div className="mt-2">
-                                  <span className="text-xs text-slate-500 bg-slate-100 p-1 rounded">
-                                    {item.category}
-                                  </span>
-                                </div>
+                      {questionsList.map((item: GeneratedQuestion, index: number) => (
+                        <div
+                          key={index}
+                          onClick={() => handleQuestionSelect(item)}
+                          className={`w-full cursor-pointer p-4 rounded-lg transition-all duration-200 border ${
+                            selectedQuestion?.id === item.id
+                              ? "bg-teal-100 border-2 border-teal-500 shadow-md"
+                              : "bg-slate-50 hover:bg-slate-100 border-slate-200 hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="shrink-0 w-6 h-6 rounded-full bg-teal-500 text-white text-xs flex items-center justify-center font-medium mt-1">
+                              {index + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-slate-800 text-sm">
+                                {item.selectedQuestion || item.question}
+                              </p>
+                              <div className="mt-2">
+                                <span className="text-xs text-slate-500 bg-slate-100 p-1 rounded">
+                                  {item.category}
+                                </span>
                               </div>
                             </div>
                           </div>
-                        ),
-                      )}
+                        </div>
+                      ))}
                     </div>
                   </ScrollArea>
                 </div>
@@ -654,16 +624,10 @@ export const ResultPage = ({
                               </span>
                               {selectedQuestion.tooltip && (
                                 <div className="group relative z-50">
-                                  <Info
-                                    size={20}
-                                    className="text-white/80 hover:text-white"
-                                  />
+                                  <Info size={20} className="text-white/80 hover:text-white" />
                                   <div className="absolute top-full right-0 mt-2 hidden group-hover:block w-64 bg-slate-800 text-white text-xs rounded-lg p-3 z-50 shadow-xl border border-slate-700">
                                     <div className="text-teal-300 font-medium mb-1 flex items-center gap-1">
-                                      <Info
-                                        size={14}
-                                        className="text-teal-300"
-                                      />
+                                      <Info size={14} className="text-teal-300" />
                                       Tip
                                     </div>
                                     <p>{selectedQuestion.tooltip}</p>
@@ -673,14 +637,11 @@ export const ResultPage = ({
                               )}
                             </div>
                             <h3 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug line-clamp-5 sm:line-clamp-4">
-                              {selectedQuestion.selectedQuestion ||
-                                selectedQuestion.question}
+                              {selectedQuestion.selectedQuestion || selectedQuestion.question}
                             </h3>
                           </div>
                           <div className="text-center space-y-1">
-                            <p className="text-teal-100 text-xs">
-                              Click to reveal
-                            </p>
+                            <p className="text-teal-100 text-xs">Click to reveal</p>
                             <div className="flex justify-center">
                               <div className="w-4 h-4 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
                                 <div className="w-1 h-1 bg-white/80 rounded-full"></div>
@@ -716,9 +677,7 @@ export const ResultPage = ({
 
                               {/* Toggle section with sample answer and guidance - visible by default or if no saved answer */}
                               {!savedAnswers[selectedQuestion.id] ||
-                              showSampleAnswerInFlashcard[
-                                selectedQuestion.id
-                              ] ? (
+                              showSampleAnswerInFlashcard[selectedQuestion.id] ? (
                                 <>
                                   <div>
                                     <h4 className="text-teal-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
@@ -764,15 +723,12 @@ export const ResultPage = ({
                                   e.stopPropagation(); // Prevent card flip when clicking toggle
                                   setShowSampleAnswerInFlashcard((prev) => ({
                                     ...prev,
-                                    [selectedQuestion.id]:
-                                      !prev[selectedQuestion.id],
+                                    [selectedQuestion.id]: !prev[selectedQuestion.id],
                                   }));
                                 }}
                                 className="w-full text-teal-100 hover:text-white text-xs sm:text-sm font-medium transition-colors underline"
                               >
-                                {showSampleAnswerInFlashcard[
-                                  selectedQuestion.id
-                                ]
+                                {showSampleAnswerInFlashcard[selectedQuestion.id]
                                   ? "Hide Sample"
                                   : "Compare"}
                               </button>
@@ -797,9 +753,7 @@ export const ResultPage = ({
                           )}
 
                           <div className="text-center mt-2">
-                            <p className="text-slate-300 text-xs">
-                              Click to flip
-                            </p>
+                            <p className="text-slate-300 text-xs">Click to flip</p>
                           </div>
                         </div>
                       </div>
@@ -809,13 +763,10 @@ export const ResultPage = ({
                       <div className="text-center text-slate-500">
                         <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
 
-                        <h3 className="text-xl font-medium mb-2">
-                          Select a Question
-                        </h3>
+                        <h3 className="text-xl font-medium mb-2">Select a Question</h3>
 
                         <p>
-                          Choose any question from the sidebar to view detailed
-                          answers and guidance
+                          Choose any question from the sidebar to view detailed answers and guidance
                         </p>
                       </div>
                     </div>
@@ -872,12 +823,8 @@ export const ResultPage = ({
                 {/* Modal Header */}
                 <div className="bg-linear-to-r from-teal-600 to-teal-700 p-6 text-white flex justify-between items-start shrink-0">
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold">
-                      {selectedQuestion.question}
-                    </h3>
-                    <p className="text-teal-100 text-sm mt-2">
-                      {selectedQuestion.guidance}
-                    </p>
+                    <h3 className="text-2xl font-bold">{selectedQuestion.question}</h3>
+                    <p className="text-teal-100 text-sm mt-2">{selectedQuestion.guidance}</p>
                   </div>
                   <button
                     onClick={() => setShowAnswerModal(false)}
@@ -925,7 +872,7 @@ export const ResultPage = ({
                               handleImproveAnswer(
                                 selectedQuestion.id,
                                 selectedQuestion.question,
-                                "clarity",
+                                "clarity"
                               )
                             }
                             disabled={aiImproving[selectedQuestion.id]}
@@ -949,9 +896,8 @@ export const ResultPage = ({
                       </div>
                       <p className="text-xs text-slate-500 mt-2">
                         {
-                          (userAnswers[selectedQuestion.id] || "")
-                            .split(/\s+/)
-                            .filter((w) => w).length
+                          (userAnswers[selectedQuestion.id] || "").split(/\s+/).filter((w) => w)
+                            .length
                         }{" "}
                         words
                       </p>
@@ -980,9 +926,8 @@ export const ResultPage = ({
                           Use This Improvement
                         </Button>
                         <p className="text-xs text-[#0a5a5d] mt-4 pt-4 border-t border-[#14a0a6]/10">
-                          <span className="font-medium">Tip:</span> AI can make
-                          mistakes and may not fully reflect your intent. Please
-                          review carefully before using.
+                          <span className="font-medium">Tip:</span> AI can make mistakes and may not
+                          fully reflect your intent. Please review carefully before using.
                         </p>
                       </div>
                     )}
@@ -993,9 +938,7 @@ export const ResultPage = ({
                       disabled={savingAnswers[selectedQuestion.id]}
                       className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2"
                     >
-                      {savingAnswers[selectedQuestion.id]
-                        ? "Saving..."
-                        : "Save Answer"}
+                      {savingAnswers[selectedQuestion.id] ? "Saving..." : "Save Answer"}
                     </Button>
                   </div>
                 </div>
@@ -1005,16 +948,10 @@ export const ResultPage = ({
         </div>
 
         {showUpgradeModal && (
-          <UpgradeModal
-            feature="interview_rapid_fire"
-            onClose={() => setShowUpgradeModal(false)}
-          />
+          <UpgradeModal feature="interview_rapid_fire" onClose={() => setShowUpgradeModal(false)} />
         )}
         {showMockUpgradeModal && (
-          <UpgradeModal
-            feature="mock_interview"
-            onClose={() => setShowMockUpgradeModal(false)}
-          />
+          <UpgradeModal feature="mock_interview" onClose={() => setShowMockUpgradeModal(false)} />
         )}
       </div>
     );
@@ -1023,10 +960,7 @@ export const ResultPage = ({
   return (
     <div className="text-center py-8">
       <p className="text-slate-600">No results found. Please try again.</p>
-      <Button
-        onClick={onRestart}
-        className="mt-4 bg-teal-600 hover:bg-teal-700 text-white"
-      >
+      <Button onClick={onRestart} className="mt-4 bg-teal-600 hover:bg-teal-700 text-white">
         Restart
       </Button>
     </div>

@@ -16,16 +16,46 @@ import { ALL_COUNTRIES } from "../data/countries";
 import { SUPPORTED_DESTINATIONS, getCountryData } from "../data/registry";
 
 export const DOWNSTREAM_CLEAR_MAP: Record<string, string[]> = {
-  origin:        ["destination", "purpose", "workType", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
-  destination:   ["purpose", "workType", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
-  purpose:       ["workType", "sponsor", "relationship", "beneficiaryAge", "petitionerAge", "workBase", "tempType", "gateAnswers"],
-  sponsor:       ["relationship", "beneficiaryAge", "petitionerAge", "gateAnswers"],
-  relationship:  ["beneficiaryAge", "petitionerAge", "gateAnswers"],
-  beneficiaryAge:["gateAnswers"],
+  origin: [
+    "destination",
+    "purpose",
+    "workType",
+    "sponsor",
+    "relationship",
+    "beneficiaryAge",
+    "petitionerAge",
+    "workBase",
+    "tempType",
+    "gateAnswers",
+  ],
+  destination: [
+    "purpose",
+    "workType",
+    "sponsor",
+    "relationship",
+    "beneficiaryAge",
+    "petitionerAge",
+    "workBase",
+    "tempType",
+    "gateAnswers",
+  ],
+  purpose: [
+    "workType",
+    "sponsor",
+    "relationship",
+    "beneficiaryAge",
+    "petitionerAge",
+    "workBase",
+    "tempType",
+    "gateAnswers",
+  ],
+  sponsor: ["relationship", "beneficiaryAge", "petitionerAge", "gateAnswers"],
+  relationship: ["beneficiaryAge", "petitionerAge", "gateAnswers"],
+  beneficiaryAge: ["gateAnswers"],
   petitionerAge: ["gateAnswers"],
-  workBase:      ["gateAnswers"],
-  tempType:      ["gateAnswers"],
-  workType:      ["gateAnswers"],
+  workBase: ["gateAnswers"],
+  tempType: ["gateAnswers"],
+  workType: ["gateAnswers"],
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -36,16 +66,23 @@ export function buildSteps(a: VisaExplorationAnswers): Step[] {
 
   // Q1: Origin
   steps.push({
-    id: "origin", type: "country", field: "origin", isDestination: false,
+    id: "origin",
+    type: "country",
+    field: "origin",
+    isDestination: false,
     title: "Where are you from?",
-    subtitle: "Tell us your country of citizenship. This helps us figure out what options are available for you.",
+    subtitle:
+      "Tell us your country of citizenship. This helps us figure out what options are available for you.",
     hint: "Start typing your country name...",
     canProceed: !!a.origin,
   });
 
   // Q2: Destination
   steps.push({
-    id: "destination", type: "country", field: "destination", isDestination: true,
+    id: "destination",
+    type: "country",
+    field: "destination",
+    isDestination: true,
     title: "Where do you want to go?",
     subtitle: "Which country are you interested in visiting, studying, working, or settling in?",
     hint: "Start typing a country name...",
@@ -65,9 +102,12 @@ export function buildSteps(a: VisaExplorationAnswers): Step[] {
 
   // Q3: Purpose (from country data — no hard-coding)
   steps.push({
-    id: "purpose", type: "options", field: "purpose",
+    id: "purpose",
+    type: "options",
+    field: "purpose",
     title: "What would you like to do there?",
-    subtitle: "Don't worry if you're not sure — just pick the option closest to what you have in mind.",
+    subtitle:
+      "Don't worry if you're not sure — just pick the option closest to what you have in mind.",
     options: countryData.purposes,
     canProceed: !!a.purpose,
   });

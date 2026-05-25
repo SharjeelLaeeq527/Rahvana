@@ -9,11 +9,14 @@
  * Never downgrades. Idempotent — safe to call from anywhere.
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
-import Stripe from 'stripe';
+import { SupabaseClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
 
 const TIER_RANK: Record<string, number> = {
-  free: 0, basic: 1, premium: 2, executive: 3,
+  free: 0,
+  basic: 1,
+  premium: 2,
+  executive: 3,
 };
 
 export interface ReconcileResult {
@@ -25,27 +28,29 @@ export interface ReconcileResult {
 
 export async function reconcileUserPlan(
   admin: SupabaseClient,
-  userId: string,
+  userId: string
 ): Promise<ReconcileResult> {
   // 1. Current DB state
   const { data: profile } = await admin
-    .from('user_profiles')
-    .select('subscription_tier, subscription_status, profile_details')
-    .eq('id', userId)
+    .from("user_profiles")
+    .select("subscription_tier, subscription_status, profile_details")
+    .eq("id", userId)
     .single();
 
-  const currentTier   = (profile?.subscription_tier ?? 'free').toLowerCase();
-  const currentStatus = profile?.subscription_status ?? 'inactive';
-  const currentRank   = TIER_RANK[currentTier] ?? 0;
+  const currentTier = (profile?.subscription_tier ?? "free").toLowerCase();
+  const currentStatus = profile?.subscription_status ?? "inactive";
+  const currentRank = TIER_RANK[currentTier] ?? 0;
 
   // 2. All recent journey_plan payments — both succeeded AND pending
   const { data: payments } = await admin
-    .from('payments')
-    .select('id, product_id, stripe_payment_id, stripe_checkout_session_id, status, metadata, created_at')
-    .eq('user_id', userId)
-    .eq('product_type', 'journey_plan')
-    .in('status', ['succeeded', 'pending'])
-    .order('created_at', { ascending: false })
+    .from("payments")
+    .select(
+      "id, product_id, stripe_payment_id, stripe_checkout_session_id, status, metadata, created_at"
+    )
+    .eq("user_id", userId)
+    .eq("product_type", "journey_plan")
+    .in("status", ["succeeded", "pending"])
+    .order("created_at", { ascending: false })
     .limit(10);
 
   if (!payments || payments.length === 0) {
@@ -63,14 +68,16 @@ export async function reconcileUserPlan(
 
   // First pass: check already-succeeded payments
   for (const p of payments) {
-    if (p.status !== 'succeeded') continue;
-    const pid  = ((p.product_id as string) ?? '').toLowerCase();
+    if (p.status !== "succeeded") continue;
+    const pid = ((p.product_id as string) ?? "").toLowerCase();
     const rank = TIER_RANK[pid] ?? 0;
     if (rank > bestRank) {
       bestRank = rank;
       bestTier = pid;
-      bestSubId = ((p.metadata as any)?.stripe_subscription_id as string)
-        ?? ((p.stripe_payment_id as string) ?? null);
+      bestSubId =
+        ((p.metadata as any)?.stripe_subscription_id as string) ??
+        (p.stripe_payment_id as string) ??
+        null;
     }
   }
 
@@ -79,31 +86,36 @@ export async function reconcileUserPlan(
     // Try to initialise Stripe lazily (only when needed, avoids import errors in edge)
     let stripeClient: Stripe | null = null;
     try {
-      const { stripe } = await import('@/lib/stripe/config');
+      const { stripe } = await import("@/lib/stripe/config");
       stripeClient = stripe;
-    } catch { /* Stripe unavailable in this context — skip */ }
+    } catch {
+      /* Stripe unavailable in this context — skip */
+    }
 
     if (stripeClient) {
       for (const p of payments) {
-        if (p.status !== 'pending') continue;
+        if (p.status !== "pending") continue;
         const sessionId = p.stripe_checkout_session_id as string;
         if (!sessionId) continue;
 
         try {
           const session = await stripeClient.checkout.sessions.retrieve(sessionId);
-          const isConfirmed = session.status === 'complete' || session.payment_status === 'paid';
+          const isConfirmed = session.status === "complete" || session.payment_status === "paid";
           if (!isConfirmed) continue;
 
-          const pid  = ((p.product_id as string) ?? '').toLowerCase();
+          const pid = ((p.product_id as string) ?? "").toLowerCase();
           const rank = TIER_RANK[pid] ?? 0;
           if (rank > bestRank) {
             bestRank = rank;
             bestTier = pid;
-            bestSubId = (session.subscription as string) || (session.payment_intent as string) || null;
+            bestSubId =
+              (session.subscription as string) || (session.payment_intent as string) || null;
             pendingPaymentId = p.id as string;
             pendingSessionId = sessionId;
           }
-        } catch { /* Session not found or Stripe error — skip */ }
+        } catch {
+          /* Session not found or Stripe error — skip */
+        }
       }
     }
   }
@@ -113,8 +125,9 @@ export async function reconcileUserPlan(
   }
 
   // 4. Decide whether to apply
-  const needsUpgrade     = bestRank > currentRank;
-  const needsReactivation = bestRank === currentRank && currentStatus !== 'active' && currentRank > 0;
+  const needsUpgrade = bestRank > currentRank;
+  const needsReactivation =
+    bestRank === currentRank && currentStatus !== "active" && currentRank > 0;
 
   if (!needsUpgrade && !needsReactivation) {
     return { tier: currentTier, status: currentStatus, reconciled: false };
@@ -123,7 +136,7 @@ export async function reconcileUserPlan(
   // 5. Apply paid tier
   const updateData: Record<string, unknown> = {
     subscription_tier: bestTier,
-    subscription_status: 'active',
+    subscription_status: "active",
   };
   if (bestSubId) {
     updateData.profile_details = {
@@ -131,32 +144,29 @@ export async function reconcileUserPlan(
       active_plan: bestTier,
       stripe_subscription_id: bestSubId,
       reconciled_at: new Date().toISOString(),
-      reconciled_by: 'reconcile-utility',
+      reconciled_by: "reconcile-utility",
     };
   }
 
-  const { error } = await admin
-    .from('user_profiles')
-    .update(updateData)
-    .eq('id', userId);
+  const { error } = await admin.from("user_profiles").update(updateData).eq("id", userId);
 
   if (error) {
-    console.error('[reconcileUserPlan] Update failed:', error);
+    console.error("[reconcileUserPlan] Update failed:", error);
     return { tier: currentTier, status: currentStatus, reconciled: false };
   }
 
   // 6. If we found a pending payment that Stripe confirmed — mark it succeeded
   if (pendingPaymentId) {
     await admin
-      .from('payments')
+      .from("payments")
       .update({
-        status: 'succeeded',
+        status: "succeeded",
         ...(bestSubId ? { stripe_payment_id: bestSubId } : {}),
       })
-      .eq('id', pendingPaymentId);
+      .eq("id", pendingPaymentId);
   }
 
   console.log(`[reconcileUserPlan] ${userId}: ${currentTier} → ${bestTier} (active)`);
 
-  return { tier: bestTier, status: 'active', reconciled: true, previousTier: currentTier };
+  return { tier: bestTier, status: "active", reconciled: true, previousTier: currentTier };
 }

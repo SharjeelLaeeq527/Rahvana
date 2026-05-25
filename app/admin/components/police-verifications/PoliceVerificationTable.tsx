@@ -95,20 +95,16 @@ interface PoliceVerificationRequest {
 type VerificationStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
 export default function PoliceVerificationTable() {
-  const [policeVerifications, setPoliceVerifications] = useState<
+  const [policeVerifications, setPoliceVerifications] = useState<PoliceVerificationRequest[]>([]);
+  const [filteredPoliceVerifications, setFilteredPoliceVerifications] = useState<
     PoliceVerificationRequest[]
   >([]);
-  const [filteredPoliceVerifications, setFilteredPoliceVerifications] =
-    useState<PoliceVerificationRequest[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<
-    VerificationStatus | "all"
-  >("all");
+  const [selectedStatus, setSelectedStatus] = useState<VerificationStatus | "all">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [selectedRequest, setSelectedRequest] =
-    useState<PoliceVerificationRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<PoliceVerificationRequest | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Pagination state
@@ -172,9 +168,7 @@ export default function PoliceVerificationTable() {
     setCurrentPage(1); // Reset to first page on filter change
   }, [policeVerifications, selectedStatus, searchTerm, sortOrder]);
 
-  const totalPages = Math.ceil(
-    filteredPoliceVerifications.length / ITEMS_PER_PAGE
-  );
+  const totalPages = Math.ceil(filteredPoliceVerifications.length / ITEMS_PER_PAGE);
   const currentRequests = filteredPoliceVerifications.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
@@ -195,9 +189,7 @@ export default function PoliceVerificationTable() {
 
       fetchPoliceVerifications();
       if (selectedRequest?.id === id) {
-        setSelectedRequest((prev) =>
-          prev ? { ...prev, status: newStatus } : null
-        );
+        setSelectedRequest((prev) => (prev ? { ...prev, status: newStatus } : null));
       }
     } catch (err: unknown) {
       console.error("Error updating status:", err);
@@ -272,21 +264,15 @@ export default function PoliceVerificationTable() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Total Requests
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Total Requests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {policeVerifications.length}
-            </div>
+            <div className="text-2xl font-bold">{policeVerifications.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Pending
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Pending</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
@@ -296,31 +282,21 @@ export default function PoliceVerificationTable() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              In Progress
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">In Progress</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {
-                policeVerifications.filter((a) => a.status === "in_progress")
-                  .length
-              }
+              {policeVerifications.filter((a) => a.status === "in_progress").length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Completed
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Completed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {
-                policeVerifications.filter((a) => a.status === "completed")
-                  .length
-              }
+              {policeVerifications.filter((a) => a.status === "completed").length}
             </div>
           </CardContent>
         </Card>
@@ -340,9 +316,7 @@ export default function PoliceVerificationTable() {
           <div className="flex items-center space-x-3">
             <Select
               value={selectedStatus}
-              onValueChange={(value: VerificationStatus | "all") =>
-                setSelectedStatus(value)
-              }
+              onValueChange={(value: VerificationStatus | "all") => setSelectedStatus(value)}
             >
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Filter by status" />
@@ -369,11 +343,7 @@ export default function PoliceVerificationTable() {
               </SelectContent>
             </Select>
 
-            <Button
-              onClick={fetchPoliceVerifications}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={fetchPoliceVerifications} variant="outline" size="sm">
               Refresh
             </Button>
           </div>
@@ -399,23 +369,16 @@ export default function PoliceVerificationTable() {
                 <TableBody>
                   {currentRequests.length === 0 ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center py-8 text-gray-500"
-                      >
+                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                         No records found.
                       </TableCell>
                     </TableRow>
                   ) : (
                     currentRequests.map((pv) => (
                       <TableRow key={pv.id}>
-                        <TableCell className="font-medium">
-                          {pv.full_name}
-                        </TableCell>
+                        <TableCell className="font-medium">{pv.full_name}</TableCell>
                         <TableCell>{pv.email}</TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {pv.request_id}
-                        </TableCell>
+                        <TableCell className="font-mono text-sm">{pv.request_id}</TableCell>
                         <TableCell>{formatDate(pv.created_at)}</TableCell>
                         <TableCell>
                           <Badge
@@ -447,15 +410,9 @@ export default function PoliceVerificationTable() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="in_progress">
-                                  In Progress
-                                </SelectItem>
-                                <SelectItem value="completed">
-                                  Completed
-                                </SelectItem>
-                                <SelectItem value="cancelled">
-                                  Cancelled
-                                </SelectItem>
+                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                                <SelectItem value="cancelled">Cancelled</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -469,18 +426,16 @@ export default function PoliceVerificationTable() {
           )}
 
           {/* Pagination */}
-          {!loading &&
-            filteredPoliceVerifications.length > 0 &&
-            totalPages > 0 && (
-              <div className="mt-6 flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalItems={filteredPoliceVerifications.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
+          {!loading && filteredPoliceVerifications.length > 0 && totalPages > 0 && (
+            <div className="mt-6 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredPoliceVerifications.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -492,13 +447,9 @@ export default function PoliceVerificationTable() {
               <span>Request Details: {selectedRequest?.request_id}</span>
               <Badge
                 variant={
-                  selectedRequest
-                    ? getStatusBadgeVariant(selectedRequest.status)
-                    : "secondary"
+                  selectedRequest ? getStatusBadgeVariant(selectedRequest.status) : "secondary"
                 }
-                className={
-                  selectedRequest ? getStatusColor(selectedRequest.status) : ""
-                }
+                className={selectedRequest ? getStatusColor(selectedRequest.status) : ""}
               >
                 {selectedRequest?.status.replace("_", " ").toUpperCase()}
               </Badge>
@@ -513,36 +464,24 @@ export default function PoliceVerificationTable() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <User className="text-primary w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    Step 1: Personal Info
-                  </h3>
+                  <h3 className="text-lg font-bold text-gray-900">Step 1: Personal Info</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      Purpose
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">Purpose</p>
                     <p className="font-medium">{selectedRequest.purpose}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      Delivery Type
-                    </p>
-                    <p className="font-medium">
-                      {selectedRequest.delivery_type}
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">Delivery Type</p>
+                    <p className="font-medium">{selectedRequest.delivery_type}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      Email Address
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">Email Address</p>
                     <p className="font-medium">{selectedRequest.email}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      Full Name
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">Full Name</p>
                     <p className="font-medium">{selectedRequest.full_name}</p>
                   </div>
                   <div>
@@ -555,28 +494,20 @@ export default function PoliceVerificationTable() {
                     <p className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                       <Calendar size={12} /> Date Of Birth
                     </p>
-                    <p className="font-medium">
-                      {formatDate(selectedRequest.dob)}
-                    </p>
+                    <p className="font-medium">{formatDate(selectedRequest.dob)}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                       <Phone size={12} /> Mobile Number
                     </p>
-                    <p className="font-medium">
-                      {selectedRequest.phone_number}
-                    </p>
+                    <p className="font-medium">{selectedRequest.phone_number}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      District
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">District</p>
                     <p className="font-medium">{selectedRequest.district}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      Presently Residing
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">Presently Residing</p>
                     <p className="font-medium">
                       {selectedRequest.residing_in}
                       {selectedRequest.residing_in === "Abroad" &&
@@ -584,43 +515,28 @@ export default function PoliceVerificationTable() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      Target Country
-                    </p>
-                    <p className="font-medium">
-                      {selectedRequest.target_country}
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">Target Country</p>
+                    <p className="font-medium">{selectedRequest.target_country}</p>
                   </div>
                 </div>
 
                 {/* CNIC Details */}
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-4">
                   <h4 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
-                    <ShieldCheck size={16} className="text-primary" /> CNIC
-                    Details
+                    <ShieldCheck size={16} className="text-primary" /> CNIC Details
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase">
-                        CNIC Number
-                      </p>
+                      <p className="text-xs font-bold text-gray-500 uppercase">CNIC Number</p>
                       <p className="font-medium">{selectedRequest.cnic}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase">
-                        Issue Date
-                      </p>
-                      <p className="font-medium">
-                        {formatDate(selectedRequest.cnic_issue_date)}
-                      </p>
+                      <p className="text-xs font-bold text-gray-500 uppercase">Issue Date</p>
+                      <p className="font-medium">{formatDate(selectedRequest.cnic_issue_date)}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase">
-                        Expiry Date
-                      </p>
-                      <p className="font-medium">
-                        {formatDate(selectedRequest.cnic_expiry_date)}
-                      </p>
+                      <p className="text-xs font-bold text-gray-500 uppercase">Expiry Date</p>
+                      <p className="font-medium">{formatDate(selectedRequest.cnic_expiry_date)}</p>
                     </div>
                   </div>
                 </div>
@@ -628,30 +544,21 @@ export default function PoliceVerificationTable() {
                 {/* Passport Details */}
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-4">
                   <h4 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
-                    <Globe size={16} className="text-primary" /> Passport
-                    Details
+                    <Globe size={16} className="text-primary" /> Passport Details
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase">
-                        Passport No
-                      </p>
-                      <p className="font-medium">
-                        {selectedRequest.passport_number || "N/A"}
-                      </p>
+                      <p className="text-xs font-bold text-gray-500 uppercase">Passport No</p>
+                      <p className="font-medium">{selectedRequest.passport_number || "N/A"}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase">
-                        Issue Date
-                      </p>
+                      <p className="text-xs font-bold text-gray-500 uppercase">Issue Date</p>
                       <p className="font-medium">
                         {formatDate(selectedRequest.passport_issue_date)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-500 uppercase">
-                        Expiry Date
-                      </p>
+                      <p className="text-xs font-bold text-gray-500 uppercase">Expiry Date</p>
                       <p className="font-medium">
                         {formatDate(selectedRequest.passport_expiry_date)}
                       </p>
@@ -662,29 +569,21 @@ export default function PoliceVerificationTable() {
                 {/* Address Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase">
-                      Current Address
-                    </p>
-                    <p className="font-medium">
-                      {selectedRequest.current_address}
-                    </p>
+                    <p className="text-xs font-bold text-gray-500 uppercase">Current Address</p>
+                    <p className="font-medium">{selectedRequest.current_address}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <p className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                         <Calendar size={12} /> Stay From
                       </p>
-                      <p className="font-medium">
-                        {formatDate(selectedRequest.stay_from)}
-                      </p>
+                      <p className="font-medium">{formatDate(selectedRequest.stay_from)}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                         <Calendar size={12} /> Stay To
                       </p>
-                      <p className="font-medium">
-                        {formatDate(selectedRequest.stay_to)}
-                      </p>
+                      <p className="font-medium">{formatDate(selectedRequest.stay_to)}</p>
                     </div>
                   </div>
                 </div>
@@ -693,17 +592,13 @@ export default function PoliceVerificationTable() {
                 <div className="bg-orange-50 border border-orange-100 p-6 rounded-2xl space-y-4">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="text-orange-600 w-5 h-5" />
-                    <h4 className="font-bold text-gray-900 text-sm">
-                      Arrest History
-                    </h4>
+                    <h4 className="font-bold text-gray-900 text-sm">Arrest History</h4>
                   </div>
                   <p className="text-sm">
                     Was Arrested:{" "}
                     <span
                       className={`font-bold ${
-                        selectedRequest.was_arrested
-                          ? "text-red-600"
-                          : "text-green-600"
+                        selectedRequest.was_arrested ? "text-red-600" : "text-green-600"
                       }`}
                     >
                       {selectedRequest.was_arrested ? "Yes" : "No"}
@@ -712,34 +607,20 @@ export default function PoliceVerificationTable() {
                   {selectedRequest.was_arrested && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          FIR No
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">FIR No</p>
                         <p className="font-medium">{selectedRequest.fir_no}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          FIR Year
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.fir_year}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">FIR Year</p>
+                        <p className="font-medium">{selectedRequest.fir_year}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Police Station
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.police_station}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Police Station</p>
+                        <p className="font-medium">{selectedRequest.police_station}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Status
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.arrest_status}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Status</p>
+                        <p className="font-medium">{selectedRequest.arrest_status}</p>
                       </div>
                     </div>
                   )}
@@ -760,98 +641,54 @@ export default function PoliceVerificationTable() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Witness 1 */}
                   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                    <h4 className="font-bold text-gray-800 border-b pb-2 text-sm">
-                      Witness 1
-                    </h4>
+                    <h4 className="font-bold text-gray-800 border-b pb-2 text-sm">Witness 1</h4>
                     <div className="space-y-3 text-sm">
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Name
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness1_name}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Name</p>
+                        <p className="font-medium">{selectedRequest.witness1_name}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Father Name
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness1_father}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Father Name</p>
+                        <p className="font-medium">{selectedRequest.witness1_father}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          CNIC
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness1_cnic}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">CNIC</p>
+                        <p className="font-medium">{selectedRequest.witness1_cnic}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Contact No
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness1_contact}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Contact No</p>
+                        <p className="font-medium">{selectedRequest.witness1_contact}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Address
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness1_address}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Address</p>
+                        <p className="font-medium">{selectedRequest.witness1_address}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Witness 2 */}
                   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                    <h4 className="font-bold text-gray-800 border-b pb-2 text-sm">
-                      Witness 2
-                    </h4>
+                    <h4 className="font-bold text-gray-800 border-b pb-2 text-sm">Witness 2</h4>
                     <div className="space-y-3 text-sm">
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Name
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness2_name}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Name</p>
+                        <p className="font-medium">{selectedRequest.witness2_name}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Father Name
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness2_father}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Father Name</p>
+                        <p className="font-medium">{selectedRequest.witness2_father}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          CNIC
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness2_cnic}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">CNIC</p>
+                        <p className="font-medium">{selectedRequest.witness2_cnic}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Contact No
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness2_contact}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Contact No</p>
+                        <p className="font-medium">{selectedRequest.witness2_contact}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Address
-                        </p>
-                        <p className="font-medium">
-                          {selectedRequest.witness2_address}
-                        </p>
+                        <p className="text-xs font-bold text-gray-500 uppercase">Address</p>
+                        <p className="font-medium">{selectedRequest.witness2_address}</p>
                       </div>
                     </div>
                   </div>
@@ -864,9 +701,7 @@ export default function PoliceVerificationTable() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Upload className="text-primary w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    Step 3: Documents Required
-                  </h3>
+                  <h3 className="text-lg font-bold text-gray-900">Step 3: Documents Required</h3>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -914,9 +749,7 @@ export default function PoliceVerificationTable() {
               {/* Status Update */}
               <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t">
                 <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                  <span className="text-sm font-bold text-gray-700">
-                    Current Status:
-                  </span>
+                  <span className="text-sm font-bold text-gray-700">Current Status:</span>
                   <Select
                     value={selectedRequest.status}
                     onValueChange={(value: VerificationStatus) =>
@@ -935,14 +768,8 @@ export default function PoliceVerificationTable() {
                   </Select>
                 </div>
                 <div className="text-[10px] text-gray-400 font-mono text-right space-y-1">
-                  <p>
-                    SUBMITTED:{" "}
-                    {new Date(selectedRequest.created_at).toLocaleString()}
-                  </p>
-                  <p>
-                    LAST UPDATE:{" "}
-                    {new Date(selectedRequest.updated_at).toLocaleString()}
-                  </p>
+                  <p>SUBMITTED: {new Date(selectedRequest.created_at).toLocaleString()}</p>
+                  <p>LAST UPDATE: {new Date(selectedRequest.updated_at).toLocaleString()}</p>
                 </div>
               </div>
             </div>

@@ -117,9 +117,14 @@ interface TutorialOverlayProps {
   title?: string;
 }
 
-const TutorialShell: React.FC<
-  TutorialOverlayProps & { children: React.ReactNode }
-> = ({ isOpen, onClose, tutorial, index, setIndex, children }) => {
+const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode }> = ({
+  isOpen,
+  onClose,
+  tutorial,
+  index,
+  setIndex,
+  children,
+}) => {
   useEffect(() => {
     if (isOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
@@ -199,9 +204,7 @@ export const MedicalTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
       <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
         {s.heading}
       </h2>
-      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
-        {s.instruction}
-      </p>
+      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">{s.instruction}</p>
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
         <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[10px_14px] flex items-center gap-1.5">
           <div className="w-[9px] h-[9px] rounded-full bg-[#f87171]" />
@@ -225,9 +228,7 @@ export const MedicalTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
   );
 };
 
-export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (
-  props,
-) => {
+export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
   const s = props.tutorial[props.index];
   return (
     <TutorialShell {...props} title="Interview Day Guide">
@@ -237,9 +238,7 @@ export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (
       <h2 className="text-[clamp(20px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
         {s.heading}
       </h2>
-      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">
-        {s.instruction}
-      </p>
+      <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">{s.instruction}</p>
       {s.media?.type === "img" && s.media.src ? (
         <Image
           src={s.media.src}
@@ -340,12 +339,8 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
           desc: t("pages.courierRegistration.guide.steps.signup.s8.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.signup.s8.username",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.signup.s8.usernameDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.signup.s8.username"),
+              value: t("pages.courierRegistration.guide.steps.signup.s8.usernameDesc"),
             },
             {
               label: t("pages.courierRegistration.guide.steps.signup.s8.q1"),
@@ -353,9 +348,7 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
             },
             {
               label: t("pages.courierRegistration.guide.steps.signup.s8.q2"),
-              value: t(
-                "pages.courierRegistration.guide.steps.signup.s8.q2Desc",
-              ),
+              value: t("pages.courierRegistration.guide.steps.signup.s8.q2Desc"),
             },
           ],
         },
@@ -402,135 +395,83 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
       steps: [
         {
           id: "a1",
-          title: t(
-            "pages.courierRegistration.guide.steps.application.s1.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.application.s1.title"),
           desc: t("pages.courierRegistration.guide.steps.application.s1.desc"),
         },
         {
           id: "a2",
-          title: t(
-            "pages.courierRegistration.guide.steps.application.s2.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.application.s2.title"),
           desc: t("pages.courierRegistration.guide.steps.application.s2.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s2.country",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s2.countryDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s2.country"),
+              value: t("pages.courierRegistration.guide.steps.application.s2.countryDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s2.name",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s2.nameDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s2.name"),
+              value: t("pages.courierRegistration.guide.steps.application.s2.nameDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s2.birth",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s2.birthDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s2.birth"),
+              value: t("pages.courierRegistration.guide.steps.application.s2.birthDesc"),
             },
           ],
         },
         {
           id: "a3",
-          title: t(
-            "pages.courierRegistration.guide.steps.application.s3.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.application.s3.title"),
           desc: t("pages.courierRegistration.guide.steps.application.s3.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s3.phone",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s3.phoneDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s3.phone"),
+              value: t("pages.courierRegistration.guide.steps.application.s3.phoneDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s3.email",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s3.emailDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s3.email"),
+              value: t("pages.courierRegistration.guide.steps.application.s3.emailDesc"),
             },
           ],
         },
         {
           id: "a4",
-          title: t(
-            "pages.courierRegistration.guide.steps.application.s4.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.application.s4.title"),
           desc: t("pages.courierRegistration.guide.steps.application.s4.desc"),
         },
         {
           id: "a5",
-          title: t(
-            "pages.courierRegistration.guide.steps.application.s5.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.application.s5.title"),
           desc: t("pages.courierRegistration.guide.steps.application.s5.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s5.pasport",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s5.pasportDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s5.pasport"),
+              value: t("pages.courierRegistration.guide.steps.application.s5.pasportDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s5.dates",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s5.datesDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s5.dates"),
+              value: t("pages.courierRegistration.guide.steps.application.s5.datesDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s5.place",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s5.placeDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s5.place"),
+              value: t("pages.courierRegistration.guide.steps.application.s5.placeDesc"),
             },
           ],
         },
         {
           id: "a6",
-          title: t(
-            "pages.courierRegistration.guide.steps.application.s6.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.application.s6.title"),
           desc: t("pages.courierRegistration.guide.steps.application.s6.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.application.s6.id",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s6.idDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.application.s6.id"),
+              value: t("pages.courierRegistration.guide.steps.application.s6.idDesc"),
             },
             {
               label: "",
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s6.review",
-              ),
+              value: t("pages.courierRegistration.guide.steps.application.s6.review"),
             },
             {
               label: "",
-              value: t(
-                "pages.courierRegistration.guide.steps.application.s6.submit",
-              ),
+              value: t("pages.courierRegistration.guide.steps.application.s6.submit"),
             },
           ],
         },
@@ -544,107 +485,63 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
       steps: [
         {
           id: "g1",
-          title: t(
-            "pages.courierRegistration.guide.steps.groupRequest.s1.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.groupRequest.s1.title"),
           desc: t("pages.courierRegistration.guide.steps.groupRequest.s1.desc"),
         },
         {
           id: "g2",
-          title: t(
-            "pages.courierRegistration.guide.steps.groupRequest.s2.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.groupRequest.s2.title"),
           desc: t("pages.courierRegistration.guide.steps.groupRequest.s2.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s2.name",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s2.nameDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s2.name"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s2.nameDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s2.date",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s2.dateDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s2.date"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s2.dateDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s2.reason",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s2.reasonDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s2.reason"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s2.reasonDesc"),
             },
           ],
         },
         {
           id: "g3",
-          title: t(
-            "pages.courierRegistration.guide.steps.groupRequest.s3.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.groupRequest.s3.title"),
           desc: t("pages.courierRegistration.guide.steps.groupRequest.s3.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s3.local",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s3.localDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s3.local"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s3.localDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s3.us",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s3.usDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s3.us"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s3.usDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s3.address",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s3.addressDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s3.address"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s3.addressDesc"),
             },
           ],
         },
         {
           id: "g4",
-          title: t(
-            "pages.courierRegistration.guide.steps.groupRequest.s4.title",
-          ),
+          title: t("pages.courierRegistration.guide.steps.groupRequest.s4.title"),
           desc: t("pages.courierRegistration.guide.steps.groupRequest.s4.desc"),
           bullets: [
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s4.embassy",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s4.embassyDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s4.embassy"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s4.embassyDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s4.attach",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s4.attachDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s4.attach"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s4.attachDesc"),
             },
             {
-              label: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s4.submit",
-              ),
-              value: t(
-                "pages.courierRegistration.guide.steps.groupRequest.s4.submitDesc",
-              ),
+              label: t("pages.courierRegistration.guide.steps.groupRequest.s4.submit"),
+              value: t("pages.courierRegistration.guide.steps.groupRequest.s4.submitDesc"),
             },
           ],
         },
@@ -655,11 +552,7 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
   const currentStage = stages[props.index] || stages[0];
 
   return (
-    <TutorialShell
-      {...props}
-      tutorial={stages}
-      title={t("pages.courierRegistration.title.main")}
-    >
+    <TutorialShell {...props} tutorial={stages} title={t("pages.courierRegistration.title.main")}>
       <div className="w-full flex flex-col">
         {/* Kicker & Title */}
         <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-3.5">
@@ -693,12 +586,8 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
                 )}
               </div>
               <div className="space-y-3">
-                <div className="text-[15px] font-bold text-[#0c1b33]">
-                  {step.title}
-                </div>
-                <div className="text-sm text-[#3a4f63] leading-[1.7]">
-                  {step.desc}
-                </div>
+                <div className="text-[15px] font-bold text-[#0c1b33]">{step.title}</div>
+                <div className="text-sm text-[#3a4f63] leading-[1.7]">{step.desc}</div>
                 {step.bullets && (
                   <ul className="mt-3 space-y-2.5">
                     {step.bullets.map((b, i) => (
@@ -706,14 +595,10 @@ export const CourierTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
                         key={i}
                         className="flex gap-2.5 text-[13px] text-[#4a5f73] leading-relaxed"
                       >
-                        <span className="text-primary/60 font-bold shrink-0">
-                          •
-                        </span>
+                        <span className="text-primary/60 font-bold shrink-0">•</span>
                         <div>
                           {b.label && (
-                            <span className="font-bold text-[#0c1b33] mr-1">
-                              {b.label}
-                            </span>
+                            <span className="font-bold text-[#0c1b33] mr-1">{b.label}</span>
                           )}
                           <span>{b.value}</span>
                         </div>

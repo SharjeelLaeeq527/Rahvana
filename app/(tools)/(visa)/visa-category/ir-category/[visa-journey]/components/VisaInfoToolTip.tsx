@@ -19,13 +19,10 @@ export default function VisaInfoTooltip({ roadmapData, language }: Props) {
 
   return (
     <div className="space-y-3 text-xs leading-relaxed">
-
       {/* Disclaimer */}
       {disclaimerText && (
         <div>
-          <span className="font-semibold text-amber-400">
-            Disclaimer:
-          </span>{" "}
+          <span className="font-semibold text-amber-400">Disclaimer:</span>{" "}
           {renderTextWithLinks(
             disclaimerText,
             roadmapData.disclaimerLinks || [],
@@ -46,7 +43,6 @@ export default function VisaInfoTooltip({ roadmapData, language }: Props) {
           {language === "ur" && roadmapData.visaOverview.textUr
             ? roadmapData.visaOverview.textUr
             : roadmapData.visaOverview.text}
-
           {roadmapData.visaOverview.link && (
             <a
               href={roadmapData.visaOverview.link}
@@ -63,9 +59,7 @@ export default function VisaInfoTooltip({ roadmapData, language }: Props) {
       {/* Info */}
       {infoText && (
         <div>
-          <span className="font-semibold text-teal-400">
-            Info:
-          </span>{" "}
+          <span className="font-semibold text-teal-400">Info:</span>{" "}
           {renderTextWithLinks(
             infoText,
             roadmapData.infoLinks || [],

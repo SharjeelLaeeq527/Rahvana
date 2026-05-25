@@ -15,12 +15,7 @@ interface ProgressFooterProps {
   sections: Section[];
 }
 
-export function ProgressFooter({
-  current,
-  total,
-  progress,
-  sections,
-}: ProgressFooterProps) {
+export function ProgressFooter({ current, total, progress, sections }: ProgressFooterProps) {
   const [hoveredDot, setHoveredDot] = useState<number | null>(null);
 
   const getCleanSectionName = (title: string) => {
@@ -31,8 +26,7 @@ export function ProgressFooter({
     <div
       className="mt-8 border-t border-[#e8f6f6] py-4 px-3 sm:py-6 sm:px-4 md:px-8"
       style={{
-        background:
-          "linear-gradient(135deg, #0b5f63 0%, #0d7377 50%, #0f8f94 100%)",
+        background: "linear-gradient(135deg, #0b5f63 0%, #0d7377 50%, #0f8f94 100%)",
       }}
     >
       <div className="flex items-center justify-between gap-3 sm:gap-6">
@@ -43,9 +37,7 @@ export function ProgressFooter({
             const isDone = stepNum < current;
             const isActive = stepNum === current;
             const section = sections[i];
-            const cleanTitle = section
-              ? getCleanSectionName(section.title)
-              : "";
+            const cleanTitle = section ? getCleanSectionName(section.title) : "";
 
             // Determine tooltip positioning based on dot position
             const isLeftDot = i < Math.ceil(total / 3);
@@ -75,9 +67,7 @@ export function ProgressFooter({
                   <div className="font-semibold text-xs sm:text-sm">
                     Section {stepNum} of {total}
                   </div>
-                  <div className="text-[10px] sm:text-[11px] opacity-80 mt-1">
-                    {cleanTitle}
-                  </div>
+                  <div className="text-[10px] sm:text-[11px] opacity-80 mt-1">{cleanTitle}</div>
                   <div
                     className={`absolute -top-2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-gray-900 ${arrowPositionClass}`}
                   />
@@ -96,9 +86,9 @@ export function ProgressFooter({
                     minWidth: 6,
                     minHeight: 6,
                     backgroundColor: isDone
-                      ? "#ffffff" 
+                      ? "#ffffff"
                       : isActive
-                        ? "#32e0c4" 
+                        ? "#32e0c4"
                         : "rgba(255,255,255,0.35)",
                     boxShadow: isActive
                       ? "0 0 0 5px rgba(50, 224, 196, 0.25)"

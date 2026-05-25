@@ -18,15 +18,13 @@ export async function POST(req: Request) {
     const { portalType, type, questionId } = body;
 
     if (!portalType || !type) {
-      return NextResponse.json(
-        { error: "portalType and type required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "portalType and type required" }, { status: 400 });
     }
 
     const { data: credential, error } = await supabase
       .from("portal_wallet_credentials")
-      .select(`
+      .select(
+        `
         encrypted_password,
         nvc_case_number,
         nvc_invoice_id,
@@ -35,7 +33,8 @@ export async function POST(req: Request) {
           question,
           encrypted_answer
         )
-      `)
+      `
+      )
       .eq("user_id", user.id)
       .eq("portal_type", portalType)
       .single();
@@ -49,14 +48,13 @@ export async function POST(req: Request) {
       );
     }
 
-
     // Return all details for dashboard
     if (type === "all_details") {
       return NextResponse.json({
         details: {
           nvcCaseNum: decrypt(credential.nvc_case_number),
           nvcInvoice: decrypt(credential.nvc_invoice_id),
-        }
+        },
       });
     }
 
@@ -88,10 +86,7 @@ export async function POST(req: Request) {
       );
 
       if (!question) {
-        return NextResponse.json(
-          { error: "Question not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Question not found" }, { status: 404 });
       }
 
       const answer = decrypt(question.encrypted_answer);
@@ -102,13 +97,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ error: "Invalid type" }, { status: 400 });
-
   } catch (error) {
     console.error("Reveal error:", error);
 
-    return NextResponse.json(
-      { error: "Failed to reveal credentials" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to reveal credentials" }, { status: 500 });
   }
 }

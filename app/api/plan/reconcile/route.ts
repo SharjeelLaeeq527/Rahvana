@@ -1,8 +1,7 @@
-
-import { NextResponse } from 'next/server';
-import { createClient as createServerClient } from '@/lib/supabase/server';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
-import { reconcileUserPlan } from '@/lib/plan/reconcile';
+import { NextResponse } from "next/server";
+import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { reconcileUserPlan } from "@/lib/plan/reconcile";
 
 /**
  * POST /api/plan/reconcile
@@ -25,19 +24,19 @@ export async function POST() {
     const { data: authData, error: authErr } = await supabase.auth.getUser();
 
     if (authErr || !authData?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const admin = createServiceClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
     const result = await reconcileUserPlan(admin, authData.user.id);
     return NextResponse.json(result);
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[plan/reconcile] Error:', msg);
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error("[plan/reconcile] Error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

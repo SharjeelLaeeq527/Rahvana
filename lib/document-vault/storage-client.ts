@@ -1,7 +1,7 @@
 // Client-side Storage Manager for Document Vault
 // Uses localStorage to persist document metadata
 
-import { UploadedDocument, DocumentVaultConfig } from './types';
+import { UploadedDocument, DocumentVaultConfig } from "./types";
 
 /**
  * LocalStorage-based document store (client-side only)
@@ -18,7 +18,7 @@ export class DocumentStorageClient {
    * Gets all documents from localStorage
    */
   getAllDocuments(): UploadedDocument[] {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === "undefined") return [];
 
     const data = localStorage.getItem(this.storageKey);
     if (!data) return [];
@@ -29,12 +29,10 @@ export class DocumentStorageClient {
       return docs.map((doc: UploadedDocument) => ({
         ...doc,
         uploadedAt: new Date(doc.uploadedAt),
-        expirationDate: doc.expirationDate
-          ? new Date(doc.expirationDate)
-          : undefined,
+        expirationDate: doc.expirationDate ? new Date(doc.expirationDate) : undefined,
       }));
     } catch (error) {
-      console.error('Error parsing documents from localStorage:', error);
+      console.error("Error parsing documents from localStorage:", error);
       return [];
     }
   }
@@ -43,7 +41,7 @@ export class DocumentStorageClient {
    * Saves document metadata to localStorage
    */
   saveDocument(document: UploadedDocument): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const documents = this.getAllDocuments();
     const existingIndex = documents.findIndex((d) => d.id === document.id);
@@ -61,7 +59,7 @@ export class DocumentStorageClient {
    * Deletes document from localStorage
    */
   deleteDocument(documentId: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const documents = this.getAllDocuments();
     const filtered = documents.filter((d) => d.id !== documentId);
@@ -79,18 +77,13 @@ export class DocumentStorageClient {
    * Gets documents by definition ID
    */
   getDocumentsByDefId(documentDefId: string): UploadedDocument[] {
-    return this.getAllDocuments().filter(
-      (d) => d.documentDefId === documentDefId
-    );
+    return this.getAllDocuments().filter((d) => d.documentDefId === documentDefId);
   }
 
   /**
    * Updates document status
    */
-  updateDocumentStatus(
-    documentId: string,
-    status: UploadedDocument['status']
-  ): void {
+  updateDocumentStatus(documentId: string, status: UploadedDocument["status"]): void {
     const doc = this.getDocument(documentId);
     if (doc) {
       doc.status = status;
@@ -102,7 +95,7 @@ export class DocumentStorageClient {
    * Stores vault configuration
    */
   saveVaultConfig(config: DocumentVaultConfig): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     localStorage.setItem(`vault_config_${config.userId}`, JSON.stringify(config));
   }
 
@@ -110,7 +103,7 @@ export class DocumentStorageClient {
    * Gets vault configuration
    */
   getVaultConfig(userId: string): DocumentVaultConfig | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
 
     const data = localStorage.getItem(`vault_config_${userId}`);
     if (!data) return null;
@@ -118,7 +111,7 @@ export class DocumentStorageClient {
     try {
       return JSON.parse(data);
     } catch (error) {
-      console.error('Error parsing vault config:', error);
+      console.error("Error parsing vault config:", error);
       return null;
     }
   }
@@ -127,7 +120,7 @@ export class DocumentStorageClient {
    * Clears all vault data for user
    */
   clearAllData(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     localStorage.removeItem(this.storageKey);
   }
 }
@@ -142,9 +135,7 @@ export function generateDocumentId(): string {
 /**
  * Helper function to determine next version number
  */
-export function getNextVersionNumber(
-  existingDocuments: UploadedDocument[]
-): number {
+export function getNextVersionNumber(existingDocuments: UploadedDocument[]): number {
   if (existingDocuments.length === 0) return 1;
 
   const versions = existingDocuments.map((d) => d.version);

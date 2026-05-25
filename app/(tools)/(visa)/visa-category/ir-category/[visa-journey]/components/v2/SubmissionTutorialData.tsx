@@ -182,8 +182,7 @@ export function SubmissionTutorialOverlay({
           {currentStep.note && (
             <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] mb-5">
               <div className="text-[13px] text-[#8a6200] leading-[1.55]">
-                <strong className="font-bold">Important:</strong>{" "}
-                {currentStep.note}
+                <strong className="font-bold">Important:</strong> {currentStep.note}
               </div>
             </div>
           )}

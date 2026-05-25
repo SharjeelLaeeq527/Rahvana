@@ -6,7 +6,7 @@ export async function checkFeatureUsage(
   userId: string,
   feature: string,
   tier: PlanTier,
-  purchasedAddons: string[] = [],
+  purchasedAddons: string[] = []
 ) {
   const supabase = await createClient();
 

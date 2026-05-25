@@ -12,10 +12,7 @@ export async function GET(request: NextRequest) {
     const caseId = searchParams.get("caseId");
 
     if (!caseId) {
-      return NextResponse.json(
-        { error: "Missing caseId parameter" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing caseId parameter" }, { status: 400 });
     }
 
     console.log(`[EasyPost API] Fetching status for case ${caseId}`);
@@ -24,10 +21,7 @@ export async function GET(request: NextRequest) {
     const trackerIdData = await db.getCaseDataByKeyDB(caseId, "easypost_tracker_id");
 
     if (!trackerIdData || !trackerIdData.data_value) {
-      return NextResponse.json(
-        { error: "No tracker found for this case" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "No tracker found for this case" }, { status: 404 });
     }
 
     const trackerId = trackerIdData.data_value;
@@ -43,7 +37,7 @@ export async function GET(request: NextRequest) {
           error: "Failed to fetch tracker status",
           details: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -108,7 +102,7 @@ export async function GET(request: NextRequest) {
           data_value: eventId,
           source: "external_api",
           source_reference: "status_fetch",
-        }),
+        })
       );
     }
 
@@ -125,7 +119,7 @@ export async function GET(request: NextRequest) {
         deliveredAt: trackerData.updated_at,
         events: trackerData.events || [],
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("[EasyPost API] Unexpected error:", error);
@@ -134,7 +128,7 @@ export async function GET(request: NextRequest) {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

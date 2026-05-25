@@ -37,9 +37,27 @@ const LEVEL: Record<
   AggregatedIssue["level"],
   { dot: string; iconColor: string; chipBg: string; chipFg: string; chipLabel: string }
 > = {
-  critical: { dot: "#dc2626", iconColor: "#dc2626", chipBg: "#fee2e2", chipFg: "#7f1d1d", chipLabel: "Fix now" },
-  warning:  { dot: "#d97706", iconColor: "#d97706", chipBg: "#fef3c7", chipFg: "#78350f", chipLabel: "Check"  },
-  info:     { dot: "#3b82f6", iconColor: "#3b82f6", chipBg: "#dbeafe", chipFg: "#1e3a8a", chipLabel: "FYI"    },
+  critical: {
+    dot: "#dc2626",
+    iconColor: "#dc2626",
+    chipBg: "#fee2e2",
+    chipFg: "#7f1d1d",
+    chipLabel: "Fix now",
+  },
+  warning: {
+    dot: "#d97706",
+    iconColor: "#d97706",
+    chipBg: "#fef3c7",
+    chipFg: "#78350f",
+    chipLabel: "Check",
+  },
+  info: {
+    dot: "#3b82f6",
+    iconColor: "#3b82f6",
+    chipBg: "#dbeafe",
+    chipFg: "#1e3a8a",
+    chipLabel: "FYI",
+  },
 };
 
 function IssueRow({
@@ -54,20 +72,17 @@ function IssueRow({
   onOpenStep?: () => void;
 }) {
   const s = LEVEL[issue.level];
-  const stepLabel = `Step ${issue.stepIdx + 1}`;
+  // Use step name if available — avoids numbering mismatch with filtered visible steps
+  const stepLabel = issue.stepName
+    ? issue.stepName.replace(/^(Chapter\s*\d+[:\s-]*|Step\s*\d+[:\s-]*)/i, "").trim() || issue.stepName
+    : `Step ${issue.stepNumber}`;
 
   return (
     <div className="border-b border-slate-100 last:border-0">
       <div className="flex items-start gap-3 px-4 py-2.5 hover:bg-slate-50/60 transition-colors">
-        <span
-          className="w-2 h-2 rounded-full shrink-0 mt-1.5"
-          style={{ background: s.dot }}
-        />
+        <span className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: s.dot }} />
         <div className="flex-1 min-w-0">
-          <button
-            onClick={onToggle}
-            className="w-full flex items-start gap-2 text-left"
-          >
+          <button onClick={onToggle} className="w-full flex items-start gap-2 text-left">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span
@@ -81,9 +96,7 @@ function IssueRow({
                 </span>
               </div>
               {expanded && issue.hint && (
-                <p className="text-[11px] text-slate-500 leading-relaxed mt-1">
-                  {issue.hint}
-                </p>
+                <p className="text-[11px] text-slate-500 leading-relaxed mt-1">{issue.hint}</p>
               )}
             </div>
             <ChevronDown
@@ -114,7 +127,7 @@ export function DashboardCriticalCard({
 }: DashboardCriticalCardProps) {
   const issues = useMemo(
     () => aggregateChapter1Issues({ chapters, state, uploadedDocuments }),
-    [chapters, state, uploadedDocuments],
+    [chapters, state, uploadedDocuments]
   );
 
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
@@ -138,7 +151,7 @@ export function DashboardCriticalCard({
   const critCount = issues.filter((i) => i.level === "critical").length;
   const warnCount = issues.filter((i) => i.level === "warning").length;
   const headerColor = critCount > 0 ? "#dc2626" : warnCount > 0 ? "#d97706" : "#3b82f6";
-  const HeaderIcon  = critCount > 0 ? CircleAlert : warnCount > 0 ? AlertTriangle : Info;
+  const HeaderIcon = critCount > 0 ? CircleAlert : warnCount > 0 ? AlertTriangle : Info;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -164,14 +177,18 @@ export function DashboardCriticalCard({
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {critCount > 0 && (
-            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full"
-              style={{ background: LEVEL.critical.chipBg, color: LEVEL.critical.chipFg }}>
+            <span
+              className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: LEVEL.critical.chipBg, color: LEVEL.critical.chipFg }}
+            >
               {critCount}c
             </span>
           )}
           {warnCount > 0 && (
-            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full"
-              style={{ background: LEVEL.warning.chipBg, color: LEVEL.warning.chipFg }}>
+            <span
+              className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: LEVEL.warning.chipBg, color: LEVEL.warning.chipFg }}
+            >
               {warnCount}w
             </span>
           )}
@@ -192,7 +209,9 @@ export function DashboardCriticalCard({
               issue={issue}
               expanded={expandedIdx === i}
               onToggle={() => setExpandedIdx((cur) => (cur === i ? null : i))}
-              onOpenStep={onOpenStep ? () => onOpenStep(issue.chapterIdx, issue.stepIdx) : undefined}
+              onOpenStep={
+                onOpenStep ? () => onOpenStep(issue.chapterIdx, issue.stepIdx) : undefined
+              }
             />
           ))}
         </div>

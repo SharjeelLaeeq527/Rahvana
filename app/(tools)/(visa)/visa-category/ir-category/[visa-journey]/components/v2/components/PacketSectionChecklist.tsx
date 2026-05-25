@@ -10,12 +10,7 @@
 // Source basis: USCIS I-130 paper filing instructions (uscis.gov/i-130)
 
 import React, { useMemo } from "react";
-import {
-  PackageCheck,
-  Square,
-  CheckSquare,
-  AlertCircle,
-} from "lucide-react";
+import { PackageCheck, Square, CheckSquare, AlertCircle } from "lucide-react";
 
 export interface PacketSectionConfig {
   id: string;
@@ -38,22 +33,18 @@ interface PacketSectionChecklistProps {
   onToggle: (next: Record<string, boolean>) => void;
 }
 
-export function PacketSectionChecklist({
-  config,
-  checked,
-  onToggle,
-}: PacketSectionChecklistProps) {
+export function PacketSectionChecklist({ config, checked, onToggle }: PacketSectionChecklistProps) {
   if (!config?.sections || config.sections.length === 0) return null;
 
   const checkedMap = checked ?? {};
 
   const requiredSections = useMemo(
     () => config.sections.filter((s) => s.required === true),
-    [config.sections],
+    [config.sections]
   );
   const conditionalSections = useMemo(
     () => config.sections.filter((s) => !!s.required_when),
-    [config.sections],
+    [config.sections]
   );
 
   const requiredDone = requiredSections.filter((s) => checkedMap[s.id]).length;
@@ -65,7 +56,11 @@ export function PacketSectionChecklist({
   };
 
   return (
-    <div className="mt-[12px] px-3 sm:px-4 md:px-0" role="region" aria-label="Packet section checklist">
+    <div
+      className="mt-[12px] px-3 sm:px-4 md:px-0"
+      role="region"
+      aria-label="Packet section checklist"
+    >
       <div className="max-w-3xl w-full mx-auto">
         <div
           className="rounded-[12px] border-[1.5px] p-4 sm:p-5"
@@ -80,10 +75,7 @@ export function PacketSectionChecklist({
                 border: `1px solid ${allRequiredDone ? "#a7f3d0" : "#bfdbfe"}`,
               }}
             >
-              <PackageCheck
-                size={18}
-                color={allRequiredDone ? "#065f46" : "#1e40af"}
-              />
+              <PackageCheck size={18} color={allRequiredDone ? "#065f46" : "#1e40af"} />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug">
@@ -114,9 +106,7 @@ export function PacketSectionChecklist({
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${
-                  requiredSections.length === 0
-                    ? 0
-                    : (requiredDone / requiredSections.length) * 100
+                  requiredSections.length === 0 ? 0 : (requiredDone / requiredSections.length) * 100
                 }%`,
                 background: allRequiredDone ? "#16a34a" : "#3b82f6",
               }}
@@ -141,24 +131,13 @@ export function PacketSectionChecklist({
                     onClick={() => handleToggle(section.id)}
                     className="w-full flex items-start gap-3 px-3 py-2.5 text-left hover:bg-[#f5f5f4] transition-colors"
                     style={{
-                      borderBottom:
-                        i < requiredSections.length - 1
-                          ? "1px solid #f5f5f4"
-                          : "none",
+                      borderBottom: i < requiredSections.length - 1 ? "1px solid #f5f5f4" : "none",
                     }}
                   >
                     {isChecked ? (
-                      <CheckSquare
-                        size={18}
-                        color="#16a34a"
-                        className="shrink-0 mt-0.5"
-                      />
+                      <CheckSquare size={18} color="#16a34a" className="shrink-0 mt-0.5" />
                     ) : (
-                      <Square
-                        size={18}
-                        color="#a8a29e"
-                        className="shrink-0 mt-0.5"
-                      />
+                      <Square size={18} color="#a8a29e" className="shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div
@@ -203,23 +182,13 @@ export function PacketSectionChecklist({
                       className="w-full flex items-start gap-3 px-3 py-2.5 text-left hover:bg-[#f5f5f4] transition-colors"
                       style={{
                         borderBottom:
-                          i < conditionalSections.length - 1
-                            ? "1px solid #f5f5f4"
-                            : "none",
+                          i < conditionalSections.length - 1 ? "1px solid #f5f5f4" : "none",
                       }}
                     >
                       {isChecked ? (
-                        <CheckSquare
-                          size={18}
-                          color="#16a34a"
-                          className="shrink-0 mt-0.5"
-                        />
+                        <CheckSquare size={18} color="#16a34a" className="shrink-0 mt-0.5" />
                       ) : (
-                        <Square
-                          size={18}
-                          color="#a8a29e"
-                          className="shrink-0 mt-0.5"
-                        />
+                        <Square size={18} color="#a8a29e" className="shrink-0 mt-0.5" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div
@@ -256,19 +225,11 @@ export function PacketSectionChecklist({
               className="rounded-[10px] border p-3 flex items-start gap-3 mb-3"
               style={{ background: "#fffbeb", borderColor: "#fde68a" }}
             >
-              <AlertCircle
-                size={16}
-                color="#92400e"
-                className="shrink-0 mt-0.5"
-              />
-              <p
-                className="text-[11.5px] leading-relaxed"
-                style={{ color: "#78350f" }}
-              >
+              <AlertCircle size={16} color="#92400e" className="shrink-0 mt-0.5" />
+              <p className="text-[11.5px] leading-relaxed" style={{ color: "#78350f" }}>
                 {requiredSections.length - requiredDone} required section
-                {requiredSections.length - requiredDone === 1 ? "" : "s"}{" "}
-                remaining. Do not seal the envelope until every required section
-                is in the packet.
+                {requiredSections.length - requiredDone === 1 ? "" : "s"} remaining. Do not seal the
+                envelope until every required section is in the packet.
               </p>
             </div>
           )}
@@ -278,26 +239,20 @@ export function PacketSectionChecklist({
               className="rounded-[10px] border p-3 flex items-start gap-3 mb-3"
               style={{ background: "#ecfdf5", borderColor: "#a7f3d0" }}
             >
-              <PackageCheck
-                size={16}
-                color="#065f46"
-                className="shrink-0 mt-0.5"
-              />
-              <p
-                className="text-[11.5px] leading-relaxed"
-                style={{ color: "#065f46" }}
-              >
-                All required sections are checked off. Do one final flip-through
-                of the packet for legibility and page order before sealing.
+              <PackageCheck size={16} color="#065f46" className="shrink-0 mt-0.5" />
+              <p className="text-[11.5px] leading-relaxed" style={{ color: "#065f46" }}>
+                All required sections are checked off. Do one final flip-through of the packet for
+                legibility and page order before sealing.
               </p>
             </div>
           )}
 
           {/* Source */}
           <p className="text-[10.5px] text-[#78716c] leading-relaxed italic">
-            Source: {config.source_basis ?? "USCIS I-130 paper filing instructions — uscis.gov/i-130"}.
-            Advisory checklist — not legal advice. Verify the current USCIS
-            instructions before mailing.
+            Source:{" "}
+            {config.source_basis ?? "USCIS I-130 paper filing instructions — uscis.gov/i-130"}.
+            Advisory checklist — not legal advice. Verify the current USCIS instructions before
+            mailing.
           </p>
         </div>
       </div>

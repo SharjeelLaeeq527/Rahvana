@@ -46,27 +46,27 @@ const ValidationStep = ({
 
   const title = data?.title || t("wizard.common.certificateValidation");
   const description = data?.description || "";
-  const uploadSection = data?.upload_section || data?.uploadSection || {
-    title: "",
-    description: "",
-    formats: "",
-  };
-  const checklistTitle = data?.checklist_title || data?.checklistTitle || t("wizard.common.validation");
+  const uploadSection = data?.upload_section ||
+    data?.uploadSection || {
+      title: "",
+      description: "",
+      formats: "",
+    };
+  const checklistTitle =
+    data?.checklist_title || data?.checklistTitle || t("wizard.common.validation");
   const categories = data?.categories || [];
 
   const totalItems = categories.reduce((acc, cat) => acc + cat.items.length, 0);
   const checkedCount = validationChecks.length;
   const criticalTotal = categories.reduce(
     (acc, cat) => acc + cat.items.filter((item) => item.critical).length,
-    0,
+    0
   );
   const criticalChecked = categories.reduce(
     (acc, cat) =>
       acc +
-      cat.items.filter(
-        (item) => item.critical && validationChecks.includes(item.label),
-      ).length,
-    0,
+      cat.items.filter((item) => item.critical && validationChecks.includes(item.label)).length,
+    0
   );
   const criticalRemaining = criticalTotal - criticalChecked;
 
@@ -76,8 +76,7 @@ const ValidationStep = ({
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       const formats = data?.upload_section?.formats || data?.uploadSection?.formats;
-      fileInput.accept =
-        formats?.replace(/,/g, ",.") || "";
+      fileInput.accept = formats?.replace(/,/g, ",.") || "";
       fileInput.onchange = (e: any) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -102,9 +101,7 @@ const ValidationStep = ({
       >
         {title}
       </h2>
-      <p className="text-[0.95rem] text-[hsl(215_16%_47%)] mb-8">
-        {description}
-      </p>
+      <p className="text-[0.95rem] text-[hsl(215_16%_47%)] mb-8">{description}</p>
 
       {/* Upload Section */}
       <div
@@ -128,9 +125,7 @@ const ValidationStep = ({
               >
                 {t("wizard.common.uploadSuccess")}
               </p>
-              <p
-                className={`text-[0.78rem] text-green-600 ${isUrdu ? "font-urdu-body" : ""}`}
-              >
+              <p className={`text-[0.78rem] text-green-600 ${isUrdu ? "font-urdu-body" : ""}`}>
                 {t("wizard.common.secureStore")}
               </p>
             </>
@@ -160,9 +155,7 @@ const ValidationStep = ({
                         }`}
           >
             {uploadedFile ? (
-              <span
-                className={`flex items-center gap-2 ${isUrdu ? "font-urdu-body" : ""}`}
-              >
+              <span className={`flex items-center gap-2 ${isUrdu ? "font-urdu-body" : ""}`}>
                 <Check className="w-4 h-4" />
                 {t("wizard.common.uploadedToVault")}
               </span>
@@ -213,9 +206,7 @@ const ValidationStep = ({
           </div>
         </div>
         {!showValidations && (
-          <p
-            className={`text-[0.85rem] text-slate-500 mt-1 ${isUrdu ? "font-urdu-body" : ""}`}
-          >
+          <p className={`text-[0.85rem] text-slate-500 mt-1 ${isUrdu ? "font-urdu-body" : ""}`}>
             {t("wizard.common.clickToSeeValidations")}
           </p>
         )}
@@ -227,9 +218,7 @@ const ValidationStep = ({
           <div key={ci} className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full bg-[hsl(168_80%_30%)]" />
-              <h4 className="text-[0.95rem] font-bold text-[hsl(220_20%_15%)]">
-                {category.name}
-              </h4>
+              <h4 className="text-[0.95rem] font-bold text-[hsl(220_20%_15%)]">{category.name}</h4>
             </div>
 
             <div className="flex flex-col gap-2 pl-4">
@@ -253,9 +242,7 @@ const ValidationStep = ({
                                        : "bg-white border-[hsl(214_32%_85%)]"
                                    }`}
                     >
-                      {isChecked && (
-                        <Check className="w-3.5 h-3.5 text-white" />
-                      )}
+                      {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
                     </div>
 
                     {/* Label */}

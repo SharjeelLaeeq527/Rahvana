@@ -1,7 +1,7 @@
 // app/api/feedback/route.ts
 import { createClient } from "@/lib/supabase/server";
-import { supabaseAdmin }  from "@/lib/supabase/admin";
-import { NextResponse }   from "next/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { NextResponse } from "next/server";
 import { appendFeedbackToSheet } from "@/lib/googleSheets";
 
 /** Convert a URL path to a human-readable page name */
@@ -16,9 +16,7 @@ function pathToPageName(url: string): string {
     const segments = pathname.split("/").filter(Boolean);
     const last = segments[segments.length - 1] ?? pathname;
 
-    return last
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return last.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   } catch {
     // url might already be just a pathname
     if (url === "/" || url === "") return "Home Page";
@@ -30,10 +28,10 @@ function pathToPageName(url: string): string {
 /** Maps feedback type keys to readable labels */
 const FEEDBACK_TYPE_LABELS: Record<string, string> = {
   incorrect_information: "Incorrect Information",
-  ui_ux_issue:           "UI / UX Issue",
-  bug:                   "Bug / Broken",
-  suggestion:            "Suggestion",
-  other:                 "Other",
+  ui_ux_issue: "UI / UX Issue",
+  bug: "Bug / Broken",
+  suggestion: "Suggestion",
+  other: "Other",
 };
 
 export async function POST(request: Request) {
@@ -41,21 +39,23 @@ export async function POST(request: Request) {
     const supabase = await createClient();
 
     // User is optional – anonymous feedback is allowed on global pages
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const formData = await request.formData();
 
-    const slug         = (formData.get("slug")         as string) || "";
-    const stepKey      = (formData.get("stepKey")      as string) || "";
+    const slug = (formData.get("slug") as string) || "";
+    const stepKey = (formData.get("stepKey") as string) || "";
     const feedbackType = (formData.get("feedbackType") as string) || "";
-    const description  = (formData.get("description")  as string) || "";
-    const pageUrl      = (formData.get("pageUrl")      as string) || "";  // full URL
-    const files        = formData.getAll("attachment") as File[];
+    const description = (formData.get("description") as string) || "";
+    const pageUrl = (formData.get("pageUrl") as string) || ""; // full URL
+    const files = formData.getAll("attachment") as File[];
 
     if (!feedbackType || !description) {
       return NextResponse.json(
         { error: "Missing required fields (feedbackType, description)" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -74,17 +74,17 @@ export async function POST(request: Request) {
     // ── 2. File attachments (Multiple) ─────────────────────────────────────
     console.log(`[Feedback] Processing ${files.length} attachments...`);
     const attachmentUrls: string[] = [];
-    
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file && file.size > 0) {
         const folder = guideId ? `guides/${guideId}` : "general";
         // Unique filename: Date + Index + Random string to prevent ANY collision
         const randomStr = Math.random().toString(36).substring(2, 7);
-        const fileName = `${Date.now()}_${i}_${randomStr}_${file.name.replace(/\s+/g, '_')}`;
+        const fileName = `${Date.now()}_${i}_${randomStr}_${file.name.replace(/\s+/g, "_")}`;
         const filePath = `feedback/${folder}/${user?.id ?? "anon"}/${fileName}`;
 
-        console.log(`[Feedback] Uploading file ${i+1}/${files.length}: ${file.name}`);
+        console.log(`[Feedback] Uploading file ${i + 1}/${files.length}: ${file.name}`);
 
         const { error: uploadError } = await supabaseAdmin.storage
           .from("document-vault")
@@ -101,10 +101,11 @@ export async function POST(request: Request) {
       }
     }
 
-    const finalAttachmentUrl = attachmentUrls.length > 0 
-      ? attachmentUrls.join("\n\n") // Double newline for extra clarity
-      : "";
-    
+    const finalAttachmentUrl =
+      attachmentUrls.length > 0
+        ? attachmentUrls.join("\n\n") // Double newline for extra clarity
+        : "";
+
     console.log(`[Feedback] Total successful uploads: ${attachmentUrls.length}`);
 
     // ── 3. Silently save to Supabase (backup) ─────────────────────────────
@@ -114,10 +115,10 @@ export async function POST(request: Request) {
       const { data: inserted, error: dbErr } = await supabaseAdmin
         .from("guide_feedback")
         .insert({
-          user_id:        user?.id ?? null,
-          guide_id:       guideId,
-          step_key:       stepKey || null,
-          feedback_type:  feedbackType,
+          user_id: user?.id ?? null,
+          guide_id: guideId,
+          step_key: stepKey || null,
+          feedback_type: feedbackType,
           description,
           attachment_url: finalAttachmentUrl || null,
         })
@@ -157,14 +158,14 @@ export async function POST(request: Request) {
     // ── 6. Sync to Google Sheets ───────────────────────────────────────────
     try {
       await appendFeedbackToSheet({
-        userEmail:      user?.email ?? "Anonymous",
-        pageName:       resolvedPageName,
-        pageUrl:        pageUrl || slug || "/",
-        feedbackType:   FEEDBACK_TYPE_LABELS[feedbackType] ?? feedbackType,
+        userEmail: user?.email ?? "Anonymous",
+        pageName: resolvedPageName,
+        pageUrl: pageUrl || slug || "/",
+        feedbackType: FEEDBACK_TYPE_LABELS[feedbackType] ?? feedbackType,
         description,
         attachmentUrls: finalAttachmentUrl || "—",
         timestamp,
-        priority
+        priority,
       });
     } catch (sheetErr) {
       console.error("Google Sheets sync error (non-fatal):", sheetErr);

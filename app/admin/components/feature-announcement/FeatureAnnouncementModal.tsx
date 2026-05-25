@@ -9,10 +9,7 @@ interface FeatureAnnouncementModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function FeatureAnnouncementModal({
-  open,
-  onOpenChange,
-}: FeatureAnnouncementModalProps) {
+export function FeatureAnnouncementModal({ open, onOpenChange }: FeatureAnnouncementModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [featureUrl, setFeatureUrl] = useState("");
@@ -25,9 +22,9 @@ export function FeatureAnnouncementModal({
       showToast("Please fill in all fields", "error");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       const response = await fetch("/api/admin/announce-feature", {
         method: "POST",
@@ -36,9 +33,9 @@ export function FeatureAnnouncementModal({
         },
         body: JSON.stringify({ title, description, featureUrl }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         showToast(data.message, "success");
       } else {
@@ -60,7 +57,6 @@ export function FeatureAnnouncementModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl w-[95%] bg-background overflow-hidden rounded-2xl p-0">
         <div className="relative w-full overflow-hidden px-8 py-10 guide-grid-bg">
-          
           {/* Background Blobs */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/4 left-1/3 w-64 h-64 rounded-full bg-primary/5 blur-3xl animate-pulse" />
@@ -68,12 +64,9 @@ export function FeatureAnnouncementModal({
           </div>
 
           <div className="relative z-10 space-y-8">
-
             {/* Header */}
             <div>
-              <h2 className="text-3xl font-bold text-slate-900">
-                Announce New Feature
-              </h2>
+              <h2 className="text-3xl font-bold text-slate-900">Announce New Feature</h2>
               <p className="text-muted-foreground mt-2">
                 Inform users about newly launched features or improvements.
               </p>
@@ -81,12 +74,9 @@ export function FeatureAnnouncementModal({
 
             {/* Form */}
             <div className="space-y-6">
-
               {/* Title */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Feature Title
-                </label>
+                <label className="text-sm font-medium text-slate-700">Feature Title</label>
                 <input
                   type="text"
                   placeholder="e.g. Smart Visa Eligibility Checker"
@@ -98,9 +88,7 @@ export function FeatureAnnouncementModal({
 
               {/* Description */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Description
-                </label>
+                <label className="text-sm font-medium text-slate-700">Description</label>
                 <textarea
                   rows={4}
                   placeholder="Explain what this feature does and why users should try it..."
@@ -112,9 +100,7 @@ export function FeatureAnnouncementModal({
 
               {/* Feature URL */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Feature URL
-                </label>
+                <label className="text-sm font-medium text-slate-700">Feature URL</label>
                 <input
                   type="url"
                   placeholder="https://www.rahvana.com/new-feature"

@@ -701,52 +701,27 @@
         "categories": {
           "civil": {
             "title": "Civil Documents",
-            "items": [
-              "Birth Certificates",
-              "Nikah Nama",
-              "Passports",
-              "CNIC"
-            ]
+            "items": ["Birth Certificates", "Nikah Nama", "Passports", "CNIC"]
           },
           "financial": {
             "title": "Financial Support",
-            "items": [
-              "Form I-864",
-              "Tax Transcripts",
-              "Employment Letters",
-              "Pay Stubs"
-            ]
+            "items": ["Form I-864", "Tax Transcripts", "Employment Letters", "Pay Stubs"]
           },
           "relationship": {
             "title": "Relationship Evidence",
-            "items": [
-              "Wedding Photos",
-              "Joint Accounts",
-              "Chat Logs",
-              "Family Pictures"
-            ]
+            "items": ["Wedding Photos", "Joint Accounts", "Chat Logs", "Family Pictures"]
           },
           "police": {
             "title": "Police & Court",
-            "items": [
-              "Police Certificates",
-              "Court Records",
-              "Military Records"
-            ]
+            "items": ["Police Certificates", "Court Records", "Military Records"]
           },
           "medical": {
             "title": "Medical & Health",
-            "items": [
-              "Medical Exam (DS-2019)",
-              "Vaccination Records"
-            ]
+            "items": ["Medical Exam (DS-2019)", "Vaccination Records"]
           },
           "photos": {
             "title": "Visa Photos",
-            "items": [
-              "2x2 Inch Validated Photos",
-              "Digital Copies"
-            ]
+            "items": ["2x2 Inch Validated Photos", "Digital Copies"]
           }
         }
       },
@@ -1429,10 +1404,7 @@
           "step1": {
             "title": "Obtain Matric Certificate",
             "description": "Get your original Matriculation certificate from respective board.",
-            "tips": [
-              "Must be original",
-              "Get English translation if in Urdu"
-            ]
+            "tips": ["Must be original", "Get English translation if in Urdu"]
           }
         }
       },
@@ -1523,10 +1495,7 @@
           "step1": {
             "title": "Get EOBI Certificate",
             "description": "Obtain EOBI certificate if you have EOBI registration.",
-            "tips": [
-              "Shows employment history in Pakistan",
-              "Useful for proving work experience"
-            ]
+            "tips": ["Shows employment history in Pakistan", "Useful for proving work experience"]
           }
         }
       },
@@ -1545,11 +1514,7 @@
           "step1": {
             "title": "Collect Old Passports",
             "description": "Gather all previous passports showing travel history.",
-            "tips": [
-              "Scan biographical pages",
-              "Scan all visa stamps",
-              "Scan entry/exit stamps"
-            ]
+            "tips": ["Scan biographical pages", "Scan all visa stamps", "Scan entry/exit stamps"]
           }
         }
       },
@@ -1654,10 +1619,7 @@
           "step1": {
             "title": "Get FBR Tax Returns",
             "description": "Download your tax returns from FBR portal.",
-            "tips": [
-              "Last 3 years recommended",
-              "NTN certificate also helpful"
-            ]
+            "tips": ["Last 3 years recommended", "NTN certificate also helpful"]
           }
         }
       },
@@ -2603,11 +2565,7 @@
     "heroTitle1": "Your Immigration Journey, ",
     "heroTitle2": "Simplified",
     "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
-    "heroFeatures": [
-      "Secure Vault",
-      "AI Insights",
-      "Step-by-Step Guidance"
-    ],
+    "heroFeatures": ["Secure Vault", "AI Insights", "Step-by-Step Guidance"],
     "resumeJourney": "Resume My Journey",
     "exploreJourneys": "Explore Journeys",
     "journeysBadge": "Find Your Path",
@@ -4392,9 +4350,7 @@
             "Cross-check CBRC with Passport application details.",
             "Attestation by MOFA is usually required for international use."
           ],
-          "pitfalls": [
-            "Manual handwritten certificates are NOT accepted for visas."
-          ]
+          "pitfalls": ["Manual handwritten certificates are NOT accepted for visas."]
         }
       }
     }

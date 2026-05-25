@@ -25,7 +25,7 @@ export class ScoringRules {
   static calculateIncomeScore(
     answers: Record<string, unknown>,
     income: number,
-    householdSize: number,
+    householdSize: number
   ): ScoringResult {
     const risks: RiskFlag[] = [];
     let score = COMPONENT_WEIGHTS.INCOME_AND_FINANCIAL;
@@ -34,12 +34,13 @@ export class ScoringRules {
     const povertyThreshold =
       INCOME_THRESHOLDS.POVERTY_GUIDELINE_BASE +
       INCOME_THRESHOLDS.ADDITIONAL_PER_PERSON * Math.max(0, householdSize - 1);
-    
+
     // Active duty military sponsors only need 100% of the poverty guideline
-    const isMilitary = answers.industry_sector === "Military/Defense" || answers.prior_military_service === true;
+    const isMilitary =
+      answers.industry_sector === "Military/Defense" || answers.prior_military_service === true;
     const criticalRatio = isMilitary ? 1.0 : INCOME_THRESHOLDS.CRITICAL_RATIO;
     const warningRatio = isMilitary ? 1.25 : INCOME_THRESHOLDS.WARNING_RATIO;
-    
+
     const incomeRatio = income / povertyThreshold;
 
     if (incomeRatio < criticalRatio) {
@@ -67,12 +68,13 @@ export class ScoringRules {
     // Public Charge Risk Assessment (Education & Occupation)
     const educationLevel = answers.highest_education_level as string;
     const isHighRiskIndustry = answers.industry_sector === "Unemployed/Student";
-    
+
     if (isHighRiskIndustry) {
       risks.push({
         flagCode: "PUBLIC_CHARGE_RISK",
         severity: "LOW",
-        explanation: "Unemployed or student status may increase 'Public Charge' scrutiny during the visa interview.",
+        explanation:
+          "Unemployed or student status may increase 'Public Charge' scrutiny during the visa interview.",
         improvement: IMPROVEMENT_MESSAGES.PUBLIC_CHARGE_RISK,
       });
       score -= 2;
@@ -86,34 +88,35 @@ export class ScoringRules {
       score -= 2;
     }
 
-    const MIN_FINANCIAL_SCORE =
-      COMPONENT_WEIGHTS.INCOME_AND_FINANCIAL * 0.2;
+    const MIN_FINANCIAL_SCORE = COMPONENT_WEIGHTS.INCOME_AND_FINANCIAL * 0.2;
 
     score = Math.min(COMPONENT_WEIGHTS.INCOME_AND_FINANCIAL, Math.max(score, MIN_FINANCIAL_SCORE));
 
     return { score, risks };
   }
 
-  static calculateRelationshipScore(
-    answers: Record<string, unknown>,
-  ): ScoringResult {
+  static calculateRelationshipScore(answers: Record<string, unknown>): ScoringResult {
     const risks: RiskFlag[] = [];
     let score = COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH;
 
     // Relationship duration calculations
     const currentDate = new Date();
     const marriageDate = answers.marriage_date ? new Date(String(answers.marriage_date)) : null;
-    const relationshipStartDate = answers.relationship_start_date ? new Date(String(answers.relationship_start_date)) : null;
+    const relationshipStartDate = answers.relationship_start_date
+      ? new Date(String(answers.relationship_start_date))
+      : null;
 
     let durationMonths = 0;
     let effectiveRelMonths = 0;
 
     if (marriageDate) {
-      durationMonths = (currentDate.getTime() - marriageDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      durationMonths =
+        (currentDate.getTime() - marriageDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
     }
 
     if (relationshipStartDate) {
-      effectiveRelMonths = (currentDate.getTime() - relationshipStartDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      effectiveRelMonths =
+        (currentDate.getTime() - relationshipStartDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
     } else {
       effectiveRelMonths = durationMonths;
     }
@@ -134,7 +137,7 @@ export class ScoringRules {
       const isMitigated = effectiveRelMonths >= 24;
       const severity = isMitigated ? "MEDIUM" : "HIGH";
       const deduction = isMitigated ? RISK_POINTS_DEDUCTION.MEDIUM : RISK_POINTS_DEDUCTION.HIGH;
-      
+
       risks.push({
         flagCode: "SHORT_RELATIONSHIP_DURATION",
         severity,
@@ -151,11 +154,11 @@ export class ScoringRules {
       risks.push({
         flagCode: "CR1_I751_REMINDER",
         severity: "LOW",
-        explanation: "Conditional status applies (CR-1) because the marriage is less than 2 years old.",
+        explanation:
+          "Conditional status applies (CR-1) because the marriage is less than 2 years old.",
         improvement: IMPROVEMENT_MESSAGES.CR1_I751_REMINDER,
       });
     }
-
 
     // Bonus for children together (Strong evidence of bona fide relationship)
     if (answers.children_together === true) {
@@ -188,7 +191,7 @@ export class ScoringRules {
       const hasChildren = answers.children_together === true;
       const severity = hasChildren ? "LOW" : "MEDIUM";
       const deduction = hasChildren ? RISK_POINTS_DEDUCTION.LOW : RISK_POINTS_DEDUCTION.MEDIUM;
-      
+
       risks.push({
         flagCode: "NO_COHABITATION_EVIDENCE",
         severity,
@@ -238,9 +241,7 @@ export class ScoringRules {
     }
 
     // Check for age gap between sponsor and beneficiary
-    const sponsorDob = answers.sponsor_dob
-      ? new Date(String(answers.sponsor_dob))
-      : null;
+    const sponsorDob = answers.sponsor_dob ? new Date(String(answers.sponsor_dob)) : null;
     const beneficiaryDob = answers.beneficiary_dob
       ? new Date(String(answers.beneficiary_dob))
       : null;
@@ -264,24 +265,21 @@ export class ScoringRules {
 
     const MIN_RELATIONSHIP_SCORE = COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH * 0.2;
 
-    score = Math.min(COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH, Math.max(score, MIN_RELATIONSHIP_SCORE));
+    score = Math.min(
+      COMPONENT_WEIGHTS.RELATIONSHIP_STRENGTH,
+      Math.max(score, MIN_RELATIONSHIP_SCORE)
+    );
 
     return { score, risks };
   }
 
-  static calculateDocumentScore(
-    answers: Record<string, unknown>,
-  ): ScoringResult {
+  static calculateDocumentScore(answers: Record<string, unknown>): ScoringResult {
     const risks: RiskFlag[] = [];
     let score = COMPONENT_WEIGHTS.DOCUMENT_COMPLETENESS;
 
     // Critical documents check
     const criticalDocs: [string, FlagCode, string][] = [
-      [
-        "urdu_marriage_certificate",
-        "NO_MARRIAGE_CERTIFICATE",
-        "Marriage certificate",
-      ],
+      ["urdu_marriage_certificate", "NO_MARRIAGE_CERTIFICATE", "Marriage certificate"],
       [
         "english_translation_certificate",
         "NO_MARRIAGE_TRANSLATION",
@@ -289,16 +287,8 @@ export class ScoringRules {
       ],
       ["birth_certificates", "NO_BIRTH_CERTIFICATES", "Birth certificates"],
       ["passports_available", "NO_VALID_PASSPORTS", "Valid passports"],
-      [
-        "nadra_marriage_registration_cert",
-        "NO_NADRA_MARRIAGE_CERT",
-        "NADRA marriage certificate",
-      ],
-      [
-        "family_registration_certificate",
-        "NO_FRC_AVAILABLE",
-        "Family Registration Certificate",
-      ],
+      ["nadra_marriage_registration_cert", "NO_NADRA_MARRIAGE_CERT", "NADRA marriage certificate"],
+      ["family_registration_certificate", "NO_FRC_AVAILABLE", "Family Registration Certificate"],
       [
         "valid_police_clearance_certificate",
         "NO_VALID_POLICE_CLEARANCE_CERTIFICATE",
@@ -340,8 +330,7 @@ export class ScoringRules {
             improvementMsg = IMPROVEMENT_MESSAGES.NO_FRC_AVAILABLE;
             break;
           case "NO_VALID_POLICE_CLEARANCE_CERTIFICATE":
-            improvementMsg =
-              IMPROVEMENT_MESSAGES.NO_VALID_POLICE_CLEARANCE_CERTIFICATE;
+            improvementMsg = IMPROVEMENT_MESSAGES.NO_VALID_POLICE_CLEARANCE_CERTIFICATE;
             break;
           case "NO_MEDICAL_REPORT":
             improvementMsg = IMPROVEMENT_MESSAGES.NO_MEDICAL_REPORT;
@@ -430,7 +419,8 @@ export class ScoringRules {
       risks.push({
         flagCode: "NO_POLIO_VACCINATION_PROOF",
         severity: "MEDIUM",
-        explanation: "No polio vaccination proof. Per CDC guidance, Pakistan is a high-risk country for polio, making this requirement critical for immigrant visa applicants.",
+        explanation:
+          "No polio vaccination proof. Per CDC guidance, Pakistan is a high-risk country for polio, making this requirement critical for immigrant visa applicants.",
         improvement: IMPROVEMENT_MESSAGES.NO_POLIO_VACCINATION_PROOF,
       });
       score -= 2;
@@ -477,9 +467,7 @@ export class ScoringRules {
     return { score, risks };
   }
 
-  static calculateImmigrationHistoryScore(
-    answers: Record<string, unknown>,
-  ): ScoringResult {
+  static calculateImmigrationHistoryScore(answers: Record<string, unknown>): ScoringResult {
     const risks: RiskFlag[] = [];
     let score = COMPONENT_WEIGHTS.IMMIGRATION_HISTORY;
 
@@ -566,15 +554,13 @@ export class ScoringRules {
     }
 
     // Check for joint sponsor
-    const householdSize = Math.max(
-      1,
-      Number(answers.household_size) || 2,
-    );
+    const householdSize = Math.max(1, Number(answers.household_size) || 2);
     const povertyThreshold =
       INCOME_THRESHOLDS.POVERTY_GUIDELINE_BASE +
       INCOME_THRESHOLDS.ADDITIONAL_PER_PERSON * Math.max(0, householdSize - 1);
-    
-    const isMilitary = answers.industry_sector === "Military/Defense" || answers.prior_military_service === true;
+
+    const isMilitary =
+      answers.industry_sector === "Military/Defense" || answers.prior_military_service === true;
     const requiredRatio = isMilitary ? 1.0 : INCOME_THRESHOLDS.CRITICAL_RATIO;
 
     if (
@@ -612,10 +598,7 @@ export class ScoringRules {
     }
 
     // Background & Security Risks (Integrated into Immigration/Background score)
-    if (
-      answers.industry_sector === "Military/Defense" ||
-      answers.prior_military_service === true
-    ) {
+    if (answers.industry_sector === "Military/Defense" || answers.prior_military_service === true) {
       risks.push({
         flagCode: "WORKING_IN_DEFENSE_SECTOR",
         severity: "MEDIUM",
@@ -653,7 +636,8 @@ export class ScoringRules {
       risks.push({
         flagCode: "I130_PROCESS_NOT_STARTED",
         severity: "HIGH",
-        explanation: "Form I-130 has not been filed. This is the first essential step for any spouse visa.",
+        explanation:
+          "Form I-130 has not been filed. This is the first essential step for any spouse visa.",
         improvement: IMPROVEMENT_MESSAGES.I130_PROCESS_NOT_STARTED,
       });
       score -= 20;
@@ -661,7 +645,8 @@ export class ScoringRules {
       risks.push({
         flagCode: "I130_PROCESS_NOT_STARTED",
         severity: "LOW",
-        explanation: "Form I-130 is pending. While the process has started, you must wait for approval before NVC processing.",
+        explanation:
+          "Form I-130 is pending. While the process has started, you must wait for approval before NVC processing.",
         improvement: IMPROVEMENT_MESSAGES.I130_PROCESS_NOT_STARTED,
       });
       score -= 5;
@@ -676,33 +661,31 @@ export class ScoringRules {
 
   static calculateTotalScore(answers: Record<string, unknown>) {
     // Calculate individual component scores
-    const householdSize = Math.max(
-      1,
-      this.safeNumber(answers.household_size, 2),
-    );
+    const householdSize = Math.max(1, this.safeNumber(answers.household_size, 2));
 
     const income = this.safeNumber(answers.sponsor_annual_income, 0);
 
-    const { score: incomeScore, risks: incomeRisks } =
-      this.calculateIncomeScore(answers, income, householdSize);
+    const { score: incomeScore, risks: incomeRisks } = this.calculateIncomeScore(
+      answers,
+      income,
+      householdSize
+    );
 
     const { score: relationshipScore, risks: relationshipRisks } =
       this.calculateRelationshipScore(answers);
-    const { score: documentScore, risks: documentRisks } =
-      this.calculateDocumentScore(answers);
+    const { score: documentScore, risks: documentRisks } = this.calculateDocumentScore(answers);
     const { score: immigrationScore, risks: immigrationRisks } =
       this.calculateImmigrationHistoryScore(answers);
 
     // Calculate total score
-    const rawTotalScore =
-      incomeScore + relationshipScore + documentScore + immigrationScore;
+    const rawTotalScore = incomeScore + relationshipScore + documentScore + immigrationScore;
 
     // Ensure score stays within database limits (DECIMAL(5,2) can handle up to 99.99)
     // But we cap at 100 as per business logic
     const totalScore = Number.isFinite(rawTotalScore)
       ? Math.min(MAX_TOTAL_SCORE, Math.max(MIN_TOTAL_SCORE, rawTotalScore))
       : MIN_TOTAL_SCORE;
-    
+
     // Ensure we never exceed 99.99 to prevent database overflow
     // This handles edge cases where rounding might push us slightly over 100
     const finalScore = Math.min(99.99, totalScore);
@@ -718,12 +701,7 @@ export class ScoringRules {
     }
 
     // Combine all risks
-    const allRisks = [
-      ...incomeRisks,
-      ...relationshipRisks,
-      ...documentRisks,
-      ...immigrationRisks,
-    ];
+    const allRisks = [...incomeRisks, ...relationshipRisks, ...documentRisks, ...immigrationRisks];
 
     // Generate summary reasons and suggestions
     const summaryReasons: string[] = [];
@@ -731,24 +709,24 @@ export class ScoringRules {
 
     if (finalScore <= 50) {
       summaryReasons.push(
-        "Your case has multiple high-impact issues that could significantly affect visa approval.",
+        "Your case has multiple high-impact issues that could significantly affect visa approval."
       );
       improvementSuggestions.push(
-        "Prioritize resolving high-risk items such as missing critical documents, financial eligibility, or relationship evidence before proceeding.",
+        "Prioritize resolving high-risk items such as missing critical documents, financial eligibility, or relationship evidence before proceeding."
       );
     } else if (finalScore <= 80) {
       summaryReasons.push(
-        "Your case shows legitimate strengths, but some areas may raise questions during review.",
+        "Your case shows legitimate strengths, but some areas may raise questions during review."
       );
       improvementSuggestions.push(
-        "Strengthen medium-risk areas by adding supporting documentation and clarifying any potential concerns.",
+        "Strengthen medium-risk areas by adding supporting documentation and clarifying any potential concerns."
       );
     } else {
       summaryReasons.push(
-        "Your case demonstrates strong overall eligibility with well-supported evidence.",
+        "Your case demonstrates strong overall eligibility with well-supported evidence."
       );
       improvementSuggestions.push(
-        "Maintain document accuracy and be prepared to clearly explain your case during the interview.",
+        "Maintain document accuracy and be prepared to clearly explain your case during the interview."
       );
     }
 

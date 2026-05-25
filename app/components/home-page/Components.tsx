@@ -103,13 +103,7 @@ export function ProductFrame({
   );
 }
 
-export function StepStatusIcon({
-  status,
-  index,
-}: {
-  status: string;
-  index: number;
-}) {
+export function StepStatusIcon({ status, index }: { status: string; index: number }) {
   if (status === "done") {
     return (
       <div className="flex size-7 items-center justify-center rounded-full border-2 border-white/45 bg-white/20 text-[11px] font-bold text-white">
@@ -182,9 +176,7 @@ export function StepRow({
               : { x: 0 }
       }
       transition={
-        isClicking
-          ? { duration: 0.15 }
-          : { duration: 4, repeat: Infinity, ease: "easeInOut" }
+        isClicking ? { duration: 0.15 } : { duration: 4, repeat: Infinity, ease: "easeInOut" }
       }
     >
       {isCurrent && !isDone && !isLocked && (
@@ -195,16 +187,10 @@ export function StepRow({
       )}
       <StepStatusIcon status={status} index={index} />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[14px] font-bold leading-[1.3]">
-          {name}
-        </div>
+        <div className="truncate text-[14px] font-bold leading-[1.3]">{name}</div>
         <div
           className={`mt-0.5 truncate text-[11.5px] font-semibold ${
-            isDone
-              ? "text-white/90"
-              : isLocked
-                ? "opacity-60"
-                : "text-[#2C3A3E]"
+            isDone ? "text-white/90" : isLocked ? "opacity-60" : "text-[#2C3A3E]"
           }`}
         >
           {isLocked ? "Upgrade to unlock" : description}
@@ -215,11 +201,7 @@ export function StepRow({
           Upgrade
         </span>
       ) : (
-        <ChevronRight
-          className="shrink-0 text-[#b3a6b3] opacity-35"
-          size={14}
-          strokeWidth={3}
-        />
+        <ChevronRight className="shrink-0 text-[#b3a6b3] opacity-35" size={14} strokeWidth={3} />
       )}
     </motion.div>
   );
@@ -276,7 +258,7 @@ export function RealDashboardScene({
     const run = () => {
       timers.forEach(window.clearTimeout);
       timers = schedule.map(([delay, nextPhase]) =>
-        window.setTimeout(() => setPhase(nextPhase), delay),
+        window.setTimeout(() => setPhase(nextPhase), delay)
       );
     };
 
@@ -322,8 +304,7 @@ export function RealDashboardScene({
   };
 
   const currentCursor = cursorStates[phase] ?? cursorStates[0];
-  const isClicking =
-    phase === 2 || phase === 5 || phase === 8 || phase === 13 || phase === 17;
+  const isClicking = phase === 2 || phase === 5 || phase === 8 || phase === 13 || phase === 17;
   const view =
     phase >= 21
       ? "dashboard-complete"
@@ -339,11 +320,7 @@ export function RealDashboardScene({
 
   return (
     <motion.div
-      animate={
-        reduceMotion
-          ? undefined
-          : { y: [0, 0, -4, -4, 0], scale: [1, 1, 1.004, 1.004, 1] }
-      }
+      animate={reduceMotion ? undefined : { y: [0, 0, -4, -4, 0], scale: [1, 1, 1.004, 1.004, 1] }}
       transition={{ duration: 44, repeat: Infinity, ease: "easeInOut" }}
     >
       <ProductFrame
@@ -356,8 +333,7 @@ export function RealDashboardScene({
                 WebkitBackdropFilter: "blur(24px)",
                 border: "1px solid rgba(255,255,255,0.55)",
                 borderRadius: 28,
-                boxShadow:
-                  "0 30px 90px rgba(15,23,42,0.30), inset 0 1px 0 rgba(255,255,255,0.38)",
+                boxShadow: "0 30px 90px rgba(15,23,42,0.30), inset 0 1px 0 rgba(255,255,255,0.38)",
               }
             : undefined
         }
@@ -449,10 +425,7 @@ export function RealDashboardScene({
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <HeroAutoformPanel
-                    playPhase={phase}
-                    isClicking={isClicking}
-                  />
+                  <HeroAutoformPanel playPhase={phase} isClicking={isClicking} />
                 </motion.div>
               )}
               {view === "pdf" && (
@@ -555,9 +528,7 @@ export function HeroDashboardPanel({
             <div className="mb-2 text-[10.5px] font-black uppercase tracking-[0.12em] text-white/60">
               Next roadmap step
             </div>
-            <h3 className="text-[27px] font-black leading-tight tracking-tight">
-              {nextStepTitle}
-            </h3>
+            <h3 className="text-[27px] font-black leading-tight tracking-tight">{nextStepTitle}</h3>
             <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-white/75">
               {nextStepBody}
             </p>
@@ -578,9 +549,7 @@ export function HeroDashboardPanel({
                   : "border-[#d0e4f7]"
               }`}
               animate={
-                index === 0 && chapterTargeted
-                  ? { y: -4, scale: 1.018 }
-                  : { y: 0, scale: 1 }
+                index === 0 && chapterTargeted ? { y: -4, scale: 1.018 } : { y: 0, scale: 1 }
               }
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -624,16 +593,11 @@ export function HeroDashboardPanel({
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {caseFields.map(([label, value]) => (
-              <div
-                key={label}
-                className="rounded-xl border border-[#d0e4f7] bg-[#f4f7fb] p-3"
-              >
+              <div key={label} className="rounded-xl border border-[#d0e4f7] bg-[#f4f7fb] p-3">
                 <div className="text-[10.5px] font-black uppercase tracking-[0.1em] text-[#6b8097]">
                   {label}
                 </div>
-                <div className="mt-1 text-[12.5px] font-bold text-[#162126]">
-                  {value}
-                </div>
+                <div className="mt-1 text-[12.5px] font-bold text-[#162126]">{value}</div>
               </div>
             ))}
           </div>
@@ -669,9 +633,7 @@ export function HeroDashboardPanel({
                   >
                     {isDone ? <Check size={11} strokeWidth={3} /> : index + 1}
                   </div>
-                  <span className="text-[12.5px] font-bold text-[#2C3A3E]">
-                    {label}
-                  </span>
+                  <span className="text-[12.5px] font-bold text-[#2C3A3E]">{label}</span>
                 </div>
               );
             })}
@@ -731,8 +693,8 @@ export function HeroChapterOnePanel({
           USCIS Petition Filing
         </h1>
         <p className="mb-4 text-[14.5px] leading-[1.7] text-[#2C3A3E]">
-          File Form I-130 with USCIS to begin the IR-1 spouse visa process for
-          your Pakistani spouse.
+          File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani
+          spouse.
         </p>
         <div className="flex items-center gap-2.5">
           <div className="h-[7px] flex-1 overflow-hidden rounded-[13px] bg-[#F0F1FB]">
@@ -747,30 +709,18 @@ export function HeroChapterOnePanel({
 
       <motion.div className="flex flex-col gap-1.5 px-2 pb-20" initial={false}>
         {chapters[0].steps.slice(0, 5).map((chapterStep, index) => {
-          const status =
-            index < 3 ? "done" : index === 3 ? "current" : "locked";
+          const status = index < 3 ? "done" : index === 3 ? "current" : "locked";
           return (
             <motion.div
               key={chapterStep[0]}
               ref={(el) => {
                 stepRefs.current[index] = el;
               }}
-              animate={
-                index === 3 && stepTargeted
-                  ? { scale: 1.015, x: 3 }
-                  : { scale: 1, x: 0 }
-              }
+              animate={index === 3 && stepTargeted ? { scale: 1.015, x: 3 } : { scale: 1, x: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <StepRow
-                step={
-                  [
-                    chapterStep[0],
-                    chapterStep[1],
-                    chapterStep[2],
-                    status,
-                  ] as const
-                }
+                step={[chapterStep[0], chapterStep[1], chapterStep[2], status] as const}
                 chapter={chapters[0]}
                 index={index}
                 active={index === 3}
@@ -840,9 +790,8 @@ export function HeroI130StepPanel({
             Fill Form I-130
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
-            Use Rahvana&apos;s guided Autoform Filler to complete the I-130
-            x for Alien Relative — with structured step-by-step support,
-            clear prompts, and a built-in review flow.
+            Use Rahvana&apos;s guided Autoform Filler to complete the I-130 x for Alien Relative —
+            with structured step-by-step support, clear prompts, and a built-in review flow.
           </p>
 
           <div className="mb-[22px] flex flex-wrap gap-[8px]">
@@ -864,11 +813,7 @@ export function HeroI130StepPanel({
             <div className="p-[36px_36px_32px]">
               <div className="mb-[26px] flex items-start gap-[16px]">
                 <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[12px] border border-[#c0596a] bg-[#c0596a]">
-                  <FileText
-                    size={22}
-                    className="text-white"
-                    strokeWidth={1.6}
-                  />
+                  <FileText size={22} className="text-white" strokeWidth={1.6} />
                 </div>
                 <div className="flex-1">
                   <div className="mb-[5px] text-[10px] font-bold uppercase tracking-widest text-[#c0596a]">
@@ -887,9 +832,7 @@ export function HeroI130StepPanel({
                     className="flex items-start gap-[10px] rounded-[10px] border border-[#c0596a]/30 bg-[#3a232a] p-[12px_14px]"
                   >
                     <div className="mt-[6px] h-[5px] w-[5px] shrink-0 rounded-full bg-[#c0596a]" />
-                    <div className="text-[13px] leading-[1.4] text-[#fbeaec]">
-                      {feat}
-                    </div>
+                    <div className="text-[13px] leading-[1.4] text-[#fbeaec]">{feat}</div>
                   </div>
                 ))}
               </div>
@@ -944,12 +887,10 @@ export function HeroAutoformPanel({
   const fields = useMemo(
     () =>
       config?.formFields
-        .filter(
-          (field) => field.section === "Information About You (Petitioner)",
-        )
+        .filter((field) => field.section === "Information About You (Petitioner)")
         .filter((field) => field.key === "full_name_group")
         .slice(0, 1) ?? [],
-    [config],
+    [config]
   );
 
   useEffect(() => {
@@ -970,28 +911,16 @@ export function HeroAutoformPanel({
       setFillStage(2);
     } else if (playPhase === 15) {
       const timers = [
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, given_name: "A" })),
-          200,
-        ),
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
-          600,
-        ),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, given_name: "A" })), 200),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, given_name: "Amina" })), 600),
       ];
       return () => timers.forEach(window.clearTimeout);
     } else if (playPhase === 17) {
       setFillStage(3);
     } else if (playPhase === 19) {
       const timers = [
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, middle_name: "N" })),
-          200,
-        ),
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, middle_name: "Noor" })),
-          600,
-        ),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, middle_name: "N" })), 200),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, middle_name: "Noor" })), 600),
       ];
       return () => timers.forEach(window.clearTimeout);
     } else if (playPhase >= 20) {
@@ -1019,9 +948,7 @@ export function HeroAutoformPanel({
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-base md:text-lg font-bold text-gray-900 truncate">
-                Form I-130
-              </h1>
+              <h1 className="text-base md:text-lg font-bold text-gray-900 truncate">Form I-130</h1>
               <p className="text-xs md:text-sm text-gray-500 truncate">
                 Petition for Alien Relative
               </p>
@@ -1172,8 +1099,7 @@ export const twoWaysPaths = [
     supportLead: "Get focused help exactly where you need it.",
     supportText:
       "Jump directly into calculators, checklists, and support tools when you have a specific task to complete. Use them independently or alongside the roadmap whenever you need targeted help.",
-    bestFor:
-      "Best for people who want targeted help without using the full roadmap.",
+    bestFor: "Best for people who want targeted help without using the full roadmap.",
     cta: "Browse Tools",
     href: toolsHref,
   },
@@ -1197,11 +1123,7 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   }, []);
 
   return (
-    <div
-      ref={wrapRef}
-      className="w-full"
-      style={{ height: Math.round(560 * scale) }}
-    >
+    <div ref={wrapRef} className="w-full" style={{ height: Math.round(560 * scale) }}>
       <div
         style={{
           width: 680,
@@ -1228,11 +1150,7 @@ export function TwoWaysSection() {
   return (
     <>
       {/* ── Desktop (lg+): scroll-driven sticky ─────────────────────────── */}
-      <section
-        id="path"
-        aria-label="Two ways to use Rahvana"
-        className="relative hidden lg:block"
-      >
+      <section id="path" aria-label="Two ways to use Rahvana" className="relative hidden lg:block">
         <div
           style={{
             minHeight: "100vh",
@@ -1245,7 +1163,7 @@ export function TwoWaysSection() {
         >
           {/* Decorative radial highlights removed for seamless background */}
 
-        {/* Main grid */}
+          {/* Main grid */}
           <div
             className="relative mx-auto w-full px-12 xl:px-16"
             style={{
@@ -1281,9 +1199,8 @@ export function TwoWaysSection() {
                   maxWidth: 420,
                 }}
               >
-                Follow the guided IR-1 roadmap, use focused tools and resources
-                independently, and choose the support style that fits what you
-                need right now.
+                Follow the guided IR-1 roadmap, use focused tools and resources independently, and
+                choose the support style that fits what you need right now.
               </p>
 
               {/* Active-panel label */}
@@ -1325,13 +1242,9 @@ export function TwoWaysSection() {
                       aria-current={isActive ? "true" : undefined}
                       className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
                       style={{
-                        border: isActive
-                          ? "1.5px solid #0d7377"
-                          : "1px solid #e2ebe8",
+                        border: isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
                         background: isActive ? "#f4fbfa" : "transparent",
-                        boxShadow: isActive
-                          ? "0 5px 18px rgba(13,115,119,0.10)"
-                          : "none",
+                        boxShadow: isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
                         WebkitTapHighlightColor: "transparent",
                         cursor: "pointer",
                       }}
@@ -1344,8 +1257,7 @@ export function TwoWaysSection() {
                           background: isActive ? "#0d7377" : "transparent",
                           color: isActive ? "white" : "#9aaeac",
                           border: isActive ? "none" : "1.5px solid #c8d5d3",
-                          transition:
-                            "background 0.22s, color 0.22s, border-color 0.22s",
+                          transition: "background 0.22s, color 0.22s, border-color 0.22s",
                         }}
                       >
                         {String(i + 1).padStart(2, "0")}
@@ -1438,7 +1350,6 @@ export function TwoWaysSection() {
         >
           {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 items-start">
-
             {/* Left: heading + selectors + CTAs */}
             <div>
               <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
@@ -1454,8 +1365,8 @@ export function TwoWaysSection() {
                 className="mt-3 mb-0 text-[#4a5c62]"
                 style={{ fontSize: "clamp(14px,2vw,16px)", lineHeight: 1.65 }}
               >
-                Use the full IR-1 roadmap, or jump into focused tools and
-                resources when you need targeted help.
+                Use the full IR-1 roadmap, or jump into focused tools and resources when you need
+                targeted help.
               </p>
 
               {/* Active panel label */}
@@ -1565,7 +1476,6 @@ export function TwoWaysSection() {
                 </AnimatePresence>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -1576,11 +1486,7 @@ export function TwoWaysScene() {
   return <TwoWaysSection />;
 }
 
-export function TwoWaysSupportText({
-  path,
-}: {
-  path: (typeof twoWaysPaths)[number];
-}) {
+export function TwoWaysSupportText({ path }: { path: (typeof twoWaysPaths)[number] }) {
   return (
     <div className="w-full min-w-0">
       <p className="m-0 text-[11px] font-black uppercase tracking-[0.08em] text-[#0d7377]">
@@ -1610,9 +1516,7 @@ export function TwoWaysSupportText({
 // internal absolute-positioned children render correctly.
 export function TwoWaysVisual({ index }: { index: TwoWaysIndex }) {
   return (
-    <div
-      style={{ position: "relative", width: 680, height: 560 }}
-    >
+    <div style={{ position: "relative", width: 680, height: 560 }}>
       {index === 0 ? <GuidedRoadmapScene /> : <IndividualToolsScene />}
     </div>
   );
@@ -1660,8 +1564,8 @@ export function TwoWaysMobile({
           margin: "0 0 32px 0",
         }}
       >
-        Use the full IR-1 roadmap, or jump into focused tools and resources when
-        you need targeted help.
+        Use the full IR-1 roadmap, or jump into focused tools and resources when you need targeted
+        help.
       </p>
 
       <div className="space-y-3">
@@ -1694,9 +1598,7 @@ export function TwoWaysMobile({
               >
                 {path.title}
               </h3>
-              <p className="mt-1 text-sm leading-6 text-[#4a5c62]">
-                {path.teaser}
-              </p>
+              <p className="mt-1 text-sm leading-6 text-[#4a5c62]">{path.teaser}</p>
             </div>
           </button>
         ))}
@@ -1722,13 +1624,9 @@ export function TwoWaysMobile({
               key={activeIndex}
               className="absolute left-1/2 top-1/2 origin-center"
               style={{ width: 680, height: 560 }}
-              initial={
-                reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }
-              }
+              initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }}
               animate={{ opacity: 1, y: 0, scale: 0.5 }}
-              exit={
-                reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.49 }
-              }
+              exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.49 }}
               transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
             >
               <div style={{ transform: "translate(-50%, -50%)" }}>
@@ -1779,9 +1677,7 @@ const GUIDED_TOUR = [
 ] as const;
 
 export function GuidedRoadmapScene() {
-  const [view, setView] = useState<"dashboard" | "chapter" | "step">(
-    "dashboard",
-  );
+  const [view, setView] = useState<"dashboard" | "chapter" | "step">("dashboard");
   const [activeChapterIdx, setActiveChapterIdx] = useState(0);
   const [activeStepIdx, setActiveStepIdx] = useState(-1);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
@@ -1798,12 +1694,9 @@ export function GuidedRoadmapScene() {
   // Complete overlay triggers from handleSelectStep — no useEffect timer needed
 
   const activeChapter = chapters[activeChapterIdx];
-  const activeStep =
-    activeStepIdx !== -1 ? activeChapter.steps[activeStepIdx] : null;
+  const activeStep = activeStepIdx !== -1 ? activeChapter.steps[activeStepIdx] : null;
 
-  const nextStep =
-    chapters[0].steps.find((s) => !completedSteps.has(s[0])) ||
-    chapters[0].steps[0];
+  const nextStep = chapters[0].steps.find((s) => !completedSteps.has(s[0])) || chapters[0].steps[0];
 
   const handleSelectChapter = (idx: number) => {
     if (idx >= 1) return; // Only Chapter 1 is open in demo
@@ -1918,8 +1811,8 @@ export function GuidedRoadmapScene() {
                       Notifications Center
                     </div>
                     <p className="text-[10px] text-[#6b8097] leading-relaxed mb-4">
-                      This is where your real-time case updates and automated
-                      tracking alerts will appear.
+                      This is where your real-time case updates and automated tracking alerts will
+                      appear.
                     </p>
                     <div className="space-y-2">
                       <div className="rounded-lg bg-[#f0f9f6] p-2.5 border border-[#d1e7e2]">
@@ -1928,8 +1821,7 @@ export function GuidedRoadmapScene() {
                           Live Case Tracking
                         </div>
                         <div className="text-[11px] leading-snug text-[#4a5c62]">
-                          Automated alerts for USCIS/NVC status changes and
-                          priority date movements.
+                          Automated alerts for USCIS/NVC status changes and priority date movements.
                         </div>
                       </div>
                       <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100 opacity-60">
@@ -1937,8 +1829,7 @@ export function GuidedRoadmapScene() {
                           System Intelligence
                         </div>
                         <div className="text-[11px] leading-snug text-[#6b8097]">
-                          Personalized reminders for upcoming deadlines and
-                          document expirations.
+                          Personalized reminders for upcoming deadlines and document expirations.
                         </div>
                       </div>
                     </div>
@@ -2032,9 +1923,7 @@ export function GuidedRoadmapScene() {
                         >
                           Chapter {idx + 1}
                         </div>
-                        {isLocked && (
-                          <Lock size={14} className="text-slate-300" />
-                        )}
+                        {isLocked && <Lock size={14} className="text-slate-300" />}
                       </div>
 
                       <h4
@@ -2126,10 +2015,7 @@ export function GuidedRoadmapScene() {
                       >
                         <div className="space-y-3 border-t border-[#dde8e6] bg-[#f9fafc] p-5">
                           {milestones.map(([title, completed], idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-2.5"
-                            >
+                            <div key={idx} className="flex items-center gap-2.5">
                               <div
                                 className={`flex size-4 items-center justify-center rounded-full border ${completed ? "bg-[#0d7377] border-[#0d7377] text-white" : "border-[#dde8e6] bg-white text-transparent"}`}
                               >
@@ -2243,9 +2129,7 @@ export function GuidedRoadmapScene() {
                             >
                               {step[1]}
                             </div>
-                            <div className="text-[11px] text-[#6b8097]">
-                              {step[2]}
-                            </div>
+                            <div className="text-[11px] text-[#6b8097]">{step[2]}</div>
                           </div>
                         </div>
                         {!isLocked && (
@@ -2300,13 +2184,10 @@ export function GuidedRoadmapScene() {
                   <div className="flex size-16 items-center justify-center rounded-2xl bg-[#f0f1fb] text-[#4e518c] mb-6 shadow-sm">
                     <FileText size={32} />
                   </div>
-                  <h2 className="text-2xl font-black text-[#162126] mb-2">
-                    {activeStep[1]}
-                  </h2>
+                  <h2 className="text-2xl font-black text-[#162126] mb-2">{activeStep[1]}</h2>
                   <p className="max-w-md text-[#6b8097] leading-relaxed mb-8">
-                    In the full app, this step includes interactive guides,
-                    Pakistan-specific checklists, and automated tools to help
-                    you finish faster.
+                    In the full app, this step includes interactive guides, Pakistan-specific
+                    checklists, and automated tools to help you finish faster.
                   </p>
 
                   <div className="flex flex-col w-full max-w-sm gap-3">
@@ -2335,17 +2216,13 @@ export function GuidedRoadmapScene() {
                       <div className="text-[10px] font-bold uppercase tracking-wider text-[#6b8097] mb-1">
                         Free Access
                       </div>
-                      <div className="text-sm font-bold text-[#162126]">
-                        Preview Only
-                      </div>
+                      <div className="text-sm font-bold text-[#162126]">Preview Only</div>
                     </div>
                     <div className="rounded-xl border border-[#d0e4f7] bg-[#f0f7ff] p-4">
                       <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377] mb-1">
                         Pro Tool
                       </div>
-                      <div className="text-sm font-bold text-[#0d7377]">
-                        Auto-Fill Ready
-                      </div>
+                      <div className="text-sm font-bold text-[#0d7377]">Auto-Fill Ready</div>
                     </div>
                   </div>
                 </div>
@@ -2402,7 +2279,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 900, color: "white", lineHeight: 1.2 }}
+              style={{
+                margin: "0 0 8px",
+                fontSize: 22,
+                fontWeight: 900,
+                color: "white",
+                lineHeight: 1.2,
+              }}
             >
               Demo Complete!
             </motion.h3>
@@ -2411,7 +2294,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.38, duration: 0.3 }}
-              style={{ margin: "0 0 6px", fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.6, maxWidth: 320 }}
+              style={{
+                margin: "0 0 6px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.72)",
+                lineHeight: 1.6,
+                maxWidth: 320,
+              }}
             >
               You've seen how the guided IR-1 roadmap works.
             </motion.p>
@@ -2419,7 +2308,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.44, duration: 0.3 }}
-              style={{ margin: "0 0 28px", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 300 }}
+              style={{
+                margin: "0 0 28px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.55)",
+                lineHeight: 1.6,
+                maxWidth: 300,
+              }}
             >
               Start your full journey — all chapters, steps, and built-in tools are free to use.
             </motion.p>
@@ -2428,7 +2323,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.52, duration: 0.3 }}
-              style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 280 }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                width: "100%",
+                maxWidth: 280,
+              }}
             >
               <a
                 href={journeyHref}
@@ -2513,18 +2414,29 @@ export function GuidedRoadmapScene() {
                       animate={{ x: [-4, 0, -4] }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#0d7377"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M19 12H5M5 12L12 19M5 12L12 5" />
                       </svg>
                     </motion.div>
                   )}
-                  <span style={{
-                    fontSize: 12,
-                    fontWeight: 400,
-                    color: "#0d7377",
-                    letterSpacing: "0.01em",
-                    textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
-                  }}>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 400,
+                      color: "#0d7377",
+                      letterSpacing: "0.01em",
+                      textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
+                    }}
+                  >
                     {step.text}
                   </span>
                   {step.side === "top" && (
@@ -2532,7 +2444,16 @@ export function GuidedRoadmapScene() {
                       animate={{ y: [-4, 0, -4] }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#0d7377"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M12 5V19M12 19L5 12M12 19L19 12" />
                       </svg>
                     </motion.div>
@@ -2549,9 +2470,13 @@ export function GuidedRoadmapScene() {
               transition={{ delay: 0.15, duration: 0.22 }}
               style={{
                 position: "absolute",
-                top: GUIDED_TOUR[tourIdx].dot.top - 10 - (GUIDED_TOUR[tourIdx].view === "dashboard" ? dashScrollTop : 0),
+                top:
+                  GUIDED_TOUR[tourIdx].dot.top -
+                  10 -
+                  (GUIDED_TOUR[tourIdx].view === "dashboard" ? dashScrollTop : 0),
                 left: GUIDED_TOUR[tourIdx].dot.left - 10,
-                width: 20, height: 20,
+                width: 20,
+                height: 20,
                 borderRadius: "50%",
                 background: "rgba(13,115,119,0.15)",
                 border: "2px solid #0d7377",
@@ -2561,7 +2486,8 @@ export function GuidedRoadmapScene() {
                 animate={{ scale: [1, 2.5, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  position: "absolute", inset: -4,
+                  position: "absolute",
+                  inset: -4,
                   borderRadius: "50%",
                   border: "1.5px solid rgba(13,115,119,0.4)",
                 }}
@@ -2593,9 +2519,7 @@ export function GuidedRoadmapScene() {
           <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
             Demo Mode
           </div>
-          <div className="mt-0.5 text-[15px] font-black text-[#0d7377]">
-            Free Preview
-          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#0d7377]">Free Preview</div>
         </div>
       </div>
     </div>
@@ -2721,8 +2645,7 @@ const toolContent: Record<string, any> = {
     eyebrow: "Case Review",
     title: "Case Strength Analyzer",
     headline: "Know if your case is ready before the officer does.",
-    subtext:
-      "Review your evidence, spot the gaps, and fix them before you submit — not after.",
+    subtext: "Review your evidence, spot the gaps, and fix them before you submit — not after.",
     benefits: [
       "Evidence gaps flagged instantly",
       "Domicile & financial check",
@@ -2733,8 +2656,7 @@ const toolContent: Record<string, any> = {
     eyebrow: "Post-Interview",
     title: "221(g) Action Planner",
     headline: "Got a 221(g)? Here's exactly what to do next.",
-    subtext:
-      "Step-by-step response guide — right documents, right format, right place.",
+    subtext: "Step-by-step response guide — right documents, right format, right place.",
     benefits: [
       "Not a denial — act fast",
       "Document checklist included",
@@ -2745,20 +2667,14 @@ const toolContent: Record<string, any> = {
     eyebrow: "Getting Started",
     title: "Visa Path Finder",
     headline: "5 questions. One clear starting point.",
-    subtext:
-      "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
-    benefits: [
-      "Confirm IR-1 eligibility",
-      "Know who files what",
-      "Instant next step",
-    ],
+    subtext: "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
+    benefits: ["Confirm IR-1 eligibility", "Know who files what", "Instant next step"],
   },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Prep",
     headline: "Walk into ISL prepared, not guessing.",
-    subtext:
-      "Real Islamabad embassy questions, real model answers, built for IR-1 spouses.",
+    subtext: "Real Islamabad embassy questions, real model answers, built for IR-1 spouses.",
     benefits: [
       "50+ real ISL questions",
       "Relationship & domicile focus",
@@ -2769,13 +2685,8 @@ const toolContent: Record<string, any> = {
     eyebrow: "Financial Check",
     title: "Sponsorship Calculator",
     headline: "Does your income qualify? Find out in 60 seconds.",
-    subtext:
-      "Check I-864 threshold, pick the right form, and see if a joint sponsor is needed.",
-    benefits: [
-      "2025 guidelines updated",
-      "I-864 vs I-864EZ",
-      "Joint sponsor check",
-    ],
+    subtext: "Check I-864 threshold, pick the right form, and see if a joint sponsor is needed.",
+    benefits: ["2025 guidelines updated", "I-864 vs I-864EZ", "Joint sponsor check"],
   },
   dq: {
     eyebrow: "Scheduling",
@@ -2783,71 +2694,42 @@ const toolContent: Record<string, any> = {
     headline: "See where the ISL scheduling queue stands today.",
     subtext:
       "Check which DQ months are being called and estimate when your interview window opens.",
-    benefits: [
-      "Live scheduling month",
-      "ISL embassy data",
-      "Estimate your wait",
-    ],
+    benefits: ["Live scheduling month", "ISL embassy data", "Estimate your wait"],
   },
   bulletin: {
     eyebrow: "Priority Date",
     title: "Visa Bulletin Monitor",
     headline: "IR-1 is always current. But yours might not be.",
-    subtext:
-      "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
-    benefits: [
-      "Monthly bulletin updates",
-      "Priority date tracker",
-      "Current or waiting?",
-    ],
+    subtext: "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
+    benefits: ["Monthly bulletin updates", "Priority date tracker", "Current or waiting?"],
   },
   photo: {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",
     headline: "Compliant visa photo. Without the studio visit.",
-    subtext:
-      "Upload any photo — get a 2×2 inch, white background, embassy-ready result.",
-    benefits: [
-      "Auto-crop & format",
-      "Meets USCIS standards",
-      "Download in seconds",
-    ],
+    subtext: "Upload any photo — get a 2×2 inch, white background, embassy-ready result.",
+    benefits: ["Auto-crop & format", "Meets USCIS standards", "Download in seconds"],
   },
   pdf: {
     eyebrow: "Document Tools",
     title: "PDF Tool Kit",
     headline: "NVC rejects big files. We fix that.",
-    subtext:
-      "Merge, compress, and convert your documents to meet CEAC's strict 2MB upload limit.",
-    benefits: [
-      "Under 2MB guaranteed",
-      "Merge multiple files",
-      "PDF & JPG ready",
-    ],
+    subtext: "Merge, compress, and convert your documents to meet CEAC's strict 2MB upload limit.",
+    benefits: ["Under 2MB guaranteed", "Merge multiple files", "PDF & JPG ready"],
   },
   snap: {
     eyebrow: "Signatures",
     title: "Snap & Sign",
     headline: "Every document needs a signature. Make yours in seconds.",
-    subtext:
-      "Draw, type, or upload your signature — download as PNG and drop it anywhere.",
-    benefits: [
-      "Works on any form or doc",
-      "Transparent PNG download",
-      "Mobile & desktop ready",
-    ],
+    subtext: "Draw, type, or upload your signature — download as PNG and drop it anywhere.",
+    benefits: ["Works on any form or doc", "Transparent PNG download", "Mobile & desktop ready"],
   },
   filler: {
     eyebrow: "Form Completion",
     title: "Smart Form Filler",
     headline: "I-130 done in minutes. Not hours.",
-    subtext:
-      "Fill your details once and get a completed, submission-ready PDF — no blank fields.",
-    benefits: [
-      "I-130, DS-260, I-864",
-      "Pakistan-specific defaults",
-      "Review before you submit",
-    ],
+    subtext: "Fill your details once and get a completed, submission-ready PDF — no blank fields.",
+    benefits: ["I-130, DS-260, I-864", "Pakistan-specific defaults", "Review before you submit"],
   },
 };
 
@@ -2873,9 +2755,7 @@ function ToolCarousel({
   const COPIES = 20;
   const totalStep = useRef(10 * N); // start at copy 10, icon 0
   const prevIdx = useRef(activeIdx);
-  const [offset, setOffset] = useState(
-    () => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2),
-  );
+  const [offset, setOffset] = useState(() => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2));
   const [animated, setAnimated] = useState(true);
 
   useEffect(() => {
@@ -2913,9 +2793,7 @@ function ToolCarousel({
           paddingLeft: GAP,
           height: "100%",
           transform: `translateX(${offset}px)`,
-          transition: animated
-            ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)"
-            : "none",
+          transition: animated ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
           willChange: "transform",
         }}
       >
@@ -2950,8 +2828,7 @@ function ToolCarousel({
                   alignItems: "center",
                   justifyContent: "center",
                   transform: isActive ? "scale(1.13)" : "scale(1)",
-                  transition:
-                    "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   outline: isActive ? `3px solid ${tool.fg}` : "none",
                   outlineOffset: isActive ? "3px" : "0",
                   boxShadow: isActive ? `0 8px 24px ${tool.fg}55` : "none",
@@ -2996,9 +2873,7 @@ export function IndividualToolsScene() {
   const activeIdxRef = useRef(0);
 
   const goTo = useCallback((idx: number) => {
-    const next =
-      ((idx % featuredTools.length) + featuredTools.length) %
-      featuredTools.length;
+    const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
     activeIdxRef.current = next;
     setVisible(false);
     window.setTimeout(() => {
@@ -3025,10 +2900,13 @@ export function IndividualToolsScene() {
     };
   }, [hovered, startAutoPlay]);
 
-  const handleSelect = useCallback((idx: number) => {
-    goTo(idx);
-    if (!hovered) startAutoPlay();
-  }, [goTo, hovered, startAutoPlay]);
+  const handleSelect = useCallback(
+    (idx: number) => {
+      goTo(idx);
+      if (!hovered) startAutoPlay();
+    },
+    [goTo, hovered, startAutoPlay]
+  );
 
   const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
@@ -3041,8 +2919,7 @@ export function IndividualToolsScene() {
         borderRadius: 32,
         background: "white",
         border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
         position: "relative",
         margin: 0,
         overflow: "hidden",
@@ -3074,9 +2951,7 @@ export function IndividualToolsScene() {
           >
             {content.eyebrow}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 900, color: "white" }}>
-            {content.title}
-          </div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: "white" }}>{content.title}</div>
         </div>
         <a
           href="#"
@@ -3241,10 +3116,7 @@ export function IndividualToolsScene() {
             }}
           >
             {content.benefits.map((b: string) => (
-              <div
-                key={b}
-                style={{ display: "flex", alignItems: "center", gap: 10 }}
-              >
+              <div key={b} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div
                   style={{
                     width: 18,
@@ -3277,11 +3149,7 @@ export function IndividualToolsScene() {
       </div>
 
       {/* ── Carousel ── */}
-      <ToolCarousel
-        activeIdx={activeIdx}
-        onSelect={handleSelect}
-        onHoverChange={setHovered}
-      />
+      <ToolCarousel activeIdx={activeIdx} onSelect={handleSelect} onHoverChange={setHovered} />
     </div>
   );
 }
@@ -3327,14 +3195,7 @@ function InteractiveClockWidget() {
     springAngle.set(angle);
     minuteHandRotate.set(minuteHandAngle);
     hourHandRotate.set(hourHandAngle);
-  }, [
-    angle,
-    minuteHandAngle,
-    hourHandAngle,
-    springAngle,
-    minuteHandRotate,
-    hourHandRotate,
-  ]);
+  }, [angle, minuteHandAngle, hourHandAngle, springAngle, minuteHandRotate, hourHandRotate]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowHint(false), 3600);
@@ -3525,11 +3386,7 @@ function InteractiveClockWidget() {
   );
 }
 
-export function ConsultationBanner({
-  onConsultationClick,
-}: {
-  onConsultationClick: () => void;
-}) {
+export function ConsultationBanner({ onConsultationClick }: { onConsultationClick: () => void }) {
   const reduceMotion = useReducedMotion();
   const helpWith = [
     "Talk through your exact case",
@@ -3547,8 +3404,7 @@ export function ConsultationBanner({
     {
       label: "WHAT WE DISCUSS",
       title: "Case clarity",
-      description:
-        "Practical guidance on exactly what will move your case forward.",
+      description: "Practical guidance on exactly what will move your case forward.",
       accent: "#0B666A",
       bg: "rgba(245,250,248,0.96)",
       pillBg: "rgba(11, 102, 106, 0.08)",
@@ -3645,12 +3501,12 @@ export function ConsultationBanner({
                 lineHeight: 1.68,
               }}
             >
-              If the roadmap feels like too much or a tool isn&apos;t enough,
-              book a consultation for tailored clarity on your immigration case.
+              If the roadmap feels like too much or a tool isn&apos;t enough, book a consultation
+              for tailored clarity on your immigration case.
             </motion.p>
           </div>
 
-         {/* Two-card illustrated grid */}
+          {/* Two-card illustrated grid */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -3751,7 +3607,7 @@ export function ConsultationBanner({
             ))}
           </motion.div>
         </div>
-        
+
         {/* RIGHT SIDE: Clock & CTA */}
         <motion.div
           initial={{ opacity: 0, x: 12 }}
@@ -3834,9 +3690,7 @@ export function ConsultationPreviewVisual() {
               <span className="flex size-[42px] items-center justify-center text-[#154f50]">
                 <Icon className="size-8" strokeWidth={1.8} />
               </span>
-              <span className="text-lg font-medium leading-tight text-[#111c29]">
-                {label}
-              </span>
+              <span className="text-lg font-medium leading-tight text-[#111c29]">{label}</span>
               <span className="flex size-6 items-center justify-center rounded-full bg-[#4f9a71] text-white">
                 <Check className="size-3.5" strokeWidth={3} />
               </span>
@@ -3848,10 +3702,7 @@ export function ConsultationPreviewVisual() {
       <div className="flex flex-col gap-4">
         <div className="rounded-[18px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-5 shadow-[0_16px_30px_rgba(37,41,46,0.08)]">
           <div className="mb-4 flex items-center gap-2.5">
-            <Calendar
-              className="size-[22px] text-[#154f50]"
-              strokeWidth={1.8}
-            />
+            <Calendar className="size-[22px] text-[#154f50]" strokeWidth={1.8} />
             <h4 className="m-0 text-[17px] font-black uppercase tracking-[-0.01em] text-[#101b27]">
               Availability
             </h4>
@@ -3899,16 +3750,11 @@ export function ConsultationPreviewVisual() {
           </div>
           <div className="flex flex-col gap-4">
             {outcomes.map(({ label, icon: Icon }) => (
-              <div
-                key={label}
-                className="grid grid-cols-[30px_1fr] items-start gap-3"
-              >
+              <div key={label} className="grid grid-cols-[30px_1fr] items-start gap-3">
                 <span className="flex size-[30px] items-center justify-center text-[#154f50]">
                   <Icon className="size-7" strokeWidth={1.8} />
                 </span>
-                <span className="text-[15px] font-medium leading-snug text-[#111827]">
-                  {label}
-                </span>
+                <span className="text-[15px] font-medium leading-snug text-[#111827]">{label}</span>
               </div>
             ))}
           </div>
@@ -3960,9 +3806,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
     }));
   };
 
-  const doneCount = Object.values(docStatus).filter(
-    (s) => s === "reviewed",
-  ).length;
+  const doneCount = Object.values(docStatus).filter((s) => s === "reviewed").length;
   const isAllDone = doneCount === docs.length;
 
   return (
@@ -3974,8 +3818,8 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
         </div>
       </div>
       <p className="text-[#6b8097] max-w-xl leading-relaxed mb-8">
-        Prepare the documents needed for your IR-1 spouse petition. In the full
-        app, you get Pakistan-specific guides for each.
+        Prepare the documents needed for your IR-1 spouse petition. In the full app, you get
+        Pakistan-specific guides for each.
       </p>
 
       <div className="grid gap-3">
@@ -3994,9 +3838,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
               <div className="flex items-center gap-4">
                 <div
                   className={`flex size-12 shrink-0 items-center justify-center rounded-xl transition-all ${
-                    isDone
-                      ? "bg-[#0d7377] text-white"
-                      : "bg-slate-50 text-slate-400"
+                    isDone ? "bg-[#0d7377] text-white" : "bg-slate-50 text-slate-400"
                   }`}
                 >
                   {doc.icon}
@@ -4056,11 +3898,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
     </div>
   );
 }
-export function JourneyConsultationBand({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function JourneyConsultationBand({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="relative overflow-hidden"
@@ -4085,8 +3923,7 @@ export function JourneyConsultationBand({
           width: "60%",
           height: "80%",
           borderRadius: "50%",
-          background:
-            "radial-gradient(ellipse, rgba(13,115,119,0.04) 0%, transparent 65%)",
+          background: "radial-gradient(ellipse, rgba(13,115,119,0.04) 0%, transparent 65%)",
         }}
       />
       <div className="relative z-10">{children}</div>

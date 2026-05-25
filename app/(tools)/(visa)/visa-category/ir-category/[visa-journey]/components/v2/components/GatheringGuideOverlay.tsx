@@ -31,11 +31,7 @@ export const GatheringGuideOverlay: React.FC<GatheringGuideOverlayProps> = ({
           onClick={onClose}
           className="w-[36px] h-[36px] rounded-full bg-[#f4f7fb] flex items-center justify-center transition-colors hover:bg-[#d0e4f7] group"
         >
-          <X
-            size={16}
-            strokeWidth={2}
-            className="text-[#3a4f63] group-hover:text-[#1c2b3a]"
-          />
+          <X size={16} strokeWidth={2} className="text-[#3a4f63] group-hover:text-[#1c2b3a]" />
         </button>
         <div className="flex-1 h-1.25 bg-[#d0e4f7] rounded-full overflow-hidden">
           <div
@@ -80,8 +76,7 @@ export const GatheringGuideOverlay: React.FC<GatheringGuideOverlayProps> = ({
           <div className="flex flex-col gap-[10px] mt-[24px]">
             <button
               onClick={() => {
-                const isRev =
-                  gatheringStatus[selectedGatheringItem.id] === "reviewed";
+                const isRev = gatheringStatus[selectedGatheringItem.id] === "reviewed";
                 if (isRev) return;
                 const next = {
                   ...gatheringStatus,
@@ -94,9 +89,7 @@ export const GatheringGuideOverlay: React.FC<GatheringGuideOverlayProps> = ({
                 onClose();
                 toast.success("Document marked as packed!");
               }}
-              disabled={
-                gatheringStatus[selectedGatheringItem.id] === "reviewed"
-              }
+              disabled={gatheringStatus[selectedGatheringItem.id] === "reviewed"}
               className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[14px] sm:text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
             >
               {gatheringStatus[selectedGatheringItem.id] === "reviewed" ? (

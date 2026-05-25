@@ -36,12 +36,7 @@ interface ResultPageProps {
   onSaveToProfile?: () => Promise<void>;
 }
 
-export function ResultPage({
-  sessionId,
-  onRestart,
-  onEdit,
-  onSaveToProfile,
-}: ResultPageProps) {
+export function ResultPage({ sessionId, onRestart, onEdit, onSaveToProfile }: ResultPageProps) {
   const [resultData, setResultData] = useState<ResultData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,9 +92,7 @@ export function ResultPage({
       <Card className="">
         <CardContent className="text-center site-main-px site-main-py">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">
-            Session not found
-          </h3>
+          <h3 className="text-xl font-semibold text-slate-900 mb-2">Session not found</h3>
           <p className="text-slate-600 mb-6">
             Your assessment session could not be loaded. Please restart.
           </p>
@@ -123,10 +116,7 @@ export function ResultPage({
               : error}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              onClick={onRestart}
-              className="bg-primary text-primary-foreground"
-            >
+            <Button onClick={onRestart} className="bg-primary text-primary-foreground">
               Start New Assessment
             </Button>
             {!sessionGone && (
@@ -168,12 +158,10 @@ export function ResultPage({
     <div className="site-main-px site-main-py">
       {/* Header Section */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-slate-900">
-          Case Strength Analysis Complete
-        </h1>
+        <h1 className="text-4xl font-bold text-slate-900">Case Strength Analysis Complete</h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Your visa case has been analyzed. Here&apos;s your detailed assessment
-          with actionable insights.
+          Your visa case has been analyzed. Here&apos;s your detailed assessment with actionable
+          insights.
         </p>
       </div>
 
@@ -181,12 +169,8 @@ export function ResultPage({
       <Card className="border-2 border-slate-200 bg-white">
         <CardHeader>
           <CardTitle className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-2xl font-bold text-slate-900">
-              Overall Assessment
-            </span>
-            <Badge
-              className={`${getRiskColor(resultData.riskLevel)} text-xl px-6 py-3 font-bold`}
-            >
+            <span className="text-2xl font-bold text-slate-900">Overall Assessment</span>
+            <Badge className={`${getRiskColor(resultData.riskLevel)} text-xl px-6 py-3 font-bold`}>
               {resultData.riskLevel}
             </Badge>
           </CardTitle>
@@ -194,9 +178,7 @@ export function ResultPage({
         <CardContent className="space-y-8">
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <span className="text-lg text-slate-700 font-medium">
-                Overall Score
-              </span>
+              <span className="text-lg text-slate-700 font-medium">Overall Score</span>
               <span className="text-4xl font-bold text-slate-900">
                 {Math.round(resultData.overallScore)}/100
               </span>
@@ -222,9 +204,7 @@ export function ResultPage({
           </div>
 
           <div className="p-6 bg-slate-50 rounded-xl border border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">
-              Summary of Findings
-            </h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-3">Summary of Findings</h3>
             <ul className="list-disc pl-6 space-y-2">
               {resultData.summaryReasons?.map((reason, idx) => (
                 <li key={idx} className="text-slate-700 text-base">
@@ -244,25 +224,24 @@ export function ResultPage({
       </Card>
 
       {/* Improvement Suggestions Section */}
-      {resultData.improvementSuggestions &&
-        resultData.improvementSuggestions.length > 0 && (
-          <Card className="border-2 border-slate-200 bg-white">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-slate-900">
-                Improvement Suggestions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-6 space-y-3">
-                {resultData.improvementSuggestions.map((suggestion, idx) => (
-                  <li key={idx} className="text-slate-700 text-base">
-                    {suggestion}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
+      {resultData.improvementSuggestions && resultData.improvementSuggestions.length > 0 && (
+        <Card className="border-2 border-slate-200 bg-white">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-slate-900">
+              Improvement Suggestions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-6 space-y-3">
+              {resultData.improvementSuggestions.map((suggestion, idx) => (
+                <li key={idx} className="text-slate-700 text-base">
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Risk Flags by Priority */}
       <div className="space-y-8">
@@ -277,8 +256,7 @@ export function ResultPage({
                 High Priority Issues (Must Address)
               </CardTitle>
               <p className="text-red-700 text-lg">
-                These are critical issues that significantly impact your case
-                strength
+                These are critical issues that significantly impact your case strength
               </p>
             </CardHeader>
             <CardContent>
@@ -296,9 +274,7 @@ export function ResultPage({
                         {flag.severity} RISK
                       </Badge>
                     </div>
-                    <p className="text-slate-700 text-base mb-4">
-                      {flag.explanation}
-                    </p>
+                    <p className="text-slate-700 text-base mb-4">{flag.explanation}</p>
                     <div className="flex gap-3 text-base text-red-700">
                       <Info className="h-5 w-5 mt-0.5 shrink-0" />
                       <span>
@@ -342,14 +318,11 @@ export function ResultPage({
                         {flag.severity} RISK
                       </Badge>
                     </div>
-                    <p className="text-slate-700 text-base mb-4">
-                      {flag.explanation}
-                    </p>
+                    <p className="text-slate-700 text-base mb-4">{flag.explanation}</p>
                     <div className="flex gap-3 text-base text-yellow-700">
                       <Info className="h-5 w-5 mt-0.5 shrink-0" />
                       <span>
-                        <span className="font-medium">Consider:</span>{" "}
-                        {flag.improvementSuggestions}
+                        <span className="font-medium">Consider:</span> {flag.improvementSuggestions}
                       </span>
                     </div>
                   </div>
@@ -388,9 +361,7 @@ export function ResultPage({
                         {flag.severity} RISK
                       </Badge>
                     </div>
-                    <p className="text-slate-700 text-base mb-4">
-                      {flag.explanation}
-                    </p>
+                    <p className="text-slate-700 text-base mb-4">{flag.explanation}</p>
                     <div className="flex gap-3 text-base text-blue-700">
                       <Info className="h-5 w-5 mt-0.5 shrink-0" />
                       <span>

@@ -18,13 +18,7 @@ import {
   GraduationCap,
   Users,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Accordion,
@@ -100,17 +94,13 @@ export default function EmploymentVerificationGuide() {
           </h1>
 
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-600 leading-relaxed">
-            The complete roadmap to verifying your employment history in
-            Pakistan. Whether for loans, visas, or overseas opportunities.
+            The complete roadmap to verifying your employment history in Pakistan. Whether for
+            loans, visas, or overseas opportunities.
           </p>
         </motion.div>
 
         {/* Main Interface */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-12"
-        >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-12">
           {/* Navigation Pills */}
           <div className="flex justify-center overflow-x-auto pb-4 sm:pb-0">
             <TabsList className="bg-white/80 backdrop-blur-md border border-slate-200 p-1.5 rounded-full h-auto shadow-sm inline-flex">
@@ -143,10 +133,7 @@ export default function EmploymentVerificationGuide() {
               </TabsContent>
 
               <TabsContent value="process" className="mt-0">
-                <ProcessSection
-                  containerVariants={containerVariants}
-                  itemVariants={itemVariants}
-                />
+                <ProcessSection containerVariants={containerVariants} itemVariants={itemVariants} />
               </TabsContent>
 
               <TabsContent value="provinces" className="mt-0">
@@ -164,10 +151,7 @@ export default function EmploymentVerificationGuide() {
               </TabsContent>
 
               <TabsContent value="faq" className="mt-0">
-                <FAQSection
-                  containerVariants={containerVariants}
-                  itemVariants={itemVariants}
-                />
+                <FAQSection containerVariants={containerVariants} itemVariants={itemVariants} />
               </TabsContent>
             </AnimatePresence>
           </div>
@@ -179,10 +163,7 @@ export default function EmploymentVerificationGuide() {
 
 // --- SUB-COMPONENTS ---
 
-function OverviewSection({
-  containerVariants,
-  itemVariants,
-}: GuideSectionProps) {
+function OverviewSection({ containerVariants, itemVariants }: GuideSectionProps) {
   return (
     <motion.div
       variants={containerVariants}
@@ -220,10 +201,7 @@ function OverviewSection({
                   "States Job Title & Duration",
                   "Must have Signature & Stamp",
                 ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-2 text-slate-700 text-sm"
-                  >
+                  <li key={i} className="flex items-center gap-2 text-slate-700 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-purple-500 shrink-0" />
                     {item}
                   </li>
@@ -254,10 +232,7 @@ function OverviewSection({
                   "Passport + CNIC Verification",
                   "Often needed for emigration",
                 ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-2 text-slate-700 text-sm"
-                  >
+                  <li key={i} className="flex items-center gap-2 text-slate-700 text-sm">
                     <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0" />
                     {item}
                   </li>
@@ -313,8 +288,8 @@ function OverviewSection({
             <div className="pt-4 border-t border-white/10 flex items-start gap-3 text-sm text-slate-300">
               <AlertCircle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
               <p>
-                Fees for attestation depend on the specific agency (MOFA,
-                Embassy, etc.) and are subject to change.
+                Fees for attestation depend on the specific agency (MOFA, Embassy, etc.) and are
+                subject to change.
               </p>
             </div>
           </CardContent>
@@ -324,10 +299,7 @@ function OverviewSection({
   );
 }
 
-function ProcessSection({
-  containerVariants,
-  itemVariants,
-}: GuideSectionProps) {
+function ProcessSection({ containerVariants, itemVariants }: GuideSectionProps) {
   const steps: StepItem[] = [
     {
       title: "Gather Basic Documents",
@@ -339,9 +311,8 @@ function ProcessSection({
       title: "Request from Employer",
       desc: (
         <>
-          Ask HR for a verification letter on{" "}
-          <strong>official letterhead</strong>. Ensure it has stamp & signature.
-          This is the primary method.
+          Ask HR for a verification letter on <strong>official letterhead</strong>. Ensure it has
+          stamp & signature. This is the primary method.
         </>
       ),
       icon: Building2,
@@ -364,12 +335,9 @@ function ProcessSection({
       className="max-w-4xl mx-auto space-y-12"
     >
       <div className="text-center space-y-4 mb-8">
-        <h2 className="text-3xl font-bold text-slate-900">
-          Step-by-Step Process
-        </h2>
+        <h2 className="text-3xl font-bold text-slate-900">Step-by-Step Process</h2>
         <p className="text-slate-600 max-w-2xl mx-auto">
-          Follow these steps to ensure your employment verification is valid and
-          accepted.
+          Follow these steps to ensure your employment verification is valid and accepted.
         </p>
       </div>
 
@@ -388,14 +356,10 @@ function ProcessSection({
             <div className="w-full md:w-1/2 pl-12 md:pl-0 md:px-8">
               <Card className={`shadow-lg`}>
                 <CardContent className="p-6">
-                  <h3
-                    className={`text-xl font-bold text-${step.color}-700 mb-2`}
-                  >
+                  <h3 className={`text-xl font-bold text-${step.color}-700 mb-2`}>
                     Step {i + 1}: {step.title}
                   </h3>
-                  <p className="text-slate-600 leading-relaxed text-sm">
-                    {step.desc}
-                  </p>
+                  <p className="text-slate-600 leading-relaxed text-sm">{step.desc}</p>
                 </CardContent>
               </Card>
             </div>
@@ -427,12 +391,9 @@ function ProvincesSection({
       className="max-w-5xl mx-auto"
     >
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold text-slate-900">
-          Province Specifics
-        </h2>
+        <h2 className="text-3xl font-bold text-slate-900">Province Specifics</h2>
         <p className="text-slate-600 mt-2">
-          Employment verification is largely employer-driven, but some
-          provincial nuances exist.
+          Employment verification is largely employer-driven, but some provincial nuances exist.
         </p>
       </div>
 
@@ -445,8 +406,8 @@ function ProvincesSection({
           </CardHeader>
           <CardContent className="text-slate-600 text-sm leading-relaxed space-y-3">
             <p>
-              Govt departments require <strong>strict verification</strong> of
-              educational and domicile credentials before employment orders.
+              Govt departments require <strong>strict verification</strong> of educational and
+              domicile credentials before employment orders.
             </p>
             <p className="bg-green-50 p-2 rounded-lg text-green-800 border border-green-100">
               No separate provincial employment verification office exists.
@@ -462,12 +423,9 @@ function ProvincesSection({
           </CardHeader>
           <CardContent className="text-slate-600 text-sm leading-relaxed space-y-3">
             <p>
-              Pushing teacher verification through <strong>TECTAA</strong>{" "}
-              online portal.
+              Pushing teacher verification through <strong>TECTAA</strong> online portal.
             </p>
-            <p>
-              General employment relies on standard Employer & HR verification.
-            </p>
+            <p>General employment relies on standard Employer & HR verification.</p>
           </CardContent>
         </Card>
 
@@ -479,12 +437,10 @@ function ProvincesSection({
           </CardHeader>
           <CardContent className="text-slate-600 text-sm leading-relaxed space-y-3">
             <p>
-              <strong>KPK & Balochistan</strong>: Follow the same HR & Employer
-              process.
+              <strong>KPK & Balochistan</strong>: Follow the same HR & Employer process.
             </p>
             <p className="bg-orange-50 p-2 rounded-lg text-orange-800 border border-orange-100">
-              No separate government department for private employment
-              verification.
+              No separate government department for private employment verification.
             </p>
           </CardContent>
         </Card>
@@ -493,18 +449,15 @@ function ProvincesSection({
       <div className="mt-8 p-4 bg-slate-100 rounded-xl text-center text-slate-500 text-sm flex items-center justify-center gap-2">
         <AlertCircle className="w-4 h-4" />
         <span>
-          Note: As of 2026, verification remains primarily an employer-driven
-          responsibility across all provinces.
+          Note: As of 2026, verification remains primarily an employer-driven responsibility across
+          all provinces.
         </span>
       </div>
     </motion.div>
   );
 }
 
-function OverseasSection({
-  containerVariants,
-  itemVariants,
-}: GuideSectionProps) {
+function OverseasSection({ containerVariants, itemVariants }: GuideSectionProps) {
   return (
     <motion.div
       variants={containerVariants}
@@ -517,8 +470,8 @@ function OverseasSection({
         <div className="relative z-10">
           <h2 className="text-3xl font-bold mb-4">Going Abroad?</h2>
           <p className="text-indigo-100 max-w-2xl mx-auto text-lg">
-            If you are leaving Pakistan for work, your documents require
-            additional verification steps.
+            If you are leaving Pakistan for work, your documents require additional verification
+            steps.
           </p>
         </div>
         <Globe className="absolute -right-10 -bottom-10 w-64 h-64 text-indigo-500/30 rotate-12" />
@@ -558,12 +511,8 @@ function OverseasSection({
                   <item.icon className={`w-6 h-6 text-${item.color}-600`} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg">
-                    {item.title}
-                  </h3>
-                  <p className="text-slate-600 mt-2 text-sm leading-relaxed">
-                    {item.text}
-                  </p>
+                  <h3 className="font-bold text-slate-900 text-lg">{item.title}</h3>
+                  <p className="text-slate-600 mt-2 text-sm leading-relaxed">{item.text}</p>
                 </div>
               </CardContent>
             </Card>
@@ -603,12 +552,8 @@ function FAQSection({ containerVariants, itemVariants }: GuideSectionProps) {
       className="max-w-3xl mx-auto space-y-8"
     >
       <motion.div variants={itemVariants} className="text-center">
-        <h2 className="text-3xl font-bold text-slate-900 mb-2">
-          Common Questions
-        </h2>
-        <p className="text-slate-500">
-          Everything you need to know about the process
-        </p>
+        <h2 className="text-3xl font-bold text-slate-900 mb-2">Common Questions</h2>
+        <p className="text-slate-500">Everything you need to know about the process</p>
       </motion.div>
 
       <motion.div variants={itemVariants}>
@@ -636,12 +581,10 @@ function FAQSection({ containerVariants, itemVariants }: GuideSectionProps) {
       >
         <HelpCircle className="w-6 h-6 text-purple-600 shrink-0 mt-1" />
         <div>
-          <h4 className="font-bold text-purple-900 text-lg">
-            Still have questions?
-          </h4>
+          <h4 className="font-bold text-purple-900 text-lg">Still have questions?</h4>
           <p className="text-purple-800 text-sm mt-1 leading-relaxed">
-            For specific legal disputes regarding employment certificates,
-            consult a labor lawyer or relevant provincial labor courts.
+            For specific legal disputes regarding employment certificates, consult a labor lawyer or
+            relevant provincial labor courts.
           </p>
         </div>
       </motion.div>

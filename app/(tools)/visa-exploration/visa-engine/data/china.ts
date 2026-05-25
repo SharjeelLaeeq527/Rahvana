@@ -87,9 +87,9 @@ function getCandidateCodes(a: VisaExplorationAnswers): string[] {
   if (!a.purpose) return [];
 
   if (a.purpose === "STUDY") {
-    if (a.studyDuration === "LONG")  c.push("CN-STUDENT-X1");
+    if (a.studyDuration === "LONG") c.push("CN-STUDENT-X1");
     if (a.studyDuration === "SHORT") c.push("CN-STUDENT-X2");
-    if (!a.studyDuration)            c.push("CN-STUDENT-X1", "CN-STUDENT-X2");
+    if (!a.studyDuration) c.push("CN-STUDENT-X1", "CN-STUDENT-X2");
   }
 
   if (a.purpose === "VISIT") {
@@ -116,7 +116,8 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
       type: "options",
       field: "studyDuration",
       title: "How long is your course?",
-      subtitle: "This determines whether you need an X1 (long-term, converts to Residence Permit) or X2 (short-term, single entry).",
+      subtitle:
+        "This determines whether you need an X1 (long-term, converts to Residence Permit) or X2 (short-term, single entry).",
       options: [
         {
           label: "Long term — more than 180 days",
@@ -341,8 +342,7 @@ export const CHINA_DATA: CountryData = {
         id: "admission",
         question:
           "Do you have the original Admission Notice (with official university stamp) from a recognized Chinese institution?",
-        source:
-          "Chinese Visa Application Service Center — X1 Student Visa requirements",
+        source: "Chinese Visa Application Service Center — X1 Student Visa requirements",
         sourceUrl: "https://www.visaforchina.cn/",
         passWith: ["YES"],
         failMsg:
@@ -380,8 +380,7 @@ export const CHINA_DATA: CountryData = {
         id: "medical_exam",
         question:
           "Have you completed the Foreigner Physical Examination at an authorized hospital (required for all X1 stays over 180 days)?",
-        source:
-          "Chinese Visa Application Service Center — Physical Examination requirement for X1",
+        source: "Chinese Visa Application Service Center — Physical Examination requirement for X1",
         sourceUrl: "https://www.visaforchina.cn/",
         passWith: ["YES", "ARRANGED"],
         failMsg:
@@ -405,8 +404,7 @@ export const CHINA_DATA: CountryData = {
         id: "admission_x2",
         question:
           "Do you have the original Admission Notice from your Chinese institution confirming a program of 180 days or less?",
-        source:
-          "Chinese Visa Application Service Center — X2 Student Visa requirements",
+        source: "Chinese Visa Application Service Center — X2 Student Visa requirements",
         sourceUrl: "https://www.visaforchina.cn/",
         passWith: ["YES"],
         failMsg:
@@ -420,8 +418,7 @@ export const CHINA_DATA: CountryData = {
         id: "dq_or_jw",
         question:
           "Has your institution issued you a DQ form or JW202 form for your short-term program?",
-        source:
-          "Chinese university guidelines — DQ/JW202 required for most X2 programs",
+        source: "Chinese university guidelines — DQ/JW202 required for most X2 programs",
         sourceUrl: "https://www.visaforchina.cn/",
         passWith: ["YES", "NOT_REQUIRED"],
         failMsg:
@@ -445,10 +442,8 @@ export const CHINA_DATA: CountryData = {
         id: "temp_visit",
         question:
           "Is the purpose of your visit to China purely tourism, sightseeing, or visiting family/friends — with no intention to work, study, or conduct commercial activities?",
-        source:
-          "Chinese Embassy — L Visa: Tourist/Visit purposes only",
-        sourceUrl:
-          "https://us.china-embassy.gov.cn/eng/lsfw/zj/",
+        source: "Chinese Embassy — L Visa: Tourist/Visit purposes only",
+        sourceUrl: "https://us.china-embassy.gov.cn/eng/lsfw/zj/",
         passWith: ["YES"],
         failMsg:
           "The L Tourist Visa is for temporary visits only. Working in China requires a Z visa; studying requires an X visa; business activities require an M visa. Entering on an L visa and engaging in unauthorized activities can result in fines, detention, or deportation.",
@@ -458,8 +453,7 @@ export const CHINA_DATA: CountryData = {
             value: "YES",
           },
           {
-            label:
-              "No — I also plan to work, study, or conduct business",
+            label: "No — I also plan to work, study, or conduct business",
             value: "NO",
           },
         ],
@@ -468,22 +462,18 @@ export const CHINA_DATA: CountryData = {
         id: "travel_docs",
         question:
           "Do you have a confirmed itinerary — round-trip flight confirmation and hotel reservation?",
-        source:
-          "Chinese Embassy — L visa supporting documents",
-        sourceUrl:
-          "https://us.china-embassy.gov.au/eng/lsfw/zj/",
+        source: "Chinese Embassy — L visa supporting documents",
+        sourceUrl: "https://us.china-embassy.gov.au/eng/lsfw/zj/",
         passWith: ["YES", "PARTIAL"],
         failMsg:
           "Most consulates require proof of your round-trip travel and accommodation plans. Without these, your application may be delayed or refused. Some consulates (like those serving US-based applicants since Jan 2024) have simplified requirements — check your local embassy's current checklist.",
         options: [
           {
-            label:
-              "Yes — I have both flight and hotel confirmed",
+            label: "Yes — I have both flight and hotel confirmed",
             value: "YES",
           },
           {
-            label:
-              "I have one but not both — or my local embassy has simplified requirements",
+            label: "I have one but not both — or my local embassy has simplified requirements",
             value: "PARTIAL",
           },
           { label: "No — I have neither yet", value: "NO" },
@@ -496,17 +486,14 @@ export const CHINA_DATA: CountryData = {
         id: "invitation_letter",
         question:
           "Do you have a formal Invitation Letter from a Chinese company or commercial entity for your business visit?",
-        source:
-          "Chinese Embassy — M Visa: Invitation Letter required for business visits",
-        sourceUrl:
-          "https://us.china-embassy.gov.cn/eng/lsfw/zj/",
+        source: "Chinese Embassy — M Visa: Invitation Letter required for business visits",
+        sourceUrl: "https://us.china-embassy.gov.cn/eng/lsfw/zj/",
         passWith: ["YES"],
         failMsg:
           "A detailed Invitation Letter from a recognized Chinese company or entity is mandatory for the M visa. The letter must clearly state your name, passport number, purpose and dates of visit, and who is responsible for covering your expenses. Vague or informal letters are a frequent cause of refusal.",
         options: [
           {
-            label:
-              "Yes — I have an official Invitation Letter from the Chinese entity",
+            label: "Yes — I have an official Invitation Letter from the Chinese entity",
             value: "YES",
           },
           {
@@ -521,15 +508,13 @@ export const CHINA_DATA: CountryData = {
           "Will your activities in China be limited to commercial/trade activities (meetings, trade fairs, factory visits, contract signing) — and NOT actual employment in China?",
         source:
           "Chinese Embassy — M visa is for commercial activity only; employment requires Z visa",
-        sourceUrl:
-          "https://us.china-embassy.gov.cn/eng/lsfw/zj/",
+        sourceUrl: "https://us.china-embassy.gov.cn/eng/lsfw/zj/",
         passWith: ["YES"],
         failMsg:
           "The M visa only covers commercial and trade-related visits. If you will be employed by a Chinese company, set up an office, or carry out regular work duties in China, you need a Z Work Visa with a valid Foreigner's Work Permit.",
         options: [
           {
-            label:
-              "Yes — meetings, trade fairs, negotiations, or inspections only",
+            label: "Yes — meetings, trade fairs, negotiations, or inspections only",
             value: "YES",
           },
           {
@@ -554,13 +539,11 @@ export const CHINA_DATA: CountryData = {
           "Your employer must be a legally registered Chinese entity (with valid business license) that has authorization to hire foreign workers. Without this, they cannot apply for the Work Permit Notification Letter on your behalf. If you're not sure, ask your HR department to confirm.",
         options: [
           {
-            label:
-              "Yes — my employer is a registered Chinese entity authorized to hire foreigners",
+            label: "Yes — my employer is a registered Chinese entity authorized to hire foreigners",
             value: "YES",
           },
           {
-            label:
-              "No / I'm not sure about my employer's legal status",
+            label: "No / I'm not sure about my employer's legal status",
             value: "NO",
           },
         ],
@@ -571,15 +554,13 @@ export const CHINA_DATA: CountryData = {
           "Has your employer applied for (or already received) the Notification Letter of Foreigner's Work Permit from Chinese authorities?",
         source:
           "China Z Visa — Step 1: Employer must obtain Work Permit Notification before Z visa application",
-        sourceUrl:
-          "https://fdichina.com/blog/guide-to-china-work-permits/",
+        sourceUrl: "https://fdichina.com/blog/guide-to-china-work-permits/",
         passWith: ["YES", "IN_PROGRESS"],
         failMsg:
           "The Notification Letter of Foreigner's Work Permit must be obtained by your employer before you can apply for the Z visa at a Chinese embassy. This is Step 1 of the process and takes approximately 2–4 weeks. Without it, you cannot apply for the Z visa.",
         options: [
           {
-            label:
-              "Yes — employer has the notification letter ready",
+            label: "Yes — employer has the notification letter ready",
             value: "YES",
           },
           {
@@ -598,8 +579,7 @@ export const CHINA_DATA: CountryData = {
           "Do you meet at least Class B work permit criteria: a bachelor's degree or higher AND at least 2 years of relevant full-time work experience?",
         source:
           "China Foreign Work Permit — Three-tier classification (A/B/C); Class B minimum requirements",
-        sourceUrl:
-          "https://fdichina.com/blog/guide-to-china-work-permits/",
+        sourceUrl: "https://fdichina.com/blog/guide-to-china-work-permits/",
         passWith: ["CLASS_A", "CLASS_B"],
         failMsg:
           "The minimum for a standard work permit (Class B) is a bachelor's degree plus 2 years of relevant experience. Without these qualifications, obtaining a work permit is very difficult unless you qualify under Class C (short-term/quota positions) or are a foreign language teacher with appropriate credentials. Recent graduates without 2 years of experience will likely not qualify.",
@@ -615,8 +595,7 @@ export const CHINA_DATA: CountryData = {
             value: "CLASS_B",
           },
           {
-            label:
-              "No — I don't yet have a bachelor's degree or 2 years of experience",
+            label: "No — I don't yet have a bachelor's degree or 2 years of experience",
             value: "NO",
           },
         ],
