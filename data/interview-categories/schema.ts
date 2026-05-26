@@ -86,12 +86,8 @@ export interface InterviewQuestion {
   sampleAnswer: string;
   guidance: string;
   tooltip: string;
-<<<<<<< HEAD
   priority: "high" | "medium" | "low";
-=======
-  priority: 'high' | 'medium' | 'low';
-  tier?: 'free' | 'basic' | 'premium' | 'executive';
->>>>>>> 722ffd112842fc10321cabd82022e3a092c91a0b
+  tier?: "free" | "basic" | "premium" | "executive";
   mockInterviewOrder?: number;
   skipIf?: SkipCondition[];
 }

@@ -335,7 +335,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                 {currentSteps[pccOverlayStep].instruction}
               </p>
 
-              {pccOverlayStep === 0 && (
+              {pccOverlayStep === 0 && pccOverlayMode === "service" && (
                 <div className="flex justify-center items-center">
                   <button
                     onClick={() => {

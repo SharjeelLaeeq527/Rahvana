@@ -149,6 +149,85 @@ import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQu
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
 
+const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
+  step_1_3: [
+    {
+      text: "Submit your petition through your USCIS online account",
+      link: "https://www.uscis.gov/file-online",
+    },
+    {
+      text: "USCIS mailing addresses",
+      link: "https://www.uscis.gov/i-130-addresses",
+    },
+  ],
+  step_1_4: [
+    {
+      text: "Official form link",
+      link: "https://www.uscis.gov/i-130",
+    },
+  ],
+  step_1_5: [
+    {
+      text: "Official form link",
+      link: "https://www.uscis.gov/sites/default/files/document/forms/i-130a.pdf",
+    },
+  ],
+  step_1_12: [
+    {
+      text: "USCIS Filing Fees Guide",
+      link: "https://www.uscis.gov/forms/filing-fees",
+    },
+    {
+      text: "USCIS Form G‑1055 Fee Schedule",
+      link: "https://www.uscis.gov/g-1055",
+    },
+  ],
+  step_1_14: [
+    {
+      text: "USCIS Direct Filing Addresses",
+      link: "https://www.uscis.gov/i-130-addresses",
+    },
+  ],
+  step_1_17: [
+    {
+      text: "USCIS Case Status Tracker",
+      link: "https://egov.uscis.gov/",
+    },
+  ],
+  step_2_3: [
+    {
+      text: "Consular Electronic Application Center (CEAC)",
+      link: "https://ceac.state.gov/IV",
+    },
+  ],
+  step_2_7: [
+    {
+      text: "Affidavit of Support (Department of State)",
+      link: "https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/affidavit-of-support.html",
+    },
+    {
+      text: "USCIS Affidavit of Support Guidance",
+      link: "https://www.uscis.gov/green-card/green-card-processes-and-procedures/affidavit-of-support",
+    },
+  ],
+  step_3_1: [
+    {
+      text: "Medical Exam Instructions (Department of State)",
+      link: "https://travel.state.gov/content/travel/en/us-visas/Supplements/Supplements_by_Post/ISL-Islamabad.html",
+    },
+  ],
+  step_3_2: [
+    {
+      text: "Pakistan Polio Vaccination Certificate Information",
+      link: "https://www.poliofreepakistan.gov.pk/certificate/vaccination-certificate",
+    },
+    {
+      text: "NADRA NIMS Portal (certificate access)",
+      link: "https://nims.nadra.gov.pk/nims/",
+    },
+  ],
+};
+
 interface StepViewProps {
   data: RoadmapData;
   state: WizardState;
@@ -971,6 +1050,45 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
         setDocActionUpgradeFeature={setUpgradeModalFeature}
         sId={sId}
       />
+    );
+  };
+
+  const renderCitationsSection = () => {
+    const citations = STEP_CITATIONS[sId];
+    if (!citations || citations.length === 0) return null;
+
+    return (
+      <div className="mt-4 mb-7 w-full max-w-[660px] mx-auto animate-in fade-in duration-500">
+        <div className="bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] rounded-[20px] p-5 sm:p-6 shadow-xs flex flex-col gap-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-[#e1eefc]">
+            <Book className="h-[16px] w-[16px] text-primary shrink-0" strokeWidth={2.5} />
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[#3a4f63]">
+              Official References & Citations
+            </span>
+          </div>
+          <div className="flex flex-col gap-3">
+            {citations.map((cite, index) => (
+              <a
+                key={index}
+                href={cite.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-3.5 sm:p-4 rounded-[14px] bg-white border border-[#e1eefc] hover:border-primary hover:shadow-xs group transition-all"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[13.5px] sm:text-[14px] font-bold text-[#0f1f38] group-hover:text-primary transition-colors">
+                    {cite.text}
+                  </span>
+                  {/* <span className="text-[11px] sm:text-[11.5px] text-[#6b8097] font-medium break-all">
+                    {cite.link}
+                  </span> */}
+                </div>
+                <ExternalLink className="h-4 w-4 text-[#6b8097] group-hover:text-primary transition-colors shrink-0 ml-3" strokeWidth={2} />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -2380,6 +2498,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               ))}
             </div>
           )}
+          {/* Citations section */}
+          {renderCitationsSection()}
+
           {/* Disclaimer */}
           <p
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
@@ -3199,7 +3320,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           <div className="mt-10 sm:mt-12 mx-3 sm:mx-0 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center max-w-[740px] w-full mb-5 sm:mb-6">
                             <span className="block text-[10px] sm:text-[12px] leading-relaxed">
                               Rahvana provides structured guidance only. This is not legal advice.{" "}
-                              <br className="hidden sm:block" />
+                              {/* <br className="hidden sm:block" /> */}
                               Consult a licensed immigration attorney for case-specific decisions.
                             </span>
                           </div>
@@ -3339,7 +3460,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                         <div className="mt-10 px-4 sm:px-5 py-3.5 sm:py-4 bg-[#e8f1fb] rounded-xl text-[#6b8097] leading-relaxed text-center">
                           <span className="block text-[10px] sm:text-[12px] leading-relaxed">
                             Rahvana provides structured guidance only. This is not legal advice.{" "}
-                            <br className="hidden sm:block" />
+                            {/* <br className="hidden sm:block" /> */}
                             Consult a licensed immigration attorney for case-specific decisions.
                           </span>
                         </div>
@@ -3350,7 +3471,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                <div className="flex flex-col w-full max-w-[660px] pb-[80px] px-[24px]">
+                <div className="flex flex-col w-full max-w-[660px] pb-[40px]">
                   <h1
                     className="
                 mt-8 sm:mt-10 md:mt-0
@@ -3553,8 +3674,8 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     className={`mt-8 p-[12px_16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.6] m-0`}
                   >
                     <>
-                      Rahvana provides structured guidance only. This is not legal advice.
-                      <br />
+                      Rahvana provides structured guidance only. This is not legal advice.{" "}
+                      {/* <br /> */}
                       Consult a licensed immigration attorney for case-specific decisions.
                     </>
                   </div>
@@ -3605,6 +3726,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 )}
               </div>
             )}
+            {currentStep.step_type !== "tool" && renderCitationsSection()}
           </div>
         </div>
       )}
@@ -3867,7 +3989,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
           {/* Guide Body */}
           <div className="flex-1 overflow-y-auto flex flex-col items-center p-[48px_24px_40px]">
-            <div className="w-full max-w-[600px] flex flex-col">
+            <div className="w-full max-w-[680px] flex flex-col">
               <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
                 Step 2 · Gather Required Documents
               </div>
