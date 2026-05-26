@@ -26,6 +26,7 @@ import {
 const I864_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf";
 const I864EZ_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864ez.pdf";
 const I864A_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864a.pdf";
+const I864P_URL = "https://www.uscis.gov/i-864p";
 
 // --- COLOR PALETTE ---
 const COLORS = {
@@ -37,18 +38,18 @@ const COLORS = {
 };
 
 export const POVERTY_GUIDELINES: Record<number, { level100: number; level125: number }> = {
-  2: { level100: 20440, level125: 25550 },
-  3: { level100: 25820, level125: 32275 },
-  4: { level100: 31200, level125: 39000 },
-  5: { level100: 36580, level125: 45725 },
-  6: { level100: 41960, level125: 52450 },
-  7: { level100: 47340, level125: 59175 },
-  8: { level100: 52720, level125: 65900 },
+  2: { level100: 21640, level125: 27050 },
+  3: { level100: 27320, level125: 34150 },
+  4: { level100: 33000, level125: 41250 },
+  5: { level100: 38680, level125: 48350 },
+  6: { level100: 44360, level125: 55450 },
+  7: { level100: 50040, level125: 62550 },
+  8: { level100: 55720, level125: 69650 },
 };
 
 const ADDITIONAL_MEMBER_COST = {
-  level100: 5380,
-  level125: 6725,
+  level100: 5680,
+  level125: 7100,
 };
 
 // --- EXPORTED LOGIC FOR REUSE ---
@@ -357,7 +358,7 @@ export default function SponsorshipCalculatorTool({
                     evidence.
                   </p>
                   <div
-                    className="rounded-[10px] p-[14px_16px] mb-6"
+                    className="rounded-[10px] p-[14px_16px] mb-4"
                     style={{
                       backgroundColor: `${COLORS.secondary}20`,
                       border: `1px solid ${COLORS.secondary}50`,
@@ -367,6 +368,18 @@ export default function SponsorshipCalculatorTool({
                       Keep your most recent federal tax return (Form 1040) and current pay stubs
                       handy.
                     </p>
+                  </div>
+                  <div className="text-[12px] text-[#6b8097] mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-slate-100 pt-4">
+                    <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                    <a
+                      href={I864P_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                      style={{ color: COLORS.primary }}
+                    >
+                      Official USCIS I-864P Guidelines &rarr;
+                    </a>
                   </div>
                   <button
                     onClick={() => setStepIdx(1)}
@@ -987,7 +1000,7 @@ export default function SponsorshipCalculatorTool({
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
                     
-                    <div className={`p-6 rounded-2xl border-2 mb-8`} 
+                    <div className={`p-6 rounded-2xl border-2 mb-6`} 
                       style={{ 
                         backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
                         borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
@@ -1007,6 +1020,19 @@ export default function SponsorshipCalculatorTool({
                           ? "Based on your income and household size, you qualify as the sole sponsor."
                           : `You are $${(result.shortfall ?? 0).toLocaleString()} below the threshold.`}
                       </p>
+                    </div>
+
+                    <div className="text-[12px] text-[#6b8097] mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
+                      <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                      <a
+                        href={I864P_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                        style={{ color: COLORS.primary }}
+                      >
+                        Official USCIS I-864P Guidelines &rarr;
+                      </a>
                     </div>
 
                     <div className="space-y-4 mb-8">
@@ -1269,6 +1295,19 @@ export default function SponsorshipCalculatorTool({
                           Total Household Income: <strong className="text-[#0c1b33] text-lg">${result.totalIncome.toLocaleString()}</strong><br/>
                           Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${result.requiredIncome.toLocaleString()}</strong>
                         </p>
+                      </div>
+
+                      <div className="text-[12px] text-[#6b8097] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
+                        <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                        <a
+                          href={I864P_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                          style={{ color: COLORS.primary }}
+                        >
+                          Official USCIS I-864P Guidelines &rarr;
+                        </a>
                       </div>
 
                       <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
