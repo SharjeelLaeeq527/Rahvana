@@ -28,6 +28,7 @@ interface VisaForm {
   keywords?: string[];
   type?: string;
   notes?: string;
+  expiryDate?: string;
 }
 
 const VISA_FORMS: VisaForm[] = [
@@ -45,6 +46,7 @@ const VISA_FORMS: VisaForm[] = [
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-130.pdf",
     description:
       "Primary petition to establish family relationship for green card eligibility. Required for most family-based immigration.",
+    expiryDate: "02-28-2027",
   },
   {
     id: "i130a",
@@ -59,6 +61,7 @@ const VISA_FORMS: VisaForm[] = [
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-130a.pdf",
     description:
       "Required supplement when petitioning for a spouse. Includes biographical information about the beneficiary spouse.",
+    expiryDate: "02-28-2027",
   },
   // {
   //   id: "i129f",
@@ -139,6 +142,7 @@ const VISA_FORMS: VisaForm[] = [
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf",
     description:
       "Legally binding contract where sponsor agrees to financially support immigrant. Must meet 125% of poverty guidelines.",
+    expiryDate: "10-31-2027",
   },
   {
     id: "i864a",
@@ -153,6 +157,7 @@ const VISA_FORMS: VisaForm[] = [
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-864a.pdf",
     description:
       "Used when household member combines income with primary sponsor to meet income requirements.",
+    expiryDate: "10-31-2027",
   },
   {
     id: "i864ez",
@@ -167,6 +172,7 @@ const VISA_FORMS: VisaForm[] = [
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-864ez.pdf",
     description:
       "Simplified affidavit of support. Can be used when sponsor meets income requirements solely with current employment.",
+    expiryDate: "10-31-2027",
   },
   // {
   //   id: "i864w",
@@ -550,6 +556,7 @@ const VISA_FORMS: VisaForm[] = [
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/i-912.pdf",
     description:
       "Request to waive filing fees based on financial hardship. Must demonstrate income at or below 150% of Federal Poverty Guidelines.",
+    expiryDate: "03-31-2027",
   },
 
   // {
@@ -1032,7 +1039,7 @@ export default function VisaFormSelector() {
                   return (
                     <div
                       key={form.code}
-                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-[320px] sm:h-[340px]"
+                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-auto min-h-[370px] lg:h-[340px] lg:min-h-0"
                     >
                       {/* Top Accent Line */}
                       <div className="absolute top-0 left-0 right-10 h-1 bg-linear-to-r from-[#0d7377] to-teal-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
@@ -1043,7 +1050,7 @@ export default function VisaFormSelector() {
                         <div className="absolute top-0 right-0 w-0 h-0 border-t-40 border-l-40 border-t-gray-50 border-l-gray-50 shadow-md" />
                       </div>
 
-                      <div className="p-7 flex flex-col h-full relative">
+                      <div className="p-7 flex flex-col flex-1 relative">
                         {/* Header */}
                         <div className="flex justify-between items-start mb-5 mr-8">
                           <div>
@@ -1069,12 +1076,24 @@ export default function VisaFormSelector() {
 
                         {/* Content */}
                         <div className="flex-1 min-h-0">
-                          <h3 className="text-lg font-bold text-gray-800 leading-snug mb-3 group-hover:text-[#0d7377] transition-colors line-clamp-2">
+                          <h3
+                            className="text-lg font-bold text-gray-800 leading-snug mb-3 group-hover:text-[#0d7377] transition-colors line-clamp-2 lg:line-clamp-1 lg:truncate"
+                            title={form.name}
+                          >
                             {form.name}
                           </h3>
-                          <p className="text-sm text-gray-500 leading-relaxed line-clamp-3 group-hover:line-clamp-4 transition-all">
+                          <p
+                            className="text-sm text-gray-500 leading-relaxed lg:line-clamp-2"
+                            title={form.description}
+                          >
                             {form.description}
                           </p>
+                          {form.expiryDate && (
+                            <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50/70 border border-amber-200/50 px-2.5 py-1 rounded-lg font-medium">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                              Valid till {form.expiryDate}
+                            </div>
+                          )}
                         </div>
 
                         {/* Footer (Static) */}
@@ -1087,7 +1106,7 @@ export default function VisaFormSelector() {
                         </div>
 
                         {/* Hover Overlay Actions */}
-                        <div className="absolute inset-x-0 bottom-0 p-6 bg-white/95 backdrop-blur-[2px] border-t border-gray-100 translate-y-0 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 ease-out flex flex-col gap-3 z-10">
+                        <div className="relative lg:absolute lg:inset-x-0 lg:bottom-0 p-4 lg:p-6 border-t border-gray-100 bg-white/95 lg:backdrop-blur-[2px] translate-y-0 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 ease-out flex flex-col gap-3 z-10 mt-auto mx-[-1.75rem] mb-[-1.75rem] lg:mx-0 lg:mb-0">
                           <div className="flex gap-3">
                             <button
                               onClick={() => setSelectedForm(form)}
@@ -1308,7 +1327,17 @@ export default function VisaFormSelector() {
                           {selectedForm.stage}
                         </div>
                       </div>
-                      {/* Add more fields if needed matching the HTML design */}
+                      {selectedForm.expiryDate && (
+                        <div>
+                          <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
+                            Validation Status
+                          </div>
+                          <div className="inline-flex items-center gap-1.5 text-sm text-amber-600 bg-amber-50/70 border border-amber-200/50 px-3 py-1.5 rounded-lg font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            Valid till {selectedForm.expiryDate}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Categories & Keywords */}
