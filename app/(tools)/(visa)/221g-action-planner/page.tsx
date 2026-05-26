@@ -64,6 +64,9 @@ export default function TwentyTwoOneGActionPlanner() {
         <p className="mt-1 text-sm text-slate-600">
           Build and export a structured 221(g) response packet step by step.
         </p>
+        <p className="mt-3 text-xs text-slate-500 italic leading-relaxed border-t border-slate-100 pt-2">
+          Note: 221(g) notices may differ by embassy/consulate; always follow the specific instructions provided with your case notice.
+        </p>
       </div>
 
       <CombinedIntakeFormWrapper
