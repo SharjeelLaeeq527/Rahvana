@@ -309,9 +309,20 @@ export default function Home() {
 
         <div className="bg-white p-6 rounded-lg shadow-md mb-8 text-gray-700 text-sm leading-relaxed">
           <p className="mb-3">{t("ivTool.description.p1")}</p>
-          <p>
+          <p className="mb-3">
             <strong>Important:</strong> {t("ivTool.description.p2")}
           </p>
+          <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500 flex flex-col sm:flex-row items-start sm:items-center justify-start gap-2">
+            <span>Official resources:</span>
+            <a
+              href="https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/iv-wait-times.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+            >
+              U.S. Department of State IV Wait Times &rarr;
+            </a>
+          </div>
         </div>
 
         <div className="bg-gray-100 p-8 rounded-lg shadow-sm">
@@ -515,7 +526,7 @@ export default function Home() {
 
         {/* Results Display */}
         {results && results.length > 0 && (
-          <div ref={resultsRef} className="space-y-4">
+          <div ref={resultsRef} className="space-y-4 pt-4">
             <div className="flex items-center gap-2 mb-4">
               <CheckCircle2 className="h-6 w-6 text-primary" />
               <h3 className="text-lg font-semibold text-gray-800">{t("ivTool.results.title")}</h3>
