@@ -38,6 +38,19 @@ const CASE_DATA_TO_PROFILE: Record<string, string> = {
   has_police_certificate: "documents.hasPoliceCertificate",
   has_passport: "documents.hasPassport",
   has_medical_record: "documents.hasMedicalRecord",
+
+  // Interview Metadata
+  interviewDate: "interviewDate",
+  interview_date: "interviewDate",
+  consulateLocation: "interviewLocation",
+  caseStatus: "caseStatus",
+  ceacStatus: "caseStatus",
+  nvcCaseNum: "caseNumber",
+  nvcInvoice: "nvcInvoice",
+  embassyCity: "interviewLocation",
+  beneficiaryName: "fullName",
+  passportNumber: "passportNumber",
+  surname: "surname",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -202,3 +215,57 @@ export function syncToolOutputToProfile(
 
   return delta as Partial<MasterProfile>;
 }
+
+/**
+ * Helper: Get nested value from profile object
+ */
+function getNestedValue(obj: Record<string, any>, path: string): any {
+  const keys = path.split(".");
+  let current: any = obj;
+  for (const key of keys) {
+    if (current == null || typeof current !== "object") return undefined;
+    current = current[key];
+  }
+  return current;
+}
+
+/**
+ * Sync MasterProfile standard fields back to case_data format.
+ * Call this to pre-fill/merge profile data into the journey roadmap metadata.
+ *
+ * @param profile - The user's MasterProfile
+ * @param existingCaseData - Current journey case_data
+ * @returns Partial case_data delta
+ */
+export function syncProfileToCaseData(
+  profile: Partial<MasterProfile>,
+  existingCaseData: Record<string, unknown> = {}
+): Record<string, unknown> {
+  const delta: Record<string, unknown> = {};
+
+  for (const [caseKey, profilePath] of Object.entries(CASE_DATA_TO_PROFILE)) {
+    const profileValue = getNestedValue(profile as Record<string, any>, profilePath);
+    if (profileValue === undefined || profileValue === null || profileValue === "") continue;
+
+    // Convert booleans back to expected strings or keep as is
+    let finalValue = profileValue;
+    if (typeof profileValue === "boolean") {
+      const current = existingCaseData[caseKey];
+      if (typeof current === "string") {
+        finalValue = String(profileValue);
+      }
+    }
+
+    if (existingCaseData[caseKey] !== finalValue) {
+      delta[caseKey] = finalValue;
+    }
+  }
+
+  // Handle special interviewSaved flag
+  if (profile.interviewDate && existingCaseData.interviewSaved !== true) {
+    delta.interviewSaved = true;
+  }
+
+  return delta;
+}
+

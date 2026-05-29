@@ -13,7 +13,7 @@ import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
 
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
-import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
+import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { ReviewStep } from "@/app/components/interview-prep/review-step";
 import { CategorySelectionStep } from "@/app/components/interview-prep/category-selection-step";
 import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
@@ -64,7 +64,17 @@ export default function InterviewPreparation() {
   const [isRedirectingSession, setIsRedirectingSession] = useState(false);
 
   const { user } = useAuth();
-  const { profile, isProfileLoading } = useUserProfile();
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
+
+  const saveProgressToProfile = (currentFormData = formData) => {
+    if (!user) return;
+    try {
+      const profileUpdate = mapFormToProfile(currentFormData as Record<string, unknown>);
+      updateProfile(profileUpdate, { silent: true });
+    } catch (err) {
+      console.error("Error saving progress to profile:", err);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -298,10 +308,13 @@ export default function InterviewPreparation() {
   }, []); // Run only on initial mount to avoid auto-restoring when categories load
 
   const handleInputChange = (key: string, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    const updatedFormData = { ...formData, [key]: value };
+    setFormData(updatedFormData);
     if (error) {
       setError(null);
     }
+
+    saveProgressToProfile(updatedFormData);
 
     // Debounce the save operation to prevent rapid API calls
     if (sessionId) {
@@ -439,6 +452,7 @@ export default function InterviewPreparation() {
       return;
     }
 
+    saveProgressToProfile();
     // For other steps, we are handling validation through the child component (DynamicQuestionStep)
     // This function just advances to the next step after validation passes
     setStep((prev) => prev + 1);
@@ -490,6 +504,7 @@ export default function InterviewPreparation() {
       return;
     }
 
+    saveProgressToProfile();
     setLoading(true);
     setError(null);
 

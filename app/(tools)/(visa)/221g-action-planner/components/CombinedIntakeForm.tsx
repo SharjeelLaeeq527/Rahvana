@@ -369,6 +369,7 @@ export default function CombinedIntakeForm({
   const [showWelcome, setShowWelcome] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [dobError, setDobError] = useState<string | null>(null);
+  const [caseNumberError, setCaseNumberError] = useState<string | null>(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   // Embassy combobox state
   const [embassySearchText, setEmbassySearchText] = useState(formData.consularPost ?? "");
@@ -515,6 +516,18 @@ export default function CombinedIntakeForm({
     handleField("dateOfBirth", value);
     setDobError(validateDob(value));
   };
+
+  const validateCaseNumber = (value: string): string | null => {
+    if (!value) return null;
+    if (!/^[A-Z]{3}[0-9]{10}$/i.test(value)) {
+      return "Must be exactly 3 letters followed by 10 digits (e.g. ISL2024123456 or IOE0923456789).";
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    setCaseNumberError(formData.caseNumber ? validateCaseNumber(formData.caseNumber) : null);
+  }, [formData.caseNumber]);
 
   const resetWizard = () => {
     setFormData(EMPTY_FORM);
@@ -2632,9 +2645,18 @@ export default function CombinedIntakeForm({
                   <Input
                     id="caseNumber"
                     value={formData.caseNumber}
-                    onChange={(e) => handleField("caseNumber", e.target.value)}
-                    placeholder="ISL2024..."
+                    onChange={(e) => handleField("caseNumber", e.target.value.toUpperCase())}
+                    className={caseNumberError ? "border-red-500 focus-visible:ring-red-400" : ""}
+                    placeholder="e.g. ISL2024123456"
                   />
+                  {caseNumberError && (
+                    <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                      <span className="inline-block w-3.5 h-3.5 rounded-full bg-red-100 text-red-600 text-center leading-[14px] font-bold text-[10px]">
+                        !
+                      </span>
+                      {caseNumberError}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="beneficiaryName">Beneficiary Name (optional)</Label>
@@ -2694,7 +2716,8 @@ export default function CombinedIntakeForm({
                     !formData.visaCategory ||
                     !formData.interviewDate ||
                     !formData.consularPost ||
-                    !!dobError
+                    !!dobError ||
+                    !!caseNumberError
                   }
                 >
                   Continue to Checklist →

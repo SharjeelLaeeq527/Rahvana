@@ -1,6 +1,70 @@
 import { NextRequest, NextResponse } from "next/server";
 import { caseDataService } from "@/lib/journey/service";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { createClient } from "@/lib/supabase/server";
+import { syncCaseDataToProfile } from "@/lib/autoFill/journeyProfileBridge";
+import type { MasterProfile } from "@/types/profile";
+
+// SECURE SERVER-SIDE BRIDGE: Mirrors roadmap case_data changes back to standard user_profile fields
+async function syncJourneyMetadataToUserProfile(userId: string, updatedMetadata: Record<string, any>) {
+  try {
+    const supabase = await createClient();
+    
+    // 1. Fetch current profile
+    const { data: profileRow, error: fetchError } = await supabase
+      .from("user_profiles")
+      .select("profile_details")
+      .eq("id", userId)
+      .single();
+
+    if (fetchError && fetchError.code !== "PGRST116") {
+      console.error("[case_data API] Failed to fetch user profile for sync:", fetchError);
+      return;
+    }
+
+    const currentProfile = (profileRow?.profile_details || {}) as Record<string, any>;
+    
+    // 2. Map the new journey metadata changes to profile paths
+    const profileDelta = syncCaseDataToProfile(updatedMetadata, currentProfile as MasterProfile);
+
+    if (Object.keys(profileDelta).length === 0) {
+      return; // Nothing mapped
+    }
+
+    // 3. Simple deep merge helper
+    const deepMerge = (target: any, source: any) => {
+      for (const [key, value] of Object.entries(source)) {
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          if (!target[key]) target[key] = {};
+          deepMerge(target[key], value);
+        } else {
+          target[key] = value;
+        }
+      }
+      return target;
+    };
+
+    const newProfileDetails = deepMerge({ ...currentProfile }, profileDelta);
+
+    // 4. Save synced profile details back to database
+    const { error: upsertError } = await supabase.from("user_profiles").upsert(
+      {
+        id: userId,
+        profile_details: newProfileDetails,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+
+    if (upsertError) {
+      console.error("[case_data API] Failed to save synced profile details:", upsertError);
+    } else {
+      console.log("[case_data API] Synced journey metadata to user_profile:", profileDelta);
+    }
+  } catch (err) {
+    console.error("[case_data API] Unexpected error in user profile sync:", err);
+  }
+}
 
 // POST /api/case_data - Create or update case data
 export async function POST(request: NextRequest) {
@@ -47,6 +111,19 @@ export async function POST(request: NextRequest) {
         }, {})
       );
 
+      // Sync to UserProfile if authenticated
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const metadataBatch: Record<string, any> = {};
+        body.operations.forEach((op: any) => {
+          if (op.operation === "set" || op.operation === "update") {
+            metadataBatch[op.data_key] = op.data_value;
+          }
+        });
+        syncJourneyMetadataToUserProfile(user.id, metadataBatch);
+      }
+
       return NextResponse.json({ success: true, data: results }, { status: 201 });
     }
 
@@ -74,6 +151,13 @@ export async function POST(request: NextRequest) {
       source: body.source,
       source_reference: body.source_reference,
     });
+
+    // Sync to UserProfile if authenticated
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      syncJourneyMetadataToUserProfile(user.id, { [body.data_key]: body.data_value });
+    }
 
     return NextResponse.json({ success: true, data: result }, { status: 201 });
   } catch (error) {

@@ -680,6 +680,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     currentStep,
     currentQuestionIndex,
     progressiveSubQuestionIndices,
+    userProfile,
+    updateProfile,
   ]);
 
   const handleNext = () => {
@@ -731,6 +733,17 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         setProgressiveSubQuestionIndices({});
       } else {
         setView("review");
+    }
+
+    // Save current step data back to central profile (real-time sync for other tools)
+    if (userProfile) {
+      try {
+        const profileDelta = mapFormToProfile(formData, userProfile);
+        if (Object.keys(profileDelta).length > 0) {
+          updateProfile(profileDelta, { silent: true });
+        }
+      } catch (e) {
+        console.warn("[MultiStepForm] Profile save-back failed:", e);
       }
     }
 

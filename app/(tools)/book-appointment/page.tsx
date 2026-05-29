@@ -17,7 +17,7 @@ import IOMInfoStep from "./components/IOMInfoStep";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
-import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
+import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -2029,7 +2029,35 @@ export default function WilcareAppointmentForm() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { profile, isProfileLoading } = useUserProfile();
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
+
+  const saveProgressToProfile = (currentFormData = formData) => {
+    if (!user) return;
+    try {
+      const cleanData: Record<string, unknown> = {
+        primaryContact: currentFormData.primaryContact,
+        contactNumber: currentFormData.contactNumber,
+        email: currentFormData.email,
+        surname: currentFormData.surname,
+        givenName: currentFormData.givenName,
+        fullName: currentFormData.fullName,
+        gender: currentFormData.gender,
+        dateOfBirth: currentFormData.dateOfBirth,
+        passportNumber: currentFormData.passportNumber,
+        passportExpiryDate: currentFormData.passportExpiryDate,
+        passportIssueDate: currentFormData.passportIssueDate,
+        caseNumber: currentFormData.caseNumber || currentFormData.caseRef,
+        destinationCountry: currentFormData.destinationCountry,
+        interviewDate: currentFormData.interviewDate,
+        visaCategory: currentFormData.visaCategory || currentFormData.visaType,
+      };
+
+      const profileUpdate = mapFormToProfile(cleanData);
+      updateProfile(profileUpdate, { silent: true });
+    } catch (err) {
+      console.error("Error saving progress to profile:", err);
+    }
+  };
 
   // Auto-fill profile data (from central context)
   useEffect(() => {
@@ -2050,6 +2078,8 @@ export default function WilcareAppointmentForm() {
       passportIssueDate: formData.passportIssueDate,
       caseNumber: formData.caseNumber,
       destinationCountry: formData.destinationCountry,
+      interviewDate: formData.interviewDate,
+      visaCategory: formData.visaCategory || formData.visaType,
     });
 
     setFormData((prev) => ({
@@ -2150,6 +2180,7 @@ export default function WilcareAppointmentForm() {
   };
 
   const handleNextStep = () => {
+    saveProgressToProfile();
     if (step === 1) {
       if (!formData.location) {
         setError(t("bookAppointment.validation.reqLocation"));
@@ -2303,6 +2334,7 @@ export default function WilcareAppointmentForm() {
   };
 
   const handleFinalSubmit = async () => {
+    saveProgressToProfile();
     setLoading(true);
     setError(null);
     try {

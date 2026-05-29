@@ -18,6 +18,25 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
     "Visa Type",
     "visa-type",
   ],
+  caseNumber: [
+    "caseNumber",
+    "case_number",
+    "caseNo",
+    "case_no",
+    "caseRef",
+    "case_ref",
+  ],
+  interviewDate: [
+    "interviewDate",
+    "interview_date",
+    "interviewDate",
+  ],
+  caseStatus: [
+    "caseStatus",
+    "case_status",
+    "ceacStatus",
+    "ceac_status",
+  ],
 
   // --- Personal ---
   "name.first": [
@@ -444,6 +463,7 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
     "sponsor_full_name",
     "beneficiary_full_name",
     "applicant_full_name",
+    "primaryContact",
   ],
 };
 

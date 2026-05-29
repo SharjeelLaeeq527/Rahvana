@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { encrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function GET() {
   try {
@@ -46,10 +46,17 @@ export async function GET() {
         portal_type: cred.portal_type,
 
         username: cred.username,
-        nvc_case_number: cred.nvc_case_number,
-        nvc_invoice_id: cred.nvc_invoice_id,
+        nvc_case_number:
+          cred.nvc_case_number && cred.nvc_case_number.startsWith("gcm:")
+            ? decrypt(cred.nvc_case_number)
+            : cred.nvc_case_number,
+        nvc_invoice_id:
+          cred.nvc_invoice_id && cred.nvc_invoice_id.startsWith("gcm:")
+            ? decrypt(cred.nvc_invoice_id)
+            : cred.nvc_invoice_id,
 
         password: cred.portal_type === "NVC" ? null : "••••••••",
+
 
         security_questions:
           cred.portal_type === "NVC"

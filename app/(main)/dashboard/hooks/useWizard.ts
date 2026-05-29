@@ -5,6 +5,9 @@ import { toast } from "sonner";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { syncCaseDataToProfile, syncProfileToCaseData } from "@/lib/autoFill/journeyProfileBridge";
+
 
 export interface WizardState {
   currentStage: number;
@@ -51,8 +54,10 @@ interface UseWizardOptions {
 
 export function useWizard(options: UseWizardOptions = {}) {
   const { userId, journeyId = "ir1", roadmapData: externalRoadmapData } = options;
+  const { profile, updateProfile } = useUserProfile();
 
   const activeRoadmap = externalRoadmapData;
+
 
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -239,7 +244,26 @@ export function useWizard(options: UseWizardOptions = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, journeyId]);
 
+  // Synchronize MasterProfile standard fields back into wizard metadata in-memory
+  useEffect(() => {
+    if (!profile || !isLoaded) return;
+
+    try {
+      const profileDelta = syncProfileToCaseData(profile, state.metadata);
+      if (Object.keys(profileDelta).length > 0) {
+        setState((prev) => ({
+          ...prev,
+          metadata: { ...prev.metadata, ...profileDelta },
+        }));
+        console.log("[useWizard] Auto-merged profile fields into journey metadata:", profileDelta);
+      }
+    } catch (err) {
+      console.error("[useWizard] Failed to auto-merge profile fields into journey metadata:", err);
+    }
+  }, [profile, isLoaded, state.metadata]);
+
   // ─── Actions ───────────────────────────────────────────────────────────────
+
   const actions = useMemo(() => {
     // Helper to invalidate server cache in the background after a mutation
     const invalidateJourneyCache = () => {
@@ -447,6 +471,17 @@ export function useWizard(options: UseWizardOptions = {}) {
           ...prev,
           metadata: { ...prev.metadata, ...metadata },
         }));
+
+        // Client-side synchronization with UserProfileContext
+        try {
+          const profileDelta = syncCaseDataToProfile(metadata);
+          if (Object.keys(profileDelta).length > 0) {
+            updateProfile(profileDelta, { silent: true });
+          }
+        } catch (err) {
+          console.error("[useWizard] Failed to sync metadata to user profile context:", err);
+        }
+
 
         if (currentState.backendId) {
           const ops = Object.entries(metadata).map(([key, val]) => ({

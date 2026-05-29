@@ -137,35 +137,22 @@ export function UserProfileProvider({
     []
   );
 
-  // ── Fetch profile from Supabase ─────────────────────────────────────────
+  // ── Fetch profile from Decrypted Profile API ─────────────────────────────
 
   const fetchProfile = useCallback(
     async (userId: string) => {
       try {
         setIsProfileLoading(true);
 
-        const { data, error } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", userId)
-          .single();
-
-        if (error) {
-          // PGRST116 = no rows found — user has no profile yet
-          if (error.code === "PGRST116") {
-            setProfile(null);
-            return;
-          }
-          console.error(
-            "[UserProfileContext] Error fetching profile:",
-            error
-          );
-          setProfile(null);
-          return;
+        const response = await fetch("/api/profile");
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to fetch profile");
         }
 
-        if (data?.profile_details) {
-          setProfile(data.profile_details as MasterProfile);
+        const data = await response.json();
+        if (data?.profile?.profile_details) {
+          setProfile(data.profile.profile_details as MasterProfile);
         } else {
           setProfile(null);
         }
@@ -179,7 +166,7 @@ export function UserProfileProvider({
         setIsProfileLoading(false);
       }
     },
-    [supabase]
+    []
   );
 
   // ── Save profile to Supabase (via server-side encryption route) ─────────
@@ -204,6 +191,7 @@ export function UserProfileProvider({
     } catch (err) {
       console.error("[UserProfileContext] Error saving profile:", err);
       toast.error("Failed to save your information. Please try again.");
+      throw err; // Rethrow to prevent subsequent success toast
     } finally {
       setIsSaving(false);
     }
@@ -234,25 +222,33 @@ export function UserProfileProvider({
 
       if (options?.immediate) {
         // Immediate save
-        saveProfile().then(() => {
-          if (!options?.silent) {
-            toast.success("Your information has been saved", {
-              duration: 2000,
-              position: "bottom-right",
-            });
-          }
-        });
-      } else {
-        // Debounced save
-        debounceTimerRef.current = setTimeout(() => {
-          saveProfile().then(() => {
+        saveProfile()
+          .then(() => {
             if (!options?.silent) {
               toast.success("Your information has been saved", {
                 duration: 2000,
                 position: "bottom-right",
               });
             }
+          })
+          .catch(() => {
+            // Already handled error toast in saveProfile
           });
+      } else {
+        // Debounced save
+        debounceTimerRef.current = setTimeout(() => {
+          saveProfile()
+            .then(() => {
+              if (!options?.silent) {
+                toast.success("Your information has been saved", {
+                  duration: 2000,
+                  position: "bottom-right",
+                });
+              }
+            })
+            .catch(() => {
+              // Already handled error toast in saveProfile
+            });
           debounceTimerRef.current = null;
         }, DEBOUNCE_MS);
       }

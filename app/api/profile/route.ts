@@ -17,6 +17,9 @@ const SENSITIVE_TOP_LEVEL = [
   "uscisAccountNumber",
   "annualIncome",
   "phone",
+  "caseNumber",
+  "nvcInvoice",
+  "surname",
 ] as const;
 
 // Nested objects where every leaf-string should be encrypted

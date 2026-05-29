@@ -25,6 +25,9 @@ const SENSITIVE_TOP_LEVEL = [
   "uscisAccountNumber",
   "annualIncome",
   "phone",
+  "caseNumber",
+  "nvcInvoice",
+  "surname",
 ] as const;
 
 // Sensitive nested fields: { parentKey: [subKey, ...] }

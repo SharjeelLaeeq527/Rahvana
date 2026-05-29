@@ -18,13 +18,50 @@ export default function TwentyTwoOneGActionPlanner() {
   useEffect(() => {
     if (isProfileLoading || !profile) return;
 
-    if (profile.actionPlanner?.questionnaire) {
-      const savedData = profile.actionPlanner.questionnaire.formData as unknown as FormData;
-      const savedSelections = profile.actionPlanner.questionnaire
-        .selectedItems as unknown as FormSelections;
+    let savedData: Record<string, unknown> = {};
+    let savedSelections = null;
 
-      if (savedData) setInitialData(savedData);
-      if (savedSelections) setInitialSelections(savedSelections);
+    if (profile.actionPlanner?.questionnaire) {
+      savedData = { ...(profile.actionPlanner.questionnaire.formData as unknown as FormData) };
+      savedSelections = profile.actionPlanner.questionnaire
+        .selectedItems as unknown as FormSelections;
+    }
+
+    // Prioritize standard fields from central profile if present
+    if (profile.interviewDate) {
+      savedData.interviewDate = profile.interviewDate;
+    }
+    if (profile.interviewLocation) {
+      savedData.consularPost = profile.interviewLocation;
+    }
+    if (profile.caseStatus) {
+      savedData.ceacStatus = profile.caseStatus;
+    }
+    if (profile.caseNumber) {
+      savedData.caseNumber = profile.caseNumber;
+    }
+    if (profile.fullName) {
+      savedData.beneficiaryName = profile.fullName;
+    } else if (profile.name?.first) {
+      savedData.beneficiaryName = `${profile.name.first} ${profile.name.last || ""}`.trim();
+    }
+    if (profile.passportNumber) {
+      savedData.passportNumber = profile.passportNumber;
+    }
+    if (profile.dateOfBirth) {
+      savedData.dateOfBirth = profile.dateOfBirth;
+    }
+    if (!savedData.visaCategory && profile.visaCategory) {
+      savedData.visaCategory = profile.visaCategory;
+    } else if (!savedData.visaCategory && profile.visaType) {
+      savedData.visaCategory = profile.visaType;
+    }
+
+    if (Object.keys(savedData).length > 0) {
+      setInitialData(savedData as unknown as FormData);
+    }
+    if (savedSelections) {
+      setInitialSelections(savedSelections);
     }
   }, [profile, isProfileLoading]);
 
@@ -45,9 +82,17 @@ export default function TwentyTwoOneGActionPlanner() {
       interviewDate: formData.interviewDate,
     };
 
-    // Use context's updateProfile instead of direct Supabase upsert
+    // Use context's updateProfile to save both specific namespace and standard fields
     updateProfile(
-      { actionPlanner: actionPlannerData } as any,
+      {
+        actionPlanner: actionPlannerData,
+        interviewDate: formData.interviewDate || undefined,
+        caseStatus: formData.ceacStatus || undefined,
+        caseNumber: formData.caseNumber || undefined,
+        fullName: formData.beneficiaryName || undefined,
+        passportNumber: formData.passportNumber || undefined,
+        dateOfBirth: formData.dateOfBirth || undefined,
+      } as any,
       { immediate: true }
     );
   };
@@ -70,7 +115,7 @@ export default function TwentyTwoOneGActionPlanner() {
       </div>
 
       <CombinedIntakeFormWrapper
-        key={smartModeEnabled ? "smart-mode" : "basic-mode"}
+        key={`${smartModeEnabled ? "smart-mode" : "basic-mode"}-${initialData ? JSON.stringify(initialData) : "empty"}`}
         onSubmit={handleSubmit}
         onSaveToProfile={handleSaveToProfile}
         initialData={initialData}

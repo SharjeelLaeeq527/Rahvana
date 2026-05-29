@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
+import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -21,7 +21,7 @@ export default function Form() {
   const router = useRouter();
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
-  const { profile, isProfileLoading } = useUserProfile();
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
   const visaCategoryOptions: DropdownOption[] = [{ value: "IR-1", label: "IR-1 (Spouse)" }];
 
@@ -66,6 +66,10 @@ export default function Form() {
     setLoading(true);
 
     try {
+      if (user) {
+        const profileUpdate = mapFormToProfile(form);
+        updateProfile(profileUpdate, { silent: true });
+      }
       let baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       baseUrl = baseUrl.replace(/\/$/, "");
       const endpoint = baseUrl.includes("/api/v1")

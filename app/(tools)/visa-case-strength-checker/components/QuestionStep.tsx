@@ -104,7 +104,11 @@ const QuestionStep = ({
             value={question.type === "number" ? (value ?? "").toString() : String(value ?? "")}
             onClick={(e) => {
               if (question.type === "date") {
-                (e.currentTarget as HTMLInputElement).showPicker?.();
+                try {
+                  (e.currentTarget as HTMLInputElement).showPicker?.();
+                } catch {
+                  // showPicker requires a direct user gesture; native click already opens the picker
+                }
               }
             }}
             onChange={(e) =>

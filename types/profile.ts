@@ -53,6 +53,11 @@ export interface MasterProfile {
   visaType?: string; // Primary visa/case type being applied for (IR-1, CR-1, K-1, etc.)
   visaCategory?: string; // Sub-category if applicable
   fullName?: string; // Full name in single field format (some forms prefer this)
+  caseNumber?: string;
+  interviewDate?: string;
+  caseStatus?: string;
+  nvcInvoice?: string;
+  surname?: string;
 
   // Relationship & Family (NEW)
   spouse?: {

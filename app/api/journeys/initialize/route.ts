@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { journeyService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import { ConfigLoader } from "@/lib/journey/config-loader";
+import { decrypt } from "@/lib/encryption";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
@@ -128,6 +129,19 @@ export async function POST(req: NextRequest) {
       db.getStepsForJourneyDB(journeyId, undefined, dbClient),
       db.getCaseDataForJourneyDB(journeyId, undefined, dbClient),
     ]);
+
+    // Decrypt sensitive fields in case_data before returning to client
+    if (caseDataRows) {
+      caseDataRows.forEach((item: any) => {
+        if (item && typeof item.data_value === "string" && item.data_value.startsWith("gcm:")) {
+          try {
+            item.data_value = decrypt(item.data_value);
+          } catch (e) {
+            console.error("Failed to decrypt case data:", item.data_key, e);
+          }
+        }
+      });
+    }
 
     if (!journeyRow) {
       return NextResponse.json(

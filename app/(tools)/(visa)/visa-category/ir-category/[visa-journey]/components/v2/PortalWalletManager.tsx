@@ -31,12 +31,24 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
   const [caseNumber, setCaseNumber] = useState(initialData?.nvc_case_number || "");
   const [invoiceId, setInvoiceId] = useState(initialData?.nvc_invoice_id || "");
   const [email, setEmail] = useState(initialData?.username || "");
-  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSave = async () => {
-    const newErrors: Record<string, boolean> = {};
-    if (!caseNumber.trim()) newErrors.caseNumber = true;
-    if (!invoiceId.trim()) newErrors.invoiceId = true;
+    const newErrors: Record<string, string> = {};
+    const cleanCase = caseNumber.trim().toUpperCase();
+    const cleanInvoice = invoiceId.trim().toUpperCase();
+
+    if (!cleanCase) {
+      newErrors.caseNumber = "Case Number is required.";
+    } else if (!/^[A-Z]{3}[0-9]{10}$/.test(cleanCase)) {
+      newErrors.caseNumber = "Must be exactly 3 letters followed by 10 digits (e.g. ISL2024123456).";
+    }
+
+    if (!cleanInvoice) {
+      newErrors.invoiceId = "Invoice ID is required.";
+    } else if (!/^[A-Z0-9]{8,15}$/.test(cleanInvoice)) {
+      newErrors.invoiceId = "Must be 8-15 alphanumeric characters.";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -45,8 +57,8 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
 
     await onSave({
       portalType: "NVC",
-      nvcCaseNumber: caseNumber.trim(),
-      nvcInvoiceId: invoiceId.trim(),
+      nvcCaseNumber: cleanCase,
+      nvcInvoiceId: cleanInvoice,
       username: email.trim(),
     });
     onClose();
@@ -86,14 +98,17 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
                 type="text"
                 value={caseNumber}
                 onChange={(e) => {
-                  setCaseNumber(e.target.value);
-                  if (errors.caseNumber) setErrors({ ...errors, caseNumber: false });
+                  setCaseNumber(e.target.value.toUpperCase());
+                  if (errors.caseNumber) setErrors({ ...errors, caseNumber: "" });
                 }}
                 placeholder="e.g. ISL2026XXXXXX"
                 className={`p-[11px_14px] border-[1.5px] rounded-[10px] text-[14px] bg-white outline-none transition-all
                   ${errors.caseNumber ? "border-[#f87171] bg-[#fff5f5]" : "border-[#d0e4f7] focus:border-[#3b7dd8] focus:shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"}
                 `}
               />
+              {errors.caseNumber && (
+                <p className="text-xs text-red-500 font-medium mt-0.5">{errors.caseNumber}</p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -104,15 +119,19 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
                 type="text"
                 value={invoiceId}
                 onChange={(e) => {
-                  setInvoiceId(e.target.value);
-                  if (errors.invoiceId) setErrors({ ...errors, invoiceId: false });
+                  setInvoiceId(e.target.value.toUpperCase());
+                  if (errors.invoiceId) setErrors({ ...errors, invoiceId: "" });
                 }}
                 placeholder="Enter your Invoice ID"
                 className={`p-[11px_14px] border-[1.5px] rounded-[10px] text-[14px] bg-white outline-none transition-all
                   ${errors.invoiceId ? "border-[#f87171] bg-[#fff5f5]" : "border-[#d0e4f7] focus:border-[#3b7dd8] focus:shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"}
                 `}
               />
+              {errors.invoiceId && (
+                <p className="text-xs text-red-500 font-medium mt-0.5">{errors.invoiceId}</p>
+              )}
             </div>
+
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-semibold text-[#6b8097] uppercase tracking-[0.04em]">
