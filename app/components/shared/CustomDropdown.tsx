@@ -36,7 +36,10 @@ export const CustomDropdown = ({
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSelect = (selectedValue: string) => {
-    onChange(selectedValue);
+    const optionExists = options.some((opt) => opt.value === selectedValue);
+    if (selectedValue && optionExists && selectedValue !== value) {
+      onChange(selectedValue);
+    }
   };
 
   const selectedLabel = value ? options.find((opt) => opt.value === value)?.label : null;
@@ -66,11 +69,11 @@ export const CustomDropdown = ({
             alignItems: "center",
           }}
         >
-          {selectedLabel ? (
-            <span style={{ color: "#1c2b3a", fontSize: "15px" }}>{selectedLabel}</span>
-          ) : (
-            <SelectValue placeholder={placeholder} />
-          )}
+          <SelectValue placeholder={placeholder}>
+            {selectedLabel ? (
+              <span style={{ color: "#1c2b3a", fontSize: "15px" }}>{selectedLabel}</span>
+            ) : null}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {options.length > 10 && (

@@ -97,7 +97,7 @@ export const consultationService = {
     const referenceId = `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // Normalize urgency for database check constraint (must be 'normal' or 'urgent')
-    const normalizedUrgency = bookingData.urgency === "urgent" ? "urgent" : "normal";
+    const normalizedUrgency = (bookingData.urgency && bookingData.urgency.startsWith("urgent")) ? "urgent" : "normal";
 
     // Map camelCase to snake_case for Supabase
     const newBooking = {

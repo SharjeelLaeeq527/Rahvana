@@ -174,7 +174,7 @@ const ConsultationBookingPage = () => {
     issue_category: "",
     visa_category: "",
     case_stage: "",
-    embassy_consulate: "",
+    embassy_consulate: "islamabad",
     urgency: "" as string,
     preferred_language: "English",
     full_name: "",
@@ -202,6 +202,7 @@ const ConsultationBookingPage = () => {
   const { checkAccess, consumeAccess } = useFeatureAccess();
   const hasExecutiveAccess = tier === "executive";
   const { showToast } = useToast();
+  const [useCreditIfAvailable, setUseCreditIfAvailable] = useState<boolean>(true);
 
   // Mock data for dropdowns
   const issueCategories = [
@@ -364,8 +365,8 @@ const ConsultationBookingPage = () => {
 
   const embassyOptions: DropdownOption[] = [
     { value: "islamabad", label: "U.S. Embassy Islamabad" },
-    { value: "karachi", label: "U.S. Consulate Karachi" },
-    { value: "other", label: "Other Country" },
+    // { value: "karachi", label: "U.S. Consulate Karachi" },
+    // { value: "other", label: "Other Country" },
   ];
 
   const urgencyOptions: DropdownOption[] = [
@@ -534,6 +535,8 @@ const ConsultationBookingPage = () => {
     let isMounted = true;
 
     const loadConsultationCredits = async () => {
+      if (authLoading || !user) return; // Do not fetch if auth is loading or user is not logged in
+
       setConsultationCreditsLoading(true);
       const access = await checkAccess("expert_consultation");
       if (!isMounted) return;
@@ -555,7 +558,7 @@ const ConsultationBookingPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [checkAccess]);
+  }, [checkAccess, user, authLoading]);
 
   const handleAcceptAlternative = async (bookingId: string, slot: Date) => {
     setLoading(true);
@@ -617,6 +620,13 @@ const ConsultationBookingPage = () => {
       ...prev,
       selected_slot: slot.date,
     }));
+    if (errors.selected_slot) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.selected_slot;
+        return newErrors;
+      });
+    }
   };
 
   const handleDropZoneDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -710,20 +720,18 @@ const ConsultationBookingPage = () => {
     }
 
     const hasCredit = tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
+    const shouldConsumeCredit = hasCredit && useCreditIfAvailable;
 
     setLoading(true);
 
-    if (hasCredit) {
-      const reservation = await consumeAccess("expert_consultation");
-
-      if (!reservation.allowed) {
-        setShowConsultationUpgradeModal(true);
+    if (shouldConsumeCredit) {
+      // Check first if they have credits before uploading files and calling endpoint
+      const check = await checkAccess("expert_consultation");
+      const remaining = check.data?.data?.usage?.remaining;
+      if (!check.allowed || (remaining !== undefined && remaining <= 0)) {
+        showToast("You have run out of consultation credits. Please select card payment or upgrade your plan.", "error");
         setLoading(false);
         return;
-      }
-
-      if (reservation.data?.remaining !== undefined) {
-        setRemainingConsultations(reservation.data.remaining);
       }
     }
 
@@ -778,8 +786,20 @@ const ConsultationBookingPage = () => {
       if (response.ok) {
         const result = await response.json();
 
+        // Consume credit ONLY after successful booking creation!
+        if (shouldConsumeCredit) {
+          try {
+            const reservation = await consumeAccess("expert_consultation");
+            if (reservation.allowed && reservation.data?.remaining !== undefined) {
+              setRemainingConsultations(reservation.data.remaining);
+            }
+          } catch (consumeErr) {
+            console.error("Failed to consume credit after booking:", consumeErr);
+          }
+        }
+
         // If not using credit, redirect to Stripe checkout!
-        if (!hasCredit && user?.id) {
+        if (!shouldConsumeCredit && user?.id) {
           try {
             const stripeRes = await fetch("/api/stripe/checkout", {
               method: "POST",
@@ -843,6 +863,9 @@ const ConsultationBookingPage = () => {
       if (!formData.case_stage) {
         newErrors.case_stage = "Case stage is required";
       }
+      if (!formData.urgency) {
+        newErrors.urgency = "Urgency level is required";
+      }
     } else if (step === 2) {
       if (!formData.full_name || !validateName(formData.full_name)) {
         newErrors.full_name = "Please enter a valid full name";
@@ -852,6 +875,9 @@ const ConsultationBookingPage = () => {
       }
       if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
         newErrors.phone_number = "Please enter a valid phone number";
+      }
+      if (!formData.preferred_language) {
+        newErrors.preferred_language = "Preferred language is required";
       }
       if (!formData.case_summary || !validateCaseSummary(formData.case_summary)) {
         newErrors.case_summary = "Case summary must be at least 20 characters";
@@ -1011,10 +1037,23 @@ const ConsultationBookingPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Urgency *</label>
                 <CustomDropdown
                   value={formData.urgency}
-                  onChange={(value) => handleInputChange("urgency", value)}
+                  onChange={(value) => {
+                    handleInputChange("urgency", value);
+                    if (errors.urgency && value) {
+                      setErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors.urgency;
+                        return newErrors;
+                      });
+                    }
+                  }}
                   options={urgencyOptions}
                   placeholder="Select urgency level..."
+                  className={errors.urgency ? "border-red-500" : ""}
                 />
+                {errors.urgency && (
+                  <p className="mt-1 text-sm text-red-600">{errors.urgency}</p>
+                )}
               </div>
             </div>
           </div>
@@ -1150,10 +1189,23 @@ const ConsultationBookingPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Language *</label>
                 <CustomDropdown
                   value={formData.preferred_language}
-                  onChange={(value) => handleInputChange("preferred_language", value)}
+                  onChange={(value) => {
+                    handleInputChange("preferred_language", value);
+                    if (errors.preferred_language && value) {
+                      setErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors.preferred_language;
+                        return newErrors;
+                      });
+                    }
+                  }}
                   options={preferredLanguageOptions}
                   placeholder="Select language..."
+                  className={errors.preferred_language ? "border-red-500" : ""}
                 />
+                {errors.preferred_language && (
+                  <p className="mt-1 text-sm text-red-600">{errors.preferred_language}</p>
+                )}
               </div>
             </div>
             <div>
@@ -1330,6 +1382,11 @@ const ConsultationBookingPage = () => {
                 </div>
               )}
             </div>
+            {errors.selected_slot && (
+              <p className="mt-4 text-sm text-red-600 text-center font-bold animate-pulse">
+                {errors.selected_slot}
+              </p>
+            )}
             {formData.selected_slot && (
               <div className="space-y-4">
                 <p className="text-sm font-medium">Alternative Slots (Optional - Max 2)</p>
@@ -1362,6 +1419,7 @@ const ConsultationBookingPage = () => {
         const selectedIssue = issueCategories.find(c => c.value === formData.issue_category)?.label || formData.issue_category || "General Inquiry";
         const selectedStage = caseStages.find(s => s.value === formData.case_stage)?.label || formData.case_stage || "Not Specified";
         const selectedUrgency = urgencyOptions.find(u => u.value === formData.urgency)?.label || formData.urgency || "Normal";
+        const selectedEmbassy = embassyOptions.find(e => e.value === formData.embassy_consulate)?.label || formData.embassy_consulate || "Not Specified";
 
         const formattedDate = formData.selected_slot?.toLocaleDateString(undefined, {
           weekday: "long",
@@ -1432,6 +1490,12 @@ const ConsultationBookingPage = () => {
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Language Preference</p>
                       <p className="text-sm font-bold text-slate-800 mt-1">{formData.preferred_language}</p>
                     </div>
+                    {formData.embassy_consulate && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Embassy / Consulate</p>
+                        <p className="text-sm font-bold text-slate-800 mt-1">{selectedEmbassy}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-6 pt-5 border-t border-slate-100">
@@ -1446,6 +1510,34 @@ const ConsultationBookingPage = () => {
                       </div>
                     </div>
                   </div>
+
+                  {formData.alternate_slots && formData.alternate_slots.length > 0 && (
+                    <div className="mt-6 pt-5 border-t border-slate-100">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Alternative Slots</p>
+                      <div className="mt-2 space-y-2">
+                        {formData.alternate_slots.map((slotDate, idx) => {
+                          const formattedAltDate = slotDate.toLocaleDateString(undefined, {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric"
+                          });
+                          const altSlotTime = availableSlots.find(s => s.date.getTime() === slotDate.getTime())?.formattedTime || "";
+                          return (
+                            <div key={idx} className="flex items-center gap-3 bg-slate-50 border border-slate-100/60 p-3 rounded-xl">
+                              <div className="bg-slate-500 text-white rounded-lg p-1.5 flex items-center justify-center">
+                                <Clock className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-slate-900">{formattedAltDate}</p>
+                                <p className="text-[11px] font-semibold text-slate-500 mt-0.5">{altSlotTime}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Secure checkout info */}
@@ -1477,7 +1569,7 @@ const ConsultationBookingPage = () => {
                       </div>
 
                       {/* Plan Discounts / Benefits */}
-                      {hasCredit ? (
+                      {hasCredit && useCreditIfAvailable ? (
                         <div className="flex justify-between items-center text-sm text-green-600">
                           <span className="font-semibold flex items-center gap-1">
                             <Sparkles className="h-3.5 w-3.5 animate-pulse" />
@@ -1490,7 +1582,7 @@ const ConsultationBookingPage = () => {
                       <div className="border-t border-slate-200 pt-4 mt-2 flex justify-between items-center">
                         <span className="text-base font-bold text-slate-900">Total Due</span>
                         <span className="text-xl font-black text-slate-900">
-                          {hasCredit ? "$0.00" : "$99.00"}
+                          {hasCredit && useCreditIfAvailable ? "$0.00" : "$99.00"}
                         </span>
                       </div>
                     </div>
@@ -1501,9 +1593,13 @@ const ConsultationBookingPage = () => {
                         <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
                         <span className="text-[11px] font-bold text-amber-800">
                           {remainingConsultations !== null ? (
-                            remainingConsultations === 1
-                              ? "1 Executive Consultation credit left"
-                              : `${remainingConsultations} Executive Consultation credits left`
+                            useCreditIfAvailable ? (
+                              remainingConsultations === 1
+                                ? "0 Executive Consultation credits left"
+                                : `${remainingConsultations - 1} Executive Consultation credits left`
+                            ) : (
+                              `${remainingConsultations} Executive Consultation credits left`
+                            )
                           ) : (
                             "Executive credits active."
                           )}
@@ -1512,8 +1608,79 @@ const ConsultationBookingPage = () => {
                     )}
                   </div>
 
-                  {/* Show Checkout badge if no credits */}
-                  {!hasCredit && (
+                  {/* Credit Choice Selection if credits are available */}
+                  {hasCredit && (
+                    <div className="mt-6 pt-5 border-t border-slate-200">
+                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Redemption Method</p>
+                      
+                      <div className="space-y-3">
+                        <div 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setUseCreditIfAvailable(true);
+                          }}
+                          className={cn(
+                            "flex items-center justify-between p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                            useCreditIfAvailable
+                              ? "border-teal-600 bg-teal-50/50 shadow-xs"
+                              : "border-slate-200 hover:border-slate-300"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "h-4 w-4 rounded-full border flex items-center justify-center",
+                              useCreditIfAvailable ? "border-teal-600 bg-teal-600" : "border-slate-300"
+                            )}>
+                              {useCreditIfAvailable && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-slate-900">Use Plan Credit (Free)</p>
+                              <p className="text-[10px] text-teal-700 font-medium mt-0.5">
+                                Consume 1 credit ({
+                                  useCreditIfAvailable 
+                                    ? `${remainingConsultations - 1} left after booking` 
+                                    : `${remainingConsultations} available`
+                                })
+                              </p>
+                            </div>
+                          </div>
+                          <Crown className={cn("h-5 w-5", useCreditIfAvailable ? "text-amber-500" : "text-slate-400")} />
+                        </div>
+
+                        <div 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setUseCreditIfAvailable(false);
+                          }}
+                          className={cn(
+                            "flex items-center justify-between p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                            !useCreditIfAvailable
+                              ? "border-teal-600 bg-teal-50/50 shadow-xs"
+                              : "border-slate-200 hover:border-slate-300"
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "h-4 w-4 rounded-full border flex items-center justify-center",
+                              !useCreditIfAvailable ? "border-teal-600 bg-teal-600" : "border-slate-300"
+                            )}>
+                              {!useCreditIfAvailable && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-slate-900">Pay with Card ($99)</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">Save your credits for future use</p>
+                            </div>
+                          </div>
+                          <CreditCard className={cn("h-5 w-5", !useCreditIfAvailable ? "text-teal-600" : "text-slate-400")} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show Checkout badge if paying */}
+                  {(!hasCredit || !useCreditIfAvailable) && (
                     <div className="mt-5 p-4 rounded-xl bg-teal-50 border border-teal-100 flex items-start gap-3">
                       <CreditCard className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
                       <div>
@@ -1754,7 +1921,13 @@ const ConsultationBookingPage = () => {
                   {consultationCreditsLoading ? (
                     <span>Loading consultation credits...</span>
                   ) : remainingConsultations !== null ? (
-                    <span>Remaining consultation credits: {remainingConsultations}/2</span>
+                    <span>
+                      Remaining consultation credits: {
+                        (currentStep === 4 && useCreditIfAvailable) 
+                          ? remainingConsultations - 1 
+                          : remainingConsultations
+                      }/2
+                    </span>
                   ) : (
                     <span>Consultation credits unavailable</span>
                   )}
@@ -1844,6 +2017,7 @@ const ConsultationBookingPage = () => {
               <div>{renderStepContent()}</div>
               <div className="mt-4 px-4 py-3 sm:px-8 sm:py-5 bg-gray-50 border-t flex justify-between items-center gap-4">
                 <Button
+                  key="prev-btn"
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
@@ -1854,6 +2028,7 @@ const ConsultationBookingPage = () => {
                 </Button>
                 {currentStep < 4 ? (
                   <Button
+                    key="next-btn"
                     type="button"
                     onClick={handleNext}
                     className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-4 sm:px-8"
@@ -1862,13 +2037,14 @@ const ConsultationBookingPage = () => {
                   </Button>
                 ) : (
                   <Button
+                    key="submit-btn"
                     type="submit"
                     disabled={!formData.selected_slot || loading}
                     className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
                   >
                     {loading ? (
                       "Processing..."
-                    ) : tier === "executive" && remainingConsultations !== null && remainingConsultations > 0 ? (
+                    ) : tier === "executive" && remainingConsultations !== null && remainingConsultations > 0 && useCreditIfAvailable ? (
                       "Confirm & Book (Free)"
                     ) : (
                       "Proceed to Payment ($99)"
