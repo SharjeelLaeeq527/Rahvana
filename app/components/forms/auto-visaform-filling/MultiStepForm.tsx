@@ -733,6 +733,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         setProgressiveSubQuestionIndices({});
       } else {
         setView("review");
+      }
     }
 
     // Save current step data back to central profile (real-time sync for other tools)
