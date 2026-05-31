@@ -30,6 +30,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Webhook Error: ${errorMessage}` }, { status: 400 });
   }
 
+  // NOTE: Activation is primarily handled by the self-healing /api/stripe/verify-session
+  // endpoint (called on the payment success page) and reconcileUserPlan(). This webhook is a
+  // secondary, best-effort sync. Therefore — once the signature is valid — we ALWAYS acknowledge
+  // with HTTP 200, even if an individual handler throws. Returning 500 on processing errors is
+  // what caused Stripe to disable this endpoint after 9 days of retries. We log failures loudly
+  // for debugging but never let them fail the delivery.
   try {
     switch (event.type) {
       // ✅ Payment completed (subscription + add-ons first invoice)
@@ -87,9 +93,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error: unknown) {
-    console.error("Error handling webhook event:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    // Log loudly so the failure is visible in production logs, but STILL return 200.
+    // verify-session / reconcileUserPlan are the source of truth for activation, so a failed
+    // sync here is non-critical — and a 200 keeps Stripe from disabling the endpoint again.
+    console.error(`Error handling webhook event (${event.type}, ${event.id}):`, error);
+    return NextResponse.json({ received: true, handler_error: true });
   }
 }
 
