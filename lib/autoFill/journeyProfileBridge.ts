@@ -39,18 +39,43 @@ const CASE_DATA_TO_PROFILE: Record<string, string> = {
   has_passport: "documents.hasPassport",
   has_medical_record: "documents.hasMedicalRecord",
 
-  // Interview Metadata
+  // Interview Metadata (Chapter 2 Step II-12 / Chapter 3)
   interviewDate: "interviewDate",
   interview_date: "interviewDate",
   consulateLocation: "interviewLocation",
   caseStatus: "caseStatus",
   ceacStatus: "caseStatus",
+
+  // NVC Registration (Chapter 2 Step II-01)
   nvcCaseNum: "caseNumber",
   nvcInvoice: "nvcInvoice",
   embassyCity: "interviewLocation",
   beneficiaryName: "fullName",
   passportNumber: "passportNumber",
   surname: "surname",
+
+  // USCIS Approval (Chapter 1 Step I-10 — nested approvalDetails handled separately)
+  // These are flattened keys that may also appear directly:
+  approvalDate: "approvalDate",
+  priorityDate: "priorityDate",
+
+  // Documentary Qualification (Chapter 2 Step II-10)
+  dqDate: "dqDate",
+  dqPost: "dqPost",
+  dqCategory: "visaCategory",
+  post: "dqPost", // alias used by DqRecordingTool
+
+  // Interview Outcome (Chapter 3 Step III-06)
+  interviewOutcome: "interviewOutcome",
+  outcome221gSubtype: "outcome221gSubtype",
+
+  // Medical Exam (Chapter 3 Step III-01/04)
+  med_date: "medicalDate",
+  med_time: "medicalTime",
+  med_clinic: "medicalClinic",
+
+  // Police Certificate (Chapter 3 Step III-02)
+  pcc_date: "pccDate",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -118,8 +143,30 @@ export function syncCaseDataToProfile(
 ): Partial<MasterProfile> {
   const delta: Record<string, unknown> = {};
 
+  // Nested metadata objects that need flattening before mapping.
+  // e.g. approvalDetails: { receiptNumber, approvalDate, priorityDate }
+  const NESTED_OBJECT_MAPS: Record<string, Record<string, string>> = {
+    approvalDetails: {
+      receiptNumber: "receiptNumber",
+      approvalDate: "approvalDate",
+      priorityDate: "priorityDate",
+    },
+  };
+
   for (const [caseKey, caseValue] of Object.entries(caseData)) {
     if (caseValue === undefined || caseValue === null || caseValue === "") continue;
+
+    // Handle nested object metadata (e.g. approvalDetails.receiptNumber)
+    if (NESTED_OBJECT_MAPS[caseKey] && typeof caseValue === "object" && !Array.isArray(caseValue)) {
+      const subMap = NESTED_OBJECT_MAPS[caseKey];
+      for (const [subKey, profilePath] of Object.entries(subMap)) {
+        const subValue = (caseValue as Record<string, unknown>)[subKey];
+        if (subValue !== undefined && subValue !== null && subValue !== "") {
+          setNestedValue(delta, profilePath, subValue);
+        }
+      }
+      continue;
+    }
 
     const profilePath = CASE_DATA_TO_PROFILE[caseKey];
     if (profilePath) {

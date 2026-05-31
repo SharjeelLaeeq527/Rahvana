@@ -56,6 +56,22 @@ export default function TwentyTwoOneGActionPlanner() {
     } else if (!savedData.visaCategory && profile.visaType) {
       savedData.visaCategory = profile.visaType;
     }
+    // New cross-chapter autofill fields
+    if (profile.interviewOutcome) {
+      savedData.interviewOutcome = profile.interviewOutcome;
+    }
+    if (profile.outcome221gSubtype) {
+      savedData.outcome221gSubtype = profile.outcome221gSubtype;
+    }
+    if (profile.receiptNumber && !savedData.receiptNumber) {
+      savedData.receiptNumber = profile.receiptNumber;
+    }
+    if (profile.dqDate && !savedData.dqDate) {
+      savedData.dqDate = profile.dqDate;
+    }
+    if (profile.dqPost && !savedData.consularPost) {
+      savedData.consularPost = profile.dqPost;
+    }
 
     if (Object.keys(savedData).length > 0) {
       setInitialData(savedData as unknown as FormData);
@@ -87,11 +103,13 @@ export default function TwentyTwoOneGActionPlanner() {
       {
         actionPlanner: actionPlannerData,
         interviewDate: formData.interviewDate || undefined,
+        interviewLocation: formData.consularPost || undefined,
         caseStatus: formData.ceacStatus || undefined,
         caseNumber: formData.caseNumber || undefined,
         fullName: formData.beneficiaryName || undefined,
         passportNumber: formData.passportNumber || undefined,
         dateOfBirth: formData.dateOfBirth || undefined,
+        visaCategory: formData.visaCategory || undefined,
       } as any,
       { immediate: true }
     );
