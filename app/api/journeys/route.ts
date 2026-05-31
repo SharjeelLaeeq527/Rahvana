@@ -10,12 +10,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
     const journeyType = searchParams.get("journey_type");
-    const limit = searchParams.get("limit")
-      ? parseInt(searchParams.get("limit")!)
-      : 10;
-    const offset = searchParams.get("offset")
-      ? parseInt(searchParams.get("offset")!)
-      : 0;
+    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : 10;
+    const offset = searchParams.get("offset") ? parseInt(searchParams.get("offset")!) : 0;
 
     // Build filters object
     const filters: JourneyFilters = {};
@@ -25,8 +21,7 @@ export async function GET(request: NextRequest) {
     filters.offset = offset;
 
     // Get journeys with progress
-    const journeysWithProgress =
-      await journeyService.getAllJourneysWithProgress();
+    const journeysWithProgress = await journeyService.getAllJourneysWithProgress();
 
     // Apply filters post-fetch
     let filtered = journeysWithProgress;
@@ -54,7 +49,7 @@ export async function GET(request: NextRequest) {
           offset,
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error in GET /api/journeys:", error);
@@ -62,7 +57,7 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json(
         { error: msg(E.JOURNEYS_UNAUTHORIZED), code: "UNAUTHORIZED" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -71,7 +66,7 @@ export async function GET(request: NextRequest) {
         error: msg(E.JOURNEYS_FETCH_FAILED),
         code: "SERVER_ERROR",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -89,7 +84,7 @@ export async function DELETE() {
           message: `All ${deletedCount} journeys deleted successfully`,
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error in DELETE /api/journeys:", error);
@@ -97,7 +92,7 @@ export async function DELETE() {
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json(
         { error: msg(E.JOURNEYS_UNAUTHORIZED), code: "UNAUTHORIZED" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -106,7 +101,7 @@ export async function DELETE() {
         error: msg(E.JOURNEYS_DELETE_FAILED),
         code: "SERVER_ERROR",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -28,17 +28,27 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
   initialData,
   isSubmitting,
 }) => {
-  const [caseNumber, setCaseNumber] = useState(
-    initialData?.nvc_case_number || "",
-  );
+  const [caseNumber, setCaseNumber] = useState(initialData?.nvc_case_number || "");
   const [invoiceId, setInvoiceId] = useState(initialData?.nvc_invoice_id || "");
   const [email, setEmail] = useState(initialData?.username || "");
-  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSave = async () => {
-    const newErrors: Record<string, boolean> = {};
-    if (!caseNumber.trim()) newErrors.caseNumber = true;
-    if (!invoiceId.trim()) newErrors.invoiceId = true;
+    const newErrors: Record<string, string> = {};
+    const cleanCase = caseNumber.trim().toUpperCase();
+    const cleanInvoice = invoiceId.trim().toUpperCase();
+
+    if (!cleanCase) {
+      newErrors.caseNumber = "Case Number is required.";
+    } else if (!/^[A-Z]{3}[0-9]{10}$/.test(cleanCase)) {
+      newErrors.caseNumber = "Must be exactly 3 letters followed by 10 digits (e.g. ISL2024123456).";
+    }
+
+    if (!cleanInvoice) {
+      newErrors.invoiceId = "Invoice ID is required.";
+    } else if (!/^[A-Z0-9]{8,15}$/.test(cleanInvoice)) {
+      newErrors.invoiceId = "Must be 8-15 alphanumeric characters.";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -47,8 +57,8 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
 
     await onSave({
       portalType: "NVC",
-      nvcCaseNumber: caseNumber.trim(),
-      nvcInvoiceId: invoiceId.trim(),
+      nvcCaseNumber: cleanCase,
+      nvcInvoiceId: cleanInvoice,
       username: email.trim(),
     });
     onClose();
@@ -58,10 +68,7 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-300 flex items-center justify-center p-5 font-sans animate-in fade-in duration-200">
-      <div
-        className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-xs"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-[#0c1b33]/55 backdrop-blur-xs" onClick={onClose} />
 
       <div className="relative w-full max-w-[460px] max-h-[88vh] bg-[#fafcff] rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-3 duration-240">
         <div className="p-6 pb-4 flex items-start justify-between">
@@ -69,9 +76,7 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
             <h2 className=" text-[22px] text-[#0c1b33] leading-tight font-black">
               CEAC Access Details
             </h2>
-            <p className="text-[13px] text-[#6b8097] mt-1">
-              Stored in your Rahvana Portal Wallet
-            </p>
+            <p className="text-[13px] text-[#6b8097] mt-1">Stored in your Rahvana Portal Wallet</p>
           </div>
           <button
             onClick={onClose}
@@ -93,15 +98,17 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
                 type="text"
                 value={caseNumber}
                 onChange={(e) => {
-                  setCaseNumber(e.target.value);
-                  if (errors.caseNumber)
-                    setErrors({ ...errors, caseNumber: false });
+                  setCaseNumber(e.target.value.toUpperCase());
+                  if (errors.caseNumber) setErrors({ ...errors, caseNumber: "" });
                 }}
                 placeholder="e.g. ISL2026XXXXXX"
                 className={`p-[11px_14px] border-[1.5px] rounded-[10px] text-[14px] bg-white outline-none transition-all
                   ${errors.caseNumber ? "border-[#f87171] bg-[#fff5f5]" : "border-[#d0e4f7] focus:border-[#3b7dd8] focus:shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"}
                 `}
               />
+              {errors.caseNumber && (
+                <p className="text-xs text-red-500 font-medium mt-0.5">{errors.caseNumber}</p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -112,16 +119,19 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
                 type="text"
                 value={invoiceId}
                 onChange={(e) => {
-                  setInvoiceId(e.target.value);
-                  if (errors.invoiceId)
-                    setErrors({ ...errors, invoiceId: false });
+                  setInvoiceId(e.target.value.toUpperCase());
+                  if (errors.invoiceId) setErrors({ ...errors, invoiceId: "" });
                 }}
                 placeholder="Enter your Invoice ID"
                 className={`p-[11px_14px] border-[1.5px] rounded-[10px] text-[14px] bg-white outline-none transition-all
                   ${errors.invoiceId ? "border-[#f87171] bg-[#fff5f5]" : "border-[#d0e4f7] focus:border-[#3b7dd8] focus:shadow-[0_0_0_3px_rgba(59,125,216,0.12)]"}
                 `}
               />
+              {errors.invoiceId && (
+                <p className="text-xs text-red-500 font-medium mt-0.5">{errors.invoiceId}</p>
+              )}
             </div>
+
 
             <div className="flex flex-col gap-1.5">
               <label className="text-[12px] font-semibold text-[#6b8097] uppercase tracking-[0.04em]">
@@ -172,12 +182,7 @@ interface NvcFeeModalProps {
   onSave: (newData: any) => void;
 }
 
-export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
-  isOpen,
-  onClose,
-  data,
-  onSave,
-}) => {
+export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data, onSave }) => {
   const [localData, setLocalData] = useState(data);
 
   useEffect(() => {
@@ -190,12 +195,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
             : data.aos === "Pending"
               ? "In process"
               : data.aos,
-        iv:
-          data.iv === "Not Started"
-            ? "Not paid"
-            : data.iv === "Pending"
-              ? "In process"
-              : data.iv,
+        iv: data.iv === "Not Started" ? "Not paid" : data.iv === "Pending" ? "In process" : data.iv,
       });
     }
   }, [isOpen, data]);
@@ -233,9 +233,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
                 </label>
                 <select
                   value={localData.aos}
-                  onChange={(e) =>
-                    setLocalData({ ...localData, aos: e.target.value })
-                  }
+                  onChange={(e) => setLocalData({ ...localData, aos: e.target.value })}
                   className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#3b7dd8] focus:ring-4 focus:ring-[#3b7dd8]/12 transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b8097%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_12px_center]"
                 >
                   <option value="">Select status…</option>
@@ -251,9 +249,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
                 </label>
                 <select
                   value={localData.iv}
-                  onChange={(e) =>
-                    setLocalData({ ...localData, iv: e.target.value })
-                  }
+                  onChange={(e) => setLocalData({ ...localData, iv: e.target.value })}
                   className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#3b7dd8] focus:ring-4 focus:ring-[#3b7dd8]/12 transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b8097%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_12px_center]"
                 >
                   <option value="">Select status…</option>
@@ -271,9 +267,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
                   type="date"
                   value={localData.date}
                   max={new Date().toISOString().split("T")[0]}
-                  onChange={(e) =>
-                    setLocalData({ ...localData, date: e.target.value })
-                  }
+                  onChange={(e) => setLocalData({ ...localData, date: e.target.value })}
                   className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#3b7dd8] focus:ring-4 focus:ring-[#3b7dd8]/12 transition-all"
                 />
               </div>
@@ -286,9 +280,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
                   type="text"
                   placeholder="e.g. Paid via credit card"
                   value={localData.note}
-                  onChange={(e) =>
-                    setLocalData({ ...localData, note: e.target.value })
-                  }
+                  onChange={(e) => setLocalData({ ...localData, note: e.target.value })}
                   className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#3b7dd8] focus:ring-4 focus:ring-[#3b7dd8]/12 transition-all"
                 />
               </div>

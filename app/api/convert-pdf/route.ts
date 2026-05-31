@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import jsPDF from "jspdf";
 import sharp from "sharp";
 import mammoth from "mammoth";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 
 type FileFormat = "text" | "html" | "markdown" | "image" | "docx";
 
@@ -25,7 +25,14 @@ export async function POST(request: NextRequest) {
     const maxSize = format === "image" ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
     if (file.size > maxSize) {
       const maxMb = format === "image" ? 50 : 10;
-      return NextResponse.json({ error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: maxMb }) }, { status: 413 });
+      return NextResponse.json(
+        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: maxMb }) },
+        { status: 413 }
+      );
+      return NextResponse.json(
+        { message: `File too large (max ${maxSize / (1024 * 1024)}MB)` },
+        { status: 413 }
+      );
     }
 
     const pdfBuffer = await convertToPDF(file, format);
@@ -42,19 +49,25 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error('Convert PDF error:', err)
+    console.error("Convert PDF error:", err);
     return NextResponse.json({ error: msg(E.PDF_CONVERTER_FAILED) }, { status: 500 });
   }
 }
 
 async function convertToPDF(file: File, format: FileFormat): Promise<ArrayBuffer> {
   switch (format) {
-    case "text":    return textToPDF(await file.text());
-    case "html":    return htmlToPDF(await file.text());
-    case "markdown":return markdownToPDF(await file.text());
-    case "image":   return imageToPDF(await file.arrayBuffer());
-    case "docx":    return docxToPDF(await file.arrayBuffer());
-    default:        throw new Error("Invalid format");
+    case "text":
+      return textToPDF(await file.text());
+    case "html":
+      return htmlToPDF(await file.text());
+    case "markdown":
+      return markdownToPDF(await file.text());
+    case "image":
+      return imageToPDF(await file.arrayBuffer());
+    case "docx":
+      return docxToPDF(await file.arrayBuffer());
+    default:
+      throw new Error("Invalid format");
   }
 }
 
@@ -67,9 +80,14 @@ function textToPDF(content: string): ArrayBuffer {
 
 function htmlToPDF(html: string): ArrayBuffer {
   const pdf = new jsPDF();
-  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  pdf.setFontSize(16); pdf.text("HTML Document", 15, 15);
-  pdf.setFontSize(11); pdf.text(pdf.splitTextToSize(text || "No content", 180), 15, 25);
+  const text = html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  pdf.setFontSize(16);
+  pdf.text("HTML Document", 15, 15);
+  pdf.setFontSize(11);
+  pdf.text(pdf.splitTextToSize(text || "No content", 180), 15, 25);
   return pdf.output("arraybuffer");
 }
 
@@ -88,9 +106,16 @@ function markdownToPDF(md: string): ArrayBuffer {
     }
   };
 
-  const renderText = (text: string, x: number, fontSize: number, isBold: boolean = false, isItalic: boolean = false) => {
+  const renderText = (
+    text: string,
+    x: number,
+    fontSize: number,
+    isBold: boolean = false,
+    isItalic: boolean = false
+  ) => {
     pdf.setFontSize(fontSize);
-    const style = isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal";
+    const style =
+      isBold && isItalic ? "bolditalic" : isBold ? "bold" : isItalic ? "italic" : "normal";
     pdf.setFont("helvetica", style);
 
     // Handle inline formatting
@@ -129,7 +154,7 @@ function markdownToPDF(md: string): ArrayBuffer {
         pdf.rect(margin, y - 3, contentWidth, codeHeight, "F");
         pdf.setFontSize(9);
         pdf.setFont("courier", "normal");
-        codeBlockContent.forEach(codeLine => {
+        codeBlockContent.forEach((codeLine) => {
           pdf.text(codeLine.substring(0, 85), margin + 2, y);
           y += 4;
         });
@@ -221,7 +246,10 @@ function markdownToPDF(md: string): ArrayBuffer {
           i++;
           continue;
         }
-        const cells = row.split("|").filter(c => c.trim() !== "").map(c => c.trim());
+        const cells = row
+          .split("|")
+          .filter((c) => c.trim() !== "")
+          .map((c) => c.trim());
         if (cells.length > 0) {
           tableRows.push(cells);
         }
@@ -229,17 +257,20 @@ function markdownToPDF(md: string): ArrayBuffer {
       }
 
       if (tableRows.length > 0) {
-        const colCount = Math.max(...tableRows.map(r => r.length));
+        const colCount = Math.max(...tableRows.map((r) => r.length));
         const cellPadding = 2;
         const colWidth = contentWidth / colCount;
         const cellContentWidth = colWidth - cellPadding * 2;
 
         // Calculate row heights based on content wrapping
         pdf.setFontSize(9);
-        const rowHeights: number[] = tableRows.map(row => {
+        const rowHeights: number[] = tableRows.map((row) => {
           let maxLines = 1;
-          row.forEach(cell => {
-            const cleanCell = cell.replace(/`/g, "").replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1");
+          row.forEach((cell) => {
+            const cleanCell = cell
+              .replace(/`/g, "")
+              .replace(/\*\*(.+?)\*\*/g, "$1")
+              .replace(/\*(.+?)\*/g, "$1");
             const wrappedLines = pdf.splitTextToSize(cleanCell, cellContentWidth);
             if (wrappedLines.length > maxLines) maxLines = wrappedLines.length;
           });
@@ -269,7 +300,10 @@ function markdownToPDF(md: string): ArrayBuffer {
             const cellX = margin + colIndex * colWidth;
             pdf.setFontSize(9);
             pdf.setFont("helvetica", isHeaderRow ? "bold" : "normal");
-            const cleanCell = cell.replace(/`/g, "").replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1");
+            const cleanCell = cell
+              .replace(/`/g, "")
+              .replace(/\*\*(.+?)\*\*/g, "$1")
+              .replace(/\*(.+?)\*/g, "$1");
             const wrappedLines = pdf.splitTextToSize(cleanCell, cellContentWidth);
 
             wrappedLines.forEach((textLine: string, lineIndex: number) => {
@@ -394,18 +428,28 @@ async function docxToPDF(arrayBuffer: ArrayBuffer): Promise<ArrayBuffer> {
       buffer: Buffer.from(arrayBuffer as ArrayBuffer), // ← yeh fix 100% kaam karta hai
     });
 
-    const text = result.value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const text = result.value
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     if (!text) throw new Error("Empty");
 
     pdf.setFontSize(11);
     pdf.splitTextToSize(text, 180).forEach((line: string) => {
-      if (y > 280) { pdf.addPage(); y = 20; }
-      pdf.text(line, 15, y); y += 7;
+      if (y > 280) {
+        pdf.addPage();
+        y = 20;
+      }
+      pdf.text(line, 15, y);
+      y += 7;
     });
   } catch {
-    pdf.setFontSize(12); pdf.setTextColor(150, 0, 0);
-    pdf.text("Failed to read DOCX file", 15, y); y += 10;
-    pdf.setFontSize(10); pdf.setTextColor(100);
+    pdf.setFontSize(12);
+    pdf.setTextColor(150, 0, 0);
+    pdf.text("Failed to read DOCX file", 15, y);
+    y += 10;
+    pdf.setFontSize(10);
+    pdf.setTextColor(100);
     pdf.text("May be password-protected or corrupted", 15, y);
   }
 

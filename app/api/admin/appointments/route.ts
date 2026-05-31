@@ -1,10 +1,12 @@
 // app/api/admin/appointments/route.ts
-import { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { E, msg } from '@/lib/errors';
+import { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { E, msg } from "@/lib/errors";
 
 // Specific admin emails - ONLY these emails can access admin panel
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'hammadnooralam@gmail.com').split(',').map(email => email.trim());
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
+  .split(",")
+  .map((email) => email.trim());
 
 async function checkAdminRole(request: NextRequest) {
   const supabase = createServerClient(
@@ -15,22 +17,22 @@ async function checkAdminRole(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll() {}
-      }
+        setAll() {},
+      },
     }
   );
 
   const {
     data: { user },
-    error: userError
+    error: userError,
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return { isAdmin: false, error: 'Authentication required' };
+    return { isAdmin: false, error: "Authentication required" };
   }
 
   if (!user.email || !ADMIN_EMAILS.includes(user.email)) {
-    return { isAdmin: false, error: 'Admin access required' };
+    return { isAdmin: false, error: "Admin access required" };
   }
 
   const supabaseAdmin = createServerClient(
@@ -41,24 +43,24 @@ async function checkAdminRole(request: NextRequest) {
         getAll() {
           return [];
         },
-        setAll() {}
-      }
+        setAll() {},
+      },
     }
   );
 
   const { data: profile, error: profileError } = await supabaseAdmin
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
     .maybeSingle();
 
   if (profileError) {
-    console.error('Error fetching profile:', profileError);
-    return { isAdmin: false, error: 'Profile verification failed' };
+    console.error("Error fetching profile:", profileError);
+    return { isAdmin: false, error: "Profile verification failed" };
   }
 
-  if (!profile || profile.role !== 'admin') {
-    return { isAdmin: false, error: 'Admin role required' };
+  if (!profile || profile.role !== "admin") {
+    return { isAdmin: false, error: "Admin role required" };
   }
 
   return { isAdmin: true, error: null };
@@ -80,21 +82,21 @@ export async function GET(req: NextRequest) {
           getAll() {
             return [];
           },
-          setAll() {}
-        }
+          setAll() {},
+        },
       }
     );
 
-    console.log('📋 Fetching appointments...');
+    console.log("📋 Fetching appointments...");
 
     // Fetch appointments
     const { data: appointments, error: appointmentsError } = await supabase
-      .from('appointments')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("appointments")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (appointmentsError) {
-      console.error('❌ Error fetching appointments:', appointmentsError);
+      console.error("❌ Error fetching appointments:", appointmentsError);
       return Response.json({ error: appointmentsError.message }, { status: 500 });
     }
 
@@ -102,12 +104,12 @@ export async function GET(req: NextRequest) {
 
     // Fetch all applicants
     const { data: applicants, error: applicantsError } = await supabase
-      .from('applicants')
-      .select('*')
-      .order('created_at', { ascending: true });
+      .from("applicants")
+      .select("*")
+      .order("created_at", { ascending: true });
 
     if (applicantsError) {
-      console.error('⚠️ Error fetching applicants:', applicantsError);
+      console.error("⚠️ Error fetching applicants:", applicantsError);
       // Continue without applicants if there's an error
       return Response.json({ data: appointments || [] });
     }
@@ -131,19 +133,20 @@ export async function GET(req: NextRequest) {
     // Attach applicants to their appointments
     const data = (appointments || []).map((appointment) => {
       const appointmentApplicants = applicantsByAppointment[appointment.id] || [];
-      console.log(`📎 Appointment ${appointment.id} has ${appointmentApplicants.length} applicants`);
-      
+      console.log(
+        `📎 Appointment ${appointment.id} has ${appointmentApplicants.length} applicants`
+      );
+
       return {
         ...appointment,
-        applicants: appointmentApplicants
+        applicants: appointmentApplicants,
       };
     });
 
-    console.log('✅ Successfully prepared appointments with applicants');
+    console.log("✅ Successfully prepared appointments with applicants");
     return Response.json({ data });
-
   } catch (error) {
-    console.error('❌ Unexpected error:', error);
+    console.error("❌ Unexpected error:", error);
     return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }
@@ -159,7 +162,7 @@ export async function PUT(req: NextRequest) {
     const { id, status } = await req.json();
 
     if (!id || !status) {
-      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+      return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const supabase = createServerClient(
@@ -170,24 +173,21 @@ export async function PUT(req: NextRequest) {
           getAll() {
             return [];
           },
-          setAll() {}
-        }
+          setAll() {},
+        },
       }
     );
 
-    const { error } = await supabase
-      .from('appointments')
-      .update({ status })
-      .eq('id', id);
+    const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
 
     if (error) {
-      console.error('Error updating appointment status:', error);
+      console.error("Error updating appointment status:", error);
       return Response.json({ error: error.message }, { status: 500 });
     }
 
     return Response.json({ success: true });
   } catch (error) {
-    console.error('Unexpected error in updating appointment:', error);
+    console.error("Unexpected error in updating appointment:", error);
     return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

@@ -50,8 +50,7 @@ export function Header({
           <div
             className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl shrink-0"
             style={{
-              background:
-                "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+              background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
             }}
           >
             <BookOpen className="w-5 h-5 text-white" />
@@ -63,9 +62,7 @@ export function Header({
               {formTitle || "Form"}
             </h1>
             {formSubtitle && (
-              <p className="text-xs md:text-sm text-gray-500 truncate">
-                {formSubtitle}
-              </p>
+              <p className="text-xs md:text-sm text-gray-500 truncate">{formSubtitle}</p>
             )}
           </div>
 
@@ -81,9 +78,7 @@ export function Header({
                   }}
                 >
                   <Loader size="sm" />
-                  <span className="text-xs font-medium tracking-[0.01em]">
-                    Saving
-                  </span>
+                  <span className="text-xs font-medium tracking-[0.01em]">Saving</span>
                 </div>
               ) : lastSavedAt ? (
                 <div
@@ -105,9 +100,7 @@ export function Header({
                   >
                     <Check className="w-3 h-3" strokeWidth={3} />
                   </span>
-                  <span className="text-xs font-medium tracking-[0.01em]">
-                    Saved
-                  </span>
+                  <span className="text-xs font-medium tracking-[0.01em]">Saved</span>
                 </div>
               ) : null}
             </div>

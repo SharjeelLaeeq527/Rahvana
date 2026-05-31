@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
-import { CreatePaymentData, Payment, UpdatePaymentData } from '@/types/payment';
-import * as Errors from '@/lib/errors'
+import { createClient } from "@supabase/supabase-js";
+import { CreatePaymentData, Payment, UpdatePaymentData } from "@/types/payment";
+import * as Errors from "@/lib/errors";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -27,13 +27,13 @@ export const paymentService = {
     };
 
     const { data: payment, error } = await supabase
-      .from('payments')
+      .from("payments")
       .insert(insertData)
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating payment:', error);
+      console.error("Error creating payment:", error);
       throw new Error(Errors.msg(Errors.E.PAYMENT_CREATE_FAILED));
     }
 
@@ -45,13 +45,13 @@ export const paymentService = {
    */
   async getPaymentById(id: string): Promise<Payment> {
     const { data: payment, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('id', id)
+      .from("payments")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) {
-      console.error('Error fetching payment:', error);
+      console.error("Error fetching payment:", error);
       throw new Error(Errors.msg(Errors.E.PAYMENT_FETCH_FAILED));
     }
 
@@ -63,17 +63,17 @@ export const paymentService = {
    */
   async getPaymentBySessionId(sessionId: string): Promise<Payment | null> {
     const { data: payment, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('stripe_checkout_session_id', sessionId)
+      .from("payments")
+      .select("*")
+      .eq("stripe_checkout_session_id", sessionId)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         // No rows returned
         return null;
       }
-      console.error('Error fetching payment by session ID:', error);
+      console.error("Error fetching payment by session ID:", error);
       throw new Error(Errors.msg(Errors.E.PAYMENT_FETCH_FAILED));
     }
 
@@ -85,16 +85,16 @@ export const paymentService = {
    */
   async getPaymentByStripeId(stripePaymentId: string): Promise<Payment | null> {
     const { data: payment, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('stripe_payment_id', stripePaymentId)
+      .from("payments")
+      .select("*")
+      .eq("stripe_payment_id", stripePaymentId)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         return null;
       }
-      console.error('Error fetching payment by Stripe ID:', error);
+      console.error("Error fetching payment by Stripe ID:", error);
       throw new Error(Errors.msg(Errors.E.PAYMENT_FETCH_FAILED));
     }
 
@@ -106,14 +106,14 @@ export const paymentService = {
    */
   async updatePayment(id: string, data: UpdatePaymentData): Promise<Payment> {
     const { data: payment, error } = await supabase
-      .from('payments')
+      .from("payments")
       .update(data)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating payment:', error);
+      console.error("Error updating payment:", error);
       throw new Error(Errors.msg(Errors.E.PAYMENT_UPDATE_FAILED));
     }
 
@@ -125,13 +125,13 @@ export const paymentService = {
    */
   async getUserPayments(userId: string): Promise<Payment[]> {
     const { data: payments, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .from("payments")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Error fetching user payments:', error);
+      console.error("Error fetching user payments:", error);
       throw new Error(Errors.msg(Errors.E.PAYMENT_USER_FETCH_FAILED));
     }
 
@@ -143,32 +143,27 @@ export const paymentService = {
    */
   async updateUserSubscription(
     userId: string,
-    tier: 'free' | 'basic' | 'premium' | 'executive',
+    tier: "free" | "basic" | "premium" | "executive",
     stripeCustomerId?: string
   ): Promise<void> {
     const updateData = {
       subscription_tier: tier,
-      subscription_status: 'active',
+      subscription_status: "active",
       ...(stripeCustomerId ? { stripe_customer_id: stripeCustomerId } : {}),
     };
 
     // Try updating user_profiles table first
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .upsert({
-        id: userId,
-        ...updateData,
-      });
+    const { error: profileError } = await supabase.from("user_profiles").upsert({
+      id: userId,
+      ...updateData,
+    });
 
     if (profileError) {
       // If user_profiles doesn't exist, try users table
-      const { error: userError } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', userId);
+      const { error: userError } = await supabase.from("users").update(updateData).eq("id", userId);
 
       if (userError) {
-        console.error('Error updating user subscription:', userError);
+        console.error("Error updating user subscription:", userError);
         throw new Error(Errors.msg(Errors.E.PAYMENT_SUBSCRIPTION_UPDATE_FAILED));
       }
     }
@@ -178,15 +173,15 @@ export const paymentService = {
    * Get user subscription info
    */
   async getUserSubscription(userId: string): Promise<{
-    subscription_tier: 'free' | 'basic' | 'premium' | 'executive';
-    subscription_status: 'active' | 'inactive' | 'canceled' | 'past_due';
+    subscription_tier: "free" | "basic" | "premium" | "executive";
+    subscription_status: "active" | "inactive" | "canceled" | "past_due";
     stripe_customer_id?: string;
   } | null> {
     // Try user_profiles first
     const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('subscription_tier, subscription_status, stripe_customer_id')
-      .eq('id', userId)
+      .from("user_profiles")
+      .select("subscription_tier, subscription_status, stripe_customer_id")
+      .eq("id", userId)
       .single();
 
     if (!profileError && profile) {
@@ -195,9 +190,9 @@ export const paymentService = {
 
     // Try users table
     const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('subscription_tier, subscription_status, stripe_customer_id')
-      .eq('id', userId)
+      .from("users")
+      .select("subscription_tier, subscription_status, stripe_customer_id")
+      .eq("id", userId)
       .single();
 
     if (userError) {

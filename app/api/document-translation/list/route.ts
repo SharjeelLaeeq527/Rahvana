@@ -2,7 +2,7 @@
 // User lists their own documents
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error('[document-translation/list] Unauthorized:', userError);
+      console.error("[document-translation/list] Unauthorized:", userError);
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    const { data: documents, error, count } = await supabase
+    const {
+      data: documents,
+      error,
+      count,
+    } = await supabase
       .from("translation_documents")
       .select("*", { count: "exact" })
       .eq("user_id", user.id)
@@ -32,10 +36,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("Query error:", error);
-      return NextResponse.json(
-        { error: msg(E.ADMIN_FETCH_FAILED) },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
     // Generate signed URLs
@@ -76,9 +77,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("List documents error:", error);
-    return NextResponse.json(
-      { error: msg(E.ADMIN_FETCH_FAILED) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

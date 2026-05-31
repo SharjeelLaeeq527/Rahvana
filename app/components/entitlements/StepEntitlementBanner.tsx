@@ -7,7 +7,10 @@ import { UpgradeModal } from "./UpgradeModal";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 
 // ── Human-readable labels per feature key ────────────────────────────────────
-const FEATURE_LABELS: Record<string, { title: string; what: string; icon: "lock" | "crown" | "zap" | "shield" }> = {
+const FEATURE_LABELS: Record<
+  string,
+  { title: string; what: string; icon: "lock" | "crown" | "zap" | "shield" }
+> = {
   step_guides: {
     title: "Step-by-Step Guides Locked",
     what: "Guides, document upload buttons, and the document vault are not included in your current plan. You can still view the checklist and save manual entries.",
@@ -40,7 +43,7 @@ const FEATURE_LABELS: Record<string, { title: string; what: string; icon: "lock"
   },
   medical_booking: {
     title: "Medical Appointment Booking Locked",
-    what: "Rahvana's medical booking service and the full scheduling guide require Premium or higher. You can still save your appointment details manually.",
+    what: "Rahvana's medical booking service and the full scheduling guide require Executive Plan. You can still save your appointment details manually.",
     icon: "shield",
   },
   polio_certificate: {
@@ -60,66 +63,69 @@ const FEATURE_LABELS: Record<string, { title: string; what: string; icon: "lock"
 // premium:   silver icon      → periwinkle-grey tones
 // executive: gold icon        → amber-cream tones
 // fallback:  lock             → cool slate-blue tones
-const TIER_THEME: Record<string, {
-  banner: string;        // banner background
-  border: string;        // banner border
-  iconCircle: string;    // circular icon wrapper bg
-  iconCircleBorder: string;
-  iconColor: string;     // icon / plan-icon tint
-  badge: string;         // hint pill classes
-  ctaColor: string;      // CTA link color
-  ctaHover: string;
-  titleColor: string;
-  descColor: string;
-}> = {
+const TIER_THEME: Record<
+  string,
+  {
+    banner: string; // banner background
+    border: string; // banner border
+    iconCircle: string; // circular icon wrapper bg
+    iconCircleBorder: string;
+    iconColor: string; // icon / plan-icon tint
+    badge: string; // hint pill classes
+    ctaColor: string; // CTA link color
+    ctaHover: string;
+    titleColor: string;
+    descColor: string;
+  }
+> = {
   basic: {
-    banner:            "bg-[#e4f4f2]",
-    border:            "border-[#98d0ca]",
-    iconCircle:        "bg-[#b8e4de]",
-    iconCircleBorder:  "border-[#78c8c0]",
-    iconColor:         "text-[#1e8880]",
-    badge:             "bg-[#b8e4de] text-[#0f4040] border-[#78c8c0]",
-    ctaColor:          "text-[#1e8880]",
-    ctaHover:          "hover:text-[#0e6860]",
-    titleColor:        "text-[#072c2a]",
-    descColor:         "text-[#2d6a64]",
+    banner: "bg-[#e4f4f2]",
+    border: "border-[#98d0ca]",
+    iconCircle: "bg-[#b8e4de]",
+    iconCircleBorder: "border-[#78c8c0]",
+    iconColor: "text-[#1e8880]",
+    badge: "bg-[#b8e4de] text-[#0f4040] border-[#78c8c0]",
+    ctaColor: "text-[#1e8880]",
+    ctaHover: "hover:text-[#0e6860]",
+    titleColor: "text-[#072c2a]",
+    descColor: "text-[#2d6a64]",
   },
   premium: {
-    banner:            "bg-[#eeeeF8]",
-    border:            "border-[#c0c0dc]",
-    iconCircle:        "bg-[#dcdcf0]",
-    iconCircleBorder:  "border-[#a8a8cc]",
-    iconColor:         "text-[#585878]",
-    badge:             "bg-[#dcdcf0] text-[#282848] border-[#a8a8cc]",
-    ctaColor:          "text-[#585878]",
-    ctaHover:          "hover:text-[#383858]",
-    titleColor:        "text-[#181830]",
-    descColor:         "text-[#484868]",
+    banner: "bg-[#eeeeF8]",
+    border: "border-[#c0c0dc]",
+    iconCircle: "bg-[#dcdcf0]",
+    iconCircleBorder: "border-[#a8a8cc]",
+    iconColor: "text-[#585878]",
+    badge: "bg-[#dcdcf0] text-[#282848] border-[#a8a8cc]",
+    ctaColor: "text-[#585878]",
+    ctaHover: "hover:text-[#383858]",
+    titleColor: "text-[#181830]",
+    descColor: "text-[#484868]",
   },
   executive: {
-    banner:            "bg-[#fdf4d8]",
-    border:            "border-[#e4cc88]",
-    iconCircle:        "bg-[#f0e0a0]",
-    iconCircleBorder:  "border-[#d0b060]",
-    iconColor:         "text-[#8a6810]",
-    badge:             "bg-[#f0e0a0] text-[#5a3808] border-[#d0b060]",
-    ctaColor:          "text-[#8a6810]",
-    ctaHover:          "hover:text-[#6a4800]",
-    titleColor:        "text-[#3a2800]",
-    descColor:         "text-[#7a5818]",
+    banner: "bg-[#fdf4d8]",
+    border: "border-[#e4cc88]",
+    iconCircle: "bg-[#f0e0a0]",
+    iconCircleBorder: "border-[#d0b060]",
+    iconColor: "text-[#8a6810]",
+    badge: "bg-[#f0e0a0] text-[#5a3808] border-[#d0b060]",
+    ctaColor: "text-[#8a6810]",
+    ctaHover: "hover:text-[#6a4800]",
+    titleColor: "text-[#3a2800]",
+    descColor: "text-[#7a5818]",
   },
   // Default / lock fallback
   lock: {
-    banner:            "bg-[#f0f4f8]",
-    border:            "border-[#c0d0e0]",
-    iconCircle:        "bg-[#dce8f4]",
-    iconCircleBorder:  "border-[#a8c0d8]",
-    iconColor:         "text-[#5a7a96]",
-    badge:             "bg-[#dce8f4] text-[#2a4a64] border-[#a8c0d8]",
-    ctaColor:          "text-[#5a7a96]",
-    ctaHover:          "hover:text-[#3a5a76]",
-    titleColor:        "text-[#0c1b2e]",
-    descColor:         "text-[#4a6070]",
+    banner: "bg-[#f0f4f8]",
+    border: "border-[#c0d0e0]",
+    iconCircle: "bg-[#dce8f4]",
+    iconCircleBorder: "border-[#a8c0d8]",
+    iconColor: "text-[#5a7a96]",
+    badge: "bg-[#dce8f4] text-[#2a4a64] border-[#a8c0d8]",
+    ctaColor: "text-[#5a7a96]",
+    ctaHover: "hover:text-[#3a5a76]",
+    titleColor: "text-[#0c1b2e]",
+    descColor: "text-[#4a6070]",
   },
 };
 
@@ -128,10 +134,7 @@ interface StepEntitlementBannerProps {
   defaultOpen?: boolean;
 }
 
-export function StepEntitlementBanner({
-  stepKey,
-  defaultOpen = true,
-}: StepEntitlementBannerProps) {
+export function StepEntitlementBanner({ stepKey, defaultOpen = true }: StepEntitlementBannerProps) {
   const plan = usePlan();
   const [dismissed, setDismissed] = useState(false);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
@@ -168,10 +171,7 @@ export function StepEntitlementBanner({
   return (
     <>
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
       <div
@@ -191,10 +191,7 @@ export function StepEntitlementBanner({
           `}
         >
           {tierIconClass ? (
-            <span
-              className={`plan-icon ${tierIconClass}`}
-              style={{ width: 22, height: 22 }}
-            />
+            <span className={`plan-icon ${tierIconClass}`} style={{ width: 22, height: 22 }} />
           ) : (
             <IconEl size={15} strokeWidth={2.3} className={theme.iconColor} />
           )}
@@ -208,16 +205,16 @@ export function StepEntitlementBanner({
               {meta.title}
             </span>
             {hint && (
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${theme.badge}`}>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${theme.badge}`}
+              >
                 {hint}
               </span>
             )}
           </div>
 
           {/* Description */}
-          <p className={`text-[12px] leading-[1.65] ${theme.descColor}`}>
-            {meta.what}
-          </p>
+          <p className={`text-[12px] leading-[1.65] ${theme.descColor}`}>{meta.what}</p>
 
           {/* CTA */}
           {cta && (

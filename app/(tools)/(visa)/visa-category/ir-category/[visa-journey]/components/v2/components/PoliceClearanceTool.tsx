@@ -80,11 +80,10 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
 
   const data = POLICE_CLEARANCE_DATA;
   const isPccUploaded = uploadedDocuments?.some(
-    (doc: any) => doc.documentDefId === "police-certificate-pakistan",
+    (doc: any) => doc.documentDefId === "police-certificate-pakistan"
   );
 
-  const currentSteps =
-    pccOverlayMode === "service" ? data.serviceSteps : data.guideSteps;
+  const currentSteps = pccOverlayMode === "service" ? data.serviceSteps : data.guideSteps;
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 shadow-xs border p-6 rounded-2xl bg-white">
@@ -104,9 +103,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
         <div className="text-[10px] font-black tracking-widest uppercase text-white/30 mb-1">
           {data.decisionModule.eyebrow}
         </div>
-        <div className="text-xl text-white/95 font-bold mb-6">
-          {data.decisionModule.heading}
-        </div>
+        <div className="text-xl text-white/95 font-bold mb-6">{data.decisionModule.heading}</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {data.decisionModule.paths.map((p: any) => (
             <button
@@ -123,9 +120,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                 {p.icon}
               </div>
               <div className="text-sm font-bold text-white mb-1">{p.title}</div>
-              <div className="text-[10px] text-white/50 leading-tight">
-                {p.sub}
-              </div>
+              <div className="text-[10px] text-white/50 leading-tight">{p.sub}</div>
             </button>
           ))}
         </div>
@@ -161,18 +156,12 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                   max={isDate ? todayStr : undefined}
                   maxLength={!isDate ? MAX_LEN : undefined}
                   placeholder={
-                    !isDate
-                      ? f.id === "receipt"
-                        ? "e.g. PCC-2024-001234"
-                        : "Optional"
-                      : undefined
+                    !isDate ? (f.id === "receipt" ? "e.g. PCC-2024-001234" : "Optional") : undefined
                   }
                   onChange={(e) => {
                     let val = e.target.value;
                     if (!isDate) {
-                      val = val
-                        .replace(/[^a-zA-Z0-9\-\/\s]/g, "")
-                        .toUpperCase();
+                      val = val.replace(/[^a-zA-Z0-9\-\/\s]/g, "").toUpperCase();
                       if (val.length > MAX_LEN) val = val.slice(0, MAX_LEN);
                       const err = validatePccField(f.id, val);
                       setErrors((prev) => ({ ...prev, [f.id]: err }));
@@ -180,9 +169,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                     setPccData({ ...pccData, [f.id]: val });
                   }}
                   className={`p-3 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm ${
-                    errors[f.id]
-                      ? "border-red-500 bg-red-50/30"
-                      : "border-slate-200"
+                    errors[f.id] ? "border-red-500 bg-red-50/30" : "border-slate-200"
                   }`}
                 />
                 {errors[f.id] && (
@@ -243,12 +230,8 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
       {pccSaved && !pccReceived && (
         <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl flex flex-col gap-4">
           <div>
-            <div className="text-sm font-bold text-amber-900 mb-1">
-              📌 {data.pendingCard.title}
-            </div>
-            <div className="text-xs text-amber-800 leading-relaxed">
-              {data.pendingCard.body}
-            </div>
+            <div className="text-sm font-bold text-amber-900 mb-1">📌 {data.pendingCard.title}</div>
+            <div className="text-xs text-amber-800 leading-relaxed">{data.pendingCard.body}</div>
           </div>
           <button
             onClick={async () => {
@@ -274,12 +257,9 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
         <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex flex-col gap-4">
           <div>
             <div className="text-sm font-bold text-emerald-900 mb-1 flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-emerald-600" />{" "}
-              {data.receivedCard.title}
+              <CheckCircle2 size={18} className="text-emerald-600" /> {data.receivedCard.title}
             </div>
-            <div className="text-xs text-emerald-800 leading-relaxed">
-              {data.receivedCard.body}
-            </div>
+            <div className="text-xs text-emerald-800 leading-relaxed">{data.receivedCard.body}</div>
           </div>
           {isPccUploaded ? (
             <div className="flex flex-col gap-3">
@@ -290,11 +270,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
               <button
                 onClick={() => {
                   if (guard && !guard()) return;
-                  if (
-                    openUploadModal &&
-                    setActiveUploadId &&
-                    setActiveUploadType
-                  ) {
+                  if (openUploadModal && setActiveUploadId && setActiveUploadType) {
                     setActiveUploadId("pcc_upload");
                     setActiveUploadType("doc");
                     openUploadModal("police-certificate-pakistan");
@@ -311,11 +287,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
             <button
               onClick={() => {
                 if (guard && !guard()) return;
-                if (
-                  openUploadModal &&
-                  setActiveUploadId &&
-                  setActiveUploadType
-                ) {
+                if (openUploadModal && setActiveUploadId && setActiveUploadType) {
                   setActiveUploadId("pcc_upload");
                   setActiveUploadType("doc");
                   openUploadModal("police-certificate-pakistan");
@@ -364,17 +336,14 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                 {currentSteps[pccOverlayStep].instruction}
               </p>
 
-              {pccOverlayStep === 0 && (
+              {pccOverlayStep === 0 && pccOverlayMode === "service" && (
                 <div className="flex justify-center items-center">
                   <button
                     onClick={() => {
                       if (tier !== "executive") {
                         setShowUpgradeModal(true);
                       } else {
-                        window.open(
-                          "/police-verification/apply?province=Sindh",
-                          "_blank",
-                        );
+                        window.open("/police-verification/apply?province=Sindh", "_blank");
                       }
                     }}
                     className="relative w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary/90 transition-colors mb-4"
@@ -408,9 +377,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                   }}
                   className="flex-1 bg-slate-900 text-white p-4 rounded-xl font-bold hover:bg-slate-800 transition-colors"
                 >
-                  {pccOverlayStep === currentSteps.length - 1
-                    ? "Finish Guide"
-                    : "Next →"}
+                  {pccOverlayStep === currentSteps.length - 1 ? "Finish Guide" : "Next →"}
                 </button>
               </div>
             </div>
@@ -418,10 +385,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
         </div>
       )}
       {showUpgradeModal && (
-        <UpgradeModal
-          feature="Executive PCC Filing"
-          onClose={() => setShowUpgradeModal(false)}
-        />
+        <UpgradeModal feature="Executive PCC Filing" onClose={() => setShowUpgradeModal(false)} />
       )}
     </div>
   );

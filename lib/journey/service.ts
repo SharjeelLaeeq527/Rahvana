@@ -46,14 +46,11 @@ export class ProgressCalculationService {
       const chapters = await db.getChaptersForJourneyDB(journeyId);
 
       // Sum all steps across all chapters
-      const totalSteps = chapters.reduce(
-        (sum, chapter) => sum + chapter.total_steps_count,
-        0,
-      );
+      const totalSteps = chapters.reduce((sum, chapter) => sum + chapter.total_steps_count, 0);
 
       const completedSteps = chapters.reduce(
         (sum, chapter) => sum + chapter.completed_steps_count,
-        0,
+        0
       );
 
       const completionPercentage =
@@ -75,10 +72,7 @@ export class ProgressCalculationService {
 
       return progressData;
     } catch (error) {
-      console.error(
-        `Error calculating journey progress for ${journeyId}:`,
-        error,
-      );
+      console.error(`Error calculating journey progress for ${journeyId}:`, error);
       throw error;
     }
   }
@@ -94,19 +88,17 @@ export class ProgressCalculationService {
 
       // Get journey to check filing method for filtering
       const journey = await db.getJourneyDB(chapter.journey_id);
-      const filingMethod = journey?.filing_method || 'online';
+      const filingMethod = journey?.filing_method || "online";
 
       // Filter steps based on branch/filing method
-      const activeSteps = steps.filter(step => {
+      const activeSteps = steps.filter((step) => {
         const branch = (step.metadata as any)?.branch;
-        return !branch || branch === 'both' || branch === filingMethod;
+        return !branch || branch === "both" || branch === filingMethod;
       });
 
       // Count completed steps
       const totalSteps = activeSteps.length;
-      const completedSteps = activeSteps.filter(
-        (step) => step.status === "completed",
-      ).length;
+      const completedSteps = activeSteps.filter((step) => step.status === "completed").length;
 
       const completionPercentage =
         totalSteps === 0 ? 0 : Math.round((completedSteps / totalSteps) * 100);
@@ -133,10 +125,7 @@ export class ProgressCalculationService {
 
       return progressData;
     } catch (error) {
-      console.error(
-        `Error calculating chapter progress for ${chapterId}:`,
-        error,
-      );
+      console.error(`Error calculating chapter progress for ${chapterId}:`, error);
       throw error;
     }
   }
@@ -148,35 +137,38 @@ export class ProgressCalculationService {
       if (!journey) throw new Error("Journey not found");
 
       const chapters = await db.getChaptersForJourneyDB(journeyId, undefined, client);
-      const filingMethod = journey.filing_method || 'online';
+      const filingMethod = journey.filing_method || "online";
 
       // Optimized: Fetch ALL steps for the journey in ONE query instead of N (chapters) queries
       const allSteps = await db.getStepsForJourneyDB(journeyId, undefined, client);
-      
+
       // Group steps by chapter ID in memory
-      const stepsByChapter = allSteps.reduce((acc, step) => {
-        if (!acc[step.chapter_id]) acc[step.chapter_id] = [];
-        acc[step.chapter_id].push(step);
-        return acc;
-      }, {} as Record<string, Step[]>);
+      const stepsByChapter = allSteps.reduce(
+        (acc, step) => {
+          if (!acc[step.chapter_id]) acc[step.chapter_id] = [];
+          acc[step.chapter_id].push(step);
+          return acc;
+        },
+        {} as Record<string, Step[]>
+      );
 
       // Build per-chapter progress from memory-grouped steps
       const chapterProgress = chapters.map((ch) => {
         const steps = stepsByChapter[ch.id] || [];
         const activeSteps = steps.filter((s) => {
           const branch = (s.metadata as any)?.branch;
-          return !branch || branch === 'both' || branch === filingMethod;
+          return !branch || branch === "both" || branch === filingMethod;
         });
-        const completedCount = activeSteps.filter(s => s.status === 'completed').length;
+        const completedCount = activeSteps.filter((s) => s.status === "completed").length;
         const total = activeSteps.length;
         const pct = total === 0 ? 0 : Math.round((completedCount / total) * 100);
         return { ch, activeSteps, completedCount, total, pct };
       });
 
-      const completedChapters = chapterProgress.filter(c => c.pct === 100).length;
+      const completedChapters = chapterProgress.filter((c) => c.pct === 100).length;
 
       // Current chapter = first chapter that is NOT 100% complete
-      let currentChapterIdx = chapterProgress.findIndex(c => c.pct < 100);
+      let currentChapterIdx = chapterProgress.findIndex((c) => c.pct < 100);
       if (currentChapterIdx === -1) currentChapterIdx = chapters.length - 1;
 
       // Current step = first incomplete active step in that chapter
@@ -184,7 +176,7 @@ export class ProgressCalculationService {
       const currentChapterData = chapterProgress[currentChapterIdx];
       if (currentChapterData) {
         const firstIncompleteIdx = currentChapterData.activeSteps.findIndex(
-          s => s.status !== 'completed'
+          (s) => s.status !== "completed"
         );
         activeStepIdx = firstIncompleteIdx === -1 ? 0 : firstIncompleteIdx;
       }
@@ -203,7 +195,7 @@ export class ProgressCalculationService {
           chapter_key: ch.chapter_key,
           chapter_name: ch.chapter_name,
           completion_percentage: pct,
-          status: pct === 100 ? 'completed' : pct > 0 ? 'in_progress' : 'not_started',
+          status: pct === 100 ? "completed" : pct > 0 ? "in_progress" : "not_started",
         })),
       };
     } catch (error) {
@@ -217,25 +209,22 @@ export class ProgressCalculationService {
     try {
       const chapter = await db.getChapterDB(chapterId);
       if (!chapter) return null;
-      
+
       const journey = await db.getJourneyDB(chapter.journey_id);
-      const filingMethod = journey?.filing_method || 'online';
+      const filingMethod = journey?.filing_method || "online";
 
       const steps = await db.getStepsForChapterDB(chapterId);
-      
+
       // Filter by branch
-      const activeSteps = steps.filter(s => {
+      const activeSteps = steps.filter((s) => {
         const branch = (s.metadata as any)?.branch;
-        return !branch || branch === 'both' || branch === filingMethod;
+        return !branch || branch === "both" || branch === filingMethod;
       });
 
       const currentStep = activeSteps.find((step) => step.status !== "completed");
       return currentStep || null;
     } catch (error) {
-      console.error(
-        `Error getting current step for chapter ${chapterId}:`,
-        error,
-      );
+      console.error(`Error getting current step for chapter ${chapterId}:`, error);
       throw error;
     }
   }
@@ -252,14 +241,11 @@ export class ConditionalLogicEngine {
   //  Check if a chapter should be visible based on its visible_when condition and the user's case_data
   checkChapterVisibility(
     chapter: Chapter,
-    caseData: Record<string, unknown>,
+    caseData: Record<string, unknown>
   ): VisibilityCheckResult {
     try {
       // If no visible_when condition, chapter is always visible
-      if (
-        !chapter.visible_when ||
-        Object.keys(chapter.visible_when).length === 0
-      ) {
+      if (!chapter.visible_when || Object.keys(chapter.visible_when).length === 0) {
         return {
           is_visible: true,
           reason: "No visibility restrictions",
@@ -277,7 +263,7 @@ export class ConditionalLogicEngine {
         if (Array.isArray(expectedValue)) {
           if (!expectedValue.includes(caseValue)) {
             failedConditions.push(
-              `${key} must be one of ${JSON.stringify(expectedValue)}, but was ${JSON.stringify(caseValue)}`,
+              `${key} must be one of ${JSON.stringify(expectedValue)}, but was ${JSON.stringify(caseValue)}`
             );
           }
         }
@@ -296,7 +282,7 @@ export class ConditionalLogicEngine {
         else {
           if (caseValue !== expectedValue) {
             failedConditions.push(
-              `${key} must be ${JSON.stringify(expectedValue)}, but was ${JSON.stringify(caseValue)}`,
+              `${key} must be ${JSON.stringify(expectedValue)}, but was ${JSON.stringify(caseValue)}`
             );
           }
         }
@@ -314,19 +300,13 @@ export class ConditionalLogicEngine {
         reason: "All visibility conditions met",
       };
     } catch (error) {
-      console.error(
-        `Error checking chapter visibility for ${chapter.id}:`,
-        error,
-      );
+      console.error(`Error checking chapter visibility for ${chapter.id}:`, error);
       throw error;
     }
   }
 
   // Get visible chapters for a journey based on case_data
-  async getVisibleChapters(
-    journeyId: string,
-    caseData: Record<string, unknown>,
-  ) {
+  async getVisibleChapters(journeyId: string, caseData: Record<string, unknown>) {
     try {
       const chapters = await db.getChaptersForJourneyDB(journeyId);
 
@@ -346,10 +326,7 @@ export class ConditionalLogicEngine {
   }
 
   // Get hidden chapters with reasons (for admin debugging)
-  async getHiddenChaptersWithReasons(
-    journeyId: string,
-    caseData: Record<string, unknown>,
-  ) {
+  async getHiddenChaptersWithReasons(journeyId: string, caseData: Record<string, unknown>) {
     try {
       const chapters = await db.getChaptersForJourneyDB(journeyId);
 
@@ -369,10 +346,7 @@ export class ConditionalLogicEngine {
   }
 
   // Check if step should be visible based on conditions
-  evaluateStepVisibility(
-    step: Step,
-    caseData: Record<string, unknown>,
-  ): VisibilityCheckResult {
+  evaluateStepVisibility(step: Step, caseData: Record<string, unknown>): VisibilityCheckResult {
     try {
       // If no visibility conditions, step is visible
       if (!step.visible_when || Object.keys(step.visible_when).length === 0) {
@@ -402,15 +376,13 @@ export class ConditionalLogicEngine {
           // If expected is array, check if actual is in array
           if (!expectedValue.includes(actualValue)) {
             failedConditions.push(
-              `${key} must be one of ${expectedValue.join(", ")} (got ${actualValue})`,
+              `${key} must be one of ${expectedValue.join(", ")} (got ${actualValue})`
             );
           }
         } else {
           // Direct equality check
           if (actualValue !== expectedValue) {
-            failedConditions.push(
-              `${key} must be ${expectedValue} (got ${actualValue})`,
-            );
+            failedConditions.push(`${key} must be ${expectedValue} (got ${actualValue})`);
           }
         }
       }
@@ -433,10 +405,7 @@ export class ConditionalLogicEngine {
   }
 
   // Evaluate step status based on dependencies and case data
-  evaluateBlockedStatus(
-    step: Step,
-    caseData: Record<string, unknown>,
-  ): VisibilityCheckResult {
+  evaluateBlockedStatus(step: Step, caseData: Record<string, unknown>): VisibilityCheckResult {
     try {
       // If step status is blocked
       if (step.status === "blocked") {
@@ -483,22 +452,18 @@ export class ConditionalLogicEngine {
  */
 export class StepCompletionEngine {
   // Mark a step as completed — optimized for speed: 1 direct write + background recalc
-  async completeStep(
-    stepId: string,
-    journeyId: string,
-    completionData?: Record<string, unknown>,
-  ) {
+  async completeStep(stepId: string, journeyId: string, completionData?: Record<string, unknown>) {
     try {
       const now = new Date().toISOString();
-      const { createClient } = await import('@/lib/supabase/server');
+      const { createClient } = await import("@/lib/supabase/server");
       const client = await createClient();
 
       // 1. Mark step completed — single direct UPDATE, no pre-read
       const { data: updatedStep, error: updateError } = await client
-        .from('steps')
-        .update({ status: 'completed', completion_percentage: 100, completed_at: now })
-        .eq('id', stepId)
-        .select('id, step_key, chapter_id, status')
+        .from("steps")
+        .update({ status: "completed", completion_percentage: 100, completed_at: now })
+        .eq("id", stepId)
+        .select("id, step_key, chapter_id, status")
         .single();
 
       if (updateError) {
@@ -506,10 +471,11 @@ export class StepCompletionEngine {
       }
 
       // 2. Fire-and-forget: mark journey in_progress
-      client.from('journeys')
-        .update({ status: 'in_progress', updated_at: now })
-        .eq('id', journeyId)
-        .neq('status', 'in_progress')
+      client
+        .from("journeys")
+        .update({ status: "in_progress", updated_at: now })
+        .eq("id", journeyId)
+        .neq("status", "in_progress")
         .then(() => {});
 
       // 3. Background: recalculate chapter & journey progress (non-blocking)
@@ -518,7 +484,7 @@ export class StepCompletionEngine {
           await new ProgressCalculationService().calculateChapterProgress(updatedStep.chapter_id);
           await new ProgressCalculationService().calculateJourneyProgress(journeyId);
         } catch (e) {
-          console.warn('[completeStep] Background progress recalc failed:', e);
+          console.warn("[completeStep] Background progress recalc failed:", e);
         }
       });
 
@@ -536,10 +502,7 @@ export class StepCompletionEngine {
   }
 
   // Check if all dependencies for a step are met
-  async checkDependencies(
-    stepId: string,
-    journeyId: string,
-  ): Promise<DependencyCheckResult> {
+  async checkDependencies(stepId: string, journeyId: string): Promise<DependencyCheckResult> {
     try {
       // Get the step first to check its dependencies
       const step = await db.getStepDB(stepId);
@@ -554,13 +517,10 @@ export class StepCompletionEngine {
       }
 
       // Fetch all dependency steps for this journey in one go
-      const dependencySteps = await db.getStepsForJourneyByStepKeysDB(
-        journeyId,
-        step.dependencies,
-      );
+      const dependencySteps = await db.getStepsForJourneyByStepKeysDB(journeyId, step.dependencies);
 
       const pendingDependencies: string[] = [];
-      
+
       // Check if all needed keys were found and are completed
       for (const depKey of step.dependencies) {
         const depStep = dependencySteps.find((s: Step) => s.step_key === depKey);
@@ -591,7 +551,7 @@ export class StepCompletionEngine {
   // Validate that step can be completed
   async validateStepCompletion(
     step: Step,
-    completionData?: Record<string, unknown>,
+    completionData?: Record<string, unknown>
   ): Promise<{ valid: boolean; errors?: string[] }> {
     try {
       const errors: string[] = [];
@@ -620,10 +580,7 @@ export class StepCompletionEngine {
   }
 
   // Unlock steps that depend on the completed step
-  async unlockDependentSteps(
-    completedStepId: string,
-    journeyId: string,
-  ): Promise<string[]> {
+  async unlockDependentSteps(completedStepId: string, journeyId: string): Promise<string[]> {
     try {
       // Get all steps for journey
       const allSteps = await db.getStepsForJourneyDB(journeyId);
@@ -631,9 +588,7 @@ export class StepCompletionEngine {
       // Find steps that depend on completed step
       const dependentSteps = allSteps.filter(
         (s) =>
-          s.dependencies &&
-          s.dependencies.includes(completedStepId) &&
-          s.status === "not_started",
+          s.dependencies && s.dependencies.includes(completedStepId) && s.status === "not_started"
       );
 
       // Update them to visible and in_progress status if needed
@@ -651,10 +606,7 @@ export class StepCompletionEngine {
 
       return unlockedIds;
     } catch (error) {
-      console.error(
-        `Error unlocking dependent steps for ${completedStepId}:`,
-        error,
-      );
+      console.error(`Error unlocking dependent steps for ${completedStepId}:`, error);
       throw error;
     }
   }
@@ -663,9 +615,7 @@ export class StepCompletionEngine {
   async getDependentSteps(stepId: string, journeyId: string): Promise<Step[]> {
     try {
       const allSteps = await db.getStepsForJourneyDB(journeyId);
-      return allSteps.filter(
-        (s) => s.dependencies && s.dependencies.includes(stepId),
-      );
+      return allSteps.filter((s) => s.dependencies && s.dependencies.includes(stepId));
     } catch (error) {
       console.error(`Error getting dependent steps for ${stepId}:`, error);
       throw error;
@@ -673,11 +623,7 @@ export class StepCompletionEngine {
   }
 
   // Skip step but keep it visible and persistent on dashboard (for optional tasks like Police Certificate)
-  async skipStepButKeepPersistent(
-    stepId: string,
-    journeyId: string,
-    reason?: string,
-  ) {
+  async skipStepButKeepPersistent(stepId: string, journeyId: string, reason?: string) {
     try {
       // Get step and verify it exists
       const step = await db.getStepDB(stepId);
@@ -694,9 +640,7 @@ export class StepCompletionEngine {
 
       // Check if step is skippable (not required)
       if (step.is_required) {
-        throw new Error(
-          "Cannot skip required step. This step must be completed.",
-        );
+        throw new Error("Cannot skip required step. This step must be completed.");
       }
 
       // Mark as skipped with "persistent" substatus
@@ -711,15 +655,13 @@ export class StepCompletionEngine {
       const chapter = await db.getChapterDB(step.chapter_id);
 
       if (chapter) {
-        const chapterProgress =
-          await new ProgressCalculationService().calculateChapterProgress(
-            step.chapter_id,
-          );
+        const chapterProgress = await new ProgressCalculationService().calculateChapterProgress(
+          step.chapter_id
+        );
 
-        const journeyProgress =
-          await new ProgressCalculationService().calculateJourneyProgress(
-            journeyId,
-          );
+        const journeyProgress = await new ProgressCalculationService().calculateJourneyProgress(
+          journeyId
+        );
 
         return {
           step_id: stepId,
@@ -730,8 +672,7 @@ export class StepCompletionEngine {
           is_persistent: true,
           chapter_completion_percentage: chapterProgress.completion_percentage,
           journey_completion_percentage: journeyProgress.completion_percentage,
-          message:
-            "Step skipped but will remain visible until completed or resolved",
+          message: "Step skipped but will remain visible until completed or resolved",
         };
       }
 
@@ -753,11 +694,7 @@ export class StepCompletionEngine {
 
   // Mark an incomplete step as "passed" (for review-only or informational steps)
   // This is for steps that don't require completion but should be marked as reviewed
-  async markStepAsIncompleteButPassed(
-    stepId: string,
-    journeyId: string,
-    reviewNotes?: string,
-  ) {
+  async markStepAsIncompleteButPassed(stepId: string, journeyId: string, reviewNotes?: string) {
     try {
       const step = await db.getStepDB(stepId);
       if (!step) throw new Error("Step not found");
@@ -771,14 +708,12 @@ export class StepCompletionEngine {
 
       const chapter = await db.getChapterDB(step.chapter_id);
       if (chapter) {
-        const chapterProgress =
-          await new ProgressCalculationService().calculateChapterProgress(
-            step.chapter_id,
-          );
-        const journeyProgress =
-          await new ProgressCalculationService().calculateJourneyProgress(
-            journeyId,
-          );
+        const chapterProgress = await new ProgressCalculationService().calculateChapterProgress(
+          step.chapter_id
+        );
+        const journeyProgress = await new ProgressCalculationService().calculateJourneyProgress(
+          journeyId
+        );
 
         return {
           step_id: stepId,
@@ -803,10 +738,7 @@ export class StepCompletionEngine {
         message: "Step marked as reviewed but incomplete (optional)",
       };
     } catch (error) {
-      console.error(
-        `Error marking step as incomplete-but-passed ${stepId}:`,
-        error,
-      );
+      console.error(`Error marking step as incomplete-but-passed ${stepId}:`, error);
       throw error;
     }
   }
@@ -817,16 +749,10 @@ export class StepCompletionEngine {
     try {
       const allSteps = await db.getStepsForJourneyDB(journeyId);
       return allSteps.filter(
-        (s) =>
-          s.status === "skipped" &&
-          s.substatus === "persistent" &&
-          !s.is_required,
+        (s) => s.status === "skipped" && s.substatus === "persistent" && !s.is_required
       );
     } catch (error) {
-      console.error(
-        `Error getting skippable-persistent steps for ${journeyId}:`,
-        error,
-      );
+      console.error(`Error getting skippable-persistent steps for ${journeyId}:`, error);
       throw error;
     }
   }
@@ -866,8 +792,7 @@ export class CaseDataValidationEngine {
     },
 
     beneficiary_country_of_residence: (value) => {
-      if (typeof value !== "string" || value.length < 2)
-        return ["Must be a valid country name"];
+      if (typeof value !== "string" || value.length < 2) return ["Must be a valid country name"];
       return [];
     },
 
@@ -924,9 +849,7 @@ export class CaseDataValidationEngine {
         "WI",
         "WY",
       ];
-      return !validUSStates.includes(value?.toUpperCase())
-        ? ["Must be a valid US state code"]
-        : [];
+      return !validUSStates.includes(value?.toUpperCase()) ? ["Must be a valid US state code"] : [];
     },
   };
 
@@ -954,38 +877,32 @@ export class CaseDataValidationEngine {
 
   // Validate complete case profile
   validateCaseProfile(
-    caseData: Record<string, CaseData>,
+    caseData: Record<string, CaseData>
   ): Record<string, CaseDataValidationResult> {
     const results: Record<string, CaseDataValidationResult> = {};
 
     for (const [dataKey, caseDataItem] of Object.entries(caseData)) {
-      results[dataKey] = this.validateCaseData(
-        dataKey,
-        caseDataItem.data_value,
-      );
+      results[dataKey] = this.validateCaseData(dataKey, caseDataItem.data_value);
     }
 
     return results;
   }
 
   // Add custom validation rule
-  addValidationRule(
-    dataKey: string,
-    validator: (value: any) => string[],
-  ): void {
+  addValidationRule(dataKey: string, validator: (value: any) => string[]): void {
     this.validationRules[dataKey] = validator;
   }
 
   // Check if required data is complete
   checkDataCompleteness(
     caseData: Record<string, CaseData>,
-    requiredKeys: string[],
+    requiredKeys: string[]
   ): { complete: boolean; missing_keys: string[] } {
     const missing_keys = requiredKeys.filter(
       (key) =>
         !caseData[key] ||
         caseData[key].data_value === null ||
-        caseData[key].data_value === undefined,
+        caseData[key].data_value === undefined
     );
 
     return {
@@ -1009,7 +926,7 @@ export class JourneyService {
     overrides?: {
       filing_method?: "online" | "paper";
       visa_category?: string;
-    },
+    }
   ) {
     try {
       console.log(`Creating journey from config: ${filePath}`);
@@ -1017,9 +934,7 @@ export class JourneyService {
       // Load and transform JSON to database schema
       const rawJSON = ConfigLoader.loadJourneyJSON(filePath);
       const journeyInput = ConfigLoader.transformJourneyInput(rawJSON);
-      const chaptersInput = ConfigLoader.transformChaptersInput(
-        rawJSON.chapters,
-      );
+      const chaptersInput = ConfigLoader.transformChaptersInput(rawJSON.chapters);
       const caseDataKeys = ConfigLoader.extractCaseDataKeys(rawJSON);
       const caseDataInput = ConfigLoader.generateInitialCaseData(caseDataKeys);
 
@@ -1031,9 +946,7 @@ export class JourneyService {
         journeyInput.visa_category = overrides.visa_category;
       }
 
-      console.log(
-        `Loaded: ${journeyInput.journey_name} with ${chaptersInput.length} chapters`,
-      );
+      console.log(`Loaded: ${journeyInput.journey_name} with ${chaptersInput.length} chapters`);
 
       // Create journey in database
       const journey = await db.createJourneyDB(journeyInput);
@@ -1051,11 +964,11 @@ export class JourneyService {
 
         const stepsInput = ConfigLoader.transformStepsInput(
           rawChapter.steps,
-          rawChapter.chapter_key,
+          rawChapter.chapter_key
         );
 
         const createdSteps = await Promise.all(
-          stepsInput.map((stepInput) => db.createStepDB(chapter.id, stepInput)),
+          stepsInput.map((stepInput) => db.createStepDB(chapter.id, stepInput))
         );
 
         totalStepsCreated += createdSteps.length;
@@ -1069,8 +982,7 @@ export class JourneyService {
       // );
 
       // Calculate initial progress
-      const progressSummary =
-        await this.progressService.calculateJourneyProgress(journey.id);
+      const progressSummary = await this.progressService.calculateJourneyProgress(journey.id);
 
       return {
         journey,
@@ -1091,10 +1003,7 @@ export class JourneyService {
    * Create journey with manual chapter structure
    * (Legacy method - use createJourneyFromConfig instead)
    */
-  async createJourneyWithChapters(
-    journeyData: JourneyInput,
-    chaptersData?: ChapterInput[],
-  ) {
+  async createJourneyWithChapters(journeyData: JourneyInput, chaptersData?: ChapterInput[]) {
     try {
       // Create journey first
       const journey = await db.createJourneyDB(journeyData);
@@ -1103,9 +1012,7 @@ export class JourneyService {
       let createdChapters: Chapter[] = [];
       if (chaptersData && chaptersData.length > 0) {
         createdChapters = await Promise.all(
-          chaptersData.map((chapterData) =>
-            db.createChapterDB(journey.id, chapterData),
-          ),
+          chaptersData.map((chapterData) => db.createChapterDB(journey.id, chapterData))
         );
       }
 
@@ -1121,26 +1028,19 @@ export class JourneyService {
   }
 
   //   Get complete journey details. Includes chapters, progress summary, visibility info
-  async getJourneyDetails(
-    journeyId: string,
-    caseData?: Record<string, unknown>,
-  ) {
+  async getJourneyDetails(journeyId: string, caseData?: Record<string, unknown>) {
     try {
       const journey = await db.getJourneyDB(journeyId);
       if (!journey) throw new Error("Journey not found");
 
       const chapters = await db.getChaptersForJourneyDB(journeyId);
 
-      const progressSummary =
-        await this.progressService.getJourneyProgressSummary(journeyId);
+      const progressSummary = await this.progressService.getJourneyProgressSummary(journeyId);
 
       // If case data provided, check chapter visibility
       let visibleChapters = chapters;
       if (caseData) {
-        const checkResults = await this.conditionalEngine.getVisibleChapters(
-          journeyId,
-          caseData,
-        );
+        const checkResults = await this.conditionalEngine.getVisibleChapters(journeyId, caseData);
         visibleChapters = checkResults.map((res: any) => res.chapter);
       }
 
@@ -1160,9 +1060,11 @@ export class JourneyService {
   async getAllJourneysWithProgress() {
     try {
       // Create a shared client for all sub-calls to avoid redundant auth/getUser overhead
-      const { createClient } = await import('@/lib/supabase/server');
+      const { createClient } = await import("@/lib/supabase/server");
       const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Unauthorized");
       const client = { supabase, user };
 
@@ -1170,13 +1072,15 @@ export class JourneyService {
 
       const journeysWithProgress = await Promise.all(
         journeys.map(async (journey) => {
-          const progressSummary =
-            await this.progressService.getJourneyProgressSummary(journey.id, client);
+          const progressSummary = await this.progressService.getJourneyProgressSummary(
+            journey.id,
+            client
+          );
           return {
             journey,
             progress_summary: progressSummary,
           };
-        }),
+        })
       );
 
       return journeysWithProgress;
@@ -1190,8 +1094,7 @@ export class JourneyService {
   async updateJourney(journeyId: string, updates: JourneyUpdate) {
     try {
       const journey = await db.updateJourneyDB(journeyId, updates);
-      const progressSummary =
-        await this.progressService.getJourneyProgressSummary(journeyId);
+      const progressSummary = await this.progressService.getJourneyProgressSummary(journeyId);
 
       return {
         journey,
@@ -1238,10 +1141,7 @@ export class StepService {
   private conditionalLogic = new ConditionalLogicEngine();
 
   // Create step in a chapter
-  async createStep(
-    chapterId: string,
-    stepData: StepInput,
-  ): Promise<StepResponse> {
+  async createStep(chapterId: string, stepData: StepInput): Promise<StepResponse> {
     try {
       const step = await db.createStepDB(chapterId, stepData);
 
@@ -1260,41 +1160,26 @@ export class StepService {
   }
 
   // Get step details with metadata (visibility, dependencies, next steps)
-  async getStepDetails(
-    stepId: string,
-    caseData?: Record<string, unknown>,
-  ): Promise<StepResponse> {
+  async getStepDetails(stepId: string, caseData?: Record<string, unknown>): Promise<StepResponse> {
     try {
       const step = await db.getStepDB(stepId);
       if (!step) throw new Error("Step not found");
 
       // Check visibility
-      const visibilityCheck = this.conditionalLogic.evaluateStepVisibility(
-        step,
-        caseData || {},
-      );
+      const visibilityCheck = this.conditionalLogic.evaluateStepVisibility(step, caseData || {});
 
       // Check if blocked
-      const blockedReason = this.conditionalLogic.evaluateBlockedStatus(
-        step,
-        caseData || {},
-      );
+      const blockedReason = this.conditionalLogic.evaluateBlockedStatus(step, caseData || {});
 
       // Check dependencies
       let dependenciesCompleted = true;
       if (step.dependencies && step.dependencies.length > 0) {
-        const depCheck = await this.completionEngine.checkDependencies(
-          stepId,
-          step.chapter_id,
-        );
+        const depCheck = await this.completionEngine.checkDependencies(stepId, step.chapter_id);
         dependenciesCompleted = depCheck.all_dependencies_met;
       }
 
       // Get dependent steps
-      const nextSteps = await this.completionEngine.getDependentSteps(
-        stepId,
-        step.chapter_id,
-      );
+      const nextSteps = await this.completionEngine.getDependentSteps(stepId, step.chapter_id);
 
       // Get chapter for context
       const chapter = await db.getChapterDB(step.chapter_id);
@@ -1322,14 +1207,10 @@ export class StepService {
   async completeStep(
     stepId: string,
     journeyId: string,
-    completionData?: Record<string, unknown>,
+    completionData?: Record<string, unknown>
   ): Promise<StepCompletionResult> {
     try {
-      return await this.completionEngine.completeStep(
-        stepId,
-        journeyId,
-        completionData,
-      );
+      return await this.completionEngine.completeStep(stepId, journeyId, completionData);
     } catch (error) {
       console.error(`Error completing step ${stepId}:`, error);
       throw error;
@@ -1349,7 +1230,7 @@ export class StepService {
   // Get all steps in a chapter with visibility filtering
   async getChapterSteps(
     chapterId: string,
-    caseData?: Record<string, unknown>,
+    caseData?: Record<string, unknown>
   ): Promise<StepResponse[]> {
     try {
       const steps = await db.getStepsForChapterDB(chapterId);
@@ -1358,10 +1239,7 @@ export class StepService {
       if (caseData) {
         return steps
           .filter((step) => {
-            const visibility = this.conditionalLogic.evaluateStepVisibility(
-              step,
-              caseData,
-            );
+            const visibility = this.conditionalLogic.evaluateStepVisibility(step, caseData);
             return visibility.is_visible;
           })
           .map((step) => ({
@@ -1382,44 +1260,26 @@ export class StepService {
 
   // Skip an optional step but keep it visible on dashboard (persistent)
   // Used for tasks like Police Certificate that can be skipped but should remain visible
-  async skipStepButKeepPersistent(
-    stepId: string,
-    journeyId: string,
-    reason?: string,
-  ) {
+  async skipStepButKeepPersistent(stepId: string, journeyId: string, reason?: string) {
     try {
-      return await this.completionEngine.skipStepButKeepPersistent(
-        stepId,
-        journeyId,
-        reason,
-      );
+      return await this.completionEngine.skipStepButKeepPersistent(stepId, journeyId, reason);
     } catch (error) {
-      console.error(
-        `Error skipping persistent step ${stepId}:`,
-        error,
-      );
+      console.error(`Error skipping persistent step ${stepId}:`, error);
       throw error;
     }
   }
 
   // Mark a step as reviewed/incomplete but passed
   // Used for informational or review-only steps
-  async markStepAsIncompleteButPassed(
-    stepId: string,
-    journeyId: string,
-    reviewNotes?: string,
-  ) {
+  async markStepAsIncompleteButPassed(stepId: string, journeyId: string, reviewNotes?: string) {
     try {
       return await this.completionEngine.markStepAsIncompleteButPassed(
         stepId,
         journeyId,
-        reviewNotes,
+        reviewNotes
       );
     } catch (error) {
-      console.error(
-        `Error marking step as incomplete-but-passed ${stepId}:`,
-        error,
-      );
+      console.error(`Error marking step as incomplete-but-passed ${stepId}:`, error);
       throw error;
     }
   }
@@ -1427,14 +1287,9 @@ export class StepService {
   // Get persistent-skipped steps (for dashboard display)
   async getSkippablePersistentSteps(journeyId: string) {
     try {
-      return await this.completionEngine.getSkippablePersistentSteps(
-        journeyId,
-      );
+      return await this.completionEngine.getSkippablePersistentSteps(journeyId);
     } catch (error) {
-      console.error(
-        `Error getting skippable-persistent steps for ${journeyId}:`,
-        error,
-      );
+      console.error(`Error getting skippable-persistent steps for ${journeyId}:`, error);
       throw error;
     }
   }
@@ -1453,16 +1308,14 @@ export class CaseDataService {
       is_verified?: boolean;
       source?: string;
       source_reference?: string;
-    },
+    }
   ): Promise<CaseDataResponse> {
     // 1. Prevent recursion if the engine itself is updating the score
-    const isInternalUpdate = options?.source === 'CaseStrengthEngine' || dataKey === 'case_strength_score';
+    const isInternalUpdate =
+      options?.source === "CaseStrengthEngine" || dataKey === "case_strength_score";
 
     // 2. Validate
-    const validation = this.validationEngine.validateCaseData(
-      dataKey,
-      dataValue,
-    );
+    const validation = this.validationEngine.validateCaseData(dataKey, dataValue);
 
     const response = await db.upsertCaseDataDB(journeyId, dataKey, {
       data_key: dataKey,
@@ -1500,21 +1353,20 @@ export class CaseDataService {
     try {
       // TRIGGER 1: NVC Fee Auto-Unlock
       // Requirement §552: If NVC fee is posted, complete Step II.2 to unlock II.3 (DS-260)
-      if (dataKey === 'nvc_fee_status' && (dataValue === 'posted' || dataValue === '"posted"')) {
-        const steps = await db.getStepsForJourneyByStepKeyDB(journeyId, 'II.2');
-        if (steps && steps.length > 0 && steps[0].status !== 'completed') {
-           // We use the completion engine to ensure dependent steps are unlocked correctly
-           await new StepCompletionEngine().completeStep(steps[0].id, journeyId, {
-             source: 'system_auto_unlock',
-             trigger_data_key: 'nvc_fee_status'
-           });
+      if (dataKey === "nvc_fee_status" && (dataValue === "posted" || dataValue === '"posted"')) {
+        const steps = await db.getStepsForJourneyByStepKeyDB(journeyId, "II.2");
+        if (steps && steps.length > 0 && steps[0].status !== "completed") {
+          // We use the completion engine to ensure dependent steps are unlocked correctly
+          await new StepCompletionEngine().completeStep(steps[0].id, journeyId, {
+            source: "system_auto_unlock",
+            trigger_data_key: "nvc_fee_status",
+          });
         }
       }
 
       // TRIGGER 2: Update Case Strength Score
       // This runs on EVERY change to maintain live accuracy
       await this.strengthEngine.calculateJourneyStrength(journeyId);
-      
     } catch (e) {
       console.error("[CaseDataService] Trigger execution failed:", e);
       // We don't throw here to ensure the original data-save succeeds even if triggers fail
@@ -1522,10 +1374,7 @@ export class CaseDataService {
   }
 
   // Get case data with full details
-  async getCaseData(
-    journeyId: string,
-    dataKey: string,
-  ): Promise<CaseDataResponse> {
+  async getCaseData(journeyId: string, dataKey: string): Promise<CaseDataResponse> {
     const caseData = await db.getCaseDataByKeyDB(journeyId, dataKey);
     if (!caseData) throw new Error("Case data not found");
 
@@ -1545,19 +1394,10 @@ export class CaseDataService {
     });
 
     // Count required data filled
-    const requiredKeys = [
-      "filing_method",
-      "visa_category",
-      "beneficiary_country_of_residence",
-    ];
-    const completeness = this.validationEngine.checkDataCompleteness(
-      caseDataByKey,
-      requiredKeys,
-    );
+    const requiredKeys = ["filing_method", "visa_category", "beneficiary_country_of_residence"];
+    const completeness = this.validationEngine.checkDataCompleteness(caseDataByKey, requiredKeys);
     const completionPercentage = Math.round(
-      ((requiredKeys.length - completeness.missing_keys.length) /
-        requiredKeys.length) *
-        100,
+      ((requiredKeys.length - completeness.missing_keys.length) / requiredKeys.length) * 100
     );
 
     return {
@@ -1565,8 +1405,7 @@ export class CaseDataService {
       filing_method: caseDataByKey["filing_method"]?.data_value,
       visa_category: caseDataByKey["visa_category"]?.data_value,
       beneficiary_age: caseDataByKey["beneficiary_age"]?.data_value,
-      beneficiary_relationship:
-        caseDataByKey["beneficiary_relationship"]?.data_value,
+      beneficiary_relationship: caseDataByKey["beneficiary_relationship"]?.data_value,
       beneficiary_country_of_residence:
         caseDataByKey["beneficiary_country_of_residence"]?.data_value,
       employer_state: caseDataByKey["employer_state"]?.data_value,
@@ -1577,18 +1416,13 @@ export class CaseDataService {
         .filter((d) => !requiredKeys.includes(d.data_key))
         .map((d) => d.data_key),
       completion_percentage: completionPercentage,
-      last_updated:
-        allCaseData.length > 0
-          ? allCaseData[0].updated_at
-          : new Date().toISOString(),
+      last_updated: allCaseData.length > 0 ? allCaseData[0].updated_at : new Date().toISOString(),
       all_data: caseDataByKey,
     };
   }
 
   // Validate all case data for a journey
-  async validateAllCaseData(
-    journeyId: string,
-  ): Promise<Record<string, CaseDataValidationResult>> {
+  async validateAllCaseData(journeyId: string): Promise<Record<string, CaseDataValidationResult>> {
     const allCaseData = await db.getCaseDataForJourneyDB(journeyId);
 
     const caseDataByKey: Record<string, CaseData> = {};
@@ -1596,8 +1430,7 @@ export class CaseDataService {
       caseDataByKey[item.data_key] = item;
     });
 
-    const validationResults =
-      this.validationEngine.validateCaseProfile(caseDataByKey);
+    const validationResults = this.validationEngine.validateCaseProfile(caseDataByKey);
 
     // Update validation status in database
     for (const [dataKey, result] of Object.entries(validationResults)) {
@@ -1613,24 +1446,22 @@ export class CaseDataService {
   // Batch set case data
   async batchSetCaseData(
     journeyId: string,
-    dataObject: Record<string, any>,
+    dataObject: Record<string, any>
   ): Promise<CaseDataResponse[]> {
-    const operations: CaseDataBatchOperation[] = Object.entries(dataObject).map(
-      ([key, value]) => ({
-        operation: "set",
-        data_key: key,
-        data_value: value,
-      }),
-    );
+    const operations: CaseDataBatchOperation[] = Object.entries(dataObject).map(([key, value]) => ({
+      operation: "set",
+      data_key: key,
+      data_value: value,
+    }));
 
     const results = await db.batchUpdateCaseDataDB(journeyId, operations);
 
     // After batch, trigger scoring (just once for the whole batch)
     try {
       // Check for fee status in the batch specifically
-      const feeOp = operations.find(op => op.data_key === 'nvc_fee_status');
+      const feeOp = operations.find((op) => op.data_key === "nvc_fee_status");
       if (feeOp) {
-        await this.runTriggersAndScoring(journeyId, 'nvc_fee_status', feeOp.data_value);
+        await this.runTriggersAndScoring(journeyId, "nvc_fee_status", feeOp.data_value);
       } else {
         await this.strengthEngine.calculateJourneyStrength(journeyId);
       }

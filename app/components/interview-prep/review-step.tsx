@@ -36,10 +36,7 @@ interface QuestionnaireSection {
 
 // Icon mapping for different section IDs - comprehensive across all categories
 const getSectionIcon = (sectionId: string) => {
-  const iconMap: Record<
-    string,
-    { Icon: typeof User; bgColor: string; iconColor: string }
-  > = {
+  const iconMap: Record<string, { Icon: typeof User; bgColor: string; iconColor: string }> = {
     // Basic Profile & Identity Sections
     basic_case_information: {
       Icon: User,
@@ -353,10 +350,7 @@ export function ReviewStep({
     const { Icon, bgColor, iconColor } = getSectionIcon(section.id);
 
     return (
-      <div
-        key={section.id}
-        className="bg-muted/20 rounded-xl p-6 border border-border"
-      >
+      <div key={section.id} className="bg-muted/20 rounded-xl p-6 border border-border">
         <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-3">
           <div
             className={`${bgColor} ${iconColor} w-10 h-10 rounded-full flex items-center justify-center`}
@@ -366,16 +360,12 @@ export function ReviewStep({
           {section.title}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {section.fields.map(
-            (field: { key: string; label: string; value: string }) => (
-              <div key={field.key}>
-                <p className="text-sm text-muted-foreground">{field.label}</p>
-                <p className="font-medium text-foreground break-normal">
-                  {field.value}
-                </p>
-              </div>
-            ),
-          )}
+          {section.fields.map((field: { key: string; label: string; value: string }) => (
+            <div key={field.key}>
+              <p className="text-sm text-muted-foreground">{field.label}</p>
+              <p className="font-medium text-foreground break-normal">{field.value}</p>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -384,12 +374,10 @@ export function ReviewStep({
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-3">
-          Review Your Information
-        </h2>
+        <h2 className="text-3xl font-bold text-foreground mb-3">Review Your Information</h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Please review all the information you&apos;ve entered before
-          submitting for interview preparation.
+          Please review all the information you&apos;ve entered before submitting for interview
+          preparation.
         </p>
       </div>
 
@@ -417,9 +405,9 @@ export function ReviewStep({
                         : categorySlug === "uk-student"
                           ? "UK Student"
                           : categorySlug === "ca-student"
-                            ? "CA Student" 
+                            ? "CA Student"
                             : categorySlug === "au-student"
-                              ? "AU Student" 
+                              ? "AU Student"
                               : categorySlug === "it-student"
                                 ? "IT Student"
                                 : categorySlug || formData.caseType}
@@ -469,9 +457,7 @@ export function ReviewStep({
             disabled={loading}
             className="bg-teal-600 hover:bg-teal-700 px-6 py-3 text-base disabled:opacity-50"
           >
-            {loading
-              ? "Generating Interview Prep..."
-              : "Generate Interview Prep"}
+            {loading ? "Generating Interview Prep..." : "Generate Interview Prep"}
           </Button>
         </div>
       </div>

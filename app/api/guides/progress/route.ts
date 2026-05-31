@@ -24,10 +24,12 @@ export async function GET(request: Request) {
     // 1. Get the session for this guide
     const { data: session, error: sessionError } = await supabase
       .from("user_guides")
-      .select(`
+      .select(
+        `
         *,
         guides!inner(slug, title)
-      `)
+      `
+      )
       .eq("user_id", user.id)
       .eq("guides.slug", slug)
       .maybeSingle();

@@ -193,7 +193,9 @@ export default function DraggableSignature({
     >
       <div
         className={`relative ${
-          isSelected ? "ring-1 ring-blue-400 cursor-move" : "hover:ring-1 hover:ring-blue-300 cursor-pointer"
+          isSelected
+            ? "ring-1 ring-blue-400 cursor-move"
+            : "hover:ring-1 hover:ring-blue-300 cursor-pointer"
         } rounded-md transition-all`}
         style={{
           width: `${data.width * scale}px`,

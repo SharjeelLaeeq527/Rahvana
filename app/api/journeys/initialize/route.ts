@@ -15,7 +15,8 @@ import { createClient } from "@/lib/supabase/server";
 import { journeyService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import { ConfigLoader } from "@/lib/journey/config-loader";
-import { E, msg } from '@/lib/errors';
+import { decrypt } from "@/lib/encryption";
+import { E, msg } from "@/lib/errors";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
@@ -28,9 +29,7 @@ function normType(t: string) {
 // Runs AFTER response is sent — never blocks the user
 async function syncStepsBackground(journeyId: string, configType: string) {
   try {
-    const rawJSON = ConfigLoader.loadJourneyJSON(
-      `data/visa-category/${configType}.json`
-    );
+    const rawJSON = ConfigLoader.loadJourneyJSON(`data/visa-category/${configType}.json`);
     const [existingChapters, existingSteps] = await Promise.all([
       db.getChaptersForJourneyDB(journeyId),
       db.getStepsForJourneyDB(journeyId),
@@ -38,22 +37,15 @@ async function syncStepsBackground(journeyId: string, configType: string) {
     const existingKeys = new Set(existingSteps.map((s) => s.step_key));
 
     for (const rawChapter of rawJSON.chapters) {
-      const dbChapter = existingChapters.find(
-        (ch) => ch.chapter_key === rawChapter.chapter_key
-      );
+      const dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
       if (!dbChapter) continue;
 
-      const stepsInput = ConfigLoader.transformStepsInput(
-        rawChapter.steps,
-        rawChapter.chapter_key
-      );
+      const stepsInput = ConfigLoader.transformStepsInput(rawChapter.steps, rawChapter.chapter_key);
       const newSteps = stepsInput.filter((s) => !existingKeys.has(s.step_key));
 
       // Batch inserts — parallel instead of sequential
       await Promise.all(
-        newSteps.map((stepInput) =>
-          db.createStepDB(dbChapter.id, stepInput).catch(() => {})
-        )
+        newSteps.map((stepInput) => db.createStepDB(dbChapter.id, stepInput).catch(() => {}))
       );
     }
   } catch {
@@ -79,7 +71,7 @@ export async function POST(req: NextRequest) {
     const { journey_type } = await req.json();
     if (!journey_type) {
       return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[journey_type]' }) },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_type]" }) },
         { status: 400 }
       );
     }
@@ -107,13 +99,10 @@ export async function POST(req: NextRequest) {
     // ── Find or create journey ────────────────────────────────────────────────
     const allJourneys = await db.getAllJourneysDB(undefined, dbClient);
     const normalizedQuery = normType(journey_type);
-    const existing = allJourneys.find(
-      (j) => normType(j.journey_type) === normalizedQuery
-    );
+    const existing = allJourneys.find((j) => normType(j.journey_type) === normalizedQuery);
 
     let journeyId: string;
-    const configType =
-      normalizedQuery === "ir1" ? "ir-1" : journey_type.toLowerCase();
+    const configType = normalizedQuery === "ir1" ? "ir-1" : journey_type.toLowerCase();
 
     if (existing) {
       journeyId = existing.id;
@@ -124,14 +113,9 @@ export async function POST(req: NextRequest) {
         journeyId = result.journey.id;
       } catch (createErr: any) {
         // Race condition: another tab already created it
-        if (
-          createErr?.message?.includes("unique") ||
-          createErr?.message?.includes("duplicate")
-        ) {
+        if (createErr?.message?.includes("unique") || createErr?.message?.includes("duplicate")) {
           const retryJourneys = await db.getAllJourneysDB(undefined, dbClient);
-          const retried = retryJourneys.find(
-            (j) => normType(j.journey_type) === normalizedQuery
-          );
+          const retried = retryJourneys.find((j) => normType(j.journey_type) === normalizedQuery);
           if (!retried) throw createErr;
           journeyId = retried.id;
         } else {
@@ -149,6 +133,19 @@ export async function POST(req: NextRequest) {
       db.getStepsForJourneyDB(journeyId, undefined, dbClient),
       db.getCaseDataForJourneyDB(journeyId, undefined, dbClient),
     ]);
+
+    // Decrypt sensitive fields in case_data before returning to client
+    if (caseDataRows) {
+      caseDataRows.forEach((item: any) => {
+        if (item && typeof item.data_value === "string" && item.data_value.startsWith("gcm:")) {
+          try {
+            item.data_value = decrypt(item.data_value);
+          } catch (e) {
+            console.error("Failed to decrypt case data:", item.data_key, e);
+          }
+        }
+      });
+    }
 
     if (!journeyRow) {
       return NextResponse.json(
@@ -176,9 +173,6 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("[/api/journeys/initialize] Error:", error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

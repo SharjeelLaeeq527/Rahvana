@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 import * as cheerio from "cheerio";
 
 // === Types ===
@@ -115,12 +115,13 @@ function findSimilarCountries(
 async function scrapeIVData(): Promise<IVData[]> {
   try {
     console.log("Fetching fresh data from State Department...");
-    
+
     const response = await fetch(
       "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/iv-wait-times.html",
       {
         headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         },
         cache: "no-store",
       }
@@ -155,9 +156,9 @@ async function scrapeIVData(): Promise<IVData[]> {
         if (cells.length < 4) return;
 
         const post = cells[0];
-        const eb = cells[1];  // Employment Visa
-        const fs = cells[2];  // Preference (Family-Sponsored) Visa
-        const ir = cells[3];  // Relative (Immediate Relative) Visa
+        const eb = cells[1]; // Employment Visa
+        const fs = cells[2]; // Preference (Family-Sponsored) Visa
+        const ir = cells[3]; // Relative (Immediate Relative) Visa
 
         if (ir && ir !== "-" && !ir.toLowerCase().includes("n/a")) {
           data.push({
@@ -247,7 +248,7 @@ export async function POST(req: Request) {
 
     if (!city?.trim() || !visaCategory) {
       return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[city, visaCategory]' }) },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[city, visaCategory]" }) },
         { status: 400 }
       );
     }
@@ -301,7 +302,10 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log("Similar countries:", similarCountries.map((c) => c.country));
+    console.log(
+      "Similar countries:",
+      similarCountries.map((c) => c.country)
+    );
 
     // Group by Embassy/Consulate per country
     const countryOptions: CountryOption[] = similarCountries.map((item) => {
@@ -334,9 +338,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("API Error:", error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

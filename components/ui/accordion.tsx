@@ -70,12 +70,9 @@ const AccordionItem = ({
     >
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(
-            child as React.ReactElement<{ value?: string }>,
-            {
-              value,
-            },
-          );
+          return React.cloneElement(child as React.ReactElement<{ value?: string }>, {
+            value,
+          });
         }
         return child;
       })}
@@ -92,8 +89,7 @@ const AccordionTrigger = ({
   className?: string;
   value?: string;
 }) => {
-  const { value: activeValue, onValueChange } =
-    React.useContext(AccordionContext);
+  const { value: activeValue, onValueChange } = React.useContext(AccordionContext);
   const isOpen = activeValue === value;
 
   return (
@@ -103,15 +99,12 @@ const AccordionTrigger = ({
       onClick={() => value && onValueChange?.(value)}
       className={cn(
         "flex w-full items-center justify-between py-4 text-left font-medium transition-all hover:underline",
-        className,
+        className
       )}
     >
       {children}
       <ChevronDown
-        className={cn(
-          "h-4 w-4 shrink-0 transition-transform duration-200",
-          isOpen && "rotate-180",
-        )}
+        className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isOpen && "rotate-180")}
       />
     </button>
   );

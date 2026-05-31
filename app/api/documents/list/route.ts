@@ -1,10 +1,10 @@
 // API Route: List All Documents
 // GET /api/documents/list
 
-import {  NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
-import { E, msg } from '@/lib/errors'
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { E, msg } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -16,7 +16,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error('documents/list unauthorized:', authError);
+      console.error("documents/list unauthorized:", authError);
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
@@ -29,7 +29,9 @@ export async function GET() {
       documents,
     });
   } catch (error) {
-    console.error('List documents error:', error);
+    console.error("List documents error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("List documents error:", error);
     return NextResponse.json({ error: msg(E.VAULT_SYNC_FAILED) }, { status: 500 });
   }
 }

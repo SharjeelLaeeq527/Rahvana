@@ -1,10 +1,10 @@
 // GET /api/v1/journeys/[journeyId]/tool-sessions/[toolKey]
 // PUT /api/v1/journeys/[journeyId]/tool-sessions/[toolKey]
 
-import { NextRequest, NextResponse } from 'next/server'
-import { verifyJourneyAccess, errorResponse, successResponse } from '@/lib/api/journey-auth'
-import DataValidationService from '@/lib/services/DataValidationService'
-import type { SaveToolSessionBody } from '@/types/journey-support'
+import { NextRequest, NextResponse } from "next/server";
+import { verifyJourneyAccess, errorResponse, successResponse } from "@/lib/api/journey-auth";
+import DataValidationService from "@/lib/services/DataValidationService";
+import type { SaveToolSessionBody } from "@/types/journey-support";
 
 // ─────────────────────────────────────────────────────────────
 // GET — Get saved session for a tool (resume flow)
@@ -16,49 +16,47 @@ export async function GET(
   { params }: { params: Promise<{ journeyId: string; toolKey: string }> }
 ) {
   try {
-    const { journeyId, toolKey } = await params
-    const auth = await verifyJourneyAccess(journeyId)
-    if (auth.error) return auth.error
+    const { journeyId, toolKey } = await params;
+    const auth = await verifyJourneyAccess(journeyId);
+    if (auth.error) return auth.error;
 
-    const { supabase } = auth
-    const { searchParams } = new URL(request.url)
-    const stepKey = searchParams.get('step_key')
+    const { supabase } = auth;
+    const { searchParams } = new URL(request.url);
+    const stepKey = searchParams.get("step_key");
 
     let query = supabase
-      .from('tool_sessions')
-      .select('*')
-      .eq('journey_id', journeyId)
-      .eq('tool_key', toolKey)
+      .from("tool_sessions")
+      .select("*")
+      .eq("journey_id", journeyId)
+      .eq("tool_key", toolKey);
 
     // If step_key provided, filter by it (in case same tool used in multiple steps)
     if (stepKey) {
-      query = query.eq('step_key', stepKey)
+      query = query.eq("step_key", stepKey);
     }
 
     const { data: sessions, error } = await query
-      .order('last_saved_at', { ascending: false })
-      .limit(1)
+      .order("last_saved_at", { ascending: false })
+      .limit(1);
 
     if (error) {
-      console.error('[GET /tool-sessions/:toolKey] DB error:', error)
-      return NextResponse.json(
-        errorResponse('DB_ERROR', 'Failed to fetch tool session'),
-        { status: 500 }
-      )
+      console.error("[GET /tool-sessions/:toolKey] DB error:", error);
+      return NextResponse.json(errorResponse("DB_ERROR", "Failed to fetch tool session"), {
+        status: 500,
+      });
     }
 
-    const session = sessions && sessions.length > 0 ? sessions[0] : null
+    const session = sessions && sessions.length > 0 ? sessions[0] : null;
 
     return NextResponse.json(
-      successResponse(session, session ? 'Session found' : 'No existing session'),
+      successResponse(session, session ? "Session found" : "No existing session"),
       { status: 200 }
-    )
+    );
   } catch (err) {
-    console.error('[GET /tool-sessions/:toolKey] Error:', err)
-    return NextResponse.json(
-      errorResponse('INTERNAL_ERROR', 'Internal server error'),
-      { status: 500 }
-    )
+    console.error("[GET /tool-sessions/:toolKey] Error:", err);
+    return NextResponse.json(errorResponse("INTERNAL_ERROR", "Internal server error"), {
+      status: 500,
+    });
   }
 }
 
@@ -74,26 +72,25 @@ export async function PUT(
   { params }: { params: Promise<{ journeyId: string; toolKey: string }> }
 ) {
   try {
-    const { journeyId, toolKey } = await params
-    const auth = await verifyJourneyAccess(journeyId)
-    if (auth.error) return auth.error
+    const { journeyId, toolKey } = await params;
+    const auth = await verifyJourneyAccess(journeyId);
+    if (auth.error) return auth.error;
 
-    const { supabase } = auth
-    const body: SaveToolSessionBody = await request.json()
+    const { supabase } = auth;
+    const body: SaveToolSessionBody = await request.json();
 
     // Validate via DataValidationService
-    const errors = DataValidationService.saveToolSession(body, toolKey)
+    const errors = DataValidationService.saveToolSession(body, toolKey);
     if (DataValidationService.hasErrors(errors)) {
-      return NextResponse.json(
-        errorResponse('VALIDATION_ERROR', 'Invalid input', errors),
-        { status: 422 }
-      )
+      return NextResponse.json(errorResponse("VALIDATION_ERROR", "Invalid input", errors), {
+        status: 422,
+      });
     }
 
     // UPSERT on unique constraint (journey_id, step_key, tool_key)
     // last_saved_at is auto-updated by the DB trigger
     const { data: session, error } = await supabase
-      .from('tool_sessions')
+      .from("tool_sessions")
       .upsert(
         {
           journey_id: journeyId,
@@ -101,33 +98,28 @@ export async function PUT(
           tool_key: toolKey,
           session_state: body.session_state,
           completion_percentage: body.completion_percentage,
-          is_completed: false,         // only /complete endpoint can set this
+          is_completed: false, // only /complete endpoint can set this
         },
         {
-          onConflict: 'journey_id,step_key,tool_key',
-          ignoreDuplicates: false,     // always update
+          onConflict: "journey_id,step_key,tool_key",
+          ignoreDuplicates: false, // always update
         }
       )
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('[PUT /tool-sessions/:toolKey] DB error:', error)
-      return NextResponse.json(
-        errorResponse('DB_ERROR', 'Failed to save tool session'),
-        { status: 500 }
-      )
+      console.error("[PUT /tool-sessions/:toolKey] DB error:", error);
+      return NextResponse.json(errorResponse("DB_ERROR", "Failed to save tool session"), {
+        status: 500,
+      });
     }
 
-    return NextResponse.json(
-      successResponse(session, 'Session saved'),
-      { status: 200 }
-    )
+    return NextResponse.json(successResponse(session, "Session saved"), { status: 200 });
   } catch (err) {
-    console.error('[PUT /tool-sessions/:toolKey] Error:', err)
-    return NextResponse.json(
-      errorResponse('INTERNAL_ERROR', 'Internal server error'),
-      { status: 500 }
-    )
+    console.error("[PUT /tool-sessions/:toolKey] Error:", err);
+    return NextResponse.json(errorResponse("INTERNAL_ERROR", "Internal server error"), {
+      status: 500,
+    });
   }
 }

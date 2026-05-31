@@ -28,7 +28,8 @@ export interface FamilyMember {
   };
   isDeceased?: boolean;
   dateOfMarriage?: string; // For spouse
-  placeOfMarriage?: { // For spouse
+  placeOfMarriage?: {
+    // For spouse
     city: string;
     state?: string;
     country: string;
@@ -47,12 +48,17 @@ export interface MasterProfile {
   sex: "Male" | "Female";
   nationality?: string; // Country of citizenship
   maritalStatus: "Single" | "Married" | "Divorced" | "Widowed" | "Separated" | "Annulled";
-  
+
   // Application Context
   visaType?: string; // Primary visa/case type being applied for (IR-1, CR-1, K-1, etc.)
   visaCategory?: string; // Sub-category if applicable
   fullName?: string; // Full name in single field format (some forms prefer this)
-  
+  caseNumber?: string;
+  interviewDate?: string;
+  caseStatus?: string;
+  nvcInvoice?: string;
+  surname?: string;
+
   // Relationship & Family (NEW)
   spouse?: {
     name: PersonName;
@@ -73,7 +79,7 @@ export interface MasterProfile {
     howDidYouMeet?: string;
     numberOfInPersonVisits?: number;
     lastMeetingDate?: string;
-    
+
     // Relationship Evidence
     cohabitationProof?: boolean;
     sharedFinancialAccounts?: boolean;
@@ -82,7 +88,7 @@ export interface MasterProfile {
     moneyTransferReceipts?: boolean;
     meetingProof?: boolean;
   };
-  
+
   // Sponsor Information (when user is the beneficiary applying for visa)
   sponsor?: {
     name: PersonName;
@@ -91,14 +97,13 @@ export interface MasterProfile {
     email?: string;
     address?: Address;
   };
-  
+
   // Beneficiary Information (when user is the sponsor petitioning for someone)
   beneficiary?: {
     name: PersonName;
     dateOfBirth: string;
     countryOfResidence?: string;
   };
-
 
   // Family Background (Parents are critical for almost all forms)
   father?: {
@@ -148,14 +153,14 @@ export interface MasterProfile {
   currentAddress: Address;
   mailingAddress?: Address; // If different
   sameAsCurrentAddress?: boolean;
-  
+
   // History
   addressHistory: Address[]; // Past 5 years
-  
+
   // Family
   family: FamilyMember[];
   householdSize?: number; // household_size
-  
+
   // Immigration & Travel
   visaStatus?: string;
   i94Record?: string;
@@ -166,14 +171,14 @@ export interface MasterProfile {
     overstayOrViolation?: boolean;
     criminalRecord?: boolean;
     removedOrDeported?: boolean;
-    
+
     // Security Questions
     priorMilitaryService?: boolean;
     specializedWeaponsTraining?: boolean;
     unofficialArmedGroups?: boolean;
   };
   intendedUSState?: string; // intended_us_state_of_residence
-  
+
   // Employment
   occupation: string;
   jobTitle?: string; // current_occupation_role
@@ -184,7 +189,7 @@ export interface MasterProfile {
     address?: Address;
   };
   employmentHistory?: any[]; // Simplified for now
-  
+
   // Financial
   annualIncome?: string; // Store as string
   financialProfile?: {
@@ -192,7 +197,7 @@ export interface MasterProfile {
     hasEmploymentLetter?: boolean;
     hasPaystubs?: boolean;
     hasBankStatements?: boolean;
-    
+
     // Sponsorship
     jointSponsorAvailable?: boolean;
     i864AffidavitSubmitted?: boolean;
@@ -202,7 +207,7 @@ export interface MasterProfile {
   // Education
   educationLevel?: string;
   educationField?: string; // highest_education_field
-  
+
   // Documents Available (for readiness check)
   documents?: {
     hasPassport?: boolean;
@@ -249,7 +254,17 @@ export interface MasterProfile {
     petitionerStatus?: "US_CITIZEN" | "LPR" | "NONE";
     statusOrigin?: "NATURALIZED" | "BIRTH" | "GREEN_CARD";
     petitionerAgeGroup?: "UNDER_21" | "OVER_21";
-    relationship?: "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "FIANCE" | "OTHER" | "EMPLOYMENT" | "CHILD_UNDER_21" | "SON_DAUGHTER_ADULT" | "SON_DAUGHTER_MARRIED";
+    relationship?:
+      | "SPOUSE"
+      | "PARENT"
+      | "CHILD"
+      | "SIBLING"
+      | "FIANCE"
+      | "OTHER"
+      | "EMPLOYMENT"
+      | "CHILD_UNDER_21"
+      | "SON_DAUGHTER_ADULT"
+      | "SON_DAUGHTER_MARRIED";
     legalStatus?: "MARRIAGE_REGISTERED" | "BIOLOGICAL" | "ADOPTIVE" | "STEP";
     applicantAgeGroup?: "UNDER_21" | "OVER_21";
     applicantMaritalStatus?: "SINGLE" | "MARRIED" | "DIVORCED_WIDOWED";
@@ -261,23 +276,23 @@ export interface MasterProfile {
     tempPurpose?: "TOURISM" | "STUDY" | "WORK" | "HUMANITARIAN";
     sponsorBase?: "FAMILY" | "EMPLOYMENT" | "INVESTMENT" | "HUMANITARIAN";
   };
-  
+
   // Visa Case Strength Specifics
   caseStrength?: {
-      caseType?: string;
-      lastSessionId?: string;
-      // We store the exact simplified answers from the tool
-      answers?: Record<string, unknown>;
-      // Or we can just store the result summary if needed, but likely we want the inputs to re-populate
+    caseType?: string;
+    lastSessionId?: string;
+    // We store the exact simplified answers from the tool
+    answers?: Record<string, unknown>;
+    // Or we can just store the result summary if needed, but likely we want the inputs to re-populate
   };
 
   // 221g Action Planner Specifics
   actionPlanner?: {
-      caseStatus?: string;
-      interviewDate?: string;
-      lastSessionId?: string;
-      documentsRequested?: string[];
-      questionnaire?: Record<string, unknown>;
+    caseStatus?: string;
+    interviewDate?: string;
+    lastSessionId?: string;
+    documentsRequested?: string[];
+    questionnaire?: Record<string, unknown>;
   };
 }
 
@@ -293,7 +308,7 @@ export interface QuestionnaireSection {
   id: string;
   title: string;
   description?: string;
-  questions: QuestionDefinition[]; 
+  questions: QuestionDefinition[];
 }
 
 export interface QuestionnaireData {

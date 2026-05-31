@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ResultPage } from './ResultPage';
-import { InterviewPrepOutput } from '@/lib/interview-prep';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ResultPage } from "./ResultPage";
+import { InterviewPrepOutput } from "@/lib/interview-prep";
 import { Loader } from "@/components/ui/spinner";
-import { ToastProvider } from '@/app/components/shared/ToastProvider';
+import { ToastProvider } from "@/app/components/shared/ToastProvider";
 
 export default function InterviewPrepResultPage() {
   const [loading, setLoading] = useState(true);
@@ -13,34 +13,32 @@ export default function InterviewPrepResultPage() {
   const [results, setResults] = useState<InterviewPrepOutput | null>(null);
   const [sessionId, setSessionIdState] = useState<string | null>(null);
   const router = useRouter();
-  
+
   useEffect(() => {
     const fetchSessionData = async () => {
       try {
         // Get the sessionId from URL query parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const sessionIdParam = urlParams.get('sessionId');
-        
+        const sessionIdParam = urlParams.get("sessionId");
+
         if (!sessionIdParam) {
-          setError('Session ID is required');
+          setError("Session ID is required");
           setLoading(false);
           return;
         }
 
         setSessionIdState(sessionIdParam);
-        
+
         // Fetch the session data with results
-        const response = await fetch(
-          `/api/interview-prep/sessions/${sessionIdParam}`
-        );
-        
+        const response = await fetch(`/api/interview-prep/sessions/${sessionIdParam}`);
+
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch session data');
+          throw new Error(errorData.error || "Failed to fetch session data");
         }
-        
+
         const data = await response.json();
-        
+
         // Check if session has interview results
         if (data.session && data.session.interview_prep_results) {
           const prepOutput: InterviewPrepOutput = {
@@ -48,7 +46,8 @@ export default function InterviewPrepResultPage() {
             questions: data.session.interview_prep_results.generated_questions || [],
             summary: {
               totalQuestions: data.session.interview_prep_results.generated_questions?.length || 0,
-              applicableQuestions: data.session.interview_prep_results.generated_questions?.length || 0,
+              applicableQuestions:
+                data.session.interview_prep_results.generated_questions?.length || 0,
               categories: Array.from(
                 new Set(
                   (data.session.interview_prep_results.generated_questions || []).map(
@@ -60,23 +59,25 @@ export default function InterviewPrepResultPage() {
           };
           setResults(prepOutput);
         } else {
-          setError('No interview results found for this session. Please complete the interview preparation first.');
+          setError(
+            "No interview results found for this session. Please complete the interview preparation first."
+          );
         }
       } catch (err) {
-        console.error('Error fetching session data:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred loading session');
+        console.error("Error fetching session data:", err);
+        setError(err instanceof Error ? err.message : "An error occurred loading session");
       } finally {
         setLoading(false);
       }
     };
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       fetchSessionData();
     }
   }, []);
 
   const handleRestart = () => {
-    router.push('/interview-prep');
+    router.push("/interview-prep");
   };
 
   if (loading) {
@@ -129,13 +130,9 @@ export default function InterviewPrepResultPage() {
 
   return (
     <div className="container mx-auto mt-16">
-    <ToastProvider>
-      <ResultPage 
-        sessionId={sessionId || ''} 
-        results={results} 
-        onRestart={handleRestart} 
-      />
-    </ToastProvider>
+      <ToastProvider>
+        <ResultPage sessionId={sessionId || ""} results={results} onRestart={handleRestart} />
+      </ToastProvider>
     </div>
   );
 }

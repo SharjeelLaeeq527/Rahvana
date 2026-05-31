@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 
 export async function POST(request: Request) {
   try {
@@ -22,8 +22,8 @@ export async function POST(request: Request) {
 
     if (!slug) {
       return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[slug]' }) },
-        { status: 400 },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[slug]" }) },
+        { status: 400 }
       );
     }
 
@@ -48,29 +48,21 @@ export async function POST(request: Request) {
 
     if (sessionError) {
       console.error("Error checking session:", sessionError);
-      return NextResponse.json(
-        { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
     if (!session) {
       // Create the guide session dynamically if it does not exist
-      const { error: insertError } = await supabase
-        .from("user_guides")
-        .insert({
-          user_id: user.id,
-          guide_id: guide.id,
-          saved: true,
-          status: "not_started"
-        });
+      const { error: insertError } = await supabase.from("user_guides").insert({
+        user_id: user.id,
+        guide_id: guide.id,
+        saved: true,
+        status: "not_started",
+      });
 
       if (insertError) {
         console.error("Error creating guide session:", insertError);
-        return NextResponse.json(
-          { error: msg(E.CASE_DATA_SAVE_FAILED) },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: msg(E.CASE_DATA_SAVE_FAILED) }, { status: 500 });
       }
     } else {
       // 4. Update existing session to saved = true
@@ -84,10 +76,7 @@ export async function POST(request: Request) {
 
       if (updateError) {
         console.error("Error saving guide:", updateError);
-        return NextResponse.json(
-          { error: msg(E.CASE_DATA_SAVE_FAILED) },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: msg(E.CASE_DATA_SAVE_FAILED) }, { status: 500 });
       }
     }
 
@@ -96,9 +85,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Unexpected error in /api/guides/save:", error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

@@ -19,7 +19,17 @@ interface AppointmentNotificationData {
 
 export async function sendAppointmentNotification(data: AppointmentNotificationData) {
   try {
-    const { email, fullName, medicalWebsite, appointmentType, bookingReference, appointmentDate, appointmentTime, status, message } = data;
+    const {
+      email,
+      fullName,
+      medicalWebsite,
+      appointmentType,
+      bookingReference,
+      appointmentDate,
+      appointmentTime,
+      status,
+      message,
+    } = data;
 
     let subject = "";
     let htmlContent = "";
@@ -36,9 +46,9 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
             <h2 style="color: #374151; margin-top: 0;">Appointment Details</h2>
             <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
             <p><strong>Appointment Type:</strong> ${appointmentType}</p>
-            <p><strong>Booking Reference:</strong> ${bookingReference || 'N/A'}</p>
-            <p><strong>Date:</strong> ${appointmentDate || 'To be scheduled'}</p>
-            <p><strong>Time:</strong> ${appointmentTime || 'To be scheduled'}</p>
+            <p><strong>Booking Reference:</strong> ${bookingReference || "N/A"}</p>
+            <p><strong>Date:</strong> ${appointmentDate || "To be scheduled"}</p>
+            <p><strong>Time:</strong> ${appointmentTime || "To be scheduled"}</p>
           </div>
           
           <p>Our team has successfully booked your appointment. Please make sure to arrive on time with all required documents.</p>
@@ -83,7 +93,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
             <p><strong>Appointment Type:</strong> ${appointmentType}</p>
           </div>
           
-          <p>${message || 'If you believe this was done in error, please contact our support team.'}</p>
+          <p>${message || "If you believe this was done in error, please contact our support team."}</p>
           
           <p>Best regards,<br/>The Arachnie Team</p>
         </div>
@@ -119,14 +129,14 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
 export async function triggerAppointmentNotification(appointmentId: string) {
   try {
     const supabase = await createClient();
-    
+
     // Get appointment details
     const { data: appointment, error } = await supabase
       .from("appointments")
       .select("*")
       .eq("id", appointmentId)
       .single();
-    
+
     if (error || !appointment) {
       console.error("Error fetching appointment:", error);
       return { error: Errors.msg(Errors.E.APPOINTMENT_NOT_FOUND) };

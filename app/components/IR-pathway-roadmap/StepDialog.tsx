@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle2, ChevronLeft, Clock, RotateCcw } from "lucide-react";
@@ -13,13 +19,7 @@ interface Props {
   onComplete: () => void;
 }
 
-export default function StepDialog({
-  step,
-  isCompleted,
-  open,
-  onOpenChange,
-  onComplete,
-}: Props) {
+export default function StepDialog({ step, isCompleted, open, onOpenChange, onComplete }: Props) {
   const { uncompleteStep } = useStore(); // MUST come before return
 
   if (!step) return null;

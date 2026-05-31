@@ -18,7 +18,7 @@ async function checkAdminRole(request: NextRequest) {
         },
         setAll() {},
       },
-    },
+    }
   );
 
   const {
@@ -26,8 +26,7 @@ async function checkAdminRole(request: NextRequest) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user)
-    return { isAdmin: false, error: "Authentication required" };
+  if (userError || !user) return { isAdmin: false, error: "Authentication required" };
 
   if (!user.email || !ADMIN_EMAILS.includes(user.email))
     return { isAdmin: false, error: "Admin access required" };
@@ -35,7 +34,7 @@ async function checkAdminRole(request: NextRequest) {
   const supabaseAdmin = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { getAll: () => [], setAll: () => {} } },
+    { cookies: { getAll: () => [], setAll: () => {} } }
   );
 
   const { data: profile, error: profileError } = await supabaseAdmin
@@ -49,8 +48,7 @@ async function checkAdminRole(request: NextRequest) {
     return { isAdmin: false, error: "Profile verification failed" };
   }
 
-  if (!profile || profile.role !== "admin")
-    return { isAdmin: false, error: "Admin role required" };
+  if (!profile || profile.role !== "admin") return { isAdmin: false, error: "Admin role required" };
 
   return { isAdmin: true, error: null };
 }
@@ -60,26 +58,20 @@ export async function PATCH(request: NextRequest) {
     const { isAdmin, error: authError } = await checkAdminRole(request);
 
     if (!isAdmin) {
-      return NextResponse.json(
-        { error: authError || "Admin access required" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
     }
 
     const body = await request.json();
     const { feedbackId } = body;
 
     if (!feedbackId) {
-      return NextResponse.json(
-        { error: "feedbackId is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "feedbackId is required" }, { status: 400 });
     }
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { cookies: { getAll: () => [], setAll: () => {} } },
+      { cookies: { getAll: () => [], setAll: () => {} } }
     );
 
     // Check if feedback exists
@@ -91,24 +83,15 @@ export async function PATCH(request: NextRequest) {
 
     if (fetchError) {
       console.error("Error fetching feedback:", fetchError);
-      return NextResponse.json(
-        { error: "Failed to verify feedback" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to verify feedback" }, { status: 500 });
     }
 
     if (!existingFeedback) {
-      return NextResponse.json(
-        { error: "Feedback not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Feedback not found" }, { status: 404 });
     }
 
     if (existingFeedback.status === "resolved") {
-      return NextResponse.json(
-        { message: "Feedback already resolved" },
-        { status: 200 },
-      );
+      return NextResponse.json({ message: "Feedback already resolved" }, { status: 200 });
     }
 
     // Update status
@@ -121,10 +104,7 @@ export async function PATCH(request: NextRequest) {
 
     if (updateError) {
       console.error("Error updating feedback:", updateError);
-      return NextResponse.json(
-        { error: "Failed to update feedback status" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to update feedback status" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -134,9 +114,6 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error) {
     console.error("Resolve feedback API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

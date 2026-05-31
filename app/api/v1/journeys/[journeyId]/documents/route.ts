@@ -1,14 +1,14 @@
 // GET /api/v1/journeys/[journeyId]/documents
 // POST /api/v1/journeys/[journeyId]/documents
 
-import { NextRequest, NextResponse } from 'next/server'
-import { verifyJourneyAccess, errorResponse, successResponse } from '@/lib/api/journey-auth'
-import DataValidationService from '@/lib/services/DataValidationService'
+import { NextRequest, NextResponse } from "next/server";
+import { verifyJourneyAccess, errorResponse, successResponse } from "@/lib/api/journey-auth";
+import DataValidationService from "@/lib/services/DataValidationService";
 import type {
   CreateJourneyDocumentBody,
   DocumentListResponse,
   DocumentStatus,
-} from '@/types/journey-support'
+} from "@/types/journey-support";
 
 // ─────────────────────────────────────────────────────────────
 // GET — List all documents for a journey
@@ -20,45 +20,44 @@ export async function GET(
   { params }: { params: Promise<{ journeyId: string }> }
 ) {
   try {
-    const { journeyId } = await params
-    const auth = await verifyJourneyAccess(journeyId)
-    if (auth.error) return auth.error
+    const { journeyId } = await params;
+    const auth = await verifyJourneyAccess(journeyId);
+    if (auth.error) return auth.error;
 
-    const { supabase } = auth
-    const { searchParams } = new URL(request.url)
-    const statusFilter = searchParams.get('status') as DocumentStatus | null
-    const stepKeyFilter = searchParams.get('step_key')
+    const { supabase } = auth;
+    const { searchParams } = new URL(request.url);
+    const statusFilter = searchParams.get("status") as DocumentStatus | null;
+    const stepKeyFilter = searchParams.get("step_key");
 
     // Build query
     let query = supabase
-      .from('journey_documents')
-      .select('*')
-      .eq('journey_id', journeyId)
-      .is('deleted_at', null)             // exclude soft-deleted
-      .order('created_at', { ascending: true })
+      .from("journey_documents")
+      .select("*")
+      .eq("journey_id", journeyId)
+      .is("deleted_at", null) // exclude soft-deleted
+      .order("created_at", { ascending: true });
 
     if (statusFilter) {
-      query = query.eq('status', statusFilter)
+      query = query.eq("status", statusFilter);
     }
     if (stepKeyFilter) {
-      query = query.eq('step_key', stepKeyFilter)
+      query = query.eq("step_key", stepKeyFilter);
     }
 
-    const { data: documents, error } = await query
+    const { data: documents, error } = await query;
 
     if (error) {
-      console.error('[GET /documents] DB error:', error)
-      return NextResponse.json(
-        errorResponse('DB_ERROR', 'Failed to fetch documents'),
-        { status: 500 }
-      )
+      console.error("[GET /documents] DB error:", error);
+      return NextResponse.json(errorResponse("DB_ERROR", "Failed to fetch documents"), {
+        status: 500,
+      });
     }
 
-    const docs = documents ?? []
+    const docs = documents ?? [];
     const missingCount = docs.filter(
-      (d) => d.status === 'not_started' || d.status === 'requested'
-    ).length
-    const uploadedCount = docs.filter((d) => d.status === 'uploaded').length
+      (d) => d.status === "not_started" || d.status === "requested"
+    ).length;
+    const uploadedCount = docs.filter((d) => d.status === "uploaded").length;
 
     const response: DocumentListResponse = {
       success: true,
@@ -66,15 +65,14 @@ export async function GET(
       total: docs.length,
       missing_count: missingCount,
       uploaded_count: uploadedCount,
-    }
+    };
 
-    return NextResponse.json(response, { status: 200 })
+    return NextResponse.json(response, { status: 200 });
   } catch (err) {
-    console.error('[GET /documents] Unexpected error:', err)
-    return NextResponse.json(
-      errorResponse('INTERNAL_ERROR', 'Internal server error'),
-      { status: 500 }
-    )
+    console.error("[GET /documents] Unexpected error:", err);
+    return NextResponse.json(errorResponse("INTERNAL_ERROR", "Internal server error"), {
+      status: 500,
+    });
   }
 }
 
@@ -90,27 +88,26 @@ export async function POST(
   { params }: { params: Promise<{ journeyId: string }> }
 ) {
   try {
-    const { journeyId } = await params
-    const auth = await verifyJourneyAccess(journeyId)
-    if (auth.error) return auth.error
+    const { journeyId } = await params;
+    const auth = await verifyJourneyAccess(journeyId);
+    if (auth.error) return auth.error;
 
-    const { supabase } = auth
-    const body: CreateJourneyDocumentBody = await request.json()
+    const { supabase } = auth;
+    const body: CreateJourneyDocumentBody = await request.json();
 
     // Validate via DataValidationService
-    const errors = DataValidationService.createDocument(body)
+    const errors = DataValidationService.createDocument(body);
     if (DataValidationService.hasErrors(errors)) {
-      return NextResponse.json(
-        errorResponse('VALIDATION_ERROR', 'Invalid input', errors),
-        { status: 422 }
-      )
+      return NextResponse.json(errorResponse("VALIDATION_ERROR", "Invalid input", errors), {
+        status: 422,
+      });
     }
 
     // Auto-determine status based on whether vault file is provided
-    const status: DocumentStatus = body.vault_file_id ? 'uploaded' : 'not_started'
+    const status: DocumentStatus = body.vault_file_id ? "uploaded" : "not_started";
 
     const { data: document, error } = await supabase
-      .from('journey_documents')
+      .from("journey_documents")
       .insert({
         journey_id: journeyId,
         document_type: body.document_type.trim(),
@@ -126,25 +123,20 @@ export async function POST(
         status,
       })
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('[POST /documents] DB error:', error)
-      return NextResponse.json(
-        errorResponse('DB_ERROR', 'Failed to create document record'),
-        { status: 500 }
-      )
+      console.error("[POST /documents] DB error:", error);
+      return NextResponse.json(errorResponse("DB_ERROR", "Failed to create document record"), {
+        status: 500,
+      });
     }
 
-    return NextResponse.json(
-      successResponse(document, 'Document record created'),
-      { status: 201 }
-    )
+    return NextResponse.json(successResponse(document, "Document record created"), { status: 201 });
   } catch (err) {
-    console.error('[POST /documents] Unexpected error:', err)
-    return NextResponse.json(
-      errorResponse('INTERNAL_ERROR', 'Internal server error'),
-      { status: 500 }
-    )
+    console.error("[POST /documents] Unexpected error:", err);
+    return NextResponse.json(errorResponse("INTERNAL_ERROR", "Internal server error"), {
+      status: 500,
+    });
   }
 }

@@ -22,9 +22,9 @@
  *  [16 bytes: authTag] [remaining: ciphertext]
  */
 
-import crypto from 'crypto';
+import crypto from "crypto";
 
-const MAGIC = Buffer.from('RVLT'); // 4 bytes – identifies encrypted files
+const MAGIC = Buffer.from("RVLT"); // 4 bytes – identifies encrypted files
 const VERSION = 1;
 
 /**
@@ -37,14 +37,9 @@ const VERSION = 1;
 function deriveUserKey(userId: string): Buffer {
   const masterSecret = process.env.PORTAL_WALLET_SECRET;
   if (!masterSecret) {
-    throw new Error(
-      '[file-encryption] PORTAL_WALLET_SECRET is not set in environment variables'
-    );
+    throw new Error("[file-encryption] PORTAL_WALLET_SECRET is not set in environment variables");
   }
-  return crypto
-    .createHash('sha256')
-    .update(`${masterSecret}:${userId}`)
-    .digest();
+  return crypto.createHash("sha256").update(`${masterSecret}:${userId}`).digest();
 }
 
 /**
@@ -58,21 +53,12 @@ export function encryptFile(fileBuffer: Buffer, userId: string): Buffer {
   const key = deriveUserKey(userId);
   const iv = crypto.randomBytes(16); // fresh random IV every time
 
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-  const ciphertext = Buffer.concat([
-    cipher.update(fileBuffer),
-    cipher.final(),
-  ]);
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const ciphertext = Buffer.concat([cipher.update(fileBuffer), cipher.final()]);
   const authTag = cipher.getAuthTag(); // 16 bytes
 
   // Layout: MAGIC(4) + VERSION(1) + IV(16) + authTag(16) + ciphertext
-  return Buffer.concat([
-    MAGIC,
-    Buffer.from([VERSION]),
-    iv,
-    authTag,
-    ciphertext,
-  ]);
+  return Buffer.concat([MAGIC, Buffer.from([VERSION]), iv, authTag, ciphertext]);
 }
 
 /**
@@ -86,16 +72,12 @@ export function decryptFile(encryptedBuffer: Buffer, userId: string): Buffer {
   // Validate header
   const magic = encryptedBuffer.subarray(0, 4);
   if (!magic.equals(MAGIC)) {
-    throw new Error(
-      '[file-encryption] Invalid file header — not an encrypted Document Vault file'
-    );
+    throw new Error("[file-encryption] Invalid file header — not an encrypted Document Vault file");
   }
 
   const version = encryptedBuffer[4];
   if (version !== VERSION) {
-    throw new Error(
-      `[file-encryption] Unsupported encryption version: ${version}`
-    );
+    throw new Error(`[file-encryption] Unsupported encryption version: ${version}`);
   }
 
   // Parse layout: MAGIC(4) + VERSION(1) + IV(16) + authTag(16) + ciphertext
@@ -104,15 +86,13 @@ export function decryptFile(encryptedBuffer: Buffer, userId: string): Buffer {
   const ciphertext = encryptedBuffer.subarray(37);
 
   const key = deriveUserKey(userId);
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv);
   decipher.setAuthTag(authTag);
 
   try {
     return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   } catch {
-    throw new Error(
-      '[file-encryption] Decryption failed — file may be tampered or key mismatch'
-    );
+    throw new Error("[file-encryption] Decryption failed — file may be tampered or key mismatch");
   }
 }
 

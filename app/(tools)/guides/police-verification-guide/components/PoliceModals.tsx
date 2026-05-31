@@ -17,17 +17,11 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 // External Imports for PKM Locator
-import {
-  PKMCenter,
-  pkmCenters,
-} from "../../../police-verification/(data)/punjab-pkm-centers";
+import { PKMCenter, pkmCenters } from "../../../police-verification/(data)/punjab-pkm-centers";
 import { balochistanCenters } from "../../../police-verification/(data)/balochistan-pkm-centers";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 import { kpkCenters } from "../../../police-verification/(data)/kpk-centers";
-import {
-  findNearestCenters,
-  geocodeAddress,
-} from "../../../police-verification/location-utils";
+import { findNearestCenters, geocodeAddress } from "../../../police-verification/location-utils";
 import Link from "next/link";
 
 export interface FormData {
@@ -93,14 +87,11 @@ export function LetterModal({
     return formatted;
   };
 
-  const validateEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone: string) => /^\+?[0-9]*$/.test(phone);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -108,8 +99,7 @@ export function LetterModal({
 
     if (name === "cnic") {
       newValue = formatCNIC(value);
-      if (newValue.replace(/-/g, "").length !== 13)
-        error = "CNIC must be 13 digits";
+      if (newValue.replace(/-/g, "").length !== 13) error = "CNIC must be 13 digits";
     } else if (name === "phone") {
       if (!validatePhone(value)) return;
       newValue = value;
@@ -122,8 +112,7 @@ export function LetterModal({
   };
 
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
@@ -165,16 +154,14 @@ export function LetterModal({
           </div>
 
           <div className="pb-4 text-sm text-gray-600">
-            This letter is required to explain the reason for requesting a
-            Police Verification Certificate.
+            This letter is required to explain the reason for requesting a Police Verification
+            Certificate.
           </div>
 
           <form className="space-y-4 text-left">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-500">
-                  Full Name
-                </label>
+                <label className="text-sm font-semibold text-gray-500">Full Name</label>
                 <input
                   type="text"
                   name="fullName"
@@ -185,9 +172,7 @@ export function LetterModal({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-500">
-                  Relation
-                </label>
+                <label className="text-sm font-semibold text-gray-500">Relation</label>
                 <select
                   name="relation"
                   value={formData.relation}
@@ -218,11 +203,7 @@ export function LetterModal({
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-500">
                 CNIC Number{" "}
-                {errors.cnic && (
-                  <span className="text-red-500 text-xs ml-2">
-                    ({errors.cnic})
-                  </span>
-                )}
+                {errors.cnic && <span className="text-red-500 text-xs ml-2">({errors.cnic})</span>}
               </label>
               <input
                 type="text"
@@ -250,9 +231,7 @@ export function LetterModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-500">
-                  Purpose
-                </label>
+                <label className="text-sm font-semibold text-gray-500">Purpose</label>
                 <select
                   name="purpose"
                   value={formData.purpose}
@@ -265,9 +244,7 @@ export function LetterModal({
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-500">
-                  District/Region
-                </label>
+                <label className="text-sm font-semibold text-gray-500">District/Region</label>
                 <input
                   type="text"
                   name="district"
@@ -284,9 +261,7 @@ export function LetterModal({
                 <label className="text-sm font-semibold text-gray-500">
                   Email Address{" "}
                   {errors.email && (
-                    <span className="text-red-500 text-xs ml-2">
-                      (Invalid format)
-                    </span>
+                    <span className="text-red-500 text-xs ml-2">(Invalid format)</span>
                   )}
                 </label>
                 <input
@@ -299,9 +274,7 @@ export function LetterModal({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-500">
-                  Phone Number
-                </label>
+                <label className="text-sm font-semibold text-gray-500">Phone Number</label>
                 <input
                   type="text"
                   name="phone"
@@ -360,8 +333,7 @@ export function PreviewModal({
   const { showToast } = useToast();
 
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
@@ -398,8 +370,7 @@ export function PreviewModal({
               onClick={downloadPDF}
               className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm whitespace-nowrap"
             >
-              <Download size={16} />{" "}
-              <span className="hidden xs:inline">Download</span>
+              <Download size={16} /> <span className="hidden xs:inline">Download</span>
             </button>
           </div>
           <button
@@ -420,13 +391,7 @@ export function PreviewModal({
   );
 }
 
-function LetterContent({
-  formData,
-  province,
-}: {
-  formData: FormData;
-  province: string;
-}) {
+function LetterContent({ formData, province }: { formData: FormData; province: string }) {
   return (
     <div
       className="bg-white text-black min-h-auto md:min-h-[297mm] p-6 md:p-12 lg:p-[20mm]"
@@ -443,9 +408,7 @@ function LetterContent({
         Application for Issuance of Police Character Certificate
       </div>
       <div style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>To,</div>
-      <div style={{ fontWeight: "bold" }}>
-        The Senior Superintendent of Police (SSP)
-      </div>
+      <div style={{ fontWeight: "bold" }}>The Senior Superintendent of Police (SSP)</div>
       <div style={{ marginBottom: "2rem" }}>
         {formData.district || "[District/Region]"}, {province}, Pakistan
       </div>
@@ -462,9 +425,7 @@ function LetterContent({
           {formData.fullName || "[Full Name]"}
         </span>
         ,{" "}
-        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
-          {formData.relation}
-        </span>{" "}
+        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>{formData.relation}</span>{" "}
         <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
           {formData.guardianName || "[Guardian Name]"}
         </span>
@@ -476,37 +437,28 @@ function LetterContent({
         <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
           {formData.address || "[Full Residential Address]"}
         </span>
-        , respectfully request the issuance of a Police Character Certificate in
-        my favor.
+        , respectfully request the issuance of a Police Character Certificate in my favor.
       </div>
       <div style={{ marginBottom: "1.5rem", textAlign: "justify" }}>
         The certificate is required for{" "}
-        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
-          {formData.purpose}
-        </span>{" "}
-        purposes. I affirm that I have no criminal record, and the certificate
-        is necessary for my overseas plans.
+        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>{formData.purpose}</span>{" "}
+        purposes. I affirm that I have no criminal record, and the certificate is necessary for my
+        overseas plans.
       </div>
       <div style={{ marginBottom: "2rem" }}>
-        Kindly process my request at your earliest convenience. For any further
-        information, you may contact me at:
+        Kindly process my request at your earliest convenience. For any further information, you may
+        contact me at:
       </div>
       <div style={{ marginBottom: "0.25rem" }}>
-        <span style={{ fontWeight: "bold" }}>Email:</span>{" "}
-        {formData.email || "[Email Address]"}
+        <span style={{ fontWeight: "bold" }}>Email:</span> {formData.email || "[Email Address]"}
       </div>
       <div style={{ marginBottom: "2.5rem" }}>
-        <span style={{ fontWeight: "bold" }}>Phone:</span>{" "}
-        {formData.phone || "[Phone Number]"}
+        <span style={{ fontWeight: "bold" }}>Phone:</span> {formData.phone || "[Phone Number]"}
       </div>
-      <div style={{ marginBottom: "2rem" }}>
-        I shall remain grateful for your cooperation.
-      </div>
+      <div style={{ marginBottom: "2rem" }}>I shall remain grateful for your cooperation.</div>
       <div style={{ marginTop: "3rem" }}>
         <div style={{ fontWeight: "bold" }}>Sincerely,</div>
-        <div style={{ marginTop: "1rem" }}>
-          {formData.fullName || "[Full Name]"}
-        </div>
+        <div style={{ marginTop: "1rem" }}>{formData.fullName || "[Full Name]"}</div>
         <div>CNIC: {formData.cnic || "[CNIC Number]"}</div>
         <div>Date: {new Date().toLocaleDateString()}</div>
       </div>
@@ -549,25 +501,21 @@ export function AuthorityLetterModal({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     let newValue = value;
     let error = "";
     if (name === "cnic" || name === "authCnic") {
       newValue = formatCNIC(value);
-      if (newValue.replace(/-/g, "").length !== 13)
-        error = "CNIC must be 13 digits";
+      if (newValue.replace(/-/g, "").length !== 13) error = "CNIC must be 13 digits";
     }
     setFormData((prev) => ({ ...prev, [name]: newValue }));
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
@@ -609,14 +557,13 @@ export function AuthorityLetterModal({
           </div>
 
           <div className="pb-4 text-sm text-gray-600">
-            This letter is required when a blood relative applies on
-            applicant&apos;s behalf(if applicant is abroad).
+            This letter is required when a blood relative applies on applicant&apos;s behalf(if
+            applicant is abroad).
           </div>
 
           <div className="pb-4 text-sm text-gray-600">
-            Note: The authority letter must be stamped by the relevant Embassy,
-            otherwise it should be attested by two respectable persons who are
-            known to the applicant.
+            Note: The authority letter must be stamped by the relevant Embassy, otherwise it should
+            be attested by two respectable persons who are known to the applicant.
           </div>
 
           <form className="space-y-6 text-left">
@@ -626,9 +573,7 @@ export function AuthorityLetterModal({
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Full Name
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Full Name</label>
                   <input
                     type="text"
                     name="fullName"
@@ -638,9 +583,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    CNIC
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">CNIC</label>
                   <input
                     type="text"
                     name="cnic"
@@ -654,9 +597,7 @@ export function AuthorityLetterModal({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Relation Type
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Relation Type</label>
                   <select
                     name="relationType"
                     value={formData.relationType}
@@ -683,9 +624,7 @@ export function AuthorityLetterModal({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Passport No
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Passport No</label>
                   <input
                     type="text"
                     name="passportNo"
@@ -695,9 +634,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Address Abroad
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Address Abroad</label>
                   <input
                     type="text"
                     name="abroadAddress"
@@ -709,9 +646,7 @@ export function AuthorityLetterModal({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Stay Duration From
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Stay Duration From</label>
                   <input
                     type="date"
                     name="stayFrom"
@@ -721,9 +656,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Stay Duration To
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Stay Duration To</label>
                   <input
                     type="date"
                     name="stayTo"
@@ -741,9 +674,7 @@ export function AuthorityLetterModal({
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Full Name
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Full Name</label>
                   <input
                     type="text"
                     name="authFullName"
@@ -753,9 +684,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    CNIC
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">CNIC</label>
                   <input
                     type="text"
                     name="authCnic"
@@ -769,9 +698,7 @@ export function AuthorityLetterModal({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Relation Type
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Relation Type</label>
                   <select
                     name="authRelationType"
                     value={formData.authRelationType}
@@ -881,8 +808,7 @@ export function AuthorityLetterPreviewModal({
   const { showToast } = useToast();
 
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
@@ -919,8 +845,7 @@ export function AuthorityLetterPreviewModal({
               onClick={downloadPDF}
               className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white text-sm font-semibold rounded-lg flex items-center gap-2 whitespace-nowrap"
             >
-              <Download size={16} />{" "}
-              <span className="hidden xs:inline">Download</span>
+              <Download size={16} /> <span className="hidden xs:inline">Download</span>
             </button>
           </div>
           <button
@@ -964,15 +889,12 @@ function AuthorityLetterContent({
           I, Mr./Mrs. <b>{formData.fullName || "________________________"}</b>
         </div>
         <div>
-          {formData.relationType},{" "}
-          <b>{formData.relationName || "________________________"}</b>
+          {formData.relationType}, <b>{formData.relationName || "________________________"}</b>
         </div>
         <div>
           CNIC No. <b>{formData.cnic || "________________________"}</b>
         </div>
-        <div className="">
-          Hereby authorized my real {formData.authRelationship || "relative"}
-        </div>
+        <div className="">Hereby authorized my real {formData.authRelationship || "relative"}</div>
         <div>
           Mr./Mrs. <b>{formData.authFullName || "________________________"}</b>
         </div>
@@ -984,13 +906,11 @@ function AuthorityLetterContent({
           CNIC No. <b>{formData.authCnic || "________________________"}</b>
         </div>
         <div>
-          Resident of{" "}
-          <b>{formData.authAddress || "________________________"}</b>
+          Resident of <b>{formData.authAddress || "________________________"}</b>
         </div>
         <div className="">
-          to process and signed my behalf and collect my Police Clearance
-          Certificate from SSP Office,{" "}
-          {formData.officeLocation || province || "Islamabad"}.
+          to process and signed my behalf and collect my Police Clearance Certificate from SSP
+          Office, {formData.officeLocation || province || "Islamabad"}.
         </div>
       </div>
       <div className="pt-12 md:pt-20 space-y-2 w-full sm:w-1/2 ml-auto">
@@ -999,16 +919,13 @@ function AuthorityLetterContent({
           Name: <b>{formData.fullName || "________________________"}</b>
         </div>
         <div>
-          Fathers Name{" "}
-          <b>{formData.relationName || "________________________"}</b>
+          Fathers Name <b>{formData.relationName || "________________________"}</b>
         </div>
         <div>
-          Passport No.{" "}
-          <b>{formData.passportNo || "________________________"}</b>
+          Passport No. <b>{formData.passportNo || "________________________"}</b>
         </div>
         <div>
-          Address in Abroad{" "}
-          <b>{formData.abroadAddress || "________________________"}</b>
+          Address in Abroad <b>{formData.abroadAddress || "________________________"}</b>
         </div>
         <div>
           Stay Duration:{" "}
@@ -1027,13 +944,7 @@ function AuthorityLetterContent({
 // 3. SINDH APPLY NOW MODAL
 // ==========================================
 
-export function SindhApplyModal({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
+export function SindhApplyModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col items-center text-center max-h-[90vh] md:max-h-[95vh] overflow-y-auto gap-0 border border-gray-200">
@@ -1044,9 +955,9 @@ export function SindhApplyModal({
           Apply Online
         </DialogTitle>
         <p className="text-gray-500 mb-6 md:mb-8 text-sm md:text-base leading-relaxed">
-          We are directly providing you with this official service. By clicking{" "}
-          <b>Apply Now</b>, you will be redirected to the comprehensive Police
-          Verification form. Provide accurate information to proceed.
+          We are directly providing you with this official service. By clicking <b>Apply Now</b>,
+          you will be redirected to the comprehensive Police Verification form. Provide accurate
+          information to proceed.
         </p>
 
         <div className="flex flex-col sm:flex-row w-full gap-3 md:gap-4">
@@ -1090,9 +1001,7 @@ export function PKMLocatorModal({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [nearestCenters, setNearestCenters] = useState<
-    (PKMCenter & { distance: number })[]
-  >([]);
+  const [nearestCenters, setNearestCenters] = useState<(PKMCenter & { distance: number })[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const centersData =
@@ -1119,7 +1028,7 @@ export function PKMLocatorModal({
       () => {
         setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
         setLoading(false);
-      },
+      }
     );
   };
 
@@ -1130,22 +1039,16 @@ export function PKMLocatorModal({
     setError(null);
     const location = await geocodeAddress(searchQuery, province);
     if (location) {
-      setNearestCenters(
-        findNearestCenters(location.lat, location.lng, centersData),
-      );
+      setNearestCenters(findNearestCenters(location.lat, location.lng, centersData));
     } else {
       const fallbackLocation = await geocodeAddress(searchQuery, "");
       if (fallbackLocation) {
         setNearestCenters(
-          findNearestCenters(
-            fallbackLocation.lat,
-            fallbackLocation.lng,
-            centersData,
-          ),
+          findNearestCenters(fallbackLocation.lat, fallbackLocation.lng, centersData)
         );
       } else {
         setError(
-          `Could not find "${searchQuery}" in ${province}. Please try entering a city name like "Peshawar" or "Multan".`,
+          `Could not find "${searchQuery}" in ${province}. Please try entering a city name like "Peshawar" or "Multan".`
         );
       }
     }
@@ -1169,8 +1072,7 @@ export function PKMLocatorModal({
               Find Nearest PKM Center
             </DialogTitle>
             <p className="text-gray-500 text-sm md:text-base">
-              Locate the closest Police Khidmat Markaz for your character
-              certificate.
+              Locate the closest Police Khidmat Markaz for your character certificate.
             </p>
           </div>
 
@@ -1182,11 +1084,7 @@ export function PKMLocatorModal({
                 disabled={loading}
                 className="flex-1 flex items-center justify-center gap-2 p-3 md:p-4 rounded-xl md:rounded-2xl bg-primary/5 text-primary text-sm md:text-base font-semibold hover:bg-primary/10 transition-all border border-primary/20"
               >
-                {loading ? (
-                  <Loader size="sm" />
-                ) : (
-                  <Navigation className="w-4 h-4 md:w-5 md:h-5" />
-                )}{" "}
+                {loading ? <Loader size="sm" /> : <Navigation className="w-4 h-4 md:w-5 md:h-5" />}{" "}
                 Use My Location
               </button>
               <div className="flex-1">
@@ -1203,11 +1101,7 @@ export function PKMLocatorModal({
                     disabled={loading}
                     className="absolute right-1.5 md:right-2 top-1.5 md:top-2 p-1.5 md:p-2 rounded-lg md:rounded-xl bg-primary text-white hover:bg-primary/90 transition-all"
                   >
-                    {loading ? (
-                      <Loader size="sm" />
-                    ) : (
-                      <Search className="w-4 h-4 md:w-5 md:h-5" />
-                    )}
+                    {loading ? <Loader size="sm" /> : <Search className="w-4 h-4 md:w-5 md:h-5" />}
                   </button>
                 </form>
               </div>
@@ -1255,9 +1149,7 @@ export function PKMLocatorModal({
                               ~{center.distance.toFixed(1)} km
                             </span>
                           </div>
-                          <p className="text-xs md:text-sm text-gray-500 mt-1">
-                            {center.address}
-                          </p>
+                          <p className="text-xs md:text-sm text-gray-500 mt-1">{center.address}</p>
                         </div>
                       </div>
                     ))}

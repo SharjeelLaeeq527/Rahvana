@@ -1,14 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Truck,
-  ArrowRight,
-  ExternalLink,
-  Monitor,
-  Lock,
-  Upload,
-} from "lucide-react";
+import { Truck, ArrowRight, ExternalLink, Monitor, Lock, Upload } from "lucide-react";
 
 interface CourierRegistrationToolProps {
   tool: any;
@@ -22,9 +15,7 @@ interface CourierRegistrationToolProps {
   guard?: () => boolean;
 }
 
-export const CourierRegistrationTool: React.FC<
-  CourierRegistrationToolProps
-> = ({
+export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = ({
   tool,
   courierCredentials,
   setCourierGuideIdx,
@@ -39,22 +30,20 @@ export const CourierRegistrationTool: React.FC<
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 font-sans">
       {/* Header Chips */}
       <div className="flex items-center gap-[7px] flex-wrap mb-8">
-        {["Courier Service", "Account Setup", "Portal Wallet"].map(
-          (label, i) => (
-            <span
-              key={i}
-              className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
-                i === 0
-                  ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                  : i === 1
-                    ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                    : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-              }`}
-            >
-              {label}
-            </span>
-          ),
-        )}
+        {["Courier Service", "Account Setup", "Portal Wallet"].map((label, i) => (
+          <span
+            key={i}
+            className={`text-[11px] font-semibold tracking-[0.06em] uppercase px-3 py-1.5 rounded-full border ${
+              i === 0
+                ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                : i === 1
+                  ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                  : "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
+            }`}
+          >
+            {label}
+          </span>
+        ))}
       </div>
 
       {/* Launch Module */}
@@ -87,20 +76,14 @@ export const CourierRegistrationTool: React.FC<
                 className="bg-white/6 border border-white/10 rounded-lg p-[10px_12px] flex items-start gap-2"
               >
                 <div className="w-[5px] h-[5px] rounded-full bg-[#6aa8f0]/70 shrink-0 mt-[5.5px]" />
-                <span className="text-[13px] text-white/55 leading-[1.4]">
-                  {cue}
-                </span>
+                <span className="text-[13px] text-white/55 leading-[1.4]">{cue}</span>
               </div>
             ))}
           </div>
           <button
             onClick={() => {
               if (guard && !guard()) return;
-              window.open(
-                "https://www.usvisascheduling.com/",
-                "_blank",
-                "noopener,noreferrer",
-              );
+              window.open("https://www.usvisascheduling.com/", "_blank", "noopener,noreferrer");
             }}
             className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
           >
@@ -135,8 +118,8 @@ export const CourierRegistrationTool: React.FC<
             Step-by-Step Sign-Up Guide
           </div>
           <div className="text-[12px] text-[#6b8097] leading-[1.5] mb-3">
-            Walkthrough of the courier registration sign-up process — account
-            creation, selection, and confirmation.
+            Walkthrough of the courier registration sign-up process — account creation, selection,
+            and confirmation.
           </div>
           <div className="mt-auto text-[12px] font-bold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
             <span>View guide</span>
@@ -168,9 +151,7 @@ export const CourierRegistrationTool: React.FC<
           <div
             className={`text-[14px] font-bold ${courierCredentials ? "text-[#15744f]" : "text-[#0c1b33]"} mb-1`}
           >
-            {courierCredentials
-              ? "✓ Credentials Saved"
-              : "Save Courier Credentials"}
+            {courierCredentials ? "✓ Credentials Saved" : "Save Courier Credentials"}
           </div>
           <div className="text-[12px] text-[#6b8097] leading-[1.5] mb-3">
             {courierCredentials
@@ -180,11 +161,7 @@ export const CourierRegistrationTool: React.FC<
           <div
             className={`mt-auto text-[12px] font-bold ${courierCredentials ? "text-[#15744f]" : "text-primary"} flex items-center gap-1 group-hover:gap-2 transition-all`}
           >
-            <span>
-              {courierCredentials
-                ? "View saved credentials"
-                : "Open credential vault"}
-            </span>
+            <span>{courierCredentials ? "View saved credentials" : "Open credential vault"}</span>
             <ArrowRight size={11} strokeWidth={2.5} />
           </div>
         </button>
@@ -197,20 +174,14 @@ export const CourierRegistrationTool: React.FC<
             ✓ Credentials Saved — Courier Account
           </div>
           <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
-            <span className="text-[12px] text-[#3a4f63] font-medium">
-              Email
-            </span>
+            <span className="text-[12px] text-[#3a4f63] font-medium">Email</span>
             <span className="text-[12px] text-[#0c1b33] font-bold font-mono">
               {courierCredentials.username}
             </span>
           </div>
           <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50 last:border-none">
-            <span className="text-[12px] text-[#3a4f63] font-medium">
-              Password
-            </span>
-            <span className="text-[12px] text-[#0c1b33] font-bold font-mono">
-              ••••••••
-            </span>
+            <span className="text-[12px] text-[#3a4f63] font-medium">Password</span>
+            <span className="text-[12px] text-[#0c1b33] font-bold font-mono">••••••••</span>
           </div>
           <div className="flex flex-col gap-2.5 mt-3">
             <button
@@ -222,8 +193,7 @@ export const CourierRegistrationTool: React.FC<
               }}
               className="inline-flex items-center gap-1 text-[12px] font-bold text-primary hover:underline"
             >
-              Edit or update in Portal Wallet{" "}
-              <ExternalLink size={11} strokeWidth={2.5} />
+              Edit or update in Portal Wallet <ExternalLink size={11} strokeWidth={2.5} />
             </button>
             <a
               href="https://www.rahvana.com/document-vault"

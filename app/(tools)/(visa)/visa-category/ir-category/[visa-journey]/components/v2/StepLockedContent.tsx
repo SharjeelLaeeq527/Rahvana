@@ -13,57 +13,60 @@ type TierKey = "basic" | "premium" | "executive";
 // basic     → slate-teal icon   → teal-mint tones
 // premium   → silver/chrome icon → periwinkle-grey / silver tones
 // executive → gold icon          → amber-cream tones
-const TIER_THEME: Record<TierKey, {
-  bg: string;
-  border: string;
-  circleBg: string;
-  circleBorder: string;
-  iconColor: string;
-  ctaBtn: string;
-  ctaBtnHover: string;
-  ctaText: string;
-  ctaTextHover: string;
-  titleColor: string;
-  overlayBorder: string;
-}> = {
+const TIER_THEME: Record<
+  TierKey,
+  {
+    bg: string;
+    border: string;
+    circleBg: string;
+    circleBorder: string;
+    iconColor: string;
+    ctaBtn: string;
+    ctaBtnHover: string;
+    ctaText: string;
+    ctaTextHover: string;
+    titleColor: string;
+    overlayBorder: string;
+  }
+> = {
   basic: {
-    bg:             "bg-[#e4f4f2]",
-    border:         "border-[#98d0ca]",
-    circleBg:       "bg-[#b8e4de]",
-    circleBorder:   "border-[#78c8c0]",
-    iconColor:      "text-[#1e8880]",
-    ctaBtn:         "bg-[#4aada4]",
-    ctaBtnHover:    "hover:bg-[#3a9d94]",
-    ctaText:        "text-[#1e8880]",
-    ctaTextHover:   "hover:text-[#0e6860]",
-    titleColor:     "text-[#072c2a]",
-    overlayBorder:  "border-[#98d0ca]",
+    bg: "bg-[#e4f4f2]",
+    border: "border-[#98d0ca]",
+    circleBg: "bg-[#b8e4de]",
+    circleBorder: "border-[#78c8c0]",
+    iconColor: "text-[#1e8880]",
+    ctaBtn: "bg-[#4aada4]",
+    ctaBtnHover: "hover:bg-[#3a9d94]",
+    ctaText: "text-[#1e8880]",
+    ctaTextHover: "hover:text-[#0e6860]",
+    titleColor: "text-[#072c2a]",
+    overlayBorder: "border-[#98d0ca]",
   },
   premium: {
-    bg:             "bg-[#eeeeF8]",
-    border:         "border-[#c0c0dc]",
-    circleBg:       "bg-[#dcdcf0]",
-    circleBorder:   "border-[#a8a8cc]",
-    iconColor:      "text-[#585878]",
-    ctaBtn:         "bg-[#8888a8]",
-    ctaBtnHover:    "hover:bg-[#787898]",
-    ctaText:        "text-[#585878]",
-    ctaTextHover:   "hover:text-[#383858]",
-    titleColor:     "text-[#181830]",
-    overlayBorder:  "border-[#c0c0dc]",
+    bg: "bg-[#eeeeF8]",
+    border: "border-[#c0c0dc]",
+    circleBg: "bg-[#dcdcf0]",
+    circleBorder: "border-[#a8a8cc]",
+    iconColor: "text-[#585878]",
+    ctaBtn: "bg-[#8888a8]",
+    ctaBtnHover: "hover:bg-[#787898]",
+    ctaText: "text-[#585878]",
+    ctaTextHover: "hover:text-[#383858]",
+    titleColor: "text-[#181830]",
+    overlayBorder: "border-[#c0c0dc]",
   },
   executive: {
-    bg:             "bg-[#fdf4d8]",
-    border:         "border-[#e4cc88]",
-    circleBg:       "bg-[#f0e0a0]",
-    circleBorder:   "border-[#d0b060]",
-    iconColor:      "text-[#8a6810]",
-    ctaBtn:         "bg-[#b89030]",
-    ctaBtnHover:    "hover:bg-[#a88020]",
-    ctaText:        "text-[#8a6810]",
-    ctaTextHover:   "hover:text-[#6a4800]",
-    titleColor:     "text-[#3a2800]",
-    overlayBorder:  "border-[#e4cc88]",
+    bg: "bg-[#fdf4d8]",
+    border: "border-[#e4cc88]",
+    circleBg: "bg-[#f0e0a0]",
+    circleBorder: "border-[#d0b060]",
+    iconColor: "text-[#8a6810]",
+    ctaBtn: "bg-[#b89030]",
+    ctaBtnHover: "hover:bg-[#a88020]",
+    ctaText: "text-[#8a6810]",
+    ctaTextHover: "hover:text-[#6a4800]",
+    titleColor: "text-[#3a2800]",
+    overlayBorder: "border-[#e4cc88]",
   },
 };
 
@@ -131,9 +134,7 @@ export function StepLockedContent({
   if (mode === "replace") {
     return (
       <>
-        {showUpgrade && (
-          <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />
-        )}
+        {showUpgrade && <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />}
         <div
           className={`
             rounded-2xl border-[1.5px] border-dashed
@@ -190,14 +191,10 @@ export function StepLockedContent({
   // ── Overlay mode (default) — blurred children with lock overlay ───────────
   return (
     <>
-      {showUpgrade && (
-        <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />
-      )}
+      {showUpgrade && <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />}
       <div className={`relative ${className ?? ""}`}>
         {/* Blurred / dimmed children */}
-        <div className="pointer-events-none select-none opacity-55">
-          {children}
-        </div>
+        <div className="pointer-events-none select-none opacity-55">{children}</div>
 
         {/* Lock overlay card */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl">

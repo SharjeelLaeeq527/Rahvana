@@ -2,11 +2,8 @@
 // User rejects translation and requests changes
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { E, msg } from '@/lib/errors';
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+import { E, msg } from "@/lib/errors";
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
 
@@ -39,10 +36,7 @@ export async function POST(
       .single();
 
     if (checkError || !existing) {
-      return NextResponse.json(
-        { error: msg(E.CASE_DATA_NOT_FOUND) },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     if (existing.status !== "TRANSLATED") {
@@ -67,23 +61,16 @@ export async function POST(
 
     if (updateError) {
       console.error("Update error:", updateError);
-      return NextResponse.json(
-        { error: "Failed to request changes" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to request changes" }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
       status: updated.status,
-      message:
-        "Change request submitted. Admin will review and re-upload.",
+      message: "Change request submitted. Admin will review and re-upload.",
     });
   } catch (error) {
     console.error("Request changes error:", error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

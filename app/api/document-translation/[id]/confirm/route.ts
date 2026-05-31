@@ -1,13 +1,10 @@
 // POST /api/document-translation/[id]/confirm
 // User accepts the translation
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { E, msg } from '@/lib/errors';
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
 
@@ -25,51 +22,39 @@ export async function POST(
 
     // Check if document exists and is in TRANSLATED state
     const { data: existing, error: checkError } = await supabase
-      .from('translation_documents')
-      .select('status, translated_file_path')
-      .eq('id', id)
-      .eq('user_id', user.id)
+      .from("translation_documents")
+      .select("status, translated_file_path")
+      .eq("id", id)
+      .eq("user_id", user.id)
       .single();
 
     if (checkError || !existing) {
-      return NextResponse.json(
-        { error: msg(E.CASE_DATA_NOT_FOUND) },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
-    if (existing.status !== 'TRANSLATED') {
-      return NextResponse.json(
-          { error: msg(E.UPLOAD_TRANSLATION_NOT_READY) },
-        { status: 400 }
-      );
+    if (existing.status !== "TRANSLATED") {
+      return NextResponse.json({ error: msg(E.UPLOAD_TRANSLATION_NOT_READY) }, { status: 400 });
     }
 
     if (!existing.translated_file_path) {
-      return NextResponse.json(
-        { error: msg(E.UPLOAD_TRANSLATION_FILE_MISSING) },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: msg(E.UPLOAD_TRANSLATION_FILE_MISSING) }, { status: 400 });
     }
 
     // Update status to USER_CONFIRMED
     const { data: updated, error: updateError } = await supabase
-      .from('translation_documents')
+      .from("translation_documents")
       .update({
-        status: 'USER_CONFIRMED',
+        status: "USER_CONFIRMED",
         user_confirmed_at: new Date().toISOString(),
       })
-      .eq('id', id)
-      .eq('user_id', user.id)
+      .eq("id", id)
+      .eq("user_id", user.id)
       .select()
       .single();
 
     if (updateError) {
-      console.error('Update error:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to confirm translation' },
-        { status: 500 }
-      );
+      console.error("Update error:", updateError);
+      return NextResponse.json({ error: "Failed to confirm translation" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -78,10 +63,7 @@ export async function POST(
       message: msg(E.UPLOAD_TRANSLATION_CONFIRMED),
     });
   } catch (error) {
-    console.error('Confirm error:', error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 }
-    );
+    console.error("Confirm error:", error);
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

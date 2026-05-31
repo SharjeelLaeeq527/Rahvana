@@ -29,9 +29,27 @@
           "id": "personType",
           "title": "Select Applicant Profile",
           "options": [
-            { "id": "adult", "title": "Pakistani Adult (Travel)", "description": "For citizens leaving the country.", "icon": "user", "color": "green" },
-            { "id": "child", "title": "Pakistani Child", "description": "For travel or school admission.", "icon": "users", "color": "orange" },
-            { "id": "foreigner", "title": "Foreigner (Long-term)", "description": "Foreigners staying > 4 weeks in Pakistan.", "icon": "globe", "color": "blue" }
+            {
+              "id": "adult",
+              "title": "Pakistani Adult (Travel)",
+              "description": "For citizens leaving the country.",
+              "icon": "user",
+              "color": "green"
+            },
+            {
+              "id": "child",
+              "title": "Pakistani Child",
+              "description": "For travel or school admission.",
+              "icon": "users",
+              "color": "orange"
+            },
+            {
+              "id": "foreigner",
+              "title": "Foreigner (Long-term)",
+              "description": "Foreigners staying > 4 weeks in Pakistan.",
+              "icon": "globe",
+              "color": "blue"
+            }
           ]
         }
       ]
@@ -45,15 +63,56 @@
       "provinces": [
         {
           "name": "Punjab",
-          "districts": ["Lahore", "Rawalpindi", "Murree", "Faisalabad", "Multan", "Gujranwala", "Wazirabad", "Sialkot", "Sheikhupura", "Gujrat", "Sahiwal", "Attock", "Chakwal", "Talagang", "Mianwali", "Dera Ghazi Khan", "Taunsa", "Kot Addu"]
+          "districts": [
+            "Lahore",
+            "Rawalpindi",
+            "Murree",
+            "Faisalabad",
+            "Multan",
+            "Gujranwala",
+            "Wazirabad",
+            "Sialkot",
+            "Sheikhupura",
+            "Gujrat",
+            "Sahiwal",
+            "Attock",
+            "Chakwal",
+            "Talagang",
+            "Mianwali",
+            "Dera Ghazi Khan",
+            "Taunsa",
+            "Kot Addu"
+          ]
         },
         {
           "name": "Sindh",
-          "districts": ["Karachi Central", "Karachi South", "Karachi East", "Karachi West", "Malir", "Korangi", "Keamari", "Hyderabad", "Sukkur", "Larkana", "Shaheed Benazirabad", "Sujawal"]
+          "districts": [
+            "Karachi Central",
+            "Karachi South",
+            "Karachi East",
+            "Karachi West",
+            "Malir",
+            "Korangi",
+            "Keamari",
+            "Hyderabad",
+            "Sukkur",
+            "Larkana",
+            "Shaheed Benazirabad",
+            "Sujawal"
+          ]
         },
         {
           "name": "Khyber Pakhtunkhwa",
-          "districts": ["Peshawar", "Mardan", "Swat", "Upper Chitral", "Lower Chitral", "Khyber", "Upper South Waziristan", "Lower South Waziristan"]
+          "districts": [
+            "Peshawar",
+            "Mardan",
+            "Swat",
+            "Upper Chitral",
+            "Lower Chitral",
+            "Khyber",
+            "Upper South Waziristan",
+            "Lower South Waziristan"
+          ]
         },
         {
           "name": "Balochistan",
@@ -217,52 +276,162 @@
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "1 - 2 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your CNIC & Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center" }
+          {
+            "id": 1,
+            "title": "Download Online",
+            "duration": "Instant",
+            "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your CNIC & Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
+          }
         ],
         "onsitePhases": [
-          { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
-          { "id": 2, "title": "Get Vaccinated", "duration": "1 Day", "description": "Visit your selected vaccination center. Provide your original ID and ensure the staff correctly enters your details into the NIMS system." },
-          { "id": 3, "title": "NIMS Entry", "duration": "24 Hours", "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check your status online." }
+          {
+            "id": 1,
+            "title": "Where to Go",
+            "duration": "Preparation",
+            "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry."
+          },
+          {
+            "id": 2,
+            "title": "Get Vaccinated",
+            "duration": "1 Day",
+            "description": "Visit your selected vaccination center. Provide your original ID and ensure the staff correctly enters your details into the NIMS system."
+          },
+          {
+            "id": 3,
+            "title": "NIMS Entry",
+            "duration": "24 Hours",
+            "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check your status online."
+          }
         ],
         "documents_checklist": [
-          { "id": "cnic", "label": "Original CNIC", "description": "Your 13-digit Computerized National Identity Card.", "required": true },
-          { "id": "passport", "label": "Original Passport", "description": "Mandatory if you are traveling abroad; ensures the certificate is linked to your passport.", "required": true },
-          { "id": "mobile", "label": "Active Mobile Number", "description": "Used for SMS verification and NIMS portal tracking.", "required": true }
+          {
+            "id": "cnic",
+            "label": "Original CNIC",
+            "description": "Your 13-digit Computerized National Identity Card.",
+            "required": true
+          },
+          {
+            "id": "passport",
+            "label": "Original Passport",
+            "description": "Mandatory if you are traveling abroad; ensures the certificate is linked to your passport.",
+            "required": true
+          },
+          {
+            "id": "mobile",
+            "label": "Active Mobile Number",
+            "description": "Used for SMS verification and NIMS portal tracking.",
+            "required": true
+          }
         ]
       },
       "child": {
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "1 - 2 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter the B-Form / CRC Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center" }
+          {
+            "id": 1,
+            "title": "Download Online",
+            "duration": "Instant",
+            "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter the B-Form / CRC Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
+          }
         ],
         "onsitePhases": [
-          { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
-          { "id": 2, "title": "Get Vaccinated", "duration": "Day 1", "description": "Visit your selected vaccination center. Provide original ID and ensure the staff correctly enters details into the NIMS system." },
-          { "id": 3, "title": "NIMS Entry", "duration": "24 Hours", "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check status online." }
+          {
+            "id": 1,
+            "title": "Where to Go",
+            "duration": "Preparation",
+            "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry."
+          },
+          {
+            "id": 2,
+            "title": "Get Vaccinated",
+            "duration": "Day 1",
+            "description": "Visit your selected vaccination center. Provide original ID and ensure the staff correctly enters details into the NIMS system."
+          },
+          {
+            "id": 3,
+            "title": "NIMS Entry",
+            "duration": "24 Hours",
+            "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check status online."
+          }
         ],
         "documents_checklist": [
-          { "id": "bform", "label": "Original B-Form (CRC)", "description": "Mandatory for minors. Ensure the B-Form number is correctly relayed to the operator.", "required": true },
-          { "id": "parent_cnic", "label": "Parent's CNIC", "description": "Original CNIC of the accompanying parent or guardian.", "required": true },
-          { "id": "mobile", "label": "Active Mobile Number", "description": "Used for SMS verification and NIMS portal tracking.", "required": true },
-          { "id": "passport", "label": "Passport Copy", "description": "Important if the child is traveling abroad.", "required": false }
+          {
+            "id": "bform",
+            "label": "Original B-Form (CRC)",
+            "description": "Mandatory for minors. Ensure the B-Form number is correctly relayed to the operator.",
+            "required": true
+          },
+          {
+            "id": "parent_cnic",
+            "label": "Parent's CNIC",
+            "description": "Original CNIC of the accompanying parent or guardian.",
+            "required": true
+          },
+          {
+            "id": "mobile",
+            "label": "Active Mobile Number",
+            "description": "Used for SMS verification and NIMS portal tracking.",
+            "required": true
+          },
+          {
+            "id": "passport",
+            "label": "Passport Copy",
+            "description": "Important if the child is traveling abroad.",
+            "required": false
+          }
         ]
       },
       "foreigner": {
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "1 - 2 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download Online", "duration": "Instant", "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center" }
+          {
+            "id": 1,
+            "title": "Download Online",
+            "duration": "Instant",
+            "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
+          }
         ],
         "onsitePhases": [
-          { "id": 1, "title": "Where to Go", "duration": "Preparation", "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry." },
-          { "id": 2, "title": "Get Vaccinated", "duration": "Day 1", "description": "Visit your selected vaccination center. Provide your original ID and ensure the staff correctly enters your details into the NIMS system." },
-          { "id": 3, "title": "NIMS Entry", "duration": "24 Hours", "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check your status online." }
+          {
+            "id": 1,
+            "title": "Where to Go",
+            "duration": "Preparation",
+            "description": "Authorized government hospitals, District Headquarter Hospitals (DHQs), and District Health Offices (DHOs) provide both the vaccine and NIMS data entry."
+          },
+          {
+            "id": 2,
+            "title": "Get Vaccinated",
+            "duration": "Day 1",
+            "description": "Visit your selected vaccination center. Provide your original ID and ensure the staff correctly enters your details into the NIMS system."
+          },
+          {
+            "id": 3,
+            "title": "NIMS Entry",
+            "duration": "24 Hours",
+            "description": "Wait up to 24 hours for the vaccination record to reflect on the official NIMS portal. You can check your status online."
+          }
         ],
         "documents_checklist": [
-          { "id": "passport", "label": "Original Passport", "description": "Primary identification document. The passport number is used for NIMS entry.", "required": true },
-          { "id": "visa", "label": "Valid Visa Copy", "description": "Proof of legal stay in Pakistan.", "required": true },
-          { "id": "mobile", "label": "Active Mobile Number", "description": "Used for SMS verification and NIMS portal tracking.", "required": true }
+          {
+            "id": "passport",
+            "label": "Original Passport",
+            "description": "Primary identification document. The passport number is used for NIMS entry.",
+            "required": true
+          },
+          {
+            "id": "visa",
+            "label": "Valid Visa Copy",
+            "description": "Proof of legal stay in Pakistan.",
+            "required": true
+          },
+          {
+            "id": "mobile",
+            "label": "Active Mobile Number",
+            "description": "Used for SMS verification and NIMS portal tracking.",
+            "required": true
+          }
         ]
       }
     },
@@ -286,7 +455,10 @@
         {
           "name": "NIMS & Online Status",
           "items": [
-            { "label": "Check NIMS website for data reflection after vaccination", "critical": true },
+            {
+              "label": "Check NIMS website for data reflection after vaccination",
+              "critical": true
+            },
             { "label": "Verify phone number linked with the NIMS record matches", "critical": true }
           ]
         },
@@ -305,44 +477,28 @@
           "Ensure you bring the original ID document associated with your profile.",
           "Children must have their original B-Form or CRC."
         ],
-        "pitfalls": [
-          "Do not forget your original passport if traveling abroad."
-        ],
-        "links": [
-          { "label": "NIMS Portal", "url": "https://nims.nadra.gov.pk/nims/" }
-        ]
+        "pitfalls": ["Do not forget your original passport if traveling abroad."],
+        "links": [{ "label": "NIMS Portal", "url": "https://nims.nadra.gov.pk/nims/" }]
       },
       "location": {
-        "tips": [
-          "Your nearest vaccination center is based on your current residential address."
-        ],
-        "pitfalls": [
-          "Don't assume any center can process your request — check availability."
-        ],
-        "links": [
-        ]
+        "tips": ["Your nearest vaccination center is based on your current residential address."],
+        "pitfalls": ["Don't assume any center can process your request — check availability."],
+        "links": []
       },
       "roadmap": {
         "tips": [
           "Double-check your passport number with the operator during data entry.",
           "Wait 24 hours before trying to download the certificate from NIMS."
         ],
-        "pitfalls": [
-          "A wrong passport number entry will require a correction process."
-        ],
+        "pitfalls": ["A wrong passport number entry will require a correction process."],
         "links": [
           { "label": "NIMS Certificate Download", "url": "https://nims.nadra.gov.pk/nims/" }
         ]
       },
       "office_finder": {
-        "tips": [
-          "Confirm office hours before visiting; some close early on Fridays."
-        ],
-        "pitfalls": [
-          "Don't rely on unofficial centers."
-        ],
-        "links": [
-        ]
+        "tips": ["Confirm office hours before visiting; some close early on Fridays."],
+        "pitfalls": ["Don't rely on unofficial centers."],
+        "links": []
       },
       "validation": {
         "tips": [

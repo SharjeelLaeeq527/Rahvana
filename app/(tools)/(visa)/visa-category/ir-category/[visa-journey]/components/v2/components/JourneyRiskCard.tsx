@@ -10,8 +10,13 @@
 
 import React, { useMemo, useState } from "react";
 import {
-  ShieldAlert, AlertTriangle, Info, ChevronDown, ArrowRight,
-  ShieldCheck, ClipboardList,
+  ShieldAlert,
+  AlertTriangle,
+  Info,
+  ChevronDown,
+  ArrowRight,
+  ShieldCheck,
+  ClipboardList,
 } from "lucide-react";
 import {
   detectRiskFlags,
@@ -30,25 +35,72 @@ interface JourneyRiskCardProps {
 
 const SEV: Record<
   RiskFlag["severity"],
-  { rowBg: string; rowBorder: string; titleColor: string; fg: string; chipBg: string; chipFg: string; label: string; iconColor: string; Icon: React.ComponentType<{ size?: number; color?: string; className?: string }> }
+  {
+    rowBg: string;
+    rowBorder: string;
+    titleColor: string;
+    fg: string;
+    chipBg: string;
+    chipFg: string;
+    label: string;
+    iconColor: string;
+    Icon: React.ComponentType<{ size?: number; color?: string; className?: string }>;
+  }
 > = {
-  critical: { rowBg: "#fff8f8", rowBorder: "#fecaca", titleColor: "#991b1b", fg: "#7f1d1d", chipBg: "#fee2e2", chipFg: "#7f1d1d", label: "Critical", iconColor: "#dc2626", Icon: ShieldAlert },
-  warning:  { rowBg: "#fffdf5", rowBorder: "#fde68a", titleColor: "#92400e", fg: "#78350f", chipBg: "#fef3c7", chipFg: "#78350f", label: "Warning",  iconColor: "#d97706", Icon: AlertTriangle },
-  advisory: { rowBg: "#f8fbff", rowBorder: "#bfdbfe", titleColor: "#1e40af", fg: "#1e3a8a", chipBg: "#dbeafe", chipFg: "#1e3a8a", label: "Note",     iconColor: "#3b82f6", Icon: Info },
+  critical: {
+    rowBg: "#fff8f8",
+    rowBorder: "#fecaca",
+    titleColor: "#991b1b",
+    fg: "#7f1d1d",
+    chipBg: "#fee2e2",
+    chipFg: "#7f1d1d",
+    label: "Critical",
+    iconColor: "#dc2626",
+    Icon: ShieldAlert,
+  },
+  warning: {
+    rowBg: "#fffdf5",
+    rowBorder: "#fde68a",
+    titleColor: "#92400e",
+    fg: "#78350f",
+    chipBg: "#fef3c7",
+    chipFg: "#78350f",
+    label: "Warning",
+    iconColor: "#d97706",
+    Icon: AlertTriangle,
+  },
+  advisory: {
+    rowBg: "#f8fbff",
+    rowBorder: "#bfdbfe",
+    titleColor: "#1e40af",
+    fg: "#1e3a8a",
+    chipBg: "#dbeafe",
+    chipFg: "#1e3a8a",
+    label: "Note",
+    iconColor: "#3b82f6",
+    Icon: Info,
+  },
 };
 
 // ─── Risk indicator (mirrors DocCaseStrengthMeter's ScoreRing visual weight) ──
 
 function RiskIndicator({ count, color, label }: { count: number; color: string; label: string }) {
   return (
-    <div className="relative shrink-0 flex flex-col items-center justify-center" style={{ width: 64, height: 64 }}>
+    <div
+      className="relative shrink-0 flex flex-col items-center justify-center"
+      style={{ width: 64, height: 64 }}
+    >
       <div
         className="w-12 h-12 rounded-full flex items-center justify-center border-2"
         style={{ borderColor: color, background: `${color}10` }}
       >
-        <span className="text-[16px] font-black leading-none" style={{ color }}>{count}</span>
+        <span className="text-[16px] font-black leading-none" style={{ color }}>
+          {count}
+        </span>
       </div>
-      <span className="text-[7.5px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{label}</span>
+      <span className="text-[7.5px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+        {label}
+      </span>
     </div>
   );
 }
@@ -58,24 +110,37 @@ function FlagRow({ flag }: { flag: RiskFlag }) {
   const s = SEV[flag.severity];
   const Icon = s.Icon;
   return (
-    <div className="rounded-[10px] border overflow-hidden" style={{ borderColor: s.rowBorder, background: s.rowBg }}>
+    <div
+      className="rounded-[10px] border overflow-hidden"
+      style={{ borderColor: s.rowBorder, background: s.rowBg }}
+    >
       <button
         className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:brightness-[0.98] transition-all"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
         <Icon size={13} color={s.iconColor} />
-        <span className="flex-1 text-[11.5px] font-semibold leading-snug" style={{ color: s.titleColor }}>
+        <span
+          className="flex-1 text-[11.5px] font-semibold leading-snug"
+          style={{ color: s.titleColor }}
+        >
           {flag.title}
         </span>
         <ChevronDown
-          size={12} color={s.iconColor} className="shrink-0"
-          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
+          size={12}
+          color={s.iconColor}
+          className="shrink-0"
+          style={{
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s",
+          }}
         />
       </button>
       {open && (
         <div className="px-3 pb-2.5 pt-0.5 border-t" style={{ borderColor: s.rowBorder }}>
-          <p className="text-[11px] leading-relaxed" style={{ color: s.fg }}>{flag.advisory}</p>
+          <p className="text-[11px] leading-relaxed" style={{ color: s.fg }}>
+            {flag.advisory}
+          </p>
         </div>
       )}
     </div>
@@ -111,7 +176,10 @@ export function JourneyRiskCard({
     const seen = new Set<string>();
     const out: RiskFlag[] = [];
     for (const f of [...fromQuest, ...fromDates]) {
-      if (!seen.has(f.id)) { seen.add(f.id); out.push(f); }
+      if (!seen.has(f.id)) {
+        seen.add(f.id);
+        out.push(f);
+      }
     }
     const order: Record<RiskFlag["severity"], number> = { critical: 0, warning: 1, advisory: 2 };
     return out.sort((a, b) => order[a.severity] - order[b.severity]);
@@ -120,7 +188,7 @@ export function JourneyRiskCard({
   const hasAnsweredQuest = !!metadata?.["questAnswers_eligibility-suite"];
 
   const criticalCount = allFlags.filter((f) => f.severity === "critical").length;
-  const warningCount  = allFlags.filter((f) => f.severity === "warning").length;
+  const warningCount = allFlags.filter((f) => f.severity === "warning").length;
   const advisoryCount = allFlags.filter((f) => f.severity === "advisory").length;
 
   // ── State derivation ─────────────────────────────────────────────────────
@@ -134,35 +202,34 @@ export function JourneyRiskCard({
     if (defaultCollapsed) return null;
     stateLabel = "Take check";
     stateColor = "#64748b";
-    stateText  = "Answer a few questions to find any case risks";
-    StateIcon  = ClipboardList;
+    stateText = "Answer a few questions to find any case risks";
+    StateIcon = ClipboardList;
   } else if (allFlags.length === 0) {
     // Dashboard: hide when clean — no risks = no panel needed
     if (defaultCollapsed) return null;
     stateLabel = "All good";
     stateColor = "#059669";
-    stateText  = "No issues found in your case";
-    StateIcon  = ShieldCheck;
+    stateText = "No issues found in your case";
+    StateIcon = ShieldCheck;
   } else if (criticalCount > 0) {
     stateLabel = `${allFlags.length} to fix`;
     stateColor = "#dc2626";
-    stateText  = "Important issues found — please review";
-    StateIcon  = ShieldAlert;
+    stateText = "Important issues found — please review";
+    StateIcon = ShieldAlert;
   } else if (warningCount > 0) {
     stateLabel = `${allFlags.length} to review`;
     stateColor = "#d97706";
-    stateText  = "Some things to be careful about";
-    StateIcon  = AlertTriangle;
+    stateText = "Some things to be careful about";
+    StateIcon = AlertTriangle;
   } else {
     stateLabel = "Notes";
     stateColor = "#3b82f6";
-    stateText  = "A few things worth knowing";
-    StateIcon  = Info;
+    stateText = "A few things worth knowing";
+    StateIcon = Info;
   }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-
       {/* ── Compact header (always visible) — matches DocCaseStrengthMeter ─── */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -174,9 +241,14 @@ export function JourneyRiskCard({
         {hasAnsweredQuest && allFlags.length > 0 ? (
           <RiskIndicator count={allFlags.length} color={stateColor} label="risks" />
         ) : (
-          <div className="relative shrink-0 flex items-center justify-center" style={{ width: 64, height: 64 }}>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center border-2"
-              style={{ borderColor: stateColor, background: `${stateColor}10` }}>
+          <div
+            className="relative shrink-0 flex items-center justify-center"
+            style={{ width: 64, height: 64 }}
+          >
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center border-2"
+              style={{ borderColor: stateColor, background: `${stateColor}10` }}
+            >
               <StateIcon size={20} color={stateColor} />
             </div>
           </div>
@@ -192,7 +264,11 @@ export function JourneyRiskCard({
           <div className="flex items-center gap-1.5 mt-1">
             <span
               className="text-[9.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full whitespace-nowrap"
-              style={{ background: `${stateColor}15`, color: stateColor, border: `1px solid ${stateColor}33` }}
+              style={{
+                background: `${stateColor}15`,
+                color: stateColor,
+                border: `1px solid ${stateColor}33`,
+              }}
             >
               {stateLabel}
             </span>
@@ -209,24 +285,32 @@ export function JourneyRiskCard({
       {/* ── Expanded body ───────────────────────────────────────────────── */}
       {open && (
         <div className="border-t border-slate-100 p-3 flex flex-col gap-2.5 bg-[#fafbfc]">
-
           {/* Severity counts row — only when risks present */}
           {hasAnsweredQuest && allFlags.length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
               {criticalCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: SEV.critical.chipBg, color: SEV.critical.chipFg }}>
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: SEV.critical.chipBg, color: SEV.critical.chipFg }}
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                   {criticalCount} critical
                 </span>
               )}
               {warningCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: SEV.warning.chipBg, color: SEV.warning.chipFg }}>
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: SEV.warning.chipBg, color: SEV.warning.chipFg }}
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                   {warningCount} warning
                 </span>
               )}
               {advisoryCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: SEV.advisory.chipBg, color: SEV.advisory.chipFg }}>
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: SEV.advisory.chipBg, color: SEV.advisory.chipFg }}
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                   {advisoryCount} note
                 </span>
@@ -237,7 +321,9 @@ export function JourneyRiskCard({
           {/* Flag rows */}
           {hasAnsweredQuest && allFlags.length > 0 && (
             <div className="flex flex-col gap-1.5">
-              {allFlags.map((f) => <FlagRow key={f.id} flag={f} />)}
+              {allFlags.map((f) => (
+                <FlagRow key={f.id} flag={f} />
+              ))}
             </div>
           )}
 

@@ -39,7 +39,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
   onLockedClick,
 }) => {
   const [localIsSubmitted, setLocalIsSubmitted] = useState<boolean | null>(
-    submissionSaved ? true : null,
+    submissionSaved ? true : null
   );
   const [localDate, setLocalDate] = useState(submissionDate);
   const [justSaved, setJustSaved] = useState(false);
@@ -87,9 +87,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
                 className="bg-[var(--rv-ch2-feature-bg)] border border-[var(--rv-ch2)]/30 rounded-[10px] p-[10px_12px] flex items-start gap-[8px]"
               >
                 <div className="w-[5px] h-[5px] rounded-full bg-[var(--rv-ch2)] shrink-0 mt-[5px]" />
-                <div className="text-[13px] text-[var(--rv-ch2-text)] leading-[1.4]">
-                  {feat}
-                </div>
+                <div className="text-[13px] text-[var(--rv-ch2-text)] leading-[1.4]">{feat}</div>
               </div>
             ))}
           </div>
@@ -140,15 +138,11 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
                       : "bg-white border-[#d0e4f7]"
                   }`}
                 >
-                  {submissionChecklistStatus[i] && (
-                    <Check size={10} className="text-white" />
-                  )}
+                  {submissionChecklistStatus[i] && <Check size={10} className="text-white" />}
                 </div>
                 <span
                   className={`text-[13px] leading-[1.45] ${
-                    submissionChecklistStatus[i]
-                      ? "text-primary"
-                      : "text-[#3a4f63]"
+                    submissionChecklistStatus[i] ? "text-primary" : "text-[#3a4f63]"
                   }`}
                 >
                   {item}
@@ -180,9 +174,7 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
                 <span className="text-[14px] shrink-0 mt-[1px]">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
                 </span>
-                <span className="text-[13px] leading-[1.45] text-[#3a4f63]">
-                  {pitfall}
-                </span>
+                <span className="text-[13px] leading-[1.45] text-[#3a4f63]">{pitfall}</span>
               </div>
             ))}
           </div>
@@ -201,8 +193,8 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
         {/* Tier lock badge */}
         {isStatusLocked && (
           <div className={`plan-icon-badge plan-icon-badge--premium plan-icon-badge--md`}>
-  <span className={`plan-icon plan-icon--premium`} />
-</div>
+            <span className={`plan-icon plan-icon--premium`} />
+          </div>
         )}
 
         <div className="flex items-center gap-[12px] mb-[20px]">
@@ -216,7 +208,9 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
             <Send size={20} className={isStatusLocked ? "text-[#6b8097]" : "text-primary"} />
           </div>
           <div>
-            <div className={`text-[15px] font-bold ${isStatusLocked ? "text-[#6b8097]" : "text-[#0c1b33]"}`}>
+            <div
+              className={`text-[15px] font-bold ${isStatusLocked ? "text-[#6b8097]" : "text-[#0c1b33]"}`}
+            >
               Document Submission Status
             </div>
             <div className={`text-[12px] ${isStatusLocked ? "text-[#9aabb8]" : "text-[#6b8097]"}`}>
@@ -235,7 +229,10 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
           <div className="flex flex-col gap-[18px]">
             <div className="grid grid-cols-2 gap-[10px]">
               <button
-                onClick={() => { setLocalIsSubmitted(true); setJustSaved(false); }}
+                onClick={() => {
+                  setLocalIsSubmitted(true);
+                  setJustSaved(false);
+                }}
                 className={`flex items-center justify-center gap-[8px] p-[12px] rounded-[12px] border-[1.5px] font-sans text-[14px] font-semibold transition-all ${
                   localIsSubmitted === true
                     ? "bg-primary/10 border-primary text-primary"
@@ -281,21 +278,15 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
             <div className="mt-[6px]">
               <button
                 onClick={handleSave}
-                disabled={
-                  localIsSubmitted === null ||
-                  (localIsSubmitted === true && !localDate)
-                }
+                disabled={localIsSubmitted === null || (localIsSubmitted === true && !localDate)}
                 className={`w-full p-[14px] rounded-[12px] font-sans text-[15px] font-semibold flex items-center justify-center gap-[9px] transition-all ${
-                  localIsSubmitted === null ||
-                  (localIsSubmitted === true && !localDate)
+                  localIsSubmitted === null || (localIsSubmitted === true && !localDate)
                     ? "bg-slate-100 text-slate-400 cursor-not-allowed border-transparent"
                     : "bg-primary text-white cursor-pointer hover:bg-primary/90 hover:-translate-y-0.5 shadow-[0_4px_12px_rgba(47,111,212,0.2)]"
                 }`}
               >
                 <Save size={18} />
-                {submissionSaved
-                  ? "Update Submission Info"
-                  : "Save Submission Status"}
+                {submissionSaved ? "Update Submission Info" : "Save Submission Status"}
               </button>
             </div>
 

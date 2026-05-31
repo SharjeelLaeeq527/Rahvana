@@ -11,7 +11,7 @@ import { usePlan } from "@/app/context/PlanContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { E, msg } from "@/lib/errors";
- 
+
 interface ApprovalNoticeToolProps {
   state: any;
   actions: any;
@@ -57,12 +57,10 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   // Basic tier cannot upload — manual entry only
   const isBasic = plan.tier === "basic";
 
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
-    null,
-  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   const approvalDoc = (uploadedDocuments || []).find(
-    (d) => d.documentDefId === "i797-approval-notice",
+    (d) => d.documentDefId === "i797-approval-notice"
   );
 
   const [receiptError, setReceiptError] = useState("");
@@ -160,15 +158,12 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
         className="w-7 h-7 rounded-full border border-[#c5b9ff] bg-[#f0ebff] flex items-center justify-center shrink-0 mt-0.5 shadow-sm"
         aria-hidden="true"
       >
-        <span
-          className="plan-icon plan-icon--premium scale-110"
-          aria-hidden="true"
-        />
+        <span className="plan-icon plan-icon--premium scale-110" aria-hidden="true" />
       </span>
       <p className="text-[12px] leading-[1.6]" style={{ color: "#5a3040" }}>
-        Uploading your approval notice automatically saves it to the document
-        vault and extracts key information — approval date, receipt number, and
-        more. This feature is available on <strong>Premium and above</strong>.{" "}
+        Uploading your approval notice automatically saves it to the document vault and extracts key
+        information — approval date, receipt number, and more. This feature is available on{" "}
+        <strong>Premium and above</strong>.{" "}
         <button
           onClick={() => setUpgradeModalFeature("approval_notice_upload")}
           className="underline font-bold"
@@ -195,8 +190,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
         <div
           className="absolute top-0 left-0 right-0 h-[2px] opacity-80"
           style={{
-            background:
-              "linear-gradient(90deg, var(--rv-ch1) 0%, var(--rv-ch1-module-bg) 100%)",
+            background: "linear-gradient(90deg, var(--rv-ch1) 0%, var(--rv-ch1-module-bg) 100%)",
           }}
         />
         <div className="p-[20px_4px_22px] sm:p-[30px_16px_28px]">
@@ -230,8 +224,6 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 <p className="text-[13.5px] leading-[1.66] text-white/60 max-w-[500px]">
                   {data.launchModule.copy}
                 </p>
-
-                
               </div>
             </div>
             <div
@@ -262,9 +254,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 <div className="text-[14px] font-semibold text-white/95 leading-[1.35]">
                   {m.value}
                 </div>
-                <div className="text-[11px] text-white/60 mt-[4px] leading-[1.4]">
-                  {m.sub}
-                </div>
+                <div className="text-[11px] text-white/60 mt-[4px] leading-[1.4]">{m.sub}</div>
               </div>
             ))}
             ==
@@ -311,20 +301,16 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       >
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
-            <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">
-              {data.savePanel.title}
-            </h3>
+            <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">{data.savePanel.title}</h3>
             <p className="text-[14px] leading-[1.68] text-[#3a4f63] max-w-[560px]">
               {data.savePanel.copy}
             </p>
-<div className="flex items-center gap-1.5 text-[10px] text-[#0c1b33] font-semibold mt-3">
-                  <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span className={isUrdu ? "font-urdu-body" : ""}>
-                    {t(
-                      "documentVaultPage.components.uploadModal.securityNotice",
-                    )}
-                  </span>
-                </div>
+            <div className="flex items-center gap-1.5 text-[10px] text-[#0c1b33] font-semibold mt-3">
+              <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className={isUrdu ? "font-urdu-body" : ""}>
+                {t("documentVaultPage.components.uploadModal.securityNotice")}
+              </span>
+            </div>
           </div>
           <div className="text-[11px] font-bold tracking-[0.08em] uppercase p-[7px_11px] rounded-full bg-[#e8f1fb] border border-[#d0e4f7] text-[#2d4a6e] whitespace-nowrap">
             {data.savePanel.tag}
@@ -353,26 +339,20 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                     <span
                       className="text-[12px] text-[#1c2b3a] font-bold truncate max-w-[200px]"
                       title={
-                        approvalDoc?.originalFilename ||
-                        (isBasic ? "Upload locked" : "Not saved")
+                        approvalDoc?.originalFilename || (isBasic ? "Upload locked" : "Not saved")
                       }
                     >
-                      {approvalDoc?.originalFilename ||
-                        (isBasic ? "—" : "Not saved")}
+                      {approvalDoc?.originalFilename || (isBasic ? "—" : "Not saved")}
                     </span>
                   </div>
                   <div className="flex justify-between gap-[12px] py-[7px] border-b border-[#a8d9be]">
-                    <span className="text-[12px] text-[#3a4f63]">
-                      Approval date
-                    </span>
+                    <span className="text-[12px] text-[#3a4f63]">Approval date</span>
                     <span className="text-[12px] text-[#1c2b3a] font-bold">
                       {approvalDetails.approvalDate || "Not entered"}
                     </span>
                   </div>
                   <div className="flex justify-between gap-[12px] py-[7px]">
-                    <span className="text-[12px] text-[#3a4f63]">
-                      Receipt number
-                    </span>
+                    <span className="text-[12px] text-[#3a4f63]">Receipt number</span>
                     <span className="text-[12px] text-[#1c2b3a] font-bold">
                       {approvalDetails.receiptNumber || "Not entered"}
                     </span>
@@ -462,9 +442,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   <strong className="block text-[13px] text-[#0c1b33] mb-[4px]">
                     {item.title}
                   </strong>
-                  <span className="text-[12.5px] text-[#3a4f63] leading-[1.55]">
-                    {item.copy}
-                  </span>
+                  <span className="text-[12.5px] text-[#3a4f63] leading-[1.55]">{item.copy}</span>
                 </div>
               </div>
             ))}
@@ -476,9 +454,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_4px] sm:p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
-            <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">
-              {data.timeline.title}
-            </h3>
+            <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">{data.timeline.title}</h3>
             <p className="text-[14px] leading-[1.68] text-[#3a4f63] max-w-[560px]">
               {data.timeline.copy}
             </p>
@@ -495,12 +471,8 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
             >
               <div className="w-[12px] h-[12px] rounded-full bg-[#2f6fd4] mt-[5px] shadow-[0_0_0_5px_rgba(47,111,212,0.12)] shrink-0" />
               <div>
-                <div className="text-[14px] font-bold text-[#0c1b33] mb-[4px]">
-                  {item.title}
-                </div>
-                <div className="text-[13px] text-[#3a4f63] leading-[1.65]">
-                  {item.copy}
-                </div>
+                <div className="text-[14px] font-bold text-[#0c1b33] mb-[4px]">{item.title}</div>
+                <div className="text-[13px] text-[#3a4f63] leading-[1.65]">{item.copy}</div>
               </div>
             </div>
           ))}
@@ -522,9 +494,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_4px] sm:p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
-            <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">
-              {data.prepCards.title}
-            </h3>
+            <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">{data.prepCards.title}</h3>
             <p className="text-[14px] leading-[1.68] text-[#3a4f63] max-w-[560px]">
               {data.prepCards.copy}
             </p>
@@ -576,12 +546,8 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   </svg>
                 )}
               </div>
-              <div className="text-[15px] font-bold text-[#0c1b33] mb-[6px]">
-                {card.title}
-              </div>
-              <div className="text-[13px] text-[#3a4f63] leading-[1.6]">
-                {card.copy}
-              </div>
+              <div className="text-[15px] font-bold text-[#0c1b33] mb-[6px]">{card.title}</div>
+              <div className="text-[13px] text-[#3a4f63] leading-[1.6]">{card.copy}</div>
             </div>
           ))}
         </div>
@@ -617,9 +583,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
           <div className="bg-white rounded-[18px] shadow-[0_24px_80px_rgba(12,27,51,0.24),0_4px_20px_rgba(12,27,51,0.14)] max-h-[88vh] overflow-auto animate-in zoom-in-95 duration-200">
             <div className="flex justify-between gap-[16px] items-start p-[24px_24px_0]">
               <div>
-                <h2 className="text-[24px] text-[#0c1b33]">
-                  {data.modal.title}
-                </h2>
+                <h2 className="text-[24px] text-[#0c1b33]">{data.modal.title}</h2>
                 <div className="text-[13px] text-[#6b8097] mt-[4px] leading-[1.6]">
                   {data.modal.sub}
                 </div>
@@ -668,9 +632,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   value={approvalDetails.receiptNumber}
                   maxLength={13}
                   onChange={(e) => {
-                    const val = e.target.value
-                      .toUpperCase()
-                      .replace(/[^A-Z0-9]/g, "");
+                    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
                     setApprovalDetails({
                       ...approvalDetails,
                       receiptNumber: val,
@@ -832,9 +794,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   }}
                   className="flex-1 p-[13px_18px] rounded-[11px] font-bold text-[14px] border-none text-white transition-all bg-primary hover:bg-primary/90"
                 >
-                  {approvalGuideStep === data.guideSteps.length - 1
-                    ? "Done"
-                    : "Next"}
+                  {approvalGuideStep === data.guideSteps.length - 1 ? "Done" : "Next"}
                 </button>
               </div>
             </div>
@@ -844,10 +804,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
 
       {/* Upgrade modal */}
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
     </div>
   );

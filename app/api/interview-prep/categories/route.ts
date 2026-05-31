@@ -19,9 +19,6 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error("Error loading categories:", error);
-    return NextResponse.json(
-      { error: "Failed to load categories" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to load categories" }, { status: 500 });
   }
 }

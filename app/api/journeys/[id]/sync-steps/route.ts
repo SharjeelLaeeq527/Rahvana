@@ -10,23 +10,17 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { ConfigLoader } from "@/lib/journey/config-loader";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 import * as db from "@/lib/journey/data-access";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const journeyId = (await params).id;
 
     // Verify journey exists
     const journey = await db.getJourneyDB(journeyId);
     if (!journey) {
-      return NextResponse.json(
-        { success: false, error: msg(E.JOURNEY_NOT_FOUND) },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: "Journey not found" }, { status: 404 });
     }
 
     // Load the config JSON
@@ -45,21 +39,14 @@ export async function POST(
 
     for (let ci = 0; ci < rawJSON.chapters.length; ci++) {
       const rawChapter = rawJSON.chapters[ci];
-      const dbChapter = existingChapters.find(
-        (ch) => ch.chapter_key === rawChapter.chapter_key
-      );
+      const dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
 
       if (!dbChapter) {
-        console.warn(
-          `[sync-steps] Chapter ${rawChapter.chapter_key} not found in DB, skipping`
-        );
+        console.warn(`[sync-steps] Chapter ${rawChapter.chapter_key} not found in DB, skipping`);
         continue;
       }
 
-      const stepsInput = ConfigLoader.transformStepsInput(
-        rawChapter.steps,
-        rawChapter.chapter_key
-      );
+      const stepsInput = ConfigLoader.transformStepsInput(rawChapter.steps, rawChapter.chapter_key);
 
       for (const stepInput of stepsInput) {
         if (!existingStepKeys.has(stepInput.step_key)) {
@@ -68,22 +55,15 @@ export async function POST(
             await db.createStepDB(dbChapter.id, stepInput);
             newStepsAdded++;
             addedKeys.push(stepInput.step_key);
-            console.log(
-              `[sync-steps] Added missing step: ${stepInput.step_key}`
-            );
+            console.log(`[sync-steps] Added missing step: ${stepInput.step_key}`);
           } catch (err) {
-            console.error(
-              `[sync-steps] Failed to add step ${stepInput.step_key}:`,
-              err
-            );
+            console.error(`[sync-steps] Failed to add step ${stepInput.step_key}:`, err);
           }
         }
       }
     }
 
-    console.log(
-      `[sync-steps] Journey ${journeyId}: ${newStepsAdded} new steps added`
-    );
+    console.log(`[sync-steps] Journey ${journeyId}: ${newStepsAdded} new steps added`);
 
     return NextResponse.json({
       success: true,
@@ -102,8 +82,7 @@ export async function POST(
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error ? error.message : "Failed to sync steps",
+        error: error instanceof Error ? error.message : "Failed to sync steps",
       },
       { status: 500 }
     );

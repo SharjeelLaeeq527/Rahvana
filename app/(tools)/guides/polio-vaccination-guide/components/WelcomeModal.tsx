@@ -35,9 +35,7 @@ export default function WelcomeModal() {
         className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-none sm:max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div 
-          className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 welcome-thick-scrollbar"
-        >
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 welcome-thick-scrollbar">
           {/* Header */}
           <div className="flex items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="flex items-start gap-3 sm:gap-4 min-w-0">
@@ -69,12 +67,11 @@ export default function WelcomeModal() {
                 What does this guide cover?
               </h3>
               <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
-                A Polio Vaccination Certificate is an official document that
-                proves you have received the polio vaccine. It is managed by
-                NADRA through the National Immunization Management System
-                (NIMS). This interactive wizard will customize the process based
-                on your profile (Adult/Child) and location, guiding you through
-                vaccination centers and the online download process.
+                A Polio Vaccination Certificate is an official document that proves you have
+                received the polio vaccine. It is managed by NADRA through the National Immunization
+                Management System (NIMS). This interactive wizard will customize the process based
+                on your profile (Adult/Child) and location, guiding you through vaccination centers
+                and the online download process.
               </p>
             </section>
 
@@ -88,11 +85,8 @@ export default function WelcomeModal() {
                     <CheckCircle2 className="w-4 h-4 sm:w-4 sm:h-4 text-primary shrink-0" />
                   </div>
                   <span>
-                    <strong className="text-slate-800">
-                      Targeted Locations:
-                    </strong>{" "}
-                    Find recognized DHOs and hospitals in your specific
-                    province.
+                    <strong className="text-slate-800">Targeted Locations:</strong> Find recognized
+                    DHOs and hospitals in your specific province.
                   </span>
                 </li>
                 <li className="flex items-start gap-2 sm:gap-3">
@@ -100,9 +94,8 @@ export default function WelcomeModal() {
                     <CheckCircle2 className="w-4 h-4 sm:w-4 sm:h-4 text-primary shrink-0" />
                   </div>
                   <span>
-                    <strong className="text-slate-800">Avoid Pitfalls:</strong>{" "}
-                    Learn why private hospital certificates might get rejected
-                    for travel.
+                    <strong className="text-slate-800">Avoid Pitfalls:</strong> Learn why private
+                    hospital certificates might get rejected for travel.
                   </span>
                 </li>
                 <li className="flex items-start gap-2 sm:gap-3">
@@ -110,9 +103,8 @@ export default function WelcomeModal() {
                     <CheckCircle2 className="w-4 h-4 sm:w-4 sm:h-4 text-primary shrink-0" />
                   </div>
                   <span>
-                    <strong className="text-slate-800">Clear Roadmap:</strong> A
-                    robust step-by-step path detailing exactly how to use the
-                    NIMS portal.
+                    <strong className="text-slate-800">Clear Roadmap:</strong> A robust step-by-step
+                    path detailing exactly how to use the NIMS portal.
                   </span>
                 </li>
               </ul>
@@ -124,10 +116,9 @@ export default function WelcomeModal() {
                 <div className="text-xs sm:text-sm text-amber-800">
                   <p className="font-bold mb-1">Disclaimer</p>
                   <p>
-                    This is an informational guide and not an official NADRA
-                    website. Always confirm specific requirements with your
-                    airline or destination country&apos;s embassy prior to
-                    travel.
+                    This is an informational guide and not an official NADRA website. Always confirm
+                    specific requirements with your airline or destination country&apos;s embassy
+                    prior to travel.
                   </p>
                 </div>
               </div>

@@ -18,10 +18,10 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
   guard,
 }) => {
   const [selectedOutcome, setSelectedOutcome] = useState<string>(
-    state.metadata?.interviewOutcome || "",
+    state.metadata?.interviewOutcome || ""
   );
   const [selectedSubtype, setSelectedSubtype] = useState<string>(
-    state.metadata?.outcome221gSubtype || "",
+    state.metadata?.outcome221gSubtype || ""
   );
   const [questionAnswers, setQuestionAnswers] = useState<Record<string, string>>({});
   const [showRecommendation, setShowRecommendation] = useState(false);
@@ -71,18 +71,55 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
   const getRecommendation = () => {
     const { received_letter, docs_asked, passport_kept, ceac_status } = questionAnswers;
 
-    if (ceac_status === "issued") return { outcome: "approved", label: "Approved", description: "Your CEAC status shows 'Issued', which means your visa is approved and being printed." };
-    if (received_letter === "yes" && docs_asked === "yes") return { outcome: "221g", subtype: "docs_requested", label: "221(g) - Documents Requested", description: "Since you received a letter and specific documents were requested, you are in the Document Submission phase of 221(g)." };
-    if (received_letter === "yes" && docs_asked === "no") return { outcome: "221g", subtype: "further_review", label: "221(g) - Further Review", description: "You received a refusal sheet but no specific documents were requested. Your case is likely in Administrative Processing for further review." };
-    if (ceac_status === "refused" && passport_kept === "returned") return { outcome: "221g", label: "Refusal / 221(g)", description: "CEAC shows 'Refused' and your passport was returned. This is the standard status for 221(g) cases while they are pending." };
-    
-    return { outcome: "221g", label: "221(g) / Administrative Processing", description: "Based on your answers, your case is most likely undergoing further review or 221(g) processing." };
+    if (ceac_status === "issued")
+      return {
+        outcome: "approved",
+        label: "Approved",
+        description:
+          "Your CEAC status shows 'Issued', which means your visa is approved and being printed.",
+      };
+    if (received_letter === "yes" && docs_asked === "yes")
+      return {
+        outcome: "221g",
+        subtype: "docs_requested",
+        label: "221(g) - Documents Requested",
+        description:
+          "Since you received a letter and specific documents were requested, you are in the Document Submission phase of 221(g).",
+      };
+    if (received_letter === "yes" && docs_asked === "no")
+      return {
+        outcome: "221g",
+        subtype: "further_review",
+        label: "221(g) - Further Review",
+        description:
+          "You received a refusal sheet but no specific documents were requested. Your case is likely in Administrative Processing for further review.",
+      };
+    if (ceac_status === "refused" && passport_kept === "returned")
+      return {
+        outcome: "221g",
+        label: "Refusal / 221(g)",
+        description:
+          "CEAC shows 'Refused' and your passport was returned. This is the standard status for 221(g) cases while they are pending.",
+      };
+
+    return {
+      outcome: "221g",
+      label: "221(g) / Administrative Processing",
+      description:
+        "Based on your answers, your case is most likely undergoing further review or 221(g) processing.",
+    };
   };
 
   useEffect(() => {
     if (selectedOutcome !== "approved") return;
     const end = Date.now() + 2200;
-    const colors = ["var(--rv-green)", "var(--rv-launch-blue)", "var(--rv-amber)", "#a8d9be", "#ffffff"];
+    const colors = [
+      "var(--rv-green)",
+      "var(--rv-launch-blue)",
+      "var(--rv-amber)",
+      "#a8d9be",
+      "#ffffff",
+    ];
     const frame = () => {
       confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors });
       confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors });
@@ -131,9 +168,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[15px] font-bold text-[#0c1b33]">
-                    {outcome.label}
-                  </span>
+                  <span className="text-[15px] font-bold text-[#0c1b33]">{outcome.label}</span>
                   {outcome.badge && (
                     <span
                       className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
@@ -168,9 +203,9 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
               Question {currentQuestionIdx + 1} of {tool.clarification_questions.length}
             </div>
             <div className="w-32 h-1.5 bg-white rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[#0d7377] transition-all duration-500" 
-                style={{ width: `${progress}%` }} 
+              <div
+                className="h-full bg-[#0d7377] transition-all duration-500"
+                style={{ width: `${progress}%` }}
               />
             </div>
           </div>
@@ -192,10 +227,16 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                         : "bg-white text-[var(--rv-soft)] border-[var(--rv-line)] hover:border-[#0d7377]/50"
                     }`}
                   >
-                    <div className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center ${
-                      questionAnswers[currentQuestion.id] === opt.value ? "border-white" : "border-[#d0e4f7]"
-                    }`}>
-                      {questionAnswers[currentQuestion.id] === opt.value && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    <div
+                      className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center ${
+                        questionAnswers[currentQuestion.id] === opt.value
+                          ? "border-white"
+                          : "border-[#d0e4f7]"
+                      }`}
+                    >
+                      {questionAnswers[currentQuestion.id] === opt.value && (
+                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                      )}
                     </div>
                     {opt.label}
                   </button>
@@ -217,9 +258,13 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
             <button
               onClick={nextQuestion}
               disabled={!questionAnswers[currentQuestion.id]}
-              className={`p-3.5 bg-[#0d7377] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#0d7377]/90 transition-all disabled:opacity-50 ${currentQuestionIdx === 0 ? 'w-full' : 'flex-1'}`}
+              className={`p-3.5 bg-[#0d7377] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#0d7377]/90 transition-all disabled:opacity-50 ${currentQuestionIdx === 0 ? "w-full" : "flex-1"}`}
             >
-              <span>{currentQuestionIdx === (tool.clarification_questions?.length || 0) - 1 ? 'See Recommendation' : 'Next Question'}</span>
+              <span>
+                {currentQuestionIdx === (tool.clarification_questions?.length || 0) - 1
+                  ? "See Recommendation"
+                  : "Next Question"}
+              </span>
               <ArrowRight size={18} />
             </button>
           </div>
@@ -233,8 +278,12 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
               <Sparkles size={20} />
             </div>
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-muted)]">Our Recommendation</div>
-              <div className="text-[16px] font-bold text-[var(--rv-navy)]">{recommendation.label}</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-muted)]">
+                Our Recommendation
+              </div>
+              <div className="text-[16px] font-bold text-[var(--rv-navy)]">
+                {recommendation.label}
+              </div>
             </div>
           </div>
           <p className="text-[13px] text-[var(--rv-soft)] leading-relaxed mb-6">
@@ -270,9 +319,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
           <div className="text-[14px] font-bold text-[#8a6200] mb-1">
             {tool.followup_221g.title}
           </div>
-          <div className="text-[13px] text-[#8a6200]/80 mb-4">
-            {tool.followup_221g.subtitle}
-          </div>
+          <div className="text-[13px] text-[#8a6200]/80 mb-4">{tool.followup_221g.subtitle}</div>
           <div className="flex flex-col gap-2">
             {tool.followup_221g.options.map((opt: any) => (
               <button
@@ -299,9 +346,7 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
                   <div className="text-[13.5px] font-bold text-[#8a6200] mb-0.5 leading-tight">
                     {opt.label}
                   </div>
-                  <div className="text-[12px] text-[#8a6200]/80 leading-relaxed">
-                    {opt.sub}
-                  </div>
+                  <div className="text-[12px] text-[#8a6200]/80 leading-relaxed">{opt.sub}</div>
                 </div>
               </button>
             ))}
@@ -318,7 +363,8 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
             Your visa has been approved!
           </div>
           <div className="text-[13px] text-[#15744f]/90 leading-relaxed">
-            Your next steps have been unlocked. Head to the next step to track your passport delivery.
+            Your next steps have been unlocked. Head to the next step to track your passport
+            delivery.
           </div>
         </div>
       )}
@@ -329,16 +375,14 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
             <CheckCircle2 size={20} />
           </div>
           <div>
-            <div className="text-[14px] font-bold text-[#15744f]">
-              Outcome recorded
-            </div>
+            <div className="text-[14px] font-bold text-[#15744f]">Outcome recorded</div>
             <div className="text-[13px] text-[#15744f]/80">
-              Your next steps have been updated on your roadmap based on this result. You may now continue.
+              Your next steps have been updated on your roadmap based on this result. You may now
+              continue.
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

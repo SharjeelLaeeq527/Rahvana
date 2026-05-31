@@ -2,13 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  Instagram,
-  Facebook,
-  Linkedin,
-  ArrowRight,
-  Youtube,
-} from "lucide-react";
+import { Instagram, Facebook, Linkedin, ArrowRight, Youtube } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function Footer() {
@@ -194,10 +188,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
               >
-                <Instagram
-                  size={18}
-                  className="group-hover:scale-110 transition-transform"
-                />
+                <Instagram size={18} className="group-hover:scale-110 transition-transform" />
                 {t("footer.instagram") || "Instagram"}
               </Link>
               <Link
@@ -206,10 +197,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
               >
-                <Facebook
-                  size={18}
-                  className="group-hover:scale-110 transition-transform"
-                />
+                <Facebook size={18} className="group-hover:scale-110 transition-transform" />
                 {t("footer.facebook") || "Facebook"}
               </Link>
               <Link
@@ -233,10 +221,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
               >
-                <Youtube
-                  size={18}
-                  className="group-hover:scale-110 transition-transform"
-                />
+                <Youtube size={18} className="group-hover:scale-110 transition-transform" />
                 {t("footer.youtube") || "Youtube"}
               </Link>
               <Link
@@ -245,10 +230,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
               >
-                <Linkedin
-                  size={18}
-                  className="group-hover:scale-110 transition-transform"
-                />
+                <Linkedin size={18} className="group-hover:scale-110 transition-transform" />
                 LinkedIn
               </Link>
             </nav>
@@ -258,37 +240,25 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
           <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-center text-center sm:text-left">
-            <p>
-              {t("footer.rightsReserved") ||
-                "© 2026 Rahvana. All rights reserved."}
-            </p>
+            <p>{t("footer.rightsReserved") || "© 2026 Rahvana. All rights reserved."}</p>
             <span className="hidden sm:inline text-slate-700">·</span>
             <p className="text-slate-600 text-xs">
               Rahvana is not a law firm and does not provide legal advice.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-6">
-            <Link
-              href="/privacy-policy"
-              className="hover:text-white transition-colors"
-            >
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">
               {t("footer.privacyPolicy") || "Privacy Policy"}
             </Link>
             <Link href="/terms" className="hover:text-white transition-colors">
               {t("footer.termsOfService") || "Terms of Service"}
             </Link>
-            <Link
-              href="/cookie-policy"
-              className="hover:text-white transition-colors"
-            >
+            <Link href="/cookie-policy" className="hover:text-white transition-colors">
               {t("footer.cookiePolicy") || "Cookie Policy"}
             </Link>
-             <Link
-              href="/acceptable-use"
-              className="hover:text-white transition-colors"
-            >
+            <Link href="/acceptable-use" className="hover:text-white transition-colors">
               Acceptable Use
-            </Link> 
+            </Link>
           </div>
         </div>
       </div>

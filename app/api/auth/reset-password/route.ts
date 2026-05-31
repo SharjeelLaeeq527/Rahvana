@@ -1,13 +1,13 @@
 // app/api/auth/reset-password/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { E, msg } from '@/lib/errors'
+import { E, msg } from "@/lib/errors";
 import crypto from "crypto";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } },
+  { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
 // Strong password validation
@@ -30,90 +30,66 @@ export async function POST(request: NextRequest) {
 
     if (!token || !email || !password) {
       console.warn("reset-password invalid request");
-      return NextResponse.json(
-        { error: msg(E.AUTH_RESET_LINK_INVALID) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.AUTH_RESET_LINK_INVALID) }, { status: 400 });
     }
 
     if (!validatePassword(password)) {
       console.warn("reset-password weak password");
-      return NextResponse.json(
-        { error: msg(E.AUTH_PASSWORD_TOO_WEAK) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.AUTH_PASSWORD_TOO_WEAK) }, { status: 400 });
     }
 
     // Find user by email
-    const { data: users, error: userError } =
-      await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 100 });
+    const { data: users, error: userError } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 100,
+    });
 
     if (userError) {
       console.error("Error listing users:", userError);
       return NextResponse.json({ error: msg(E.AUTH_PASSWORD_UPDATE_GENERIC) }, { status: 500 });
     }
 
-    const user = users.users.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase(),
-    );
+    const user = users.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
 
     if (!user) {
       console.warn("reset-password user not found");
-      return NextResponse.json(
-        { error: msg(E.AUTH_RESET_LINK_INVALID) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.AUTH_RESET_LINK_INVALID) }, { status: 400 });
     }
 
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
     const storedTokenHash = user.user_metadata?.reset_token_hash;
     const tokenExpiry = user.user_metadata?.reset_token_expiry;
 
-    if (
-      !storedTokenHash ||
-      !tokenExpiry ||
-      !safeCompare(tokenHash, storedTokenHash)
-    ) {
-      console.warn("reset-password invalid token");
-      return NextResponse.json(
-        { error: msg(E.AUTH_RESET_LINK_INVALID) },
-        { status: 400 },
-      );
+    if (!storedTokenHash || !tokenExpiry || !safeCompare(tokenHash, storedTokenHash)) {
+      return NextResponse.json({ error: "Invalid or expired reset link" }, { status: 400 });
     }
 
     if (new Date() > new Date(tokenExpiry)) {
       console.warn("reset-password token expired");
       return NextResponse.json(
-        { error: msg(E.AUTH_RESET_LINK_INVALID) },
-        { status: 400 },
+        { error: "Reset link has expired. Please request a new one." },
+        { status: 400 }
       );
     }
 
     // Update password and clear token
-    const { error: updateError } =
-      await supabaseAdmin.auth.admin.updateUserById(user.id, {
-        password,
-        user_metadata: {
-          ...user.user_metadata,
-          reset_token_hash: null,
-          reset_token_expiry: null,
-        },
-      });
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      password,
+      user_metadata: {
+        ...user.user_metadata,
+        reset_token_hash: null,
+        reset_token_expiry: null,
+      },
+    });
 
     if (updateError) {
       console.error("Error updating password:", updateError);
-      return NextResponse.json(
-        { error: msg(E.AUTH_PASSWORD_UPDATE_FAILED) },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to update password" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Reset password error:", error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_PASSWORD_UPDATE_GENERIC) },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }

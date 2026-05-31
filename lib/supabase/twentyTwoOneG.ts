@@ -1,14 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
-import {
-  FormData,
-  FormSelections,
-} from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
+import { FormData, FormSelections } from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
 
 export async function save221gCase(
   userId: string,
   formData: FormData,
   selectedItems: FormSelections,
-  status: string = "received",
+  status: string = "received"
 ) {
   const supabase = createClient();
   console.log("Saving 221g case for user:", userId, status);
@@ -97,7 +94,7 @@ export async function update221gStatus(
   status: string,
   nextFollowUpDate?: Date | null,
   lastResponses?: Record<string, boolean>,
-  dismissCount?: number,
+  dismissCount?: number
 ) {
   const supabase = createClient();
   const updateData: {
@@ -127,10 +124,7 @@ export async function update221gStatus(
     updateData.last_responses = lastResponses;
   }
 
-  const { error } = await supabase
-    .from("user_221g_cases")
-    .update(updateData)
-    .eq("id", caseId);
+  const { error } = await supabase.from("user_221g_cases").update(updateData).eq("id", caseId);
 
   if (error) throw error;
 }

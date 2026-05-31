@@ -9,7 +9,7 @@
 //   webpack: (config) => {
 //     config.resolve.alias.canvas = false;
 //     config.resolve.alias.encoding = false;
-//     config.resolve.fallback = { 
+//     config.resolve.fallback = {
 //       ...config.resolve.fallback,
 //       canvas: false,
 //     };
@@ -34,12 +34,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
       {
-        protocol: 'https',
-        hostname: '*.supabase.co',
+        protocol: "https",
+        hostname: "*.supabase.co",
       },
     ],
   },
@@ -51,37 +51,37 @@ const nextConfig = {
     return [
       {
         // Apply to ALL routes
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           // Prevent your site from being embedded in iframes (clickjacking protection)
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           // Prevent MIME-type sniffing attacks
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           // Control referrer info sent with requests
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           // Block camera, microphone, geolocation access from this origin
           {
-            key: 'Permissions-Policy',
-            value: 'camera=(), geolocation=()',
+            key: "Permissions-Policy",
+            value: "camera=(), geolocation=()",
           },
           // Force HTTPS for 1 year (only active in production with real HTTPS)
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
           },
           // Basic XSS protection for older browsers
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
           },
         ],
       },
@@ -89,8 +89,8 @@ const nextConfig = {
   },
 
   webpack: (config) => {
-    config.resolve.fallback = { canvas: false }
-    return config
+    config.resolve.fallback = { canvas: false };
+    return config;
   },
 
   eslint: {
@@ -102,8 +102,8 @@ const nextConfig = {
   },
 
   outputFileTracingIncludes: {
-    '/api/**/*': ['./data/**/*'],
+    "/api/**/*": ["./data/**/*"],
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;

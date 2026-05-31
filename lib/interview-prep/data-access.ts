@@ -46,9 +46,7 @@ export async function createInterviewSessionDB(
 }
 
 // Get session (enforce ownership)
-export async function getInterviewSessionDB(
-  sessionId: string
-): Promise<InterviewSession | null> {
+export async function getInterviewSessionDB(sessionId: string): Promise<InterviewSession | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
@@ -113,10 +111,7 @@ export async function getAllUserSessionsDB(
 ): Promise<InterviewSession[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
-  let query = supabase
-    .from("interview_prep_sessions")
-    .select("*")
-    .eq("user_id", user.id);
+  let query = supabase.from("interview_prep_sessions").select("*").eq("user_id", user.id);
 
   // Optional filter by completion status
   if (completed !== undefined) {
@@ -183,9 +178,7 @@ export async function saveInterviewAnswersDB(
 }
 
 // Get answers
-export async function getSessionAnswersDB(
-  sessionId: string
-): Promise<InterviewAnswer[]> {
+export async function getSessionAnswersDB(sessionId: string): Promise<InterviewAnswer[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Enforce ownership
@@ -215,7 +208,10 @@ export async function saveInterviewResultsDB(
 
   const { data, error } = await supabase
     .from("interview_prep_results")
-    .upsert({ session_id: sessionId, generated_questions: generatedQuestions }, { onConflict: "session_id" })
+    .upsert(
+      { session_id: sessionId, generated_questions: generatedQuestions },
+      { onConflict: "session_id" }
+    )
     .select()
     .single();
 
@@ -225,9 +221,7 @@ export async function saveInterviewResultsDB(
 }
 
 // Get results
-export async function getInterviewResultsDB(
-  sessionId: string
-): Promise<InterviewResult | null> {
+export async function getInterviewResultsDB(sessionId: string): Promise<InterviewResult | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
   const session = await getInterviewSessionDB(sessionId);
@@ -348,9 +342,7 @@ export async function saveUserAnswerDB(
 }
 
 // STEP 5: Get user's saved answers for a session
-export async function getUserAnswersForSessionDB(
-  sessionId: string
-): Promise<any[]> {
+export async function getUserAnswersForSessionDB(sessionId: string): Promise<any[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Verify session ownership
@@ -369,10 +361,7 @@ export async function getUserAnswersForSessionDB(
 }
 
 // STEP 5: Get single user answer for a question
-export async function getUserAnswerDB(
-  sessionId: string,
-  questionId: string
-): Promise<any | null> {
+export async function getUserAnswerDB(sessionId: string, questionId: string): Promise<any | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Verify session ownership

@@ -39,8 +39,15 @@ export default function RoadmapView({ showTitle = true }: RoadmapViewProps) {
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
-      {showConfetti && <Confetti recycle={false} numberOfPieces={200} gravity={0.2} style={{ position: 'fixed', zIndex: 100 }} />}
-      
+      {showConfetti && (
+        <Confetti
+          recycle={false}
+          numberOfPieces={200}
+          gravity={0.2}
+          style={{ position: "fixed", zIndex: 100 }}
+        />
+      )}
+
       {/* Header with Progress */}
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-border shadow-sm px-6 py-6">
         <div className="flex flex-col gap-4 w-full">
@@ -49,7 +56,9 @@ export default function RoadmapView({ showTitle = true }: RoadmapViewProps) {
               <h1 className="text-3xl md:text-4xl font-bold text-foreground text-balance">
                 Pakistan to USA Spousal Journey
               </h1>
-              <p className="text-muted-foreground mt-1">Track your immigration pathway step by step</p>
+              <p className="text-muted-foreground mt-1">
+                Track your immigration pathway step by step
+              </p>
             </div>
           )}
           <ProgressBar completed={completed.length} total={immigrationSteps.length} />

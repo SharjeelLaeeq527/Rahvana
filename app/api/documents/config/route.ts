@@ -2,11 +2,11 @@
 // GET /api/documents/config - Get vault configuration
 // POST /api/documents/config - Save vault configuration
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
-import { DocumentVaultConfig } from '@/lib/document-vault/types';
-import { E, msg } from '@/lib/errors';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { DocumentVaultConfig } from "@/lib/document-vault/types";
+import { E, msg } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -18,7 +18,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get vault configuration
@@ -34,7 +34,7 @@ export async function GET() {
       config,
     });
   } catch (error) {
-    console.error('Get config error:', error);
+    console.error("Get config error:", error);
     return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse request body
@@ -67,7 +67,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!config.visaCategory) {
-      return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[visaCategory]' }) }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[visaCategory]" }) },
+        { status: 400 }
+      );
     }
 
     // Save configuration
@@ -77,10 +80,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       config: savedConfig,
-      message: 'Configuration saved successfully',
+      message: "Configuration saved successfully",
     });
   } catch (error) {
-    console.error('Save config error:', error);
+    console.error("Save config error:", error);
     return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

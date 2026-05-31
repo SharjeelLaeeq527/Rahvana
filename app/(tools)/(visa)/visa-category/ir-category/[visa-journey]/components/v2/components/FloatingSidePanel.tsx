@@ -1,16 +1,18 @@
 "use client";
 
 /**
- * FloatingSidePanel — reusable wrapper for any fixed right-side panel
- * that should fade out when the footer enters the viewport.
+ * FloatingSidePanel — reusable wrapper for any fixed right-side panel.
  *
- * Use anywhere you'd otherwise write `position: fixed; top: 100; right: 24`.
- * Children get a clean shell, plus automatic footer-aware fade.
+ * Positioning accounts for the IR-1 journey page layout:
+ *   - Top navbar:       ~70px
+ *   - Step breadcrumb:  52px  (sticky at top-[70px])
+ *   - Bottom step nav:  58px
  *
- * Usage:
- *   <FloatingSidePanel>
- *     <YourCard />
- *   </FloatingSidePanel>
+ * So panel starts at 136px from top and ends 74px from bottom —
+ * no overlap with header, breadcrumb, or progress/nav bar.
+ *
+ * Fades out automatically when footer enters viewport.
+ * Only renders at xl+ screens (≥1280px).
  */
 
 import React from "react";
@@ -18,47 +20,51 @@ import { useHideOnFooter } from "@/lib/hooks/useHideOnFooter";
 
 interface FloatingSidePanelProps {
   children: React.ReactNode;
-  /** Position from top in pixels (default 100) */
+  /**
+   * Top offset in px.
+   * Default 136 = 70px navbar + 52px breadcrumb + 14px gap.
+   */
   top?: number;
-  /** Position from right in pixels (default 24) */
+  /** Right offset in px (default 20) */
   right?: number;
-  /** Width in pixels (default 280) */
+  /** Panel width in px (default 272) */
   width?: number;
-  /** z-index — keep low so footer can cover (default 10) */
+  /** z-index — below sticky header (z-40) so header covers on scroll (default 10) */
   zIndex?: number;
-  /** Show panel only at xl+ screens (default true) */
-  desktopOnly?: boolean;
-  /** Optional inline override class */
+  /** Extra class names */
   className?: string;
 }
 
 export function FloatingSidePanel({
   children,
-  top = 100,
-  right = 24,
-  width = 280,
+  top = 136,
+  right = 20,
+  width = 272,
   zIndex = 10,
-  desktopOnly = true,
   className,
 }: FloatingSidePanelProps) {
-  const hideForFooter = useHideOnFooter();
+  const hideForFooter = useHideOnFooter(80);
 
   return (
     <aside
-      className={`${desktopOnly ? "hidden xl:flex" : "flex"} flex-col gap-3 ${className ?? ""}`}
+      className={`hidden xl:flex flex-col ${className ?? ""}`}
       style={{
         position: "fixed",
         top,
         right,
         width,
-        maxHeight: `calc(100vh - ${top + 40}px)`,
+        // Stop before the bottom step-nav bar (58px) + safe gap (16px)
+        maxHeight: `calc(100vh - ${top}px - 74px)`,
         zIndex,
         opacity: hideForFooter ? 0 : 1,
         pointerEvents: hideForFooter ? "none" : "auto",
-        transition: "opacity 0.2s ease",
+        transition: "opacity 0.25s ease",
       }}
     >
-      <div className="overflow-y-auto scrollbar-hide flex-1 flex flex-col gap-3">
+      <div
+        className="overflow-y-auto flex-1 flex flex-col gap-2.5"
+        style={{ scrollbarWidth: "none" }}
+      >
         {children}
       </div>
     </aside>

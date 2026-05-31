@@ -1,12 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  ChevronRight,
-  AlertTriangle,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, AlertTriangle } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
@@ -19,26 +14,17 @@ interface StageViewProps {
   onSelectStep: (stageIdx: number, stepIdx: number) => void;
 }
 
-export function StageView({
-  data,
-  stageIdx,
-  state,
-  onBack,
-  onSelectStep,
-}: StageViewProps) {
+export function StageView({ data, stageIdx, state, onBack, onSelectStep }: StageViewProps) {
   const isChapter1 = stageIdx === 0;
   const isChapter2 = stageIdx === 1;
   const isChapter3 = stageIdx === 2;
   const stage = data.chapters[stageIdx];
   const activeSteps = useMemo(
     () => getActiveStepsForStage(data, stageIdx, state.metadata, state.filingType),
-    [data, stageIdx, state.metadata, state.filingType],
+    [data, stageIdx, state.metadata, state.filingType]
   );
 
-  const prog = useMemo(
-    () => getStageProgress(data, stageIdx, state),
-    [data, stageIdx, state],
-  );
+  const prog = useMemo(() => getStageProgress(data, stageIdx, state), [data, stageIdx, state]);
 
   const isDone = prog.done === prog.total && prog.total > 0;
   const isStarted = prog.done > 0;
@@ -56,17 +42,14 @@ export function StageView({
       : "Not started";
 
   return (
-    //  <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 scrollbar-hide ch3step-bg"> 
-    <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 scrollbar-hide "> 
+    //  <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 scrollbar-hide ch3step-bg">
+    <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 pb-20 scrollbar-hide ">
       <div className="max-w-4xl mx-auto">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-[13px] font-bold text-primary hover:translate-x-[-4px] transition-transform mb-6 group"
         >
-          <ArrowLeft
-            size={18}
-            className="group-hover:scale-110 transition-transform"
-          />
+          <ArrowLeft size={18} className="group-hover:scale-110 transition-transform" />
           Back to Dashboard
         </button>
 
@@ -111,8 +94,8 @@ export function StageView({
               <strong className="block mb-1 text-amber-900 text-[13px] uppercase tracking-wide">
                 Action Required: Filing Method
               </strong>
-              Filing method not yet chosen. Complete Step 3 to select Online or
-              Paper filing. Steps 4 onward differ by branch.
+              Filing method not yet chosen. Complete Step 3 to select Online or Paper filing. Steps
+              4 onward differ by branch.
             </div>
           </div>
         )}
@@ -131,10 +114,10 @@ export function StageView({
             const isCompleted = state.completedSteps.has(step.step_key);
             const isNext =
               !isCompleted &&
-              activeSteps
-                .slice(0, idx)
-                .every((s) => state.completedSteps.has(s.step_key));
-            const fullStepIdx = stage.steps.findIndex((s: any) => (s.step_key || s.id) === step.step_key);
+              activeSteps.slice(0, idx).every((s) => state.completedSteps.has(s.step_key));
+            const fullStepIdx = stage.steps.findIndex(
+              (s: any) => (s.step_key || s.id) === step.step_key
+            );
 
             return (
               //              <div
@@ -163,11 +146,7 @@ export function StageView({
                   className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-[14px] shrink-0 transition-all duration-500
                   ${isCompleted ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 rotate-3" : isNext ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-slate-100 text-slate-400 group-hover:bg-slate-200"}`}
                 >
-                  {isCompleted ? (
-                    <CheckCircle2 size={18} strokeWidth={3} />
-                  ) : (
-                    idx + 1
-                  )}
+                  {isCompleted ? <CheckCircle2 size={18} strokeWidth={3} /> : idx + 1}
                 </div>
 
                 <div className="flex-1 min-w-0">

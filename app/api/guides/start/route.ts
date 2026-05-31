@@ -34,15 +34,18 @@ export async function POST(request: Request) {
     // 2. Initialize or fetch existing session
     const { data: session, error: sessionError } = await supabase
       .from("user_guides")
-      .upsert({
-        user_id: user.id,
-        guide_id: guide.id,
-        status: "in_progress",
-        last_updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'user_id,guide_id',
-        ignoreDuplicates: false
-      })
+      .upsert(
+        {
+          user_id: user.id,
+          guide_id: guide.id,
+          status: "in_progress",
+          last_updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id,guide_id",
+          ignoreDuplicates: false,
+        }
+      )
       .select()
       .single();
 

@@ -16,11 +16,15 @@ import {
   ChevronLeft,
   X as CloseIcon,
   Crown,
+  CreditCard,
+  ShoppingBag,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
 import { CustomDropdown, DropdownOption } from "@/app/components/shared/CustomDropdown";
 import { usePlan } from "@/app/context/PlanContext";
+import { useAuth } from "@/app/context/AuthContext";
 import { PageGate } from "@/app/components/entitlements/PageGate";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
@@ -34,10 +38,10 @@ interface Booking {
   visa_category: string;
   issue_category: string;
   status:
-    | "confirmed"
-    | "pending_approval"
-    | "alternatives_proposed"
-    | "cancelled";
+  | "confirmed"
+  | "pending_approval"
+  | "alternatives_proposed"
+  | "cancelled";
   selected_slot: string;
   alternate_slots?: string[];
   admin_notes?: string;
@@ -159,9 +163,7 @@ const ConsultationBookingPage = () => {
   };
 
   // View state
-  const [activeView, setActiveView] = useState<"booking" | "requests">(
-    "booking",
-  );
+  const [activeView, setActiveView] = useState<"booking" | "requests">("booking");
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -192,14 +194,11 @@ const ConsultationBookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [referenceId, setReferenceId] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showConsultationUpgradeModal, setShowConsultationUpgradeModal] =
-    useState(false);
-  const [remainingConsultations, setRemainingConsultations] = useState<
-    number | null
-  >(null);
-  const [consultationCreditsLoading, setConsultationCreditsLoading] =
-    useState(true);
+  const [showConsultationUpgradeModal, setShowConsultationUpgradeModal] = useState(false);
+  const [remainingConsultations, setRemainingConsultations] = useState<number | null>(null);
+  const [consultationCreditsLoading, setConsultationCreditsLoading] = useState(true);
   const { tier } = usePlan();
+  const { user, isLoading: authLoading } = useAuth();
   const { checkAccess, consumeAccess } = useFeatureAccess();
   const hasExecutiveAccess = tier === "executive";
   const { showToast } = useToast();
@@ -351,6 +350,11 @@ const ConsultationBookingPage = () => {
       label: "Aging Out & CSPA Protection",
       group: "Visa Bulletin & Wait Times",
     },
+    {
+      value: "other",
+      label: "Other / Not Listed",
+      group: "Other",
+    },
   ];
 
   const issueCategoryOptions: DropdownOption[] = issueCategories.map((item) => ({
@@ -413,6 +417,11 @@ const ConsultationBookingPage = () => {
       group: "Embassy Phase",
     },
     { value: "visa-approved", label: "Visa Approved", group: "Embassy Phase" },
+    {
+      value: "other",
+      label: "Not Listed",
+      group: "Other",
+    },
   ];
 
   const countryCodes = [
@@ -474,10 +483,7 @@ const ConsultationBookingPage = () => {
             };
 
             const displayTime = slotDate.toLocaleTimeString([], formatOptions);
-            const displayEndTime = slotEndDate.toLocaleTimeString(
-              [],
-              formatOptions,
-            );
+            const displayEndTime = slotEndDate.toLocaleTimeString([], formatOptions);
 
             return {
               id: slot.id,
@@ -572,10 +578,7 @@ const ConsultationBookingPage = () => {
     }
   };
 
-  const handleInputChange = (
-    field: keyof FormData,
-    value: string | boolean | Date | Date[],
-  ) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean | Date | Date[]) => {
     // Validate phone number field to prevent alphabetic characters
     if (field === "phone_number" && typeof value === "string") {
       // Allow only digits, spaces, hyphens, parentheses, plus signs, and periods
@@ -633,14 +636,10 @@ const ConsultationBookingPage = () => {
   };
 
   const handleAlternateSlotSelect = (slot: TimeSlot) => {
-    if (
-      formData.alternate_slots.some((s) => s.getTime() === slot.date.getTime())
-    ) {
+    if (formData.alternate_slots.some((s) => s.getTime() === slot.date.getTime())) {
       setFormData((prev) => ({
         ...prev,
-        alternate_slots: prev.alternate_slots.filter(
-          (s) => s.getTime() !== slot.date.getTime(),
-        ),
+        alternate_slots: prev.alternate_slots.filter((s) => s.getTime() !== slot.date.getTime()),
       }));
     } else {
       if (formData.alternate_slots.length < 2) {
@@ -671,7 +670,7 @@ const ConsultationBookingPage = () => {
     if (!formData.full_name || !validateName(formData.full_name)) {
       showToast(
         "Please enter a valid full name (letters, spaces, hyphens, apostrophes only).",
-        "error",
+        "error"
       );
       setLoading(false);
       return;
@@ -686,17 +685,14 @@ const ConsultationBookingPage = () => {
     if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
       showToast(
         `Please enter a valid phone number for the selected country (${formData.country_code}).`,
-        "error",
+        "error"
       );
       setLoading(false);
       return;
     }
 
     if (!formData.case_summary || !validateCaseSummary(formData.case_summary)) {
-      showToast(
-        "Please provide a detailed case summary with at least 20 characters.",
-        "error",
-      );
+      showToast("Please provide a detailed case summary with at least 20 characters.", "error");
       setLoading(false);
       return;
     }
@@ -713,27 +709,25 @@ const ConsultationBookingPage = () => {
       return;
     }
 
-    if (remainingConsultations !== null && remainingConsultations <= 0) {
-      setShowConsultationUpgradeModal(true);
-      setLoading(false);
-      return;
-    }
+    const hasCredit = tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
 
-    const reservation = await consumeAccess("expert_consultation");
+    setLoading(true);
 
-    if (!reservation.allowed) {
-      // Show upgrade modal - UpgradeModal fetches entitlement data itself
-      setShowConsultationUpgradeModal(true);
-      setLoading(false);
-      return;
-    }
+    if (hasCredit) {
+      const reservation = await consumeAccess("expert_consultation");
 
-    if (reservation.data?.remaining !== undefined) {
-      setRemainingConsultations(reservation.data.remaining);
+      if (!reservation.allowed) {
+        setShowConsultationUpgradeModal(true);
+        setLoading(false);
+        return;
+      }
+
+      if (reservation.data?.remaining !== undefined) {
+        setRemainingConsultations(reservation.data.remaining);
+      }
     }
 
     console.log("Submitting form...", formData);
-    setLoading(true);
 
     try {
       // 1. Upload attachments first if any
@@ -758,15 +752,11 @@ const ConsultationBookingPage = () => {
       }
 
       // 2. Clean up and combine phone fields
-      // Remove all non-digits from phone_number except a leading + if present
       const cleanPhoneNumber = formData.phone_number.replace(/[^\d+]/g, "");
-      // If the phone number already starts with +, we assume it has its own country code,
-      // but the business requirement is to use the selected country_code.
-      // Most robust: remove leading + from phone_number if country_code is already preened.
       const finalPhoneStr =
         `${formData.country_code}${cleanPhoneNumber.startsWith("+") ? cleanPhoneNumber.substring(1) : cleanPhoneNumber}`.replace(
           /\s+/g,
-          "",
+          ""
         );
 
       const payload = {
@@ -774,9 +764,7 @@ const ConsultationBookingPage = () => {
         whatsapp_phone: finalPhoneStr,
         attachments: uploadedPaths,
         selected_slot: formData.selected_slot?.toISOString(),
-        alternate_slots: formData.alternate_slots?.map((slot) =>
-          slot.toISOString(),
-        ),
+        alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
       };
 
       console.log("Final Payload:", payload);
@@ -789,14 +777,45 @@ const ConsultationBookingPage = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setReferenceId(result.reference_id);
-        setShowConfirmation(true);
+
+        // If not using credit, redirect to Stripe checkout!
+        if (!hasCredit && user?.id) {
+          try {
+            const stripeRes = await fetch("/api/stripe/checkout", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                consultationId: result.id,
+                userId: user.id,
+              }),
+            });
+
+            const stripeData = await stripeRes.json();
+
+            if (!stripeRes.ok) {
+              throw new Error(stripeData.error || "Failed to create checkout session");
+            }
+
+            if (stripeData.url) {
+              window.location.href = stripeData.url;
+              return; // Do not show confirmation screen yet since they are redirecting to pay
+            } else {
+              throw new Error("No checkout URL returned");
+            }
+          } catch (stripeErr: any) {
+            console.error("Checkout redirection failed:", stripeErr);
+            showToast(`Redirection failed: ${stripeErr.message || stripeErr}`, "error");
+          }
+        } else {
+          // Free booking -> show confirmation directly!
+          setReferenceId(result.reference_id);
+          setShowConfirmation(true);
+        }
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error("Submission failed:", errorData);
-        // if (response.status === 403) {
-        setShowConsultationUpgradeModal(true);
-        // }
         showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
       }
     } catch (error) {
@@ -811,7 +830,7 @@ const ConsultationBookingPage = () => {
     if (!validateStep(currentStep)) {
       return; // Don't proceed if validation fails
     }
-    setCurrentStep((prev) => Math.min(prev + 1, 3));
+    setCurrentStep((prev) => Math.min(prev + 1, 4));
   };
   // Validation function for each step
   const validateStep = (step: number): boolean => {
@@ -834,14 +853,16 @@ const ConsultationBookingPage = () => {
       if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
         newErrors.phone_number = "Please enter a valid phone number";
       }
-      if (
-        !formData.case_summary ||
-        !validateCaseSummary(formData.case_summary)
-      ) {
+      if (!formData.case_summary || !validateCaseSummary(formData.case_summary)) {
         newErrors.case_summary = "Case summary must be at least 20 characters";
       }
       if (!formData.consent) {
         newErrors.consent = "You must agree to the terms to continue";
+      }
+    } else if (step === 3) {
+      if (!formData.selected_slot) {
+        newErrors.selected_slot = "Please select a consultation time slot";
+        showToast("Please select a consultation time slot.", "error");
       }
     }
 
@@ -905,9 +926,7 @@ const ConsultationBookingPage = () => {
                   className={errors.issue_category ? "border-red-500" : ""}
                 />
                 {errors.issue_category && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.issue_category}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.issue_category}</p>
                 )}
               </div>
               {/* <div>
@@ -956,9 +975,7 @@ const ConsultationBookingPage = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Case Stage *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Case Stage *</label>
                 <CustomDropdown
                   value={formData.case_stage}
                   onChange={(value) => {
@@ -976,9 +993,7 @@ const ConsultationBookingPage = () => {
                   className={errors.case_stage ? "border-red-500" : ""}
                 />
                 {errors.case_stage && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.case_stage}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.case_stage}</p>
                 )}
               </div>
               <div>
@@ -987,17 +1002,13 @@ const ConsultationBookingPage = () => {
                 </label>
                 <CustomDropdown
                   value={formData.embassy_consulate}
-                  onChange={(value) =>
-                    handleInputChange("embassy_consulate", value)
-                  }
+                  onChange={(value) => handleInputChange("embassy_consulate", value)}
                   options={embassyOptions}
                   placeholder="Select embassy..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Urgency *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Urgency *</label>
                 <CustomDropdown
                   value={formData.urgency}
                   onChange={(value) => handleInputChange("urgency", value)}
@@ -1013,9 +1024,7 @@ const ConsultationBookingPage = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                   <input
@@ -1038,17 +1047,14 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                      errors.full_name ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.full_name ? "border-red-500" : "border-gray-300"
+                      }`}
                     placeholder="John Doe"
                     required
                   />
                 </div>
                 {errors.full_name && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.full_name}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.full_name}</p>
                 )}
               </div>
               <div>
@@ -1077,16 +1083,13 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                      errors.email ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.email ? "border-red-500" : "border-gray-300"
+                      }`}
                     placeholder="john@example.com"
                     required
                   />
                 </div>
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
+                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1119,10 +1122,7 @@ const ConsultationBookingPage = () => {
                       value={formData.phone_number}
                       onChange={(e) => {
                         // Allow only digits, spaces, hyphens, parentheses, plus signs, and periods
-                        const cleanedValue = e.target.value.replace(
-                          /[^\d\s\-\(\)\+.]/g,
-                          "",
-                        );
+                        const cleanedValue = e.target.value.replace(/[^\d\s\-\(\)\+.]/g, "");
                         handleInputChange("phone_number", cleanedValue);
                         // Clear error when user types
                         if (errors.phone_number) {
@@ -1133,31 +1133,24 @@ const ConsultationBookingPage = () => {
                           });
                         }
                       }}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                        errors.phone_number
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.phone_number
+                        ? "border-red-500"
+                        : "border-gray-300"
+                        }`}
                       placeholder={getPhonePlaceholder(formData.country_code)}
                       required
                     />
                   </div>
                 </div>
                 {errors.phone_number && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.phone_number}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.phone_number}</p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Language *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Language *</label>
                 <CustomDropdown
                   value={formData.preferred_language}
-                  onChange={(value) =>
-                    handleInputChange("preferred_language", value)
-                  }
+                  onChange={(value) => handleInputChange("preferred_language", value)}
                   options={preferredLanguageOptions}
                   placeholder="Select language..."
                 />
@@ -1172,11 +1165,10 @@ const ConsultationBookingPage = () => {
                 onDragOver={handleDropZoneDragOver}
                 onDragLeave={handleDropZoneDragLeave}
                 onDrop={handleDropZoneDrop}
-                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${
-                  isDraggingFiles
-                    ? "border-teal-500 bg-teal-50/60"
-                    : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
-                }`}
+                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${isDraggingFiles
+                  ? "border-teal-500 bg-teal-50/60"
+                  : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
+                  }`}
               >
                 <input
                   id="consultation-file-input"
@@ -1189,9 +1181,7 @@ const ConsultationBookingPage = () => {
                 <div className="bg-gray-100 group-hover:bg-teal-100 transition-colors w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                   <FileText className="h-6 w-6 text-gray-400 group-hover:text-teal-600" />
                 </div>
-                <p className="text-sm font-bold text-gray-700">
-                  Click to upload or drag and drop
-                </p>
+                <p className="text-sm font-bold text-gray-700">Click to upload or drag and drop</p>
                 <p className="text-xs text-gray-500 mt-1">
                   Notices, letters, or forms relevant to your case
                 </p>
@@ -1227,9 +1217,7 @@ const ConsultationBookingPage = () => {
                   // Validate case summary length
                   if (summaryValue && !validateCaseSummary(summaryValue)) {
                     // Optionally show a character count or warning
-                    console.warn(
-                      "Case summary should be at least 20 characters",
-                    );
+                    console.warn("Case summary should be at least 20 characters");
                   }
                   handleInputChange("case_summary", summaryValue);
                   // Clear error when user types
@@ -1242,16 +1230,13 @@ const ConsultationBookingPage = () => {
                   }
                 }}
                 rows={5}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition min-h-30 ${
-                  errors.case_summary ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition min-h-30 ${errors.case_summary ? "border-red-500" : "border-gray-300"
+                  }`}
                 placeholder="Tell us about your visa status, any RFE/221g received, and specific questions you have..."
                 required
               />
               {errors.case_summary && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.case_summary}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.case_summary}</p>
               )}
             </div>
             <div className="bg-teal-50/50 border border-teal-100 p-5 rounded-2xl">
@@ -1272,20 +1257,16 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${
-                      errors.consent ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${errors.consent ? "border-red-500" : "border-gray-300"
+                      }`}
                   />
                 </div>
                 <span className="text-xs text-gray-600 leading-relaxed font-medium group-hover:text-teal-900 transition-colors">
-                  I consent to being contacted via email and WhatsApp. I
-                  understand this consultation provides general guidance and
-                  does not constitute legal advice.
+                  I consent to being contacted via email and WhatsApp. I understand this
+                  consultation provides general guidance and does not constitute legal advice.
                 </span>
               </label>
-              {errors.consent && (
-                <p className="mt-1 text-sm text-red-600">{errors.consent}</p>
-              )}
+              {errors.consent && <p className="mt-1 text-sm text-red-600">{errors.consent}</p>}
             </div>
           </div>
         );
@@ -1296,8 +1277,7 @@ const ConsultationBookingPage = () => {
               <div className="flex items-center gap-3">
                 <Info className="h-5 w-5 text-blue-600 mt-0.5" />
                 <p className="text-sm text-blue-700">
-                  Selected slots are held as &#34;Pending Approval&#34; until
-                  confirmed.
+                  Selected slots are held as &#34;Pending Approval&#34; until confirmed.
                 </p>
               </div>
               <div className="flex justify-end">
@@ -1324,7 +1304,7 @@ const ConsultationBookingPage = () => {
                         ? "border-teal-500 bg-teal-50"
                         : slot.available
                           ? "border-gray-200 hover:border-teal-300 hover:bg-teal-50/30"
-                          : "opacity-50 cursor-not-allowed bg-gray-50",
+                          : "opacity-50 cursor-not-allowed bg-gray-50"
                     )}
                   >
                     <div className="flex items-center gap-2 text-sm font-medium">
@@ -1343,9 +1323,7 @@ const ConsultationBookingPage = () => {
               ) : (
                 <div className="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
                   <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">
-                    No consultation slots are currently available.
-                  </p>
+                  <p className="text-gray-500">No consultation slots are currently available.</p>
                   <p className="text-xs text-gray-400 mt-1">
                     Please check back later or contact us for assistance.
                   </p>
@@ -1354,15 +1332,11 @@ const ConsultationBookingPage = () => {
             </div>
             {formData.selected_slot && (
               <div className="space-y-4">
-                <p className="text-sm font-medium">
-                  Alternative Slots (Optional - Max 2)
-                </p>
+                <p className="text-sm font-medium">Alternative Slots (Optional - Max 2)</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {availableSlots
                     .filter(
-                      (s) =>
-                        s.available &&
-                        s.date.getTime() !== formData.selected_slot?.getTime(),
+                      (s) => s.available && s.date.getTime() !== formData.selected_slot?.getTime()
                     )
                     .slice(0, 6)
                     .map((slot) => (
@@ -1371,11 +1345,9 @@ const ConsultationBookingPage = () => {
                         onClick={() => handleAlternateSlotSelect(slot)}
                         className={cn(
                           "border rounded-lg p-3 cursor-pointer transition text-xs",
-                          formData.alternate_slots.some(
-                            (s) => s.getTime() === slot.date.getTime(),
-                          )
+                          formData.alternate_slots.some((s) => s.getTime() === slot.date.getTime())
                             ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:bg-gray-50",
+                            : "border-gray-200 hover:bg-gray-50"
                         )}
                       >
                         {slot.date.toLocaleDateString()} - {slot.formattedTime}
@@ -1386,6 +1358,178 @@ const ConsultationBookingPage = () => {
             )}
           </div>
         );
+      case 4: {
+        const selectedIssue = issueCategories.find(c => c.value === formData.issue_category)?.label || formData.issue_category || "General Inquiry";
+        const selectedStage = caseStages.find(s => s.value === formData.case_stage)?.label || formData.case_stage || "Not Specified";
+        const selectedUrgency = urgencyOptions.find(u => u.value === formData.urgency)?.label || formData.urgency || "Normal";
+
+        const formattedDate = formData.selected_slot?.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }) || "No slot selected";
+
+        const slotTime = availableSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || "";
+
+        const hasCredit = tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
+
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            {/* Heading / Premium Badge */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-linear-to-r from-slate-900 to-slate-800 p-6 rounded-2xl text-white shadow-xl">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-500/20 text-teal-300 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border border-teal-500/30">
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                  Order Review
+                </span>
+                <h3 className="text-xl font-bold">Review your Consultation Details</h3>
+                <p className="text-slate-400 text-xs mt-1 font-light">Confirm details and complete booking.</p>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
+                {tier !== "free" ? (
+                  <span
+                    aria-hidden="true"
+                    className={`plan-icon plan-icon--${tier}`}
+                    style={{ width: 28, height: 28, flexShrink: 0 }}
+                  />
+                ) : null}
+                <span className="text-sm font-semibold capitalize">{tier} Plan</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+              {/* Order breakdown */}
+              <div className="md:col-span-3 space-y-6">
+                {/* Summary Card */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-teal-600" />
+                    Consultation Summary
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Issue / Subject</p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">{selectedIssue}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Visa Stage</p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">{selectedStage}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Urgency Priority</p>
+                      <span className={cn(
+                        "inline-block text-[11px] font-bold px-2 py-0.5 rounded mt-1.5",
+                        formData.urgency.startsWith("urgent")
+                          ? "bg-red-50 text-red-600 border border-red-100"
+                          : "bg-slate-50 text-slate-600 border border-slate-100"
+                      )}>
+                        {selectedUrgency}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Language Preference</p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">{formData.preferred_language}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-5 border-t border-slate-100">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Selected Slot</p>
+                    <div className="mt-2 flex items-center gap-3 bg-teal-50/50 border border-teal-100/50 p-4 rounded-xl">
+                      <div className="bg-teal-600 text-white rounded-lg p-2 flex items-center justify-center">
+                        <Calendar className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{formattedDate}</p>
+                        <p className="text-xs font-bold text-teal-700 mt-0.5">{slotTime}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secure checkout info */}
+                {/* <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex items-start gap-3">
+                  <ShieldCheck className="h-6 w-6 text-teal-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Secure Transaction Guaranteed</h5>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Your consultation details are handled with standard end-to-end encryption. Direct Stripe payment uses secure 256-bit SSL encryption.
+                    </p>
+                  </div>
+                </div> */}
+              </div>
+
+              {/* Shopping Cart Summary & Payment Choice */}
+              <div className="md:col-span-2 space-y-6">
+                <div className="bg-slate-50/55 border border-slate-200/60 rounded-2xl p-6 shadow-sm flex flex-col justify-between h-full">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                      <ShoppingBag className="h-4 w-4 text-teal-600" />
+                      Price Breakdown
+                    </h4>
+
+                    {/* Order line items */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-slate-600 font-medium">1x Expert Consultation</span>
+                        <span className="text-slate-800 font-bold">$99.00</span>
+                      </div>
+
+                      {/* Plan Discounts / Benefits */}
+                      {hasCredit ? (
+                        <div className="flex justify-between items-center text-sm text-green-600">
+                          <span className="font-semibold flex items-center gap-1">
+                            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                            Executive Credit Applied
+                          </span>
+                          <span className="font-bold">-$99.00</span>
+                        </div>
+                      ) : null}
+
+                      <div className="border-t border-slate-200 pt-4 mt-2 flex justify-between items-center">
+                        <span className="text-base font-bold text-slate-900">Total Due</span>
+                        <span className="text-xl font-black text-slate-900">
+                          {hasCredit ? "$0.00" : "$99.00"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Show available credits message */}
+                    {tier === "executive" && (
+                      <div className="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
+                        <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                        <span className="text-[11px] font-bold text-amber-800">
+                          {remainingConsultations !== null ? (
+                            remainingConsultations === 1
+                              ? "1 Executive Consultation credit left"
+                              : `${remainingConsultations} Executive Consultation credits left`
+                          ) : (
+                            "Executive credits active."
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Show Checkout badge if no credits */}
+                  {!hasCredit && (
+                    <div className="mt-5 p-4 rounded-xl bg-teal-50 border border-teal-100 flex items-start gap-3">
+                      <CreditCard className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-bold text-teal-800">Secure Card Checkout</p>
+                        <p className="text-[11px] text-teal-700/80 mt-0.5 leading-relaxed">
+                          Payment is processed securely via Stripe. All major credit and debit cards accepted.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
       default:
         return null;
     }
@@ -1424,9 +1568,7 @@ const ConsultationBookingPage = () => {
                   placeholder="Search by name, email or Reference ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && fetchUserBookings(searchQuery)
-                  }
+                  onKeyDown={(e) => e.key === "Enter" && fetchUserBookings(searchQuery)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition text-sm"
                 />
                 <Globe className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -1447,9 +1589,7 @@ const ConsultationBookingPage = () => {
               ) : userBookings.length === 0 ? (
                 <div className="text-center py-20">
                   <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">
-                    No requests found
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900">No requests found</h3>
                   <p className="text-gray-500 mt-1">
                     We couldn&#39;t find any requests matching your criteria.
                   </p>
@@ -1475,34 +1615,27 @@ const ConsultationBookingPage = () => {
                                   ? "bg-yellow-100 text-yellow-700"
                                   : booking.status === "alternatives_proposed"
                                     ? "bg-purple-100 text-purple-700"
-                                    : "bg-gray-100 text-gray-700",
+                                    : "bg-gray-100 text-gray-700"
                             )}
                           >
                             {booking.status?.replace("_", " ")}
                           </span>
                         </div>
-                        <h4 className="font-bold text-gray-900">
-                          {booking.full_name}
-                        </h4>
+                        <h4 className="font-bold text-gray-900">{booking.full_name}</h4>
                         <p className="text-sm text-gray-500">
                           {booking.visa_category} • {booking.issue_category}
                         </p>
                       </div>
                       <div className="text-right flex flex-col items-end gap-2">
                         <div>
-                          <p className="text-xs text-gray-400 mb-1">
-                            Requested Date
-                          </p>
+                          <p className="text-xs text-gray-400 mb-1">Requested Date</p>
                           <p className="text-sm font-medium">
-                            {new Date(booking.selected_slot).toLocaleString(
-                              undefined,
-                              {
-                                month: "short",
-                                day: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit",
-                              },
-                            )}
+                            {new Date(booking.selected_slot).toLocaleString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
                           </p>
                         </div>
 
@@ -1514,31 +1647,26 @@ const ConsultationBookingPage = () => {
                                 Alternative Slots Proposed:
                               </p>
                               <div className="flex flex-wrap gap-2">
-                                {booking.alternate_slots.map(
-                                  (slot: string, idx: number) => (
-                                    <Button
-                                      key={idx}
-                                      onClick={() =>
-                                        handleAcceptAlternative(
-                                          booking.id,
-                                          new Date(slot),
-                                        )
-                                      }
-                                      variant="outline"
-                                      className="text-[10px] py-1 h-auto bg-white hover:bg-teal-600 hover:text-white transition-colors"
-                                    >
-                                      {new Date(slot).toLocaleDateString(
-                                        undefined,
-                                        { month: "short", day: "numeric" },
-                                      )}{" "}
-                                      @{" "}
-                                      {new Date(slot).toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </Button>
-                                  ),
-                                )}
+                                {booking.alternate_slots.map((slot: string, idx: number) => (
+                                  <Button
+                                    key={idx}
+                                    onClick={() =>
+                                      handleAcceptAlternative(booking.id, new Date(slot))
+                                    }
+                                    variant="outline"
+                                    className="text-[10px] py-1 h-auto bg-white hover:bg-teal-600 hover:text-white transition-colors"
+                                  >
+                                    {new Date(slot).toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                    })}{" "}
+                                    @{" "}
+                                    {new Date(slot).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </Button>
+                                ))}
                               </div>
                               {booking.admin_notes && (
                                 <p className="mt-2 text-[10px] text-teal-800 italic">
@@ -1570,19 +1698,13 @@ const ConsultationBookingPage = () => {
             <h2 className="text-2xl font-bold mb-2">Request Received!</h2>
             <p className="text-gray-600 mb-6">
               Your reference ID is:{" "}
-              <span className="font-mono font-bold text-teal-700">
-                {referenceId}
-              </span>
+              <span className="font-mono font-bold text-teal-700">{referenceId}</span>
             </p>
             <div className="space-y-3">
               <Button onClick={resetForm} className="w-full bg-teal-600">
                 Book Another
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push("/")}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={() => router.push("/")} className="w-full">
                 Back to Home
               </Button>
             </div>
@@ -1592,12 +1714,22 @@ const ConsultationBookingPage = () => {
     );
   }
 
-  if (!hasExecutiveAccess) {
+  if (authLoading) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#fafcff] overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[80px] pointer-events-none translate-y-1/2 -translate-x-1/3" />
+        <Loader size="lg" text="Loading profile..." />
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <PageGate
         feature="expert_consultation"
-        title="Expert Consultation Locked"
-        description="Expert consultation booking is available on Premium or Executive plans, or as an add-on for other plans."
+        title="Expert Consultation"
+        description="Please log in or sign up to book a personalized consultation with our immigration experts."
       >
         <></>
       </PageGate>
@@ -1622,9 +1754,7 @@ const ConsultationBookingPage = () => {
                   {consultationCreditsLoading ? (
                     <span>Loading consultation credits...</span>
                   ) : remainingConsultations !== null ? (
-                    <span>
-                      Remaining consultation credits: {remainingConsultations}/2
-                    </span>
+                    <span>Remaining consultation credits: {remainingConsultations}/2</span>
                   ) : (
                     <span>Consultation credits unavailable</span>
                   )}
@@ -1634,24 +1764,15 @@ const ConsultationBookingPage = () => {
             <div className="flex gap-3">
               <Button
                 onClick={() => {
-                  if (tier !== "executive") {
-                    setShowConsultationUpgradeModal(true);
-                  } else {
-                    setActiveView("booking");
-                  }
+                  setActiveView("booking");
                 }}
-                disabled={tier !== "executive"}
                 className={cn(
                   "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
-                  activeView === ("booking" as "booking" | "requests") &&
-                    tier === "executive"
+                  activeView === ("booking" as "booking" | "requests")
                     ? "bg-white text-teal-800 shadow-lg"
-                    : tier !== "executive"
-                      ? "bg-white/10 text-white/50 cursor-not-allowed border border-white/20"
-                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
                 )}
               >
-                {tier !== "executive" && <Crown className="h-4 w-4" />}
                 Book New
               </Button>
               <Button
@@ -1660,7 +1781,7 @@ const ConsultationBookingPage = () => {
                   "px-6 py-2 rounded-full text-sm font-bold transition-all",
                   activeView === ("requests" as "booking" | "requests")
                     ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
                 )}
               >
                 My Requests
@@ -1672,7 +1793,7 @@ const ConsultationBookingPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-20">
-        {activeView === "booking" && tier === "executive" && (
+        {activeView === "booking" && (
           <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
             {/* Improved Progress Tracker */}
             <div className="bg-gray-50/50 border-b border-gray-100 p-8">
@@ -1681,7 +1802,7 @@ const ConsultationBookingPage = () => {
                 <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200 -z-10">
                   <div
                     className="h-full bg-teal-600 transition-all duration-500"
-                    style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+                    style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
                   />
                 </div>
 
@@ -1689,17 +1810,15 @@ const ConsultationBookingPage = () => {
                   { step: 1, label: "Case Details", icon: FileText },
                   { step: 2, label: "Contact Info", icon: User },
                   { step: 3, label: "Select Time", icon: Clock },
+                  { step: 4, label: "Checkout", icon: CreditCard },
                 ].map((item) => (
-                  <div
-                    key={item.step}
-                    className="flex flex-col items-center gap-2"
-                  >
+                  <div key={item.step} className="flex flex-col items-center gap-2">
                     <div
                       className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
                         currentStep >= item.step
                           ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-200"
-                          : "bg-white border-gray-200 text-gray-400",
+                          : "bg-white border-gray-200 text-gray-400"
                       )}
                     >
                       {currentStep > item.step ? (
@@ -1711,9 +1830,7 @@ const ConsultationBookingPage = () => {
                     <span
                       className={cn(
                         "text-xs font-bold tracking-tight uppercase",
-                        currentStep >= item.step
-                          ? "text-teal-900"
-                          : "text-gray-400",
+                        currentStep >= item.step ? "text-teal-900" : "text-gray-400"
                       )}
                     >
                       {item.label}
@@ -1730,12 +1847,12 @@ const ConsultationBookingPage = () => {
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
-                  disabled={currentStep === 1}
+                  disabled={currentStep === 1 || loading}
                   className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 text-white"
                 >
                   <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
                 </Button>
-                {currentStep < 3 ? (
+                {currentStep < 4 ? (
                   <Button
                     type="button"
                     onClick={handleNext}
@@ -1750,9 +1867,11 @@ const ConsultationBookingPage = () => {
                     className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
                   >
                     {loading ? (
-                      <Loader size="sm" text="Processing..." />
+                      "Processing..."
+                    ) : tier === "executive" && remainingConsultations !== null && remainingConsultations > 0 ? (
+                      "Confirm & Book (Free)"
                     ) : (
-                      "Request Appointment"
+                      "Proceed to Payment ($99)"
                     )}
                   </Button>
                 )}
@@ -1781,9 +1900,7 @@ const ConsultationBookingPage = () => {
 export default ConsultationBookingPage;
 
 // Helper components for consistency
-const Info = ({ className }: { className?: string }) => (
-  <AlertCircle className={className} />
-);
+const Info = ({ className }: { className?: string }) => <AlertCircle className={className} />;
 
 type ButtonVariant = "primary" | "outline" | "ghost";
 

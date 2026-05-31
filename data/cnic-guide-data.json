@@ -27,17 +27,47 @@
           "id": "personType",
           "title": "Who is applying?",
           "options": [
-            { "id": "adult", "title": "Standard Adult", "description": "Has parents or siblings already registered with NADRA.", "icon": "adult", "color": "green" },
-            { "id": "special", "title": "Special Case / Orphan", "description": "No blood relative with a NADRA record available.", "icon": "special", "color": "orange" }
+            {
+              "id": "adult",
+              "title": "Standard Adult",
+              "description": "Has parents or siblings already registered with NADRA.",
+              "icon": "adult",
+              "color": "green"
+            },
+            {
+              "id": "special",
+              "title": "Special Case / Orphan",
+              "description": "No blood relative with a NADRA record available.",
+              "icon": "special",
+              "color": "orange"
+            }
           ]
         },
         {
           "id": "applicationType",
           "title": "What is the purpose?",
           "options": [
-            { "id": "new", "title": "New CNIC", "description": "Applying for the very first time (age 18+)", "icon": "new", "color": "blue" },
-            { "id": "correction", "title": "Correction / Update", "description": "Fixing details (name, DOB, marital status, address)", "icon": "correction", "color": "purple" },
-            { "id": "replacement", "title": "Replacement / Renewal", "description": "CNIC is expired, lost, stolen, or damaged", "icon": "replacement", "color": "rose" }
+            {
+              "id": "new",
+              "title": "New CNIC",
+              "description": "Applying for the very first time (age 18+)",
+              "icon": "new",
+              "color": "blue"
+            },
+            {
+              "id": "correction",
+              "title": "Correction / Update",
+              "description": "Fixing details (name, DOB, marital status, address)",
+              "icon": "correction",
+              "color": "purple"
+            },
+            {
+              "id": "replacement",
+              "title": "Replacement / Renewal",
+              "description": "CNIC is expired, lost, stolen, or damaged",
+              "icon": "replacement",
+              "color": "rose"
+            }
           ]
         }
       ]
@@ -49,46 +79,201 @@
       "country_note": "This wizard is specifically for Pakistan CNIC applications.",
       "location_note": "Why location matters: For a CNIC application, your residential address dictates the specific NADRA center you must visit. Ensuring this matches your supporting documents is crucial to avoid application rejection.",
       "provinces": [
-         {
+        {
           "name": "Punjab",
           "districts": [
-            "Lahore", "Narowal", "Gujranwala", "Qasur", "Sialkot", "Sheikhupura", "Okara", "Wazirabad", "Nankana Sahib", "Layyah", "Muzzafargarh", "Multan", "Rahim Yar Khan", "Vehari", "Bahawalpur", "Bahawalnagar", "Dera Ghazi Khan", "Rajanpur", "Khanewal", "Lodhran", "Sahiwal", "PakPattan", "Kot Addu", "Khushab", "Jhang", "Chiniot", "Faisalabad", "Toba Tek Singh", "Mianwali", "Hafizabad", "Bhakkar", "Sargodha"
+            "Lahore",
+            "Narowal",
+            "Gujranwala",
+            "Qasur",
+            "Sialkot",
+            "Sheikhupura",
+            "Okara",
+            "Wazirabad",
+            "Nankana Sahib",
+            "Layyah",
+            "Muzzafargarh",
+            "Multan",
+            "Rahim Yar Khan",
+            "Vehari",
+            "Bahawalpur",
+            "Bahawalnagar",
+            "Dera Ghazi Khan",
+            "Rajanpur",
+            "Khanewal",
+            "Lodhran",
+            "Sahiwal",
+            "PakPattan",
+            "Kot Addu",
+            "Khushab",
+            "Jhang",
+            "Chiniot",
+            "Faisalabad",
+            "Toba Tek Singh",
+            "Mianwali",
+            "Hafizabad",
+            "Bhakkar",
+            "Sargodha"
           ]
         },
         {
           "name": "Sindh",
           "districts": [
-            "Jamshoro", "Mirpurkhas", "Badin", "Thatta", "Tando Muhammad Khan", "Tando Allahyar", "Matiari", "Karachi South", "Karachi East", "Karachi West", "Karachi Central", "Karachi Malir", "Tharparkar", "Sujawal", "Umerkot", "Karachi Korangi", "Karachi Kemari", "Hyderabad", "Dadu", "Jacobabad", "Shikarpur", "Ghotki", "Khairpur", "Sanghar", "Naushahro Feroze", "Larkana", "Kashmore", "Sukkur", "Kambar Shahdadkot", "Shaheed Benazirabad"
+            "Jamshoro",
+            "Mirpurkhas",
+            "Badin",
+            "Thatta",
+            "Tando Muhammad Khan",
+            "Tando Allahyar",
+            "Matiari",
+            "Karachi South",
+            "Karachi East",
+            "Karachi West",
+            "Karachi Central",
+            "Karachi Malir",
+            "Tharparkar",
+            "Sujawal",
+            "Umerkot",
+            "Karachi Korangi",
+            "Karachi Kemari",
+            "Hyderabad",
+            "Dadu",
+            "Jacobabad",
+            "Shikarpur",
+            "Ghotki",
+            "Khairpur",
+            "Sanghar",
+            "Naushahro Feroze",
+            "Larkana",
+            "Kashmore",
+            "Sukkur",
+            "Kambar Shahdadkot",
+            "Shaheed Benazirabad"
           ]
         },
         {
           "name": "Khyber Pakhtunkhwa",
           "districts": [
-            "DI Khan", "Nowshera", "Swabi", "Abbottabad", "Lakki Marwat", "Boner", "Bannu", "Kohistan", "Shangla", "Tor Ghar", "Tank", "Batagram", "Haripur", "Hangu", "Karak", "Chitral", "Lower Dir", "Malakand P Area", "Upper Dir", "Bajaur", "Charsadda", "Khyber", "Kurram", "N Waziristan", "M Waziristan", "Orakzai", "Mohmand", "Upper Chitral", "Peshawar", "Mardan", "T A ADJ Tank", "T A ADJ DI Khan", "T A ADJ Peshawar", "T A ADJ Lakki Marwat", "T A ADJ Kohat", "T A ADJ Bannu", "Swat", "Mansehra"
+            "DI Khan",
+            "Nowshera",
+            "Swabi",
+            "Abbottabad",
+            "Lakki Marwat",
+            "Boner",
+            "Bannu",
+            "Kohistan",
+            "Shangla",
+            "Tor Ghar",
+            "Tank",
+            "Batagram",
+            "Haripur",
+            "Hangu",
+            "Karak",
+            "Chitral",
+            "Lower Dir",
+            "Malakand P Area",
+            "Upper Dir",
+            "Bajaur",
+            "Charsadda",
+            "Khyber",
+            "Kurram",
+            "N Waziristan",
+            "M Waziristan",
+            "Orakzai",
+            "Mohmand",
+            "Upper Chitral",
+            "Peshawar",
+            "Mardan",
+            "T A ADJ Tank",
+            "T A ADJ DI Khan",
+            "T A ADJ Peshawar",
+            "T A ADJ Lakki Marwat",
+            "T A ADJ Kohat",
+            "T A ADJ Bannu",
+            "Swat",
+            "Mansehra"
           ]
         },
         {
           "name": "Quetta",
           "districts": [
-            "Gwadar", "Kech", "Kachhi", "Jhal Magsi", "Jaffarabad", "Nasirabad", "Chagai", "Killa Abdullah", "Pishin", "Quetta", "Nushki", "Dera Bugti", "Kohlu", "Sibbi", "Ziarat", "Barkhan", "Killa Saifullah", "Loralai", "Musakhel", "Zhob", "Sherani", "Harnai", "Awaran", "Kalat", "Kharan", "Khuzdar", "Lasbela", "Mastung", "Chaman", "Surab", "Sohbatpur", "Duki", "Usta Mohammad"
+            "Gwadar",
+            "Kech",
+            "Kachhi",
+            "Jhal Magsi",
+            "Jaffarabad",
+            "Nasirabad",
+            "Chagai",
+            "Killa Abdullah",
+            "Pishin",
+            "Quetta",
+            "Nushki",
+            "Dera Bugti",
+            "Kohlu",
+            "Sibbi",
+            "Ziarat",
+            "Barkhan",
+            "Killa Saifullah",
+            "Loralai",
+            "Musakhel",
+            "Zhob",
+            "Sherani",
+            "Harnai",
+            "Awaran",
+            "Kalat",
+            "Kharan",
+            "Khuzdar",
+            "Lasbela",
+            "Mastung",
+            "Chaman",
+            "Surab",
+            "Sohbatpur",
+            "Duki",
+            "Usta Mohammad"
           ]
         },
         {
           "name": "Islamabad Capital Territory",
           "districts": [
-            "Islamabad", "Gujrat", "Rawalpindi", "Attock", "Jhelum", "Chakwal", "Murree", "Tala Gang", "Mandi Bahauddin"
+            "Islamabad",
+            "Gujrat",
+            "Rawalpindi",
+            "Attock",
+            "Jhelum",
+            "Chakwal",
+            "Murree",
+            "Tala Gang",
+            "Mandi Bahauddin"
           ]
         },
         {
           "name": "Azad Jammu & Kashmir",
           "districts": [
-            "Bhimber", "Bagh", "Jhelum Valley", "Poonch", "Sudhnoti", "Neelum", "Haveli", "Muzaffarabad", "Mirpur", "Kotli"
+            "Bhimber",
+            "Bagh",
+            "Jhelum Valley",
+            "Poonch",
+            "Sudhnoti",
+            "Neelum",
+            "Haveli",
+            "Muzaffarabad",
+            "Mirpur",
+            "Kotli"
           ]
         },
         {
           "name": "Gilgit-Baltistan",
           "districts": [
-            "Diamir", "Astore", "Ghanchi", "Kharmang", "Nagar", "Shigar", "Gilgit", "Skardu", "Hunza", "Ghizer"
+            "Diamir",
+            "Astore",
+            "Ghanchi",
+            "Kharmang",
+            "Nagar",
+            "Shigar",
+            "Gilgit",
+            "Skardu",
+            "Hunza",
+            "Ghizer"
           ]
         }
       ]
@@ -122,79 +307,274 @@
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "10-15 Days (Normal)",
         "onlinePhases": [
-          { "id": 1, "title": "Download App", "duration": "5 mins", "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address." },
-          { "id": 2, "title": "Details & Documents", "duration": "20 mins", "description": "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, etc). Enter applicant’s personal details. Upload supporting documents including Birth Certificate or B-Form, School Leaving Certificate, Guardian Certificate (if any), Affidavit, and UC/Police Verification. Review carefully." },
-          { "id": 3, "title": "Submit & Verification", "duration": "5 mins", "description": "Submit application for NADRA verification. Pay fees online (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750). Applicant will be notified via SMS/app for biometric visit and final processing." }
+          {
+            "id": 1,
+            "title": "Download App",
+            "duration": "5 mins",
+            "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address."
+          },
+          {
+            "id": 2,
+            "title": "Details & Documents",
+            "duration": "20 mins",
+            "description": "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, etc). Enter applicant’s personal details. Upload supporting documents including Birth Certificate or B-Form, School Leaving Certificate, Guardian Certificate (if any), Affidavit, and UC/Police Verification. Review carefully."
+          },
+          {
+            "id": 3,
+            "title": "Submit & Verification",
+            "duration": "5 mins",
+            "description": "Submit application for NADRA verification. Pay fees online (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750). Applicant will be notified via SMS/app for biometric visit and final processing."
+          }
         ],
         "onsitePhases": [
-          { "id": 1, "title": "Token & Registration", "duration": "Varies", "description": "Visit nearest NADRA Registration Center. Inform staff that you are applying WITHOUT BLOOD RELATIVE (Special Case). Get a special case token and wait for your turn. Visit early morning to avoid delays." },
-          { "id": 2, "title": "Verification & Biometrics", "duration": "25–40 mins", "description": "Biometric capture. Document verification including Birth Certificate/B-Form, School Leaving Certificate, Guardian Certificate (if any), Affidavit, and UC/Police verification. No family biometric required. Attestation by Gazetted Officer. Interview by NADRA OIC. Fee submission." },
-          { "id": 3, "title": "Review & Receipt", "duration": "5 mins", "description": "Review printed application form. Sign it and collect your tracking receipt. CNIC will be printed and handed over after completion of NADRA verification." }
+          {
+            "id": 1,
+            "title": "Token & Registration",
+            "duration": "Varies",
+            "description": "Visit nearest NADRA Registration Center. Inform staff that you are applying WITHOUT BLOOD RELATIVE (Special Case). Get a special case token and wait for your turn. Visit early morning to avoid delays."
+          },
+          {
+            "id": 2,
+            "title": "Verification & Biometrics",
+            "duration": "25–40 mins",
+            "description": "Biometric capture. Document verification including Birth Certificate/B-Form, School Leaving Certificate, Guardian Certificate (if any), Affidavit, and UC/Police verification. No family biometric required. Attestation by Gazetted Officer. Interview by NADRA OIC. Fee submission."
+          },
+          {
+            "id": 3,
+            "title": "Review & Receipt",
+            "duration": "5 mins",
+            "description": "Review printed application form. Sign it and collect your tracking receipt. CNIC will be printed and handed over after completion of NADRA verification."
+          }
         ],
         "documents_checklist": [
-          { "id": "birth_cert", "label": "Birth Certificate", "description": "Original birth certificate from Union Council.", "required": true },
-          { "id": "school_cert", "label": "School Certificate", "description": "If applicable, from your last attended educational institute.", "required": true },
-          { "id": "affidavit", "label": "Affidavit", "description": "Explaining your family status and why parents' CNICs are unavailable.", "required": true },
-          { "id": "court_ver", "label": "Court Verification", "description": "Legal proof of guardianship from a court or recognized institution.", "required": true },
-          { "id": "police_ver", "label": "Police Verification", "description": "Local clearance to verify your identity.", "required": true }
+          {
+            "id": "birth_cert",
+            "label": "Birth Certificate",
+            "description": "Original birth certificate from Union Council.",
+            "required": true
+          },
+          {
+            "id": "school_cert",
+            "label": "School Certificate",
+            "description": "If applicable, from your last attended educational institute.",
+            "required": true
+          },
+          {
+            "id": "affidavit",
+            "label": "Affidavit",
+            "description": "Explaining your family status and why parents' CNICs are unavailable.",
+            "required": true
+          },
+          {
+            "id": "court_ver",
+            "label": "Court Verification",
+            "description": "Legal proof of guardianship from a court or recognized institution.",
+            "required": true
+          },
+          {
+            "id": "police_ver",
+            "label": "Police Verification",
+            "description": "Local clearance to verify your identity.",
+            "required": true
+          }
         ]
       },
       "standard_new": {
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "7-10 Days (Executive)",
         "onlinePhases": [
-          { "id": 1, "title": "Download App", "duration": "5 mins", "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address." },
-          { "id": 2, "title": "Details & Biometrics", "duration": "15 mins", "description": "On Home page, go to ID Documents and select ID Card. Choose application category. Capture applicant's Photograph & Fingerprints. Enter the personal details. Upload documents, if required. Review and verify information." },
-          { "id": 3, "title": "Payment & Submit", "duration": "5 mins", "description": "Submit application. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. CNIC will be printed and handed over upon completion." }
+          {
+            "id": 1,
+            "title": "Download App",
+            "duration": "5 mins",
+            "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address."
+          },
+          {
+            "id": 2,
+            "title": "Details & Biometrics",
+            "duration": "15 mins",
+            "description": "On Home page, go to ID Documents and select ID Card. Choose application category. Capture applicant's Photograph & Fingerprints. Enter the personal details. Upload documents, if required. Review and verify information."
+          },
+          {
+            "id": 3,
+            "title": "Payment & Submit",
+            "duration": "5 mins",
+            "description": "Submit application. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. CNIC will be printed and handed over upon completion."
+          }
         ],
         "onsitePhases": [
-          { "id": 1, "title": "Token & Waiting", "duration": "Varies", "description": "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush." },
-          { "id": 2, "title": "Data Entry & Biometrics", "duration": "15 mins", "description": "Biometric Verification (anyone of parents or sibling). Photographs and fingerprints are mandatory. Your data will be entered and reviewed. Attestation by anyone of the parents or siblings or by Gazetted officer. Interview by OIC. Fee submission." },
-          { "id": 3, "title": "Review & Receipt", "duration": "5 mins", "description": "Review the printed application form carefully. Sign it and collect your tracking receipt." }
+          {
+            "id": 1,
+            "title": "Token & Waiting",
+            "duration": "Varies",
+            "description": "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush."
+          },
+          {
+            "id": 2,
+            "title": "Data Entry & Biometrics",
+            "duration": "15 mins",
+            "description": "Biometric Verification (anyone of parents or sibling). Photographs and fingerprints are mandatory. Your data will be entered and reviewed. Attestation by anyone of the parents or siblings or by Gazetted officer. Interview by OIC. Fee submission."
+          },
+          {
+            "id": 3,
+            "title": "Review & Receipt",
+            "duration": "5 mins",
+            "description": "Review the printed application form carefully. Sign it and collect your tracking receipt."
+          }
         ],
         "documents_checklist": [
-          { "id": "original_bform", "label": "Original B-Form (CRC)", "description": "Or original Birth Certificate. Without originals, application may be rejected.", "required": true },
-          { "id": "parents_cnic", "label": "Parents' CNIC Copies", "description": "Clear copies of at least one parent's CNIC (both is better).", "required": true },
-          { "id": "proof_residence", "label": "Proof of Residence", "description": "Utility bill or domicile in your parent's/your name.", "required": false },
-          { "id": "active_mobile", "label": "Active Mobile Number", "description": "For OTP verification and SMS tracking.", "required": true }
+          {
+            "id": "original_bform",
+            "label": "Original B-Form (CRC)",
+            "description": "Or original Birth Certificate. Without originals, application may be rejected.",
+            "required": true
+          },
+          {
+            "id": "parents_cnic",
+            "label": "Parents' CNIC Copies",
+            "description": "Clear copies of at least one parent's CNIC (both is better).",
+            "required": true
+          },
+          {
+            "id": "proof_residence",
+            "label": "Proof of Residence",
+            "description": "Utility bill or domicile in your parent's/your name.",
+            "required": false
+          },
+          {
+            "id": "active_mobile",
+            "label": "Active Mobile Number",
+            "description": "For OTP verification and SMS tracking.",
+            "required": true
+          }
         ]
       },
       "standard_correction": {
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "10-15 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download App", "duration": "5 mins", "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address." },
-          { "id": 2, "title": "Details & Biometrics", "duration": "15 mins", "description": "On Home page, go to ID Documents and select ID Card. Choose Update Card. Capture applicant's Photograph & Fingerprints. Enter the new personal details. Upload supporting proof of modification. Review and verify information." },
-          { "id": 3, "title": "Payment & Submit", "duration": "5 mins", "description": "Submit application. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. Modified CNIC will be printed and handed over upon completion." }
+          {
+            "id": 1,
+            "title": "Download App",
+            "duration": "5 mins",
+            "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address."
+          },
+          {
+            "id": 2,
+            "title": "Details & Biometrics",
+            "duration": "15 mins",
+            "description": "On Home page, go to ID Documents and select ID Card. Choose Update Card. Capture applicant's Photograph & Fingerprints. Enter the new personal details. Upload supporting proof of modification. Review and verify information."
+          },
+          {
+            "id": 3,
+            "title": "Payment & Submit",
+            "duration": "5 mins",
+            "description": "Submit application. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. Modified CNIC will be printed and handed over upon completion."
+          }
         ],
         "onsitePhases": [
-          { "id": 1, "title": "Token & Waiting", "duration": "Varies", "description": "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush." },
-          { "id": 2, "title": "Data Entry & Modification", "duration": "15 mins", "description": "Provide your original CNIC and proof of modification. Your data will be updated and reviewed. Biometric Verification may be required. Attestation by Gazetted officer. Interview by OIC. Fee submission." },
-          { "id": 3, "title": "Review & Receipt", "duration": "5 mins", "description": "Review the printed application form carefully to ensure modifications are correct. Sign it and collect your tracking receipt." }
+          {
+            "id": 1,
+            "title": "Token & Waiting",
+            "duration": "Varies",
+            "description": "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush."
+          },
+          {
+            "id": 2,
+            "title": "Data Entry & Modification",
+            "duration": "15 mins",
+            "description": "Provide your original CNIC and proof of modification. Your data will be updated and reviewed. Biometric Verification may be required. Attestation by Gazetted officer. Interview by OIC. Fee submission."
+          },
+          {
+            "id": 3,
+            "title": "Review & Receipt",
+            "duration": "5 mins",
+            "description": "Review the printed application form carefully to ensure modifications are correct. Sign it and collect your tracking receipt."
+          }
         ],
         "documents_checklist": [
-          { "id": "original_existing", "label": "Original Existing CNIC", "description": "Your current CNIC card that needs correction.", "required": true },
-          { "id": "proof_mod", "label": "Proof of Modification", "description": "E.g., Nikkah Nama for marital status, Matriculation transcript for DOB, Utility Bill for address change.", "required": true },
-          { "id": "relative_cnic", "label": "Relative CNIC Copies", "description": "Parents' or Spouse's CNIC copies if modifying family linkages.", "required": false }
+          {
+            "id": "original_existing",
+            "label": "Original Existing CNIC",
+            "description": "Your current CNIC card that needs correction.",
+            "required": true
+          },
+          {
+            "id": "proof_mod",
+            "label": "Proof of Modification",
+            "description": "E.g., Nikkah Nama for marital status, Matriculation transcript for DOB, Utility Bill for address change.",
+            "required": true
+          },
+          {
+            "id": "relative_cnic",
+            "label": "Relative CNIC Copies",
+            "description": "Parents' or Spouse's CNIC copies if modifying family linkages.",
+            "required": false
+          }
         ]
       },
       "standard_replacement": {
         "title": "Your Personalized Roadmap",
         "estimated_timeline": "10-15 Days",
         "onlinePhases": [
-          { "id": 1, "title": "Download App", "duration": "5 mins", "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address." },
-          { "id": 2, "title": "Details & Biometrics", "duration": "15 mins", "description": "On Home page, go to ID Documents and select ID Card. Choose Replacement/Renewal. Capture applicant's Photograph & Fingerprints. Verify the existing personal details. Review and verify information." },
-          { "id": 3, "title": "Payment & Submit", "duration": "5 mins", "description": "Submit application. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. New CNIC will be printed and handed over upon completion." }
+          {
+            "id": 1,
+            "title": "Download App",
+            "duration": "5 mins",
+            "description": "Download the PakID app on your smartphone and register an account using your mobile number and email address."
+          },
+          {
+            "id": 2,
+            "title": "Details & Biometrics",
+            "duration": "15 mins",
+            "description": "On Home page, go to ID Documents and select ID Card. Choose Replacement/Renewal. Capture applicant's Photograph & Fingerprints. Verify the existing personal details. Review and verify information."
+          },
+          {
+            "id": 3,
+            "title": "Payment & Submit",
+            "duration": "5 mins",
+            "description": "Submit application. Fee submission (Executive Rs 2500, Urgent Rs 1500, Normal Rs 750) excluding delivery fee. New CNIC will be printed and handed over upon completion."
+          }
         ],
         "onsitePhases": [
-          { "id": 1, "title": "Token & Waiting", "duration": "Varies", "description": "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush." },
-          { "id": 2, "title": "Verification & Renewal", "duration": "15 mins", "description": "Provide FIR or copy of old CNIC. Your existing data will be verified. Biometric Verification may be required. Fee submission." },
-          { "id": 3, "title": "Review & Receipt", "duration": "5 mins", "description": "Review the printed application form carefully. Sign it and collect your tracking receipt." }
+          {
+            "id": 1,
+            "title": "Token & Waiting",
+            "duration": "Varies",
+            "description": "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush."
+          },
+          {
+            "id": 2,
+            "title": "Verification & Renewal",
+            "duration": "15 mins",
+            "description": "Provide FIR or copy of old CNIC. Your existing data will be verified. Biometric Verification may be required. Fee submission."
+          },
+          {
+            "id": 3,
+            "title": "Review & Receipt",
+            "duration": "5 mins",
+            "description": "Review the printed application form carefully. Sign it and collect your tracking receipt."
+          }
         ],
         "documents_checklist": [
-          { "id": "copy_old", "label": "Copy of Lost/Old CNIC", "description": "If available, otherwise ensure you know your 13-digit CNIC number.", "required": false },
-          { "id": "loss_report", "label": "Loss Report / FIR", "description": "A non-cognizable (NC) report or FIR from local police station.", "required": false },
-          { "id": "secondary_id", "label": "Original Secondary ID", "description": "Passport or Domicile as secondary photo ID proof, if requested.", "required": false }
+          {
+            "id": "copy_old",
+            "label": "Copy of Lost/Old CNIC",
+            "description": "If available, otherwise ensure you know your 13-digit CNIC number.",
+            "required": false
+          },
+          {
+            "id": "loss_report",
+            "label": "Loss Report / FIR",
+            "description": "A non-cognizable (NC) report or FIR from local police station.",
+            "required": false
+          },
+          {
+            "id": "secondary_id",
+            "label": "Original Secondary ID",
+            "description": "Passport or Domicile as secondary photo ID proof, if requested.",
+            "required": false
+          }
         ]
       }
     },
@@ -219,13 +599,19 @@
           "name": "Form Validation",
           "items": [
             { "label": "Applicant's name & details spell-checked", "critical": true },
-            { "label": "Attestation by a Grade-16+ officer included (if required)", "critical": true }
+            {
+              "label": "Attestation by a Grade-16+ officer included (if required)",
+              "critical": true
+            }
           ]
         },
         {
           "name": "Payment Preparation",
           "items": [
-            { "label": "Processing fee available based on selection (Normal/Urgent/Executive)", "critical": false }
+            {
+              "label": "Processing fee available based on selection (Normal/Urgent/Executive)",
+              "critical": false
+            }
           ]
         }
       ]
@@ -255,9 +641,7 @@
           "Don't assume any NADRA center can process your request — check availability.",
           "Avoid visiting on Fridays after 12 PM as most centers close early."
         ],
-        "links": [
-          { "label": "Find NADRA Offices", "url": "https://www.nadra.gov.pk/nadraOffices" }
-        ]
+        "links": [{ "label": "Find NADRA Offices", "url": "https://www.nadra.gov.pk/nadraOffices" }]
       },
       "roadmap": {
         "tips": [
@@ -268,9 +652,7 @@
           "Don't visit without original B-form — photocopies alone are not accepted.",
           "Missing family member documents will delay your application."
         ],
-        "links": [
-          { "label": "NADRA Document Requirements", "url": "https://www.nadra.gov.pk" }
-        ]
+        "links": [{ "label": "NADRA Document Requirements", "url": "https://www.nadra.gov.pk" }]
       },
       "office_finder": {
         "tips": [
@@ -293,9 +675,7 @@
           "Don't submit with spelling mismatches — it will cause lifelong issues.",
           "Don't assume your old CNIC info will auto-correct."
         ],
-        "links": [
-          { "label": "NADRA Certificate Verification", "url": "https://id.nadra.gov.pk" }
-        ]
+        "links": [{ "label": "NADRA Certificate Verification", "url": "https://id.nadra.gov.pk" }]
       }
     }
   }

@@ -70,7 +70,7 @@ export interface ConditionalDocument {
 export interface DocumentDecisionRule {
   /** Which question this rule evaluates */
   questionId: string;
-  /** 
+  /**
    * The answer value(s) that trigger this rule.
    * If array, any match triggers the rule (OR logic).
    */

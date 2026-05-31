@@ -104,10 +104,7 @@ function FlagRow({ flag, defaultOpen }: { flag: RiskFlag; defaultOpen: boolean }
 
       {/* Expanded detail — simple advisory only, source hidden */}
       {open && (
-        <div
-          className="px-3.5 pb-2.5 pt-0.5 border-t"
-          style={{ borderColor: s.rowBorder }}
-        >
+        <div className="px-3.5 pb-2.5 pt-0.5 border-t" style={{ borderColor: s.rowBorder }}>
           <p
             className="text-[11.5px] leading-relaxed"
             style={{ color: s.titleColor, opacity: 0.85 }}
@@ -128,12 +125,16 @@ export function EligibilityRiskBanner({ answers, compact = false }: EligibilityR
   const sorted = [...flags].sort((a, b) => order[a.severity] - order[b.severity]);
 
   const criticalCount = sorted.filter((f) => f.severity === "critical").length;
-  const warningCount  = sorted.filter((f) => f.severity === "warning").length;
+  const warningCount = sorted.filter((f) => f.severity === "warning").length;
   const advisoryCount = sorted.filter((f) => f.severity === "advisory").length;
 
   return (
     <div
-      className={compact ? "rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" : "mt-6 rounded-[14px] border-[1.5px] overflow-hidden"}
+      className={
+        compact
+          ? "rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+          : "mt-6 rounded-[14px] border-[1.5px] overflow-hidden"
+      }
       style={compact ? undefined : { borderColor: "#e7e5e4" }}
       role="region"
       aria-label="Eligibility risk advisories"
@@ -144,22 +145,33 @@ export function EligibilityRiskBanner({ answers, compact = false }: EligibilityR
         style={{ background: "#fafaf9", borderBottom: "1px solid #f0ece8" }}
       >
         <ShieldAlert size={compact ? 13 : 15} color="#991b1b" className="shrink-0" />
-        <span className={`font-semibold text-[#1c1917] flex-1 ${compact ? "text-[11.5px]" : "text-[13px]"}`}>
+        <span
+          className={`font-semibold text-[#1c1917] flex-1 ${compact ? "text-[11.5px]" : "text-[13px]"}`}
+        >
           {flags.length} thing{flags.length === 1 ? "" : "s"} to check
         </span>
         <div className="flex items-center gap-1">
           {criticalCount > 0 && (
-            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: SEV.critical.chipBg, color: SEV.critical.chipFg }}>
+            <span
+              className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: SEV.critical.chipBg, color: SEV.critical.chipFg }}
+            >
               {criticalCount}c
             </span>
           )}
           {warningCount > 0 && (
-            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: SEV.warning.chipBg, color: SEV.warning.chipFg }}>
+            <span
+              className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: SEV.warning.chipBg, color: SEV.warning.chipFg }}
+            >
               {warningCount}w
             </span>
           )}
           {advisoryCount > 0 && (
-            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: SEV.advisory.chipBg, color: SEV.advisory.chipFg }}>
+            <span
+              className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: SEV.advisory.chipBg, color: SEV.advisory.chipFg }}
+            >
               {advisoryCount}n
             </span>
           )}
@@ -167,7 +179,10 @@ export function EligibilityRiskBanner({ answers, compact = false }: EligibilityR
       </div>
 
       {/* Flag rows — collapsed by default */}
-      <div className={`flex flex-col ${compact ? "gap-1.5 p-2" : "gap-2 p-3"}`} style={{ background: "#fefefe" }}>
+      <div
+        className={`flex flex-col ${compact ? "gap-1.5 p-2" : "gap-2 p-3"}`}
+        style={{ background: "#fefefe" }}
+      >
         {sorted.map((flag) => (
           <FlagRow key={flag.id} flag={flag} defaultOpen={false} />
         ))}
@@ -175,7 +190,10 @@ export function EligibilityRiskBanner({ answers, compact = false }: EligibilityR
 
       {/* Footer disclaimer — full banner only */}
       {!compact && (
-        <div className="px-4 py-2.5 border-t" style={{ borderColor: "#f0ece8", background: "#fafaf9" }}>
+        <div
+          className="px-4 py-2.5 border-t"
+          style={{ borderColor: "#f0ece8", background: "#fafaf9" }}
+        >
           <p className="text-[10.5px] text-[#a8a29e] leading-snug">
             Follow the steps shown above to fix these. Rahvana will guide you through each one.
           </p>

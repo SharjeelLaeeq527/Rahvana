@@ -16,18 +16,18 @@
 // THEME TOKENS
 // ─────────────────────────────────────────────────────────────
 export const T = {
-  primary:      "#0D6E6E",
+  primary: "#0D6E6E",
   primaryLight: "#E8F4F4",
-  primaryDark:  "#095555",
-  text:         "#1a2332",
-  textMuted:    "#6b7280",
-  textLight:    "#9ca3af",
-  border:       "#e5e7eb",
-  bg:           "#f8fafa",
-  white:        "#ffffff",
-  success:      "#059669",
+  primaryDark: "#095555",
+  text: "#1a2332",
+  textMuted: "#6b7280",
+  textLight: "#9ca3af",
+  border: "#e5e7eb",
+  bg: "#f8fafa",
+  white: "#ffffff",
+  success: "#059669",
   successLight: "#ecfdf5",
-  warning:      "#d97706",
+  warning: "#d97706",
   warningLight: "#fffbeb",
 };
 

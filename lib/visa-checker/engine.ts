@@ -1,10 +1,4 @@
-import { 
-  CategoryRules, 
-  Rule, 
-  Condition, 
-  Action, 
-  ComputedFact 
-} from "./engine-types";
+import { CategoryRules, Rule, Condition, Action, ComputedFact } from "./engine-types";
 import { RiskLevel } from "./types";
 export interface RiskFlagResponse {
   flagCode: string;
@@ -53,8 +47,10 @@ export class ScoringEngine {
       totalPossiblePoints: this.categoryRules.baseScore,
       totalDeductedPoints: totalDeductions,
       riskFlags,
-      summaryReasons: riskFlags.map(f => f.explanation),
-      improvementSuggestions: riskFlags.map(f => f.improvementSuggestions).filter(Boolean) as string[],
+      summaryReasons: riskFlags.map((f) => f.explanation),
+      improvementSuggestions: riskFlags
+        .map((f) => f.improvementSuggestions)
+        .filter(Boolean) as string[],
     };
   }
 
@@ -87,7 +83,10 @@ export class ScoringEngine {
       computed.marriageMonths = monthDiff(now, new Date(String(answers.marriage_date)));
     }
     if (answers.relationship_start_date) {
-      computed.relationshipMonths = monthDiff(now, new Date(String(answers.relationship_start_date)));
+      computed.relationshipMonths = monthDiff(
+        now,
+        new Date(String(answers.relationship_start_date))
+      );
     }
     if (answers.sponsor_dob && answers.beneficiary_dob) {
       const sAge = calculateAge(new Date(String(answers.sponsor_dob)));
@@ -105,7 +104,8 @@ export class ScoringEngine {
         const threshold = Number(computed.povertyThreshold) || 1;
         computed[fact.id] = income / threshold;
       } else if (fact.id === "isMilitary") {
-        computed[fact.id] = answers.industry_sector === 'Military/Defense' || answers.prior_military_service === true;
+        computed[fact.id] =
+          answers.industry_sector === "Military/Defense" || answers.prior_military_service === true;
       }
     }
 
@@ -113,7 +113,7 @@ export class ScoringEngine {
   }
 
   private evaluateRule(rule: Rule, answers: Record<string, unknown>): boolean {
-    const applicableConditions = rule.conditions.filter(condition => {
+    const applicableConditions = rule.conditions.filter((condition) => {
       if (!condition.when) return true;
       return this.evaluateExpression(condition.when, answers);
     });
@@ -121,7 +121,7 @@ export class ScoringEngine {
     if (applicableConditions.length === 0) return false;
 
     // Rule matches if ALL applicable conditions are met
-    return applicableConditions.every(condition => this.evaluateCondition(condition, answers));
+    return applicableConditions.every((condition) => this.evaluateCondition(condition, answers));
   }
 
   private evaluateCondition(condition: Condition, answers: Record<string, unknown>): boolean {
@@ -169,7 +169,7 @@ export class ScoringEngine {
     if (parts.length === 3) {
       const [prop, op, val] = parts;
       const left = answers[prop];
-      
+
       let right: unknown = val;
       if (val === "true") right = true;
       else if (val === "false") right = false;
@@ -184,12 +184,18 @@ export class ScoringEngine {
       }
 
       switch (op) {
-        case "==": return String(leftValue) === String(right);
-        case "!=": return String(leftValue) !== String(right);
-        case ">": return Number(leftValue) > Number(right);
-        case "<": return Number(leftValue) < Number(right);
-        case ">=": return Number(leftValue) >= Number(right);
-        case "<=": return Number(leftValue) <= Number(right);
+        case "==":
+          return String(leftValue) === String(right);
+        case "!=":
+          return String(leftValue) !== String(right);
+        case ">":
+          return Number(leftValue) > Number(right);
+        case "<":
+          return Number(leftValue) < Number(right);
+        case ">=":
+          return Number(leftValue) >= Number(right);
+        case "<=":
+          return Number(leftValue) <= Number(right);
       }
     }
 
@@ -200,14 +206,15 @@ export class ScoringEngine {
     if (action.type === "addFlag") {
       const pointsAdded = action.pointsAdded || 0;
       const pointsDeducted = action.pointsDeducted || 0;
-      
+
       return {
         flagCode: action.flagCode || rule.id.toUpperCase(),
         severity: action.severity || "LOW",
         pointsDeducted,
         pointsAdded,
         explanation: action.explanation || rule.description || `Detected risk: ${action.flagCode}`,
-        improvementSuggestions: action.improvementSuggestions || `Address issues related to ${action.flagCode}`,
+        improvementSuggestions:
+          action.improvementSuggestions || `Address issues related to ${action.flagCode}`,
       };
     }
     return null;

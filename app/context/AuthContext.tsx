@@ -12,12 +12,7 @@ import {
 } from "react";
 import { E, msg } from '@/lib/errors'
 import { createClient } from "@/lib/supabase/client";
-import {
-  AuthError,
-  User,
-  Session,
-  AuthChangeEvent,
-} from "@supabase/supabase-js";
+import { AuthError, User, Session, AuthChangeEvent } from "@supabase/supabase-js";
 
 // Define types for MFA error metadata
 interface MFAMetadata {
@@ -56,21 +51,16 @@ interface AuthContextType {
   mfaPending: boolean;
   signIn: (
     email: string,
-    password: string,
+    password: string
   ) => Promise<{
     error: AuthError | null;
     mfaRequired?: boolean;
     factorId?: string;
     challengeId?: string;
   }>;
-  signUp: (
-    email: string,
-    password: string,
-  ) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
-  signInWithGoogle: (
-    redirectUrl?: string | null,
-  ) => Promise<{ error: AuthError | null }>;
+  signInWithGoogle: (redirectUrl?: string | null) => Promise<{ error: AuthError | null }>;
   enableMFA: () => Promise<{
     success: boolean;
     qrCode?: string;
@@ -80,7 +70,7 @@ interface AuthContextType {
   }>;
   verifyMFASetup: (
     factorId: string,
-    code: string,
+    code: string
   ) => Promise<{
     success: boolean;
     error?: string;
@@ -88,7 +78,7 @@ interface AuthContextType {
   verifyMFALogin: (
     factorId: string,
     challengeId: string,
-    code: string,
+    code: string
   ) => Promise<{
     success: boolean;
     user?: User;
@@ -114,7 +104,7 @@ interface AuthContextType {
   checkMFAStatus: (userId: string) => Promise<boolean>;
   disableMFASetup: (
     factorId: string,
-    code: string,
+    code: string
   ) => Promise<{
     success: boolean;
     message?: string;
@@ -130,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // useMemo ensures the same client instance is used across renders,
   // preventing stale closures in fetchProfile and onAuthStateChange.
   const supabase = useMemo(() => createClient(), []);
@@ -146,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper function to safely extract MFA error details
   const extractMFAErrorDetails = (
-    error: MFAError | AuthError,
+    error: MFAError | AuthError
   ): { factorId?: string; challengeId?: string } => {
     const typedError = error as MFAError;
     return {
@@ -175,10 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch profile with retry and fallback.
   // Never throws — always sets a usable profile even on network failure.
   const fetchProfile = useCallback(
-    async (
-      userId: string,
-      userMeta?: { full_name?: string; name?: string; email?: string },
-    ) => {
+    async (userId: string, userMeta?: { full_name?: string; name?: string; email?: string }) => {
       // Try up to 3 attempts with increasing delays (1s, 2s)
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
@@ -199,7 +186,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           // PGRST116 = no row found — user has no profile yet, skip retry
           if ((error as any)?.code === "PGRST116") break;
-
         } catch {
           // Network error — try again silently
         }
@@ -207,10 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // All attempts failed — use metadata fallback so UI never shows blank
       const fallbackName =
-        userMeta?.full_name ||
-        userMeta?.name ||
-        userMeta?.email?.split("@")[0] ||
-        "User";
+        userMeta?.full_name || userMeta?.name || userMeta?.email?.split("@")[0] || "User";
 
       setProfile({
         full_name: fallbackName,
@@ -218,7 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: "user",
       });
     },
-    [supabase],
+    [supabase]
   );
 
   useEffect(() => {
@@ -243,13 +226,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(u);
       setSession(s);
-      
+
       // Preliminary profile
-      setProfile(prev => prev || {
-        full_name: u.user_metadata?.full_name || u.email?.split("@")[0] || "User",
-        email: u.email || "",
-        role: "user",
-      });
+      setProfile(
+        (prev) =>
+          prev || {
+            full_name: u.user_metadata?.full_name || u.email?.split("@")[0] || "User",
+            email: u.email || "",
+            role: "user",
+          }
+      );
 
       // Fetch full details in background
       fetchProfile(u.id, {
@@ -275,9 +261,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        const { data: { session: s } } = await supabase.auth.getSession();
-        const { data: { user: u } } = await supabase.auth.getUser();
-        
+        const {
+          data: { session: s },
+        } = await supabase.auth.getSession();
+        const {
+          data: { user: u },
+        } = await supabase.auth.getUser();
+
         await initializeUser(u, s);
       } catch (err) {
         console.error("Error getting initial session:", err);
@@ -289,17 +279,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        // Only trigger initialization for relevant events to avoid loops
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
-          await initializeUser(session?.user ?? null, session);
-        } else if (event === 'SIGNED_OUT') {
-          await initializeUser(null, null);
-        }
-        setIsLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+      // Only trigger initialization for relevant events to avoid loops
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "USER_UPDATED") {
+        await initializeUser(session?.user ?? null, session);
+      } else if (event === "SIGNED_OUT") {
+        await initializeUser(null, null);
       }
-    );
+      setIsLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, [supabase, fetchProfile, fetchUserProfile]);
@@ -354,11 +344,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const verifyMFALogin = async (
-    factorId: string,
-    challengeId: string,
-    code: string,
-  ) => {
+  const verifyMFALogin = async (factorId: string, challengeId: string, code: string) => {
     try {
       const { error } = await supabase.auth.mfa.verify({
         factorId,
@@ -398,8 +384,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const getAuthenticatorAssuranceLevel = async () => {
     try {
-      const { data, error } =
-        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
       if (error) {
         return {
@@ -508,8 +493,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { factorId, challengeId } = extractMFAErrorDetails(error);
 
           if (!factorId || !challengeId) {
-            const { totp: fetchedTotp, error: factorsError } =
-              await listMFACheckFactors();
+            const { totp: fetchedTotp, error: factorsError } = await listMFACheckFactors();
 
             if (factorsError) {
               return {
@@ -568,7 +552,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
         const factors = userWithFactors?.factors || [];
         const totpFactors = factors.filter(
-          (f) => f.factor_type === "totp" && f.status === "verified",
+          (f) => f.factor_type === "totp" && f.status === "verified"
         );
 
         if (totpFactors.length > 0) {
@@ -667,9 +651,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async (redirectUrl?: string | null) => {
     // Always use the current browser origin so localhost never jumps to production
-    const currentOrigin =
-      typeof window !== "undefined" ? window.location.origin : "";
-      
+    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
+
     if (typeof document !== "undefined" && redirectUrl) {
       document.cookie = `oauth_redirect=${encodeURIComponent(redirectUrl)}; path=/; max-age=3600; SameSite=Lax`;
     }

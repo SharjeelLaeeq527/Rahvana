@@ -1,15 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { E, msg } from '@/lib/errors';
-import {
-  BookOpen,
-  Plus,
-  AlertTriangle,
-  CheckCircle,
-  BarChart3,
-  Heart,
-} from "lucide-react";
+import { E, msg } from "@/lib/errors";
+import { BookOpen, Plus, AlertTriangle, CheckCircle, BarChart3, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
@@ -73,15 +66,8 @@ const formatCreatedDate = (dateString: string): string => {
   });
 };
 
-const CompletionBadge = ({
-  status,
-}: {
-  status: SessionStatus;
-}) => {
-  const statusConfig: Record<
-    SessionStatus,
-    { color: string; icon: ElementType; label: string }
-  > = {
+const CompletionBadge = ({ status }: { status: SessionStatus }) => {
+  const statusConfig: Record<SessionStatus, { color: string; icon: ElementType; label: string }> = {
     COMPLETED: {
       color: "bg-green-100 text-green-800",
       icon: CheckCircle,
@@ -118,14 +104,10 @@ const CompletionBadge = ({
 
 export default function MyInterviewSessions() {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
-  const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>(
-    []
-  );
+  const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
-    null
-  );
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const { showToast } = useToast();
@@ -151,7 +133,7 @@ export default function MyInterviewSessions() {
         if (response.ok) {
           setSessions(data.sessions);
         } else {
-          console.error('Failed to fetch user sessions:', data.error ?? data);
+          console.error("Failed to fetch user sessions:", data.error ?? data);
           setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
           setSessions([]);
         }
@@ -178,9 +160,7 @@ export default function MyInterviewSessions() {
 
     // Status filter
     if (selectedStatus !== "all") {
-      filtered = filtered.filter(
-        (s) => getSessionStatus(s) === selectedStatus
-      );
+      filtered = filtered.filter((s) => getSessionStatus(s) === selectedStatus);
     }
 
     // Time filter
@@ -218,12 +198,9 @@ export default function MyInterviewSessions() {
     setLoadingDelete(true);
 
     try {
-      const res = await fetch(
-        `/api/interview-prep/sessions/${sessionId}/delete`,
-        {
-          method: "DELETE",
-        }
-      );
+      const res = await fetch(`/api/interview-prep/sessions/${sessionId}/delete`, {
+        method: "DELETE",
+      });
 
       let data;
       try {
@@ -248,10 +225,7 @@ export default function MyInterviewSessions() {
   };
 
   // pagination calculations
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredSessions.length / ITEMS_PER_PAGE)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredSessions.length / ITEMS_PER_PAGE));
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentSessions = filteredSessions.slice(startIndex, endIndex);
@@ -266,9 +240,7 @@ export default function MyInterviewSessions() {
     }
   };
 
-  const uniqueCategories = Array.from(
-    new Set(sessions.map((s) => s.category_slug))
-  );
+  const uniqueCategories = Array.from(new Set(sessions.map((s) => s.category_slug)));
 
   const getCategoryIcon = (categorySlug: string) => {
     if (categorySlug.includes("spouse") || categorySlug.includes("ir-1")) {
@@ -315,11 +287,7 @@ export default function MyInterviewSessions() {
       key: "status",
       label: "Status",
       width: "25%",
-      render: (session) => (
-        <CompletionBadge
-          status={getSessionStatus(session)}
-        />
-      ),
+      render: (session) => <CompletionBadge status={getSessionStatus(session)} />,
     },
     {
       key: "actions",
@@ -328,9 +296,7 @@ export default function MyInterviewSessions() {
       className: "text-right",
       render: (session) => (
         <ActionMenu
-          onView={() =>
-            (window.location.href = `/interview-prep/result?sessionId=${session.id}`)
-          }
+          onView={() => (window.location.href = `/interview-prep/result?sessionId=${session.id}`)}
           onDelete={() => setSelectedSessionId(session.id)}
         />
       ),
@@ -340,9 +306,7 @@ export default function MyInterviewSessions() {
   const emptyState = (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
       <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">
-        No sessions found
-      </h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">No sessions found</h3>
       <p className="text-lg text-gray-500 mb-8">
         You haven&apos;t created any interview preparation sessions yet.
       </p>
@@ -439,9 +403,7 @@ export default function MyInterviewSessions() {
         ) : error ? (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
             <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Error Loading Sessions
-            </h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Sessions</h3>
             <p className="text-lg text-gray-500 mb-6">{error}</p>
             <Button
               onClick={() => window.location.reload()}

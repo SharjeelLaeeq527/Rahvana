@@ -1,4 +1,4 @@
-// Dynamic Interview Preparation - TypeScript Schemas. 
+// Dynamic Interview Preparation - TypeScript Schemas.
 // Defines structure for all category configuration files.
 
 // Category Configuration
@@ -27,13 +27,7 @@ export interface InterviewCategoryConfig {
 }
 
 // Questionnaire Types
-export type QuestionType = 
-  | 'text'
-  | 'textarea'
-  | 'number'
-  | 'date'
-  | 'boolean'
-  | 'select';
+export type QuestionType = "text" | "textarea" | "number" | "date" | "boolean" | "select";
 
 export interface QuestionValidation {
   minLength?: number;
@@ -92,8 +86,8 @@ export interface InterviewQuestion {
   sampleAnswer: string;
   guidance: string;
   tooltip: string;
-  priority: 'high' | 'medium' | 'low';
-  tier?: 'free' | 'basic' | 'premium' | 'executive';
+  priority: "high" | "medium" | "low";
+  tier?: "free" | "basic" | "premium" | "executive";
   mockInterviewOrder?: number;
   skipIf?: SkipCondition[];
 }

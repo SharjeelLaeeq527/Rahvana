@@ -37,11 +37,7 @@ async function pdfPageToImageData(pdfPage: PDFPageProxy): Promise<string> {
  */
 async function extractTextFromPDF(
   file: File,
-  onProgress?: (progress: {
-    page: number;
-    totalPages: number;
-    ocrProgress: number;
-  }) => void
+  onProgress?: (progress: { page: number; totalPages: number; ocrProgress: number }) => void
 ): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
 
@@ -106,11 +102,7 @@ async function extractTextFromImage(
  */
 export async function processDocumentOCR(
   file: File,
-  onProgress?: (progress: {
-    current: number;
-    total: number;
-    status: string;
-  }) => void
+  onProgress?: (progress: { current: number; total: number; status: string }) => void
 ): Promise<string> {
   const fileType = file.type;
 

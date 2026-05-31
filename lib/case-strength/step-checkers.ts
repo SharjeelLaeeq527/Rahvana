@@ -20,7 +20,10 @@ export interface StepCheck {
 export interface StepCheckContext {
   state: WizardState;
   uploadedDocuments: UploadedDocument[];
-  eligibilityAnswers: Record<string, Record<string, string | string[]> | undefined> | null | undefined;
+  eligibilityAnswers:
+    | Record<string, Record<string, string | string[]> | undefined>
+    | null
+    | undefined;
 }
 
 export type StepChecker = (ctx: StepCheckContext) => StepCheck[];
@@ -37,7 +40,6 @@ function getQuestAnswers(state: WizardState) {
 // ─── IR-1 step-by-step checkers ─────────────────────────────────────────────
 
 export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
-
   // Step 1.3 — Choose Filing Method
   step_1_3: ({ state }) => {
     const checks: StepCheck[] = [];
@@ -199,7 +201,11 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_1_10: ({ state, eligibilityAnswers }) => {
     const checks: StepCheck[] = [];
     const baseline = state.metadata?.consistencyBaseline as any;
-    if (!baseline?.marriageDate || !baseline?.petitionerDateOfBirth || !baseline?.beneficiaryDateOfBirth) {
+    if (
+      !baseline?.marriageDate ||
+      !baseline?.petitionerDateOfBirth ||
+      !baseline?.beneficiaryDateOfBirth
+    ) {
       checks.push({
         level: "warning",
         title: "Key dates not captured",
@@ -254,22 +260,31 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
 // ─── Shared helper ──────────────────────────────────────────────────────────
 
 function receiptChecks(state: WizardState): StepCheck[] {
-  const checks: StepCheck[] = [];
-  const num = state.metadata?.receiptNum as string | undefined;
-  if (!num) {
-    checks.push({
+  // Receipt is stored in a separate DB table (receipts), not wizard metadata.
+  // Use step completion as the signal — when user saves receipt the step
+  // gets marked complete and this check disappears automatically.
+  const receiptStepDone =
+    state.completedSteps?.has?.("step_1_15") ||
+    state.completedSteps?.has?.("step_1_16") ||
+    state.completedSteps?.has?.("step_1_17");
+
+  if (receiptStepDone) return [];
+
+  // Also check any metadata paths that some flows may write
+  const num = (
+    (state.metadata?.receiptNum as string) ||
+    (state.metadata?.receiptNumber as string) ||
+    (state.metadata?.uscis_receipt_number as string)
+  );
+  if (num) return [];
+
+  return [
+    {
       level: "info",
-      title: "Receipt number not entered yet",
-      hint: "Add it from your USCIS Form I-797C notice to enable case tracking",
-    });
-  } else if (!/^[A-Z]{3}\d{10}$/.test(num.replace(/\s+/g, ""))) {
-    checks.push({
-      level: "warning",
-      title: "Receipt number format looks wrong",
-      hint: "USCIS format is 3 letters + 10 digits (e.g., MSC2390123456)",
-    });
-  }
-  return checks;
+      title: "Receipt number not saved yet",
+      hint: "Enter it from your USCIS Form I-797C notice to enable case tracking",
+    },
+  ];
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -277,7 +292,7 @@ function receiptChecks(state: WizardState): StepCheck[] {
 export function runStepChecks(
   stepKey: string,
   ctx: StepCheckContext,
-  registry: Record<string, StepChecker> = IR1_STEP_CHECKERS,
+  registry: Record<string, StepChecker> = IR1_STEP_CHECKERS
 ): StepCheck[] {
   const checker = registry[stepKey];
   if (!checker) return [];

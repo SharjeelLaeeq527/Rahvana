@@ -45,17 +45,25 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
         "Case Documentarily Complete": string;
       }> = data.data || [];
       const match =
-        results.find((r) =>
-          r.Post.toLowerCase().includes(postName.toLowerCase()),
-        ) || results[0];
+        results.find((r) => r.Post.toLowerCase().includes(postName.toLowerCase())) || results[0];
       if (!match) {
         setIvError(msg(E.TOOL_IV_NO_MATCH, { postName }));
         return;
       }
 
       const MONTH_MAP: Record<string, string> = {
-        jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
-        jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
+        jan: "01",
+        feb: "02",
+        mar: "03",
+        apr: "04",
+        may: "05",
+        jun: "06",
+        jul: "07",
+        aug: "08",
+        sep: "09",
+        oct: "10",
+        nov: "11",
+        dec: "12",
       };
       const raw = match["Case Documentarily Complete"].trim();
       const parts = raw.split(/[\s-]+/);
@@ -124,9 +132,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
             <div className="text-[10px] font-semibold tracking-widest uppercase text-white/36 mb-[3px]">
               Current stage
             </div>
-            <div className="text-[13px] font-semibold text-white/88">
-              Awaiting interview letter
-            </div>
+            <div className="text-[13px] font-semibold text-white/88">Awaiting interview letter</div>
           </div>
         </div>
       </div>
@@ -156,14 +162,13 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
                 })()}
               </div>
               {savedUpdated && (
-                <div className="text-[10px] text-[#6b8097]">
-                  Last synced: {savedUpdated}
-                </div>
+                <div className="text-[10px] text-[#6b8097]">Last synced: {savedUpdated}</div>
               )}
             </div>
           ) : (
             <div className="text-[12.5px] text-[#6b8097] mb-3 leading-relaxed">
-              Sync from the official IV Scheduling Status Tool to see what DQ month the embassy is currently processing.
+              Sync from the official IV Scheduling Status Tool to see what DQ month the embassy is
+              currently processing.
             </div>
           )}
 
@@ -208,20 +213,24 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
             if (!ivMonth || !dqDateStr) {
               return (
                 <div className="text-[13px] text-[#6b8097] leading-relaxed">
-                  Enter the current scheduling month above from the official IV Tool to see your personal estimate.
+                  Enter the current scheduling month above from the official IV Tool to see your
+                  personal estimate.
                 </div>
               );
             }
             const [ivY, ivM] = ivMonth.split("-").map(Number);
             const dqDate = new Date(dqDateStr + "T00:00:00");
             const ivDate = new Date(ivY, ivM - 1, 1);
-            const raw = (dqDate.getFullYear() - ivDate.getFullYear()) * 12 + (dqDate.getMonth() - ivDate.getMonth());
+            const raw =
+              (dqDate.getFullYear() - ivDate.getFullYear()) * 12 +
+              (dqDate.getMonth() - ivDate.getMonth());
             const waitMonths = Math.max(0, raw);
             const low = new Date();
             low.setMonth(low.getMonth() + waitMonths);
             const high = new Date(low);
             high.setMonth(high.getMonth() + 2);
-            const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+            const fmt = (d: Date) =>
+              d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
             return (
               <>
                 <div className="text-[13px] font-semibold text-[#0c1b33] mb-[2px]">
@@ -234,7 +243,8 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
                   {waitMonths === 0 ? "Approaching now" : `${fmt(low)} – ${fmt(high)}`}
                 </div>
                 <div className="text-[12px] text-[#6b8097] leading-[1.5]">
-                  Embassy is approx {waitMonths} month{waitMonths !== 1 ? "s" : ""} away from your DQ date. Keep documents ready.
+                  Embassy is approx {waitMonths} month{waitMonths !== 1 ? "s" : ""} away from your
+                  DQ date. Keep documents ready.
                 </div>
               </>
             );
@@ -257,7 +267,10 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
           </div>
           <div className="flex flex-col gap-[7px]">
             {INTERVIEW_SCHEDULING_DATA.whileYouWait.map((item: string, i: number) => (
-              <div key={i} className="flex items-start gap-[8px] text-[13px] text-[#3a4f63] leading-[1.5]">
+              <div
+                key={i}
+                className="flex items-start gap-[8px] text-[13px] text-[#3a4f63] leading-[1.5]"
+              >
                 <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
                 <span>{item}</span>
               </div>
@@ -266,17 +279,25 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
         </div>
 
         <div className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px_20px] shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-          <div className="text-[13px] font-semibold text-[#0c1b33] mb-[14px]">Your progress in Chapter 2</div>
+          <div className="text-[13px] font-semibold text-[#0c1b33] mb-[14px]">
+            Your progress in Chapter 2
+          </div>
           <div className="flex flex-col relative pl-[22px]">
             <div className="absolute left-[7px] top-[6px] bottom-[6px] w-[2px] bg-[#d0e4f7] rounded-[2px]" />
             {INTERVIEW_SCHEDULING_DATA.milestones.map((ms: any, i: number) => (
               <div key={i} className="flex items-center gap-[10px] mb-[12px] last:mb-0">
                 <div
                   className={`w-[14px] h-[14px] rounded-full shrink-0 z-[1] ml-[-22px] ${
-                    ms.status === "done" ? "bg-[#15744f]" : ms.status === "active" ? "bg-[#2f6fd4] animate-pulse" : "bg-[#d0e4f7]"
+                    ms.status === "done"
+                      ? "bg-[#15744f]"
+                      : ms.status === "active"
+                        ? "bg-[#2f6fd4] animate-pulse"
+                        : "bg-[#d0e4f7]"
                   }`}
                 />
-                <span className={`text-[13px] ${ms.status === "done" ? "text-[#0e5c3c] font-medium" : ms.status === "active" ? "text-[#2f6fd4] font-bold" : "text-[#6b8097] font-medium"}`}>
+                <span
+                  className={`text-[13px] ${ms.status === "done" ? "text-[#0e5c3c] font-medium" : ms.status === "active" ? "text-[#2f6fd4] font-bold" : "text-[#6b8097] font-medium"}`}
+                >
                   {ms.label} {ms.status === "active" && "← here"}
                 </span>
               </div>
@@ -290,11 +311,16 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
           <div className="w-[34px] h-[34px] rounded-[8px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0">
             <Info size={16} className="text-[#2f6fd4]" strokeWidth={1.8} />
           </div>
-          <div className="text-[14px] font-semibold text-[#0c1b33]">How interview scheduling works at this stage</div>
+          <div className="text-[14px] font-semibold text-[#0c1b33]">
+            How interview scheduling works at this stage
+          </div>
         </div>
         <div className="flex flex-col gap-[7px]">
           {INTERVIEW_SCHEDULING_DATA.howItWorks.map((item: string, i: number) => (
-            <div key={i} className="flex items-start gap-[8px] text-[13px] text-[#3a4f63] leading-[1.5]">
+            <div
+              key={i}
+              className="flex items-start gap-[8px] text-[13px] text-[#3a4f63] leading-[1.5]"
+            >
               <div className="w-[4px] h-[4px] rounded-full bg-[#b8d4f0] shrink-0 mt-[6px]" />
               <span>{item}</span>
             </div>

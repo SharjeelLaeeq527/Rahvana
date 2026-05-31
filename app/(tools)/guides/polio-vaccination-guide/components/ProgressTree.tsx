@@ -2,14 +2,7 @@
 
 import React from "react";
 import { usePolioWizard } from "../PolioContext";
-import {
-  CheckCircle2,
-  Syringe,
-  MapPin,
-  ShieldCheck,
-  User,
-  BookmarkPlus,
-} from "lucide-react";
+import { CheckCircle2, Syringe, MapPin, ShieldCheck, User, BookmarkPlus } from "lucide-react";
 
 const STEPS = [
   { id: 1, title: "Who Needs It & Docs", icon: User },
@@ -78,16 +71,12 @@ export default function ProgressTree() {
                     ) : (
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          status === "current"
-                            ? "bg-primary shadow-md"
-                            : "bg-slate-100"
+                          status === "current" ? "bg-primary shadow-md" : "bg-slate-100"
                         }`}
                       >
                         <Icon
                           className={`w-4 h-4 ${
-                            status === "current"
-                              ? "text-white"
-                              : "text-slate-400"
+                            status === "current" ? "text-white" : "text-slate-400"
                           }`}
                         />
                       </div>
@@ -120,9 +109,7 @@ export default function ProgressTree() {
                   <div className="flex justify-start pl-6 py-0.5">
                     <div
                       className={`w-0.5 h-4 ${
-                        state.completedSteps.includes(step.id)
-                          ? "bg-primary"
-                          : "bg-slate-200"
+                        state.completedSteps.includes(step.id) ? "bg-primary" : "bg-slate-200"
                       }`}
                     />
                   </div>

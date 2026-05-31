@@ -8,15 +8,10 @@ export async function POST(request: NextRequest) {
     const { caseId, carrier, trackingCode } = await request.json();
 
     if (!caseId || !carrier || !trackingCode) {
-      return NextResponse.json(
-        { error: msg(E.EASPOST_TRACKER_MISSING_FIELDS) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.EASPOST_TRACKER_MISSING_FIELDS) }, { status: 400 });
     }
 
-    console.log(
-      `[EasyPost API] Creating tracker for case ${caseId}: ${carrier} ${trackingCode}`,
-    );
+    console.log(`[EasyPost API] Creating tracker for case ${caseId}: ${carrier} ${trackingCode}`);
 
     // Step 1: Create tracker in EasyPost
     let trackerData;
@@ -37,7 +32,7 @@ export async function POST(request: NextRequest) {
         {
           error: msg(E.EASPOST_TRACKER_CREATE_FAILED),
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -54,7 +49,7 @@ export async function POST(request: NextRequest) {
         label: "EasyPost Tracker ID",
         source: "external_api",
         source_reference: "tracker_creation",
-      }),
+      })
     );
 
     writes.push(
@@ -64,7 +59,7 @@ export async function POST(request: NextRequest) {
         label: "Tracking Status",
         source: "external_api",
         source_reference: "tracker_creation",
-      }),
+      })
     );
 
     writes.push(
@@ -73,7 +68,7 @@ export async function POST(request: NextRequest) {
         data_value: now,
         source: "external_api",
         source_reference: "tracker_creation",
-      }),
+      })
     );
 
     // Save last processed event id for idempotency
@@ -83,7 +78,7 @@ export async function POST(request: NextRequest) {
         data_value: eventId,
         source: "easypost_api",
         source_reference: "tracker_creation",
-      }),
+      })
     );
 
     // If already delivered, record delivered_at
@@ -94,7 +89,7 @@ export async function POST(request: NextRequest) {
           data_value: trackerData.updated_at,
           source: "easypost_api",
           source_reference: "tracker_creation",
-        }),
+        })
       );
     }
 
@@ -108,7 +103,7 @@ export async function POST(request: NextRequest) {
         id: trackerData.id,
         status: trackerData.status,
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("[EasyPost API] Unexpected error:", error);
@@ -116,7 +111,7 @@ export async function POST(request: NextRequest) {
       {
         error: msg(E.EASPOST_WEBHOOK_PROCESS_FAILED),
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

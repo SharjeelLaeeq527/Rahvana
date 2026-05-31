@@ -13,7 +13,7 @@ interface Toast {
 }
 
 interface ToastContextType {
-  showToast: (message: string, type?: ToastType) => void;
+  showToast: (message: string, type?: ToastType, duration?: number) => void;
 }
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -27,13 +27,13 @@ export const useToast = () => {
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (message: string, type: ToastType = "info") => {
+  const showToast = (message: string, type: ToastType = "info", duration = 4000) => {
     const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message, type }]);
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, duration);
   };
 
   return (
@@ -52,22 +52,21 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className={`border shadow-lg rounded-xl px-6 py-4 flex items-center gap-3 ${
-                  isError
-                    ? "bg-red-50 border-red-200 text-red-800"
-                    : isSuccess
-                      ? "bg-card border-border text-foreground"
-                      : "bg-card border-border text-foreground"
-                }`}
+                className={`border shadow-lg rounded-xl px-4 py-3.5 md:px-6 md:py-4 flex items-start gap-3.5 max-w-[90vw] sm:max-w-md ${isError
+                  ? "bg-red-50 border-red-200 text-red-800"
+                  : isSuccess
+                    ? "bg-card border-border text-foreground"
+                    : "bg-card border-border text-foreground"
+                  }`}
               >
                 {isError ? (
-                  <Icons.XCircle className="w-5 h-5 text-red-500" />
+                  <Icons.XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                 ) : isSuccess ? (
-                  <Icons.CheckCircle className="w-5 h-5 text-rahvana-primary" />
+                  <Icons.CheckCircle className="w-5 h-5 text-rahvana-primary shrink-0 mt-0.5" />
                 ) : (
-                  <Icons.Info className="w-5 h-5 text-blue-500" />
+                  <Icons.Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                 )}
-                <span>{toast.message}</span>
+                <span className="text-sm leading-relaxed">{toast.message}</span>
               </motion.div>
             );
           })}

@@ -22,11 +22,7 @@ interface DqRecordingToolProps {
   guard?: () => boolean;
 }
 
-export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
-  dqState,
-  actions,
-  guard,
-}) => {
+export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actions, guard }) => {
   const {
     dqSaved,
     setDqSaved,
@@ -123,9 +119,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
         </div>
       ) : (
         <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-4 flex justify-between items-center">
-          <div className="font-bold text-emerald-800 text-xs">
-            ✓ DQ Recorded ({dqDate})
-          </div>
+          <div className="font-bold text-emerald-800 text-xs">✓ DQ Recorded ({dqDate})</div>
           <button
             onClick={() => {
               setIsSaving(false);

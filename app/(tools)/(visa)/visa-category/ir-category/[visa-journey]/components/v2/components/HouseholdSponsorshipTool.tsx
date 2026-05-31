@@ -16,9 +16,7 @@ interface HouseholdSponsorshipToolProps {
   // Setters
   setHhCount: (val: number) => void;
   setJsCount: (val: number) => void;
-  setHhRelationships: React.Dispatch<
-    React.SetStateAction<Record<number, string>>
-  >;
+  setHhRelationships: React.Dispatch<React.SetStateAction<Record<number, string>>>;
   setHhDocsStatus: (val: Record<string, string>) => void;
 
   // Actions
@@ -42,9 +40,7 @@ interface HouseholdSponsorshipToolProps {
   setIsHhDocGuideOpen: (open: boolean) => void;
 }
 
-export const HouseholdSponsorshipTool: React.FC<
-  HouseholdSponsorshipToolProps
-> = ({
+export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> = ({
   hhCount,
   jsCount,
   hhRelationships,
@@ -68,19 +64,13 @@ export const HouseholdSponsorshipTool: React.FC<
 }) => {
   const allItems = getHhDocItems(hhCount, hhRelationships);
   const total = allItems.length;
-  const reviewed = allItems.filter(
-    (item) => hhDocsStatus[item.id] === "reviewed",
-  ).length;
+  const reviewed = allItems.filter((item) => hhDocsStatus[item.id] === "reviewed").length;
   const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
 
   const renderHhDocCard = (item: any) => {
     const st = hhDocsStatus[item.id] || "not-started";
     const stLabel =
-      st === "reviewed"
-        ? "✓ Reviewed"
-        : st === "in-progress"
-          ? "In progress"
-          : "Open guide";
+      st === "reviewed" ? "✓ Reviewed" : st === "in-progress" ? "In progress" : "Open guide";
 
     return (
       <div
@@ -104,9 +94,7 @@ export const HouseholdSponsorshipTool: React.FC<
           <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
             {item.title}
           </div>
-          <div className="text-[12px] text-[#6b8097] leading-tight">
-            {item.sub}
-          </div>
+          <div className="text-[12px] text-[#6b8097] leading-tight">{item.sub}</div>
           <div className="flex gap-[5px] mt-[6px] flex-wrap">
             {item.tags.map((tag: any, idx: number) => {
               const tagMap: Record<string, string> = {
@@ -201,10 +189,9 @@ export const HouseholdSponsorshipTool: React.FC<
             Added in CEAC, no proof checklist
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A joint sponsor is an independent U.S. citizen or LPR who sponsors
-            separately. Added through the CEAC sponsorship flow —{" "}
-            <strong>no relationship-proof documents</strong> are typically
-            required from them.
+            A joint sponsor is an independent U.S. citizen or LPR who sponsors separately. Added
+            through the CEAC sponsorship flow — <strong>no relationship-proof documents</strong> are
+            typically required from them.
           </div>
         </div>
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
@@ -215,9 +202,8 @@ export const HouseholdSponsorshipTool: React.FC<
             Added in CEAC + relationship proof required
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A household member&apos;s income is used alongside the
-            petitioner&apos;s. Added through CEAC — and also requires{" "}
-            <strong>relationship-proof documentation</strong> showing their
+            A household member&apos;s income is used alongside the petitioner&apos;s. Added through
+            CEAC — and also requires <strong>relationship-proof documentation</strong> showing their
             connection to the sponsoring household.
           </div>
         </div>
@@ -253,9 +239,7 @@ export const HouseholdSponsorshipTool: React.FC<
                 className="bg-[var(--rv-ch2-feature-bg)] border border-[var(--rv-ch2)]/30 rounded-[10px] p-[11px_13px] flex items-start gap-[9px]"
               >
                 <div className="w-[5px] h-[5px] rounded-full bg-[var(--rv-ch2)] shrink-0 mt-[5px]" />
-                <div className="text-[13px] text-[var(--rv-ch2-text)] leading-tight">
-                  {cue}
-                </div>
+                <div className="text-[13px] text-[var(--rv-ch2-text)] leading-tight">{cue}</div>
               </div>
             ))}
           </div>
@@ -295,16 +279,12 @@ export const HouseholdSponsorshipTool: React.FC<
                   key={card.id}
                   onClick={() => {
                     if (!guard()) return;
-                    const pathMap: Record<
-                      string,
-                      "household_member" | "joint_sponsor"
-                    > = {
+                    const pathMap: Record<string, "household_member" | "joint_sponsor"> = {
                       "add-household-member": "household_member",
                       "add-joint-sponsor": "joint_sponsor",
                     };
                     setTutorialPath(
-                      pathMap[card.id] ||
-                        (card.id as "household_member" | "joint_sponsor"),
+                      pathMap[card.id] || (card.id as "household_member" | "joint_sponsor")
                     );
                     setTutorialIdx(0);
                     setIsTutorialOpen(true);
@@ -313,19 +293,11 @@ export const HouseholdSponsorshipTool: React.FC<
                 >
                   <div className="flex items-center gap-[10px] mb-[12px]">
                     <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                      <Book
-                        size={18}
-                        className="text-[#4a2d8a]"
-                        strokeWidth={1.7}
-                      />
+                      <Book size={18} className="text-[#4a2d8a]" strokeWidth={1.7} />
                     </div>
                   </div>
-                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                    {card.title}
-                  </h3>
-                  <p className="text-[12px] text-[#6b8097] leading-normal mb-3">
-                    {card.subtitle}
-                  </p>
+                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">{card.title}</h3>
+                  <p className="text-[12px] text-[#6b8097] leading-normal mb-3">{card.subtitle}</p>
                   <div className="flex items-center gap-1 mt-auto text-[12px] font-semibold text-primary">
                     <span>View guide</span>
                     <ArrowRight size={11} strokeWidth={2} />
@@ -390,10 +362,7 @@ export const HouseholdSponsorshipTool: React.FC<
               {Array.from({ length: hhCount }).map((_, idx) => {
                 const num = idx + 1;
                 return (
-                  <div
-                    key={num}
-                    className="flex flex-col sm:flex-row sm:items-center gap-2"
-                  >
+                  <div key={num} className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
                       Household Member {num}
                     </span>
@@ -433,9 +402,7 @@ export const HouseholdSponsorshipTool: React.FC<
               Joint Sponsors
             </div>
             <div className="text-[14px] font-semibold text-white/90">
-              {jsCount === 0
-                ? "None"
-                : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
+              {jsCount === 0 ? "None" : `${jsCount} joint sponsor${jsCount > 1 ? "s" : ""}`}
             </div>
             {jsCount > 0 && (
               <div className="text-[11px] text-white/50 mt-0.5">
@@ -448,9 +415,7 @@ export const HouseholdSponsorshipTool: React.FC<
               Household Members
             </div>
             <div className="text-[14px] font-semibold text-white/90">
-              {hhCount === 0
-                ? "None"
-                : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
+              {hhCount === 0 ? "None" : `${hhCount} household member${hhCount > 1 ? "s" : ""}`}
             </div>
             {hhCount > 0 && (
               <div className="text-[11px] text-white/50 mt-0.5">
@@ -520,8 +485,8 @@ export const HouseholdSponsorshipTool: React.FC<
             No relationship-proof checklist needed
           </div>
           <div className="text-[13px] text-[#6b8097]">
-            Joint sponsors do not require relationship documentation. Your I-864
-            forms are the primary requirement — see Step 5 for those.
+            Joint sponsors do not require relationship documentation. Your I-864 forms are the
+            primary requirement — see Step 5 for those.
           </div>
         </div>
       ) : (
@@ -530,8 +495,7 @@ export const HouseholdSponsorshipTool: React.FC<
             Set your scenario above
           </div>
           <div className="text-[13px] text-[#6b8097]">
-            Select the number of joint sponsors and household members to see the
-            relevant checklist.
+            Select the number of joint sponsors and household members to see the relevant checklist.
           </div>
         </div>
       )}

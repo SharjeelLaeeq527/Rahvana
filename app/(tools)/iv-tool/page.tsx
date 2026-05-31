@@ -188,8 +188,7 @@ const CITY_SUGGESTIONS = [
 
 export default function Home() {
   const { t } = useLanguage();
-  const [visaCategory, setVisaCategory] =
-    useState<string>("immediate-relative");
+  const [visaCategory, setVisaCategory] = useState<string>("immediate-relative");
   const [city, setCity] = useState<string>("");
   const [results, setResults] = useState<SchedulingResult[] | null>(null);
   const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
@@ -208,7 +207,7 @@ export default function Home() {
     debounceRef.current = setTimeout(() => {
       if (city.trim().length >= 2) {
         const filtered = CITY_SUGGESTIONS.filter((c) =>
-          c.toLowerCase().includes(city.toLowerCase()),
+          c.toLowerCase().includes(city.toLowerCase())
         ).slice(0, 8);
         setCitySuggestions(filtered);
         setShowSuggestions(true);
@@ -305,28 +304,34 @@ export default function Home() {
   return (
     <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py mt-[55px]">
       <div className="">
-        <h1 className="text-3xl font-bold text-primary mb-2">
-          {t("ivTool.title")}
-        </h1>
+        <h1 className="text-3xl font-bold text-primary mb-2">{t("ivTool.title")}</h1>
         <p className="text-gray-600 mb-6">{t("ivTool.subtitle")}</p>
 
         <div className="bg-white p-6 rounded-lg shadow-md mb-8 text-gray-700 text-sm leading-relaxed">
           <p className="mb-3">{t("ivTool.description.p1")}</p>
-          <p>
+          <p className="mb-3">
             <strong>Important:</strong> {t("ivTool.description.p2")}
           </p>
+          <div className="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500 flex flex-col sm:flex-row items-start sm:items-center justify-start gap-2">
+            <span>Official resources:</span>
+            <a
+              href="https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/iv-wait-times.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+            >
+              U.S. Department of State IV Wait Times &rarr;
+            </a>
+          </div>
         </div>
 
         <div className="bg-gray-100 p-8 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
-            {t("ivTool.findStatus")}
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-6">{t("ivTool.findStatus")}</h2>
 
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-4">
-                {t("ivTool.categoryLabel")}{" "}
-                <span className="text-red-600">*</span>
+                {t("ivTool.categoryLabel")} <span className="text-red-600">*</span>
               </label>
               <div className="space-y-3">
                 {[
@@ -343,10 +348,7 @@ export default function Home() {
                     label: t("ivTool.categories.employment"),
                   },
                 ].map((option) => (
-                  <label
-                    key={option.value}
-                    className="flex items-center cursor-pointer"
-                  >
+                  <label key={option.value} className="flex items-center cursor-pointer">
                     <input
                       type="radio"
                       name="visaCategory"
@@ -362,15 +364,10 @@ export default function Home() {
             </div>
 
             <div className="relative">
-              <label
-                htmlFor="city"
-                className="block text-sm font-semibold text-gray-800 mb-2"
-              >
+              <label htmlFor="city" className="block text-sm font-semibold text-gray-800 mb-2">
                 {t("ivTool.cityLabel")} <span className="text-red-600">*</span>
               </label>
-              <p className="text-xs text-gray-600 mb-2">
-                {t("ivTool.cityExamples")}
-              </p>
+              <p className="text-xs text-gray-600 mb-2">{t("ivTool.cityExamples")}</p>
               <div className="relative">
                 <input
                   id="city"
@@ -380,9 +377,7 @@ export default function Home() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   onFocus={() => city.length >= 2 && setShowSuggestions(true)}
-                  onBlur={() =>
-                    setTimeout(() => setShowSuggestions(false), 200)
-                  }
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent text-gray-700 placeholder-gray-400"
                 />
                 {city && (
@@ -433,9 +428,7 @@ export default function Home() {
           <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-8 flex gap-3 items-start">
             <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-red-900">
-                {t("ivTool.errors.title")}
-              </p>
+              <p className="font-semibold text-red-900">{t("ivTool.errors.title")}</p>
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           </div>
@@ -451,9 +444,7 @@ export default function Home() {
                   <h3 className="text-lg font-semibold text-amber-900 mb-2">
                     {t("ivTool.suggestions.notfound", { city: searchTerm })}
                   </h3>
-                  <p className="text-sm text-amber-800">
-                    {t("ivTool.suggestions.didYouMean")}
-                  </p>
+                  <p className="text-sm text-amber-800">{t("ivTool.suggestions.didYouMean")}</p>
                 </div>
               </div>
 
@@ -463,9 +454,7 @@ export default function Home() {
                     key={idx}
                     className="border-t border-amber-200 pt-6 first:border-t-0 first:pt-0"
                   >
-                    <h4 className="font-bold text-gray-800 mb-4 text-lg">
-                      {option.country}
-                    </h4>
+                    <h4 className="font-bold text-gray-800 mb-4 text-lg">{option.country}</h4>
 
                     {/* Embassies Section */}
                     {option.embassies.length > 0 && (
@@ -525,12 +514,9 @@ export default function Home() {
                       </div>
                     )}
 
-                    {option.embassies.length === 0 &&
-                      option.consulates.length === 0 && (
-                        <p className="text-gray-600 text-sm">
-                          {t("ivTool.suggestions.noPosts")}
-                        </p>
-                      )}
+                    {option.embassies.length === 0 && option.consulates.length === 0 && (
+                      <p className="text-gray-600 text-sm">{t("ivTool.suggestions.noPosts")}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -540,12 +526,10 @@ export default function Home() {
 
         {/* Results Display */}
         {results && results.length > 0 && (
-          <div ref={resultsRef} className="space-y-4">
+          <div ref={resultsRef} className="space-y-4 pt-4">
             <div className="flex items-center gap-2 mb-4">
               <CheckCircle2 className="h-6 w-6 text-primary" />
-              <h3 className="text-lg font-semibold text-gray-800">
-                {t("ivTool.results.title")}
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-800">{t("ivTool.results.title")}</h3>
             </div>
 
             {results.map((result, idx) => (
@@ -555,9 +539,7 @@ export default function Home() {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h4 className="text-lg font-bold text-primary mb-1">
-                      {result.Post}
-                    </h4>
+                    <h4 className="text-lg font-bold text-primary mb-1">{result.Post}</h4>
                     <div className="space-y-2">
                       <div>
                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">

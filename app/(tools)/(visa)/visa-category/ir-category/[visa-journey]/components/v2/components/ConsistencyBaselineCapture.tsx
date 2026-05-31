@@ -41,17 +41,10 @@ function ageGapYears(petitionerDob: string, beneficiaryDob: string): number | nu
   return Math.abs((p.getTime() - b.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
 }
 
-export function ConsistencyBaselineCapture({
-  baseline,
-  onSave,
-}: ConsistencyBaselineCaptureProps) {
+export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBaselineCaptureProps) {
   const [marriageDate, setMarriageDate] = useState(baseline?.marriageDate ?? "");
-  const [petitionerDob, setPetitionerDob] = useState(
-    baseline?.petitionerDateOfBirth ?? ""
-  );
-  const [beneficiaryDob, setBeneficiaryDob] = useState(
-    baseline?.beneficiaryDateOfBirth ?? ""
-  );
+  const [petitionerDob, setPetitionerDob] = useState(baseline?.petitionerDateOfBirth ?? "");
+  const [beneficiaryDob, setBeneficiaryDob] = useState(baseline?.beneficiaryDateOfBirth ?? "");
   const [justSaved, setJustSaved] = useState(false);
 
   const handleSave = () => {
@@ -79,10 +72,7 @@ export function ConsistencyBaselineCapture({
   // Age gap advisory (separate from the library risk patterns)
   const gapAdvisory = useMemo(() => {
     if (!baseline?.petitionerDateOfBirth || !baseline?.beneficiaryDateOfBirth) return null;
-    const gap = ageGapYears(
-      baseline.petitionerDateOfBirth,
-      baseline.beneficiaryDateOfBirth
-    );
+    const gap = ageGapYears(baseline.petitionerDateOfBirth, baseline.beneficiaryDateOfBirth);
     if (gap === null) return null;
     if (gap >= 15) {
       return {
@@ -92,8 +82,7 @@ export function ConsistencyBaselineCapture({
           "Address this proactively by including a relationship-context cover letter and " +
           "providing strong bona fide evidence (joint financial documents, communication " +
           "history, third-party affidavits).",
-        source_basis:
-          "Practitioner-reported adjudication pattern; not a formal USCIS rule",
+        source_basis: "Practitioner-reported adjudication pattern; not a formal USCIS rule",
       };
     }
     return null;
@@ -120,10 +109,9 @@ export function ConsistencyBaselineCapture({
               Save key dates for consistency checking
             </h3>
             <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
-              Saving these here lets Rahvana detect date-driven risk patterns
-              (e.g., short marriage duration, age gap) and cross-check the same
-              values against DS-260 and I-864 later. Independent of the I-130
-              form data.
+              Saving these here lets Rahvana detect date-driven risk patterns (e.g., short marriage
+              duration, age gap) and cross-check the same values against DS-260 and I-864 later.
+              Independent of the I-130 form data.
             </p>
           </div>
         </div>
@@ -221,10 +209,7 @@ export function ConsistencyBaselineCapture({
                     >
                       {flag.title}
                     </h5>
-                    <p
-                      className="text-[12px] mt-1 leading-relaxed"
-                      style={{ color: fg }}
-                    >
+                    <p className="text-[12px] mt-1 leading-relaxed" style={{ color: fg }}>
                       {flag.advisory}
                     </p>
                     <p
@@ -251,10 +236,7 @@ export function ConsistencyBaselineCapture({
                   >
                     {gapAdvisory.title}
                   </h5>
-                  <p
-                    className="text-[12px] mt-1 leading-relaxed"
-                    style={{ color: "#78350f" }}
-                  >
+                  <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#78350f" }}>
                     {gapAdvisory.advisory}
                   </p>
                   <p
@@ -270,8 +252,8 @@ export function ConsistencyBaselineCapture({
         )}
 
         <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
-          Advisory only — not legal advice. Rahvana stores these values
-          separately from the I-130 form data.
+          Advisory only — not legal advice. Rahvana stores these values separately from the I-130
+          form data.
         </p>
       </div>
     </div>

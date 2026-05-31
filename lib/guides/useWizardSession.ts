@@ -8,12 +8,11 @@ export function useWizardSession<T>(
   setState: React.Dispatch<React.SetStateAction<T>>,
   stepIds: string[],
   setCurrentStep: (step: number) => void,
-  stateToStepData: (prev: T, stepsData: Record<string, any>) => Partial<T>,
+  stateToStepData: (prev: T, stepsData: Record<string, any>) => Partial<T>
 ) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const { user } = useAuth();
-  const { session, stepsData, startSession, saveStep, loading } =
-    useGuideSession(slug);
+  const { session, stepsData, startSession, saveStep, loading } = useGuideSession(slug);
 
   // 1. Initial Session Start
   useEffect(() => {
@@ -41,24 +40,13 @@ export function useWizardSession<T>(
       }
       setHasLoaded(true);
     }
-  }, [
-    stepsData,
-    session,
-    loading,
-    hasLoaded,
-    setState,
-    stepIds,
-    setCurrentStep,
-    stateToStepData,
-  ]);
+  }, [stepsData, session, loading, hasLoaded, setState, stepIds, setCurrentStep, stateToStepData]);
 
   // 3. Helper to save a step with progress calculation
   const saveWizardStep = (stepKey: string, data: any, isCompleted = false) => {
     if (user && session) {
       const stepIdx = stepIds.indexOf(stepKey);
-      const progressPercent = Math.round(
-        ((stepIdx + 1) / stepIds.length) * 100,
-      );
+      const progressPercent = Math.round(((stepIdx + 1) / stepIds.length) * 100);
       saveStep(stepKey, data, isCompleted, progressPercent);
     }
   };

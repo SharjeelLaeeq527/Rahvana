@@ -26,28 +26,28 @@ export default function CheckoutButton({
   disabled = false,
   onLoadingChange,
 }: CheckoutButtonProps & { onLoadingChange?: (loading: boolean) => void }) {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-  
-    const handleCheckout = async () => {
-      setIsLoading(true);
-      onLoadingChange?.(true);
-      setError(null);
-  
-      try {
-        const response = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            productTier,
-            addons,
-            visaCategory,
-            consultationId,
-            userId,
-          }),
-        });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCheckout = async () => {
+    setIsLoading(true);
+    onLoadingChange?.(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productTier,
+          addons,
+          visaCategory,
+          consultationId,
+          userId,
+        }),
+      });
 
       const data = await response.json();
 
@@ -63,8 +63,7 @@ export default function CheckoutButton({
       }
     } catch (err: unknown) {
       console.error("Checkout error:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : msg(E.PAYMENT_CHECKOUT_FAILED);
+      const errorMessage = err instanceof Error ? err.message : msg(E.PAYMENT_CHECKOUT_FAILED);
       setError(errorMessage);
       setIsLoading(false);
       onLoadingChange?.(false);

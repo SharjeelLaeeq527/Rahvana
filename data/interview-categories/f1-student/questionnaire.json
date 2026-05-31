@@ -45,7 +45,14 @@
           "label": "What is your current education level?",
           "type": "select",
           "required": true,
-          "options": ["High School / 12th Grade", "Undergraduate (Bachelor's)", "Master's Degree", "PhD / Doctoral", "Professional Diploma", "Other"],
+          "options": [
+            "High School / 12th Grade",
+            "Undergraduate (Bachelor's)",
+            "Master's Degree",
+            "PhD / Doctoral",
+            "Professional Diploma",
+            "Other"
+          ],
           "description": "This helps us understand your educational background"
         },
         {
@@ -69,7 +76,13 @@
           "label": "What degree are you planning to pursue?",
           "type": "select",
           "required": true,
-          "options": ["Bachelor's (4 years)", "Master's (2 years)", "PhD / Doctoral (4+ years)", "Certificate / Diploma", "Other"]
+          "options": [
+            "Bachelor's (4 years)",
+            "Master's (2 years)",
+            "PhD / Doctoral (4+ years)",
+            "Certificate / Diploma",
+            "Other"
+          ]
         },
         {
           "key": "field_of_study",
@@ -307,7 +320,16 @@
           "label": "Who is your primary financial sponsor?",
           "type": "select",
           "required": true,
-          "options": ["Father", "Mother", "Both Parents", "Self", "Aunt/Uncle", "Grandparents", "Other Family Member", "Other"],
+          "options": [
+            "Father",
+            "Mother",
+            "Both Parents",
+            "Self",
+            "Aunt/Uncle",
+            "Grandparents",
+            "Other Family Member",
+            "Other"
+          ],
           "description": "Who will support your education financially?"
         },
         {
@@ -391,7 +413,14 @@
           "label": "What type of scholarship did you receive?",
           "type": "select",
           "required": false,
-          "options": ["Merit-based", "Need-based", "Partial Tuition", "Full Tuition + Stipend", "Full Tuition Only", "Other"],
+          "options": [
+            "Merit-based",
+            "Need-based",
+            "Partial Tuition",
+            "Full Tuition + Stipend",
+            "Full Tuition Only",
+            "Other"
+          ],
           "dependsOn": { "key": "scholarship_status", "value": true }
         },
         {

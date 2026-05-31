@@ -1,14 +1,14 @@
-"use client"
-import React, { useEffect, useRef, useState, useCallback } from "react"
-import { Move, RotateCcw, Check } from "lucide-react"
-import domtoimage from "dom-to-image-more"
-import { useLanguage } from "@/app/context/LanguageContext"
-import { Loader } from "@/components/ui/spinner"
+"use client";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { Move, RotateCcw, Check } from "lucide-react";
+import domtoimage from "dom-to-image-more";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { Loader } from "@/components/ui/spinner";
 
 interface TiltCorrectionToolProps {
-  processedImage: string
-  onApply: (correctedImage: string) => void
-  onCancel: () => void
+  processedImage: string;
+  onApply: (correctedImage: string) => void;
+  onCancel: () => void;
 }
 
 export default function TiltCorrectionTool({
@@ -16,81 +16,83 @@ export default function TiltCorrectionTool({
   onApply,
   onCancel,
 }: TiltCorrectionToolProps) {
-  const { t } = useLanguage()
-  const [horizontalTilt, setHorizontalTilt] = useState(0) // Y-axis rotation (left-right)
-  const [verticalTilt, setVerticalTilt] = useState(0)     // X-axis rotation (up-down)
-  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null)
-  const [isApplying, setIsApplying] = useState(false)
+  const { t } = useLanguage();
+  const [horizontalTilt, setHorizontalTilt] = useState(0); // Y-axis rotation (left-right)
+  const [verticalTilt, setVerticalTilt] = useState(0); // X-axis rotation (up-down)
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(
+    null
+  );
+  const [isApplying, setIsApplying] = useState(false);
 
-  const previewContainerRef = useRef<HTMLDivElement>(null)
-  const captureContainerRef = useRef<HTMLDivElement>(null)
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const captureContainerRef = useRef<HTMLDivElement>(null);
 
   // Load image once and get dimensions
   useEffect(() => {
     if (processedImage) {
-      const img = new Image()
-      img.crossOrigin = "anonymous"
-      img.src = processedImage
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = processedImage;
       img.onload = () => {
-        setImageDimensions({ width: img.width, height: img.height })
-      }
+        setImageDimensions({ width: img.width, height: img.height });
+      };
     }
-  }, [processedImage])
+  }, [processedImage]);
 
   // Calculate perspective based on image size
   const getPerspective = useCallback(() => {
-    if (!imageDimensions) return 1000
-    return Math.max(imageDimensions.width, imageDimensions.height) * 2
-  }, [imageDimensions])
+    if (!imageDimensions) return 1000;
+    return Math.max(imageDimensions.width, imageDimensions.height) * 2;
+  }, [imageDimensions]);
 
   // Get the CSS transform string
   const getTransformStyle = useCallback(() => {
-    const perspective = getPerspective()
-    return `perspective(${perspective}px) rotateX(${verticalTilt}deg) rotateY(${horizontalTilt}deg)`
-  }, [horizontalTilt, verticalTilt, getPerspective])
+    const perspective = getPerspective();
+    return `perspective(${perspective}px) rotateX(${verticalTilt}deg) rotateY(${horizontalTilt}deg)`;
+  }, [horizontalTilt, verticalTilt, getPerspective]);
 
   const handleApply = async () => {
-    if (isApplying) return
+    if (isApplying) return;
 
-    setIsApplying(true)
+    setIsApplying(true);
     try {
       // If no tilt applied, return original image
       if (horizontalTilt === 0 && verticalTilt === 0) {
-        onApply(processedImage)
-        return
+        onApply(processedImage);
+        return;
       }
 
       // Use dom-to-image-more to capture the 3D transformed element
       if (captureContainerRef.current) {
         const dataUrl = await domtoimage.toPng(captureContainerRef.current, {
-          bgcolor: 'transparent',
+          bgcolor: "transparent",
           quality: 1,
           scale: 2,
-        })
-        onApply(dataUrl)
+        });
+        onApply(dataUrl);
       } else {
-        onApply(processedImage)
+        onApply(processedImage);
       }
     } catch (error) {
-      console.error("Error applying tilt:", error)
-      onApply(processedImage)
+      console.error("Error applying tilt:", error);
+      onApply(processedImage);
     } finally {
-      setIsApplying(false)
+      setIsApplying(false);
     }
-  }
+  };
 
   const handleResetHorizontal = () => {
-    setHorizontalTilt(0)
-  }
+    setHorizontalTilt(0);
+  };
 
   const handleResetVertical = () => {
-    setVerticalTilt(0)
-  }
+    setVerticalTilt(0);
+  };
 
   const handleResetAll = () => {
-    setHorizontalTilt(0)
-    setVerticalTilt(0)
-  }
+    setHorizontalTilt(0);
+    setVerticalTilt(0);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
@@ -109,7 +111,8 @@ export default function TiltCorrectionTool({
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  {t("pdfProcessing.editor.tilt.horizontalLabel")}: <span className="font-bold text-blue-600">{horizontalTilt}°</span>
+                  {t("pdfProcessing.editor.tilt.horizontalLabel")}:{" "}
+                  <span className="font-bold text-blue-600">{horizontalTilt}°</span>
                 </label>
                 <button
                   onClick={handleResetHorizontal}
@@ -137,7 +140,8 @@ export default function TiltCorrectionTool({
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  {t("pdfProcessing.editor.tilt.verticalLabel")}: <span className="font-bold text-blue-600">{verticalTilt}°</span>
+                  {t("pdfProcessing.editor.tilt.verticalLabel")}:{" "}
+                  <span className="font-bold text-blue-600">{verticalTilt}°</span>
                 </label>
                 <button
                   onClick={handleResetVertical}
@@ -282,5 +286,5 @@ export default function TiltCorrectionTool({
         </button>
       </div>
     </div>
-  )
+  );
 }

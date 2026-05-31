@@ -46,11 +46,7 @@ interface RoadmapLayoutV2Props {
 
 type ViewType = "dashboard" | "chapter" | "step";
 
-export default function RoadmapLayoutV2({
-  data,
-  state,
-  actions,
-}: RoadmapLayoutV2Props) {
+export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV2Props) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
 
@@ -75,7 +71,8 @@ export default function RoadmapLayoutV2({
     // Sequential navigation guard: Step 1.1 -> Step 1.2
     if (targetKey === "step_1_2" && !state.completedSteps.has("step_1_1")) {
       toast.error("Please complete Step 1 (Determine Eligibility) before accessing Step 2.", {
-        description: "Your eligibility answers are used to customize the document checklist for your situation.",
+        description:
+          "Your eligibility answers are used to customize the document checklist for your situation.",
         duration: 5000,
       });
       return;
@@ -122,12 +119,7 @@ export default function RoadmapLayoutV2({
   };
 
   const currentStepDisplayNum = (() => {
-    if (
-      view !== "step" ||
-      state.currentStep === null ||
-      state.currentStep === -1
-    )
-      return null;
+    if (view !== "step" || state.currentStep === null || state.currentStep === -1) return null;
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep ?? 0];
     const activeSteps = chapter
@@ -135,16 +127,13 @@ export default function RoadmapLayoutV2({
       : [];
     return step
       ? activeSteps.findIndex(
-          (s: any) =>
-            (s.step_key || s.id) === (step.step_key || (step as any).id),
+          (s: any) => (s.step_key || s.id) === (step.step_key || (step as any).id)
         ) + 1
       : (state.currentStep ?? 0) + 1;
   })();
 
   return (
-    <div
-      className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500 pt-10"
-    >
+    <div className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500 pt-10">
       {/* Top Navigation */}
       <nav className="sticky top-15 h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40">
         {/* Dynamic Back / Logo */}
@@ -163,10 +152,7 @@ export default function RoadmapLayoutV2({
         {/* Breadcrumbs */}
         <ol className="breadcrumbs" aria-label="Navigation">
           <li>
-            <button
-              className="breadcrumb-item breadcrumb-link"
-              onClick={handleBackToDashboard}
-            >
+            <button className="breadcrumb-item breadcrumb-link" onClick={handleBackToDashboard}>
               <LayoutDashboard size={12} strokeWidth={3} aria-hidden="true" />
               <span className={`bc-text${view !== "dashboard" ? " bc-text--dashboard" : ""}`}>
                 Dashboard
@@ -176,7 +162,12 @@ export default function RoadmapLayoutV2({
 
           {(view === "chapter" || view === "step") && (
             <li className="breadcrumb-sep-item">
-              <ChevronRight size={10} className="breadcrumb-sep" strokeWidth={3} aria-hidden="true" />
+              <ChevronRight
+                size={10}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
               <button
                 className={`breadcrumb-item ${view === "chapter" ? "breadcrumb-current" : "breadcrumb-link"}`}
                 onClick={view === "step" ? handleBackToChapter : undefined}
@@ -189,7 +180,12 @@ export default function RoadmapLayoutV2({
 
           {view === "step" && currentStepDisplayNum !== null && (
             <li className="breadcrumb-sep-item">
-              <ChevronRight size={10} className="breadcrumb-sep" strokeWidth={3} aria-hidden="true" />
+              <ChevronRight
+                size={10}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
               <span className="breadcrumb-item breadcrumb-current">
                 <span className="bc-text">Step {currentStepDisplayNum}</span>
               </span>
@@ -234,7 +230,6 @@ export default function RoadmapLayoutV2({
           >
             <X size={14} />
           </button> */}
-         
         </div>
       </nav>
 
@@ -311,7 +306,9 @@ export default function RoadmapLayoutV2({
           overflow-x: hidden;
           overflow-y: visible;
           background: #fff;
-          box-shadow: 0 2px 16px 0 rgba(16,30,54,0.08), 0 1.5px 4px 0 rgba(16,30,54,0.04);
+          box-shadow:
+            0 2px 16px 0 rgba(16, 30, 54, 0.08),
+            0 1.5px 4px 0 rgba(16, 30, 54, 0.04);
           transition: box-shadow 0.3s;
           display: flex;
           align-items: center;
@@ -480,16 +477,26 @@ export default function RoadmapLayoutV2({
           480–559px → short label
           <480px   → icon only, circle
         */
-        .complete-label--full  { display: inline; }
-        .complete-label--short { display: none; }
+        .complete-label--full {
+          display: inline;
+        }
+        .complete-label--short {
+          display: none;
+        }
 
         @media (max-width: 559px) {
-          .complete-label--full  { display: none; }
-          .complete-label--short { display: inline; }
+          .complete-label--full {
+            display: none;
+          }
+          .complete-label--short {
+            display: inline;
+          }
         }
 
         @media (max-width: 479px) {
-          .complete-label--short { display: inline; }
+          .complete-label--short {
+            display: inline;
+          }
           .complete-btn {
             width: auto;
             padding: 0 10px;

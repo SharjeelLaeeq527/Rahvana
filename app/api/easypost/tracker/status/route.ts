@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTracker } from "@/lib/easypost/tracker";
 import * as db from "@/lib/journey/data-access";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 
 /**
  * GET /api/easypost/tracker/status?caseId=xxx
@@ -13,10 +13,7 @@ export async function GET(request: NextRequest) {
     const caseId = searchParams.get("caseId");
 
     if (!caseId) {
-      return NextResponse.json(
-        { error: msg(E.EASPOST_MISSING_CASE_ID) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.EASPOST_MISSING_CASE_ID) }, { status: 400 });
     }
 
     console.log(`[EasyPost API] Fetching status for case ${caseId}`);
@@ -25,10 +22,7 @@ export async function GET(request: NextRequest) {
     const trackerIdData = await db.getCaseDataByKeyDB(caseId, "easypost_tracker_id");
 
     if (!trackerIdData || !trackerIdData.data_value) {
-      return NextResponse.json(
-        { error: msg(E.EASPOST_NO_TRACKER) },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: msg(E.EASPOST_NO_TRACKER) }, { status: 404 });
     }
 
     const trackerId = trackerIdData.data_value;
@@ -44,7 +38,7 @@ export async function GET(request: NextRequest) {
           error: "Failed to fetch tracker status",
           details: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -67,7 +61,7 @@ export async function GET(request: NextRequest) {
         data_value: now,
         source: "external_api",
         source_reference: "status_fetch",
-      }),
+      })
     );
 
     if (existingStatus !== newStatus) {
@@ -77,7 +71,7 @@ export async function GET(request: NextRequest) {
           data_value: newStatus,
           source: "external_api",
           source_reference: "status_fetch",
-        }),
+        })
       );
 
       // If delivered, also save delivery timestamp
@@ -88,7 +82,7 @@ export async function GET(request: NextRequest) {
             data_value: trackerData.updated_at,
             source: "external_api",
             source_reference: "status_fetch",
-          }),
+          })
         );
       }
 
@@ -99,7 +93,7 @@ export async function GET(request: NextRequest) {
           data_value: eventId,
           source: "external_api",
           source_reference: "status_fetch",
-        }),
+        })
       );
     } else {
       // Even if status didn't change, store last event id so retries are tracked
@@ -109,13 +103,15 @@ export async function GET(request: NextRequest) {
           data_value: eventId,
           source: "external_api",
           source_reference: "status_fetch",
-        }),
+        })
       );
     }
 
     await Promise.all(updates);
 
-    console.log(`[EasyPost API] Status fetched: ${trackerData.status} (changed=${existingStatus !== newStatus})`);
+    console.log(
+      `[EasyPost API] Status fetched: ${trackerData.status} (changed=${existingStatus !== newStatus})`
+    );
 
     return NextResponse.json(
       {
@@ -126,7 +122,7 @@ export async function GET(request: NextRequest) {
         deliveredAt: trackerData.updated_at,
         events: trackerData.events || [],
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error("[EasyPost API] Unexpected error:", error);

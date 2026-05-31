@@ -127,8 +127,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: url("/assets/images/chapter-2-bg.png") center/cover no-repeat
-    fixed;
+  background: url("/assets/images/chapter-2-bg.png") center/cover no-repeat fixed;
   opacity: 0.6;
 }
 
@@ -273,11 +272,7 @@
   --rv-rose-soft: #f0f1fb;
 
   /* Guide-specific tokens */
-  --guide-hero-gradient: linear-gradient(
-    135deg,
-    hsl(168 70% 42%),
-    hsl(168 60% 52%)
-  );
+  --guide-hero-gradient: linear-gradient(135deg, hsl(168 70% 42%), hsl(168 60% 52%));
   --guide-card-shadow: 0 4px 24px -4px hsl(168 70% 42% / 0.15);
   --guide-card-hover-shadow: 0 8px 32px -4px hsl(168 70% 42% / 0.25);
   --guide-grid-color: hsl(168 70% 42% / 0.025);

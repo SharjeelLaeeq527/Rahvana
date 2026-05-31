@@ -35,12 +35,9 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
   const [submissionMethod, setSubmissionMethod] = useState<string>(
     state.metadata?.response221gMethod || ""
   );
-  const [isSaved, setIsSaved] = useState<boolean>(
-    !!state.metadata?.response221gDate
-  );
+  const [isSaved, setIsSaved] = useState<boolean>(!!state.metadata?.response221gDate);
 
-  const selections: FormSelections =
-    state.metadata?.twentyTwoOneGSelections || {};
+  const selections: FormSelections = state.metadata?.twentyTwoOneGSelections || {};
 
   const formData: PlannerFormData = {
     visaType: "Immigrant",
@@ -67,7 +64,6 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300 w-full gap-4">
-
       {/* ── Submission Log ─────────────────────────────────────────── */}
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] overflow-hidden shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
         <div className="px-5 py-4 border-b border-[#eef4fb]">
@@ -133,10 +129,11 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
                 ✓ Submission Logged
               </div>
               <div className="text-[13.5px] font-bold text-[#0c1b33]">
-                {new Date(submissionDate + "T00:00:00").toLocaleDateString(
-                  "en-US",
-                  { year: "numeric", month: "long", day: "numeric" }
-                )}
+                {new Date(submissionDate + "T00:00:00").toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
                 {submissionMethod && (
                   <span className="text-[#6b8097] font-normal ml-1.5 text-[12.5px]">
                     · via {submissionMethod.replace(/_/g, " ")}

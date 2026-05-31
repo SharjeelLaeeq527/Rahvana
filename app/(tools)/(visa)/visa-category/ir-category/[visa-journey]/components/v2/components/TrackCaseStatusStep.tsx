@@ -1,14 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { fmtDate, fmtDateTime } from "@/lib/register-receipt";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  CheckCircle,
-  BookOpen,
-  Scale,
-  Info,
-  Shield,
-} from "lucide-react";
+import { ArrowRight, CheckCircle, BookOpen, Scale, Info, Shield } from "lucide-react";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
 import {
   AfterI130ApprovalModal,
@@ -40,14 +33,11 @@ const TrackCaseStatusStep: React.FC<any> = ({
   const receiptNumber = tool?.receiptNumber || state?.receiptNumber || "";
 
   // journeyId should be available from tool, state, or props
-  const journeyId =
-    tool?.journeyId || state?.journeyId || state?.backendId || "";
+  const journeyId = tool?.journeyId || state?.journeyId || state?.backendId || "";
   useEffect(() => {
     if (!journeyId) return;
     const load = async () => {
-      const res = await fetch(
-        `/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`,
-      );
+      const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
       const data = await res.json();
       if (!res.ok || data.error) return;
       setReceiptInfo({
@@ -70,12 +60,9 @@ const TrackCaseStatusStep: React.FC<any> = ({
   const [showProcessingModal, setShowProcessingModal] = useState(false);
   const [showMilestonesModal, setShowMilestonesModal] = useState(false);
   const [showAfterI130Modal, setShowAfterI130Modal] = useState(false);
-  const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] =
-    useState(false);
-  const [showAffidavitSupportModal, setShowAffidavitSupportModal] =
-    useState(false);
-  const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] =
-    useState(false);
+  const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] = useState(false);
+  const [showAffidavitSupportModal, setShowAffidavitSupportModal] = useState(false);
+  const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] = useState(false);
 
   // Interactive checklist state (persisted to localStorage)
   const checklistKey = "ir1_step12_checklist";
@@ -114,17 +101,12 @@ const TrackCaseStatusStep: React.FC<any> = ({
       kicker: "Official USCIS tracking",
       head: "Case Status Online",
       copy: "Track your case using the 13-character receipt number.",
-      pills: [
-        "Receipt number required",
-        "Last action shown",
-        "Official USCIS tool",
-      ],
+      pills: ["Receipt number required", "Last action shown", "Official USCIS tool"],
       note: "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet.",
     },
     {
       label: "Step 2 of 4 — Understand common pending statuses",
-      heading:
-        "Learn the difference between waiting and action-required states",
+      heading: "Learn the difference between waiting and action-required states",
       instruction:
         "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
       url: "rahvana.local/status-map",
@@ -196,10 +178,9 @@ const TrackCaseStatusStep: React.FC<any> = ({
           Monitor USCIS Case Status
         </h1>
         <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-3">
-          Stay prepared while USCIS reviews your case. Rahvana keeps the
-          tracking context in one place, explains what the current status means,
-          and gives you useful next-step prep so the waiting period does not
-          become dead time.
+          Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one
+          place, explains what the current status means, and gives you useful next-step prep so the
+          waiting period does not become dead time.
         </p>
         <MetaChips />
         {/* Launch Module with tracking buttons */}
@@ -253,9 +234,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   </div>
                 </div>
                 {/* CHANGE 4: self-start shrink-0 prevents badge from stretching/squishing */}
-                <span
-                  className={`status-badge ml-auto self-start shrink-0 text-[#b668b8]`}
-                >
+                <span className={`status-badge ml-auto self-start shrink-0 text-[#b668b8]`}>
                   {tool.launch_module.status?.badge}
                 </span>
               </div>
@@ -309,9 +288,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     className="metric-value text-[14px] font-semibold"
                     style={{ color: "var(--rv-ch1-text)" }}
                   >
-                    {receiptInfo?.lastCheckedAt
-                      ? fmtDateTime(receiptInfo.lastCheckedAt)
-                      : "—"}
+                    {receiptInfo?.lastCheckedAt ? fmtDateTime(receiptInfo.lastCheckedAt) : "—"}
                   </div>
                   <div className="metric-sub text-[11px] mt-1 text-white">
                     Latest system refresh
@@ -336,13 +313,9 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     className="metric-value text-[14px] font-semibold"
                     style={{ color: "var(--rv-ch1-text)" }}
                   >
-                    {receiptInfo?.noticeDate
-                      ? fmtDate(receiptInfo.noticeDate)
-                      : "—"}
+                    {receiptInfo?.noticeDate ? fmtDate(receiptInfo.noticeDate) : "—"}
                   </div>
-                  <div className="metric-sub text-[11px] mt-1 text-white">
-                    USCIS receipt notice
-                  </div>
+                  <div className="metric-sub text-[11px] mt-1 text-white">USCIS receipt notice</div>
                 </div>
 
                 {/* Priority Date */}
@@ -363,9 +336,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     className="metric-value text-[14px] font-semibold"
                     style={{ color: "var(--rv-ch1-text)" }}
                   >
-                    {receiptInfo?.priorityDate
-                      ? fmtDate(receiptInfo.priorityDate)
-                      : "—"}
+                    {receiptInfo?.priorityDate ? fmtDate(receiptInfo.priorityDate) : "—"}
                   </div>
                   <div className="metric-sub text-[11px] mt-1 text-white">
                     Filing priority reference
@@ -378,9 +349,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition"
                   style={
                     {
-                      backgroundColor: isChapter1
-                        ? "var(--rv-ch1)"
-                        : launchAccentColor,
+                      backgroundColor: isChapter1 ? "var(--rv-ch1)" : launchAccentColor,
                       color: "#fff",
                       "--hover-bg": isChapter1
                         ? "rgba(186, 169, 218, 0.86)"
@@ -391,8 +360,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   }
                   onMouseEnter={(e) => {
                     if (isChapter1) {
-                      e.currentTarget.style.backgroundColor =
-                        "rgba(123, 127, 243, 0.88)";
+                      e.currentTarget.style.backgroundColor = "rgba(123, 127, 243, 0.88)";
                       e.currentTarget.style.color = "var(--rv-ch1-text)";
                     } else {
                       e.currentTarget.style.backgroundColor = isChapter2
@@ -473,9 +441,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 Stay Prepared While USCIS Reviews Your Case
               </h2>
               <div className="text-[13px] text-[#3a4f63] leading-[1.7] max-w-[560px]">
-                Use this waiting period to stay organized, build stronger
-                records, and prepare for the steps that usually come after USCIS
-                review.
+                Use this waiting period to stay organized, build stronger records, and prepare for
+                the steps that usually come after USCIS review.
               </div>
             </div>
             <span
@@ -508,14 +475,11 @@ const TrackCaseStatusStep: React.FC<any> = ({
               >
                 What this status means
               </div>
-              <div className="text-[18px] text-[#0c1b33] mb-1">
-                USCIS has the case
-              </div>
+              <div className="text-[18px] text-[#0c1b33] mb-1">USCIS has the case</div>
               <div className="text-[12px] text-[#3a4f63] mb-4">
-                This usually means the filing has entered the system and is in
-                line for review. Most users do not need to take any action right
-                now unless USCIS later issues an update, a request for evidence,
-                or another notice.
+                This usually means the filing has entered the system and is in line for review. Most
+                users do not need to take any action right now unless USCIS later issues an update,
+                a request for evidence, or another notice.
               </div>
               <Button
                 variant="outline"
@@ -532,9 +496,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       ? "var(--rv-ch2)"
                       : "#031020")
                 }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.borderColor = launchAccentColor)
-                }
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)}
                 onClick={() => setShowProcessingModal(true)}
                 type="button"
               >
@@ -567,9 +529,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       ? "var(--rv-ch2)"
                       : "#031020")
                 }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.borderColor = launchAccentColor)
-                }
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)}
                 onClick={() => setShowMilestonesModal(true)}
                 type="button"
               >
@@ -640,9 +600,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                         >
                           {c.title}
                         </div>
-                        <div className="text-[11px] text-[#3a4f63] leading-[1.6]">
-                          {c.copy}
-                        </div>
+                        <div className="text-[11px] text-[#3a4f63] leading-[1.6]">{c.copy}</div>
                       </div>
                     </div>
                   );
@@ -658,10 +616,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
           open={showProcessingModal}
           onClose={() => setShowProcessingModal(false)}
         />
-        <MilestonesModal
-          open={showMilestonesModal}
-          onClose={() => setShowMilestonesModal(false)}
-        />
+        <MilestonesModal open={showMilestonesModal} onClose={() => setShowMilestonesModal(false)} />
         {tool.future_timeline && (
           <div
             className="mb-8 md:mb-6 rounded-[18px] bg-white/80 shadow-[0_8px_24px_rgba(12,27,51,0.07)] p-6 md:p-8"
@@ -676,18 +631,14 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   What's Coming Next
                 </h2>
                 <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">
-                  See the likely path ahead so you can prepare early without
-                  feeling rushed into work that does not matter yet.
+                  See the likely path ahead so you can prepare early without feeling rushed into
+                  work that does not matter yet.
                 </div>
               </div>
               <span
                 className="ml-auto mt-2 md:mt-0 px-3 py-1 rounded-full text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0"
                 style={{
-                  backgroundColor: isChapter1
-                    ? "#f0f1fb"
-                    : isChapter2
-                      ? "#f4e6f3"
-                      : "#e8ecf3",
+                  backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3",
                   borderWidth: "1px",
                   borderColor: launchAccentColor,
                 }}
@@ -708,10 +659,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
               {tool.future_timeline?.map((item: any, idx: number) => {
                 const isLast = idx === (tool.future_timeline?.length ?? 0) - 1;
                 return (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-4 relative z-10"
-                  >
+                  <div key={idx} className="flex items-start gap-4 relative z-10">
                     {/* Timeline dot */}
                     <div className="flex flex-col items-center min-w-[24px]">
                       <span
@@ -765,8 +713,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   Useful Right Now
                 </h2>
                 <div className="text-[15px] text-[#3a4f63] leading-[1.7] max-w-[560px]">
-                  These are focused, case-relevant resources you can use while
-                  USCIS is still processing your petition.
+                  These are focused, case-relevant resources you can use while USCIS is still
+                  processing your petition.
                 </div>
               </div>
               <span
@@ -838,13 +786,9 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       onClick={() => {
                         if (u.action?.toLowerCase().includes("preview"))
                           setShowAfterI130Modal(true);
-                        else if (
-                          u.action?.toLowerCase().includes("evidence guide")
-                        )
+                        else if (u.action?.toLowerCase().includes("evidence guide"))
                           setShowRelationshipEvidenceModal(true);
-                        else if (
-                          u.action?.toLowerCase().includes("see future prep")
-                        )
+                        else if (u.action?.toLowerCase().includes("see future prep"))
                           setShowAffidavitSupportModal(true);
                       }}
                     >
@@ -879,18 +823,12 @@ const TrackCaseStatusStep: React.FC<any> = ({
           >
             <div className="panel-header flex justify-between gap-4 items-start mb-4">
               <div>
-                <div className="panel-title text-[24px] text-[#0c1b33]">
-                  Relevant Updates
-                </div>
+                <div className="panel-title text-[24px] text-[#0c1b33]">Relevant Updates</div>
               </div>
               <div
                 className="panel-tag text-[11px] font-bold uppercase px-3 py-1 rounded-full text-[#2d4a6e] whitespace-nowrap"
                 style={{
-                  backgroundColor: isChapter1
-                    ? "#f0f1fb"
-                    : isChapter2
-                      ? "#f4e6f3"
-                      : "#e8ecf3",
+                  backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3",
                   borderWidth: "1px",
                   borderColor: launchAccentColor,
                 }}
@@ -916,10 +854,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       {u.source}
                     </div>
                   </div>
-                  <div
-                    className="update-copy text-[13px]"
-                    style={{ color: `var(--rv-soft)` }}
-                  >
+                  <div className="update-copy text-[13px]" style={{ color: `var(--rv-soft)` }}>
                     {u.copy}
                   </div>
                 </div>
@@ -950,9 +885,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     marginTop: "0.25rem",
                   }}
                 >
-                  Even while the case is pending, you can strengthen readiness
-                  by continuing to collect relationship evidence and organizing
-                  what may matter later.
+                  Even while the case is pending, you can strengthen readiness by continuing to
+                  collect relationship evidence and organizing what may matter later.
                 </div>
               </div>
               <span
@@ -968,9 +902,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               {tool.build_case.map((b: any, i: number) => {
                 const iconBg =
-                  i === 0
-                    ? "bg-[#e8f5ef] border-[#a8d9be]"
-                    : "bg-[#fbeff3] border-[#f7b8d0]";
+                  i === 0 ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#fbeff3] border-[#f7b8d0]";
                 const iconColor = i === 0 ? "#15744f" : "#d12b6a";
                 const Icon =
                   i === 0
@@ -1053,8 +985,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   Community & Proof Layer
                 </h2>
                 <div className="text-[12px] text-[#3a4f63] leading-[1.7] max-w-[620px] mt-1">
-                  See practical insights from similar journeys and common habits
-                  that help people stay organized during this stage.
+                  See practical insights from similar journeys and common habits that help people
+                  stay organized during this stage.
                 </div>
               </div>
               <span className="ml-auto mt-2 md:mt-0 px-4 py-1.5 rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[#2d4a6e] text-[11px] font-bold uppercase tracking-wide shadow-sm whitespace-nowrap flex-shrink-0">
@@ -1070,12 +1002,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   <div className="italic text-[12px] text-[#0c1b33] mb-5 leading-[1.7]">
                     {c.quote}
                   </div>
-                  <div className="font-semibold text-[#0c1b33] text-[12px] mb-0.5">
-                    {c.meta}
-                  </div>
-                  <div className="text-[13px] text-[#6b8097] mt-0.5">
-                    {c.sub}
-                  </div>
+                  <div className="font-semibold text-[#0c1b33] text-[12px] mb-0.5">{c.meta}</div>
+                  <div className="text-[13px] text-[#6b8097] mt-0.5">{c.sub}</div>
                 </div>
               ))}
             </div>

@@ -2,7 +2,7 @@
 // User uploads original Urdu document for translation
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -35,17 +35,14 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!file || !documentType) {
       return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[file, documentType]' }) },
-        { status: 400 },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[file, documentType]" }) },
+        { status: 400 }
       );
     }
 
     // Validate file type (PDF only)
     if (file.type !== "application/pdf") {
-      return NextResponse.json(
-        { error: msg(E.UPLOAD_INVALID_PDF) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.UPLOAD_INVALID_PDF) }, { status: 400 });
     }
 
     // Validate file size (max 50MB)
@@ -53,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 50 }) },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -64,8 +61,12 @@ export async function POST(request: NextRequest) {
     const allowedTypes = ["marriage", "birth", "death", "divorce"];
     if (!allowedTypes.includes(documentType)) {
       return NextResponse.json(
-        { error: msg(E.UPLOAD_INVALID_DOCUMENT_TYPE, { types: '[marriage, birth, death, divorce]' }) },
-        { status: 400 },
+        {
+          error: msg(E.UPLOAD_INVALID_DOCUMENT_TYPE, {
+            types: "[marriage, birth, death, divorce]",
+          }),
+        },
+        { status: 400 }
       );
     }
 
@@ -90,10 +91,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      return NextResponse.json(
-        { error: msg(E.UPLOAD_PROCESSING_FAILED) },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
     }
 
     // Create database record
@@ -123,10 +121,7 @@ export async function POST(request: NextRequest) {
       console.error("Database error:", dbError);
       // Cleanup uploaded file
       await supabase.storage.from("document-vault").remove([storagePath]);
-      return NextResponse.json(
-        { error: "Failed to create database record" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -138,9 +133,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

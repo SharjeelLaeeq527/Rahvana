@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -12,12 +12,17 @@ import {
 } from "@/lib/interview-prep";
 import confetti from "canvas-confetti";
 import { Zap } from "lucide-react";
+import { usePlan } from "@/app/context/PlanContext";
 import { Loader } from "@/components/ui/spinner";
 import {
   computeQuestionCooldowns,
   QuestionCooldownMap,
   reduceCooldowns,
 } from "@/lib/interview-prep/round-engine";
+import {
+  RapidFireTrainingView,
+} from "./RapidFireModePage.views";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 const QUESTIONS_PER_ROUND = 12;
 
@@ -47,7 +52,7 @@ interface PersistedAdaptiveTraining {
   score: number;
   showAnswer: boolean;
   isFlipped: boolean;
-  userResponse: QuestionResponse["response"];
+  userResponse: QuestionResponse["response"] | null;
   questionResponses: QuestionResponse[];
   shuffledQuestionIds: string[];
   screen: AdaptiveScreen;
@@ -147,7 +152,7 @@ const loadPersistedAdaptiveTraining = async (
 const savePersistedAdaptiveTraining = async (
   state: PersistedAdaptiveTraining,
 ) => {
-  const payload: InterviewPrepSessionProgressInput = {
+  const payload: Partial<InterviewPrepSessionProgressInput> = {
     current_round: state.currentRound,
     current_question_index: state.currentQuestionIndex,
     round_question_ids: state.shuffledQuestionIds,
@@ -162,7 +167,7 @@ const savePersistedAdaptiveTraining = async (
     time_left: state.timeLeft,
     show_answer: state.showAnswer,
     is_flipped: state.isFlipped,
-    user_response: state.userResponse,
+    user_response: state.userResponse ?? undefined,
     skipped_questions: state.skippedQuestions,
     screen: state.screen,
     completed: state.completed,
@@ -176,17 +181,6 @@ const savePersistedAdaptiveTraining = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
-    });
-  } catch {
-    // best-effort persistence
-  }
-};
-
-const clearPersistedAdaptiveTraining = async (sessionId: string) => {
-  try {
-    await fetch(buildProgressEndpoint(sessionId), {
-      method: "DELETE",
-      credentials: "include",
     });
   } catch {
     // best-effort persistence
@@ -235,6 +229,10 @@ export const RapidFireModePage = ({
   onSwitchToPrep,
   savedAnswers = {},
 }: RapidFireModeProps) => {
+  const plan = usePlan();
+  const isFreeTier = plan.tier === "free";
+
+  const questionsPerRound = isFreeTier ? 5 : QUESTIONS_PER_ROUND;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [score, setScore] = useState(0);
@@ -252,11 +250,8 @@ export const RapidFireModePage = ({
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isHydratingProgress, setIsHydratingProgress] = useState(true);
   const [skippedQuestions, setSkippedQuestions] = useState<number>(0);
-  const [questionResponses, setQuestionResponses] = useState<
-    QuestionResponse[]
-  >([]);
-  const [reviewQuestion, setReviewQuestion] =
-    useState<GeneratedQuestion | null>(null);
+  const [questionResponses, setQuestionResponses] = useState<QuestionResponse[]>([]);
+  const [reviewQuestion, setReviewQuestion] = useState<GeneratedQuestion | null>(null);
   const [isReviewFlipped, setIsReviewFlipped] = useState(false);
   const [questionCooldowns, setQuestionCooldowns] =
     useState<QuestionCooldownMap>({});
@@ -300,14 +295,10 @@ export const RapidFireModePage = ({
 
   // NOTE: `buildQuestionRound` moved to server-side; client no longer performs full round computation.
 
-  const [shuffledQuestions, setShuffledQuestions] = useState<
-    GeneratedQuestion[]
-  >(() =>
-    shuffleArray(questions)
-      .filter((q) => q.applicable)
-      .slice(0, QUESTIONS_PER_ROUND),
+  const [shuffledQuestions, setShuffledQuestions] = useState<GeneratedQuestion[]>(() =>
+    shuffleArray(questions).filter((q) => q.applicable).slice(0, questionsPerRound),
   );
-  const roundQuestionCount = QUESTIONS_PER_ROUND;
+  const roundQuestionCount = questionsPerRound;
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / roundQuestionCount) * 100;
 
@@ -532,9 +523,7 @@ export const RapidFireModePage = ({
       response === "covered" ? 10 : response === "partial" ? 5 : 0;
 
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -727,9 +716,7 @@ export const RapidFireModePage = ({
     };
 
     setQuestionResponses((prev) => {
-      const existingIndex = prev.findIndex(
-        (r) => r.index === currentQuestionIndex,
-      );
+      const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
       if (existingIndex >= 0) {
         const updated = [...prev];
         updated[existingIndex] = newResponse;
@@ -749,36 +736,6 @@ export const RapidFireModePage = ({
 
     setMasteredQuestionIds((prev) =>
       prev.filter((id) => id !== currentQuestion.id),
-    );
-  };
-
-  const restartRapidFire = () => {
-    void clearPersistedAdaptiveTraining(sessionId);
-    setCurrentQuestionIndex(0);
-    setTimeLeft(10);
-    setScore(0);
-    setRoundScore(null);
-    setShowAnswer(false);
-    setIsFlipped(false);
-    setUserResponse(null);
-    setTotalScore(null);
-    setScreen("training");
-    setRoundSummary(null);
-    setResumeProgress(null);
-    setIsStorageReady(false);
-    setSkippedQuestions(0);
-    setQuestionResponses([]);
-    setReviewQuestion(null);
-    setIsReviewFlipped(false);
-    setCurrentRound(1);
-    setUsedQuestionIds([]);
-    setRetryQuestionIds([]);
-    setMasteredQuestionIds([]);
-    setTotalRoundsCompleted(0);
-    setShuffledQuestions(
-      shuffleArray(questions)
-        .filter((q) => q.applicable)
-        .slice(0, QUESTIONS_PER_ROUND),
     );
   };
 
@@ -809,10 +766,7 @@ export const RapidFireModePage = ({
               No applicable questions found for rapid fire mode.
             </p>
             <div className="flex gap-3 justify-center">
-              <Button
-                onClick={onSwitchToPrep}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
+              <Button onClick={onSwitchToPrep} className="bg-teal-600 hover:bg-teal-700">
                 Switch to Prep Mode
               </Button>
               <Button onClick={onExit} variant="outline"></Button>
@@ -852,8 +806,14 @@ export const RapidFireModePage = ({
 
   if (screen === "results" || screen === "completed") {
     return (
-      <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
-        <div className="">
+      <ResultGate
+        feature="interview_rapid_fire"
+        title="Rapid Fire Results Ready"
+        description="Upgrade to Basic or above to view your readiness score, question breakdown, and performance review."
+        minHeight="400px"
+      >
+        <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
+          <div className="">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
               {screen === "completed" ? "Training Complete!" : "Round Complete"}
@@ -873,9 +833,7 @@ export const RapidFireModePage = ({
                     <span className="text-4xl font-bold text-teal-700">
                       {roundScore ?? totalScore ?? 0}%
                     </span>
-                    <div className="text-sm text-teal-600 font-medium mt-1">
-                      Readiness Score
-                    </div>
+                    <div className="text-sm text-teal-600 font-medium mt-1">Readiness Score</div>
                   </div>
                 </div>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
@@ -928,219 +886,223 @@ export const RapidFireModePage = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-                <div className="text-2xl font-bold text-emerald-600">
-                  {roundSummary?.coveredCount ??
-                    questionResponses.filter((r) => r.response === "covered")
-                      .length}
-                </div>
-                <div className="text-sm text-emerald-700">Covered Well</div>
-              </div>
-              <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
-                <div className="text-2xl font-bold text-amber-600">
-                  {roundSummary?.partialCount ??
-                    questionResponses.filter((r) => r.response === "partial")
-                      .length}
-                </div>
-                <div className="text-sm text-amber-700">Partial Coverage</div>
-              </div>
-              <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
-                <div className="text-2xl font-bold text-rose-600">
-                  {roundSummary?.missedCount ??
-                    questionResponses.filter((r) => r.response === "missed")
-                      .length}
-                </div>
-                <div className="text-sm text-rose-700">Missed</div>
-              </div>
-            </div>
-
-            {skippedQuestions > 0 && (
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                  <span className="text-slate-600">Questions skipped:</span>
-                  <span className="font-bold text-slate-800">
-                    {skippedQuestions}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Reviewable Progress Bar */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                Performance Review
-              </h3>
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <span className="font-medium">Note:</span> Click on any of the
-                  color-coded tabs to review the Q&A.
-                </p>
-              </div>
-              <div className="flex gap-1 mb-4 mt-2">
-                {shuffledQuestions.map((_, index) => {
-                  const response = questionResponses.find(
-                    (r) => r.index === index,
-                  );
-                  let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
-
-                  if (response) {
-                    switch (response.response) {
-                      case "covered":
-                        bgColor = "bg-green-500";
-                        break;
-                      case "partial":
-                        bgColor = "bg-amber-500";
-                        break;
-                      case "missed":
-                        bgColor = "bg-red-500";
-                        break;
-                      case "skipped":
-                        bgColor = "bg-gray-400";
-                        break;
-                    }
-                  }
-
-                  return (
-                    <div
-                      key={index}
-                      className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
-                      onClick={() => {
-                        const questionResp = questionResponses.find(
-                          (r) => r.index === index,
-                        );
-                        if (questionResp) {
-                          handleReviewQuestionClick(questionResp.question);
-                        }
-                      }}
-                      title={`Question ${index + 1}: ${response?.response || "Unanswered"}`}
-                    />
-                  );
-                })}
-              </div>
-              <div className="flex justify-center gap-6 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-                  <span>Covered Well</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
-                  <span>Partial Coverage</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                  <span>Missed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-400 rounded-sm"></div>
-                  <span>Skipped</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Review Question Card */}
-            {reviewQuestion && (
-              <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg\">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="font-semibold text-slate-900 text-lg\">
-                    Question Review
-                  </h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReviewQuestion(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
-                <div
-                  className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
-                    isReviewFlipped ? "transform rotate-y-180" : ""
-                  }`}
-                  style={{
-                    transformStyle: "preserve-3d",
-                    perspective: "1000px",
-                  }}
-                  onClick={handleReviewCardClick}
-                >
-                  {/* Front of Card - Question */}
-                  <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
-                    <div>
-                      <div className="flex justify-between items-start mb-4">
-                        <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
-                          {reviewQuestion.category}
-                        </span>
-                        <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
-                          Review Mode
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-bold leading-tight">
-                        {reviewQuestion.selectedQuestion ||
-                          reviewQuestion.question}
-                      </h3>
+            {!isFreeTier && (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                    <div className="text-2xl font-bold text-emerald-600">
+                      {roundSummary?.coveredCount ??
+                        questionResponses.filter((r) => r.response === "covered")
+                          .length}
                     </div>
-                    <div className="text-center">
-                      <p className="text-teal-100 text-sm">
-                        Click to see answer and guidance
-                      </p>
-                      <div className="flex justify-center mt-2">
-                        <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
+                    <div className="text-sm text-emerald-700">Covered Well</div>
                   </div>
+                  <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
+                    <div className="text-2xl font-bold text-amber-600">
+                      {roundSummary?.partialCount ??
+                        questionResponses.filter((r) => r.response === "partial")
+                          .length}
+                    </div>
+                    <div className="text-sm text-amber-700">Partial Coverage</div>
+                  </div>
+                  <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
+                    <div className="text-2xl font-bold text-rose-600">
+                      {roundSummary?.missedCount ??
+                        questionResponses.filter((r) => r.response === "missed")
+                          .length}
+                    </div>
+                    <div className="text-sm text-rose-700">Missed</div>
+                  </div>
+                </div>
 
-                  {/* Back of Card - Answer & Guidance */}
-                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
-                    <div className="flex justify-between items-start mb-4">
-                      <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
-                        Answer & Guidance
+                {skippedQuestions > 0 && (
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                      <span className="text-slate-600">Questions skipped:</span>
+                      <span className="font-bold text-slate-800">
+                        {skippedQuestions}
                       </span>
                     </div>
+                  </div>
+                )}
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
-                      {savedAnswers[reviewQuestion.id] && (
-                        <div>
-                          <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                            <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
-                            Your Saved Answer
-                          </h4>
-                          <p className="text-slate-100 text-sm leading-relaxed">
-                            {savedAnswers[reviewQuestion.id]}
-                          </p>
-                        </div>
-                      )}
+                {/* Reviewable Progress Bar */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                    Performance Review
+                  </h3>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-medium">Note:</span> Click on any of the
+                      color-coded tabs to review the Q&A.
+                    </p>
+                  </div>
+                  <div className="flex gap-1 mb-4 mt-2">
+                    {shuffledQuestions.map((_, index) => {
+                      const response = questionResponses.find(
+                        (r) => r.index === index,
+                      );
+                      let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
 
-                      <div>
-                        <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                          <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
-                          Sample Answer
-                        </h4>
-                        <p className="text-slate-100 text-sm leading-relaxed">
-                          {reviewQuestion.sampleAnswer}
-                        </p>
-                      </div>
+                      if (response) {
+                        switch (response.response) {
+                          case "covered":
+                            bgColor = "bg-green-500";
+                            break;
+                          case "partial":
+                            bgColor = "bg-amber-500";
+                            break;
+                          case "missed":
+                            bgColor = "bg-red-500";
+                            break;
+                          case "skipped":
+                            bgColor = "bg-gray-400";
+                            break;
+                        }
+                      }
 
-                      <div>
-                        <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                          <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
-                          Guidance
-                        </h4>
-                        <p className="text-slate-200 text-sm leading-relaxed">
-                          {reviewQuestion.guidance}
-                        </p>
-                      </div>
+                      return (
+                        <div
+                          key={index}
+                          className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
+                          onClick={() => {
+                            const questionResp = questionResponses.find(
+                              (r) => r.index === index,
+                            );
+                            if (questionResp) {
+                              handleReviewQuestionClick(questionResp.question);
+                            }
+                          }}
+                          title={`Question ${index + 1}: ${response?.response || "Unanswered"}`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-center gap-6 text-sm text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                      <span>Covered Well</span>
                     </div>
-
-                    <div className="text-center mt-4">
-                      <p className="text-slate-300 text-xs">
-                        Click to flip back
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
+                      <span>Partial Coverage</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                      <span>Missed</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-gray-400 rounded-sm"></div>
+                      <span>Skipped</span>
                     </div>
                   </div>
                 </div>
-              </div>
+
+                {/* Review Question Card */}
+                {reviewQuestion && (
+                  <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="font-semibold text-slate-900 text-lg">
+                        Question Review
+                      </h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReviewQuestion(null)}
+                      >
+                        Close
+                      </Button>
+                    </div>
+                    <div
+                      className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
+                        isReviewFlipped ? "transform rotate-y-180" : ""
+                      }`}
+                      style={{
+                        transformStyle: "preserve-3d",
+                        perspective: "1000px",
+                      }}
+                      onClick={handleReviewCardClick}
+                    >
+                      {/* Front of Card - Question */}
+                      <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
+                        <div>
+                          <div className="flex justify-between items-start mb-4">
+                            <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
+                              {reviewQuestion.category}
+                            </span>
+                            <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
+                              Review Mode
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold leading-tight">
+                            {reviewQuestion.selectedQuestion ||
+                              reviewQuestion.question}
+                          </h3>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-teal-100 text-sm">
+                            Click to see answer and guidance
+                          </p>
+                          <div className="flex justify-center mt-2">
+                            <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
+                              <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Back of Card - Answer & Guidance */}
+                      <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
+                        <div className="flex justify-between items-start mb-4">
+                          <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
+                            Answer & Guidance
+                          </span>
+                        </div>
+
+                        <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
+                          {savedAnswers[reviewQuestion.id] && (
+                            <div>
+                              <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                                <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
+                                Your Saved Answer
+                              </h4>
+                              <p className="text-slate-100 text-sm leading-relaxed">
+                                {savedAnswers[reviewQuestion.id]}
+                              </p>
+                            </div>
+                          )}
+
+                          <div>
+                            <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                              <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
+                              Sample Answer
+                            </h4>
+                            <p className="text-slate-100 text-sm leading-relaxed">
+                              {reviewQuestion.sampleAnswer}
+                            </p>
+                          </div>
+
+                          <div>
+                            <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2 text-sm">
+                              <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
+                              Guidance
+                            </h4>
+                            <p className="text-slate-200 text-sm leading-relaxed">
+                              {reviewQuestion.guidance}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-center mt-4">
+                          <p className="text-slate-300 text-xs">
+                            Click to flip back
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex gap-3 justify-center">
@@ -1170,306 +1132,28 @@ export const RapidFireModePage = ({
           </div>
         </div>
       </div>
+      </ResultGate>
     );
   }
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-teal-50 min-h-screen w-full">
-      <div className="site-main-px py-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Zap className="w-6 h-6 text-orange-500" />
-              Rapid Fire Mode
-            </h1>
-            <p className="text-slate-600">
-              Round {currentRound} • Question {currentQuestionIndex + 1} of{" "}
-              {roundQuestionCount}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="text-right flex gap-2">
-              <div className="text-slate-900 font-bold">Score</div>
-              <div className="text-lg font-bold text-teal-600">{score} pts</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-slate-600 mb-2">
-            <span>Progress</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300 ease-out"
-              style={getProgressGradient(progress)}
-            />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-87.5 sm:h-100 lg:h-112.5 mb-8">
-          <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
-            <div
-              className={`relative w-full h-full cursor-pointer transition-transform duration-700 ease-out-cubic ${
-                isFlipped ? "transform rotate-y-180" : ""
-              }`}
-              style={{
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
-            >
-              <div
-                className={`absolute inset-0 backface-hidden bg-white rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-2xl border-4 ${
-                  !showAnswer
-                    ? timeLeft <= 3
-                      ? "border-red-500 animate-pulse"
-                      : "border-emerald-500"
-                    : "border-slate-200"
-                }`}
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-3 sm:mb-4">
-                    <span className="bg-teal-100 text-teal-800 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
-                      {currentQuestion.category}
-                    </span>
-                  </div>
-                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-slate-800 mb-4 sm:mb-6 line-clamp-5 sm:line-clamp-4">
-                    {currentQuestion.selectedQuestion ||
-                      currentQuestion.question}
-                  </h2>
-
-                  {!showAnswer && (
-                    <div className="flex justify-center mt-2 sm:mt-4">
-                      <div className="relative w-28 h-28 sm:w-32 sm:h-32">
-                        {/* Subtle outer ring for depth */}
-                        <div
-                          className={`absolute inset-0 rounded-full ${timeLeft <= 3 ? "ring-2 ring-red-100" : "ring-2 ring-teal-100"} opacity-50`}
-                        ></div>
-
-                        {/* Enhanced circular timer */}
-                        <svg
-                          className="w-full h-full drop-shadow-sm"
-                          viewBox="0 0 176 176"
-                        >
-                          {/* Background ring with subtle gradient */}
-                          <circle
-                            cx="88"
-                            cy="88"
-                            r="76"
-                            fill="none"
-                            stroke="url(#timerBg)"
-                            strokeWidth="6"
-                          />
-
-                          {/* Progress ring with smooth animation */}
-                          <circle
-                            cx="88"
-                            cy="88"
-                            r="76"
-                            fill="none"
-                            stroke={
-                              timeLeft <= 3
-                                ? "url(#timerDanger)"
-                                : "url(#timerSuccess)"
-                            }
-                            strokeWidth="6"
-                            strokeDasharray={`${2 * Math.PI * 76}`}
-                            strokeDashoffset={`${2 * Math.PI * 76 * (1 - timeLeft / 10)}`}
-                            strokeLinecap="round"
-                            className="transition-all duration-1000 ease-out"
-                            transform="rotate(-90 88 88)"
-                          />
-
-                          {/* Gradient definitions */}
-                          <defs>
-                            <linearGradient
-                              id="timerBg"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#f1f5f9" />
-                              <stop offset="100%" stopColor="#e2e8f0" />
-                            </linearGradient>
-                            <linearGradient
-                              id="timerSuccess"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#0d9488" />
-                              <stop offset="100%" stopColor="#0f766e" />
-                            </linearGradient>
-                            <linearGradient
-                              id="timerDanger"
-                              x1="0%"
-                              y1="0%"
-                              x2="100%"
-                              y2="100%"
-                            >
-                              <stop offset="0%" stopColor="#ef4444" />
-                              <stop offset="100%" stopColor="#dc2626" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-
-                        {/* Enhanced timer display */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl px-2 sm:px-4 py-1 sm:py-2">
-                            <div
-                              className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-red-600" : "text-teal-600"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
-                            >
-                              {timeLeft}
-                            </div>
-                            <div className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5 sm:mt-1">
-                              sec
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="text-center">
-                  {!showAnswer ? (
-                    <div className="inline-flex items-center gap-2 text-slate-600 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
-                      <span>Preparing response...</span>
-                    </div>
-                  ) : (
-                    <p className="text-slate-600 text-xs sm:text-sm">
-                      Click to see answer
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col text-white shadow-2xl border border-teal-500/40">
-                <div className="flex justify-between items-start mb-2 sm:mb-3 pb-2 border-b border-white/10">
-                  <span className="bg-white/20 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium">
-                    Answer & Guidance
-                  </span>
-                </div>
-
-                <div className="flex-1 overflow-y-auto pr-2 sm:pr-3 scrollbar-premium">
-                  <div className="space-y-3 sm:space-y-4">
-                    {savedAnswers[currentQuestion.id] && (
-                      <div>
-                        <h4 className="text-emerald-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                          <span className="w-1.5 h-1.5 bg-emerald-200 rounded-full"></span>
-                          Your Saved Answer
-                        </h4>
-                        <p className="text-slate-100 leading-relaxed text-xs sm:text-sm line-clamp-3">
-                          {savedAnswers[currentQuestion.id]}
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <h4 className="text-teal-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                        <span className="w-1.5 h-1.5 bg-teal-200 rounded-full"></span>
-                        Sample
-                      </h4>
-                      <p className="text-slate-100 leading-snug text-xs sm:text-sm line-clamp-3">
-                        {currentQuestion.sampleAnswer}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="text-blue-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                        <span className="w-1.5 h-1.5 bg-blue-200 rounded-full"></span>
-                        Guidance
-                      </h4>
-                      <p className="text-slate-200 leading-snug text-xs sm:text-sm line-clamp-3">
-                        {currentQuestion.guidance}
-                      </p>
-                    </div>
-
-                    {currentQuestion.tooltip && (
-                      <div>
-                        <h4 className="text-amber-200 font-semibold mb-1 flex items-center gap-2 text-xs sm:text-sm">
-                          <span className="w-1.5 h-1.5 bg-amber-200 rounded-full"></span>
-                          Tip
-                        </h4>
-                        <p className="text-slate-300 text-xs sm:text-sm italic line-clamp-2">
-                          {currentQuestion.tooltip}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-2 sm:mt-4">
-                  <Button
-                    onClick={() => handleResponse("covered")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "covered"
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-emerald-500 hover:bg-emerald-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Covered</span>
-                    <span className="text-xs">+10</span>
-                  </Button>
-
-                  <Button
-                    onClick={() => handleResponse("partial")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "partial"
-                        ? "bg-amber-600 hover:bg-amber-700"
-                        : "bg-amber-500 hover:bg-amber-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Partial</span>
-                    <span className="text-xs">+5</span>
-                  </Button>
-
-                  <Button
-                    onClick={() => handleResponse("missed")}
-                    disabled={userResponse !== null}
-                    className={`${
-                      userResponse === "missed"
-                        ? "bg-rose-600 hover:bg-rose-700"
-                        : "bg-rose-500 hover:bg-rose-600"
-                    } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
-                  >
-                    <span>Missed</span>
-                    <span className="text-xs">+0</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center gap-3 mt-4">
-          {!showAnswer ? (
-            <Button
-              onClick={skipQuestion}
-              variant="outline"
-              className="bg-white hover:bg-slate-50"
-            >
-              Skip Question
-            </Button>
-          ) : (
-            <Button
-              onClick={nextQuestion}
-              className="bg-orange-600 hover:bg-orange-700"
-              disabled={userResponse === null}
-            >
-              {currentQuestionIndex < shuffledQuestions.length - 1
-                ? "Next Question"
-                : "Finish"}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
+    <RapidFireTrainingView
+      currentRound={currentRound}
+      currentQuestionIndex={currentQuestionIndex}
+      roundQuestionCount={roundQuestionCount}
+      score={score}
+      progress={progress}
+      currentQuestion={currentQuestion}
+      timeLeft={timeLeft}
+      showAnswer={showAnswer}
+      isFlipped={isFlipped}
+      userResponse={userResponse}
+      savedAnswers={savedAnswers}
+      onHandleResponse={handleResponse}
+      onSkipQuestion={skipQuestion}
+      onNextQuestion={nextQuestion}
+      getProgressGradient={getProgressGradient}
+    />
   );
 };
+

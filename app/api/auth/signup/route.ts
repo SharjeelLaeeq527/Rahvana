@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail, getEmailConfirmationHtml } from "@/lib/email/resend";
 import crypto from "crypto";
-import { E, msg } from '@/lib/errors'
+import { E, msg } from "@/lib/errors";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +13,7 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  },
+  }
 );
 
 // Strong password validation
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       console.warn("signup invalid request");
       return NextResponse.json(
         { error: msg(E.AUTH_SIGNUP_FIELDS_REQUIRED, { fields: "email, password" }) },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -51,35 +51,24 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       console.warn("signup invalid email format");
-      return NextResponse.json(
-        { error: msg(E.AUTH_EMAIL_FORMAT_INVALID) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.AUTH_EMAIL_FORMAT_INVALID) }, { status: 400 });
     }
 
     // Disposable email check
-    const blockedDomains = [
-      "mailinator.com",
-      "tempmail.com",
-      "10minutemail.com",
-      "yopmail.com",
-    ];
+    const blockedDomains = ["mailinator.com", "tempmail.com", "10minutemail.com", "yopmail.com"];
     const domain = email.split("@")[1];
     if (blockedDomains.includes(domain)) {
       console.warn("signup disposable email blocked");
       return NextResponse.json(
         { error: msg(E.AUTH_SIGNUP_DISPOSABLE_EMAIL, { domain }) },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Strong password
     if (!validatePassword(password)) {
       console.warn("signup weak password");
-      return NextResponse.json(
-        { error: msg(E.AUTH_PASSWORD_TOO_WEAK) },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.AUTH_PASSWORD_TOO_WEAK) }, { status: 400 });
     }
 
     // List users to check existing
@@ -89,21 +78,16 @@ export async function POST(request: NextRequest) {
     });
 
     const existingUser = users?.users?.find((u) =>
-      safeCompare(u.email?.toLowerCase() || "", email),
+      safeCompare(u.email?.toLowerCase() || "", email)
     );
 
     // Build confirmation token & link (for both new and existing unconfirmed users)
     const confirmToken = crypto.randomBytes(32).toString("hex");
-    const confirmTokenHash = crypto
-      .createHash("sha256")
-      .update(confirmToken)
-      .digest("hex");
+    const confirmTokenHash = crypto.createHash("sha256").update(confirmToken).digest("hex");
     const confirmTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      request.headers.get("origin") ||
-      "http://localhost:3000";
+      process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "http://localhost:3000";
     const confirmLink = `${baseUrl}/api/auth/confirm-email?token=${confirmToken}&email=${encodeURIComponent(email)}`;
 
     const emailHtml = getEmailConfirmationHtml(confirmLink);
@@ -133,22 +117,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new user
-    const { data: newUser, error: createError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: false,
-        user_metadata: {
-          confirm_token_hash: confirmTokenHash,
-          confirm_token_expiry: confirmTokenExpiry.toISOString(),
-        },
-      });
+    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: false,
+      user_metadata: {
+        confirm_token_hash: confirmTokenHash,
+        confirm_token_expiry: confirmTokenExpiry.toISOString(),
+      },
+    });
 
     if (createError) {
       console.error("Create user error:", createError);
       return NextResponse.json(
-        { success: false, code: E.AUTH_SIGNUP_CREATE_FAILED, message: msg(E.AUTH_SIGNUP_CREATE_FAILED) },
-        { status: 500 },
+        {
+          success: false,
+          code: E.AUTH_SIGNUP_CREATE_FAILED,
+          message: msg(E.AUTH_SIGNUP_CREATE_FAILED),
+        },
+        { status: 500 }
       );
     }
 
@@ -173,7 +160,7 @@ export async function POST(request: NextRequest) {
               role: "user",
             },
           ],
-          { onConflict: "id" },
+          { onConflict: "id" }
         );
       }
     }
@@ -194,7 +181,7 @@ export async function POST(request: NextRequest) {
     console.error("Signup error:", error);
     return NextResponse.json(
       { success: false, code: E.AUTH_UNEXPECTED_ERROR, message: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

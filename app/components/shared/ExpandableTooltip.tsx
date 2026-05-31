@@ -28,9 +28,7 @@ export const ExpandableTooltip = ({
           <div className="w-5 h-5 rounded-full bg-[#0d7377] text-white text-xs flex items-center justify-center font-semibold">
             {icon}
           </div>
-          <span className="text-sm font-medium text-[#0d7377]">
-            {title}
-          </span>
+          <span className="text-sm font-medium text-[#0d7377]">{title}</span>
         </div>
         <ChevronDown
           size={18}

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { decrypt } from '@/lib/encryption';
-import { E, msg } from '@/lib/errors';
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { decrypt } from "@/lib/encryption";
+import { E, msg } from "@/lib/errors";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Helper: Create Supabase client with service role (bypasses RLS)
 function createAdminClient() {
@@ -12,9 +12,11 @@ function createAdminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
-        getAll() { return []; },
-        setAll() {}
-      }
+        getAll() {
+          return [];
+        },
+        setAll() {},
+      },
     }
   );
 }
@@ -31,26 +33,26 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createAdminClient();
     const { searchParams } = new URL(req.url);
-    const journeyType = searchParams.get('journey_type') || 'IR1';
-    const status = searchParams.get('status');
-    const search = searchParams.get('search');
+    const journeyType = searchParams.get("journey_type") || "IR1";
+    const status = searchParams.get("status");
+    const search = searchParams.get("search");
 
     // Fetch journeys first
     let query = supabase
-      .from('journeys')
-      .select('*')
-      .eq('journey_type', journeyType)
-      .order('admin_last_checked_at', { ascending: false, nullsFirst: true })
-      .order('created_at', { ascending: false });
+      .from("journeys")
+      .select("*")
+      .eq("journey_type", journeyType)
+      .order("admin_last_checked_at", { ascending: false, nullsFirst: true })
+      .order("created_at", { ascending: false });
 
     if (status) {
-      query = query.eq('status', status);
+      query = query.eq("status", status);
     }
 
     const { data: rawJourneys, error } = await query;
 
     if (error) {
-      console.error('Error fetching visa cases:', error);
+      console.error("Error fetching visa cases:", error);
       return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
@@ -64,42 +66,58 @@ export async function GET(req: NextRequest) {
 
     // Fetch related profiles
     const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .in('id', userIds);
+      .from("profiles")
+      .select("id, email")
+      .in("id", userIds);
 
     // Fetch related case data (only NVC data needed for table)
     const { data: caseData } = await supabase
-      .from('case_data')
-      .select('journey_id, data_key, data_value')
-      .in('journey_id', journeyIds)
-      .in('data_key', ['nvcCaseNum', 'nvc_case_num', 'nvcInvoice', 'nvc_invoice_id', 'passportNumber', 'surname']);
+      .from("case_data")
+      .select("journey_id, data_key, data_value")
+      .in("journey_id", journeyIds)
+      .in("data_key", [
+        "nvcCaseNum",
+        "nvc_case_num",
+        "nvcInvoice",
+        "nvc_invoice_id",
+        "passportNumber",
+        "surname",
+      ]);
 
-    console.log(`[Admin API] Fetched ${caseData?.length || 0} case_data rows for ${journeyIds.length} journeys`);
+    console.log(
+      `[Admin API] Fetched ${caseData?.length || 0} case_data rows for ${journeyIds.length} journeys`
+    );
     if (caseData && caseData.length > 0) {
-      console.log(`[Admin API] Sample keys found:`, [...new Set(caseData.map(d => d.data_key))]);
+      console.log(`[Admin API] Sample keys found:`, [...new Set(caseData.map((d) => d.data_key))]);
     }
 
     // Map the shape for the frontend
     const journeys = rawJourneys.map((j: any) => {
       // Extract profile and nvc case number
       const profile = profiles?.find((p) => p.id === j.user_id);
-      const jCaseData = (caseData?.filter((cd) => cd.journey_id === j.id) || []).map(cd => ({
+      const jCaseData = (caseData?.filter((cd) => cd.journey_id === j.id) || []).map((cd) => ({
         ...cd,
-        data_value: typeof cd.data_value === 'string' && cd.data_value.startsWith('gcm:') ? decrypt(cd.data_value) : cd.data_value
+        data_value:
+          typeof cd.data_value === "string" && cd.data_value.startsWith("gcm:")
+            ? decrypt(cd.data_value)
+            : cd.data_value,
       }));
-      const nvcCaseData = jCaseData.find((cd) => cd.data_key === 'nvcCaseNum' || cd.data_key === 'nvc_case_num');
-      const invoiceData = jCaseData.find((cd) => cd.data_key === 'nvcInvoice' || cd.data_key === 'nvc_invoice_id');
-      const passportData = jCaseData.find((cd) => cd.data_key === 'passportNumber');
-      const surnameData = jCaseData.find((cd) => cd.data_key === 'surname');
-      
+      const nvcCaseData = jCaseData.find(
+        (cd) => cd.data_key === "nvcCaseNum" || cd.data_key === "nvc_case_num"
+      );
+      const invoiceData = jCaseData.find(
+        (cd) => cd.data_key === "nvcInvoice" || cd.data_key === "nvc_invoice_id"
+      );
+      const passportData = jCaseData.find((cd) => cd.data_key === "passportNumber");
+      const surnameData = jCaseData.find((cd) => cd.data_key === "surname");
+
       return {
         ...j,
-        user_email: profile?.email || 'No email found',
-        nvc_case_number: nvcCaseData?.data_value || '',
-        nvc_invoice: invoiceData?.data_value || '',
-        passport_number: passportData?.data_value || '',
-        surname: surnameData?.data_value || '',
+        user_email: profile?.email || "No email found",
+        nvc_case_number: nvcCaseData?.data_value || "",
+        nvc_invoice: invoiceData?.data_value || "",
+        passport_number: passportData?.data_value || "",
+        surname: surnameData?.data_value || "",
       };
     });
 
@@ -108,16 +126,18 @@ export async function GET(req: NextRequest) {
     if (search) {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter((j: any) => {
-        return j.user_id?.toLowerCase().includes(searchLower) ||
-               j.id.toLowerCase().includes(searchLower) ||
-               j.user_email.toLowerCase().includes(searchLower) ||
-               j.nvc_case_number.toLowerCase().includes(searchLower);
+        return (
+          j.user_id?.toLowerCase().includes(searchLower) ||
+          j.id.toLowerCase().includes(searchLower) ||
+          j.user_email.toLowerCase().includes(searchLower) ||
+          j.nvc_case_number.toLowerCase().includes(searchLower)
+        );
       });
     }
 
     return NextResponse.json({ data: filtered });
   } catch (error: any) {
-    console.error('Unexpected error fetching visa cases:', error);
+    console.error("Unexpected error fetching visa cases:", error);
     return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }
@@ -138,12 +158,12 @@ export async function PATCH(req: NextRequest) {
     const { id, tracking_status, admin_notes } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing journey ID' }, { status: 400 });
+      return NextResponse.json({ error: "Missing journey ID" }, { status: 400 });
     }
 
     // Build update object
     const updateData: any = {
-      admin_last_checked_at: new Date().toISOString()
+      admin_last_checked_at: new Date().toISOString(),
     };
 
     if (body.clear_tracking) {
@@ -151,9 +171,9 @@ export async function PATCH(req: NextRequest) {
     } else if (tracking_status) {
       // Fetch current tracking_status first
       const { data: current } = await supabase
-        .from('journeys')
-        .select('tracking_status')
-        .eq('id', id)
+        .from("journeys")
+        .select("tracking_status")
+        .eq("id", id)
         .single();
 
       const currentTracking = current?.tracking_status || {};
@@ -165,14 +185,14 @@ export async function PATCH(req: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('journeys')
+      .from("journeys")
       .update(updateData)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating tracking status:', error);
+      console.error("Error updating tracking status:", error);
       return NextResponse.json({ error: msg(E.ADMIN_TRACKING_CLEAR_FAILED) }, { status: 500 });
     }
 
@@ -181,34 +201,34 @@ export async function PATCH(req: NextRequest) {
     const upsertOps: any[] = [
       {
         journey_id: id,
-        data_key: 'admin_last_check_date',
+        data_key: "admin_last_check_date",
         data_value: checkDate,
-        label: 'Admin Last Check Date',
-        source: 'admin',
-        source_reference: 'visa_cases_panel',
+        label: "Admin Last Check Date",
+        source: "admin",
+        source_reference: "visa_cases_panel",
       },
     ];
     if (body.case_status) {
       upsertOps.push({
         journey_id: id,
-        data_key: 'admin_case_status',
+        data_key: "admin_case_status",
         data_value: body.case_status,
-        label: 'Admin Case Status',
-        source: 'admin',
-        source_reference: 'visa_cases_panel',
+        label: "Admin Case Status",
+        source: "admin",
+        source_reference: "visa_cases_panel",
       });
     }
     if (body.check_notes) {
       upsertOps.push({
         journey_id: id,
-        data_key: 'admin_check_notes',
+        data_key: "admin_check_notes",
         data_value: body.check_notes,
-        label: 'Admin Check Notes',
-        source: 'admin',
-        source_reference: 'visa_cases_panel',
+        label: "Admin Check Notes",
+        source: "admin",
+        source_reference: "visa_cases_panel",
       });
     }
-    await supabase.from('case_data').upsert(upsertOps, { onConflict: 'journey_id,data_key' });
+    await supabase.from("case_data").upsert(upsertOps, { onConflict: "journey_id,data_key" });
 
     // TODO: Trigger notification to user if important status changed
     // This will be implemented in Phase C
@@ -221,14 +241,14 @@ export async function PATCH(req: NextRequest) {
     const trackingChanged = tracking_status && Object.keys(tracking_status).length > 0;
     if (trackingChanged) {
       // Check if this is an important status change
-      const importantFields = ['nvc_review_complete', 'dq_status', 'interview_date', 'ap_status'];
-      const hasImportantChange = importantFields.some(field =>
-        tracking_status[field] !== undefined
+      const importantFields = ["nvc_review_complete", "dq_status", "interview_date", "ap_status"];
+      const hasImportantChange = importantFields.some(
+        (field) => tracking_status[field] !== undefined
       );
 
       if (hasImportantChange) {
         // Trigger notification (will be implemented with Resend/Supabase Edge Function)
-        console.log('[Admin API] Important status change detected, triggering notification:', {
+        console.log("[Admin API] Important status change detected, triggering notification:", {
           journeyId: id,
           changes: tracking_status,
         });
@@ -247,8 +267,8 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ data });
   } catch (error: any) {
-    console.error('Error in PATCH:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    console.error("Error in PATCH:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -265,22 +285,19 @@ export async function DELETE(req: NextRequest) {
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing journey ID' }, { status: 400 });
+      return NextResponse.json({ error: "Missing journey ID" }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from('journeys')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("journeys").delete().eq("id", id);
 
     if (error) {
-      console.error('Error deleting journey:', error);
+      console.error("Error deleting journey:", error);
       return NextResponse.json({ error: msg(E.JOURNEYS_DELETE_FAILED) }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Error in DELETE:', error);
+    console.error("Error in DELETE:", error);
     return NextResponse.json({ error: msg(E.JOURNEYS_DELETE_FAILED) }, { status: 500 });
   }
 }

@@ -47,9 +47,7 @@ function ResultPageInner() {
       <div className="bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center max-w-md xl:max-w-xl">
           <div className="bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">
-              Invalid Session
-            </h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">Invalid Session</h2>
             <p className="text-slate-600 mb-6">
               No session ID provided. Please start a new assessment.
             </p>

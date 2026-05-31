@@ -75,7 +75,7 @@ export class ReminderEngine {
         journey_id: journeyId,
         ...c,
       })),
-      { onConflict: "dedup_key", ignoreDuplicates: false },
+      { onConflict: "dedup_key", ignoreDuplicates: false }
     );
   }
 
@@ -115,9 +115,7 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkMissingDocuments(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkMissingDocuments(journeyId: string): Promise<ReminderCandidate[]> {
     const { data: docs } = await this.supabase
       .from("journey_documents")
       .select("id, document_type, document_label, step_key, status")
@@ -151,9 +149,7 @@ export class ReminderEngine {
   //   Day 30+ → critical "Overdue — interview may be at risk"
   // ─────────────────────────────────────────────────────────────
 
-  private async checkPoliceCertificatePending(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkPoliceCertificatePending(journeyId: string): Promise<ReminderCandidate[]> {
     const { data: caseRows } = await this.supabase
       .from("case_data")
       .select("data_key, data_value")
@@ -162,17 +158,13 @@ export class ReminderEngine {
 
     if (!caseRows || caseRows.length === 0) return [];
 
-    const byKey = Object.fromEntries(
-      caseRows.map((r) => [r.data_key, String(r.data_value ?? "")]),
-    );
+    const byKey = Object.fromEntries(caseRows.map((r) => [r.data_key, String(r.data_value ?? "")]));
 
     // Already received — no reminder
-    if (byKey["pcc_received"] === "true" || byKey["pcc_received"] === '"true"')
-      return [];
+    if (byKey["pcc_received"] === "true" || byKey["pcc_received"] === '"true"') return [];
 
     // Application must be saved for tracking to start
-    if (byKey["pcc_saved"] !== "true" && byKey["pcc_saved"] !== '"true"')
-      return [];
+    if (byKey["pcc_saved"] !== "true" && byKey["pcc_saved"] !== '"true"') return [];
 
     // Calculate days since application date
     const now = new Date();
@@ -181,9 +173,7 @@ export class ReminderEngine {
     if (rawDate) {
       const appDate = new Date(rawDate + "T00:00:00");
       if (!isNaN(appDate.getTime())) {
-        daysSince = Math.floor(
-          (now.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24),
-        );
+        daysSince = Math.floor((now.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24));
       }
     }
 
@@ -237,18 +227,14 @@ export class ReminderEngine {
   // Priority: critical (≤1 day), high (≤7 days), normal (≤14 days)
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAppointmentsApproaching(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkAppointmentsApproaching(journeyId: string): Promise<ReminderCandidate[]> {
     const now = new Date();
     const in14Days = new Date(now);
     in14Days.setDate(in14Days.getDate() + 14);
 
     const { data: appointments } = await this.supabase
       .from("journey_appointments")
-      .select(
-        "id, appointment_type, appointment_date, appointment_datetime, location, step_key",
-      )
+      .select("id, appointment_type, appointment_date, appointment_datetime, location, step_key")
       .eq("journey_id", journeyId)
       .eq("status", "scheduled")
       .gte("appointment_datetime", now.toISOString())
@@ -257,15 +243,10 @@ export class ReminderEngine {
     if (!appointments || appointments.length === 0) return [];
 
     return appointments.map((appt) => {
-      const apptDate = new Date(
-        appt.appointment_datetime || appt.appointment_date,
-      );
-      const diffDays = Math.ceil(
-        (apptDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-      );
+      const apptDate = new Date(appt.appointment_datetime || appt.appointment_date);
+      const diffDays = Math.ceil((apptDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-      const priority =
-        diffDays <= 1 ? "critical" : diffDays <= 7 ? "high" : "normal";
+      const priority = diffDays <= 1 ? "critical" : diffDays <= 7 ? "high" : "normal";
 
       const typeLabel =
         appt.appointment_type === "medical"
@@ -301,9 +282,7 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkReceiptNotCaptured(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkReceiptNotCaptured(journeyId: string): Promise<ReminderCandidate[]> {
     // Check if journey is in_progress (user has started filing)
     const { data: journey } = await this.supabase
       .from("journeys")
@@ -346,9 +325,7 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkNvcFeeNotConfirmed(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkNvcFeeNotConfirmed(journeyId: string): Promise<ReminderCandidate[]> {
     const { data: journey } = await this.supabase
       .from("journeys")
       .select("completion_percentage")
@@ -365,8 +342,7 @@ export class ReminderEngine {
       .single();
 
     // If fee is posted, no reminder needed
-    if (feeData?.data_value === "posted" || feeData?.data_value === '"posted"')
-      return [];
+    if (feeData?.data_value === "posted" || feeData?.data_value === '"posted"') return [];
 
     return [
       {
@@ -389,9 +365,7 @@ export class ReminderEngine {
   // Priority: normal
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAccountSetupIncomplete(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkAccountSetupIncomplete(journeyId: string): Promise<ReminderCandidate[]> {
     const { data: journey } = await this.supabase
       .from("journeys")
       .select("completion_percentage")
@@ -430,9 +404,7 @@ export class ReminderEngine {
   // Priority: normal
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAbandonedToolSessions(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkAbandonedToolSessions(journeyId: string): Promise<ReminderCandidate[]> {
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
@@ -478,9 +450,7 @@ export class ReminderEngine {
   // Priority: high
   // ─────────────────────────────────────────────────────────────
 
-  private async checkAppointmentNotRecorded(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkAppointmentNotRecorded(journeyId: string): Promise<ReminderCandidate[]> {
     const { data: journey } = await this.supabase
       .from("journeys")
       .select("completion_percentage")
@@ -535,9 +505,7 @@ export class ReminderEngine {
   // Priority: depends on status
   // ─────────────────────────────────────────────────────────────
 
-  private async checkTrackingStatusUpdates(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkTrackingStatusUpdates(journeyId: string): Promise<ReminderCandidate[]> {
     // Get latest tracking status
     const { data: statusData } = await this.supabase
       .from("case_data")
@@ -549,9 +517,7 @@ export class ReminderEngine {
     if (!statusData?.data_value) return [];
 
     // Clean Value
-    const status = String(statusData.data_value)
-      .replace(/"/g, "")
-      .toLowerCase();
+    const status = String(statusData.data_value).replace(/"/g, "").toLowerCase();
 
     // Only trigger if recently updated (avoid old spam)
     const updatedAt = new Date(statusData.updated_at);
@@ -608,9 +574,7 @@ export class ReminderEngine {
   // Auto-dismisses when all required docs are marked reviewed
   // ─────────────────────────────────────────────────────────────
 
-  private async checkStep2GatheringPending(
-    journeyId: string,
-  ): Promise<ReminderCandidate[]> {
+  private async checkStep2GatheringPending(journeyId: string): Promise<ReminderCandidate[]> {
     const REQUIRED_DOC_IDS = [
       "doc_citizenship",
       "doc_passport_ben",
@@ -648,9 +612,7 @@ export class ReminderEngine {
       return [];
     }
 
-    const pendingDocs = REQUIRED_DOC_IDS.filter(
-      (id) => gatheringStatus[id] !== "reviewed",
-    );
+    const pendingDocs = REQUIRED_DOC_IDS.filter((id) => gatheringStatus[id] !== "reviewed");
 
     // All required docs reviewed — auto-dismiss any existing reminder
     if (pendingDocs.length === 0) {
@@ -664,8 +626,7 @@ export class ReminderEngine {
 
     // Only remind if user has been inactive on this step for 48+ hours
     const updatedAt = new Date(gatheringRow.updated_at);
-    const hoursSince =
-      (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60);
+    const hoursSince = (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60);
     if (hoursSince < 48) return [];
 
     const pendingLabels = pendingDocs.map((id) => REQUIRED_DOC_LABELS[id]);

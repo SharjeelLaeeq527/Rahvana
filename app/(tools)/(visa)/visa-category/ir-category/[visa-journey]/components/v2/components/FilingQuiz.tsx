@@ -1,5 +1,14 @@
 import React from "react";
-import { Info, Check, XCircle, HelpCircle, ArrowRight, User, ClipboardList, MessageSquare } from "lucide-react";
+import {
+  Info,
+  Check,
+  XCircle,
+  HelpCircle,
+  ArrowRight,
+  User,
+  ClipboardList,
+  MessageSquare,
+} from "lucide-react";
 import { FilingQuizResult } from "../hooks/useFilingQuiz";
 
 interface FilingQuizProps {
@@ -44,9 +53,7 @@ export const FilingQuiz: React.FC<FilingQuizProps> = ({
           <div
             className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
             style={{
-              width: quizResult
-                ? "100%"
-                : `${((quizScreenIdx + 1) / quiz.screens.length) * 100}%`,
+              width: quizResult ? "100%" : `${((quizScreenIdx + 1) / quiz.screens.length) * 100}%`,
             }}
           />
         </div>
@@ -62,9 +69,7 @@ export const FilingQuiz: React.FC<FilingQuizProps> = ({
               <h2 className="text-3xl font-black text-[#0c1b33] mb-3 leading-tight">
                 {quizResult.headline}
               </h2>
-              <p className="text-[15px] text-[#3a4f63] leading-relaxed mb-8">
-                {quizResult.body}
-              </p>
+              <p className="text-[15px] text-[#3a4f63] leading-relaxed mb-8">{quizResult.body}</p>
 
               <div className="flex flex-col gap-3 mb-10">
                 {quizResult.factors.map((f, i) => (
@@ -87,9 +92,7 @@ export const FilingQuiz: React.FC<FilingQuizProps> = ({
                         <HelpCircle size={12} className="text-[#6b8097]" />
                       )}
                     </div>
-                    <span className="text-[14px] font-medium text-[#3a4f63]">
-                      {f.text}
-                    </span>
+                    <span className="text-[14px] font-medium text-[#3a4f63]">{f.text}</span>
                   </div>
                 ))}
               </div>
@@ -174,9 +177,7 @@ export const FilingQuiz: React.FC<FilingQuizProps> = ({
               {screen.note && (
                 <div className="mt-8 flex gap-3 bg-[#fef8e8] border border-[#f0d98a] rounded-xl p-4">
                   <Info size={18} className="text-[#8a6200] shrink-0" />
-                  <p className="text-xs text-[#8a6200] leading-relaxed">
-                    {screen.note}
-                  </p>
+                  <p className="text-xs text-[#8a6200] leading-relaxed">{screen.note}</p>
                 </div>
               )}
             </div>

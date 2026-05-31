@@ -544,7 +544,12 @@ export const chapters = [
       ["step_2_3", "Complete Form DS-260", "Immigrant visa application", "todo"],
       ["step_2_4", "Prepare Civil Documents", "Gather required records", "todo"],
       ["step_2_5", "Affidavit of Support", "Determine and prepare sponsorship", "locked"],
-      ["step_2_10", "Record Documentary Qualification", "Record DQ date & activate tracking", "locked"],
+      [
+        "step_2_10",
+        "Record Documentary Qualification",
+        "Record DQ date & activate tracking",
+        "locked",
+      ],
     ],
   },
   {
@@ -559,7 +564,12 @@ export const chapters = [
     text: "text-[#051738]",
     steps: [
       ["step_3_1", "Schedule Medical Examination", "Official medical clearance", "current"],
-      ["step_3_2", "Obtain Polio Vaccination Certificate", "Required for Pakistan applicants", "todo"],
+      [
+        "step_3_2",
+        "Obtain Polio Vaccination Certificate",
+        "Required for Pakistan applicants",
+        "todo",
+      ],
       ["step_3_3", "Obtain Fresh Police Clearance Certificate", "Required for interview", "todo"],
       ["step_3_6", "Gather Original Documents", "Official document compilation", "todo"],
       ["step_3_7", "Prepare for Interview", "Practice questions and build confidence", "locked"],

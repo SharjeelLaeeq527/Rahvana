@@ -16,10 +16,7 @@ import {
   BookOpen,
   GraduationCap,
 } from "lucide-react";
-import type {
-  DynamicQuestion,
-  QuestionnaireSection,
-} from "@/data/interview-categories/schema";
+import type { DynamicQuestion, QuestionnaireSection } from "@/data/interview-categories/schema";
 
 interface DynamicQuestionStepProps {
   section: QuestionnaireSection;
@@ -123,10 +120,7 @@ export function DynamicQuestionStep({
     return null;
   }
 
-  const validateQuestion = (
-    question: DynamicQuestion,
-    value: unknown,
-  ): string | null => {
+  const validateQuestion = (question: DynamicQuestion, value: unknown): string | null => {
     const fieldName = formatFieldName(question.key);
     const shouldValidateRequired = question.type !== "boolean";
 
@@ -203,8 +197,7 @@ export function DynamicQuestionStep({
     const el = questionRefs.current[key];
     if (el) {
       const rect = el.getBoundingClientRect();
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const top = rect.top + scrollTop - 150;
 
       window.scrollTo({
@@ -266,8 +259,7 @@ export function DynamicQuestionStep({
       const el = questionRefs.current[firstErrorKey];
       if (el) {
         const rect = el.getBoundingClientRect();
-        const scrollTop =
-          window.pageYOffset || document.documentElement.scrollTop;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const top = rect.top + scrollTop - 100;
         window.scrollTo({ top, behavior: "smooth" });
       }
@@ -318,7 +310,7 @@ export function DynamicQuestionStep({
             onChange={(e) =>
               handleInputChange(
                 question.key,
-                e.target.value === "" ? "" : parseFloat(e.target.value),
+                e.target.value === "" ? "" : parseFloat(e.target.value)
               )
             }
             placeholder={question.placeholder}
@@ -351,24 +343,19 @@ export function DynamicQuestionStep({
             {["Yes", "No"].map((option) => (
               <button
                 key={option}
-                onClick={() =>
-                  handleInputChange(question.key, option === "Yes")
-                }
+                onClick={() => handleInputChange(question.key, option === "Yes")}
                 className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
                 style={{
                   borderColor:
-                    (option === "Yes" && value === true) ||
-                    (option === "No" && value === false)
+                    (option === "Yes" && value === true) || (option === "No" && value === false)
                       ? COLORS.primary
                       : COLORS.border,
                   backgroundColor:
-                    (option === "Yes" && value === true) ||
-                    (option === "No" && value === false)
+                    (option === "Yes" && value === true) || (option === "No" && value === false)
                       ? COLORS.primaryLight
                       : "white",
                   color:
-                    (option === "Yes" && value === true) ||
-                    (option === "No" && value === false)
+                    (option === "Yes" && value === true) || (option === "No" && value === false)
                       ? COLORS.primary
                       : "#374151",
                 }}
@@ -385,21 +372,15 @@ export function DynamicQuestionStep({
         // For 2 or 4 options: Use button-based selection (like page.tsx)
         if (optionCount === 2 || optionCount === 4) {
           return (
-            <div
-              className={`grid gap-3 ${
-                optionCount === 2 ? "grid-cols-2" : "grid-cols-2"
-              }`}
-            >
+            <div className={`grid gap-3 ${optionCount === 2 ? "grid-cols-2" : "grid-cols-2"}`}>
               {question.options?.map((option) => (
                 <button
                   key={option}
                   onClick={() => handleInputChange(question.key, option)}
                   className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
                   style={{
-                    borderColor:
-                      value === option ? COLORS.primary : COLORS.border,
-                    backgroundColor:
-                      value === option ? COLORS.primaryLight : "white",
+                    borderColor: value === option ? COLORS.primary : COLORS.border,
+                    backgroundColor: value === option ? COLORS.primaryLight : "white",
                     color: value === option ? COLORS.primary : "#374151",
                   }}
                 >
@@ -415,9 +396,7 @@ export function DynamicQuestionStep({
           <CustomDropdown
             value={(value as string) || ""}
             onChange={(val) => handleInputChange(question.key, val)}
-            options={
-              question.options?.map((opt) => ({ value: opt, label: opt })) || []
-            }
+            options={question.options?.map((opt) => ({ value: opt, label: opt })) || []}
             placeholder="Select an option"
           />
         );
@@ -448,10 +427,7 @@ export function DynamicQuestionStep({
             {sectionConfig.icon}
           </div>
 
-          <h2
-            className="text-3xl sm:text-4xl font-bold mb-3"
-            style={{ color: COLORS.primary }}
-          >
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: COLORS.primary }}>
             {section.title}
           </h2>
 
@@ -485,9 +461,7 @@ export function DynamicQuestionStep({
                         style={{ color: COLORS.primary }}
                       >
                         {processTemplate(question.label)}
-                        {question.required && (
-                          <span style={{ color: COLORS.warning }}> *</span>
-                        )}
+                        {question.required && <span style={{ color: COLORS.warning }}> *</span>}
                       </label>
                       {question.helpText && (
                         <p className="text-sm text-slate-500 mt-2 leading-relaxed">
@@ -504,9 +478,7 @@ export function DynamicQuestionStep({
                         style={{ color: COLORS.primary }}
                       >
                         {processTemplate(question.label)}
-                        {question.required && (
-                          <span style={{ color: COLORS.warning }}> *</span>
-                        )}
+                        {question.required && <span style={{ color: COLORS.warning }}> *</span>}
                       </label>
                     </div>
                   )}
@@ -514,10 +486,7 @@ export function DynamicQuestionStep({
                   <div className="mt-4">{renderQuestion(question)}</div>
 
                   {fieldError && (
-                    <p
-                      className="text-sm font-medium mt-3"
-                      style={{ color: COLORS.warning }}
-                    >
+                    <p className="text-sm font-medium mt-3" style={{ color: COLORS.warning }}>
                       {fieldError}
                     </p>
                   )}

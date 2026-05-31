@@ -10,6 +10,7 @@ import { ToastProvider } from "./components/shared/ToastProvider";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
+import { UserProfileProvider } from "./context/UserProfileContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
 
@@ -17,28 +18,21 @@ export const metadata: Metadata = {
   title: "Rahvana",
   description:
     "Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
- icons: {
-  icon: [
-    { url: "/favicon4.ico", sizes: "any" },
-    { url: "/favicon-512.png", type: "image/png", sizes: "32x32" },
-    { url: "/favicon-512.png", type: "image/png", sizes: "192x192" }, 
-  ],
-  apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
-},
+  icons: {
+    icon: [
+      { url: "/favicon4.ico", sizes: "any" },
+      { url: "/favicon-512.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-512.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className="bg-background">
-        <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-TNW3YZDTCR"
-        />
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-TNW3YZDTCR" />
         <Script id="google-analytics">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -78,21 +72,23 @@ export default function RootLayout({
         <ToastProvider>
           <AuthProvider>
             <PlanProvider>
-              <LanguageProvider>
-                {/* <ThemeProvider
-            attribute="class"
-            // un comment if you want bydefault device theme
-            // defaultTheme="system"
-            disableTransitionOnChange
-          > */}
-                <ClientHeader />
-                <ToolsGuard>{children}</ToolsGuard>
-                <ClientWidgets />
-                <Footer />
-                {/* </ThemeProvider> */}
-              </LanguageProvider>
-          <PlanTierDevToggle/>
-              {/* DEV ONLY — uncomment for local testing */}
+              <UserProfileProvider>
+                <LanguageProvider>
+                  {/* <ThemeProvider
+              attribute="class"
+              // un comment if you want bydefault device theme
+              // defaultTheme="system"
+              disableTransitionOnChange
+            > */}
+                  <ClientHeader />
+                  <ToolsGuard>{children}</ToolsGuard>
+                  <ClientWidgets />
+                  <Footer />
+                  {/* </ThemeProvider> */}
+                </LanguageProvider>
+                <PlanTierDevToggle />
+                {/* DEV ONLY — uncomment for local testing */}
+              </UserProfileProvider>
             </PlanProvider>
           </AuthProvider>
         </ToastProvider>

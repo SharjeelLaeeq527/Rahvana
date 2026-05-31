@@ -6,6 +6,8 @@ import { E, msg } from "@/lib/errors";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { syncCaseDataToProfile, syncProfileToCaseData } from "@/lib/autoFill/journeyProfileBridge";
 
 export interface WizardState {
   currentStage: number;
@@ -16,10 +18,7 @@ export interface WizardState {
   role: "both" | "petitioner" | "beneficiary";
   filingType: "online" | "paper" | "both";
   documentChecklist: Record<string, boolean>;
-  docUploads: Record<
-    string,
-    { name: string; size: number; lastModified: number }
-  >;
+  docUploads: Record<string, { name: string; size: number; lastModified: number }>;
   notes: Record<string, string>;
   started: boolean;
   answers: Record<string, any>;
@@ -54,11 +53,8 @@ interface UseWizardOptions {
 }
 
 export function useWizard(options: UseWizardOptions = {}) {
-  const {
-    userId,
-    journeyId = "ir1",
-    roadmapData: externalRoadmapData,
-  } = options;
+  const { userId, journeyId = "ir1", roadmapData: externalRoadmapData } = options;
+  const { profile, updateProfile } = useUserProfile();
 
   const activeRoadmap = externalRoadmapData;
 
@@ -118,12 +114,12 @@ export function useWizard(options: UseWizardOptions = {}) {
   //     if (currentStep === null || currentStep < 0 || currentStep >= stepsInChapter.length) {
   //       const firstIncomplete = stepsInChapter.findIndex((s: any) => {
   //         const sId = s.step_key || s.id;
-  //         const isActive = activeStepsInChapter.some((as: any) => 
+  //         const isActive = activeStepsInChapter.some((as: any) =>
   //           (as.step_key || as.id) === sId
   //         );
   //         return isActive && !prev.completedSteps.has(sId);
   //       });
-        
+
   //       if (firstIncomplete === -1) {
   //         narrowedStep = activeStepsInChapter.length > 0 ? stepsInChapter.findIndex((s: any) =>
   //           activeStepsInChapter.some((as: any) => (as.step_key || as.id) === (s.step_key || s.id))
@@ -184,25 +180,20 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         // Derive stage/step position from roadmap JSON (if available)
         // Note: activeRoadmap is no longer a dependency — we derive best-effort
-        const roadmapChapters =
-          activeRoadmap?.chapters || activeRoadmap?.stages || [];
+        const roadmapChapters = activeRoadmap?.chapters || activeRoadmap?.stages || [];
 
         let derivedStage = 0;
         let derivedStep = 0;
 
         if (roadmapChapters.length > 0) {
           for (let ci = 0; ci < roadmapChapters.length; ci++) {
-            const chapterSteps = (roadmapChapters[ci].steps || []).filter(
-              (s: any) => {
-                const branch = s.branch;
-                return !branch || branch === "both" || branch === filingMethod;
-              }
-            );
+            const chapterSteps = (roadmapChapters[ci].steps || []).filter((s: any) => {
+              const branch = s.branch;
+              return !branch || branch === "both" || branch === filingMethod;
+            });
             const allDone =
               chapterSteps.length > 0 &&
-              chapterSteps.every((s: any) =>
-                completedSet.has(s.step_key || s.id)
-              );
+              chapterSteps.every((s: any) => completedSet.has(s.step_key || s.id));
             if (!allDone) {
               derivedStage = ci;
               const firstIncomplete = chapterSteps.findIndex(
@@ -252,16 +243,35 @@ export function useWizard(options: UseWizardOptions = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, journeyId]);
 
+  // Synchronize MasterProfile standard fields back into wizard metadata in-memory
+  useEffect(() => {
+    if (!profile || !isLoaded) return;
+
+    try {
+      const profileDelta = syncProfileToCaseData(profile, state.metadata);
+      if (Object.keys(profileDelta).length > 0) {
+        setState((prev) => ({
+          ...prev,
+          metadata: { ...prev.metadata, ...profileDelta },
+        }));
+        console.log("[useWizard] Auto-merged profile fields into journey metadata:", profileDelta);
+      }
+    } catch (err) {
+      console.error("[useWizard] Failed to auto-merge profile fields into journey metadata:", err);
+    }
+  }, [profile, isLoaded, state.metadata]);
+
   // ─── Actions ───────────────────────────────────────────────────────────────
+
   const actions = useMemo(() => {
     // Helper to invalidate server cache in the background after a mutation
     const invalidateJourneyCache = () => {
       if (!userId || !journeyId) return;
       fetch("/api/journeys/initialize", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "x-cache-bust": "1" 
+          "x-cache-bust": "1",
         },
         body: JSON.stringify({ journey_type: journeyId }),
       }).catch(() => {}); // Non-blocking
@@ -272,7 +282,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         setState((prev) => {
           const chapters = activeRoadmap.chapters || activeRoadmap.stages;
           const chapter = chapters[idx];
-          
+
           if (prev.backendId && chapter?.id) {
             fetch(`/api/journeys/${prev.backendId}`, {
               method: "PATCH",
@@ -280,7 +290,7 @@ export function useWizard(options: UseWizardOptions = {}) {
               body: JSON.stringify({ current_chapter_id: chapter.id }),
             }).catch((err) => console.error("[useWizard] Failed to save chapter position:", err));
           }
-          
+
           return { ...prev, currentStage: idx, currentStep: null };
         });
       },
@@ -291,23 +301,23 @@ export function useWizard(options: UseWizardOptions = {}) {
           const stage = chapters[prev.currentStage];
           if (!stage) return prev;
           const stepId = stage.steps[idx]?.step_key || stage.steps[idx]?.id;
-          
+
           if (prev.backendId && stepId && prev.stepMap[stepId]) {
             const stepUuid = prev.stepMap[stepId];
             fetch(`/api/journeys/${prev.backendId}`, {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ 
+              body: JSON.stringify({
                 current_step_id: stepUuid,
                 current_chapter_id: stage?.id,
               }),
             }).catch((err) => console.error("[useWizard] Failed to save step position:", err));
           }
-          
-          return { 
-            ...prev, 
-            currentStep: idx, 
-            collapsedSteps: { ...prev.collapsedSteps, [stepId]: false } 
+
+          return {
+            ...prev,
+            currentStep: idx,
+            collapsedSteps: { ...prev.collapsedSteps, [stepId]: false },
           };
         });
       },
@@ -317,7 +327,8 @@ export function useWizard(options: UseWizardOptions = {}) {
         const { isLocked } = getJourneyLockStatus(currentState.metadata);
         if (isLocked) {
           toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED), {
-            description: "This journey is in read-only mode. The 14-day window following your interview outcome has ended.",
+            description:
+              "This journey is in read-only mode. The 14-day window following your interview outcome has ended.",
             duration: 4000,
           });
           return;
@@ -329,7 +340,8 @@ export function useWizard(options: UseWizardOptions = {}) {
         // toast always fires even if the journey hasn't fully synced yet.
         if (!isCompleted) {
           const chapters = activeRoadmap?.chapters || activeRoadmap?.stages || [];
-          const filingMethod = currentState.metadata?.filingMethod || currentState.filingType || 'online';
+          const filingMethod =
+            currentState.metadata?.filingMethod || currentState.filingType || "online";
           const metadata = currentState.metadata;
 
           const isStepActiveForCurrentFlow = (s: any): boolean => {
@@ -337,7 +349,7 @@ export function useWizard(options: UseWizardOptions = {}) {
             if (visibleWhen && Object.keys(visibleWhen).length > 0) {
               let isVisible = true;
               for (const [key, value] of Object.entries<any>(visibleWhen)) {
-                if (key === 'filingMethod') {
+                if (key === "filingMethod") {
                   if (value !== filingMethod) isVisible = false;
                 } else {
                   const stateValue = metadata?.[key];
@@ -351,7 +363,7 @@ export function useWizard(options: UseWizardOptions = {}) {
               if (!isVisible) return false;
             }
             const branch = s.branch;
-            if (!branch || branch === 'both') return true;
+            if (!branch || branch === "both") return true;
             return branch === filingMethod;
           };
 
@@ -362,7 +374,7 @@ export function useWizard(options: UseWizardOptions = {}) {
               if (isStepActiveForCurrentFlow(s)) {
                 orderedActiveSteps.push({
                   key: s.step_key || s.id,
-                  name: s.step_name || s.name || (s.step_key || s.id),
+                  name: s.step_name || s.name || s.step_key || s.id,
                 });
               }
             });
@@ -377,10 +389,10 @@ export function useWizard(options: UseWizardOptions = {}) {
               .find((s) => !currentState.completedSteps.has(s.key));
 
             if (firstIncomplete) {
-                toast.error(`Required step pending: "${firstIncomplete.name}"`, {
-                  description: "Please complete the required preceding step first.",
-                  duration: 4000,
-                });
+              toast.error(`Required step pending: "${firstIncomplete.name}"`, {
+                description: "Please complete the required preceding step first.",
+                duration: 4000,
+              });
               return;
             }
           }
@@ -391,8 +403,10 @@ export function useWizard(options: UseWizardOptions = {}) {
           return;
         }
 
-          if (!currentState.stepMap[stepKey]) {
-          console.warn("[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync...");
+        if (!currentState.stepMap[stepKey]) {
+          console.warn(
+            "[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync..."
+          );
           // (Rest of the sync logic skipped for brevity, but would use functional updates)
           toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED));
           return;
@@ -405,7 +419,7 @@ export function useWizard(options: UseWizardOptions = {}) {
           const newCompleted = new Set(prev.completedSteps);
           if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
           else newCompleted.add(stepKey);
-          
+
           return { ...prev, completedSteps: newCompleted };
         });
 
@@ -457,6 +471,16 @@ export function useWizard(options: UseWizardOptions = {}) {
           metadata: { ...prev.metadata, ...metadata },
         }));
 
+        // Client-side synchronization with UserProfileContext
+        try {
+          const profileDelta = syncCaseDataToProfile(metadata);
+          if (Object.keys(profileDelta).length > 0) {
+            updateProfile(profileDelta, { silent: true });
+          }
+        } catch (err) {
+          console.error("[useWizard] Failed to sync metadata to user profile context:", err);
+        }
+
         if (currentState.backendId) {
           const ops = Object.entries(metadata).map(([key, val]) => ({
             operation: "set",
@@ -488,19 +512,21 @@ export function useWizard(options: UseWizardOptions = {}) {
       },
 
       setRole: (role: WizardState["role"]) => setState((prev) => ({ ...prev, role })),
-      setFilingType: (type: WizardState["filingType"]) => setState((prev) => ({ ...prev, filingType: type })),
+      setFilingType: (type: WizardState["filingType"]) =>
+        setState((prev) => ({ ...prev, filingType: type })),
       setScenario: (scenario: string) => setState((prev) => ({ ...prev, scenarioType: scenario })),
-      toggleCollapse: (stepId: string) => setState((prev) => ({
-        ...prev,
-        collapsedSteps: { ...prev.collapsedSteps, [stepId]: !prev.collapsedSteps[stepId] }
-      })),
+      toggleCollapse: (stepId: string) =>
+        setState((prev) => ({
+          ...prev,
+          collapsedSteps: { ...prev.collapsedSteps, [stepId]: !prev.collapsedSteps[stepId] },
+        })),
       toggleDocument: (doc: string) => {
         setState((prev) => ({
           ...prev,
           documentChecklist: {
             ...prev.documentChecklist,
-            [doc]: !prev.documentChecklist[doc]
-          }
+            [doc]: !prev.documentChecklist[doc],
+          },
         }));
       },
       updateNote: (stepKey: string, note: string) => {
@@ -508,8 +534,8 @@ export function useWizard(options: UseWizardOptions = {}) {
           ...prev,
           notes: {
             ...prev.notes,
-            [stepKey]: note
-          }
+            [stepKey]: note,
+          },
         }));
       },
       clearDocument: (doc: string) => {
@@ -539,17 +565,22 @@ export function useWizard(options: UseWizardOptions = {}) {
           }
           return {
             ...prev,
-            docUploads: { ...prev.docUploads, [doc]: { name: file.name, size: file.size, lastModified: file.lastModified } }
+            docUploads: {
+              ...prev.docUploads,
+              [doc]: { name: file.name, size: file.size, lastModified: file.lastModified },
+            },
           };
         });
       },
       resetProgress: async () => {
         setState((prev) => {
           if (prev.backendId) {
-            fetch(`/api/journeys/${prev.backendId}`, { 
+            fetch(`/api/journeys/${prev.backendId}`, {
               method: "DELETE",
-              headers: { "Content-Type": "application/json" }
-            }).then(() => invalidateJourneyCache()).catch(() => {});
+              headers: { "Content-Type": "application/json" },
+            })
+              .then(() => invalidateJourneyCache())
+              .catch(() => {});
           }
           return DEFAULT_STATE;
         });
@@ -562,7 +593,9 @@ export function useWizard(options: UseWizardOptions = {}) {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: "in_progress" }),
-            }).then(() => invalidateJourneyCache()).catch(() => {});
+            })
+              .then(() => invalidateJourneyCache())
+              .catch(() => {});
           }
           return { ...prev, started: true };
         });

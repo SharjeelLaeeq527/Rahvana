@@ -4,10 +4,7 @@ import { useState, useEffect } from "react";
 import * as Errors from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import {
-  getUser221gCase,
-  update221gStatus,
-} from "@/lib/supabase/twentyTwoOneG";
+import { getUser221gCase, update221gStatus } from "@/lib/supabase/twentyTwoOneG";
 import { FollowUpDialog } from "./FollowUpDialog";
 
 interface CaseData {
@@ -72,9 +69,9 @@ export function FollowUpManager() {
     if (hasUploaded) newStatus = "submitted";
 
     // DB Constraint validation
-    const allowedStatuses = ['received', 'gathering', 'submitted', 'not_uploaded', 'stuck'];
+    const allowedStatuses = ["received", "gathering", "submitted", "not_uploaded", "stuck"];
     if (!allowedStatuses.includes(newStatus)) {
-      newStatus = 'received'; // fallback to standard allowed value
+      newStatus = "received"; // fallback to standard allowed value
     }
 
     let nextDate: Date | null = new Date();
@@ -111,13 +108,7 @@ export function FollowUpManager() {
     }
 
     try {
-      await update221gStatus(
-        caseData.id,
-        newStatus,
-        nextDate,
-        response.answers,
-        newDismissCount,
-      );
+      await update221gStatus(caseData.id, newStatus, nextDate, response.answers, newDismissCount);
       setShowDialog(false);
       } catch (err) {
       console.error("Error updating follow-up status", err);

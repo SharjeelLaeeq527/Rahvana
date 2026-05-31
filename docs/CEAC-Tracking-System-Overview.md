@@ -1,4 +1,5 @@
 # CEAC Status Tracking & Notification System
+
 ## Non-Technical Overview — For Leadership Review
 
 **Project:** Rahvana IR-1 Visa Journey  
@@ -30,18 +31,20 @@ Tracking begins **only after the user reports a CEAC status beyond the NVC stage
 
 This is the only chapter where CEAC status tracking is relevant.
 
-| Step # | Step Name | What Happens Here |
-|--------|-----------|-------------------|
-| **Step 7** | Prepare for Interview | User prepares for the consular interview |
-| **Step 8** | Attend Visa Interview | User attends interview. Three outcomes possible: Approved / AP / Refused |
-| **Step 9** | Track Administrative Processing | **← This is where the tracking system activates** |
+| Step #     | Step Name                       | What Happens Here                                                        |
+| ---------- | ------------------------------- | ------------------------------------------------------------------------ |
+| **Step 7** | Prepare for Interview           | User prepares for the consular interview                                 |
+| **Step 8** | Attend Visa Interview           | User attends interview. Three outcomes possible: Approved / AP / Refused |
+| **Step 9** | Track Administrative Processing | **← This is where the tracking system activates**                        |
 
 > **Step 8 (Attend Visa Interview)** shows the user three possible outcomes:
+>
 > - Visa Approved → journey continues normally
 > - Administrative Processing (AP) → user goes to Step 9
 > - Refused → user goes to Step 9 to record the refusal
 
 > **Step 9 (Track Administrative Processing)** is the main interface where:
+>
 > 1. User records their CEAC status from a dropdown
 > 2. User clicks **"Save AP Status & Activate Tracking"**
 > 3. The notification system is triggered **automatically**
@@ -50,14 +53,14 @@ This is the only chapter where CEAC status tracking is relevant.
 
 ## What CEAC Statuses Does the System Track?
 
-| Status User Reports | System Tracks? | What It Means |
-|--------------------|---------------|---------------|
-| Administrative Processing | ✅ Yes | Case under review post-interview |
-| Ready | ✅ Yes | Embassy has the file, interview coming |
-| Issued | ✅ Yes | Visa approved, courier delivery in progress |
-| Refused | ✅ Yes | Needs clarification (see below) |
-| In Transit | ✅ Yes | Case moving from NVC to embassy |
-| Pending / Not Available | ❌ No | NVC internal — not tracked |
+| Status User Reports       | System Tracks? | What It Means                               |
+| ------------------------- | -------------- | ------------------------------------------- |
+| Administrative Processing | ✅ Yes         | Case under review post-interview            |
+| Ready                     | ✅ Yes         | Embassy has the file, interview coming      |
+| Issued                    | ✅ Yes         | Visa approved, courier delivery in progress |
+| Refused                   | ✅ Yes         | Needs clarification (see below)             |
+| In Transit                | ✅ Yes         | Case moving from NVC to embassy             |
+| Pending / Not Available   | ❌ No          | NVC internal — not tracked                  |
 
 ---
 
@@ -65,10 +68,10 @@ This is the only chapter where CEAC status tracking is relevant.
 
 ### Group 1 — When status = "In Transit"
 
-| # | When It Fires | What User Receives | Channel |
-|---|--------------|-------------------|---------|
-| R1 | Immediately | "Case is on its way to the embassy — no action needed" | Push |
-| R2 | 3 days later (if not updated) | "Check CEAC — may have changed to Ready" | Push |
+| #   | When It Fires                 | What User Receives                                     | Channel |
+| --- | ----------------------------- | ------------------------------------------------------ | ------- |
+| R1  | Immediately                   | "Case is on its way to the embassy — no action needed" | Push    |
+| R2  | 3 days later (if not updated) | "Check CEAC — may have changed to Ready"               | Push    |
 
 **Auto-cancelled when:** User reports Ready or any later status.
 
@@ -76,10 +79,10 @@ This is the only chapter where CEAC status tracking is relevant.
 
 ### Group 2 — When status = "Ready"
 
-| # | When It Fires | What User Receives | Channel |
-|---|--------------|-------------------|---------|
-| R3 | Immediately | **URGENT:** "Status is Ready — your interview is coming" | Push + Email |
-| R4 | Every 14 days | "Check CEAC for updates" (repeats until interview outcome) | Push |
+| #   | When It Fires | What User Receives                                         | Channel      |
+| --- | ------------- | ---------------------------------------------------------- | ------------ |
+| R3  | Immediately   | **URGENT:** "Status is Ready — your interview is coming"   | Push + Email |
+| R4  | Every 14 days | "Check CEAC for updates" (repeats until interview outcome) | Push         |
 
 **Auto-cancelled when:** User reports AP, Issued, or Refused.
 
@@ -87,11 +90,11 @@ This is the only chapter where CEAC status tracking is relevant.
 
 ### Group 3 — When status = "Administrative Processing"
 
-| # | When It Fires | What User Receives | Channel |
-|---|--------------|-------------------|---------|
-| R5 | Immediately | **"AP is not a refusal — what this means"** | Push + Email |
-| R6 | Every 14 days | "Log into CEAC and check for updates" (repeats) | Push |
-| R7 | Day 60 (once) | "AP 60+ days — consider consulting an attorney" | Push |
+| #   | When It Fires | What User Receives                              | Channel      |
+| --- | ------------- | ----------------------------------------------- | ------------ |
+| R5  | Immediately   | **"AP is not a refusal — what this means"**     | Push + Email |
+| R6  | Every 14 days | "Log into CEAC and check for updates" (repeats) | Push         |
+| R7  | Day 60 (once) | "AP 60+ days — consider consulting an attorney" | Push         |
 
 **Auto-cancelled when:** User reports Issued or Refused.
 
@@ -99,10 +102,10 @@ This is the only chapter where CEAC status tracking is relevant.
 
 ### Group 4 — When status = "Issued"
 
-| # | When It Fires | What User Receives | Channel |
-|---|--------------|-------------------|---------|
-| R8 | Immediately | **URGENT:** "Visa Issued — track your courier delivery now" | Push + Email |
-| R9 | 2 days later | "Have you received your passport?" | Push |
+| #   | When It Fires | What User Receives                                          | Channel      |
+| --- | ------------- | ----------------------------------------------------------- | ------------ |
+| R8  | Immediately   | **URGENT:** "Visa Issued — track your courier delivery now" | Push + Email |
+| R9  | 2 days later  | "Have you received your passport?"                          | Push         |
 
 **R9 auto-cancelled when:** User marks passport as received.
 
@@ -112,12 +115,12 @@ This is the only chapter where CEAC status tracking is relevant.
 
 **Important rule:** The system never assumes whether a refusal is a 221(g) or a final denial. The user is shown a prompt asking which situation applies. Only then are specific reminders sent.
 
-| # | When It Fires | Condition | What User Receives | Channel |
-|---|--------------|-----------|-------------------|---------|
-| R10 | Immediately | All refusals | **URGENT:** "Refused — read your written notice carefully" | Push + Email |
-| R11 | Immediately | User confirms 221(g) | "Submit the requested documents promptly" | Push |
-| R12 | Every 21 days | After 221(g) docs submitted | "Check CEAC — has status changed to Issued?" (repeats) | Push |
-| R13 | Immediately | User confirms final denial | "Final refusal — consult an immigration attorney" | Push + Email |
+| #   | When It Fires | Condition                   | What User Receives                                         | Channel      |
+| --- | ------------- | --------------------------- | ---------------------------------------------------------- | ------------ |
+| R10 | Immediately   | All refusals                | **URGENT:** "Refused — read your written notice carefully" | Push + Email |
+| R11 | Immediately   | User confirms 221(g)        | "Submit the requested documents promptly"                  | Push         |
+| R12 | Every 21 days | After 221(g) docs submitted | "Check CEAC — has status changed to Issued?" (repeats)     | Push         |
+| R13 | Immediately   | User confirms final denial  | "Final refusal — consult an immigration attorney"          | Push + Email |
 
 ---
 
@@ -158,6 +161,7 @@ User enters CEAC status in Step 9
 ## Is It Automatic? What Does Admin Need to Do?
 
 ### Fully Automatic — No Manual Action Required:
+
 - ✅ Reminders schedule themselves when user saves status
 - ✅ Old reminders cancel themselves when status advances
 - ✅ Recurring reminders re-schedule themselves after each send
@@ -166,18 +170,18 @@ User enters CEAC status in Step 9
 
 ### One-Time Admin Setup Required (already done in code):
 
-| Task | Who | Status |
-|------|-----|--------|
-| Run database migration (`20260420_ceac_tracking.sql`) | Developer | ✅ Done by team |
-| Add `CRON_SECRET` to environment variables | Developer | Needs `.env` update |
+| Task                                                  | Who             | Status                |
+| ----------------------------------------------------- | --------------- | --------------------- |
+| Run database migration (`20260420_ceac_tracking.sql`) | Developer       | ✅ Done by team       |
+| Add `CRON_SECRET` to environment variables            | Developer       | Needs `.env` update   |
 | Register EasyCron job (6-hourly, URL + secret header) | Developer/Admin | Needs EasyCron config |
-| Add push notification provider (FCM/Expo) | Developer | Placeholder ready |
+| Add push notification provider (FCM/Expo)             | Developer       | Placeholder ready     |
 
 ### What Admin CAN Monitor (in Supabase Dashboard):
 
-| Table | What You Can See |
-|-------|-----------------|
-| `ceac_case_status` | Every user's current status + full history |
+| Table                          | What You Can See                                   |
+| ------------------------------ | -------------------------------------------------- |
+| `ceac_case_status`             | Every user's current status + full history         |
 | `ceac_scheduled_notifications` | Every pending/sent/cancelled reminder + timestamps |
 
 ---
@@ -188,7 +192,7 @@ User enters CEAC status in Step 9
 2. **User comes to Step 9** — sees a form to record their CEAC status
 3. **User selects their status** from a dropdown (e.g., "Administrative Processing")
 4. **User clicks "Save AP Status & Activate Tracking"**
-   - If status = Refused → a prompt appears asking: *"Is this a 221(g) or a final denial?"*
+   - If status = Refused → a prompt appears asking: _"Is this a 221(g) or a final denial?"_
 5. **System schedules reminders silently in the background**
 6. **User receives push notifications** at the correct intervals
 7. **For URGENT reminders** → also receives an email
@@ -214,13 +218,13 @@ If a user tries to report an impossible transition (e.g., Issued → In Transit)
 
 ## Key Decisions & Why
 
-| Decision | Reason |
-|----------|--------|
-| Skip NVC sub-stages | NVC internal status is not actionable for users |
-| Never auto-assume 221(g) vs final refusal | These require completely different actions — guessing wrong causes harm |
-| Recurring reminders re-enqueue themselves | Ensures user keeps checking without admin intervention |
-| Suppression runs before EVERY send | Prevents sending outdated reminders even if user updated status between sends |
-| Supabase as job queue (no Redis needed) | Simpler architecture, already in the stack |
+| Decision                                  | Reason                                                                        |
+| ----------------------------------------- | ----------------------------------------------------------------------------- |
+| Skip NVC sub-stages                       | NVC internal status is not actionable for users                               |
+| Never auto-assume 221(g) vs final refusal | These require completely different actions — guessing wrong causes harm       |
+| Recurring reminders re-enqueue themselves | Ensures user keeps checking without admin intervention                        |
+| Suppression runs before EVERY send        | Prevents sending outdated reminders even if user updated status between sends |
+| Supabase as job queue (no Redis needed)   | Simpler architecture, already in the stack                                    |
 
 ---
 
@@ -230,4 +234,4 @@ When a user reports their CEAC status in Step 9 of Chapter 3 (Track Administrati
 
 ---
 
-*Document prepared for leadership review. Technical implementation details available separately.*
+_Document prepared for leadership review. Technical implementation details available separately._

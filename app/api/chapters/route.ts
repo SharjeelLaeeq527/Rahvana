@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as db from "@/lib/journey/data-access";
 import type { ChapterInput } from "@/lib/journey/types";
-import { E, msg, normalizeError } from '@/lib/errors';
+import { E, msg, normalizeError } from "@/lib/errors";
 // GET /api/chapters?journey_id=uuid&status=optional_status - Get chapters for a journey, optionally filtered by status
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
           error: "journey_id query parameter is required",
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -25,10 +25,7 @@ export async function GET(request: NextRequest) {
       status: status || undefined,
     });
 
-    return NextResponse.json(
-      { success: true, data: chapters },
-      { status: 200 },
-    );
+    return NextResponse.json({ success: true, data: chapters }, { status: 200 });
   } catch (error) {
     console.error("Error in GET /api/chapters:", error);
 
@@ -37,14 +34,14 @@ export async function GET(request: NextRequest) {
     if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
         { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     if (norm.code === E.JOURNEY_NOT_FOUND) {
       return NextResponse.json(
         { error: msg(E.JOURNEY_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -53,7 +50,7 @@ export async function GET(request: NextRequest) {
         error: msg(E.CHAPTERS_SERVER_ERROR),
         code: "SERVER_ERROR",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -64,12 +61,7 @@ export async function POST(request: NextRequest) {
     const body: ChapterInput & { journey_id: string } = await request.json();
 
     // Validation
-    const requiredFields = [
-      "journey_id",
-      "chapter_key",
-      "chapter_number",
-      "chapter_name",
-    ];
+    const requiredFields = ["journey_id", "chapter_key", "chapter_number", "chapter_name"];
     for (const field of requiredFields) {
       if (!(field in body)) {
         return NextResponse.json(
@@ -77,7 +69,7 @@ export async function POST(request: NextRequest) {
             error: `${field} is required`,
             code: "VALIDATION_ERROR",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -89,7 +81,7 @@ export async function POST(request: NextRequest) {
           error: "chapter_number must be a positive integer",
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -107,29 +99,29 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error in POST /api/chapters:", error);
 
-      const norm = normalizeError(error, E.CHAPTERS_SERVER_ERROR);
+    const norm = normalizeError(error, E.CHAPTERS_SERVER_ERROR);
 
-      if (norm.code === E.AUTH_UNAUTHORIZED) {
-        return NextResponse.json(
-          { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
-          { status: 401 },
-        );
-      }
-
-      if (norm.code === E.JOURNEY_NOT_FOUND) {
-        return NextResponse.json(
-          { success: false, code: E.JOURNEY_NOT_FOUND, message: msg(E.JOURNEY_NOT_FOUND) },
-          { status: 404 },
-        );
-      }
-
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
-        {
-          success: false,
-          code: E.CHAPTERS_SERVER_ERROR,
-          message: msg(E.CHAPTERS_SERVER_ERROR),
-        },
-        { status: 500 },
+        { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
+        { status: 401 }
       );
+    }
+
+    if (norm.code === E.JOURNEY_NOT_FOUND) {
+      return NextResponse.json(
+        { success: false, code: E.JOURNEY_NOT_FOUND, message: msg(E.JOURNEY_NOT_FOUND) },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        code: E.CHAPTERS_SERVER_ERROR,
+        message: msg(E.CHAPTERS_SERVER_ERROR),
+      },
+      { status: 500 }
+    );
   }
 }

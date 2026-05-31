@@ -83,10 +83,7 @@ const lockedUpgrade = (target: PlanTier = "premium"): FeatureEntitlement => ({
 });
 
 /** Locked, but can purchase as standalone add-on instead of upgrading. */
-const lockedBuy = (
-  addon: AddonInfo,
-  target: PlanTier = "premium",
-): FeatureEntitlement => ({
+const lockedBuy = (addon: AddonInfo, target: PlanTier = "premium"): FeatureEntitlement => ({
   state: "locked_buy",
   addon,
   upgradeTarget: target,
@@ -210,6 +207,12 @@ export const ADDON: Record<string, AddonInfo> = {
     price: 5,
     unit: "per signature",
   },
+  pdfToolKit: {
+    id: "pdf-tool-kit",
+    name: "PDF Tool Kit",
+    price: 69,
+    unit: "one-time",
+  }
   // caseManager: {
   //   id: "case-manager",
   //   name: "Dedicated Case Manager",
@@ -287,7 +290,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Snap & Sign — sign documents digitally. */
   snap_sign: {
-    free: lockedUpgrade("basic"),
+    free: lockedBuy(ADDON.snapSign, "basic"),
     basic: full(),
     premium: full(),
     executive: full(),
@@ -295,7 +298,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** PDF Tool Kit — merge, edit, compress PDF documents. */
   pdf_toolkit: {
-    free: lockedUpgrade("basic"),
+    free: lockedBuy(ADDON.pdfToolKit, "basic"),
     basic: full(),
     premium: full(),
     executive: full(),
@@ -303,7 +306,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** DQ Status Check tool. */
   dq_status_check: {
-    free: full(), // lockedUpgrade('basic'),
+    free: full(),//lockedUpgrade('basic'),
     basic: full(),
     premium: full(),
     executive: full(),
@@ -344,7 +347,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Interview Prep — Rapid Fire Mode. */
   interview_rapid_fire: {
-    free: lockedBuy(ADDON.rapid, "premium"),
+    free: full(),
     basic: lockedBuy(ADDON.rapid, "premium"),
     premium: full(),
     executive: full(),
@@ -379,9 +382,9 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Book Medical Appointment through Rahvana. */
   medical_booking: {
-    free: lockedUpgrade("premium"),
-    basic: lockedUpgrade("premium"),
-    premium: full(),
+    free: lockedBuy(ADDON.medical, "executive"),
+    basic: lockedBuy(ADDON.medical, "executive"),
+    premium: lockedBuy(ADDON.medical, "executive"),
     executive: full(),
   },
 
@@ -463,7 +466,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    * Executive included; Basic & Premium can purchase as standalone add-on.
    */
   mock_interview: {
-    free: lockedBuy(ADDON.mock, "executive"),
+    free: full(),
     basic: lockedBuy(ADDON.mock, "executive"),
     premium: lockedBuy(ADDON.mock, "executive"),
     executive: full(),
@@ -495,9 +498,9 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** PCC Filing (Sindh Only). Executive included; Basic & Premium upgrade-only. */
   pcc_filing: {
-    free: lockedUpgrade("executive"),
-    basic: lockedUpgrade("executive"),
-    premium: lockedUpgrade("executive"),
+    free: lockedBuy(ADDON.pcc, "executive"),
+    basic: lockedBuy(ADDON.pcc, "executive"),
+    premium: lockedBuy(ADDON.pcc, "executive"),
     executive: full(),
   },
 
@@ -527,10 +530,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
  * Look up what a given tier can do with a specific feature.
  * Returns `locked_upgrade` pointing to Basic for any unknown feature (fail-safe).
  */
-export function getEntitlement(
-  feature: string,
-  tier: PlanTier,
-): FeatureEntitlement {
+export function getEntitlement(feature: string, tier: PlanTier): FeatureEntitlement {
   return (
     ENTITLEMENTS[feature]?.[tier] ?? {
       state: "locked_upgrade",
@@ -542,12 +542,7 @@ export function getEntitlement(
 /** True if the tier has any meaningful access to the feature (not locked or preview-only). */
 export function isAccessible(feature: string, tier: PlanTier): boolean {
   const { state } = getEntitlement(feature, tier);
-  return (
-    state === "full" ||
-    state === "limited" ||
-    state === "list_only" ||
-    state === "save_only"
-  );
+  return state === "full" || state === "limited" || state === "list_only" || state === "save_only";
 }
 
 /** Minimum tier required to get `full` access to a feature. */
@@ -568,10 +563,7 @@ export const TIER_NAMES: Record<PlanTier, string> = {
   executive: "Executive",
 };
 
-export const TIER_PRICES: Record<
-  PlanTier,
-  { annual: number; monthly: number } | null
-> = {
+export const TIER_PRICES: Record<PlanTier, { annual: number; monthly: number } | null> = {
   free: null,
   basic: { annual: 349, monthly: 29 },
   premium: { annual: 699, monthly: 58 },

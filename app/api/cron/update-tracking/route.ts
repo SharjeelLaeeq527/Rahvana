@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as db from "@/lib/journey/data-access";
 import { getTracker } from "@/lib/easypost/tracker";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 
 /**
  * POST /api/cron/update-tracking
- * 
+ *
  * Triggered by external cron service (EasyCron)
  * Updates tracking status for all active cases
  */
@@ -15,10 +15,7 @@ export async function POST(request: NextRequest) {
     const cronSecret = request.headers.get("X-CRON-SECRET");
     if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
       console.warn("[Cron API] Unauthorized cron request");
-      return NextResponse.json(
-        { error: msg(E.AUTH_UNAUTHORIZED) },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     console.log("[Cron API] Starting tracking status update job");
@@ -28,15 +25,10 @@ export async function POST(request: NextRequest) {
 
     if (!activeCases || activeCases.length === 0) {
       console.log("[Cron API] No active trackers to update");
-      return NextResponse.json(
-        { success: true, updated: 0, failed: 0, total: 0 },
-        { status: 200 }
-      );
+      return NextResponse.json({ success: true, updated: 0, failed: 0, total: 0 }, { status: 200 });
     }
 
-    console.log(
-      `[Cron API] Found ${activeCases.length} cases with active trackers`
-    );
+    console.log(`[Cron API] Found ${activeCases.length} cases with active trackers`);
 
     let updated = 0;
     let failed = 0;
@@ -45,10 +37,7 @@ export async function POST(request: NextRequest) {
     for (const caseId of activeCases) {
       try {
         // Get tracker ID from case_data
-        const trackerIdData = await db.getCaseDataByKeyDB(
-          caseId,
-          "easypost_tracker_id"
-        );
+        const trackerIdData = await db.getCaseDataByKeyDB(caseId, "easypost_tracker_id");
 
         if (!trackerIdData?.data_value) {
           console.warn(`[Cron API] No tracker ID found for case ${caseId}`);
@@ -93,18 +82,14 @@ export async function POST(request: NextRequest) {
         await Promise.all(updates);
         updated++;
 
-        console.log(
-          `[Cron API] Updated case ${caseId}: ${trackerData.status}`
-        );
+        console.log(`[Cron API] Updated case ${caseId}: ${trackerData.status}`);
       } catch (error) {
         console.error(`[Cron API] Failed to update case ${caseId}:`, error);
         failed++;
       }
     }
 
-    console.log(
-      `[Cron API] Job complete: ${updated} updated, ${failed} failed`
-    );
+    console.log(`[Cron API] Job complete: ${updated} updated, ${failed} failed`);
 
     return NextResponse.json(
       {

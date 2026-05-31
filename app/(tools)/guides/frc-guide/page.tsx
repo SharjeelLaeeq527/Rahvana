@@ -4,9 +4,7 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
@@ -31,10 +29,7 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  string,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> = {
   document_need: "document_need",
   roadmap: "roadmap",
   validation: "validation",
@@ -78,7 +73,7 @@ const FrcGuide = () => {
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
       savedOffice: prev.savedOffice, // Not used in FRC guide
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -99,15 +94,9 @@ const FrcGuide = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
-    await submitFeedbackHook(
-      "frc-guide",
-      currentStepId,
-      feedbackType,
-      description,
-      attachment,
-    );
+    await submitFeedbackHook("frc-guide", currentStepId, feedbackType, description, attachment);
   };
 
   const hasProgress = useMemo(() => {
@@ -129,8 +118,7 @@ const FrcGuide = () => {
     hasInitializedModal.current = true;
 
     const localHide =
-      typeof window !== "undefined" &&
-      localStorage.getItem("dont_show_frc_welcome") === "true";
+      typeof window !== "undefined" && localStorage.getItem("dont_show_frc_welcome") === "true";
 
     if (!session.hide_intro_modal && !localHide) {
       setShowWhatsThis(true);
@@ -159,17 +147,14 @@ const FrcGuide = () => {
       setIsSaved(true); // mark as saved
     },
     navigationHandled,
-    setNavigationHandled,
+    setNavigationHandled
   );
 
   // Before unload confirmation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Show confirmation if user has made progress beyond the first step
-      if (
-        currentStep > 0 ||
-        (state.documentNeed && state.documentNeed !== "")
-      ) {
+      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
         e.preventDefault();
         e.returnValue = "";
         return "";
@@ -184,9 +169,7 @@ const FrcGuide = () => {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
-  const infoPanelData = guideData.wizard.info_panel[
-    infoPanelKey
-  ] as unknown as InfoPanelData;
+  const infoPanelData = guideData.wizard.info_panel[infoPanelKey] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
@@ -202,8 +185,7 @@ const FrcGuide = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -287,10 +269,7 @@ const FrcGuide = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-26">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar

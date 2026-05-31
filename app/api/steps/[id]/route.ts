@@ -3,13 +3,10 @@ import { stepService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import type { StepUpdate } from "@/lib/journey/types";
 import { stepCompletionEngine } from "@/lib/journey/service";
-import { E, msg, normalizeError } from '@/lib/errors';
+import { E, msg, normalizeError } from "@/lib/errors";
 
 // GET /api/steps/[id] - Get step details with metadata and visibility context
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const stepId = (await params).id;
 
@@ -18,8 +15,9 @@ export async function GET(
     if (!step) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
+      return NextResponse.json({ error: "Step not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     // Get chapter to access journey
@@ -27,7 +25,7 @@ export async function GET(
     if (!chapter) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -38,7 +36,7 @@ export async function GET(
         acc[cd.data_key] = cd.data_value;
         return acc;
       },
-      {} as Record<string, unknown>,
+      {} as Record<string, unknown>
     );
 
     // Get step details with visibility info
@@ -47,10 +45,7 @@ export async function GET(
     // Get dependent steps (if this step is completed, what unlocks)
     const dependentSteps =
       step.status === "completed"
-        ? await stepCompletionEngine.getDependentSteps(
-            stepId,
-            step.chapter_id,
-          )
+        ? await stepCompletionEngine.getDependentSteps(stepId, step.chapter_id)
         : [];
 
     return NextResponse.json(
@@ -62,7 +57,7 @@ export async function GET(
           case_data_context: caseDataMap,
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error(`Error in GET /api/steps/[id]:`, error);
@@ -71,14 +66,14 @@ export async function GET(
     if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
         { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     if (norm.code === E.CASE_DATA_NOT_FOUND) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -87,16 +82,13 @@ export async function GET(
         error: msg(E.AUTH_UNEXPECTED_ERROR),
         code: "SERVER_ERROR",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 // PATCH /api/steps/[id] - Update step details
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const stepId = (await params).id;
     const updates: StepUpdate = await request.json();
@@ -111,14 +103,14 @@ export async function PATCH(
     if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
         { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     if (norm.code === E.CASE_DATA_NOT_FOUND) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -128,16 +120,13 @@ export async function PATCH(
         code: "SERVER_ERROR",
         details: msg(E.AUTH_UNEXPECTED_ERROR),
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
 // POST /api/steps/[id]/complete - Mark step as completed
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const stepId = (await params).id;
     const action = request.nextUrl.searchParams.get("action");
@@ -145,7 +134,7 @@ export async function POST(
     if (action !== "complete") {
       return NextResponse.json(
         { error: "Unknown action", code: "VALIDATION_ERROR" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -156,7 +145,7 @@ export async function POST(
     if (!step) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -165,16 +154,12 @@ export async function POST(
     if (!chapter) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     // Complete step with journey context
-    const result = await stepService.completeStep(
-      stepId,
-      chapter.journey_id,
-      body,
-    );
+    const result = await stepService.completeStep(stepId, chapter.journey_id, body);
 
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
@@ -184,7 +169,7 @@ export async function POST(
     if (norm.code === E.AUTH_UNAUTHORIZED) {
       return NextResponse.json(
         { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -194,7 +179,7 @@ export async function POST(
           error: msg(E.DASH_JOURNEY_STEP_LOCKED),
           code: "INVALID_STATE",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -204,7 +189,7 @@ export async function POST(
           error: msg(E.CASE_DATA_VALIDATION_FAILED),
           code: "VALIDATION_ERROR",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -213,7 +198,7 @@ export async function POST(
         error: msg(E.AUTH_UNEXPECTED_ERROR),
         code: "SERVER_ERROR",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -221,7 +206,7 @@ export async function POST(
 // DELETE /api/steps/[id] - Delete a step
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const stepId = (await params).id;
@@ -229,9 +214,10 @@ export async function DELETE(
     // Check if step exists
     const step = await db.getStepDB(stepId);
     if (!step) {
+      return NextResponse.json({ error: "Step not found", code: "NOT_FOUND" }, { status: 404 });
       return NextResponse.json(
         { error: msg(E.CASE_DATA_NOT_FOUND), code: "NOT_FOUND" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -246,15 +232,16 @@ export async function DELETE(
           message: "Step deleted successfully",
         },
       },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     console.error(`Error in DELETE /api/steps/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
       return NextResponse.json(
         { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -264,7 +251,7 @@ export async function DELETE(
         code: "SERVER_ERROR",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

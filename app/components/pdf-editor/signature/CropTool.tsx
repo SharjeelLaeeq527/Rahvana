@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Crop, Move, Check } from "lucide-react"
-import { useLanguage } from "@/app/context/LanguageContext"
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Crop, Move, Check } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import * as Errors from '@/lib/errors'
+import * as Errors from "@/lib/errors";
 
 interface CropBox {
-  x: number
-  y: number
-  width: number
-  height: number
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 interface CropToolProps {
-  currentImage: string
-  onApplyCrop: (croppedDataUrl: string) => void
-  onToggleTilt: () => void
-  onExit: () => void
+  currentImage: string;
+  onApplyCrop: (croppedDataUrl: string) => void;
+  onToggleTilt: () => void;
+  onExit: () => void;
 }
 
 export default function CropTool({
@@ -26,267 +26,278 @@ export default function CropTool({
   onToggleTilt,
   // onExit,
 }: CropToolProps) {
-  const { t } = useLanguage()
+  const { t } = useLanguage();
   const { showToast } = useToast();
-  const [cropBox, setCropBox] = useState<CropBox>({ x: 0, y: 0, width: 100, height: 100 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragType, setDragType] = useState<"move" | "nw" | "ne" | "sw" | "se" | "rotate" | null>(null)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [rotation, setRotation] = useState(0)
-  const [isRotating, setIsRotating] = useState(false)
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [imageBounds, setImageBounds] = useState({ width: 0, height: 0 })
+  const [cropBox, setCropBox] = useState<CropBox>({ x: 0, y: 0, width: 100, height: 100 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragType, setDragType] = useState<"move" | "nw" | "ne" | "sw" | "se" | "rotate" | null>(
+    null
+  );
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState(0);
+  const [isRotating, setIsRotating] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageBounds, setImageBounds] = useState({ width: 0, height: 0 });
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const imageRef = useRef<HTMLImageElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   // When image loads, set up initial crop box
   const handleImageLoad = useCallback(() => {
-    if (!imageRef.current) return
+    if (!imageRef.current) return;
 
-    const img = imageRef.current
-    const displayedWidth = img.offsetWidth
-    const displayedHeight = img.offsetHeight
+    const img = imageRef.current;
+    const displayedWidth = img.offsetWidth;
+    const displayedHeight = img.offsetHeight;
 
-    setImageBounds({ width: displayedWidth, height: displayedHeight })
-    setImageLoaded(true)
+    setImageBounds({ width: displayedWidth, height: displayedHeight });
+    setImageLoaded(true);
 
     // Auto-detect signature bounds
-    detectSignatureBounds(displayedWidth, displayedHeight)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentImage])
+    detectSignatureBounds(displayedWidth, displayedHeight);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentImage]);
 
-  const detectSignatureBounds = useCallback((displayedWidth: number, displayedHeight: number) => {
-    const img = document.createElement("img")
-    img.crossOrigin = "anonymous"
-    img.src = currentImage
+  const detectSignatureBounds = useCallback(
+    (displayedWidth: number, displayedHeight: number) => {
+      const img = document.createElement("img");
+      img.crossOrigin = "anonymous";
+      img.src = currentImage;
 
-    img.onload = () => {
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d", { willReadFrequently: true })
-      if (!ctx) {
-        // Fallback: set crop box to full image
-        setCropBox({ x: 0, y: 0, width: displayedWidth, height: displayedHeight })
-        return
-      }
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) {
+          // Fallback: set crop box to full image
+          setCropBox({ x: 0, y: 0, width: displayedWidth, height: displayedHeight });
+          return;
+        }
 
-      canvas.width = img.naturalWidth
-      canvas.height = img.naturalHeight
-      ctx.drawImage(img, 0, 0)
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
 
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      const data = imageData.data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
 
-      let minX = canvas.width
-      let minY = canvas.height
-      let maxX = 0
-      let maxY = 0
+        let minX = canvas.width;
+        let minY = canvas.height;
+        let maxX = 0;
+        let maxY = 0;
 
-      for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-          const i = (y * canvas.width + x) * 4
-          const alpha = data[i + 3]
+        for (let y = 0; y < canvas.height; y++) {
+          for (let x = 0; x < canvas.width; x++) {
+            const i = (y * canvas.width + x) * 4;
+            const alpha = data[i + 3];
 
-          if (alpha > 50) {
-            if (x < minX) minX = x
-            if (x > maxX) maxX = x
-            if (y < minY) minY = y
-            if (y > maxY) maxY = y
+            if (alpha > 50) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
           }
         }
-      }
 
-      // Add padding
-      const padding = Math.min(canvas.width, canvas.height) * 0.05
-      minX = Math.max(0, minX - padding)
-      minY = Math.max(0, minY - padding)
-      maxX = Math.min(canvas.width, maxX + padding)
-      maxY = Math.min(canvas.height, maxY + padding)
+        // Add padding
+        const padding = Math.min(canvas.width, canvas.height) * 0.05;
+        minX = Math.max(0, minX - padding);
+        minY = Math.max(0, minY - padding);
+        maxX = Math.min(canvas.width, maxX + padding);
+        maxY = Math.min(canvas.height, maxY + padding);
 
-      // Scale from original pixels to displayed pixels
-      const scaleX = displayedWidth / canvas.width
-      const scaleY = displayedHeight / canvas.height
+        // Scale from original pixels to displayed pixels
+        const scaleX = displayedWidth / canvas.width;
+        const scaleY = displayedHeight / canvas.height;
 
-      setCropBox({
-        x: minX * scaleX,
-        y: minY * scaleY,
-        width: (maxX - minX) * scaleX,
-        height: (maxY - minY) * scaleY,
-      })
-    }
+        setCropBox({
+          x: minX * scaleX,
+          y: minY * scaleY,
+          width: (maxX - minX) * scaleX,
+          height: (maxY - minY) * scaleY,
+        });
+      };
 
-    img.onerror = () => {
-      // Fallback
-      setCropBox({ x: 0, y: 0, width: displayedWidth, height: displayedHeight })
-    }
-  }, [currentImage])
+      img.onerror = () => {
+        // Fallback
+        setCropBox({ x: 0, y: 0, width: displayedWidth, height: displayedHeight });
+      };
+    },
+    [currentImage]
+  );
 
-  const handleMouseDown = (e: React.MouseEvent, type: "move" | "nw" | "ne" | "sw" | "se" | "rotate") => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleMouseDown = (
+    e: React.MouseEvent,
+    type: "move" | "nw" | "ne" | "sw" | "se" | "rotate"
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
 
     if (type === "rotate") {
-      setIsRotating(true)
-      setDragType("rotate")
+      setIsRotating(true);
+      setDragType("rotate");
     } else {
-      setIsDragging(true)
-      setDragType(type)
+      setIsDragging(true);
+      setDragType(type);
     }
-    setDragStart({ x: e.clientX, y: e.clientY })
-  }
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if ((!isDragging && !isRotating) || !dragType || !containerRef.current) return
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if ((!isDragging && !isRotating) || !dragType || !containerRef.current) return;
 
-    if (dragType === "rotate") {
-      const rect = containerRef.current.getBoundingClientRect()
-      const centerX = rect.left + cropBox.x + cropBox.width / 2
-      const centerY = rect.top + cropBox.y + cropBox.height / 2
+      if (dragType === "rotate") {
+        const rect = containerRef.current.getBoundingClientRect();
+        const centerX = rect.left + cropBox.x + cropBox.width / 2;
+        const centerY = rect.top + cropBox.y + cropBox.height / 2;
 
-      const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX)
-      const degrees = (angle * 180) / Math.PI
-      setRotation(Math.round(degrees))
-      return
-    }
-
-    const deltaX = e.clientX - dragStart.x
-    const deltaY = e.clientY - dragStart.y
-    const maxWidth = imageBounds.width
-    const maxHeight = imageBounds.height
-
-    setCropBox((prev) => {
-      let newBox = { ...prev }
-      const minSize = 30
-
-      if (dragType === "move") {
-        newBox.x = Math.max(0, Math.min(maxWidth - prev.width, prev.x + deltaX))
-        newBox.y = Math.max(0, Math.min(maxHeight - prev.height, prev.y + deltaY))
-      } else {
-        if (dragType === "nw") {
-          const newX = Math.max(0, prev.x + deltaX)
-          const newY = Math.max(0, prev.y + deltaY)
-          const newWidth = prev.width - (newX - prev.x)
-          const newHeight = prev.height - (newY - prev.y)
-          if (newWidth >= minSize && newHeight >= minSize) {
-            newBox = { x: newX, y: newY, width: newWidth, height: newHeight }
-          }
-        } else if (dragType === "ne") {
-          const newY = Math.max(0, prev.y + deltaY)
-          const newWidth = Math.min(maxWidth - prev.x, Math.max(minSize, prev.width + deltaX))
-          const newHeight = prev.height - (newY - prev.y)
-          if (newHeight >= minSize) {
-            newBox = { ...prev, y: newY, width: newWidth, height: newHeight }
-          }
-        } else if (dragType === "sw") {
-          const newX = Math.max(0, prev.x + deltaX)
-          const newWidth = prev.width - (newX - prev.x)
-          const newHeight = Math.min(maxHeight - prev.y, Math.max(minSize, prev.height + deltaY))
-          if (newWidth >= minSize) {
-            newBox = { x: newX, y: prev.y, width: newWidth, height: newHeight }
-          }
-        } else if (dragType === "se") {
-          newBox = {
-            ...prev,
-            width: Math.min(maxWidth - prev.x, Math.max(minSize, prev.width + deltaX)),
-            height: Math.min(maxHeight - prev.y, Math.max(minSize, prev.height + deltaY)),
-          }
-        }
+        const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+        const degrees = (angle * 180) / Math.PI;
+        setRotation(Math.round(degrees));
+        return;
       }
 
-      return newBox
-    })
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      const maxWidth = imageBounds.width;
+      const maxHeight = imageBounds.height;
 
-    setDragStart({ x: e.clientX, y: e.clientY })
-  }, [isDragging, isRotating, dragType, dragStart, cropBox, imageBounds])
+      setCropBox((prev) => {
+        let newBox = { ...prev };
+        const minSize = 30;
+
+        if (dragType === "move") {
+          newBox.x = Math.max(0, Math.min(maxWidth - prev.width, prev.x + deltaX));
+          newBox.y = Math.max(0, Math.min(maxHeight - prev.height, prev.y + deltaY));
+        } else {
+          if (dragType === "nw") {
+            const newX = Math.max(0, prev.x + deltaX);
+            const newY = Math.max(0, prev.y + deltaY);
+            const newWidth = prev.width - (newX - prev.x);
+            const newHeight = prev.height - (newY - prev.y);
+            if (newWidth >= minSize && newHeight >= minSize) {
+              newBox = { x: newX, y: newY, width: newWidth, height: newHeight };
+            }
+          } else if (dragType === "ne") {
+            const newY = Math.max(0, prev.y + deltaY);
+            const newWidth = Math.min(maxWidth - prev.x, Math.max(minSize, prev.width + deltaX));
+            const newHeight = prev.height - (newY - prev.y);
+            if (newHeight >= minSize) {
+              newBox = { ...prev, y: newY, width: newWidth, height: newHeight };
+            }
+          } else if (dragType === "sw") {
+            const newX = Math.max(0, prev.x + deltaX);
+            const newWidth = prev.width - (newX - prev.x);
+            const newHeight = Math.min(maxHeight - prev.y, Math.max(minSize, prev.height + deltaY));
+            if (newWidth >= minSize) {
+              newBox = { x: newX, y: prev.y, width: newWidth, height: newHeight };
+            }
+          } else if (dragType === "se") {
+            newBox = {
+              ...prev,
+              width: Math.min(maxWidth - prev.x, Math.max(minSize, prev.width + deltaX)),
+              height: Math.min(maxHeight - prev.y, Math.max(minSize, prev.height + deltaY)),
+            };
+          }
+        }
+
+        return newBox;
+      });
+
+      setDragStart({ x: e.clientX, y: e.clientY });
+    },
+    [isDragging, isRotating, dragType, dragStart, cropBox, imageBounds]
+  );
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-    setIsRotating(false)
-    setDragType(null)
-  }, [])
+    setIsDragging(false);
+    setIsRotating(false);
+    setDragType(null);
+  }, []);
 
   useEffect(() => {
     if (isDragging || isRotating) {
-      document.addEventListener("mousemove", handleMouseMove)
-            showToast(t("pdfProcessing.editor.signature.failed"), "error")
+      document.addEventListener("mousemove", handleMouseMove);
+      showToast(t("pdfProcessing.editor.signature.failed"), "error");
       return () => {
-        document.removeEventListener("mousemove", handleMouseMove)
-        document.removeEventListener("mouseup", handleMouseUp)
-      }
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
     }
-  }, [isDragging, isRotating, handleMouseMove, handleMouseUp])
+  }, [isDragging, isRotating, handleMouseMove, handleMouseUp]);
 
   const handleApplyCrop = async () => {
-    if (!currentImage || !imageRef.current) return
+    if (!currentImage || !imageRef.current) return;
 
     try {
-      const img = document.createElement("img")
-      img.crossOrigin = "anonymous"
-      img.src = currentImage
+      const img = document.createElement("img");
+      img.crossOrigin = "anonymous";
+      img.src = currentImage;
 
       await new Promise((resolve, reject) => {
-        img.onload = resolve
-        img.onerror = reject
-      })
+        img.onload = resolve;
+        img.onerror = reject;
+      });
 
-      const displayedWidth = imageRef.current.offsetWidth
-      const displayedHeight = imageRef.current.offsetHeight
+      const displayedWidth = imageRef.current.offsetWidth;
+      const displayedHeight = imageRef.current.offsetHeight;
 
       // Scale from displayed size to actual image size
-      const scaleX = img.naturalWidth / displayedWidth
-      const scaleY = img.naturalHeight / displayedHeight
+      const scaleX = img.naturalWidth / displayedWidth;
+      const scaleY = img.naturalHeight / displayedHeight;
 
       // Convert crop box from displayed coordinates to actual image coordinates
-      const actualCropX = Math.round(cropBox.x * scaleX)
-      const actualCropY = Math.round(cropBox.y * scaleY)
-      const actualCropWidth = Math.round(cropBox.width * scaleX)
-      const actualCropHeight = Math.round(cropBox.height * scaleY)
+      const actualCropX = Math.round(cropBox.x * scaleX);
+      const actualCropY = Math.round(cropBox.y * scaleY);
+      const actualCropWidth = Math.round(cropBox.width * scaleX);
+      const actualCropHeight = Math.round(cropBox.height * scaleY);
 
       // Clamp to image bounds
-      const finalX = Math.max(0, Math.min(actualCropX, img.naturalWidth - 1))
-      const finalY = Math.max(0, Math.min(actualCropY, img.naturalHeight - 1))
-      const finalWidth = Math.min(actualCropWidth, img.naturalWidth - finalX)
-      const finalHeight = Math.min(actualCropHeight, img.naturalHeight - finalY)
+      const finalX = Math.max(0, Math.min(actualCropX, img.naturalWidth - 1));
+      const finalY = Math.max(0, Math.min(actualCropY, img.naturalHeight - 1));
+      const finalWidth = Math.min(actualCropWidth, img.naturalWidth - finalX);
+      const finalHeight = Math.min(actualCropHeight, img.naturalHeight - finalY);
 
-      let finalImageData: string
+      let finalImageData: string;
 
       if (rotation !== 0) {
         // First rotate the entire image
-        const tempCanvas = document.createElement("canvas")
-        const tempCtx = tempCanvas.getContext("2d", { alpha: true })
-        if (!tempCtx) throw new Error("Canvas context unavailable")
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d", { alpha: true });
+        if (!tempCtx) throw new Error("Canvas context unavailable");
 
-        const radians = (rotation * Math.PI) / 180
-        const cos = Math.abs(Math.cos(radians))
-        const sin = Math.abs(Math.sin(radians))
-        const rotatedWidth = img.naturalWidth * cos + img.naturalHeight * sin
-        const rotatedHeight = img.naturalWidth * sin + img.naturalHeight * cos
+        const radians = (rotation * Math.PI) / 180;
+        const cos = Math.abs(Math.cos(radians));
+        const sin = Math.abs(Math.sin(radians));
+        const rotatedWidth = img.naturalWidth * cos + img.naturalHeight * sin;
+        const rotatedHeight = img.naturalWidth * sin + img.naturalHeight * cos;
 
-        tempCanvas.width = rotatedWidth
-        tempCanvas.height = rotatedHeight
+        tempCanvas.width = rotatedWidth;
+        tempCanvas.height = rotatedHeight;
 
         // Clear with transparent background
-        tempCtx.clearRect(0, 0, rotatedWidth, rotatedHeight)
+        tempCtx.clearRect(0, 0, rotatedWidth, rotatedHeight);
 
-        tempCtx.save()
-        tempCtx.translate(rotatedWidth / 2, rotatedHeight / 2)
-        tempCtx.rotate(radians)
-        tempCtx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2)
-        tempCtx.restore()
+        tempCtx.save();
+        tempCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
+        tempCtx.rotate(radians);
+        tempCtx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+        tempCtx.restore();
 
         // Then crop from the rotated image
-        const finalCanvas = document.createElement("canvas")
-        const finalCtx = finalCanvas.getContext("2d", { alpha: true })
-        if (!finalCtx) throw new Error("Final canvas context unavailable")
+        const finalCanvas = document.createElement("canvas");
+        const finalCtx = finalCanvas.getContext("2d", { alpha: true });
+        if (!finalCtx) throw new Error("Final canvas context unavailable");
 
-        finalCanvas.width = finalWidth
-        finalCanvas.height = finalHeight
+        finalCanvas.width = finalWidth;
+        finalCanvas.height = finalHeight;
 
         // Clear with transparent background
-        finalCtx.clearRect(0, 0, finalWidth, finalHeight)
+        finalCtx.clearRect(0, 0, finalWidth, finalHeight);
 
-        const offsetX = (rotatedWidth - img.naturalWidth) / 2
-        const offsetY = (rotatedHeight - img.naturalHeight) / 2
+        const offsetX = (rotatedWidth - img.naturalWidth) / 2;
+        const offsetY = (rotatedHeight - img.naturalHeight) / 2;
 
         finalCtx.drawImage(
           tempCanvas,
@@ -298,46 +309,38 @@ export default function CropTool({
           0,
           finalWidth,
           finalHeight
-        )
-        finalImageData = finalCanvas.toDataURL("image/png")
+        );
+        finalImageData = finalCanvas.toDataURL("image/png");
       } else {
         // Simple crop without rotation
-        const canvas = document.createElement("canvas")
-        const ctx = canvas.getContext("2d", { alpha: true })
-        if (!ctx) throw new Error("Canvas context unavailable")
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { alpha: true });
+        if (!ctx) throw new Error("Canvas context unavailable");
 
-        canvas.width = finalWidth
-        canvas.height = finalHeight
+        canvas.width = finalWidth;
+        canvas.height = finalHeight;
 
         // Clear with transparent background
-        ctx.clearRect(0, 0, finalWidth, finalHeight)
+        ctx.clearRect(0, 0, finalWidth, finalHeight);
 
-        ctx.drawImage(
-          img,
-          finalX,
-          finalY,
-          finalWidth,
-          finalHeight,
-          0,
-          0,
-          finalWidth,
-          finalHeight
-        )
-        finalImageData = canvas.toDataURL("image/png")
+        ctx.drawImage(img, finalX, finalY, finalWidth, finalHeight, 0, 0, finalWidth, finalHeight);
+        finalImageData = canvas.toDataURL("image/png");
       }
 
-      onApplyCrop(finalImageData)
+      onApplyCrop(finalImageData);
     } catch (error) {
-      console.error("Crop error:", error)
-      alert(Errors.msg(Errors.E.PDF_CROP_FAILED))
+      console.error("Crop error:", error);
+      alert(Errors.msg(Errors.E.PDF_CROP_FAILED));
     }
-  }
+  };
 
   return (
     <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 shadow-md">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">{t("pdfProcessing.editor.crop.title")}</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {t("pdfProcessing.editor.crop.title")}
+          </h2>
           <div className="flex items-center gap-3">
             <button
               onClick={handleApplyCrop}
@@ -356,8 +359,8 @@ export default function CropTool({
             <button
               onClick={async () => {
                 // Apply crop first, then exit
-                await handleApplyCrop()
-                setRotation(0)
+                await handleApplyCrop();
+                setRotation(0);
               }}
               className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-base shadow-md"
             >
@@ -387,8 +390,8 @@ export default function CropTool({
             ref={containerRef}
             className="relative inline-block"
             style={{
-              width: imageLoaded ? `${imageBounds.width}px` : 'auto',
-              height: imageLoaded ? `${imageBounds.height}px` : 'auto',
+              width: imageLoaded ? `${imageBounds.width}px` : "auto",
+              height: imageLoaded ? `${imageBounds.height}px` : "auto",
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -457,7 +460,12 @@ export default function CropTool({
                   >
                     <div className="w-1 h-10 bg-purple-600 rounded-full"></div>
                     <div className="w-8 h-8 bg-purple-600 border-[3px] border-white rounded-full hover:scale-125 transition-transform shadow-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-5 h-5 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -494,8 +502,8 @@ export default function CropTool({
                     {t("editor.crop.rotated", { degrees: rotation })}
                     <button
                       onClick={(e) => {
-                        e.stopPropagation()
-                        setRotation(0)
+                        e.stopPropagation();
+                        setRotation(0);
                       }}
                       className="ml-2 text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md transition font-bold"
                     >
@@ -511,11 +519,9 @@ export default function CropTool({
 
       <div className="flex justify-center">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center max-w-2xl">
-          <p className="text-gray-700 font-medium">
-            {t("editor.crop.tip")}
-          </p>
+          <p className="text-gray-700 font-medium">{t("editor.crop.tip")}</p>
         </div>
       </div>
     </div>
-  )
+  );
 }

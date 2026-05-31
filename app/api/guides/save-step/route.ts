@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 
 export async function POST(request: Request) {
   try {
@@ -15,13 +15,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { guideSessionId, stepKey, data, isCompleted, progressPercent } =
-      await request.json();
+    const { guideSessionId, stepKey, data, isCompleted, progressPercent } = await request.json();
 
     if (!guideSessionId || !stepKey) {
       return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[guideSessionId, stepKey]' }) },
-        { status: 400 },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[guideSessionId, stepKey]" }) },
+        { status: 400 }
       );
     }
 
@@ -34,10 +33,7 @@ export async function POST(request: Request) {
       .single();
 
     if (sessionError || !session) {
-      return NextResponse.json(
-        { error: msg(E.CASE_DATA_NOT_FOUND) },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 403 });
     }
 
     // 2. Upsert step
@@ -50,15 +46,12 @@ export async function POST(request: Request) {
       },
       {
         onConflict: "user_guide_id,step_key",
-      },
+      }
     );
 
     if (stepError) {
       console.error("Error saving step data:", stepError);
-      return NextResponse.json(
-        { error: msg(E.CASE_DATA_SAVE_FAILED) },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.CASE_DATA_SAVE_FAILED) }, { status: 500 });
     }
 
     // 3. Determine status
@@ -89,18 +82,13 @@ export async function POST(request: Request) {
 
     if (updateError) {
       console.error("Error updating session:", updateError);
-      return NextResponse.json(
-        { error: "Failed to update session" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to update session" }, { status: 500 });
     }
 
     return NextResponse.json({ message: "Step saved successfully" });
   } catch (error) {
     console.error("Unexpected error in /api/guides/save-step:", error);
-    return NextResponse.json(
-      { error: msg(E.AUTH_UNEXPECTED_ERROR) },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

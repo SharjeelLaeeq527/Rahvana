@@ -1,16 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { E, msg } from '@/lib/errors';
-import {
-  FileText,
-  Calendar,
-  Eye,
-  Plus,
-  CheckCircle,
-  AlertTriangle,
-  Heart,
-} from "lucide-react";
+import { E, msg } from "@/lib/errors";
+import { FileText, Calendar, Eye, Plus, CheckCircle, AlertTriangle, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
@@ -36,17 +28,8 @@ interface UserCase {
   updatedAt: string;
 }
 
-const RiskLevelBadge = ({
-  riskLevel,
-  score,
-}: {
-  riskLevel: RiskLevel;
-  score: number | null;
-}) => {
-  const riskConfig: Record<
-    RiskLevel,
-    { color: string; icon: ElementType; label: string }
-  > = {
+const RiskLevelBadge = ({ riskLevel, score }: { riskLevel: RiskLevel; score: number | null }) => {
+  const riskConfig: Record<RiskLevel, { color: string; icon: ElementType; label: string }> = {
     STRONG: {
       color: "bg-green-100 text-green-800",
       icon: CheckCircle,
@@ -96,9 +79,7 @@ export default function MyCases() {
   const [filteredCases, setFilteredCases] = useState<UserCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
-    null,
-  );
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const { showToast } = useToast();
@@ -123,7 +104,7 @@ export default function MyCases() {
         if (response.ok) {
           setCases(data);
         } else {
-          console.error('Failed to fetch cases:', data.error ?? data);
+          console.error("Failed to fetch cases:", data.error ?? data);
           setError(msg(E.TOOL_CASE_ANALYZE_FAILED));
           setCases([]);
         }
@@ -194,10 +175,7 @@ export default function MyCases() {
   };
 
   // pagination calculations
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredCases.length / ITEMS_PER_PAGE)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredCases.length / ITEMS_PER_PAGE));
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentCases = filteredCases.slice(startIndex, endIndex);
@@ -221,9 +199,7 @@ export default function MyCases() {
     }
   };
 
-  const uniqueCaseTypes = Array.from(
-    new Set(cases.map((c) => c.caseType))
-  );
+  const uniqueCaseTypes = Array.from(new Set(cases.map((c) => c.caseType)));
 
   const columns: Column<UserCase>[] = [
     {
@@ -253,9 +229,7 @@ export default function MyCases() {
           <div className="bg-slate-100 text-slate-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
             <Calendar className="w-4 h-4 text-slate-600" />
           </div>
-          <div className="text-base text-slate-700">
-            {formatDate(userCase.createdAt)}
-          </div>
+          <div className="text-base text-slate-700">{formatDate(userCase.createdAt)}</div>
         </div>
       ),
     },
@@ -264,10 +238,7 @@ export default function MyCases() {
       label: "Status",
       width: "25%",
       render: (userCase) => (
-        <RiskLevelBadge
-          riskLevel={userCase.riskLevel}
-          score={userCase.overallScore}
-        />
+        <RiskLevelBadge riskLevel={userCase.riskLevel} score={userCase.overallScore} />
       ),
     },
     {
@@ -289,17 +260,13 @@ export default function MyCases() {
   const emptyState = (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
       <FileText className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">
-        No cases found
-      </h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">No cases found</h3>
       <p className="text-lg text-gray-500 mb-8">
         You haven&apos;t submitted any visa case assessments yet.
       </p>
       <div>
         <Button
-          onClick={() =>
-            (window.location.href = "/visa-case-strength-checker")
-          }
+          onClick={() => (window.location.href = "/visa-case-strength-checker")}
           className="bg-teal-600 hover:bg-teal-700 text-white py-4 px-6 text-lg"
         >
           <Plus className="w-5 h-5 mr-2" />
@@ -313,9 +280,7 @@ export default function MyCases() {
     <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py mt-10">
       <div className="">
         <header className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
-            My Visa Cases
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">My Visa Cases</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Track and manage all your visa case assessments in one place
           </p>
@@ -361,9 +326,7 @@ export default function MyCases() {
               />
             )}
             <Button
-              onClick={() =>
-                (window.location.href = "/visa-case-strength-checker")
-              }
+              onClick={() => (window.location.href = "/visa-case-strength-checker")}
               className="bg-teal-600 hover:bg-teal-700 text-white py-5 px-6 text-lg"
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -379,9 +342,7 @@ export default function MyCases() {
         ) : error ? (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
             <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Error Loading Cases
-            </h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Cases</h3>
             <p className="text-lg text-gray-500 mb-6">{error}</p>
             <Button
               onClick={() => window.location.reload()}

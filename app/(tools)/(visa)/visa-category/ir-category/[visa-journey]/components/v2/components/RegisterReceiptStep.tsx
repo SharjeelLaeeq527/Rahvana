@@ -100,16 +100,10 @@ const UpgradeNudge: React.FC<UpgradeNudgeProps> = ({
         className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
         style={{ background: "#8284bf" }}
       >
-        <span
-          className="plan-icon plan-icon--premium scale-110"
-          aria-hidden="true"
-        />
+        <span className="plan-icon plan-icon--premium scale-110" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
-        <div
-          className="text-[14px] font-bold mb-1"
-          style={{ color: "#8284bf" }}
-        >
+        <div className="text-[14px] font-bold mb-1" style={{ color: "#8284bf" }}>
           {title}
         </div>
         <div className="text-[13px] leading-[1.6]" style={{ color: "#4a2f55" }}>
@@ -152,9 +146,7 @@ export interface VaultFile {
 
 // ─── Status Timeline ───────────────────────────────────────────────────────────
 
-const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({
-  record,
-}) => {
+const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) => {
   const items = buildTimelineItems(record);
 
   const summaryCards = [
@@ -181,10 +173,7 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({
         boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
       }}
     >
-      <div
-        className="px-6 py-4"
-        style={{ borderBottom: "1px solid #8284bf33" }}
-      >
+      <div className="px-6 py-4" style={{ borderBottom: "1px solid #8284bf33" }}>
         <div
           className="text-[10px] font-bold uppercase tracking-widest"
           style={{ color: "#8284bf" }}
@@ -209,10 +198,7 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({
               >
                 {k}
               </div>
-              <div
-                className="text-[13px] font-semibold"
-                style={{ color: "#28151c" }}
-              >
+              <div className="text-[13px] font-semibold" style={{ color: "#28151c" }}>
                 {v}
               </div>
             </div>
@@ -231,10 +217,7 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({
                 style={{ background: "#8284bf" }}
               />
               <div>
-                <div
-                  className="text-[13px] font-bold"
-                  style={{ color: "#28151c" }}
-                >
+                <div className="text-[13px] font-bold" style={{ color: "#28151c" }}>
                   {item.title}
                 </div>
                 <div className="text-[12px]" style={{ color: "#5c6570" }}>
@@ -255,17 +238,14 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({
 
 async function postReceipt(
   journeyId: string,
-  payload: RegisterReceiptPayload,
+  payload: RegisterReceiptPayload
 ): Promise<{ record: ReceiptRecord | null; error: string }> {
   try {
-    const res = await fetch(
-      `/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
+    const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
     const data = await res.json();
     if (!res.ok || "error" in data) {
       return { record: null, error: msg(E.JOURNEY_RECEIPT_SAVE_FAILED) };
@@ -289,12 +269,9 @@ async function postReceipt(
 
 async function fetchReceipt(journeyId: string) {
   try {
-    const res = await fetch(
-      `/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`,
-    );
+    const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
     const data = await res.json();
-    if (!res.ok || data.error)
-      return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
+    if (!res.ok || data.error) return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
     const record: ReceiptRecord = {
       receiptNumber: data.receipt_number,
       noticeDate: data.notice_date,
@@ -358,9 +335,8 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const set =
-    (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
-      setFields((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFields((f) => ({ ...f, [k]: e.target.value }));
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) =>
     (e.target.style.borderColor = "#8284bf");
   const blurBorder = (e: React.FocusEvent<HTMLInputElement>) =>
@@ -395,10 +371,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
         border: "1.5px solid rgba(130,132,191,0.4)",
       }}
     >
-      <div
-        className="text-[22px] mb-2 font-semibold"
-        style={{ color: "#28151c" }}
-      >
+      <div className="text-[22px] mb-2 font-semibold" style={{ color: "#28151c" }}>
         {isUpdate ? "Update receipt details" : "Register the receipt notice"}
       </div>
       <div className="text-[14px] mb-6" style={{ color: "#28151c" }}>
@@ -473,8 +446,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
             className="text-[11px] font-semibold uppercase tracking-wider"
             style={{ color: "#6b8097" }}
           >
-            Case Label{" "}
-            <span className="normal-case font-normal">(optional)</span>
+            Case Label <span className="normal-case font-normal">(optional)</span>
           </label>
           <input
             className="rounded-lg px-4 py-3 text-[15px] outline-none"
@@ -495,8 +467,8 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
           color: "#28151c",
         }}
       >
-        Always confirm the receipt number before saving — it is the primary key
-        used for case tracking.
+        Always confirm the receipt number before saving — it is the primary key used for case
+        tracking.
       </div>
 
       {/* Tracking locked notice for Basic tier (new registration only) */}
@@ -505,17 +477,11 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
           className="rounded-xl p-3 mb-4 flex items-start gap-2.5"
           style={{ background: "#fef9e7", border: "1px solid #f0d98a" }}
         >
-          <Lock
-            className="w-4 h-4 shrink-0 mt-0.5"
-            style={{ color: "#8a6200" }}
-          />
-          <p
-            className="text-[12.5px] leading-[1.6]"
-            style={{ color: "#8a6200" }}
-          >
-            <strong>Tracking is not included in your current plan.</strong> Your
-            details will be saved, but automatic case status monitoring requires
-            a higher tier. You can upgrade any time to enable tracking.
+          <Lock className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#8a6200" }} />
+          <p className="text-[12.5px] leading-[1.6]" style={{ color: "#8a6200" }}>
+            <strong>Tracking is not included in your current plan.</strong> Your details will be
+            saved, but automatic case status monitoring requires a higher tier. You can upgrade any
+            time to enable tracking.
           </p>
         </div>
       )}
@@ -538,12 +504,8 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
           style={{ background: "#8284bf" }}
           onClick={handleSubmit}
           disabled={loading}
-          onMouseEnter={(e) =>
-            !loading && (e.currentTarget.style.background = "#6d5fb0")
-          }
-          onMouseLeave={(e) =>
-            !loading && (e.currentTarget.style.background = "#8284bf")
-          }
+          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#6d5fb0")}
+          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#8284bf")}
         >
           {trackingLocked && !isUpdate && <Lock className="w-3.5 h-3.5" />}
           {loading
@@ -593,9 +555,8 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
   const [ocrError, setOcrError] = useState("");
   const [ocrRawResponse, setOcrRawResponse] = useState<any>(null);
   const [isDropActive, setIsDropActive] = useState(false);
-  const set =
-    (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
-      setFields((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFields((f) => ({ ...f, [k]: e.target.value }));
   const focusBorder = (e: React.FocusEvent<HTMLInputElement>) =>
     (e.target.style.borderColor = "#8284bf");
   const blurBorder = (e: React.FocusEvent<HTMLInputElement>) =>
@@ -685,7 +646,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       });
       const data = await response.json();
       if (!response.ok) {
-          setError(msg(E.JOURNEY_RECEIPT_SAVE_FAILED));
+        setError(msg(E.JOURNEY_RECEIPT_SAVE_FAILED));
         setLoading(false);
         return;
       }
@@ -714,10 +675,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
         border: "1.5px solid rgba(130,132,191,0.4)",
       }}
     >
-      <div
-        className="text-[22px] mb-2 font-semibold"
-        style={{ color: "#28151c" }}
-      >
+      <div className="text-[22px] mb-2 font-semibold" style={{ color: "#28151c" }}>
         {isUpdate ? "Upload a new notice file" : "Upload receipt notice"}
       </div>
       <div className="text-[14px] mb-3" style={{ color: "#28151c" }}>
@@ -797,16 +755,10 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
             await applySelectedFiles(dt.files);
           }}
         >
-          <span
-            className="text-[15px] font-semibold mb-1 text-center"
-            style={{ color: "#28151c" }}
-          >
+          <span className="text-[15px] font-semibold mb-1 text-center" style={{ color: "#28151c" }}>
             Drag & drop your receipt notice here
           </span>
-          <span
-            className="text-[13px] mb-4 text-center"
-            style={{ color: "#6b8097" }}
-          >
+          <span className="text-[13px] mb-4 text-center" style={{ color: "#6b8097" }}>
             or click anywhere in this area to choose a file
           </span>
           <span
@@ -852,8 +804,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
           color: "#3a4f63",
         }}
       >
-        Accepted formats: PDF, PNG, JPG. Confirm the receipt number and dates
-        below before saving.
+        Accepted formats: PDF, PNG, JPG. Confirm the receipt number and dates below before saving.
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
         <div className="md:col-span-2 flex flex-col gap-1">
@@ -945,18 +896,10 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
           style={{ background: "#8284bf" }}
           onClick={handleSubmit}
           disabled={loading || ocrLoading}
-          onMouseEnter={(e) =>
-            !loading && (e.currentTarget.style.background = "#6d5fb0")
-          }
-          onMouseLeave={(e) =>
-            !loading && (e.currentTarget.style.background = "#8284bf")
-          }
+          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#6d5fb0")}
+          onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#8284bf")}
         >
-          {loading
-            ? "Saving…"
-            : isUpdate
-              ? "Save Changes"
-              : "Save Receipt & Enable Tracking"}
+          {loading ? "Saving…" : isUpdate ? "Save Changes" : "Save Receipt & Enable Tracking"}
         </button>
       </div>
     </div>
@@ -999,9 +942,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
   const [vaultDocs, setVaultDocs] = useState<Record<string, VaultFile[]>>({});
 
   // ── Upgrade modal state ─────────────────────────────────────────────────────
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
-    null,
-  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   // Inline nudge: shown inside the manual form when user clicks Save with locked tracking
   const [showTrackingNudge, setShowTrackingNudge] = useState(false);
 
@@ -1011,9 +952,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
       setGuideSteps(fromTool);
       return;
     }
-    import("@/data/receipt-guide-steps.json").then((mod) =>
-      setGuideSteps(mod.default),
-    );
+    import("@/data/receipt-guide-steps.json").then((mod) => setGuideSteps(mod.default));
   }, [tool]);
 
   useEffect(() => {
@@ -1030,19 +969,14 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
       const { record: fresh } = await fetchReceipt(journeyId);
       setSavedRecord(fresh ?? record);
     },
-    [journeyId],
+    [journeyId]
   );
 
   const handleFileVault = useCallback((docId: string, files: FileList) => {
     const incoming: VaultFile[] = Array.from(files).map((file) => ({
       file,
       uploadDate: new Date(),
-      quality:
-        file.size > 500_000
-          ? "excellent"
-          : file.size > 100_000
-            ? "good"
-            : "needs-review",
+      quality: file.size > 500_000 ? "excellent" : file.size > 100_000 ? "good" : "needs-review",
     }));
     setVaultDocs((prev) => ({
       ...prev,
@@ -1114,8 +1048,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
             <div
               className="absolute top-0 left-0 right-0 h-[2px]"
               style={{
-                background:
-                  "linear-gradient(to right, #8284bf, #4e518c, transparent)",
+                background: "linear-gradient(to right, #8284bf, #4e518c, transparent)",
                 opacity: 0.8,
               }}
             />
@@ -1138,8 +1071,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                     className="text-[clamp(19px,2.8vw,23px)] leading-tight"
                     style={{ color: "#fff" }}
                   >
-                    Wait for the notice, register it, then let Rahvana monitor
-                    the case
+                    Wait for the notice, register it, then let Rahvana monitor the case
                   </div>
                 </div>
               </div>
@@ -1203,16 +1135,12 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 style={{
                   background: "#fff",
                   border: "1.5px solid #d0e4f7",
-                  transition:
-                    "border-color 0.22s, box-shadow 0.22s, transform 0.22s",
-                  ...(stepEntitlement.isLocked
-                    ? { opacity: 0.7, cursor: "not-allowed" }
-                    : {}),
+                  transition: "border-color 0.22s, box-shadow 0.22s, transform 0.22s",
+                  ...(stepEntitlement.isLocked ? { opacity: 0.7, cursor: "not-allowed" } : {}),
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = "#2f6fd4";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 20px rgba(47,111,212,0.10)";
+                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(47,111,212,0.10)";
                   e.currentTarget.style.transform = "translateY(-1px)";
                 }}
                 onMouseLeave={(e) => {
@@ -1229,18 +1157,12 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 >
                   <CheckIcon />
                 </div>
-                <div
-                  className="text-[15px] font-semibold mb-[5px]"
-                  style={{ color: "#0c1b33" }}
-                >
+                <div className="text-[15px] font-semibold mb-[5px]" style={{ color: "#0c1b33" }}>
                   {hasExistingReceipt
                     ? "Receipt Notice Registered"
                     : "I Received My Receipt Notice"}
                 </div>
-                <div
-                  className="text-[13px] leading-[1.55]"
-                  style={{ color: "#6b8097" }}
-                >
+                <div className="text-[13px] leading-[1.55]" style={{ color: "#6b8097" }}>
                   {hasExistingReceipt
                     ? `Tracking active for ${savedRecord!.receiptNumber}. Tap to update dates or the case label.`
                     : "Move into the registration step and save the receipt details inside Rahvana."}
@@ -1276,16 +1198,14 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 style={{
                   background: isBasic ? "#f9f9fb" : "#fff",
                   border: `1.5px solid ${isBasic ? "#e2e8f0" : "#d0e4f7"}`,
-                  transition:
-                    "border-color 0.22s, box-shadow 0.22s, transform 0.22s",
+                  transition: "border-color 0.22s, box-shadow 0.22s, transform 0.22s",
                   opacity: isBasic ? 0.72 : 1,
                   cursor: isBasic ? "default" : "pointer",
                 }}
                 onMouseEnter={(e) => {
                   if (!isBasic) {
                     e.currentTarget.style.borderColor = "#2f6fd4";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 20px rgba(47,111,212,0.10)";
+                    e.currentTarget.style.boxShadow = "0 4px 20px rgba(47,111,212,0.10)";
                     e.currentTarget.style.transform = "translateY(-1px)";
                   }
                 }}
@@ -1318,16 +1238,10 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 >
                   <BookIcon />
                 </div>
-                <div
-                  className="text-[15px] font-semibold mb-[5px]"
-                  style={{ color: "#0c1b33" }}
-                >
+                <div className="text-[15px] font-semibold mb-[5px]" style={{ color: "#0c1b33" }}>
                   Where Do I Find the Receipt Number?
                 </div>
-                <div
-                  className="text-[13px] leading-[1.55]"
-                  style={{ color: "#6b8097" }}
-                >
+                <div className="text-[13px] leading-[1.55]" style={{ color: "#6b8097" }}>
                   {isBasic
                     ? "Step-by-step walkthrough included in Premium and above."
                     : "Open a short walkthrough that shows where to look and what information to bring back."}
@@ -1338,10 +1252,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 >
                   {isBasic ? (
                     <>
-                      <span
-                        className="plan-icon plan-icon--premium scale-110"
-                        aria-hidden="true"
-                      />
+                      <span className="plan-icon plan-icon--premium scale-110" aria-hidden="true" />
                       Upgrade to unlock
                     </>
                   ) : (
@@ -1424,9 +1335,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                           className="flex-1 min-w-0 whitespace-nowrap px-3 sm:px-5 py-2 text-[13px] sm:text-[15px] font-semibold transition-colors duration-150 flex items-center justify-center gap-1.5"
                           style={{
                             borderBottom:
-                              activeTab === tab
-                                ? "2px solid #8284bf"
-                                : "2px solid transparent",
+                              activeTab === tab ? "2px solid #8284bf" : "2px solid transparent",
                             color: tabLocked
                               ? "#a0aec0"
                               : activeTab === tab
@@ -1443,12 +1352,8 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                             setActiveTab(tab);
                           }}
                         >
-                          {tabLocked && (
-                            <Lock size={12} style={{ color: "#a0aec0" }} />
-                          )}
-                          {tab === "manual"
-                            ? "Enter Receipt Number"
-                            : "Upload Receipt Notice"}
+                          {tabLocked && <Lock size={12} style={{ color: "#a0aec0" }} />}
+                          {tab === "manual" ? "Enter Receipt Number" : "Upload Receipt Notice"}
                           {tabLocked && (
                             <span
                               className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
@@ -1498,15 +1403,11 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 className="rounded-2xl p-4 sm:p-6 mb-2"
                 style={{ background: "#f0f1fb", border: "1.5px solid #8284bf" }}
               >
-                <div
-                  className="text-[24px] mb-1 font-semibold"
-                  style={{ color: "#0c1b33" }}
-                >
+                <div className="text-[24px] mb-1 font-semibold" style={{ color: "#0c1b33" }}>
                   Receipt notice registered
                 </div>
                 <div className="text-[14px]" style={{ color: "#3a4f63" }}>
-                  Rahvana now has the core case reference needed to monitor
-                  status changes.
+                  Rahvana now has the core case reference needed to monitor status changes.
                 </div>
               </div>
               <div className="w-full">
@@ -1519,16 +1420,11 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                 >
                   <span style={{ color: "#2f6fd4", fontSize: 18 }}>📄</span>
                   <div>
-                    <div
-                      className="text-[13px] font-semibold"
-                      style={{ color: "#1c2b3a" }}
-                    >
+                    <div className="text-[13px] font-semibold" style={{ color: "#1c2b3a" }}>
                       Receipt notice saved to document vault
                     </div>
                     <div className="text-[11px]" style={{ color: "#6b8097" }}>
-                      {vaultDocs[RECEIPT_NOTICE_DOC_ID].map(
-                        (v) => v.file.name,
-                      ).join(", ")}
+                      {vaultDocs[RECEIPT_NOTICE_DOC_ID].map((v) => v.file.name).join(", ")}
                       {" · "}
                       {vaultDocs[RECEIPT_NOTICE_DOC_ID][0].quality}
                     </div>
@@ -1551,10 +1447,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
           )}
 
           {tool.footer_note && (
-            <div
-              className="mt-8 text-xs border-t pt-4"
-              style={{ color: "#6b8097" }}
-            >
+            <div className="mt-8 text-xs border-t pt-4" style={{ color: "#6b8097" }}>
               {tool.footer_note}
             </div>
           )}
@@ -1563,10 +1456,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
 
       {/* ── Upgrade modal ── */}
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
     </div>
   );

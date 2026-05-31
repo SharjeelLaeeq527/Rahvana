@@ -4,7 +4,7 @@ import { E, msg } from '@/lib/errors'
 
 export async function POST(req: NextRequest) {
   try {
-    const { query } = await req.json()
+    const { query } = await req.json();
 
     if (!query || query.trim() === "") {
       return NextResponse.json(
@@ -16,43 +16,44 @@ export async function POST(req: NextRequest) {
     // --- SMART URL LOGIC START ---
     // Production me NEXT_PUBLIC_API_URL use karega, Local me localhost fallback
     let baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    
+
     // Trailing slash safe remove
     baseUrl = baseUrl.replace(/\/$/, "");
 
     // Path construct logic: Check if /api/v1 exists
-    const endpoint = baseUrl.includes("/api/v1") 
-      ? `${baseUrl}/ask-whatsapp`        // Vercel config: .../api/v1/ask-whatsapp
-      : `${baseUrl}/api/v1/ask-whatsapp` // Local config: .../api/v1/ask-whatsapp
+    const endpoint = baseUrl.includes("/api/v1")
+      ? `${baseUrl}/ask-whatsapp` // Vercel config: .../api/v1/ask-whatsapp
+      : `${baseUrl}/api/v1/ask-whatsapp`; // Local config: .../api/v1/ask-whatsapp
 
     console.log("NextJS API Proxy calling Backend at:", endpoint);
     // --- SMART URL LOGIC END ---
 
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ query: query.trim() }),
-    })
+    });
 
     if (!response.ok) {
-      throw new Error(`Backend error: ${response.status}`)
+      throw new Error(`Backend error: ${response.status}`);
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
     return NextResponse.json({
       response: data.response || "No response from assistant",
-    })
+    });
   } catch (error) {
-    console.error("❌ Chat API Error:", error)
+    console.error("❌ Chat API Error:", error);
     return NextResponse.json(
+      {
       {
         response: "Sorry, I'm having trouble connecting to the assistant. Please try again.",
         error: msg(E.TOOL_CHAT_SERVER_ERROR),
       },
       { status: 500 }
-    )
+    );
   }
 }

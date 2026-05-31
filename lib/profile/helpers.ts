@@ -19,7 +19,7 @@ export function getProfileCompleteness(profile: Partial<MasterProfile>): number 
     { value: profile.currentAddress?.street, weight: 2 },
     { value: profile.currentAddress?.city, weight: 2 },
     { value: profile.currentAddress?.country, weight: 2 },
-    
+
     // Important fields (weight: 1 each)
     { value: profile.name?.middle, weight: 1 },
     { value: profile.placeOfBirth?.city, weight: 1 },
@@ -67,14 +67,15 @@ export function getMissingRequiredFields(profile: Partial<MasterProfile>): strin
  */
 export function formatProfileForDisplay(profile: Partial<MasterProfile>): Record<string, string> {
   return {
-    fullName: `${profile.name?.first || ''} ${profile.name?.middle || ''} ${profile.name?.last || ''}`.trim(),
-    dateOfBirth: profile.dateOfBirth ? formatDate(profile.dateOfBirth) : '',
-    placeOfBirth: profile.placeOfBirth 
+    fullName:
+      `${profile.name?.first || ""} ${profile.name?.middle || ""} ${profile.name?.last || ""}`.trim(),
+    dateOfBirth: profile.dateOfBirth ? formatDate(profile.dateOfBirth) : "",
+    placeOfBirth: profile.placeOfBirth
       ? `${profile.placeOfBirth.city}, ${profile.placeOfBirth.country}`
-      : '',
+      : "",
     address: formatAddress(profile.currentAddress),
-    phone: formatPhoneNumber(profile.phone || ''),
-    income: profile.annualIncome ? `$${Number(profile.annualIncome).toLocaleString()}` : '',
+    phone: formatPhoneNumber(profile.phone || ""),
+    income: profile.annualIncome ? `$${Number(profile.annualIncome).toLocaleString()}` : "",
   };
 }
 
@@ -84,29 +85,29 @@ export function formatProfileForDisplay(profile: Partial<MasterProfile>): Record
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return dateString;
-  
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   });
 }
 
 /**
  * Format address object to string
  */
-function formatAddress(address?: Partial<MasterProfile['currentAddress']>): string {
-  if (!address) return '';
-  
+function formatAddress(address?: Partial<MasterProfile["currentAddress"]>): string {
+  if (!address) return "";
+
   const parts = [
     address.street,
     address.city,
     address.state,
     address.zipCode,
-    address.country
+    address.country,
   ].filter(Boolean);
-  
-  return parts.join(', ');
+
+  return parts.join(", ");
 }
 
 /**
@@ -114,13 +115,13 @@ function formatAddress(address?: Partial<MasterProfile['currentAddress']>): stri
  */
 function formatPhoneNumber(phone: string): string {
   // Remove all non-digit characters
-  const cleaned = phone.replace(/\D/g, '');
-  
+  const cleaned = phone.replace(/\D/g, "");
+
   // Format as (XXX) XXX-XXXX for 10 digit numbers
   if (cleaned.length === 10) {
     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
   }
-  
+
   return phone;
 }
 
@@ -130,13 +131,13 @@ function formatPhoneNumber(phone: string): string {
  */
 export function sanitizeProfileData(profile: Partial<MasterProfile>): Partial<MasterProfile> {
   const sanitized: Record<string, unknown> = {};
-  
+
   for (const [key, value] of Object.entries(profile)) {
-    if (value === null || value === '' || value === undefined) {
+    if (value === null || value === "" || value === undefined) {
       continue;
     }
-    
-    if (typeof value === 'object' && !Array.isArray(value)) {
+
+    if (typeof value === "object" && !Array.isArray(value)) {
       const sanitizedObj = sanitizeProfileData(value as Partial<MasterProfile>);
       if (Object.keys(sanitizedObj).length > 0) {
         sanitized[key] = sanitizedObj;
@@ -149,7 +150,7 @@ export function sanitizeProfileData(profile: Partial<MasterProfile>): Partial<Ma
       sanitized[key] = value;
     }
   }
-  
+
   return sanitized as Partial<MasterProfile>;
 }
 
@@ -161,10 +162,10 @@ export function convertToISODate(dateString: string): string {
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
     return dateString;
   }
-  
+
   // Try to parse and convert
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return dateString;
-  
-  return date.toISOString().split('T')[0];
+
+  return date.toISOString().split("T")[0];
 }

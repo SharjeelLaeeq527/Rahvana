@@ -3,10 +3,7 @@
 // Source: https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines
 // ============================================================================
 
-export const POVERTY_GUIDELINES: Record<
-  number,
-  { level100: number; level125: number }
-> = {
+export const POVERTY_GUIDELINES: Record<number, { level100: number; level125: number }> = {
   2: { level100: 21640, level125: 27050 },
   3: { level100: 27320, level125: 34150 },
   4: { level100: 33000, level125: 41250 },
