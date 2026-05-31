@@ -562,11 +562,11 @@ function ToolCard({
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
             {t(`toolsPage.categories.${tool.category}`) || tool.category}
           </span>
-          {isResultLocked && (
+          {/* {isResultLocked && (
             <span className="text-[11px] font-bold uppercase tracking-wide bg-amber-50 text-amber-700 px-2 py-0.5 rounded flex items-center gap-1 border border-amber-200/50">
               <Crown size={10} className="text-amber-500 fill-amber-500 animate-pulse" /> Premium
             </span>
-          )}
+          )} */}
         </div>
         <p className="text-sm leading-relaxed mb-6 grow text-slate-900 dark:text-white">
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
