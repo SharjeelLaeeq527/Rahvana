@@ -886,7 +886,6 @@ export const RapidFireModePage = ({
               </div>
             </div>
 
-            {!isFreeTier && (
               <>
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
@@ -1103,7 +1102,6 @@ export const RapidFireModePage = ({
                   </div>
                 )}
               </>
-            )}
 
             <div className="flex gap-3 justify-center">
               <Button
