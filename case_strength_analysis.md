@@ -13,6 +13,9 @@ This is **not** legal advice. It is a structured self-assessment tool designed t
 
 > **Important:** USCIS does not publish a case-strength formula or scoring rubric. There are no official percentages, weights, or point values assigned to individual factors. The assessment framework in this document is the **tool's own design** — structured around what practitioners and published RFE/denial patterns indicate matters most, not official USCIS metrics.
 
+> [!IMPORTANT]
+> **Implementation decision — NO NUMERIC SCORING (overrides parts of this doc).** As built, the engine produces **no scores, no percentages, and no progress rings** — anywhere. It emits only advisory checks at three levels (`critical` / `warning` / `info`), each with a title and hint. This supersedes the percentage tiers in §3.1, the `78%` dashboard mock in §7.1, and the per-chapter rings in §7.2: completeness is surfaced as *"these required items are still missing"*, never as a number. A single number would imply an official authority the tool does not have. The Chapter 2 smoke test explicitly asserts that no `score` field is ever produced.
+
 ---
 
 ## 2. The Three Pillars of Case Strength
@@ -174,16 +177,20 @@ Chapter 1 has two distinct paths after the filing method is selected. Both paths
 
 ### 5.2 Chapter 2: NVC/CEAC Processing
 
-| Step                         | Current Roadmap Coverage                                     | Gap / Risk Identified                                       | Improvement for Case Strength                                                                                                                                                                       |
+> **How to read this table:** the first three columns are the original strategy. The **fourth column describes the case-strength check the tool runs at that step.**
+
+| Step                         | Current Roadmap Coverage                                     | Gap / Risk Identified                                       | Case-Strength Check                                                                                                                                                                       |
 | ---------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.1 NVC Welcome Letter**   | Letter review, CEAC login, Portal Wallet                     | No NVC case number format validation                        | Add **case number format validator** and auto-extract key data points from uploaded welcome letter                                                                                                  |
-| **2.2 Pay NVC Fees**         | CEAC payment tutorial                                        | No "payment posted" tracking with timeline expectations     | Add **payment posting tracker** with expected timeline (typically 3–5 business days) and reminder to check CEAC weekly                                                                              |
-| **2.3 DS-260**               | Preparation flow + answer key                                | **CRITICAL GAP:** No cross-validation against I-130 answers | Implement **DS-260 ↔ I-130 Consistency Checker** — flag mismatches in names, dates, addresses, employment history, and prior marriages. This is the #1 cause of NVC rejections                      |
-| **2.4 Civil Documents**      | Categorized checklist (required / conditional / recommended) | No country-specific document guidance                       | Add **Pakistan-specific civil document requirements** — reference travel.state.gov reciprocity page for exact document versions needed (e.g., long-form NADRA birth certificate, not short-form)    |
-| **2.5 Affidavit of Support** | Calculator + dynamic form generation                         | No income adequacy pre-check before filling                 | Add **real-time income threshold check** — before user starts I-864, confirm their income meets the 125% poverty guideline for their household size. If not, proactively suggest joint sponsor path |
-| **2.6 Financial Documents**  | Dynamic checklist based on sponsor structure                 | No tax return year validation                               | Add **tax year freshness check** — ensure user is submitting the most recent tax year and warn if transcripts are outdated                                                                          |
-| **2.7 Add Sponsor in CEAC**  | Tutorial + relationship checklist                            | Only appears when needed                                    | Adequate — conditional visibility is correct                                                                                                                                                        |
-| **2.8 Upload to NVC**        | Upload placement guide + PDF processing                      | No upload completeness verification                         | Add **upload category matcher** — verify that each required CEAC category has at least one document uploaded before user clicks "Submit"                                                            |
+| **2.3 DS-260**               | Preparation flow + answer key                                | **CRITICAL GAP:** No cross-validation against I-130 answers | Compares the 3 key dates (marriage date, both birth dates) against the I-130 and flags any mismatch as **critical**. Also reminds the user to declare anything already told to USCIS — prior marriage, past visa refusal, court/police record, or overstay — because leaving it off the DS-260 is misrepresentation. Names are not auto-compared, since spelling variants (e.g. Muhammad/Mohammad) would raise false alarms.                      |
+| **2.4 Civil Documents**      | Categorized checklist (required / conditional / recommended) | No country-specific document guidance                       | Flags any missing required or conditional civil document as **critical**, and reminds the user to get a certified English translation and check their country's exact requirements on the State Dept reciprocity schedule.    |
+| **2.5 Affidavit of Support** | Calculator + dynamic form generation                         | No income adequacy pre-check before filling                 | Reads the sponsorship result and **warns** — with the exact dollar shortfall — if income is below the requirement, then points to the joint-sponsor path. |
+| **2.6 Financial Documents**  | Dynamic checklist based on sponsor structure                 | No tax return year validation                               | Reminds each sponsor to gather their most-recent-year tax documents.                                                                          |
+| **2.7 Add Sponsor in CEAC**  | Tutorial + relationship checklist                            | Only appears when needed                                    | Prompts the user to add a joint sponsor when income is short and none has been added yet.                                                                                                                                                        |
+| **2.8 Upload to NVC**        | Upload placement guide + PDF processing                      | No upload completeness verification                         | Final check before upload — confirms the DS-260 is done, civil documents are complete, and any income shortfall is resolved.                                                            |
+
+Steps **2.2, 2.10, 2.12** also carry small `info` reminders (save the fee status / DQ date / interview date) that unlock the next step or dashboard tracking. Steps **2.1, 2.9, 2.11** have no check by design — they are sign-in or "waiting on NVC / the embassy" steps where the user has nothing to enter or fix.
+
+The DS-260 dates used in the 2.3 check are entered by the user when they reach that step and return advisory alerts.
 
 ### 5.3 Chapter 3: Medical + Interview
 
@@ -451,7 +458,7 @@ This follows the existing `ENTITLEMENTS` pattern in `lib/entitlements/config.ts`
 | Risk flag display               | Inline in steps vs. dedicated section                       | Both — inline chip on step + aggregated in Case Strength detail view                             |
 | Assessment recalculation        | Recalculate on every view vs. cache + recalculate on change | Cache with invalidation on state change (better performance)                                     |
 | Legal disclaimer placement      | One-time modal vs. persistent footer                        | Persistent subtle footer on every Case Strength view: "Advisory tool only — not legal advice"    |
-| Scoring vs. no scoring          | Show a 0–100 number vs. show pillar assessments separately  | Show pillar assessments separately — a single number implies official authority it does not have |
+| Scoring vs. no scoring          | Show a 0–100 number vs. show pillar assessments separately  | **DECIDED: no numbers at all** — not a 0–100 score and not completeness %. Surface advisory checks (critical/warning/info) only. See the implementation note under §1. |
 
 ---
 

@@ -10,6 +10,8 @@ import type { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import type { UploadedDocument } from "@/lib/document-vault/types";
 import { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 import { detectRiskFlags } from "./risk-detector";
+import { analyzeCivilDocs } from "./civil-docs";
+import { compareBaselines } from "./consistency";
 
 export interface StepCheck {
   level: "info" | "warning" | "critical";
@@ -24,6 +26,12 @@ export interface StepCheckContext {
     | Record<string, Record<string, string | string[]> | undefined>
     | null
     | undefined;
+  /**
+   * The current step's roadmap JSON node. Optional so existing Chapter 1
+   * callers stay valid — Chapter 2 checkers (e.g. civil docs at step_2_4) read
+   * their checklist from here rather than hardcoding doc ids.
+   */
+  step?: any;
 }
 
 export type StepChecker = (ctx: StepCheckContext) => StepCheck[];
@@ -255,7 +263,269 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_1_15: ({ state }) => receiptChecks(state),
   step_1_16: ({ state }) => receiptChecks(state),
   step_1_17: ({ state }) => receiptChecks(state),
+
+  // ─── Chapter 2 — NVC / CEAC processing ────────────────────────────────────
+
+  // Step 2.2 — Pay NVC Fees (completeness)
+  step_2_2: ({ state }) => {
+    const checks: StepCheck[] = [];
+    if (!state.metadata?.nvcFeeStatus) {
+      checks.push({
+        level: "info",
+        title: "Save your NVC fee status",
+        hint: "Record both the Affidavit of Support fee and Immigrant Visa fee once paid — DS-260 and document upload unlock only after fees post.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 2.3 — Complete DS-260 (consistency + mandatory disclosures)
+  step_2_3: ({ state, eligibilityAnswers }) => {
+    const checks: StepCheck[] = [];
+    const i130 = state.metadata?.consistencyBaseline as any;
+    const ds260 = state.metadata?.ds260Baseline as any;
+
+    if (!i130?.marriageDate) {
+      // No I-130 baseline — nothing to compare against yet.
+      checks.push({
+        level: "warning",
+        title: "I-130 baseline not captured",
+        hint: "Go to Chapter 1 Step 4 and save your marriage date and dates of birth so Rahvana can flag any DS-260 mismatch — inconsistencies are the #1 cause of NVC delays.",
+      });
+    } else if (!ds260?.capturedAt) {
+      // I-130 baseline exists but the DS-260 values haven't been confirmed here.
+      const parts: string[] = [];
+      if (i130.marriageDate) parts.push(`marriage date ${i130.marriageDate}`);
+      if (i130.petitionerDateOfBirth)
+        parts.push(`petitioner DOB ${i130.petitionerDateOfBirth}`);
+      if (i130.beneficiaryDateOfBirth)
+        parts.push(`beneficiary DOB ${i130.beneficiaryDateOfBirth}`);
+      checks.push({
+        level: "info",
+        title: "Match these on your DS-260",
+        hint: `Keep these identical to your I-130: ${parts.join(", ")}. Names and spellings must match too. Enter your DS-260 dates above so Rahvana can compare the two forms.`,
+      });
+    } else {
+      // Both baselines present — do the real cross-form field diff.
+      const mismatches = compareBaselines(i130, ds260);
+      if (mismatches.length === 0) {
+        checks.push({
+          level: "info",
+          title: "DS-260 dates match your I-130",
+          hint: "Marriage date and dates of birth are consistent across both forms. Keep names and spellings identical too.",
+        });
+      } else {
+        for (const m of mismatches) {
+          checks.push({
+            level: "critical",
+            title: `DS-260 does not match I-130: ${m.label}`,
+            hint: `I-130 says ${m.i130Value}, DS-260 says ${m.ds260Value}. Correct one so both forms agree — form-to-form inconsistencies are a leading cause of NVC delays and interview RFEs (9 FAM 504.4).`,
+          });
+        }
+      }
+    }
+
+    // Mandatory disclosures — anything declared at eligibility MUST appear on DS-260.
+    for (const d of ds260Disclosures(eligibilityAnswers)) checks.push(d);
+
+    return checks;
+  },
+
+  // Step 2.4 — Prepare Civil Documents (completeness + consistency)
+  step_2_4: ({ state, uploadedDocuments, eligibilityAnswers, step }) => {
+    const groups = step?.tool_data?.doc_list?.groups;
+    const issues = analyzeCivilDocs(groups, {
+      civilDocsStatus: state.metadata?.civilDocsStatus as Record<string, string> | undefined,
+      uploadedDocuments,
+      eligibilityAnswers,
+    });
+    const checks: StepCheck[] = issues.map((i) => ({ level: i.level, title: i.title, hint: i.hint }));
+
+    // While civil-doc work is still pending, surface the foreign-document
+    // guidance that applies to every overseas case (the #1 here being a
+    // certified English translation). Exact civil-document requirements vary by
+    // country, so we point to the authoritative State Dept reciprocity schedule
+    // rather than hardcode per-country (e.g. Pakistan/NADRA) specifics in code.
+    if (checks.length > 0) {
+      checks.push({
+        level: "info",
+        title: "Certified translations + country-specific requirements",
+        hint: "Every foreign-language civil document (birth, marriage, divorce, police certificates) needs a certified English translation, and the exact required documents vary by country — confirm yours on the U.S. State Department reciprocity schedule at travel.state.gov before submitting. (9 FAM 504.4-4)",
+      });
+    }
+    return checks;
+  },
+
+  // Step 2.5 — Affidavit of Support (evidence quality — financial adequacy)
+  step_2_5: ({ state, eligibilityAnswers }) => {
+    const checks: StepCheck[] = [];
+    const result = state.metadata?.sponsorshipResult as any;
+
+    if (!result) {
+      const hint =
+        eligibilityAnswers?.q5?.q5s5 === "yes"
+          ? "You flagged a possible income concern during eligibility. Run the Sponsorship Calculator to confirm whether the petitioner meets the 125% poverty guideline — and line up a joint sponsor early if not."
+          : "Run the Sponsorship Calculator to confirm the petitioner's income meets the 125% poverty guideline for your household size.";
+      checks.push({ level: "info", title: "Confirm income meets the requirement", hint });
+      return checks;
+    }
+
+    if (result.isEligible === false) {
+      const shortfall =
+        typeof result.shortfall === "number" ? `$${result.shortfall.toLocaleString()}` : "an amount";
+      const required =
+        typeof result.requiredIncome === "number"
+          ? `$${result.requiredIncome.toLocaleString()}`
+          : "the required level";
+      checks.push({
+        level: "warning",
+        title: `Income is ${shortfall} below the requirement`,
+        hint: `Total counted income does not reach ${required} for a household of ${result.householdSize ?? "your size"}. Add a joint sponsor or qualifying assets before submitting the I-864.`,
+      });
+    }
+    return checks;
+  },
+
+  // Step 2.6 — Gather Financial Support Documents (completeness)
+  step_2_6: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const result = state.metadata?.sponsorshipResult as any;
+    const jsCount = Number(state.metadata?.jsCount ?? 0);
+    const hhCount = Number(state.metadata?.hhCount ?? 0);
+    if ((result && result.isEligible === false) || jsCount > 0 || hhCount > 0) {
+      checks.push({
+        level: "info",
+        title: "Gather every sponsor's financial documents",
+        hint: "Each joint sponsor and household member needs their own tax returns (most recent year), W-2s, recent pay stubs, and an employment letter — not just the petitioner.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 2.7 — Add Household Member / Joint Sponsor (conditional)
+  step_2_7: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const result = state.metadata?.sponsorshipResult as any;
+    const jsCount = Number(state.metadata?.jsCount ?? 0);
+    const hhCount = Number(state.metadata?.hhCount ?? 0);
+    if (result && result.isEligible === false && jsCount === 0 && hhCount === 0) {
+      checks.push({
+        level: "warning",
+        title: "Add a joint sponsor in CEAC",
+        hint: "The petitioner's income alone is below the requirement. Add a joint sponsor (or qualifying household member) in CEAC so their income counts toward the I-864.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 2.8 — Review & Submit to NVC (final QA gate)
+  step_2_8: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    const result = state.metadata?.sponsorshipResult as any;
+
+    if (!done("step_2_3")) {
+      checks.push({
+        level: "warning",
+        title: "DS-260 not finished yet",
+        hint: "Complete and submit the DS-260 (Step 3) before the final NVC submission.",
+      });
+    }
+    if (!done("step_2_4")) {
+      checks.push({
+        level: "warning",
+        title: "Civil documents not all prepared",
+        hint: "Finish the civil-document checklist (Step 4) — missing required documents will hold up documentary qualification.",
+      });
+    }
+    if (result && result.isEligible === false) {
+      checks.push({
+        level: "critical",
+        title: "Affidavit of Support income gap unresolved",
+        hint: "Your income still falls short of the requirement. Resolve it in Step 5/7 (joint sponsor or assets) before submitting to NVC.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 2.10 — Record Documentary Qualification
+  step_2_10: ({ state }) => {
+    const checks: StepCheck[] = [];
+    if (!state.metadata?.dqDate) {
+      checks.push({
+        level: "info",
+        title: "Record your DQ date",
+        hint: "Saving the Documentary Qualification date activates interview-scheduling tracking on your dashboard.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 2.12 — Interview Appointment Received
+  step_2_12: ({ state }) => {
+    const checks: StepCheck[] = [];
+    if (!state.metadata?.interviewDate) {
+      checks.push({
+        level: "info",
+        title: "Save your interview date",
+        hint: "Recording the appointment unlocks Chapter 3 — schedule your medical exam right away, as slots fill quickly before the interview.",
+      });
+    }
+    return checks;
+  },
 };
+
+// ─── Chapter 2 helper: DS-260 mandatory-disclosure reminders ────────────────
+
+/**
+ * Anything the user declared at eligibility MUST be disclosed on the DS-260.
+ * Omitting it is treated as misrepresentation (INA 212(a)(6)(C)) — a far more
+ * common cause of trouble than the underlying issue itself.
+ */
+function ds260Disclosures(
+  answers:
+    | Record<string, Record<string, string | string[]> | undefined>
+    | null
+    | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const get = (q: string, s: string) => {
+    const v = answers?.[q]?.[s];
+    return typeof v === "string" ? v : undefined;
+  };
+
+  const q3s1 = get("q3", "q3s1");
+  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
+    checks.push({
+      level: "warning",
+      title: "Declare the prior marriage on DS-260",
+      hint: "List every prior marriage and how it ended. It must match your I-130 and the termination documents.",
+    });
+  }
+  if (get("q5", "q5s1") === "yes") {
+    checks.push({
+      level: "warning",
+      title: "Disclose the past visa refusal on DS-260",
+      hint: "Every prior U.S. visa refusal or application must be declared. Omitting it risks a misrepresentation finding.",
+    });
+  }
+  if (get("q5", "q5s2") === "yes") {
+    checks.push({
+      level: "warning",
+      title: "Disclose the court/police record on DS-260",
+      hint: "Declare any arrest or charge. Bring certified court and police records to the interview.",
+    });
+  }
+  if (get("q5", "q5s4") === "yes") {
+    checks.push({
+      level: "warning",
+      title: "Disclose the prior U.S. overstay on DS-260",
+      hint: "Declare any unlawful presence. A provisional waiver (I-601A) may be needed before the interview.",
+    });
+  }
+  return checks;
+}
 
 // ─── Shared helper ──────────────────────────────────────────────────────────
 

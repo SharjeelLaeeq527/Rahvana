@@ -22,6 +22,7 @@ import type { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import type { UploadedDocument } from "@/lib/document-vault/types";
 import {
   aggregateChapter1Issues,
+  aggregateChapter2Issues,
   type AggregatedIssue,
 } from "@/lib/case-strength/aggregate-issues";
 
@@ -125,10 +126,16 @@ export function DashboardCriticalCard({
   uploadedDocuments,
   onOpenStep,
 }: DashboardCriticalCardProps) {
-  const issues = useMemo(
-    () => aggregateChapter1Issues({ chapters, state, uploadedDocuments }),
-    [chapters, state, uploadedDocuments]
-  );
+  const issues = useMemo(() => {
+    const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments });
+    const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments });
+    // Keep chapter order (Ch1 before Ch2), but float criticals to the top within.
+    const order = { critical: 0, warning: 1, info: 2 };
+    return [...ch1, ...ch2].sort((a, b) => {
+      if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
+      return a.chapterIdx - b.chapterIdx;
+    });
+  }, [chapters, state, uploadedDocuments]);
 
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [open, setOpen] = useState(false); // card itself collapsed by default
