@@ -833,35 +833,7 @@ export default function SponsorshipCalculatorTool({
                         </p>
                       </div>
                     </div>
-                    {data.relationshipToApplicant !== "spouse" && (
-                      <label
-                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${data.currentSponsoredSpouse ? "" : "bg-white border-slate-200"}`}
-                        style={{
-                          backgroundColor: data.currentSponsoredSpouse
-                            ? `${COLORS.primary}10`
-                            : undefined,
-                          borderColor: data.currentSponsoredSpouse ? COLORS.primary : undefined,
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={data.currentSponsoredSpouse}
-                          onChange={() =>
-                            setData({
-                              ...data,
-                              currentSponsoredSpouse: !data.currentSponsoredSpouse,
-                            })
-                          }
-                          className="w-5 h-5 rounded border-slate-300"
-                        />
-                        <div className="text-left">
-                          <p className="font-semibold text-slate-900">Applicant's Spouse</p>
-                          <p className="text-xs text-slate-500">
-                            If immigrating with the main applicant.
-                          </p>
-                        </div>
-                      </label>
-                    )}
+                    {/* Applicant's Spouse option removed for IR-1 category — the main applicant is the spouse. */}
                     <div className="p-4 rounded-xl border-2 border-slate-200 bg-white">
                       <p className="font-semibold text-slate-900 mb-2">Applicant's Children</p>
                       <div className="flex items-center gap-4">

@@ -55,9 +55,31 @@ export interface MasterProfile {
   fullName?: string; // Full name in single field format (some forms prefer this)
   caseNumber?: string;
   interviewDate?: string;
+  interviewLocation?: string; // Embassy/consulate city (e.g. "Islamabad")
   caseStatus?: string;
   nvcInvoice?: string;
   surname?: string;
+
+  // USCIS Approval (from I-797 Approval Notice — Chapter 1 Step I-10)
+  receiptNumber?: string; // USCIS receipt number (e.g. IOE1234567890)
+  approvalDate?: string; // I-130 approval date
+  priorityDate?: string; // Priority date from approval notice
+
+  // Documentary Qualification (from NVC DQ — Chapter 2 Step II-10)
+  dqDate?: string; // Date DQ status was received
+  dqPost?: string; // Consular post (e.g. "Islamabad")
+
+  // Interview Outcome (from Chapter 3 Step III-06)
+  interviewOutcome?: string; // "approved" | "221g" | "denied"
+  outcome221gSubtype?: string; // "docs_requested" | "further_review" | etc.
+
+  // Medical Exam (from Chapter 3 Step III-01/04)
+  medicalDate?: string; // Medical appointment date
+  medicalTime?: string; // Medical appointment time
+  medicalClinic?: string; // IOM clinic name
+
+  // Police Certificate (from Chapter 3 Step III-02)
+  pccDate?: string; // PCC application date
 
   // Relationship & Family (NEW)
   spouse?: {
