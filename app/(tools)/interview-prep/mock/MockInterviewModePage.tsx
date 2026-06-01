@@ -63,7 +63,6 @@ export function MockInterviewModePage({
   void sessionId;
   const plan = usePlan();
   const isExecutiveTier = plan.tier === "executive";
-  const isFreeTier = plan.tier === "free";
   const sessionDurationSeconds = isExecutiveTier
     ? EXECUTIVE_TOTAL_SECONDS
     : 3 * 60;
@@ -163,7 +162,7 @@ export function MockInterviewModePage({
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [answeringFlowMode, setAnsweringFlowMode] = useState<
     "toggle" | "pushToTalk"
-  >("toggle");
+  >("pushToTalk");
   const [questionRecords, setQuestionRecords] = useState<
     Record<string, QuestionRecord>
   >({});
@@ -800,6 +799,38 @@ export function MockInterviewModePage({
                 </div>
 
                 <div className="space-y-3 mb-6">
+                <button
+                    type="button"
+                    onClick={() => setAnsweringFlowMode("pushToTalk")}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${
+                      answeringFlowMode === "pushToTalk"
+                        ? "border-[#0d7377] bg-[#e8f6f6]"
+                        : "border-slate-200 bg-white hover:border-[#0d7377]/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            answeringFlowMode === "pushToTalk" ? "bg-[#0d7377]" : "bg-transparent"
+                          }`}
+                        />
+                      </span>
+                      <div>
+                        <div className="font-semibold text-slate-900">
+                          Flow 1: Hold Space to Talk
+                        </div>
+                        <p className="mt-1 text-sm text-slate-600">
+                          Hold Space to speak and release to stop, while the answer button still
+                          works.
+                        </p>
+                        <span className="mt-2 inline-flex rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-xs font-medium text-[#0d7377]">
+                          Most Popular
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => setAnsweringFlowMode("toggle")}
@@ -819,43 +850,11 @@ export function MockInterviewModePage({
                       </span>
                       <div>
                         <div className="font-semibold text-slate-900">
-                          Flow 1: Button or Space Toggle
+                          Flow 2: Button or Space Toggle
                         </div>
                         <p className="mt-1 text-sm text-slate-600">
                           Use the answer button or press Space to start and stop.
                         </p>
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setAnsweringFlowMode("pushToTalk")}
-                    className={`w-full rounded-2xl border p-4 text-left transition ${
-                      answeringFlowMode === "pushToTalk"
-                        ? "border-[#0d7377] bg-[#e8f6f6]"
-                        : "border-slate-200 bg-white hover:border-[#0d7377]/30 hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${
-                            answeringFlowMode === "pushToTalk" ? "bg-[#0d7377]" : "bg-transparent"
-                          }`}
-                        />
-                      </span>
-                      <div>
-                        <div className="font-semibold text-slate-900">
-                          Flow 2: Hold Space to Talk
-                        </div>
-                        <p className="mt-1 text-sm text-slate-600">
-                          Hold Space to speak and release to stop, while the answer button still
-                          works.
-                        </p>
-                        <span className="mt-2 inline-flex rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-xs font-medium text-[#0d7377]">
-                          Recommended
-                        </span>
                       </div>
                     </div>
                   </button>
@@ -889,78 +888,6 @@ export function MockInterviewModePage({
 
   //  COMPLETED PHASE
   if (phase === "completed") {
-    if (isFreeTier) {
-      return (
-        <>
-          <div className="guide-grid-bg relative min-h-screen overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
-            <div className="pointer-events-none absolute -top-40 -left-40 h-112 w-md rounded-full bg-[#32e0c4]/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-40 -right-40 h-112 w-md rounded-full bg-[#0d7377]/10 blur-3xl" />
-
-            <div className="relative w-full max-w-2xl">
-              <div className="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.25)] p-8 sm:p-10">
-                <div className="text-center mb-8">
-                  <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e8f6f6] border border-[#0d7377]/20">
-                    <CheckCircle2 className="h-8 w-8 text-[#0d7377]" />
-                  </div>
-                  <h2 className="text-4xl font-semibold text-slate-900 mb-2 tracking-tight">
-                    Interview Completed
-                  </h2>
-                  <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-md mx-auto">
-                    You answered {interviewQuestions.length} practice questions.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-[#0d7377]/15 bg-[#e8f6f6]/50 p-5 mb-6">
-                  <p className="text-sm font-semibold uppercase tracking-wider text-[#0d7377] mb-3">
-                    Upgrade to Executive to unlock:
-                  </p>
-                  <div className="grid gap-3 text-sm text-slate-700">
-                    {[
-                      "Full-length interviews",
-                      "Performance analysis",
-                      "Weakness detection",
-                      "Practice recommendations",
-                      "Unlimited exposure",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-xl border border-slate-200 bg-white px-4 py-3"
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    onClick={() => setShowUpgradeModal(true)}
-                    className="flex-1 h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
-                  >
-                    Upgrade to Executive
-                  </Button>
-                  <Button
-                    onClick={onExit}
-                    variant="outline"
-                    className="flex-1 h-12 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                  >
-                    Back to Prep
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {showUpgradeModal && (
-            <UpgradeModal
-              feature="mock_interview"
-              onClose={() => setShowUpgradeModal(false)}
-            />
-          )}
-        </>
-      );
-    }
-
     // Build canonical session log from questionRecords
     const buildSessionLog = (): InterviewSession => {
       const events: SessionEvent[] = [];
