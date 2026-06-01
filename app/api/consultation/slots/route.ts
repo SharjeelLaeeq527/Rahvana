@@ -51,32 +51,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // IMPORTANT: Accept the date and time as-is from admin
-    // The admin inputs in their local timezone
-    // We need to preserve the date in the user's timezone context
-    // To do this, we'll create a date object that represents the local time in the user's timezone
-    // and then convert it to UTC for storage
-
-    // Create a date object using the local date and time
-    // This interprets the date/time as being in the user's local timezone
-    const localDateTime = new Date(`${data.date}T${data.start_time}`);
-
-    // Convert to UTC by getting the UTC values
-    // This might change the date if the local time crosses midnight UTC
-    const utcISOString = localDateTime.toISOString();
-    const [utcDate, timeWithMs] = utcISOString.split("T");
-    const utcStartTime = timeWithMs.substring(0, 8); // HH:mm:ss in UTC
-
-    const localEndTime = new Date(`${data.date}T${data.end_time}`);
-    const utcEndISOString = localEndTime.toISOString();
-    const [, endTimeWithMs] = utcEndISOString.split("T");
-    const utcEndTime = endTimeWithMs.substring(0, 8); // HH:mm:ss in UTC
-
-    // Create new time slot with UTC times
+    // Create new time slot with UTC times (which are already converted by frontend)
     const newSlot = await consultationService.createTimeSlot({
-      date: new Date(utcDate),
-      start_time: utcStartTime,
-      end_time: utcEndTime,
+      date: data.date,
+      start_time: data.start_time,
+      end_time: data.end_time,
       status: data.status || "available",
       max_bookings: data.max_bookings || 1,
       current_bookings: data.current_bookings || 0,
@@ -102,13 +81,16 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+    let id = searchParams.get("id");
+
+    const data = await request.json();
+    if (!id && data && data.id) {
+      id = data.id;
+    }
 
     if (!id) {
       return NextResponse.json({ error: "Slot ID is required" }, { status: 400 });
     }
-
-    const data = await request.json();
 
     // Update the time slot
     const updatedSlot = await consultationService.updateTimeSlot(id, data);
@@ -119,5 +101,25 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     return handleServiceError(error, "Error updating time slot");
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Slot ID is required" }, { status: 400 });
+    }
+
+    await consultationService.deleteTimeSlot(id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Slot deleted successfully",
+    });
+  } catch (error) {
+    return handleServiceError(error, "Error deleting time slot");
   }
 }

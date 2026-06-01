@@ -134,6 +134,26 @@ export const consultationService = {
       throw new Error("Failed to create consultation booking");
     }
 
+    // Automatically update the slot status in time_slots to 'confirmed' (booked)
+    try {
+      const slotDateStr = bookingData.selected_slot.toISOString().split("T")[0];
+      const slotTimeStr = bookingData.selected_slot.toISOString().split("T")[1].substring(0, 8);
+      
+      const { error: slotUpdateError } = await supabase
+        .from("time_slots")
+        .update({ status: "confirmed" })
+        .eq("date", slotDateStr)
+        .eq("start_time", slotTimeStr);
+        
+      if (slotUpdateError) {
+        console.error("Error updating slot status:", slotUpdateError);
+      } else {
+        console.log(`Successfully marked slot ${slotDateStr} ${slotTimeStr} as confirmed`);
+      }
+    } catch (slotErr) {
+      console.error("Error in auto-marking slot as booked:", slotErr);
+    }
+
     // Map the snake_case fields from Supabase to camelCase for the frontend
     const result = data;
     return {
@@ -403,5 +423,22 @@ export const consultationService = {
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
     } as TimeSlot;
+  },
+
+  // Delete a time slot
+  async deleteTimeSlot(id: string) {
+    if (!supabase) {
+      console.error("Supabase client not initialized");
+      throw new Error("Failed to delete time slot: Supabase not initialized");
+    }
+
+    const { error } = await supabase.from("time_slots").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error deleting time slot:", error);
+      throw new Error(`Failed to delete time slot: ${error.message}`);
+    }
+
+    return true;
   },
 };

@@ -2510,6 +2510,7 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {customRenderer ? (
         <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
           {customRenderer}
+          {renderCitationsSection()}
         </div>
       ) : (
         <div
