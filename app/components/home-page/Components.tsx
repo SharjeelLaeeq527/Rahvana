@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -1075,40 +1076,44 @@ export function HeroPdfPreviewPanel() {
 
 export const twoWaysPaths = [
   {
-    title: "Guided Roadmap",
-    eyebrow: "01 - Guided roadmap",
-    shortTitle: "Follow the guided IR-1 roadmap.",
-    teaser: "A complete IR-1 path with chapters, steps, and progress.",
-    description:
-      "Follow the full IR-1 journey through structured chapters, guided steps, and clear progress from petition filing to interview readiness.",
-    supportEyebrow: "GUIDED ROADMAP",
-    supportLead: "A structured path from start to finish.",
-    supportText:
-      "Move step by step through the IR-1 process with clear milestones, built-in guidance, and the right next action always surfaced. It is designed to reduce uncertainty and keep your case moving with confidence.",
-    bestFor: "Best for people who want end-to-end guidance.",
-    cta: "Explore the Roadmap",
+    title: "Guided Visa Journey",
+    eyebrow: "01 - GUIDED ROADMAP",
+    shortTitle: "Follow the guided step-by-step IR-1 roadmap",
+    teaser: "Ideal for first-time applicants wanting a structured, guided roadmap.",
+    bestFor: "Beginners who want an end-to-end plan to navigate the visa process without stress.",
+    bestForColor: "text-teal-700 bg-teal-50 border-teal-100/60",
+    themeColor: "#0d7377",
+    hoverBg: "#f4fbfa",
+    bulletColor: "text-teal-600",
+    bullets: [
+      "Move step-by-step through the IR-1 process with clear, trackable chapters.",
+      "Stay ahead with built-in requirements, checklists, and deadline alerts.",
+    ],
+    cta: "Start the Roadmap",
     href: journeyHref,
   },
   {
     title: "Tools & Resources",
-    eyebrow: "02 - Tools & resources",
-    shortTitle: "Jump into the help you need today.",
-    teaser: "Focused help when one specific task needs attention.",
-    description:
-      "Use focused tools, guides, calculators, and services when you already know where you are stuck and only need help with one task.",
-    supportEyebrow: "TOOLS & RESOURCES",
-    supportLead: "Get focused help exactly where you need it.",
-    supportText:
-      "Jump directly into calculators, checklists, and support tools when you have a specific task to complete. Use them independently or alongside the roadmap whenever you need targeted help.",
-    bestFor: "Best for people who want targeted help without using the full roadmap.",
-    cta: "Browse Tools",
+    eyebrow: "02 - DIRECT ACCESS",
+    shortTitle: "Jump directly into focused tools and resources",
+    teaser: "For experienced users wanting immediate help with a specific task.",
+    bestFor: "Applicants who already know the IR-1 process well and need targeted help.",
+    bestForColor: "text-indigo-700 bg-indigo-50/40 border-indigo-100/60",
+    themeColor: "#1e293b",
+    hoverBg: "#f8fafc",
+    bulletColor: "text-indigo-600",
+    bullets: [
+      "Launch directly I-130 Autoform, sponsorship fee calculator, and other tools.",
+      "Use tools independently at your own pace alongside your manual progress.",
+    ],
+    cta: "Browse Resources",
     href: toolsHref,
   },
 ] as const;
 
 type TwoWaysIndex = 0 | 1;
 
-/** Scales the 680×560 visual to exactly fill its container width. */
+/** Scales the visual canvas (560px or 460px) to exactly fill its container width. */
 function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -1123,8 +1128,16 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
     return () => ro.disconnect();
   }, []);
 
+  // Roadmap visual is 560px high; Tools visual is 460px high.
+  // Using dynamic heights and clipping the empty space solves the layout gap.
+  const visualHeight = index === 0 ? 560 : 460;
+
   return (
-    <div ref={wrapRef} className="w-full" style={{ height: Math.round(560 * scale) }}>
+    <div 
+      ref={wrapRef} 
+      className="w-full overflow-hidden" 
+      style={{ height: Math.round(visualHeight * scale) }}
+    >
       <div
         style={{
           width: 680,
@@ -1140,7 +1153,6 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 }
 
 export function TwoWaysSection() {
-  const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
   const reduceMotion = useReducedMotion();
   const [showChoiceModal, setShowChoiceModal] = useState(false);
@@ -1148,6 +1160,8 @@ export function TwoWaysSection() {
   const selectPath = (idx: TwoWaysIndex) => {
     setActiveIndex(idx);
   };
+
+  const activePath = twoWaysPaths[activeIndex];
 
   return (
     <>
@@ -1163,8 +1177,6 @@ export function TwoWaysSection() {
             boxSizing: "border-box",
           }}
         >
-          {/* Decorative radial highlights removed for seamless background */}
-
           {/* Main grid */}
           <div
             className="relative mx-auto w-full px-12 xl:px-16"
@@ -1172,169 +1184,181 @@ export function TwoWaysSection() {
               maxWidth: 1300,
               display: "grid",
               gridTemplateColumns: "minmax(0,380px) minmax(0,1fr)",
-              gap: "clamp(100px,10vw,160px)",
+              gap: "clamp(60px,8vw,160px)",
               alignItems: "start",
             }}
           >
-            {/* Left: text + selectors + CTAs */}
-            <div>
-              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
-                TWO WAYS TO MOVE FORWARD
-              </p>
-
-              <h2
-                className="mt-4 mb-0 font-extrabold text-[#162126]"
-                style={{
-                  fontSize: "clamp(30px,4.2vw,60px)",
-                  lineHeight: 1.0,
-                  maxWidth: 440,
-                }}
-              >
-                Choose how you want to use Rahvana
-              </h2>
-
-              <p
-                className="mt-4 mb-0 text-[#4a5c62]"
-                style={{
-                  fontSize: "clamp(14px,1.15vw,17px)",
-                  lineHeight: 1.68,
-                  maxWidth: 420,
-                }}
-              >
-                Follow the guided IR-1 roadmap, use focused tools and resources independently, and
-                choose the support style that fits what you need right now.
-              </p>
-
-              {/* Active-panel label */}
-              <div style={{ minHeight: 64, marginTop: 16, overflow: "hidden" }}>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
-                      {twoWaysPaths[activeIndex].eyebrow}
-                    </p>
-                    <h3
-                      className="mb-0 mt-1 font-extrabold text-[#162126]"
-                      style={{
-                        fontSize: "clamp(15px,1.3vw,19px)",
-                        lineHeight: 1.2,
-                        maxWidth: 380,
-                      }}
-                    >
-                      {twoWaysPaths[activeIndex].shortTitle}
-                    </h3>
-                  </motion.div>
-                </AnimatePresence>
+            {/* Left Column: Headings, Selectors, and CTAs */}
+            <div className="flex flex-col">
+              
+              {/* Header Block */}
+              <div className="mb-8">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377] mb-2">
+                  Two Ways to Move Forward
+                </p>
+                <h2
+                  className="mt-4 mb-0 font-extrabold text-[#162126]"
+                  style={{
+                    fontSize: "clamp(30px,4.2vw,60px)",
+                    lineHeight: 1.0,
+                    maxWidth: 440,
+                  }}
+                >
+                  Choose how you want to use Rahvana
+                </h2>
+                <p
+                  className="mt-4 mb-0 text-[#4a5c62]"
+                  style={{
+                    fontSize: "clamp(14px,1.15vw,17px)",
+                    lineHeight: 1.68,
+                    maxWidth: 420,
+                  }}
+                >
+                  Follow the guided IR-1 roadmap, use focused tools and resources independently, and choose the support style that fits what you need right now.
+                </p>
               </div>
 
-              {/* Selector buttons */}
-              <div className="mt-5 flex flex-col gap-1.5">
+              {/* Options Selector Container */}
+              <div className="flex flex-col gap-3">
                 {twoWaysPaths.map((path, i) => {
                   const isActive = activeIndex === i;
+                  const isJourney = i === 0;
+                  
                   return (
                     <button
                       key={path.title}
                       type="button"
                       onClick={() => selectPath(i as TwoWaysIndex)}
                       aria-current={isActive ? "true" : undefined}
-                      className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
-                      style={{
-                        border: isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
-                        background: isActive ? "#f4fbfa" : "transparent",
-                        boxShadow: isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
-                        WebkitTapHighlightColor: "transparent",
-                        cursor: "pointer",
-                      }}
+                      className={`group flex w-full flex-col text-left p-4.5 rounded-2xl border transition-all duration-300 ${
+                        isActive
+                          ? isJourney
+                            ? "border-teal-500 bg-teal-50/40 shadow-[0_8px_20px_rgba(13,115,119,0.06)]"
+                            : "border-slate-800 bg-slate-50 shadow-[0_8px_20px_rgba(30,41,59,0.05)]"
+                          : "border-slate-200 bg-transparent hover:border-slate-300"
+                      }`}
+                      style={{ cursor: "pointer", WebkitTapHighlightColor: "transparent" }}
                     >
-                      <span
-                        className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black"
-                        style={{
-                          width: 24,
-                          height: 24,
-                          background: isActive ? "#0d7377" : "transparent",
-                          color: isActive ? "white" : "#9aaeac",
-                          border: isActive ? "none" : "1.5px solid #c8d5d3",
-                          transition: "background 0.22s, color 0.22s, border-color 0.22s",
-                        }}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div
-                          className="text-[15px] font-black leading-tight"
-                          style={{
-                            color: isActive ? "#0d7377" : "#162126",
-                            transition: "color 0.22s",
-                          }}
-                        >
-                          {path.title}
-                        </div>
-                        <div
-                          className="mt-0.5 text-[12px] leading-snug"
-                          style={{
-                            color: isActive ? "#4a5c62" : "#9aaeac",
-                            transition: "color 0.22s",
-                          }}
-                        >
-                          {path.teaser}
-                        </div>
+                      {/* Top Row: Eyebrow + Pill */}
+                      <div className="flex items-center justify-between gap-3 w-full mb-2">
+                        <span className={`text-[9px] font-black uppercase tracking-wider ${isActive ? "text-teal-600" : "text-slate-400"}`}>
+                          {path.eyebrow}
+                        </span>
+                        <span className={`text-[8.5px] px-2 py-0.5 rounded-full font-bold border transition-colors ${
+                          isActive
+                            ? isJourney
+                              ? "bg-teal-100 text-teal-800 border-teal-200"
+                              : "bg-indigo-100 text-indigo-800 border-indigo-200"
+                            : "bg-slate-100 text-slate-500 border-slate-200"
+                        }`}>
+                          {isJourney ? "Beginners" : "Experienced"}
+                        </span>
                       </div>
+
+                      {/* Title */}
+                      <h3 className={`text-base font-black transition-colors ${
+                        isActive ? "text-slate-900" : "text-slate-700 group-hover:text-slate-950"
+                      }`}>
+                        {path.title}
+                      </h3>
+
+                      {/* Subtitle / Teaser */}
+                      <p className={`text-xs mt-1 leading-relaxed transition-colors ${
+                        isActive ? "text-slate-600" : "text-slate-400 group-hover:text-slate-500"
+                      }`}>
+                        {path.teaser}
+                      </p>
                     </button>
                   );
                 })}
               </div>
 
-              {/* CTAs */}
-              <div className="mt-5 flex flex-wrap gap-2.5">
-                <Link
-                  href={journeyHref}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13.5px] font-bold text-white no-underline"
-                  style={{ boxShadow: "0 10px 24px rgba(13,115,119,0.22)" }}
-                >
-                  Start the Roadmap
-                  <ArrowRight className="size-3.5" />
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setShowChoiceModal(true)}
-                  className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  Browse Resources
-                </button>
-              </div>
-            </div>
-
-            {/* Right: animated visual */}
-            <div
-              className="min-w-0 flex flex-col gap-8"
-              style={activeIndex === 1 ? { paddingLeft: 48 } : undefined}
-            >
-              {reduceMotion ? (
-                <>
-                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                  <ResponsiveVisual index={activeIndex} />
-                </>
-              ) : (
-                <AnimatePresence mode="wait" initial={false}>
+              {/* Context-Aware Primary CTA Button */}
+              <div className="border-t border-slate-100 pt-5 mt-5">
+                <AnimatePresence mode="wait">
                   <motion.div
                     key={activeIndex}
-                    className="flex min-w-0 flex-col gap-8"
-                    initial={{ opacity: 0, y: 18, scale: 0.988 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -12, scale: 0.992 }}
-                    transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.18 }}
                   >
-                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                    <ResponsiveVisual index={activeIndex} />
+                    <Link
+                      href={activePath.href}
+                      className={`inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl text-[14px] font-black text-white shadow-md transition-all duration-200 no-underline ${
+                        activeIndex === 0
+                          ? "bg-teal-600 hover:bg-teal-700 shadow-[0_8px_20px_rgba(13,115,119,0.18)]"
+                          : "bg-slate-800 hover:bg-slate-950 shadow-[0_8px_20px_rgba(30,41,59,0.12)]"
+                      }`}
+                    >
+                      {activePath.cta}
+                      <ArrowRight size={15} />
+                    </Link>
+                    <p className="text-center text-[11px] text-slate-400 mt-3 font-semibold">
+                      Not sure yet?{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowChoiceModal(true)}
+                        className="underline hover:text-slate-600 transition-colors font-bold bg-transparent border-none p-0 cursor-pointer"
+                      >
+                        Click here to compare options.
+                      </button>
+                    </p>
                   </motion.div>
                 </AnimatePresence>
-              )}
+              </div>
+
             </div>
+
+            {/* Right Column: Dynamic Visual & Bullet Benefits */}
+            <div className="flex flex-col gap-6 w-full min-w-0">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeIndex}
+                  className="flex flex-col gap-5"
+                  initial={reduceMotion ? false : { opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  
+                  {/* Descriptive content header */}
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black tracking-widest text-teal-600 uppercase">
+                      {activePath.eyebrow} DETAILS
+                    </span>
+                    <h2 className="text-xl md:text-2xl font-black text-slate-900 leading-snug">
+                      {activePath.shortTitle}
+                    </h2>
+                  </div>
+
+                  {/* Best for box */}
+                  <div className={`flex items-start gap-2.5 rounded-2xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
+                    <span className="font-extrabold text-sm text-teal-600 mt-0.5">•</span>
+                    <p className="text-[11px] leading-relaxed font-semibold pt-1">
+                      <strong>Best for:</strong> {activePath.bestFor}
+                    </p>
+                  </div>
+
+                  {/* Live Visual Scene - Placed high up to be visible without scrolling */}
+                  <ResponsiveVisual index={activeIndex} />
+
+                  {/* Bullet Features list - Shifted below the visual section */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-5 mt-2">
+                    {activePath.bullets.map((bullet, idx) => (
+                      <div key={idx} className="flex flex-col gap-2 p-4 rounded-xl border border-slate-100 bg-white shadow-[0_4px_12px_rgba(15,23,42,0.02)]">
+                        <CheckCircle2 size={16} className={`${activePath.bulletColor} shrink-0`} />
+                        <p className="text-[12px] leading-relaxed text-slate-500 font-semibold">
+                          {bullet}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
           </div>
         </div>
       </section>
@@ -1348,138 +1372,154 @@ export function TwoWaysSection() {
         }}
       >
         <div
-          className="relative mx-auto px-5 sm:px-8 md:px-10 py-12 sm:py-16 md:py-20"
+          className="relative mx-auto px-5 sm:px-8 md:px-10 py-12 sm:py-16"
           style={{ maxWidth: 1360 }}
         >
           {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-start">
             {/* Left: heading + selectors + CTAs */}
-            <div>
-              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
-                TWO WAYS TO MOVE FORWARD
-              </p>
-              <h2
-                className="mt-4 mb-0 font-extrabold text-[#162126]"
-                style={{ fontSize: "clamp(26px,5.5vw,42px)", lineHeight: 1.08 }}
-              >
-                Choose how you want to use Rahvana.
-              </h2>
-              <p
-                className="mt-3 mb-0 text-[#4a5c62]"
-                style={{ fontSize: "clamp(14px,2vw,16px)", lineHeight: 1.65 }}
-              >
-                Use the full IR-1 roadmap, or jump into focused tools and resources when you need
-                targeted help.
-              </p>
-
-              {/* Active panel label */}
-              <div className="mt-5 overflow-hidden" style={{ minHeight: 60 }}>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
-                      {twoWaysPaths[activeIndex].eyebrow}
-                    </p>
-                    <h3
-                      className="mb-0 mt-1 font-extrabold text-[#162126]"
-                      style={{ fontSize: "clamp(15px,2.5vw,19px)", lineHeight: 1.2 }}
-                    >
-                      {twoWaysPaths[activeIndex].shortTitle}
-                    </h3>
-                  </motion.div>
-                </AnimatePresence>
+            <div className="flex flex-col">
+              
+              <div className="mb-6">
+                <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
+                  TWO WAYS TO MOVE FORWARD
+                </p>
+                <h2
+                  className="mt-3 mb-0 font-extrabold text-[#162126]"
+                  style={{ fontSize: "clamp(26px,5.5vw,42px)", lineHeight: 1.08 }}
+                >
+                  Choose how you want to use Rahvana
+                </h2>
+                <p
+                  className="mt-3 mb-0 text-[#4a5c62]"
+                  style={{ fontSize: "clamp(14px,2vw,16px)", lineHeight: 1.65 }}
+                >
+                  Follow the guided IR-1 roadmap, use focused tools and resources independently, and choose the support style that fits what you need right now.
+                </p>
               </div>
 
               {/* Selector buttons */}
-              <div className="mt-4 space-y-2.5">
-                {twoWaysPaths.map((path, i) => (
-                  <button
-                    key={path.title}
-                    type="button"
-                    onClick={() => setActiveIndex(i as TwoWaysIndex)}
-                    aria-current={activeIndex === i ? "true" : undefined}
-                    className={`flex w-full items-center gap-3 rounded-[14px] border px-3.5 py-3 text-left transition-all ${
-                      activeIndex === i
-                        ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_8px_20px_rgba(13,115,119,0.12)]"
-                        : "border-[#d7e6e2] bg-white/80"
-                    }`}
-                  >
-                    <span
-                      className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${
+              <div className="flex flex-col gap-2.5">
+                {twoWaysPaths.map((path, i) => {
+                  const isActive = activeIndex === i;
+                  const isJourney = i === 0;
+                  
+                  return (
+                    <button
+                      key={path.title}
+                      type="button"
+                      onClick={() => setActiveIndex(i as TwoWaysIndex)}
+                      aria-current={activeIndex === i ? "true" : undefined}
+                      className={`group flex w-full flex-col text-left p-4 rounded-xl border transition-all duration-300 ${
                         activeIndex === i
-                          ? "bg-[#0d7377] text-white"
-                          : "border border-[#c8d5d3] text-[#7f9290]"
+                          ? isJourney
+                            ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_6px_15px_rgba(13,115,119,0.06)]"
+                            : "border-slate-800 bg-slate-50 shadow-[0_6px_15px_rgba(30,41,59,0.05)]"
+                          : "border-[#d7e6e2] bg-white/80"
                       }`}
                     >
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="text-[14px] font-black leading-tight"
-                        style={{ color: activeIndex === i ? "#0d7377" : "#162126" }}
-                      >
+                      {/* Top row with badges */}
+                      <div className="flex items-center justify-between gap-3 w-full mb-1.5">
+                        <span className={`text-[8.5px] font-black uppercase tracking-wider ${isActive ? "text-[#0d7377]" : "text-slate-400"}`}>
+                          {path.eyebrow}
+                        </span>
+                        <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border transition-colors ${
+                          isActive
+                            ? isJourney
+                              ? "bg-teal-100 text-teal-800 border-teal-200"
+                              : "bg-indigo-100 text-indigo-800 border-indigo-200"
+                            : "bg-slate-100 text-slate-500 border-slate-200"
+                        }`}>
+                          {isJourney ? "Beginners" : "Experienced"}
+                        </span>
+                      </div>
+                      
+                      <div className="text-[14px] font-black text-slate-900 leading-tight">
                         {path.title}
                       </div>
-                      <div className="mt-0.5 text-[12px] leading-snug text-[#9aaeac]">
+                      <div className="text-[11px] leading-snug text-slate-500 mt-1">
                         {path.teaser}
                       </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* CTAs */}
-              <div className="mt-5 flex flex-wrap gap-2.5">
-                <Link
-                  href={journeyHref}
-                  className="inline-flex min-h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13px] font-bold text-white no-underline"
-                  style={{ boxShadow: "0 8px 20px rgba(13,115,119,0.22)" }}
-                >
-                  Start the Roadmap
-                  <ArrowRight className="size-3.5" />
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setShowChoiceModal(true)}
-                  className="inline-flex min-h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13px] font-bold text-[#162126] cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  Browse Resources
-                </button>
-              </div>
-            </div>
-
-            {/* Right: text above + visual card below — both left-aligned at x=0 */}
-            <div className="flex flex-col gap-8">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={activeIndex}
-                  initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                </motion.div>
-              </AnimatePresence>
-              <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
-                <AnimatePresence mode="wait" initial={false}>
+              {/* Dynamic Context-Aware CTA */}
+              <div className="border-t border-slate-100 pt-5 mt-5">
+                <AnimatePresence mode="wait">
                   <motion.div
                     key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={reduceMotion ? undefined : { opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.18 }}
                   >
-                    <ResponsiveVisual index={activeIndex} />
+                    <Link
+                      href={activePath.href}
+                      className={`inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl text-[14px] font-black text-white shadow-md transition-all duration-200 no-underline ${
+                        activeIndex === 0
+                          ? "bg-[#0d7377] hover:bg-[#0b5e61] shadow-[0_8px_20px_rgba(13,115,119,0.18)]"
+                          : "bg-slate-800 hover:bg-slate-950 shadow-[0_8px_20px_rgba(30,41,59,0.12)]"
+                      }`}
+                    >
+                      {activePath.cta}
+                      <ArrowRight size={15} />
+                    </Link>
                   </motion.div>
                 </AnimatePresence>
               </div>
+
             </div>
+
+            {/* Right: details, visual, and benefits underneath */}
+            <div className="flex flex-col gap-6">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeIndex}
+                  className="flex flex-col gap-5"
+                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {/* Heading details */}
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[10px] font-black tracking-widest text-[#0d7377] uppercase">
+                      {activePath.eyebrow} DETAILS
+                    </span>
+                    <h3 className="text-[16px] sm:text-[18px] font-extrabold text-[#162126] leading-snug">
+                      {activePath.shortTitle}
+                    </h3>
+                  </div>
+
+                  {/* Best for box */}
+                  <div className={`flex items-start gap-2.5 rounded-2xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
+                    <span className="font-extrabold text-sm text-teal-600 mt-0.5">•</span>
+                    <p className="text-[11px] leading-relaxed font-semibold">
+                      <strong>Best for:</strong> {activePath.bestFor}
+                    </p>
+                  </div>
+
+                  {/* Live Visual Canvas */}
+                  <ResponsiveVisual index={activeIndex} />
+
+                  {/* 2-column checklist benefit cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-5 mt-2">
+                    {activePath.bullets.map((bullet, idx) => (
+                      <div key={idx} className="flex flex-col gap-2 p-4 rounded-xl border border-slate-100 bg-white shadow-[0_4px_12px_rgba(15,23,42,0.02)]">
+                        <CheckCircle2 size={16} className={`${activePath.bulletColor} shrink-0`} />
+                        <p className="text-[11px] leading-relaxed text-slate-500 font-semibold">
+                          {bullet}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
           </div>
         </div>
       </section>
@@ -1746,7 +1786,7 @@ export function GuidedRoadmapScene() {
 
   return (
     <div
-      className="relative flex flex-col overflow-hidden rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
+      className="relative flex flex-col overflow-hidden rounded-[32px] border border-[#dde8e6] bg-[#f9fafc]"
       style={{
         width: 680,
         height: 560,
@@ -2945,7 +2985,7 @@ export function IndividualToolsScene() {
         borderRadius: 32,
         background: "white",
         border: "1px solid #dde8e6",
-        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        boxShadow: "none",
         position: "relative",
         margin: 0,
         overflow: "hidden",
