@@ -1084,6 +1084,9 @@
               },
               "source_basis": "USCIS processing times — uscis.gov/processing-times. Operational notes from USCIS published guidance."
             }
+          },
+          "tool_data":{
+            "disclaimer":"Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
           }
         },
         {
