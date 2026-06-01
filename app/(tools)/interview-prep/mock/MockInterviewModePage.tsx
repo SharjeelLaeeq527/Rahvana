@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { usePlan } from "@/app/context/PlanContext";
 import { useVoiceEngine } from "@/lib/interview-prep/useVoiceEngine";
+import { useQuestionSpeech } from "@/lib/interview-prep/useQuestionSpeech";
 import {
   generateSessionReport,
   type InterviewSession,
@@ -159,7 +159,6 @@ export function MockInterviewModePage({
   const [focusWarningMessage, setFocusWarningMessage] = useState<string | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showAnsweringFlowModal, setShowAnsweringFlowModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [answeringFlowMode, setAnsweringFlowMode] = useState<
     "toggle" | "pushToTalk"
   >("pushToTalk");
@@ -190,6 +189,33 @@ export function MockInterviewModePage({
     },
   });
 
+  const { speakQuestion, stopSpeaking, isQuestionSpeaking } = useQuestionSpeech();
+  const lastSpokenQuestionIdRef = useRef<string>("");
+  const currentQuestion = interviewQuestions[currentQuestionIndex];
+
+  // Trigger speech when question changes during the running phase
+  useEffect(() => {
+    if (!currentQuestion) return;
+    if (phase !== "running") return;
+  
+    const id = currentQuestion.id;
+  
+    if (lastSpokenQuestionIdRef.current === id) return;
+  
+    lastSpokenQuestionIdRef.current = id;
+  
+    const textToSpeak =
+      currentQuestion.selectedQuestion || currentQuestion.question;
+  
+    // delay ensures React + voices + state settle
+    const t = setTimeout(() => {
+      // console.log("SPEAK TRIGGERED:", textToSpeak);
+      speakQuestion(textToSpeak);
+    }, 300);
+  
+    return () => clearTimeout(t);
+  }, [currentQuestion?.id, phase, speakQuestion]);
+
   const recordsRef = useRef<Record<string, QuestionRecord>>({});
   const activeQuestionIdRef = useRef<string>("");
   const questionStartRef = useRef<number>(Date.now());
@@ -202,8 +228,6 @@ export function MockInterviewModePage({
   const showExitModalRef = useRef(false);
   const exitViaConfirmRef = useRef(false);
   const skipFullscreenExitPromptRef = useRef(false);
-
-  const currentQuestion = interviewQuestions[currentQuestionIndex];
   const progressPercent =
     interviewQuestions.length > 0
       ? ((currentQuestionIndex + 1) / interviewQuestions.length) * 100
@@ -224,14 +248,16 @@ export function MockInterviewModePage({
   const timeProgressPercent =
     ((sessionDurationSeconds - secondsRemaining) / sessionDurationSeconds) * 100;
 
-  const voiceStatusLabel =
-    voiceState === "speaking"
-      ? "Speaking"
-      : voiceState === "silence"
-        ? "Silence"
-        : voiceState === "listening"
-          ? "Listening"
-          : "Paused";
+    const voiceStatusLabel =
+    isQuestionSpeaking
+      ? "Question Speaking"
+      : voiceState === "speaking"
+        ? "Speaking"
+        : voiceState === "silence"
+          ? "Silence"
+          : voiceState === "listening"
+            ? "Listening"
+            : "Paused";
 
   const finalizeCurrentQuestion = useCallback(() => {
     if (!currentQuestion) {
@@ -265,6 +291,7 @@ export function MockInterviewModePage({
       setSessionEndReason(endReason);
 
       stopListening();
+      stopSpeaking();
 
       // If ending due to time or focus, skip closing flow and go straight to completion
       if (endReason === "aborted_time" || endReason === "aborted_focus") {
@@ -318,6 +345,7 @@ export function MockInterviewModePage({
     );
 
   const proceedToRun = async () => {
+    // console.log("proceedToRun() STARTED");
     recordsRef.current = {};
     activeQuestionIdRef.current = interviewQuestions[0]?.id || "";
     questionStartRef.current = Date.now();
@@ -329,6 +357,7 @@ export function MockInterviewModePage({
     setFocusWarnings(0);
     setFocusWarningMessage(null);
     warningTimestampRef.current = Date.now() + 1500;
+    lastSpokenQuestionIdRef.current = "";
 
     // IMPORTANT:
     // Pre-request microphone permission BEFORE push-to-talk starts.
@@ -349,6 +378,15 @@ export function MockInterviewModePage({
     } finally {
       skipFullscreenExitPromptRef.current = false;
     }
+
+    // unlock speech synthesis
+    window.speechSynthesis.getVoices();
+
+    // console.log("Voices at start:", window.speechSynthesis.getVoices());
+
+    window.speechSynthesis.onvoiceschanged = () => {
+      // console.log("Voices loaded:", window.speechSynthesis.getVoices());
+    };
   };
 
   const startInterview = async () => {
@@ -379,6 +417,8 @@ export function MockInterviewModePage({
   const exitInterview = () => {
     exitViaConfirmRef.current = true;
     explicitExitRef.current = true;
+    
+    stopSpeaking();
     stopListening();
 
     // Mark session as manually exited (unless already marked as focus abort)
@@ -771,7 +811,7 @@ export function MockInterviewModePage({
                 </span>
                 {isExecutiveTier
                   ? "this mode uses your existing prepared questions. The session will enter fullscreen and listen for your voice."
-                  : "this is a short preview. Upgrade to Executive for full-length interviews and AI analysis."}
+                  : "this is a short preview. Upgrade to Executive for full-length interviews."}
               </p>
             </div>
 
@@ -1124,8 +1164,7 @@ export function MockInterviewModePage({
       </div>
 
       {/* HEADER */}
-      {phase !== "completed" && (
-        <header className="relative shrink-0 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+      <header className="relative shrink-0 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
         <div className="flex items-center gap-4 px-4 sm:px-8 py-3.5">
           {/* Left: exit */}
           <div className="flex items-center gap-3">
@@ -1196,7 +1235,6 @@ export function MockInterviewModePage({
           />
         </div>
         </header>
-      )}
 
       {/* MAIN */}
       <main
@@ -1216,7 +1254,7 @@ export function MockInterviewModePage({
                   <div className="mt-4 space-y-4 text-sm text-gray-700 leading-relaxed font-medium">
                     <p>Greetings, and welcome to your mock immigrant visa interview.</p>
                     <p>
-                      My name is Officer Sandro, and I will be conducting your interview today.
+                      My name is Officer Alexa, and I will be conducting your interview today.
                       Please answer each question clearly and naturally, as you would during an
                       actual visa interview.
                     </p>
@@ -1225,6 +1263,18 @@ export function MockInterviewModePage({
 
                   <button
                     onClick={() => {
+                      // console.log("Continue button clicked");
+                      const firstQuestion = interviewQuestions[0];
+                      if (firstQuestion) {
+                        const questionText = firstQuestion.selectedQuestion || firstQuestion.question;
+                        // console.log("About to speak first question:", questionText);
+                        lastSpokenQuestionIdRef.current = firstQuestion.id;
+                        speakQuestion(questionText);
+                        // console.log("speakQuestion() called");
+                      } else {
+                        // console.log("No first question found");
+                      }
+                      // console.log("About to call proceedToRun");
                       void proceedToRun();
                     }}
                     className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
@@ -1425,7 +1475,7 @@ export function MockInterviewModePage({
 
                       handleListeningToggle();
                     }}
-                    disabled={micUnsupported}
+                    disabled={micUnsupported || isQuestionSpeaking}
                     className={`flex-1 h-12 font-semibold transition-all ${
                       isListening
                         ? "bg-red-600 hover:bg-red-500 text-white shadow-[0_10px_30px_-12px_rgba(220,38,38,0.5)]"
@@ -1450,7 +1500,7 @@ export function MockInterviewModePage({
                       if (isListening) return;
                       advanceQuestion();
                     }}
-                    disabled={isListening}
+                    disabled={isListening || isQuestionSpeaking}
                     className="flex-1 h-12 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     title={isListening ? "Stop Answering to advance" : "Move to the next question"}
                   >
