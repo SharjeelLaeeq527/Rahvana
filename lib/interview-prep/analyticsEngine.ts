@@ -188,7 +188,7 @@ export function generateSessionInsights(
     }
 
     if (metrics.focusWarningsCount === 0) {
-      strengths.push("Maintained focus throughout the entire 15-minute session");
+      strengths.push("Maintained focus throughout the entire session");
     }
 
     const answeredQuestions = metrics.attemptedQuestions - metrics.skippedQuestions;
@@ -268,7 +268,7 @@ export function generateSessionInsights(
       improvements.push(
         "Manual exit prevented completion—commit to the full session in your next attempt"
       );
-      improvements.push("Build interview stamina by pushing through the full 15 minutes");
+      improvements.push("Build interview stamina by pushing through the full session");
       break;
 
     case "aborted_time":
@@ -292,7 +292,9 @@ export function generateSessionInsights(
         nextFocus.push("Prepare answers for skipped categories before your next session");
       }
       if (metrics.responseVariance > 10) {
-        nextFocus.push("Standardize your answer length to 60–90 seconds");
+        nextFocus.push(
+          "Match your answer length to the question—keep simple answers concise and provide additional detail only when needed"
+        );
       }
       nextFocus.push("Take another mock interview to reinforce progress");
       break;
@@ -304,13 +306,15 @@ export function generateSessionInsights(
       break;
 
     case "aborted_manual":
-      nextFocus.push("Commit to the full 15-minute session next time");
+      nextFocus.push("Commit to the full session next time");
       nextFocus.push("Build interview endurance with consecutive full sessions");
       break;
 
     case "aborted_time":
-      nextFocus.push("Practice time management—aim for 90 seconds per question");
-      nextFocus.push("Rehearse concise, well-structured answers");
+      nextFocus.push("Focus on answering questions directly and avoid adding unnecessary details");
+      nextFocus.push(
+        "Practice concise, well-structured responses to improve your interview pacing"
+      );
       break;
   }
 

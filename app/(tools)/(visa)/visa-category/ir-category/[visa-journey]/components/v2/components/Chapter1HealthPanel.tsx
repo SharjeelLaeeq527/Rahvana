@@ -34,10 +34,10 @@ export function Chapter1HealthPanel({
   checkerRegistry,
 }: Chapter1HealthPanelProps) {
   const sId = currentStep?.step_key || currentStep?.id || "";
-  const isChapter1 = sId.startsWith("step_1_");
+  const isCsaChapter = sId.startsWith("step_1_") || sId.startsWith("step_2_");
   const [open, setOpen] = useState(true);
 
-  if (!isChapter1) return null;
+  if (!isCsaChapter) return null;
 
   const eligibilityAnswers =
     (state.answers?.["eligibility-suite"] as any) ??
@@ -45,7 +45,7 @@ export function Chapter1HealthPanel({
 
   const checks = runStepChecks(
     sId,
-    { state, uploadedDocuments, eligibilityAnswers },
+    { state, uploadedDocuments, eligibilityAnswers, step: currentStep },
     checkerRegistry
   );
 
@@ -89,6 +89,7 @@ export function Chapter1HealthPanel({
               state={state}
               uploadedDocuments={uploadedDocuments}
               eligibilityAnswers={eligibilityAnswers}
+              step={currentStep}
               registry={checkerRegistry}
               compact={true}
             />

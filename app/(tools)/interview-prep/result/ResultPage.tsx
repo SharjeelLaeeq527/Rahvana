@@ -5,16 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  BookOpen,
-  Check,
-  Info,
-  Loader2,
-  Mic,
-  Shuffle,
-  X,
-  Zap,
-} from "lucide-react";
+import { BookOpen, Check, Info, Loader2, Mic, Shuffle, X, Zap } from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
 import { MockInterviewModePage } from "../mock/MockInterviewModePage";
@@ -56,11 +47,13 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
   const [savedAnswers, setSavedAnswers] = useState<Record<string, string>>({});
 
   // Toggle to show/hide sample answer in flashcard
-  const [showSampleAnswerInFlashcard, setShowSampleAnswerInFlashcard] =
-    useState<Record<string, boolean>>({});
+  const [showSampleAnswerInFlashcard, setShowSampleAnswerInFlashcard] = useState<
+    Record<string, boolean>
+  >({});
 
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showMockUpgradeModal, setShowMockUpgradeModal] = useState(false);
+  const [showPrepUpgradeModal, setShowPrepUpgradeModal] = useState(false);
 
   const plan = usePlan();
 
@@ -72,7 +65,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
       return true;
     },
-    [plan.tier],
+    [plan.tier]
   );
 
   const canAccessRapidFire = (): boolean => {
@@ -97,9 +90,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
   const handleShuffle = () => {
     if (results?.questions) {
-      const applicableQuestions = results.questions.filter(
-        (q: GeneratedQuestion) => q.applicable,
-      );
+      const applicableQuestions = results.questions.filter((q: GeneratedQuestion) => q.applicable);
       const visibleQuestions = applicableQuestions.filter(canSeePrepQuestion);
       const shuffled = shuffleQuestions(visibleQuestions);
       setQuestionsList(shuffled);
@@ -169,9 +160,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       setLoading(false);
     } else if (results?.questions) {
       // Initialize with original order
-      const applicableQuestions = results.questions.filter(
-        (q: GeneratedQuestion) => q.applicable,
-      );
+      const applicableQuestions = results.questions.filter((q: GeneratedQuestion) => q.applicable);
       setQuestionsList(applicableQuestions.filter(canSeePrepQuestion));
       // Load existing answers
       if (sessionId) {
@@ -307,11 +296,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       <div className="bg-white site-main-py site-main-px">
         <div className="text-center mb-8">
           <div className="flex flex-col md:flex-row justify-center gap-4 mb-4">
-            <Button
-              onClick={() => setMode("prep")}
-              variant="outline"
-              className="w-full md:w-auto"
-            >
+            <Button onClick={() => setMode("prep")} variant="outline" className="w-full md:w-auto">
               <BookOpen className="h-4 w-4 mr-2" />
               Prep Mode
             </Button>
@@ -366,9 +351,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
             </div>
           </div>
 
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
-            Mock Interview Mode
-          </h2>
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">Mock Interview Mode</h2>
           <p className="text-slate-600">
             Fullscreen voice interview simulation with a 15-minute timer
           </p>
@@ -736,21 +719,53 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           )}
 
                           {/* Answer button on back of card */}
-                          {plan.tier !== "free" && (
-                            <div className="mt-3 sm:mt-4 flex gap-2">
+                          <div className="mt-3 sm:mt-4 flex gap-2">
+                            <div className="group relative flex-1">
                               <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
+
+                                  if (plan.tier === "free") {
+                                    setShowPrepUpgradeModal(true);
+                                    return;
+                                  }
+
                                   setShowAnswerModal(true);
                                 }}
-                                className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
+                                className="w-full bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
                               >
-                                {savedAnswers[selectedQuestion.id]
-                                  ? "Edit"
-                                  : "Answer"}
+                                {savedAnswers[selectedQuestion.id] ? "Edit" : "Answer"}
                               </Button>
+
+                              {plan.tier === "free" && (
+                                <>
+                                  <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
+                                    <Image
+                                      src="/icons/ribbon.png"
+                                      alt="Premium feature ribbon"
+                                      width={52}
+                                      height={52}
+                                      className="object-contain drop-shadow-lg"
+                                    />
+                                  </div>
+
+                                  <div className="absolute bottom-full left-[70%] -translate-x-1/2 mb-2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl border border-slate-700 z-50 opacity-0 translate-y-1 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+                                    <div className="font-semibold text-teal-300 mb-1">
+                                      AI Answer Builder
+                                    </div>
+
+                                    <p>
+                                      Draft your own interview answers and receive AI-powered
+                                      feedback to improve clarity, confidence, and interview
+                                      readiness. Upgrade to unlock personalized answer building and AI guidance.
+                                    </p>
+
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800" />
+                                  </div>
+                                </>
+                              )}
                             </div>
-                          )}
+                          </div>
 
                           <div className="text-center mt-2">
                             <p className="text-slate-300 text-xs">Click to flip</p>
@@ -784,14 +799,12 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                       <Zap className="w-8 h-8 text-[#0d7377]" />
                     </div>
 
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                      Rapid Fire Practice
-                    </h3>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Rapid Fire Practice</h3>
 
                     <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
-                      Simulate real interview pressure with timed questions,
-                      adaptive retries, and confidence-based repetition designed
-                      to improve long-term recall and speaking confidence.
+                      Simulate real interview pressure with timed questions, adaptive retries, and
+                      confidence-based repetition designed to improve long-term recall and speaking
+                      confidence.
                     </p>
 
                     <div className="max-w-2xl mx-auto text-left">
@@ -949,6 +962,9 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
         {showUpgradeModal && (
           <UpgradeModal feature="interview_rapid_fire" onClose={() => setShowUpgradeModal(false)} />
+        )}
+        {showPrepUpgradeModal && (
+          <UpgradeModal feature="basic_interview_prep" onClose={() => setShowPrepUpgradeModal(false)} />
         )}
         {showMockUpgradeModal && (
           <UpgradeModal feature="mock_interview" onClose={() => setShowMockUpgradeModal(false)} />

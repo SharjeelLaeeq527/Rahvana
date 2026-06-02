@@ -90,6 +90,10 @@ import {
   type ConsistencyBaseline,
 } from "./components/ConsistencyBaselineCapture";
 import {
+  Ds260BaselineCapture,
+  type Ds260Baseline,
+} from "./components/Ds260BaselineCapture";
+import {
   BeneficiaryResidenceCapture,
   type BeneficiaryBaseline,
 } from "./components/BeneficiaryResidenceCapture";
@@ -1945,6 +1949,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
             <ConsistencyBaselineCapture
               baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
               onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
+            />
+          )}
+
+          {/* DS-260 CROSS-FORM CONSISTENCY CAPTURE — step_2_3 (Fill DS-260) */}
+          {sId === "step_2_3" && (
+            <Ds260BaselineCapture
+              i130Baseline={
+                state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined
+              }
+              baseline={state.metadata?.ds260Baseline as Ds260Baseline | undefined}
+              onSave={(next) => actions.updateMetadata({ ds260Baseline: next })}
             />
           )}
 
