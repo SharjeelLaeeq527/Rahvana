@@ -4309,24 +4309,69 @@
             "id": "step_2_7",
             "type": "household_member",
             "title": "Sponsorship Management",
-            "guide_cards": [
-              {
-                "id": "add-household-member",
-                "title": "Add Household Member",
-                "subtitle": "Step-by-step guide for adding a household member to your sponsorship in CEAC.",
-                "layout": "flex"
-              },
-              {
-                "id": "add-joint-sponsor",
-                "title": "Add Joint Sponsor",
-                "subtitle": "Step-by-step guide for adding a joint sponsor to your sponsorship in CEAC.",
-                "layout": "flex"
-              }
-            ],
             "tutorial_steps": {
+              "common": [
+                {
+                  "label": "Step 1 of 6",
+                  "heading": "Open CEAC and sign in",
+                  "screenTitle": "Open CEAC and sign in",
+                  "instruction": "Sign in to CEAC at <strong>ceac.state.gov</strong> using your NVC Case Number and Invoice ID from the Welcome Letter.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "CEAC Login",
+                  "ss_headline": "CEAC — Immigrant Visa Application",
+                  "ss_desc": "Use your case number and invoice ID to enter CEAC.",
+                  "ss_highlight": null,
+                  "caption": "Sign in first, then move into the sponsorship section.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step4/01-case-into-ceac.png"
+                  }
+                },
+                {
+                  "label": "Step 2 of 6",
+                  "heading": "Go to the affidavit support area",
+                  "screenTitle": "Go to the affidavit support area",
+                  "instruction": "After signing in, navigate to the <strong>Affidavit of Support</strong> or sponsorship section inside your CEAC case. This is where sponsorship participants are managed.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "CEAC Case",
+                  "ss_headline": "Your CEAC Case",
+                  "ss_desc": "Open the sponsorship area inside the case.",
+                  "ss_highlight": null,
+                  "caption": "This is the section where participants are managed.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step7/locate_affidavit.png"
+                  }
+                },
+                {
+                  "label": "Step 3 of 6",
+                  "heading": "Choose to add a household member or joint sponsor",
+                  "screenTitle": "Choose to add a household member or joint sponsor",
+                  "instruction": "Choose the person you are adding. Rahvana will open the right branch and checklist after you pick the path.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Choose route",
+                  "ss_headline": "Add Sponsorship Participant",
+                  "ss_desc": "Choose the option that matches the participant you are adding.",
+                  "ss_highlight": null,
+                  "caption": "Choose the option that matches the person you are adding.",
+                  "note": null,
+                  "choiceOptions": [
+                    {
+                      "label": "Add a household member",
+                      "path": "household_member"
+                    },
+                    {
+                      "label": "Add a joint sponsor",
+                      "path": "joint_sponsor"
+                    }
+                  ]
+                }
+              ],
               "household_member": [
                 {
-                  "label": "Step 1 of 7 — Add household member",
+                  "label": "Step 4 of 6 — Add household member",
                   "heading": "Add a household member to your sponsorship",
                   "screenTitle": "Add a household member to your sponsorship",
                   "instruction": "In CEAC, navigate to the sponsorship section and select the option to add a household member. A household member is someone who lives with the petitioner and whose income contributes to meeting the affidavit of support income requirement.",
@@ -4343,7 +4388,7 @@
                   }
                 },
                 {
-                  "label": "Step 2 of 7 — Add household member documents",
+                  "label": "Step 5 of 6 — Add household member documents",
                   "heading": "Upload household member's financial documents",
                   "screenTitle": "Upload household member's financial documents",
                   "instruction": "Select and upload the required financial documents for the household member. These typically include tax returns, W-2 forms, pay stubs, and bank statements showing their income and assets.",
@@ -4360,84 +4405,16 @@
                   }
                 },
                 {
-                  "label": "Step 3 of 7 — Receive confirmation message",
-                  "heading": "Confirmation that household member was added",
-                  "screenTitle": "Confirmation that household member was added",
-                  "instruction": "CEAC will display a confirmation message once the household member and their documents have been successfully received. Save this confirmation for your records.",
+                  "label": "Step 6 of 6 — Finish the household member flow",
+                  "heading": "Confirm the household member path is complete",
+                  "screenTitle": "Confirm the household member path is complete",
+                  "instruction": "Use the CEAC status screen to confirm the household member entry and documents were received. Save the confirmation for your records.",
                   "url": "ceac.state.gov",
                   "ss_label": "Confirmation",
-                  "ss_headline": "Addition Confirmed",
-                  "ss_desc": "Household member successfully added",
+                  "ss_headline": "Household member flow complete",
+                  "ss_desc": "Submission status confirmed",
                   "ss_highlight": null,
-                  "caption": "The household member is now part of your sponsorship package.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6a/03-get-msg.png"
-                  }
-                },
-                {
-                  "label": "Step 4 of 7 — Approval of household member addition",
-                  "heading": "Household member addition approved",
-                  "screenTitle": "Household member addition approved",
-                  "instruction": "Once CEAC has reviewed and approved the household member addition, you will see an approval status. This confirms that their income is now counted toward your affidavit of support income requirement.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Approval",
-                  "ss_headline": "Household Member Approved",
-                  "ss_desc": "Income now counted in sponsorship package",
-                  "ss_highlight": null,
-                  "caption": "Approval typically takes several business days after submission.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6a/04-joint-household-approval.png"
-                  }
-                },
-                {
-                  "label": "Step 5 of 7 — Start document submission",
-                  "heading": "Begin financial document submission in CEAC",
-                  "screenTitle": "Begin financial document submission in CEAC",
-                  "instruction": "After the household member is approved, navigate to the Affidavit of Support document submission section. You will now submit all financial documents for both the petitioner and the household member.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Submission Start",
-                  "ss_headline": "Begin Document Submission",
-                  "ss_desc": "Upload all financial evidence",
-                  "ss_highlight": null,
-                  "caption": "Organize all documents before starting the submission process.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6a/05-start-submission-of-docs.png"
-                  }
-                },
-                {
-                  "label": "Step 6 of 7 — Upload financial documents",
-                  "heading": "Upload all required financial documents",
-                  "screenTitle": "Upload all required financial documents",
-                  "instruction": "Upload the complete financial document set for both the petitioner and the household member. Ensure each file is under 4 MB and in the correct format (PDF or image). Submit documents one by one and wait for confirmation.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Upload",
-                  "ss_headline": "Financial Evidence Submission",
-                  "ss_desc": "Complete financial package for both sponsors",
-                  "ss_highlight": null,
-                  "caption": "Upload sequentially and verify each file is accepted before proceeding to the next.",
-                  "note": "Do not close the browser tab during uploads.",
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6a/06-upload-docs.png"
-                  }
-                },
-                {
-                  "label": "Step 7 of 7 — Check submission status",
-                  "heading": "Verify your submission is complete",
-                  "screenTitle": "Verify your submission is complete",
-                  "instruction": "After uploading all documents, check the submission status in CEAC to confirm all required financial documents have been received and marked as Submitted or Accepted. This completes the household member sponsorship process.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Status Verification",
-                  "ss_headline": "Submission Complete",
-                  "ss_desc": "All documents confirmed as received",
-                  "ss_highlight": null,
-                  "caption": "A complete submission ensures NVC can proceed with documentary qualification review.",
+                  "caption": "This shared flow ends when CEAC shows the submission as received or accepted.",
                   "note": null,
                   "media": {
                     "type": "img",
@@ -4447,7 +4424,7 @@
               ],
               "joint_sponsor": [
                 {
-                  "label": "Step 1 of 8 — Click on joint sponsor option",
+                  "label": "Step 4 of 6 — Click on joint sponsor option",
                   "heading": "Select the joint sponsor option in CEAC",
                   "screenTitle": "Select the joint sponsor option in CEAC",
                   "instruction": "In CEAC, navigate to the sponsorship section and select the option to add a joint sponsor. A joint sponsor is a separate person (typically with significant income and assets) who jointly files the Affidavit of Support with the petitioner.",
@@ -4464,7 +4441,7 @@
                   }
                 },
                 {
-                  "label": "Step 2 of 8 — Add joint sponsor documents",
+                  "label": "Step 5 of 6 — Add joint sponsor documents",
                   "heading": "Upload joint sponsor's financial documents",
                   "screenTitle": "Upload joint sponsor's financial documents",
                   "instruction": "Select and upload the required financial documents for the joint sponsor. Include their complete tax returns (3 years), W-2 forms, current pay stubs (6 months), bank statements, and employment verification letter.",
@@ -4481,105 +4458,20 @@
                   }
                 },
                 {
-                  "label": "Step 3 of 8 — Receive confirmation message",
-                  "heading": "Confirmation that joint sponsor was added",
-                  "screenTitle": "Confirmation that joint sponsor was added",
-                  "instruction": "CEAC will display a confirmation message once the joint sponsor and their documents have been successfully received. This confirms that the joint sponsor addition is in process.",
+                  "label": "Step 6 of 6 — Finish the joint sponsor flow",
+                  "heading": "Confirm the joint sponsor path is complete",
+                  "screenTitle": "Confirm the joint sponsor path is complete",
+                  "instruction": "Use the CEAC status screen to confirm the joint sponsor entry and documents were received. Save the confirmation for your records.",
                   "url": "ceac.state.gov",
                   "ss_label": "Confirmation",
-                  "ss_headline": "Addition Confirmed",
-                  "ss_desc": "Joint sponsor successfully submitted",
+                  "ss_headline": "Joint sponsor flow complete",
+                  "ss_desc": "Submission status confirmed",
                   "ss_highlight": null,
-                  "caption": "Save the confirmation message for your records.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6b/03-get-a-msg.png"
-                  }
-                },
-                {
-                  "label": "Step 4 of 8 — Approval of joint sponsor addition",
-                  "heading": "Joint sponsor addition approved",
-                  "screenTitle": "Joint sponsor addition approved",
-                  "instruction": "Once CEAC has reviewed and approved the joint sponsor addition, you will see an approval status. This confirms that the joint sponsor is now officially part of your affidavit of support package and their income is counted.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Approval",
-                  "ss_headline": "Joint Sponsor Approved",
-                  "ss_desc": "Income now counted in I-864 package",
-                  "ss_highlight": null,
-                  "caption": "Approval confirms both the petitioner and joint sponsor can meet the income requirement.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6b/04-joint-sponser-approval.png"
-                  }
-                },
-                {
-                  "label": "Step 5 of 8 — Start financial document submission",
-                  "heading": "Begin Affidavit of Support submission",
-                  "screenTitle": "Begin Affidavit of Support submission",
-                  "instruction": "After the joint sponsor is approved, navigate to the Affidavit of Support section in CEAC. You will now submit the completed I-864 form and all supporting financial documents for both the petitioner and joint sponsor.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Submission Start",
-                  "ss_headline": "Start AOS Submission",
-                  "ss_desc": "Begin uploading I-864 and financial evidence",
-                  "ss_highlight": null,
-                  "caption": "Ensure the I-864 form is completed and signed before uploading.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6b/05-start-submission-of-docs.png"
-                  }
-                },
-                {
-                  "label": "Step 6 of 8 — Confirm submission status",
-                  "heading": "Verify submission is complete",
-                  "screenTitle": "Verify submission is complete",
-                  "instruction": "After uploading all required Affidavit of Support documents (I-864 form, tax returns, pay stubs, bank statements for both petitioner and joint sponsor), check the submission status in CEAC to confirm all items have been received.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Confirmation",
-                  "ss_headline": "Submission Confirmed",
-                  "ss_desc": "All documents marked as submitted",
-                  "ss_highlight": null,
-                  "caption": "A complete submission is critical for NVC documentary qualification.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6b/06-submitted.png"
-                  }
-                },
-                {
-                  "label": "Step 7 of 8 — Check document status",
-                  "heading": "Check the status of your submission",
-                  "screenTitle": "Check the status of your submission",
-                  "instruction": "Review the overall status of your Affidavit of Support submission in CEAC. All documents for both the petitioner and joint sponsor should show as received or accepted. This indicates your complete financial package is ready for NVC review.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Status Check",
-                  "ss_headline": "Document Status Review",
-                  "ss_desc": "All AOS documents confirmed in system",
-                  "ss_highlight": null,
-                  "caption": "Monitor CEAC regularly for any update notices or document requests.",
+                  "caption": "This shared flow ends when CEAC shows the submission as received or accepted.",
                   "note": null,
                   "media": {
                     "type": "img",
                     "src": "/assets/images/ir1-journey/c2_step6b/07-check-status.png"
-                  }
-                },
-                {
-                  "label": "Step 8 of 8 — Add additional documents if needed",
-                  "heading": "Submit any additional supporting documents",
-                  "screenTitle": "Submit any additional supporting documents",
-                  "instruction": "If needed, you can add additional financial documents or supporting evidence through CEAC. This may include updated pay stubs, recent bank statements, or any other documents that strengthen your sponsorship case.",
-                  "url": "ceac.state.gov",
-                  "ss_label": "Additional Docs",
-                  "ss_headline": "Add Supporting Evidence",
-                  "ss_desc": "Submit any supplemental financial documents",
-                  "ss_highlight": null,
-                  "caption": "Additional documents can be submitted at any time during CEAC processing.",
-                  "note": null,
-                  "media": {
-                    "type": "img",
-                    "src": "/assets/images/ir1-journey/c2_step6b/08-add-additional-docs.png"
                   }
                 }
               ]

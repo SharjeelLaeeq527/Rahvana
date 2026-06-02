@@ -246,9 +246,18 @@ interface StepViewProps {
     saveMailingDetails?: (carrier: string, trackingNumber: string) => Promise<void>;
   };
   onBack: () => void;
+  onSelectChapter?: (chapterIdx: number) => void;
+  onSelectStep?: (chapterIdx: number, stepIdx: number) => void;
 }
 
-export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
+export const StepView: React.FC<StepViewProps> = ({
+  data,
+  state,
+  actions,
+  onBack,
+  onSelectChapter,
+  onSelectStep,
+}) => {
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
@@ -1084,7 +1093,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     {cite.link}
                   </span> */}
                 </div>
-                <ExternalLink className="h-4 w-4 text-[#6b8097] group-hover:text-primary transition-colors shrink-0 ml-3" strokeWidth={2} />
+                <ExternalLink
+                  className="h-4 w-4 text-[#6b8097] group-hover:text-primary transition-colors shrink-0 ml-3"
+                  strokeWidth={2}
+                />
               </a>
             ))}
           </div>
@@ -1310,6 +1322,9 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 setIsApprovalSaved,
               }}
               guard={stepEntitlement.guard}
+              onBack={onBack}
+              onSelectChapter={onSelectChapter}
+              onSelectStep={onSelectStep}
             />
           )}
 
@@ -4143,10 +4158,55 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
       {/* Tutorial Overlay */}
       {isTutorialOpen &&
         (() => {
-          // If useCeacGuideData is true, always use HOUSEHOLD_TUTORIAL_STEPS from file
+          // If useCeacGuideData is true, prefer the CEAC tutorial_steps on the current step
           if (useCeacGuideData) {
-            const steps = HOUSEHOLD_TUTORIAL_STEPS;
-            const currentTutStep = steps[tutorialIdx];
+            const tool = currentStep?.tool_data;
+            const dynamicStepsRaw = tool?.tutorial_steps;
+
+            let dynamicSteps: any[] | null = null;
+            let commonSteps: any[] | null = null;
+            let isDynamic = false;
+            const effectivePath = tutorialPath || "household_member";
+
+            if (dynamicStepsRaw) {
+              if (Array.isArray(dynamicStepsRaw)) {
+                dynamicSteps = dynamicStepsRaw;
+                isDynamic = dynamicStepsRaw.length > 0;
+              } else if (typeof dynamicStepsRaw === "object") {
+                const rawSteps = dynamicStepsRaw as any;
+                if (Array.isArray(rawSteps.common)) {
+                  commonSteps = rawSteps.common;
+                }
+                const branchSteps = rawSteps[effectivePath];
+                if (tutorialPath && Array.isArray(commonSteps) && Array.isArray(branchSteps)) {
+                  dynamicSteps = [...commonSteps, ...branchSteps];
+                } else if (Array.isArray(commonSteps) && !tutorialPath) {
+                  dynamicSteps = commonSteps;
+                } else {
+                  dynamicSteps = branchSteps;
+                }
+                isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
+              }
+            }
+
+            const steps =
+              isDynamic && dynamicSteps
+                ? dynamicSteps
+                : tool?.type === "household_member"
+                  ? HOUSEHOLD_TUTORIAL_STEPS
+                  : USCIS_TUTORIAL_STEPS;
+
+            if (!Array.isArray(steps) || steps.length === 0) return null;
+
+            const safeTutorialIdx = Math.min(Math.max(tutorialIdx, 0), steps.length - 1);
+            const currentTutStep = steps[safeTutorialIdx];
+            if (!currentTutStep) return null;
+            const branchChoiceActive =
+              !tutorialPath &&
+              Array.isArray(commonSteps) &&
+              safeTutorialIdx === commonSteps.length - 1;
+            const dynamicTutStep = currentTutStep as any;
+            const hideBrowserFrame = Boolean(dynamicTutStep.choiceOptions && !dynamicTutStep.media);
 
             return (
               <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out">
@@ -4166,13 +4226,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     <div
                       className="h-full bg-linear-to-r from-primary to-primary rounded-[10px] transition-all duration-[0.4s] ease-out"
                       style={{
-                        width: `${((tutorialIdx + 1) / steps.length) * 100}%`,
+                        width: `${((safeTutorialIdx + 1) / steps.length) * 100}%`,
                       }}
                     />
                   </div>
 
                   <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-                    {tutorialIdx + 1} / {steps.length}
+                    {safeTutorialIdx + 1} / {steps.length}
                   </div>
                 </div>
 
@@ -4196,40 +4256,88 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                       }}
                     />
 
-                    {/* Screenshot Block — Media or Fallback UI with Browser Chrome */}
-                    <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
-                      {/* Browser Chrome Bar */}
-                      <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
-                        <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
-                        <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
-                        <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
-                        <div className="flex-1 h-[20px] bg-[#fafcff] rounded-[5px] border border-[#d0e4f7] ml-[10px] flex items-center px-[10px]">
-                          <span className="text-[10px] text-[#6b8097] font-mono">
-                            {currentTutStep.vlabel}
-                          </span>
+                    {branchChoiceActive && (currentTutStep as any).choiceOptions && (
+                      <div className="mb-5">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097] mb-2">
+                          {(currentTutStep as any).vlabel ||
+                            (currentTutStep as any).ss_label ||
+                            (currentTutStep as any).screenTitle ||
+                            "Choose route"}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+                          {(currentTutStep as any).choiceOptions.map((option: any) => {
+                            const isHousehold = option.path === "household_member";
+                            return (
+                              <button
+                                key={option.path}
+                                type="button"
+                                onClick={() => {
+                                  setTutorialPath(option.path);
+                                  setTutorialIdx(commonSteps?.length || 0);
+                                }}
+                                className={`group relative overflow-hidden text-left transition-all duration-200 ${
+                                  isHousehold
+                                    ? "choice-card choice-card--household"
+                                    : "choice-card choice-card--joint"
+                                }`}
+                              >
+                                <div className="flex flex-col">
+                                  <div className="choice-title">{option.label}</div>
+                                  <div className="choice-desc">
+                                    {isHousehold
+                                      ? "Use this when the person lives with the petitioner and their income will be counted as a household member."
+                                      : "Use this when the person is a separate sponsor meeting the income requirement on their own."}
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
+                    )}
 
-                      {/* Content Area — Image or Mock UI */}
-                      <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
-                        {currentTutStep.media && currentTutStep.media.type === "img" ? (
-                          <img
-                            src={currentTutStep.media.src}
-                            alt={currentTutStep.heading}
-                            className="w-full h-full object-contain"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center justify-center overflow-hidden">
-                            <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
-                              {currentTutStep.vlabel}
+                    {/* Screenshot Block — Media or Fallback UI with Browser Chrome */}
+                    {!hideBrowserFrame && (
+                      <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
+                        <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
+                          <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
+                          <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
+                          <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
+                          <div className="flex-1 h-[20px] bg-[#fafcff] rounded-[5px] border border-[#d0e4f7] ml-[10px] flex items-center px-[10px]">
+                            <span className="text-[10px] text-[#6b8097] font-mono">
+                              {currentTutStep.vlabel ||
+                                (currentTutStep as any).ss_label ||
+                                currentTutStep.heading}
                             </span>
-                            <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
-                              {currentTutStep.heading}
-                            </div>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Content Area — Image or Mock UI */}
+                        <div
+                          className="relative w-full bg-[#f8f9fb]"
+                          style={{ aspectRatio: "4/3" }}
+                        >
+                          {currentTutStep.media && currentTutStep.media.type === "img" ? (
+                            <img
+                              src={currentTutStep.media.src}
+                              alt={currentTutStep.heading}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] w-full items-center justify-center overflow-hidden">
+                              <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
+                                {currentTutStep.vlabel ||
+                                  (currentTutStep as any).ss_label ||
+                                  currentTutStep.heading}
+                              </span>
+                              <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
+                                {currentTutStep.heading}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Note Block */}
                     {currentTutStep.note && (
@@ -4243,17 +4351,24 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                     {/* Tutorial Controls */}
                     <div className="flex items-center justify-center py-[20px]">
                       <div className="w-full flex gap-[10px] items-center">
-                        {tutorialIdx > 0 && (
+                        {safeTutorialIdx > 0 && (
                           <button
-                            onClick={() => setTutorialIdx(tutorialIdx - 1)}
+                            onClick={() => setTutorialIdx(safeTutorialIdx - 1)}
                             className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
                           >
                             ← Back
                           </button>
                         )}
-                        {tutorialIdx < steps.length - 1 ? (
+                        {branchChoiceActive ? (
                           <button
-                            onClick={() => setTutorialIdx(tutorialIdx + 1)}
+                            onClick={() => setTutorialIdx(commonSteps?.length || 0)}
+                            className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
+                          >
+                            Continue after choosing
+                          </button>
+                        ) : safeTutorialIdx < steps.length - 1 ? (
+                          <button
+                            onClick={() => setTutorialIdx(safeTutorialIdx + 1)}
                             className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
                           >
                             Next →
@@ -4301,7 +4416,11 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                 ? HOUSEHOLD_TUTORIAL_STEPS
                 : USCIS_TUTORIAL_STEPS;
 
-          const currentTutStep = steps[tutorialIdx];
+          if (!Array.isArray(steps) || steps.length === 0) return null;
+
+          const safeTutorialIdx = Math.min(Math.max(tutorialIdx, 0), steps.length - 1);
+          const currentTutStep = steps[safeTutorialIdx];
+          if (!currentTutStep) return null;
 
           return (
             <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
@@ -4322,13 +4441,13 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                   <div
                     className="h-full bg-linear-to-r from-primary to-primary rounded-[10px] transition-all duration-[0.4s] ease-out"
                     style={{
-                      width: `${((tutorialIdx + 1) / steps.length) * 100}%`,
+                      width: `${((safeTutorialIdx + 1) / steps.length) * 100}%`,
                     }}
                   />
                 </div>
 
                 <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-                  {tutorialIdx + 1} / {steps.length}
+                  {safeTutorialIdx + 1} / {steps.length}
                 </div>
               </div>
 
@@ -4408,7 +4527,10 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
                           /* Fallback placeholder — absolute to fill ratio box */
                           <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] items-center justify-center overflow-hidden">
                             <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
-                              {(currentTutStep as TutorialStepData).ss_label}
+                              {(currentTutStep as TutorialStepData).ss_label ||
+                                (currentTutStep as TutorialStepData).screenTitle ||
+                                (currentTutStep as TutorialStepData).ss_headline ||
+                                currentTutStep.heading}
                             </span>
 
                             <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
@@ -4592,17 +4714,17 @@ export const StepView: React.FC<StepViewProps> = ({ data, state, actions }) => {
 
                   {/* Nav buttons */}
                   <div className="flex gap-[10px] items-center pb-2">
-                    {tutorialIdx > 0 && (
+                    {safeTutorialIdx > 0 && (
                       <button
-                        onClick={() => setTutorialIdx(tutorialIdx - 1)}
+                        onClick={() => setTutorialIdx(safeTutorialIdx - 1)}
                         className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
                       >
                         ← Back
                       </button>
                     )}
-                    {tutorialIdx < steps.length - 1 ? (
+                    {safeTutorialIdx < steps.length - 1 ? (
                       <button
-                        onClick={() => setTutorialIdx(tutorialIdx + 1)}
+                        onClick={() => setTutorialIdx(safeTutorialIdx + 1)}
                         className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
                       >
                         Next →

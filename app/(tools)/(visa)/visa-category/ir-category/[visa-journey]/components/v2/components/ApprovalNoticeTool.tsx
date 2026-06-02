@@ -6,7 +6,6 @@ import { APPROVAL_NOTICE_DATA as data } from "../ApprovalNoticeData";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import Link from "next/link";
 import { usePlan } from "@/app/context/PlanContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -28,6 +27,9 @@ interface ApprovalNoticeToolProps {
     setIsApprovalSaved: (saved: boolean) => void;
   };
   guard?: () => boolean;
+  onBack?: () => void;
+  onSelectChapter?: (chapterIdx: number) => void;
+  onSelectStep?: (chapterIdx: number, stepIdx: number) => void;
 }
 
 export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
@@ -35,6 +37,9 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   actions,
   approvalState,
   guard,
+  onBack,
+  onSelectChapter,
+  onSelectStep,
 }) => {
   const { t, isUrdu } = useLanguage();
   const {
@@ -64,6 +69,11 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   );
 
   const [receiptError, setReceiptError] = useState("");
+  const currentGuideStep = data.guideSteps[approvalGuideStep];
+  const currentGuideStepBody =
+    "body" in currentGuideStep
+      ? ((currentGuideStep as { body?: string }).body ?? undefined)
+      : undefined;
 
   const validateReceiptNumber = (value: string) => {
     const regex = /^[A-Z]{3}[0-9]{10}$/;
@@ -106,16 +116,24 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
     if (guard && !guard()) return;
     openUploadModal("i797-approval-notice");
   };
-  const UploadButton = ({ replace = false }: { replace?: boolean }) => (
-    <div className="relative inline-block">
+  const UploadButton = ({
+    replace = false,
+    fullWidth = false,
+  }: {
+    replace?: boolean;
+    fullWidth?: boolean;
+  }) => (
+    <div className={`relative ${fullWidth ? "flex-1 min-w-0" : "inline-block"}`}>
       <button
         onClick={handleUploadClick}
-        className={`inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[13px] font-bold ${
-          approvalDoc && !isBasic
-            ? "bg-[var(--rv-green-bg)] border-[#a8d9be] text-[var(--rv-green)] hover:border-[var(--rv-green)]"
-            : isBasic
-              ? "bg-[var(--rv-rose-bg)] border-[rgba(130,132,191,0.4)] text-[var(--rv-ch1)]"
-              : "bg-white border-[var(--rv-line)] text-[var(--rv-navy)] hover:border-[var(--rv-blue)] hover:text-[var(--rv-blue)]"
+        className={`inline-flex ${fullWidth ? "w-full" : ""} items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[14.5px] font-semibold tracking-tight ${
+          fullWidth
+            ? "bg-[var(--rv-ch1)] text-white hover:bg-[var(--rv-ch1-dark)] border-[var(--rv-ch1)] shadow-[0_6px_20px_rgba(130,132,191,0.3)]"
+            : approvalDoc && !isBasic
+              ? "bg-[var(--rv-green-bg)] border-[#a8d9be] text-[var(--rv-green)] hover:border-[var(--rv-green)]"
+              : isBasic
+                ? "bg-[var(--rv-rose-bg)] border-[rgba(130,132,191,0.4)] text-[var(--rv-ch1)]"
+                : "bg-white border-[var(--rv-line)] text-[var(--rv-navy)] hover:border-[var(--rv-blue)] hover:text-[var(--rv-blue)]"
         }`}
       >
         {isBasic ? (
@@ -127,11 +145,11 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
         )}
         {isBasic
           ? replace
-            ? "Replace approval notice"
-            : "Upload approval notice"
+            ? "Replace Approval Notice"
+            : "Upload Approval Notice"
           : approvalDoc
-            ? "Replace approval notice"
-            : "Upload approval notice"}
+            ? "Replace Approval Notice"
+            : "Upload Approval Notice"}
         {isBasic && (
           <span
             className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
@@ -316,8 +334,8 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
             {data.savePanel.tag}
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-[14px]">
-          <div className="border-[1.5px] border-dashed border-[#b8d4f0] rounded-[14px] bg-linear-to-b from-[#fbfdff] to-[#f6faff] p-[18px]">
+        <div className="border-[1.5px] border-dashed border-[#b8d4f0] rounded-[14px] bg-linear-to-b from-[#fbfdff] to-[#f6faff] p-[18px] flex flex-col gap-[16px]">
+          <div>
             {isApprovalSaved ? (
               <>
                 <div className="text-[16px] font-bold text-[#0c1b33] mb-[8px]">
@@ -377,40 +395,58 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
               </>
             ) : (
               <>
-                <div className="flex gap-[10px] flex-wrap mb-3">
-                  <UploadButton />
+                <div className="flex gap-[10px] items-center mb-3">
+                  <UploadButton fullWidth />
+                  <button
+                    onClick={() => {
+                      if (guard && !guard()) return;
+                      setIsApprovalModalOpen(true);
+                    }}
+                    className="inline-flex flex-1 min-w-0 items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[14.5px] font-semibold tracking-tight bg-white border-[var(--rv-ch1)] text-[var(--rv-ch1)] hover:bg-[var(--rv-ch1)]/5 shadow-md"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-[15px] h-[15px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                    Enter Notice Details Manually
+                  </button>
                 </div>
                 {isBasic && <UploadLockedNote />}
-                <button
-                  onClick={() => {
-                    if (guard && !guard()) return;
-                    setIsApprovalModalOpen(true);
-                  }}
-                  className="inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-white text-[#0c1b33] text-[13px] font-bold hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all mt-3"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-[15px] h-[15px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
-                  >
-                    <path d="M12 20h9" />
-                    <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z" />
-                  </svg>
-                  Enter notice details manually
-                </button>
               </>
             )}
           </div>
-          <div className="flex flex-col gap-[12px]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px]">
             {data.savePanel.safeItems.map((item, i) => (
-              <div
+              <button
                 key={i}
-                className="flex gap-[12px] items-start p-[12px_14px] rounded-[12px] border-[1.5px] border-[#d0e4f7] bg-white"
+                type="button"
+                onClick={() => {
+                  if (item.icon !== "book") return;
+                  if (guard && !guard()) return;
+                  onSelectChapter?.(1);
+                }}
+                className={`text-left bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px] ${
+                  item.icon === "book"
+                    ? "cursor-pointer transition-all hover:-translate-y-[1px] hover:border-[#2f6fd4]"
+                    : "cursor-default"
+                }`}
               >
-                <div className="w-[24px] h-[24px] rounded-full bg-[#e8f5ef] border border-[#a8d9be] text-[#15744f] flex items-center justify-center shrink-0">
+                <div
+                  className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-[12px] ${
+                    item.icon === "check"
+                      ? "bg-[#e8f5ef] border border-[#a8d9be] text-[#15744f]"
+                      : item.icon === "file"
+                        ? "bg-[#f3f0fb] border border-[#c9bef2] text-[#4a2d8a]"
+                        : "bg-[#fef8e8] border border-[#f0d98a] text-[#8a6200]"
+                  }`}
+                >
                   {item.icon === "check" && (
                     <svg
                       viewBox="0 0 24 24"
-                      className="w-[12px] h-[12px] stroke-current fill-none stroke-[2px]"
+                      className="w-[18px] h-[18px] stroke-current fill-none stroke-[1.8px]"
                     >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -418,7 +454,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   {item.icon === "file" && (
                     <svg
                       viewBox="0 0 24 24"
-                      className="w-[12px] h-[12px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
+                      className="w-[18px] h-[18px] stroke-current fill-none stroke-[1.8px] stroke-linecap-round stroke-linejoin-round"
                     >
                       <path d="M8 17h8" />
                       <path d="M8 13h8" />
@@ -429,7 +465,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   {item.icon === "calendar" && (
                     <svg
                       viewBox="0 0 24 24"
-                      className="w-[12px] h-[12px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
+                      className="w-[18px] h-[18px] stroke-current fill-none stroke-[1.8px] stroke-linecap-round stroke-linejoin-round"
                     >
                       <path d="M3 6h18" />
                       <path d="M7 3v6" />
@@ -438,19 +474,15 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                     </svg>
                   )}
                 </div>
-                <div className="text-left">
-                  <strong className="block text-[13px] text-[#0c1b33] mb-[4px]">
-                    {item.title}
-                  </strong>
-                  <span className="text-[12.5px] text-[#3a4f63] leading-[1.55]">{item.copy}</span>
-                </div>
-              </div>
+                <div className="text-[15px] font-bold text-[#0c1b33] mb-[6px]">{item.title}</div>
+                <div className="text-[13px] text-[#3a4f63] leading-[1.6]">{item.copy}</div>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* TIMELINE PHASE */}
+      {/* TIMELINE PHASE
       <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_4px] sm:p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
@@ -488,34 +520,55 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
           </svg>
           <span>{data.timeline.infoStrip}</span>
         </div>
-      </section>
+      </section> */}
 
       {/* PREP SECTION */}
-      <section className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_4px] sm:p-[22px] shadow-[0_8px_24px_rgba(12,27,51,0.07)]">
+      <section className="bg-[#fafcff] border-[1.5px] border-[#e2e0f2] rounded-[16px] p-[22px_4px] sm:p-[22px] shadow-sm">
         <div className="flex justify-between gap-[16px] items-start mb-[16px]">
           <div>
-            <h3 className="text-[24px] text-[#0c1b33] leading-[1.2]">{data.prepCards.title}</h3>
-            <p className="text-[14px] leading-[1.68] text-[#3a4f63] max-w-[560px]">
+            <h3 className="text-[24px] leading-[1.2] text-[#0c1b33]">{data.prepCards.title}</h3>
+            <p className="text-[14px] leading-[1.68] max-w-[560px] text-[#3a4f63]">
               {data.prepCards.copy}
             </p>
           </div>
-          <div className="text-[11px] font-bold tracking-[0.08em] uppercase p-[7px_11px] rounded-full bg-[#fef8e8] border border-[#f0d98a] text-[#8a6200] whitespace-nowrap">
+          <div className="text-[11px] font-bold tracking-[0.08em] uppercase p-[7px_11px] rounded-full bg-white border border-[#e2e0f2] text-[#4e518c] whitespace-nowrap">
             {data.prepCards.tag}
           </div>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px]">
           {data.prepCards.cards.map((card, i) => (
-            <div
+            <button
               key={i}
-              className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px]"
+              type="button"
+              onClick={() => {
+                if (guard && !guard()) return;
+                if (card.icon === "book") {
+                  onSelectChapter?.(1);
+                }
+                if (card.icon === "dollar") {
+                  onSelectStep?.(1, 4);
+                }
+              }}
+              className={`text-left border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[18px] ${
+                card.type === "green"
+                  ? "bg-[#e8f5ef]"
+                  : card.type === "purple"
+                    ? "bg-[#f3f0fb]"
+                    : "bg-[#fef8e8]"
+              } ${
+                card.icon === "book" || card.icon === "dollar"
+                  ? "cursor-pointer transition-all hover:-translate-y-[1px] hover:border-[#2f6fd4]"
+                  : "cursor-default"
+              }`}
             >
               <div
-                className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-[12px] ${
+                className={`w-[38px] h-[38px] rounded-[10px] flex items-center justify-center mb-[12px] border shadow-xs bg-white ${
                   card.type === "green"
-                    ? "bg-[#e8f5ef] border border-[#a8d9be] text-[#15744f]"
+                    ? "border-[#a8d9be] text-[#15744f]"
                     : card.type === "purple"
-                      ? "bg-[#f3f0fb] border border-[#c9bef2] text-[#4a2d8a]"
-                      : "bg-[#fef8e8] border border-[#f0d98a] text-[#8a6200]"
+                      ? "border-[#c9bef2] text-[#4a2d8a]"
+                      : "border-[#f0d98a] text-[#8a6200]"
                 }`}
               >
                 {card.icon === "book" && (
@@ -548,31 +601,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
               </div>
               <div className="text-[15px] font-bold text-[#0c1b33] mb-[6px]">{card.title}</div>
               <div className="text-[13px] text-[#3a4f63] leading-[1.6]">{card.copy}</div>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-[10px] flex-wrap mt-[16px]">
-          {data.prepCards.actions.map((act, i) => (
-            <Link
-              key={i}
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/step-2-begin-nvc-processing.html"
-            >
-              <button className="inline-flex items-center justify-center gap-[8px] p-[10px_13px] rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-[#f4f7fb] text-[12px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] hover:text-[#2f6fd4] hover:-translate-y-[1px] transition-all cursor-pointer">
-                {act.type === "info" ? (
-                  <Info size={15} className="stroke-current" strokeWidth={2} />
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-[15px] h-[15px] stroke-current fill-none stroke-[2px] stroke-linecap-round stroke-linejoin-round"
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                )}
-                {act.label}
-              </button>
-            </Link>
+            </button>
           ))}
         </div>
       </section>
@@ -730,36 +759,75 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
 
             <div className="p-[20px_16px_18px] sm:p-[28px_24px_24px] overflow-auto custom-scrollbar">
               <div className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2f6fd4] mb-[12px]">
-                {data.guideSteps[approvalGuideStep].label}
+                {currentGuideStep.label}
               </div>
               <h3 className="text-[28px] leading-[1.15] text-[#0c1b33] mb-[8px]">
-                {data.guideSteps[approvalGuideStep].title}
+                {currentGuideStep.title}
               </h3>
               <p className="text-[14px] leading-[1.72] text-[#3a4f63] mb-[18px]">
-                {data.guideSteps[approvalGuideStep].copy}
+                {currentGuideStep.copy}
               </p>
 
-              <div className="border-[1.5px] border-[#d0e4f7] rounded-[14px] overflow-hidden bg-linear-to-b from-white to-[#f7fbff] mb-[16px]">
-                <div className="h-[34px] bg-[#e8f1fb] flex items-center gap-[7px] px-[12px]">
-                  <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
-                  <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
-                  <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
-                  <div className="ml-[8px] bg-white rounded-[6px] p-[5px_10px] text-[10px] text-[#6b8097] font-mono flex-1">
-                    uscis.gov / approval notice / next stage
+              <div
+                className={
+                  approvalGuideStep === 1
+                    ? "border-[1.5px] border-[#d0e4f7] rounded-[14px] overflow-hidden bg-linear-to-b from-white to-[#f7fbff] mb-[16px]"
+                    : "mb-[16px]"
+                }
+              >
+                {approvalGuideStep === 1 && (
+                  <div className="h-[34px] bg-[#e8f1fb] flex items-center gap-[7px] px-[12px]">
+                    <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
+                    <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
+                    <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
+                    <div className="ml-[8px] bg-white rounded-[6px] p-[5px_10px] text-[10px] text-[#6b8097] font-mono flex-1">
+                      Rahvana/visa-category/ir-category/ir1-journey
+                    </div>
                   </div>
-                </div>
-                <div className="p-[22px_20px]">
+                )}
+                <div className={approvalGuideStep === 1 ? "p-[22px_20px]" : ""}>
                   <div className="text-[10px] font-bold tracking-[0.09em] uppercase text-[#2f6fd4] mb-[10px]">
                     USCIS approval milestone
                   </div>
                   <div className="text-[20px] font-bold text-[#0c1b33] mb-[8px]">
-                    {data.guideSteps[approvalGuideStep].head}
+                    {currentGuideStep.head}
                   </div>
-                  <div className="text-[12.8px] leading-[1.62] text-[#3a4f63] mb-[14px] max-w-[500px]">
-                    {data.guideSteps[approvalGuideStep].body}
-                  </div>
+                  {currentGuideStep.media ? (
+                    currentGuideStep.media.frame === false ? (
+                      <img
+                        src={currentGuideStep.media.src}
+                        alt={currentGuideStep.media.alt || currentGuideStep.head}
+                        className="block w-full h-auto rounded-[12px] border border-[#d0e4f7] mb-[14px]"
+                      />
+                    ) : (
+                      <div className="mb-[14px] overflow-hidden rounded-[12px] border border-[#d0e4f7] bg-white">
+                        {currentGuideStep.media.type === "video" ? (
+                          <video
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            preload="metadata"
+                            className="block w-full bg-black"
+                          >
+                            <source src={currentGuideStep.media.src} type="video/mp4" />
+                          </video>
+                        ) : (
+                          <img
+                            src={currentGuideStep.media.src}
+                            alt={currentGuideStep.media.alt || currentGuideStep.head}
+                            className="block w-full h-auto"
+                          />
+                        )}
+                      </div>
+                    )
+                  ) : currentGuideStepBody ? (
+                    <div className="text-[12.8px] leading-[1.62] text-[#3a4f63] mb-[14px] max-w-[500px]">
+                      {currentGuideStepBody}
+                    </div>
+                  ) : null}
                   <div className="flex gap-[8px] flex-wrap">
-                    {data.guideSteps[approvalGuideStep].pills.map((p, i) => (
+                    {currentGuideStep.pills.map((p, i) => (
                       <span
                         key={i}
                         className="p-[7px_10px] rounded-full bg-[#f4f7fb] border border-[#d0e4f7] text-[11px] font-bold text-[#2d4a6e]"
@@ -772,7 +840,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
               </div>
 
               <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[12px] p-[12px_14px] text-[12.5px] text-[#8a6200] leading-[1.58] mb-[18px]">
-                {data.guideSteps[approvalGuideStep].note}
+                {currentGuideStep.note}
               </div>
 
               <div className="flex gap-[10px]">
@@ -804,7 +872,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
 
       {/* Upgrade modal */}
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal feature={upgradeModalFeature!} onClose={() => setUpgradeModalFeature(null)} />
       )}
     </div>
   );

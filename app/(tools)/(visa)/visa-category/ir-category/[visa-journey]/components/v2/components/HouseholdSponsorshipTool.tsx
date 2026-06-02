@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Users, Book, ArrowRight, Upload } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Upload } from "lucide-react";
 import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getHhDocItems } from "./HouseholdMemberTool";
@@ -27,7 +27,7 @@ interface HouseholdSponsorshipToolProps {
   setUseCeacGuideData: (val: boolean) => void;
   setTutorialIdx: (val: number) => void;
   setIsTutorialOpen: (val: boolean) => void;
-  setTutorialPath: (val: "household_member" | "joint_sponsor") => void;
+  setTutorialPath: (val: "household_member" | "joint_sponsor" | null) => void;
 
   // Data
   currentStep: any;
@@ -66,6 +66,23 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
   const total = allItems.length;
   const reviewed = allItems.filter((item) => hhDocsStatus[item.id] === "reviewed").length;
   const progressPct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+
+  const pathCards = [
+    {
+      id: "household_member",
+      title: "Household member",
+      subtitle: "Someone in your household who can help with income.",
+      iconBg: "bg-[#fff7ed] border-[#fed7aa]",
+      iconColor: "text-[#b45309]",
+    },
+    {
+      id: "joint_sponsor",
+      title: "Joint sponsor",
+      subtitle: "A separate sponsor who meets the income requirement.",
+      iconBg: "bg-[#f3f0fb] border-[#c9bef2]",
+      iconColor: "text-[#4a2d8a]",
+    },
+  ] as const;
 
   const renderHhDocCard = (item: any) => {
     const st = hhDocsStatus[item.id] || "not-started";
@@ -186,12 +203,11 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             Joint Sponsor
           </div>
           <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
-            Added in CEAC, no proof checklist
+            Use this when a separate person helps with income.
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A joint sponsor is an independent U.S. citizen or LPR who sponsors separately. Added
-            through the CEAC sponsorship flow — <strong>no relationship-proof documents</strong> are
-            typically required from them.
+            A joint sponsor is a separate sponsor who helps meet the income requirement. In CEAC,
+            they are added as their own sponsor and usually <b>do not need relationship proof </b>.
           </div>
         </div>
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
@@ -199,12 +215,11 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             Household Member
           </div>
           <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
-            Added in CEAC + relationship proof required
+            Use this when someone in your home helps with income.
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A household member&apos;s income is used alongside the petitioner&apos;s. Added through
-            CEAC — and also requires <strong>relationship-proof documentation</strong> showing their
-            connection to the sponsoring household.
+            A household member lives with you and helps with income. In CEAC, they are added on your
+            form and <b> you will need to explain your relationship to that person </b>.
           </div>
         </div>
       </div>
@@ -229,10 +244,10 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
           <div className="h-px bg-[var(--rv-ch2)]/20 mb-5" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[9px] mb-[26px]">
             {[
-              "Access the affidavit support section",
-              "Add a household member or joint sponsor",
-              "Review what information CEAC needs",
-              "Return here to prepare relationship proof",
+              "Open the shared CEAC sponsorship flow",
+              "Review the common CEAC areas first",
+              "Choose household member or joint sponsor inside the guide",
+              "Use the right checklist once the path is selected",
             ].map((cue, idx) => (
               <div
                 key={idx}
@@ -247,6 +262,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             onClick={() => {
               if (!guard()) return;
               setUseCeacGuideData(true);
+              setTutorialPath(null);
               setTutorialIdx(0);
               setIsTutorialOpen(true);
             }}
@@ -261,54 +277,10 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
               e.currentTarget.style.backgroundColor = "var(--rv-ch2)";
             }}
           >
-            Start CEAC Guide
+            Participant Setup Guide
           </button>
         </div>
       </div>
-
-      {/* GUIDE CARDS - Flex Layout */}
-      {(() => {
-        const tool = currentStep.tool_data as any;
-        const guideCards = tool?.guide_cards;
-
-        if (guideCards && guideCards.length > 0 && tool?.tutorial_steps) {
-          return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7">
-              {guideCards.map((card: any) => (
-                <button
-                  key={card.id}
-                  onClick={() => {
-                    if (!guard()) return;
-                    const pathMap: Record<string, "household_member" | "joint_sponsor"> = {
-                      "add-household-member": "household_member",
-                      "add-joint-sponsor": "joint_sponsor",
-                    };
-                    setTutorialPath(
-                      pathMap[card.id] || (card.id as "household_member" | "joint_sponsor")
-                    );
-                    setTutorialIdx(0);
-                    setIsTutorialOpen(true);
-                  }}
-                  className="bg-[#fafcff] border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[20px] text-left group hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px transition-all cursor-pointer select-none flex flex-col"
-                >
-                  <div className="flex items-center gap-[10px] mb-[12px]">
-                    <div className="w-[36px] h-[36px] rounded-[9px] bg-[#f3f0fb] border border-[#c9bef2] flex items-center justify-center shrink-0">
-                      <Book size={18} className="text-[#4a2d8a]" strokeWidth={1.7} />
-                    </div>
-                  </div>
-                  <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">{card.title}</h3>
-                  <p className="text-[12px] text-[#6b8097] leading-normal mb-3">{card.subtitle}</p>
-                  <div className="flex items-center gap-1 mt-auto text-[12px] font-semibold text-primary">
-                    <span>View guide</span>
-                    <ArrowRight size={11} strokeWidth={2} />
-                  </div>
-                </button>
-              ))}
-            </div>
-          );
-        }
-        return null;
-      })()}
 
       {/* SCENARIO BUILDER */}
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
