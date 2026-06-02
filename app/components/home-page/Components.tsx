@@ -1091,6 +1091,9 @@ export const twoWaysPaths = [
     ],
     cta: "Start the Roadmap",
     href: journeyHref,
+    supportEyebrow: "GUIDED ROADMAP",
+    supportLead: "A structured path from start to finish.",
+    supportText: "Move step by step through the IR-1 process with clear milestones, built-in guidance, and the right next action always surfaced. It is designed to reduce uncertainty and keep your case moving with confidence.",
   },
   {
     title: "Tools & Resources",
@@ -1108,6 +1111,9 @@ export const twoWaysPaths = [
     ],
     cta: "Browse Resources",
     href: toolsHref,
+    supportEyebrow: "TOOLS & RESOURCES",
+    supportLead: "Get focused help exactly where you need it.",
+    supportText: "Jump directly into calculators, checklists, and support tools when you have a specific task to complete. Use them independently or alongside the roadmap whenever you need targeted help.",
   },
 ] as const;
 
@@ -1128,9 +1134,8 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
     return () => ro.disconnect();
   }, []);
 
-  // Roadmap visual is 560px high; Tools visual is 460px high.
-  // Using dynamic heights and clipping the empty space solves the layout gap.
-  const visualHeight = index === 0 ? 560 : 460;
+  // Set visual heights to their exact native values to prevent any cutting at the bottom:
+  const visualHeight = index === 0 ? 550 : 460;
 
   return (
     <div 
@@ -1169,11 +1174,11 @@ export function TwoWaysSection() {
       <section id="path" aria-label="Two ways to use Rahvana" className="relative hidden lg:block">
         <div
           style={{
-            minHeight: "100vh",
+            minHeight: "auto",
             display: "flex",
             alignItems: "center",
             background: "transparent",
-            paddingBlock: "clamp(40px,6vh,80px)",
+            paddingBlock: "clamp(20px,3vh,35px)",
             boxSizing: "border-box",
           }}
         >
@@ -1183,34 +1188,32 @@ export function TwoWaysSection() {
             style={{
               maxWidth: 1300,
               display: "grid",
-              gridTemplateColumns: "minmax(0,380px) minmax(0,1fr)",
-              gap: "clamp(60px,8vw,160px)",
-              alignItems: "start",
+              gridTemplateColumns: "minmax(0,340px) minmax(0,1fr)",
+              gap: "clamp(30px,4vw,80px)",
+              alignItems: "center",
             }}
           >
             {/* Left Column: Headings, Selectors, and CTAs */}
             <div className="flex flex-col">
               
               {/* Header Block */}
-              <div className="mb-8">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377] mb-2">
+              <div className="mb-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#0d7377] mb-1">
                   Two Ways to Move Forward
                 </p>
                 <h2
-                  className="mt-4 mb-0 font-extrabold text-[#162126]"
+                  className="mt-2.5 mb-0 font-extrabold text-[#162126]"
                   style={{
-                    fontSize: "clamp(30px,4.2vw,60px)",
-                    lineHeight: 1.0,
+                    fontSize: "clamp(22px,2.4vw,28px)",
+                    lineHeight: 1.08,
                     maxWidth: 440,
                   }}
                 >
                   Choose how you want to use Rahvana
                 </h2>
                 <p
-                  className="mt-4 mb-0 text-[#4a5c62]"
+                  className="mt-2 mb-0 text-[12px] leading-relaxed text-[#4a5c62]"
                   style={{
-                    fontSize: "clamp(14px,1.15vw,17px)",
-                    lineHeight: 1.68,
                     maxWidth: 420,
                   }}
                 >
@@ -1219,7 +1222,7 @@ export function TwoWaysSection() {
               </div>
 
               {/* Options Selector Container */}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 {twoWaysPaths.map((path, i) => {
                   const isActive = activeIndex === i;
                   const isJourney = i === 0;
@@ -1230,7 +1233,7 @@ export function TwoWaysSection() {
                       type="button"
                       onClick={() => selectPath(i as TwoWaysIndex)}
                       aria-current={isActive ? "true" : undefined}
-                      className={`group flex w-full flex-col text-left p-4.5 rounded-2xl border transition-all duration-300 ${
+                      className={`group flex w-full flex-col text-left p-3 rounded-xl border transition-all duration-300 ${
                         isActive
                           ? isJourney
                             ? "border-teal-500 bg-teal-50/40 shadow-[0_8px_20px_rgba(13,115,119,0.06)]"
@@ -1240,11 +1243,11 @@ export function TwoWaysSection() {
                       style={{ cursor: "pointer", WebkitTapHighlightColor: "transparent" }}
                     >
                       {/* Top Row: Eyebrow + Pill */}
-                      <div className="flex items-center justify-between gap-3 w-full mb-2">
-                        <span className={`text-[9px] font-black uppercase tracking-wider ${isActive ? "text-teal-600" : "text-slate-400"}`}>
+                      <div className="flex items-center justify-between gap-3 w-full mb-1">
+                        <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? "text-teal-600" : "text-slate-400"}`}>
                           {path.eyebrow}
                         </span>
-                        <span className={`text-[8.5px] px-2 py-0.5 rounded-full font-bold border transition-colors ${
+                        <span className={`text-[7.5px] px-1.5 py-0.5 rounded-full font-bold border transition-colors ${
                           isActive
                             ? isJourney
                               ? "bg-teal-100 text-teal-800 border-teal-200"
@@ -1256,14 +1259,14 @@ export function TwoWaysSection() {
                       </div>
 
                       {/* Title */}
-                      <h3 className={`text-base font-black transition-colors ${
+                      <h3 className={`text-[13px] font-black transition-colors ${
                         isActive ? "text-slate-900" : "text-slate-700 group-hover:text-slate-950"
                       }`}>
                         {path.title}
                       </h3>
 
                       {/* Subtitle / Teaser */}
-                      <p className={`text-xs mt-1 leading-relaxed transition-colors ${
+                      <p className={`text-[10px] mt-0.5 leading-relaxed transition-colors ${
                         isActive ? "text-slate-600" : "text-slate-400 group-hover:text-slate-500"
                       }`}>
                         {path.teaser}
@@ -1274,7 +1277,7 @@ export function TwoWaysSection() {
               </div>
 
               {/* Context-Aware Primary CTA Button */}
-              <div className="border-t border-slate-100 pt-5 mt-5">
+              <div className="border-t border-slate-100 pt-3 mt-3">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeIndex}
@@ -1285,16 +1288,16 @@ export function TwoWaysSection() {
                   >
                     <Link
                       href={activePath.href}
-                      className={`inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl text-[14px] font-black text-white shadow-md transition-all duration-200 no-underline ${
+                      className={`inline-flex items-center justify-center gap-2 w-full py-2.5 px-6 rounded-xl text-[12.5px] font-black text-white shadow-md transition-all duration-200 no-underline ${
                         activeIndex === 0
                           ? "bg-teal-600 hover:bg-teal-700 shadow-[0_8px_20px_rgba(13,115,119,0.18)]"
                           : "bg-slate-800 hover:bg-slate-950 shadow-[0_8px_20px_rgba(30,41,59,0.12)]"
                       }`}
                     >
                       {activePath.cta}
-                      <ArrowRight size={15} />
+                      <ArrowRight size={13} />
                     </Link>
-                    <p className="text-center text-[11px] text-slate-400 mt-3 font-semibold">
+                    <p className="text-center text-[10px] text-slate-400 mt-1.5 font-semibold">
                       Not sure yet?{" "}
                       <button
                         type="button"
@@ -1310,49 +1313,39 @@ export function TwoWaysSection() {
 
             </div>
 
-            {/* Right Column: Dynamic Visual & Bullet Benefits */}
-            <div className="flex flex-col gap-6 w-full min-w-0">
+            {/* Right Column: Visual Scene & Details */}
+            <div className="flex flex-col gap-4 w-full min-w-0">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={activeIndex}
-                  className="flex flex-col gap-5"
-                  initial={reduceMotion ? false : { opacity: 0, y: 15 }}
+                  className="flex flex-col gap-4"
+                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
                   
                   {/* Descriptive content header */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black tracking-widest text-teal-600 uppercase">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] font-black tracking-widest text-teal-600 uppercase">
                       {activePath.eyebrow} DETAILS
                     </span>
-                    <h2 className="text-xl md:text-2xl font-black text-slate-900 leading-snug">
+                    {/* <h2 className="text-lg md:text-xl font-black text-slate-900 leading-snug">
                       {activePath.shortTitle}
-                    </h2>
+                    </h2> */}
                   </div>
 
-                  {/* Best for box */}
-                  <div className={`flex items-start gap-2.5 rounded-2xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
-                    <span className="font-extrabold text-sm text-teal-600 mt-0.5">•</span>
-                    <p className="text-[11px] leading-relaxed font-semibold pt-1">
+                  {/* Best for box - Placed ABOVE the Visual Demo */}
+                  <div className={`flex items-start gap-2.5 rounded-xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
+                    <span className="font-extrabold text-sm text-teal-600 shrink-0">•</span>
+                    <p className="text-[11px] leading-relaxed font-semibold">
                       <strong>Best for:</strong> {activePath.bestFor}
                     </p>
                   </div>
 
-                  {/* Live Visual Scene - Placed high up to be visible without scrolling */}
-                  <ResponsiveVisual index={activeIndex} />
-
-                  {/* Bullet Features list - Shifted below the visual section */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-5 mt-2">
-                    {activePath.bullets.map((bullet, idx) => (
-                      <div key={idx} className="flex flex-col gap-2 p-4 rounded-xl border border-slate-100 bg-white shadow-[0_4px_12px_rgba(15,23,42,0.02)]">
-                        <CheckCircle2 size={16} className={`${activePath.bulletColor} shrink-0`} />
-                        <p className="text-[12px] leading-relaxed text-slate-500 font-semibold">
-                          {bullet}
-                        </p>
-                      </div>
-                    ))}
+                  {/* Demo Section (Visual Scene) - Increased height and set clean width & height limits */}
+                  <div className="w-full max-w-[620px] border border-slate-100 bg-white rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.04)] overflow-hidden">
+                    <ResponsiveVisual index={activeIndex} />
                   </div>
 
                 </motion.div>
@@ -1472,7 +1465,7 @@ export function TwoWaysSection() {
 
             </div>
 
-            {/* Right: details, visual, and benefits underneath */}
+            {/* Right: details and visual underneath */}
             <div className="flex flex-col gap-6">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -1493,7 +1486,7 @@ export function TwoWaysSection() {
                     </h3>
                   </div>
 
-                  {/* Best for box */}
+                  {/* Best for box - Placed ABOVE visual */}
                   <div className={`flex items-start gap-2.5 rounded-2xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
                     <span className="font-extrabold text-sm text-teal-600 mt-0.5">•</span>
                     <p className="text-[11px] leading-relaxed font-semibold">
@@ -1501,19 +1494,9 @@ export function TwoWaysSection() {
                     </p>
                   </div>
 
-                  {/* Live Visual Canvas */}
-                  <ResponsiveVisual index={activeIndex} />
-
-                  {/* 2-column checklist benefit cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-5 mt-2">
-                    {activePath.bullets.map((bullet, idx) => (
-                      <div key={idx} className="flex flex-col gap-2 p-4 rounded-xl border border-slate-100 bg-white shadow-[0_4px_12px_rgba(15,23,42,0.02)]">
-                        <CheckCircle2 size={16} className={`${activePath.bulletColor} shrink-0`} />
-                        <p className="text-[11px] leading-relaxed text-slate-500 font-semibold">
-                          {bullet}
-                        </p>
-                      </div>
-                    ))}
+                  {/* Live Visual Canvas - Set clean max width limits */}
+                  <div className="w-full max-w-[620px] border border-slate-100 bg-white rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.04)] overflow-hidden">
+                    <ResponsiveVisual index={activeIndex} />
                   </div>
 
                 </motion.div>
