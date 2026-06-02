@@ -1107,17 +1107,6 @@ export const StepView: React.FC<StepViewProps> = ({
             ))}
           </div>
         </div>
-      <div
-        className={`${currentStep.step_type === "filing" ? "mb-10 mt-0" : "mb-4 mt-5"} flex justify-center w-full max-w-[660px] mx-auto animate-in fade-in duration-500`}
-      >
-        <button
-          onClick={() => setIsCitationsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] hover:border-primary hover:bg-[#fafcff] rounded-[12px] shadow-xs hover:shadow-sm text-[12px] font-bold uppercase tracking-wider text-[#3a4f63] hover:text-primary transition-all group cursor-pointer"
-        >
-          {/* <Book className="h-[14px] w-[14px] text-[#6b8097] group-hover:text-primary shrink-0 transition-colors" strokeWidth={2} /> */}
-          <span className="pt-1">Official References & Citations</span>
-          <ExternalLink className="h-[14.5px] w-[14.5px] text-[#6b8097] group-hover:text-primary shrink-0 transition-colors" strokeWidth={2} />
-        </button>
       </div>
     );
   };
