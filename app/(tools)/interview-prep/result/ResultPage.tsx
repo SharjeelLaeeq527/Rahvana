@@ -623,7 +623,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           className="absolute inset-0 backface-hidden rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] border border-[rgba(13,115,119,0.08)] relative overflow-hidden"
                           style={{
                             background:
-                              "linear-gradient(145deg, #ffffff 0%, #fafffe 40%, #f0faf9 70%, #edf7f6 100%)",
+                                "linear-gradient(145deg, #ffffff 0%, #fafffe 40%, #f0faf9 70%, #edf7f6 100%)",
                           }}
                         >
                           {/* Soft radial glow top-right */}
@@ -658,7 +658,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                               {selectedQuestion.selectedQuestion || selectedQuestion.question}
                             </h3>
                           </div>
-                          <div className="text-center space-y-1 relative z-10">
+                          <div className="text-center space-y-1 relative z-10 mt-60">
                             <p className="text-[#89a4a0] text-xs">Click to reveal</p>
                             <div className="flex justify-center">
                               <div className="w-4 h-4 border-2 border-[#0d7377]/30 rounded-full animate-bounce flex items-center justify-center">
@@ -1004,16 +1004,25 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         </div>
 
         {showUpgradeModal && (
-          <UpgradeModal feature="interview_rapid_fire" onClose={() => setShowUpgradeModal(false)} />
+          <UpgradeModal
+            feature="interview_rapid_fire"
+            interviewMode="rapid"
+            onClose={() => setShowUpgradeModal(false)}
+          />
         )}
         {showPrepUpgradeModal && (
           <UpgradeModal
             feature="basic_interview_prep"
+            interviewMode="prep"
             onClose={() => setShowPrepUpgradeModal(false)}
           />
         )}
         {showMockUpgradeModal && (
-          <UpgradeModal feature="mock_interview" onClose={() => setShowMockUpgradeModal(false)} />
+          <UpgradeModal
+            feature="mock_interview"
+            interviewMode="mock"
+            onClose={() => setShowMockUpgradeModal(false)}
+          />
         )}
       </div>
     );

@@ -63,6 +63,7 @@ export function MockInterviewModePage({
   void sessionId;
   const plan = usePlan();
   const isExecutiveTier = plan.tier === "executive";
+  const isFreeTier = plan.tier === "free";
   const sessionDurationSeconds = isExecutiveTier ? EXECUTIVE_TOTAL_SECONDS : 3 * 60;
 
   const interviewQuestions = useMemo(() => {

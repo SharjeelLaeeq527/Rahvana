@@ -430,7 +430,11 @@ export const RapidFireResultsView = ({
       </div>
 
       {isFreeTier && showUpgradeModal && (
-        <UpgradeModal feature="rapid_fire" onClose={() => setShowUpgradeModal(false)} />
+        <UpgradeModal
+          feature="rapid_fire"
+          interviewMode="rapid"
+          onClose={() => setShowUpgradeModal(false)}
+        />
       )}
     </div>
   );
