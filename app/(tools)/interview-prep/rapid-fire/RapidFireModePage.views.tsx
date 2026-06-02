@@ -86,14 +86,9 @@ export const RapidFireNoQuestionsState = ({
     <div className="">
       <div className="bg-white rounded-xl shadow-lg p-8">
         <h3 className="text-xl font-bold mb-4">No Questions Available</h3>
-        <p className="text-slate-600 mb-6">
-          No applicable questions found for rapid fire mode.
-        </p>
+        <p className="text-slate-600 mb-6">No applicable questions found for rapid fire mode.</p>
         <div className="flex gap-3 justify-center">
-          <Button
-            onClick={onSwitchToPrep}
-            className="bg-teal-600 hover:bg-teal-700"
-          >
+          <Button onClick={onSwitchToPrep} className="bg-teal-600 hover:bg-teal-700">
             Switch to Prep Mode
           </Button>
           <Button onClick={onExit} variant="outline">
@@ -172,12 +167,8 @@ export const RapidFireResultsView = ({
             <div className="relative inline-block mb-6">
               <div className="w-40 h-40 rounded-full border-8 border-teal-200 flex items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
                 <div className="text-center">
-                  <span className="text-4xl font-bold text-teal-700">
-                    {readinessScore}%
-                  </span>
-                  <div className="text-sm text-teal-600 font-medium mt-1">
-                    Readiness Score
-                  </div>
+                  <span className="text-4xl font-bold text-teal-700">{readinessScore}%</span>
+                  <div className="text-sm text-teal-600 font-medium mt-1">Readiness Score</div>
                 </div>
               </div>
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
@@ -236,24 +227,21 @@ export const RapidFireResultsView = ({
                 <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
                   <div className="text-2xl font-bold text-emerald-600">
                     {roundSummary?.coveredCount ??
-                      questionResponses.filter((r) => r.response === "covered")
-                        .length}
+                      questionResponses.filter((r) => r.response === "covered").length}
                   </div>
                   <div className="text-sm text-emerald-700">Covered Well</div>
                 </div>
                 <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
                   <div className="text-2xl font-bold text-amber-600">
                     {roundSummary?.partialCount ??
-                      questionResponses.filter((r) => r.response === "partial")
-                        .length}
+                      questionResponses.filter((r) => r.response === "partial").length}
                   </div>
                   <div className="text-sm text-amber-700">Partial Coverage</div>
                 </div>
                 <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
                   <div className="text-2xl font-bold text-rose-600">
                     {roundSummary?.missedCount ??
-                      questionResponses.filter((r) => r.response === "missed")
-                        .length}
+                      questionResponses.filter((r) => r.response === "missed").length}
                   </div>
                   <div className="text-sm text-rose-700">Missed</div>
                 </div>
@@ -263,28 +251,22 @@ export const RapidFireResultsView = ({
                 <div className="text-center mb-6">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
                     <span className="text-slate-600">Questions skipped:</span>
-                    <span className="font-bold text-slate-800">
-                      {skippedQuestions}
-                    </span>
+                    <span className="font-bold text-slate-800">{skippedQuestions}</span>
                   </div>
                 </div>
               )}
 
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                  Performance Review
-                </h3>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Performance Review</h3>
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-800">
-                    <span className="font-medium">Note:</span> Click on any of the
-                    color-coded tabs to review the Q&A.
+                    <span className="font-medium">Note:</span> Click on any of the color-coded tabs
+                    to review the Q&A.
                   </p>
                 </div>
                 <div className="flex gap-1 mb-4 mt-2">
                   {shuffledQuestions.map((_, index) => {
-                    const response = questionResponses.find(
-                      (r) => r.index === index,
-                    );
+                    const response = questionResponses.find((r) => r.index === index);
                     let bgColor = "bg-gray-300";
 
                     if (response) {
@@ -309,9 +291,7 @@ export const RapidFireResultsView = ({
                         key={index}
                         className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
                         onClick={() => {
-                          const questionResp = questionResponses.find(
-                            (r) => r.index === index,
-                          );
+                          const questionResp = questionResponses.find((r) => r.index === index);
                           if (questionResp) {
                             handleReviewQuestionClick(questionResp.question);
                           }
@@ -344,14 +324,8 @@ export const RapidFireResultsView = ({
               {reviewQuestion && (
                 <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
                   <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-semibold text-slate-900 text-lg">
-                      Question Review
-                    </h4>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setReviewQuestion(null)}
-                    >
+                    <h4 className="font-semibold text-slate-900 text-lg">Question Review</h4>
+                    <Button variant="ghost" size="sm" onClick={() => setReviewQuestion(null)}>
                       Close
                     </Button>
                   </div>
@@ -376,14 +350,11 @@ export const RapidFireResultsView = ({
                           </span>
                         </div>
                         <h3 className="text-lg font-bold leading-tight">
-                          {reviewQuestion.selectedQuestion ||
-                            reviewQuestion.question}
+                          {reviewQuestion.selectedQuestion || reviewQuestion.question}
                         </h3>
                       </div>
                       <div className="text-center">
-                        <p className="text-teal-100 text-sm">
-                          Click to see answer and guidance
-                        </p>
+                        <p className="text-teal-100 text-sm">Click to see answer and guidance</p>
                         <div className="flex justify-center mt-2">
                           <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
                             <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
@@ -434,9 +405,7 @@ export const RapidFireResultsView = ({
                       </div>
 
                       <div className="text-center mt-4">
-                        <p className="text-slate-300 text-xs">
-                          Click to flip back
-                        </p>
+                        <p className="text-slate-300 text-xs">Click to flip back</p>
                       </div>
                     </div>
                   </div>
@@ -446,10 +415,7 @@ export const RapidFireResultsView = ({
           )}
 
           <div className="flex gap-3 justify-center">
-            <Button
-              onClick={onExit}
-              className="bg-teal-600 hover:bg-teal-700 cursor-pointer"
-            >
+            <Button onClick={onExit} className="bg-teal-600 hover:bg-teal-700 cursor-pointer">
               Continue Training Later
             </Button>
             <Button
@@ -488,41 +454,46 @@ export const RapidFireTrainingView = ({
   getProgressGradient,
 }: RapidFireTrainingViewProps) => {
   return (
-    <div className="bg-linear-to-br from-slate-50 to-teal-50 min-h-screen w-full">
-      <div className="site-main-px py-6">
+    <div className="interview-dots-bg bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 min-h-screen w-full relative overflow-hidden">
+      {/* Ambient gradient blobs */}
+      <div className="pointer-events-none absolute top-20 -left-32 w-96 h-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
+      <div className="site-main-px py-6 relative z-10">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Zap className="w-6 h-6 text-orange-500" />
+              <Zap className="w-6 h-6 text-[#0d7377]" />
               Rapid Fire Mode
             </h1>
-            <p className="text-slate-600">
+            <p className="text-[#89a4a0]">
               Round {currentRound} • Question {currentQuestionIndex + 1} of {roundQuestionCount}
             </p>
           </div>
 
           <div className="flex items-center gap-6">
             <div className="text-right flex gap-2">
-              <div className="text-slate-900 font-bold">Score</div>
-              <div className="text-lg font-bold text-teal-600">{score} pts</div>
+              <div className="text-[#89a4a0] font-semibold">Score</div>
+              <div className="text-lg font-bold text-[#0d7377]">{score} pts</div>
             </div>
           </div>
         </div>
 
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-slate-600 mb-2">
+          <div className="flex justify-between text-sm text-[#89a4a0] mb-2">
             <span>Progress</span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-[#afdbdb]/30 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300 ease-out"
-              style={getProgressGradient(progress)}
+              style={{
+                background: `linear-gradient(to right, #0d7377 ${progress}%, #afdbdb ${progress}%)`,
+              }}
             />
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-87.5 sm:h-100 lg:h-112.5 mb-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.1)] overflow-hidden h-87.5 sm:h-100 lg:h-112.5 mb-8 border border-[rgba(13,115,119,0.08)]">
           <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
             <div
               className={`relative w-full h-full cursor-pointer transition-transform duration-700 ease-out-cubic ${
@@ -533,18 +504,33 @@ export const RapidFireTrainingView = ({
                 perspective: "1000px",
               }}
             >
+              {/* Question Side */}
               <div
-                className={`absolute inset-0 backface-hidden bg-white rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-2xl border-4 ${
+                className={`absolute inset-0 backface-hidden rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] overflow-hidden ${
                   !showAnswer
                     ? timeLeft <= 3
-                      ? "border-red-500 animate-pulse"
-                      : "border-emerald-500"
-                    : "border-slate-200"
+                      ? "border-2 border-[#db8090] animate-pulse"
+                      : "border-2 border-[#afdbdb]"
+                    : "border border-[rgba(13,115,119,0.08)]"
                 }`}
+                style={{
+                  background:
+                    "linear-gradient(145deg, #ffffff 0%, #fafffe 40%, #f0faf9 70%, #edf7f6 100%)",
+                }}
               >
+                {/* Soft radial glow */}
+                <div
+                  className={`pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full blur-2xl transition-colors duration-500 ${
+                    !showAnswer && timeLeft <= 3 ? "bg-[#db8090]/12" : "bg-[#afdbdb]/15"
+                  }`}
+                />
+                {/* Decorative watermark */}
+                <div className="pointer-events-none absolute bottom-6 right-6 opacity-[0.035]">
+                  <Zap className="w-28 h-28 text-[#0d7377]" strokeWidth={1} />
+                </div>
                 <div>
                   <div className="flex justify-between items-start mb-3 sm:mb-4">
-                    <span className="bg-teal-100 text-teal-800 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
+                    <span className="bg-[#afdbdb] text-[#0d7377] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold">
                       {currentQuestion.category}
                     </span>
                   </div>
@@ -556,7 +542,7 @@ export const RapidFireTrainingView = ({
                     <div className="flex justify-center mt-2 sm:mt-4">
                       <div className="relative w-28 h-28 sm:w-32 sm:h-32">
                         <div
-                          className={`absolute inset-0 rounded-full ${timeLeft <= 3 ? "ring-2 ring-red-100" : "ring-2 ring-teal-100"} opacity-50`}
+                          className={`absolute inset-0 rounded-full ${timeLeft <= 3 ? "ring-2 ring-[#db8090]/30" : "ring-2 ring-[#afdbdb]/40"} opacity-50`}
                         />
 
                         <svg className="w-full h-full drop-shadow-sm" viewBox="0 0 176 176">
@@ -587,12 +573,12 @@ export const RapidFireTrainingView = ({
                               <stop offset="100%" stopColor="#e2e8f0" />
                             </linearGradient>
                             <linearGradient id="timerSuccess" x1="0%" y1="0%" x2="100%" y2="100%">
-                              <stop offset="0%" stopColor="#0d9488" />
-                              <stop offset="100%" stopColor="#0f766e" />
+                              <stop offset="0%" stopColor="#0d7377" />
+                              <stop offset="100%" stopColor="#afdbdb" />
                             </linearGradient>
                             <linearGradient id="timerDanger" x1="0%" y1="0%" x2="100%" y2="100%">
-                              <stop offset="0%" stopColor="#ef4444" />
-                              <stop offset="100%" stopColor="#dc2626" />
+                              <stop offset="0%" stopColor="#db8090" />
+                              <stop offset="100%" stopColor="#cdadcc" />
                             </linearGradient>
                           </defs>
                         </svg>
@@ -600,11 +586,11 @@ export const RapidFireTrainingView = ({
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                           <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl px-2 sm:px-4 py-1 sm:py-2">
                             <div
-                              className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-red-600" : "text-teal-600"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
+                              className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-[#db8090]" : "text-[#0d7377]"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
                             >
                               {timeLeft}
                             </div>
-                            <div className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5 sm:mt-1">
+                            <div className="text-xs text-[#89a4a0] font-medium uppercase tracking-widest mt-0.5 sm:mt-1">
                               sec
                             </div>
                           </div>
@@ -616,12 +602,12 @@ export const RapidFireTrainingView = ({
 
                 <div className="text-center">
                   {!showAnswer ? (
-                    <div className="inline-flex items-center gap-2 text-slate-600 text-xs sm:text-sm">
-                      <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
+                    <div className="inline-flex items-center gap-2 text-[#89a4a0] text-xs sm:text-sm">
+                      <div className="w-2 h-2 bg-[#0d7377] rounded-full animate-pulse" />
                       <span>Preparing response...</span>
                     </div>
                   ) : (
-                    <p className="text-slate-600 text-xs sm:text-sm">Click to see answer</p>
+                    <p className="text-[#89a4a0] text-xs sm:text-sm">Click to see answer</p>
                   )}
                 </div>
               </div>
@@ -687,8 +673,8 @@ export const RapidFireTrainingView = ({
                     disabled={userResponse !== null}
                     className={`${
                       userResponse === "covered"
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-emerald-500 hover:bg-emerald-600"
+                        ? "bg-[#0d7377] hover:bg-[#14a0a6]"
+                        : "bg-[#0a5a5d] hover:bg-[#0d7377]"
                     } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
                   >
                     <span>Covered</span>
@@ -700,8 +686,8 @@ export const RapidFireTrainingView = ({
                     disabled={userResponse !== null}
                     className={`${
                       userResponse === "partial"
-                        ? "bg-amber-600 hover:bg-amber-700"
-                        : "bg-amber-500 hover:bg-amber-600"
+                        ? "bg-[#6b5b7b] hover:bg-[#7d6d8d]"
+                        : "bg-[#5a4a6a] hover:bg-[#6b5b7b]"
                     } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
                   >
                     <span>Partial</span>
@@ -713,8 +699,8 @@ export const RapidFireTrainingView = ({
                     disabled={userResponse !== null}
                     className={`${
                       userResponse === "missed"
-                        ? "bg-rose-600 hover:bg-rose-700"
-                        : "bg-rose-500 hover:bg-rose-600"
+                        ? "bg-[#db8090] hover:bg-[#e89aaa]"
+                        : "bg-[#9e4a5a] hover:bg-[#db8090]"
                     } min-h-8 sm:min-h-10 flex items-center justify-center text-xs gap-0`}
                   >
                     <span>Missed</span>
@@ -728,13 +714,17 @@ export const RapidFireTrainingView = ({
 
         <div className="flex justify-center gap-3 mt-4">
           {!showAnswer ? (
-            <Button onClick={onSkipQuestion} variant="outline" className="bg-white hover:bg-slate-50">
+            <Button
+              onClick={onSkipQuestion}
+              variant="outline"
+              className="bg-white/90 hover:bg-slate-50 border-[rgba(13,115,119,0.08)] text-[#89a4a0] hover:text-[#0d7377] transition-colors duration-200"
+            >
               Skip Question
             </Button>
           ) : (
             <Button
               onClick={onNextQuestion}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="bg-[#0d7377] hover:bg-[#0a5a5d] shadow-[0_4px_16px_-4px_rgba(13,115,119,0.4)] transition-all duration-200"
               disabled={userResponse === null}
             >
               {currentQuestionIndex < roundQuestionCount - 1 ? "Next Question" : "Finish"}

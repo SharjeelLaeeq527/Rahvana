@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -63,9 +63,7 @@ export function MockInterviewModePage({
   void sessionId;
   const plan = usePlan();
   const isExecutiveTier = plan.tier === "executive";
-  const sessionDurationSeconds = isExecutiveTier
-    ? EXECUTIVE_TOTAL_SECONDS
-    : 3 * 60;
+  const sessionDurationSeconds = isExecutiveTier ? EXECUTIVE_TOTAL_SECONDS : 3 * 60;
 
   const interviewQuestions = useMemo(() => {
     // Base: filter applicable and sort by explicit order (fallback 9999)
@@ -152,21 +150,14 @@ export function MockInterviewModePage({
     "intro"
   );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [secondsRemaining, setSecondsRemaining] = useState(
-    sessionDurationSeconds,
-  );
+  const [secondsRemaining, setSecondsRemaining] = useState(sessionDurationSeconds);
   const [focusWarnings, setFocusWarnings] = useState(0);
   const [focusWarningMessage, setFocusWarningMessage] = useState<string | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showAnsweringFlowModal, setShowAnsweringFlowModal] = useState(false);
-  const [answeringFlowMode, setAnsweringFlowMode] = useState<
-    "toggle" | "pushToTalk"
-  >("pushToTalk");
-  const [questionRecords, setQuestionRecords] = useState<
-    Record<string, QuestionRecord>
-  >({});
-  const [sessionEndReason, setSessionEndReason] =
-    useState<SessionEndReason | null>(null);
+  const [answeringFlowMode, setAnsweringFlowMode] = useState<"toggle" | "pushToTalk">("pushToTalk");
+  const [questionRecords, setQuestionRecords] = useState<Record<string, QuestionRecord>>({});
+  const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null);
 
   const {
     canvasRef: waveformCanvasRef,
@@ -197,22 +188,21 @@ export function MockInterviewModePage({
   useEffect(() => {
     if (!currentQuestion) return;
     if (phase !== "running") return;
-  
+
     const id = currentQuestion.id;
-  
+
     if (lastSpokenQuestionIdRef.current === id) return;
-  
+
     lastSpokenQuestionIdRef.current = id;
-  
-    const textToSpeak =
-      currentQuestion.selectedQuestion || currentQuestion.question;
-  
+
+    const textToSpeak = currentQuestion.selectedQuestion || currentQuestion.question;
+
     // delay ensures React + voices + state settle
     const t = setTimeout(() => {
       // console.log("SPEAK TRIGGERED:", textToSpeak);
       speakQuestion(textToSpeak);
     }, 300);
-  
+
     return () => clearTimeout(t);
   }, [currentQuestion?.id, phase, speakQuestion]);
 
@@ -248,16 +238,15 @@ export function MockInterviewModePage({
   const timeProgressPercent =
     ((sessionDurationSeconds - secondsRemaining) / sessionDurationSeconds) * 100;
 
-    const voiceStatusLabel =
-    isQuestionSpeaking
-      ? "Question Speaking"
-      : voiceState === "speaking"
-        ? "Speaking"
-        : voiceState === "silence"
-          ? "Silence"
-          : voiceState === "listening"
-            ? "Listening"
-            : "Paused";
+  const voiceStatusLabel = isQuestionSpeaking
+    ? "Question Speaking"
+    : voiceState === "speaking"
+      ? "Speaking"
+      : voiceState === "silence"
+        ? "Silence"
+        : voiceState === "listening"
+          ? "Listening"
+          : "Paused";
 
   const finalizeCurrentQuestion = useCallback(() => {
     if (!currentQuestion) {
@@ -417,7 +406,7 @@ export function MockInterviewModePage({
   const exitInterview = () => {
     exitViaConfirmRef.current = true;
     explicitExitRef.current = true;
-    
+
     stopSpeaking();
     stopListening();
 
@@ -735,14 +724,13 @@ export function MockInterviewModePage({
 
   if (phase === "intro") {
     return (
-      <div className="guide-grid-bg relative min-h-screen overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
-        {/* ambient glows */}
-        <div className="pointer-events-none absolute -top-40 -left-40 h-112 w-md rounded-full bg-[#32e0c4]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -right-40 h-112 w-md rounded-full bg-[#0d7377]/10 blur-3xl" />
-
+      <div className="relative min-h-screen overflow-hidden flex items-start justify-center px-4 pt-8 pb-12 sm:pt-10 sm:pb-16">
         <div className="relative w-full max-w-2xl">
-          <div className="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.25)] p-8 sm:p-10">
-            <div className="text-center mb-10">
+          <div className="rounded-3xl border border-[rgba(13,115,119,0.08)] bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.2)] p-8 sm:p-10 relative overflow-hidden">
+            {/* Decorative radial glow */}
+            <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-[#cdadcc]/10 blur-3xl" />
+            <div className="text-center mb-8 relative z-10">
               <h2 className="text-4xl sm:text-5xl font-semibold text-slate-900 mb-4 tracking-tight">
                 Mock Interview Mode
               </h2>
@@ -754,49 +742,70 @@ export function MockInterviewModePage({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
-              {(
-                isExecutiveTier
-                  ? [
-                      {
-                        icon: Clock,
-                        title: "15-Minute Session",
-                        desc: "Realistic interview pacing",
-                      },
-                      {
-                        icon: Mic,
-                        title: "Voice Answering",
-                        desc: "Live, accurate transcription",
-                      },
-                      {
-                        icon: ShieldCheck,
-                        title: "Focus Tracked",
-                        desc: "Stay present, stay sharp",
-                      },
-                    ]
-                  : [
-                      {
-                        icon: Clock,
-                        title: `${interviewQuestions.length} Practice Questions`,
-                        desc: "Free preview of the interview flow",
-                      },
-                      {
-                        icon: ShieldCheck,
-                        title: `${formatTime(sessionDurationSeconds)} Timer`,
-                        desc: "Short preview session",
-                      },
-                      {
-                        icon: Mic,
-                        title: "Upgrade to Executive",
-                        desc: "Unlock full analytics and recommendations",
-                      },
-                    ]
+              {(isExecutiveTier
+                ? [
+                    {
+                      icon: Clock,
+                      title: "15-Minute Session",
+                      desc: "Realistic interview pacing",
+                      color: "#0d7377",
+                      bg: "#e8f6f6",
+                    },
+                    {
+                      icon: Mic,
+                      title: "Voice Answering",
+                      desc: "Live, accurate transcription",
+                      color: "#6b5b7b",
+                      bg: "#f3eff5",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "Focus Tracked",
+                      desc: "Stay present, stay sharp",
+                      color: "#9e4a5a",
+                      bg: "#fceef1",
+                    },
+                  ]
+                : [
+                    {
+                      icon: Clock,
+                      title: `${interviewQuestions.length} Practice Questions`,
+                      desc: "Free preview of the interview flow",
+                      color: "#0d7377",
+                      bg: "#e8f6f6",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: `${formatTime(sessionDurationSeconds)} Timer`,
+                      desc: "Short preview session",
+                      color: "#6b5b7b",
+                      bg: "#f3eff5",
+                    },
+                    {
+                      icon: Mic,
+                      title: "Upgrade to Executive",
+                      desc: "Unlock full analytics and recommendations",
+                      color: "#9e4a5a",
+                      bg: "#fceef1",
+                    },
+                  ]
               ).map((item) => (
                 <div
                   key={item.title}
-                  className="group rounded-2xl border border-slate-200 bg-white hover:border-[#14a0a6]/40 hover:shadow-[0_8px_24px_-12px_rgba(13,115,119,0.2)] transition p-4"
+                  className="group rounded-2xl border border-slate-200 bg-white hover:shadow-[0_8px_24px_-12px_rgba(13,115,119,0.2)] transition-all duration-200 p-4 cursor-default"
+                  style={{ "--hover-bg": item.bg } as React.CSSProperties}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = item.bg;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "";
+                  }}
                 >
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#e8f6f6] border border-[#0d7377]/15 mb-3 group-hover:bg-[#0d7377] transition">
-                    <item.icon className="h-4.5 w-4.5 text-[#0d7377] group-hover:text-white transition" />
+                  <div
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg mb-3 transition group-hover:opacity-90"
+                    style={{ background: item.bg, border: `1px solid ${item.color}20` }}
+                  >
+                    <item.icon className="h-4.5 w-4.5 transition" style={{ color: item.color }} />
                   </div>
                   <div className="text-sm font-semibold text-slate-900">{item.title}</div>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.desc}</p>
@@ -818,9 +827,9 @@ export function MockInterviewModePage({
             <div className="flex justify-center items-center mx-auto">
               <Button
                 onClick={handleBeginInterviewClick}
-                className="h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
+                className="h-14 px-10 bg-[#0d7377] hover:bg-[#0a5a5d] text-white font-semibold rounded-2xl text-lg shadow-[0_8px_30px_-8px_rgba(13,115,119,0.5)] hover:shadow-[0_12px_36px_-8px_rgba(13,115,119,0.6)] transition-all duration-300 hover:-translate-y-0.5"
               >
-                <Play className="h-4 w-4 mr-2" />
+                <Play className="h-5 w-5 mr-2" />
                 Begin Interview
               </Button>
             </div>
@@ -839,7 +848,7 @@ export function MockInterviewModePage({
                 </div>
 
                 <div className="space-y-3 mb-6">
-                <button
+                  <button
                     type="button"
                     onClick={() => setAnsweringFlowMode("pushToTalk")}
                     className={`w-full rounded-2xl border p-4 text-left transition ${
@@ -909,7 +918,7 @@ export function MockInterviewModePage({
                     Cancel
                   </Button>
                   <Button
-                    className="h-12 flex-1 bg-[#0d7377] text-white font-semibold hover:bg-[#14a0a6]"
+                    className="h-12 flex-1 bg-[#0d7377] text-white font-semibold hover:bg-[#0a5a5d]"
                     onClick={() => {
                       setShowAnsweringFlowModal(false);
                       void startInterview();
@@ -966,8 +975,8 @@ export function MockInterviewModePage({
     const { metrics, insights, validity } = report;
 
     return (
-      <div className="guide-grid-bg relative min-h-screen overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
-        <div className="pointer-events-none absolute -top-40 -left-40 h-112 w-md rounded-full bg-[#32e0c4]/20 blur-3xl" />
+      <div className="interview-dots-bg relative min-h-screen overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
+        <div className="pointer-events-none absolute -top-40 -left-40 h-112 w-md rounded-full bg-[#afdbdb]/15 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -right-40 h-112 w-md rounded-full bg-[#0d7377]/10 blur-3xl" />
 
         <div className="relative w-full max-w-3xl">
@@ -1012,12 +1021,13 @@ export function MockInterviewModePage({
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 text-center"
+                  className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-4 text-center hover:shadow-[0_4px_16px_-8px_rgba(13,115,119,0.15)] transition-shadow duration-200 relative overflow-hidden"
                 >
-                  <div className="text-3xl font-semibold text-slate-900 tracking-tight">
+                  <div className="pointer-events-none absolute -top-8 -right-8 w-24 h-24 rounded-full bg-[#afdbdb]/8 blur-xl" />
+                  <div className="text-3xl font-semibold text-slate-900 tracking-tight relative z-10">
                     {stat.value}
                   </div>
-                  <p className="text-[11px] uppercase tracking-wider text-slate-500 mt-1.5">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-500 mt-1.5 relative z-10">
                     {stat.label}
                   </p>
                 </div>
@@ -1026,8 +1036,8 @@ export function MockInterviewModePage({
 
             {/* Validity Notice (for partial sessions) */}
             {!validity.isFullSession && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 mb-6">
-                <p className="text-sm text-amber-900">
+              <div className="rounded-xl border border-[#db8090]/25 bg-[#db8090]/8 p-4 mb-6">
+                <p className="text-sm text-[#9e4a5a]">
                   <span className="font-semibold">Note:</span> This analysis is based on a
                   {report.sessionEndReason === "aborted_focus"
                     ? " focus-limited"
@@ -1049,7 +1059,7 @@ export function MockInterviewModePage({
                   {insights.strengths.map((strength, idx) => (
                     <div
                       key={idx}
-                      className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm text-emerald-900"
+                      className="rounded-lg border border-emerald-200/60 bg-emerald-50/40 p-3 text-sm text-emerald-800"
                     >
                       {strength}
                     </div>
@@ -1068,7 +1078,7 @@ export function MockInterviewModePage({
                   {insights.improvements.map((improvement, idx) => (
                     <div
                       key={idx}
-                      className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-sm text-amber-900"
+                      className="rounded-lg border border-[#db8090]/25 bg-[#db8090]/8 p-3 text-sm text-[#9e4a5a]"
                     >
                       {improvement}
                     </div>
@@ -1087,9 +1097,9 @@ export function MockInterviewModePage({
                   {insights.nextFocus.map((focus, idx) => (
                     <div
                       key={idx}
-                      className="rounded-lg border border-blue-200 bg-blue-50/60 p-3 text-sm text-blue-900 flex items-start gap-2"
+                      className="rounded-lg border border-[#afdbdb]/50 bg-[#afdbdb]/20 p-3 text-sm text-[#0d7377] flex items-start gap-2"
                     >
-                      <span className="text-blue-600 font-semibold mt-0.5">•</span>
+                      <span className="text-[#0d7377] font-semibold mt-0.5">•</span>
                       <span>{focus}</span>
                     </div>
                   ))}
@@ -1110,7 +1120,7 @@ export function MockInterviewModePage({
               </Button>
               <Button
                 onClick={onExit}
-                className="flex-1 h-12 bg-[#0d7377] hover:bg-[#14a0a6] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
+                className="flex-1 h-12 bg-[#0d7377] hover:bg-[#0a5a5d] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
               >
                 Back to Prep
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -1144,15 +1154,15 @@ export function MockInterviewModePage({
   return (
     <div className="fixed inset-0 z-9999 overflow-hidden flex flex-col bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 text-slate-900">
       {/* ambient color */}
-      <div className="pointer-events-none absolute -top-40 left-1/3 h-120 w-120 rounded-full bg-[#32e0c4]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -top-40 left-1/3 h-120 w-120 rounded-full bg-[#afdbdb]/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 right-0 h-104 w-104 rounded-full bg-[#0d7377]/5 blur-3xl" />
 
       {/* Alerts */}
       <div className="pointer-events-none fixed bottom-6 right-6 z-60 flex flex-col items-end gap-2 max-w-sm">
         {focusWarningMessage && (
-          <div className="pointer-events-auto w-full rounded-xl border border-amber-200 bg-amber-50/95 backdrop-blur-md p-3 flex items-start gap-3 shadow-lg animate-in slide-in-from-right-5 fade-in duration-300">
-            <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-            <p className="text-sm text-amber-900">{focusWarningMessage}</p>
+          <div className="pointer-events-auto w-full rounded-xl border border-[#db8090]/30 bg-[#db8090]/10 backdrop-blur-md p-3 flex items-start gap-3 shadow-lg animate-in slide-in-from-right-5 fade-in duration-300">
+            <AlertTriangle className="h-5 w-5 text-[#db8090] mt-0.5 shrink-0" />
+            <p className="text-sm text-[#9e4a5a]">{focusWarningMessage}</p>
           </div>
         )}
         {micError && (
@@ -1184,9 +1194,7 @@ export function MockInterviewModePage({
           {/* Center: title */}
           <div className="flex-1 flex justify-center">
             <div className="text-center">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Mock Interview Mode
-              </h2>
+              <h2 className="text-lg font-semibold text-slate-900">Mock Interview Mode</h2>
               <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mt-1">
                 {isExecutiveTier
                   ? `Executive session • ${interviewQuestions.length} questions`
@@ -1198,24 +1206,24 @@ export function MockInterviewModePage({
           {/* Right: timer */}
           <div className="flex items-center gap-3 sm:gap-4">
             <div
-              className={`flex items-center gap-2.5 rounded-xl border px-3 sm:px-4 py-2 transition ${
+              className={`flex items-center gap-2.5 rounded-xl border px-3 sm:px-4 py-2 transition duration-200 ${
                 secondsRemaining < 60
-                  ? "border-red-200 bg-red-50"
+                  ? "border-[#db8090]/30 bg-[#db8090]/10"
                   : "border-[#0d7377]/15 bg-[#e8f6f6]"
               }`}
             >
               <Timer
                 className={`h-4 w-4 ${
-                  secondsRemaining < 60 ? "text-red-600 animate-pulse" : "text-[#0d7377]"
+                  secondsRemaining < 60 ? "text-[#db8090] animate-pulse" : "text-[#0d7377]"
                 }`}
               />
               <div className="leading-none">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-[#89a4a0]">
                   {isExecutiveTier ? "Session Timer" : "Preview Timer"}
                 </p>
                 <div
                   className={`text-xl sm:text-2xl font-semibold tabular-nums tracking-tight ${
-                    secondsRemaining < 60 ? "text-red-600" : "text-slate-900"
+                    secondsRemaining < 60 ? "text-[#db8090]" : "text-slate-900"
                   }`}
                 >
                   {formatTime(secondsRemaining)}
@@ -1228,13 +1236,13 @@ export function MockInterviewModePage({
         {/* progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-100">
           <div
-            className="h-full bg-linear-to-r from-[#0d7377] via-[#14a0a6] to-[#32e0c4] transition-all duration-300"
+            className="h-full bg-linear-to-r from-[#0d7377] to-[#afdbdb] transition-all duration-300"
             style={{
               width: `${Math.max(progressPercent, timeProgressPercent)}%`,
             }}
           />
         </div>
-        </header>
+      </header>
 
       {/* MAIN */}
       <main
@@ -1246,8 +1254,10 @@ export function MockInterviewModePage({
           {isPhaseOpening && (
             <div className="flex items-center justify-center min-h-[70vh] px-4">
               <div className="w-full max-w-2xl">
-                <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
-                  <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
+                <div className="bg-white border border-[rgba(13,115,119,0.08)] rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.1)] p-8 md:p-10 relative overflow-hidden">
+                  {/* Soft radial glow */}
+                  <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+                  <p className="text-sm uppercase tracking-[0.2em] text-[#0d7377] font-semibold text-center relative z-10">
                     Mock Interview Intro
                   </p>
 
@@ -1266,7 +1276,8 @@ export function MockInterviewModePage({
                       // console.log("Continue button clicked");
                       const firstQuestion = interviewQuestions[0];
                       if (firstQuestion) {
-                        const questionText = firstQuestion.selectedQuestion || firstQuestion.question;
+                        const questionText =
+                          firstQuestion.selectedQuestion || firstQuestion.question;
                         // console.log("About to speak first question:", questionText);
                         lastSpokenQuestionIdRef.current = firstQuestion.id;
                         speakQuestion(questionText);
@@ -1277,10 +1288,7 @@ export function MockInterviewModePage({
                       // console.log("About to call proceedToRun");
                       void proceedToRun();
                     }}
-                    className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
-                    style={{
-                      background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
-                    }}
+                    className="mt-8 w-full py-3.5 rounded-xl font-semibold text-white bg-[#0d7377] hover:bg-[#0a5a5d] shadow-[0_6px_24px_-6px_rgba(13,115,119,0.5)] transition-all duration-300 hover:-translate-y-0.5"
                   >
                     Continue
                   </button>
@@ -1292,8 +1300,10 @@ export function MockInterviewModePage({
           {isPhaseClosing && (
             <div className="flex items-center justify-center min-h-[70vh] px-4">
               <div className="w-full max-w-2xl">
-                <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
-                  <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
+                <div className="bg-white border border-[rgba(13,115,119,0.08)] rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.1)] p-8 md:p-10 relative overflow-hidden">
+                  {/* Soft radial glow */}
+                  <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+                  <p className="text-sm uppercase tracking-[0.2em] text-[#0d7377] font-semibold text-center relative z-10">
                     Interview Complete
                   </p>
 
@@ -1312,10 +1322,7 @@ export function MockInterviewModePage({
                       setPhase("completed");
                       clearTranscript();
                     }}
-                    className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
-                    style={{
-                      background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
-                    }}
+                    className="mt-8 w-full py-3.5 rounded-xl font-semibold text-white bg-[#0d7377] hover:bg-[#0a5a5d] shadow-[0_6px_24px_-6px_rgba(13,115,119,0.5)] transition-all duration-300 hover:-translate-y-0.5"
                   >
                     Continue to Summary
                   </button>
@@ -1328,7 +1335,7 @@ export function MockInterviewModePage({
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               {/* LEFT: Stats column */}
               <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-3 lg:mt-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_4px_20px_-12px_rgba(15,23,42,0.1)]">
+                <div className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.1)]">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#0d7377]">
                     Progress
                   </p>
@@ -1338,9 +1345,9 @@ export function MockInterviewModePage({
                     </span>
                     <span className="text-sm text-slate-400">/ {interviewQuestions.length}</span>
                   </div>
-                  <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div className="mt-3 h-1.5 w-full rounded-full bg-[#afdbdb]/30 overflow-hidden">
                     <div
-                      className="h-full bg-linear-to-r from-[#0d7377] to-[#32e0c4] transition-all duration-500"
+                      className="h-full bg-linear-to-r from-[#0d7377] to-[#afdbdb] transition-all duration-500"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
@@ -1352,7 +1359,7 @@ export function MockInterviewModePage({
                 {sidebarStats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 flex items-center gap-3 shadow-[0_4px_20px_-12px_rgba(15,23,42,0.08)] hover:border-[#14a0a6]/40 transition"
+                    className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 flex items-center gap-3 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.08)] hover:border-[#0d7377]/20 transition-colors duration-200"
                   >
                     <div className="h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
                       <stat.icon className="h-5 w-5" />
@@ -1370,7 +1377,7 @@ export function MockInterviewModePage({
                 ))}
 
                 {/* Avg response card */}
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 flex items-center gap-3 shadow-[0_4px_20px_-12px_rgba(15,23,42,0.08)] hover:border-[#14a0a6]/40 transition">
+                <div className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 flex items-center gap-3 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.08)] hover:border-[#0d7377]/20 transition-colors duration-200">
                   <div className="h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
                     <TrendingUp className="h-5 w-5" />
                   </div>
@@ -1395,18 +1402,24 @@ export function MockInterviewModePage({
                   </span>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-[0_8px_30px_-16px_rgba(13,115,119,0.18)]">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-3">
+                <div className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-6 sm:p-7 shadow-[0_8px_30px_-16px_rgba(13,115,119,0.18)] relative overflow-hidden">
+                  {/* Soft radial glow */}
+                  <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#afdbdb]/12 blur-2xl" />
+                  {/* Decorative watermark */}
+                  <div className="pointer-events-none absolute bottom-4 right-4 opacity-[0.035]">
+                    <Mic className="w-24 h-24 text-[#0d7377]" strokeWidth={1} />
+                  </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#89a4a0] mb-3 relative z-10">
                     Current Question
                   </p>
-                  <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-snug tracking-tight">
+                  <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-snug tracking-tight relative z-10">
                     {currentQuestion.selectedQuestion || currentQuestion.question}
                   </h3>
                 </div>
 
                 {/* Transcript card */}
-                <div className="mt-5 h-80 flex flex-col rounded-2xl border border-slate-200 bg-white shadow-[0_12px_40px_-20px_rgba(13,115,119,0.2)] overflow-hidden">
-                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 shrink-0 bg-slate-50/60">
+                <div className="mt-5 h-80 flex flex-col rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white shadow-[0_12px_40px_-20px_rgba(13,115,119,0.15)] overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-[rgba(13,115,119,0.06)] shrink-0 bg-[#f0faf9]/60">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
                         <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
@@ -1479,7 +1492,7 @@ export function MockInterviewModePage({
                     className={`flex-1 h-12 font-semibold transition-all ${
                       isListening
                         ? "bg-red-600 hover:bg-red-500 text-white shadow-[0_10px_30px_-12px_rgba(220,38,38,0.5)]"
-                        : "bg-[#0d7377] hover:bg-[#14a0a6] text-white shadow-[0_10px_30px_-12px_rgba(13,115,119,0.55)]"
+                        : "bg-[#0d7377] hover:bg-[#0a5a5d] text-white shadow-[0_10px_30px_-12px_rgba(13,115,119,0.55)]"
                     }`}
                   >
                     {isListening ? (
