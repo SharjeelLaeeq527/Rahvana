@@ -140,3 +140,55 @@ export function aggregateChapter1Issues({
   const order = { critical: 0, warning: 1, info: 2 };
   return issues.sort((a, b) => order[a.level] - order[b.level]);
 }
+
+/**
+ * Aggregate Chapter 2 (NVC / CEAC) issues for the dashboard.
+ *
+ * Simpler than Chapter 1: every check — including the civil-document analysis
+ * at step_2_4 — flows through the per-step checker registry, which now receives
+ * the step's JSON node via `ctx.step`. No special-casing needed here.
+ */
+export function aggregateChapter2Issues({
+  chapters,
+  state,
+  uploadedDocuments,
+  registry = IR1_STEP_CHECKERS,
+}: AggregateContext): AggregatedIssue[] {
+  const issues: AggregatedIssue[] = [];
+
+  const eligibilityAnswers =
+    (state.answers?.["eligibility-suite"] as any) ??
+    (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+  const chapter2 = chapters?.[1];
+  if (!chapter2) return [];
+
+  const steps = chapter2.steps || [];
+
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    const stepKey = step.step_key as string;
+    if (!stepKey) continue;
+
+    const checks = runStepChecks(
+      stepKey,
+      { state, uploadedDocuments, eligibilityAnswers, step },
+      registry
+    );
+    for (const c of checks) {
+      issues.push({
+        level: c.level,
+        title: c.title,
+        hint: c.hint,
+        stepKey,
+        stepName: step.step_name ?? stepKey,
+        stepNumber: getStepNumber(step, i),
+        chapterIdx: 1,
+        stepIdx: i,
+      });
+    }
+  }
+
+  const order = { critical: 0, warning: 1, info: 2 };
+  return issues.sort((a, b) => order[a.level] - order[b.level]);
+}

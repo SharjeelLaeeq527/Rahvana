@@ -61,10 +61,7 @@ export function FloatingSidePanel({
         transition: "opacity 0.25s ease",
       }}
     >
-      <div
-        className="overflow-y-auto flex-1 flex flex-col gap-2.5"
-        style={{ scrollbarWidth: "none" }}
-      >
+      <div className="panel-scrollbar overflow-y-auto overscroll-contain flex-1 min-h-0 flex flex-col gap-2.5 pr-1.5">
         {children}
       </div>
     </aside>

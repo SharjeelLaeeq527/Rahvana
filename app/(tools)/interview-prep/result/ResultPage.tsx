@@ -54,6 +54,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showMockUpgradeModal, setShowMockUpgradeModal] = useState(false);
+  const [showPrepUpgradeModal, setShowPrepUpgradeModal] = useState(false);
 
   const plan = usePlan();
 
@@ -726,19 +727,53 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           )}
 
                           {/* Answer button on back of card */}
-                          {plan.tier !== "free" && (
-                            <div className="mt-3 sm:mt-4 flex gap-2">
+                          <div className="mt-3 sm:mt-4 flex gap-2">
+                            <div className="group relative flex-1">
                               <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
+
+                                  if (plan.tier === "free") {
+                                    setShowPrepUpgradeModal(true);
+                                    return;
+                                  }
+
                                   setShowAnswerModal(true);
                                 }}
-                                className="flex-1 bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
+                                className="w-full bg-white text-teal-700 hover:bg-teal-50 font-semibold text-xs sm:text-sm py-1 sm:py-2"
                               >
                                 {savedAnswers[selectedQuestion.id] ? "Edit" : "Answer"}
                               </Button>
+
+                              {plan.tier === "free" && (
+                                <>
+                                  <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
+                                    <Image
+                                      src="/icons/ribbon.png"
+                                      alt="Premium feature ribbon"
+                                      width={52}
+                                      height={52}
+                                      className="object-contain drop-shadow-lg"
+                                    />
+                                  </div>
+
+                                  <div className="absolute bottom-full left-[70%] -translate-x-1/2 mb-2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl border border-slate-700 z-50 opacity-0 translate-y-1 pointer-events-none transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+                                    <div className="font-semibold text-teal-300 mb-1">
+                                      AI Answer Builder
+                                    </div>
+
+                                    <p>
+                                      Draft your own interview answers and receive AI-powered
+                                      feedback to improve clarity, confidence, and interview
+                                      readiness. Upgrade to unlock personalized answer building and AI guidance.
+                                    </p>
+
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800" />
+                                  </div>
+                                </>
+                              )}
                             </div>
-                          )}
+                          </div>
 
                           <div className="text-center mt-2">
                             <p className="text-slate-300 text-xs">Click to flip</p>
@@ -935,6 +970,9 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
         {showUpgradeModal && (
           <UpgradeModal feature="interview_rapid_fire" onClose={() => setShowUpgradeModal(false)} />
+        )}
+        {showPrepUpgradeModal && (
+          <UpgradeModal feature="basic_interview_prep" onClose={() => setShowPrepUpgradeModal(false)} />
         )}
         {showMockUpgradeModal && (
           <UpgradeModal feature="mock_interview" onClose={() => setShowMockUpgradeModal(false)} />

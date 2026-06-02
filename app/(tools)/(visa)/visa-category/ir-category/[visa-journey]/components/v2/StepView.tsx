@@ -90,6 +90,7 @@ import {
   ConsistencyBaselineCapture,
   type ConsistencyBaseline,
 } from "./components/ConsistencyBaselineCapture";
+import { Ds260BaselineCapture, type Ds260Baseline } from "./components/Ds260BaselineCapture";
 import {
   BeneficiaryResidenceCapture,
   type BeneficiaryBaseline,
@@ -189,7 +190,7 @@ const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
       link: "https://www.uscis.gov/i-130-addresses",
     },
   ],
-  step_1_17: [
+  step_1_16: [
     {
       text: "USCIS Case Status Tracker",
       link: "https://egov.uscis.gov/",
@@ -558,6 +559,9 @@ export const StepView: React.FC<StepViewProps> = ({
   const [submissionDate, setSubmissionDate] = useState(
     (state.metadata.submissionDate as string) || ""
   );
+
+  // Citations Modal State
+  const [isCitationsModalOpen, setIsCitationsModalOpen] = useState(false);
 
   // Step 2.10 DQ Recording States
   const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
@@ -952,7 +956,8 @@ export const StepView: React.FC<StepViewProps> = ({
       isCivilDocGuideOpen ||
       isNvcFeeModalOpen ||
       isCeacModalOpen ||
-      isSubmissionGuideOpen
+      isSubmissionGuideOpen ||
+      isCitationsModalOpen
     ) {
       document.body.style.overflow = "hidden";
     } else {
@@ -969,6 +974,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isNvcFeeModalOpen,
     isCivilDocGuideOpen,
     isSubmissionGuideOpen,
+    isCitationsModalOpen,
   ]);
 
   const handleSaveNvcFee = (newData: any) => {
@@ -1101,6 +1107,17 @@ export const StepView: React.FC<StepViewProps> = ({
             ))}
           </div>
         </div>
+      <div
+        className={`${currentStep.step_type === "filing" ? "mb-10 mt-0" : "mb-4 mt-5"} flex justify-center w-full max-w-[660px] mx-auto animate-in fade-in duration-500`}
+      >
+        <button
+          onClick={() => setIsCitationsModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] hover:border-primary hover:bg-[#fafcff] rounded-[12px] shadow-xs hover:shadow-sm text-[12px] font-bold uppercase tracking-wider text-[#3a4f63] hover:text-primary transition-all group cursor-pointer"
+        >
+          {/* <Book className="h-[14px] w-[14px] text-[#6b8097] group-hover:text-primary shrink-0 transition-colors" strokeWidth={2} /> */}
+          <span className="pt-1">Official References & Citations</span>
+          <ExternalLink className="h-[14.5px] w-[14.5px] text-[#6b8097] group-hover:text-primary shrink-0 transition-colors" strokeWidth={2} />
+        </button>
       </div>
     );
   };
@@ -1978,6 +1995,15 @@ export const StepView: React.FC<StepViewProps> = ({
             />
           )}
 
+          {/* DS-260 CROSS-FORM CONSISTENCY CAPTURE — step_2_3 (Fill DS-260) */}
+          {sId === "step_2_3" && (
+            <Ds260BaselineCapture
+              i130Baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
+              baseline={state.metadata?.ds260Baseline as Ds260Baseline | undefined}
+              onSave={(next) => actions.updateMetadata({ ds260Baseline: next })}
+            />
+          )}
+
           {/* BENEFICIARY RESIDENCE CAPTURE — step_1_5 (Fill I-130A) */}
           {sId === "step_1_5" && (
             <BeneficiaryResidenceCapture
@@ -2514,9 +2540,6 @@ export const StepView: React.FC<StepViewProps> = ({
               ))}
             </div>
           )}
-          {/* Citations section */}
-          {renderCitationsSection()}
-
           {/* Disclaimer */}
           <p
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
@@ -2524,6 +2547,9 @@ export const StepView: React.FC<StepViewProps> = ({
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."}
           </p>
+
+          {/* Citations section */}
+          {renderCitationsSection()}
         </div>
       </div>
     );
@@ -2540,6 +2566,7 @@ export const StepView: React.FC<StepViewProps> = ({
       {customRenderer ? (
         <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col items-center relative pb-[100px]">
           {customRenderer}
+          {renderCitationsSection()}
         </div>
       ) : (
         <div
@@ -3487,7 +3514,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                <div className="flex flex-col w-full max-w-[660px] pb-[40px]">
+                <div className="flex flex-col w-full max-w-[660px] pb-[35px]">
                   <h1
                     className="
                 mt-8 sm:mt-10 md:mt-0
@@ -3686,15 +3713,11 @@ export const StepView: React.FC<StepViewProps> = ({
                     </div>
                   )}
 
-                  <div
-                    className={`mt-8 p-[12px_16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.6] m-0`}
-                  >
-                    <>
-                      Rahvana provides structured guidance only. This is not legal advice.{" "}
-                      {/* <br /> */}
-                      Consult a licensed immigration attorney for case-specific decisions.
-                    </>
-                  </div>
+                  {currentStep.tool_data?.disclaimer && (
+                    <div className="mt-8 p-[12px_16px] bg-[#e8f1fb] rounded-[9px] text-[12px] text-[#6b8097] leading-[1.6] m-0">
+                      <span>{currentStep.tool_data.disclaimer}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -3946,6 +3969,55 @@ export const StepView: React.FC<StepViewProps> = ({
         initialData={ceacCredentials}
         isSubmitting={isSubmittingCreds}
       />
+
+      {isCitationsModalOpen && (
+        <div className="fixed inset-0 z-300 bg-black/40 backdrop-blur-xs flex items-center justify-center p-5 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] w-full max-w-[500px] animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-start justify-between p-6 pb-0 mb-4">
+              <div className="flex items-center gap-2">
+                <Book
+                  className="h-[20px] w-[20px] text-primary shrink-0 animate-pulse"
+                  strokeWidth={2.5}
+                />
+                <h2 className="text-[20px] font-bold text-[#0c1b33]">
+                  Official References & Citations
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsCitationsModalOpen(false)}
+                className="w-[30px] h-[30px] rounded-full bg-[#f4f7fb] flex items-center justify-center hover:bg-[#d0e4f7] transition-all cursor-pointer border-none outline-none"
+              >
+                <X size={13} className="text-[#3a4f63]" />
+              </button>
+            </div>
+
+            <div className="p-6 pt-0">
+              <div className="h-px bg-[#d0e4f7] mb-4" />
+              <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1">
+                {(STEP_CITATIONS[sId] || []).map((cite, index) => (
+                  <a
+                    key={index}
+                    href={cite.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3.5 sm:p-4 rounded-[14px] bg-[#fafcff] hover:bg-white border border-[#e1eefc] hover:border-primary hover:shadow-xs group transition-all"
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[13.5px] sm:text-[14px] font-bold text-[#0f1f38] group-hover:text-primary transition-colors">
+                        {cite.text}
+                      </span>
+                    </div>
+                    <ExternalLink
+                      className="h-4 w-4 text-[#6b8097] group-hover:text-primary transition-colors shrink-0 ml-3"
+                      strokeWidth={2}
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isCivilDocGuideOpen && activeCivilDoc && (
         <CivilDocGuideOverlay

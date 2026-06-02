@@ -19,3 +19,19 @@ export {
   missingTier1Documents,
   RECOMMENDED_TIER_1_FLOOR,
 } from "./evidence-classifier";
+export { analyzeCivilDocs } from "./civil-docs";
+export type { CivilDocItem, CivilDocGroup, CivilDocIssue, CivilDocsContext } from "./civil-docs";
+export { compareBaselines, BASELINE_FIELDS } from "./consistency";
+export type { BaselineDates, BaselineField, BaselineMismatch } from "./consistency";
+export {
+  runStepChecks,
+  IR1_STEP_CHECKERS,
+  type StepCheck,
+  type StepCheckContext,
+  type StepChecker,
+} from "./step-checkers";
+export {
+  aggregateChapter1Issues,
+  aggregateChapter2Issues,
+  type AggregatedIssue,
+} from "./aggregate-issues";

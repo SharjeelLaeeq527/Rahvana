@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (
       !data.issue_category ||
-      !data.visa_category ||
       !data.case_stage ||
       !data.full_name ||
       !data.email ||

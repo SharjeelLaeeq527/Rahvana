@@ -800,6 +800,30 @@
   scrollbar-color: #0d7377 transparent;
 }
 
+/* Subtle neutral scrollbar for the floating CSA side panel.
+   Visible thumb so users know there is more content to scroll to. */
+.panel-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 9999px;
+}
+
+.panel-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+
+.panel-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 @keyframes rotate-line {
   0% {
     transform: translate(-50%, -50%) rotate(0deg);
