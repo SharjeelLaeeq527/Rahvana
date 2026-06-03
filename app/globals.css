@@ -1042,3 +1042,18 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Add-on card pill button — accent comes from inline --pill var */
+.addon-pill {
+  background: #fff;
+  border-color: var(--pill, var(--primary));
+  color: var(--pill, var(--primary));
+}
+.addon-pill:hover:not(:disabled):not(.is-added) {
+  background: var(--pill, var(--primary));
+  color: #fff;
+}
+.addon-pill.is-added {
+  background: var(--pill, var(--primary));
+  color: #fff;
+}
