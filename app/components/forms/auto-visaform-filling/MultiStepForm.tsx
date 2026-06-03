@@ -8,7 +8,6 @@ import { Header } from "./Header";
 import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
-import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
 import { X, ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
@@ -25,6 +24,7 @@ import { ExpandableTooltip } from "../../shared/ExpandableTooltip";
 import { AlertCircle } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { useFreePreview } from "./useFreePreview";
 
 // ============ TYPE DEFINITIONS ============
 interface FormProgressDraft {
@@ -128,11 +128,18 @@ const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string
 
 export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const plan = usePlan();
-  const [sessionQuestionCount, setSessionQuestionCount] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
+
+  const config = useMemo(() => getFormConfig(formCode), [formCode]);
+
+  const { isFreePreview, filledFieldsCount } = useFreePreview({
+    canUseSmartFormFiller: plan.canUse("smart_form_filler"),
+    formFields: config?.formFields || [],
+    formData,
+  });
   const [view, setView] = useState<ViewType>("form");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
@@ -184,8 +191,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  const config = useMemo(() => getFormConfig(formCode), [formCode]);
 
   const [isReady, setIsReady] = useState(false);
 
@@ -693,17 +698,28 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (isNavigating) return; // ← Rate limiting
     setNavigationDirection("next");
 
-    // Track user session question count
-    const nextQuestionCount = sessionQuestionCount + 1;
-    setSessionQuestionCount(nextQuestionCount);
-
-    // If user is locked out, check if warning needs to be displayed after every 7 questions
-    if (!plan.canUse("smart_form_filler") && nextQuestionCount > 0 && nextQuestionCount % 7 === 0) {
-      showToast(
-        "Preview Mode: PDF download & preview is locked on Free/Basic plan. Upgrade or unlock the tool to get access!",
-        "info",
-        8000
-      );
+    // If user is locked out, check if warning needs to be displayed after every 10 questions
+    if (isFreePreview) {
+      let nextField = null;
+      if (currentQuestionIndex < visibleFields.length - 1) {
+        nextField = visibleFields[currentQuestionIndex + 1];
+      } else if (currentStep < totalSteps) {
+        const nextSection = sections[currentStep];
+        if (nextSection) {
+          const nextVisible = nextSection.fields.filter(
+            (f) => !f.condition || f.condition(formData)
+          );
+          nextField = nextVisible[0];
+        }
+      }
+      
+      const isNextFieldEmpty = !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
+      
+      if (filledFieldsCount >= 10 && isNextFieldEmpty) {
+        showToast("Free Preview: You've reached the 10-question limit. Redirecting to review page...", "info", 6000);
+        setView("review");
+        return;
+      }
     }
 
     if (currentQuestionIndex < visibleFields.length - 1) {
@@ -809,15 +825,41 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }, []);
 
   const handleJumpToQuestion = useCallback((stepIdx: number, questionIdx: number) => {
+    if (isFreePreview && filledFieldsCount >= 10) {
+      const targetSection = sections[stepIdx];
+      const targetField = targetSection?.fields.filter(
+        (f) => !f.condition || f.condition(formData)
+      )[questionIdx];
+      
+      const isTargetEmpty = !targetField || !formData[targetField.key] || formData[targetField.key].trim() === "";
+      
+      if (isTargetEmpty) {
+        showToast("Free Preview: You've reached the 10-question limit. Please unlock the tool or upgrade to access new questions.", "info", 5000);
+        setView("review");
+        return;
+      }
+    }
     setCurrentStep(stepIdx + 1);
     setCurrentQuestionIndex(questionIdx);
     setIsDrawerOpen(false);
-  }, []);
+  }, [isFreePreview, filledFieldsCount, sections, formData]);
 
   const handleGoToStep = useCallback((step: number) => {
+    if (isFreePreview && filledFieldsCount >= 10) {
+      const targetSection = sections[step - 1];
+      const hasAnyAnswered = targetSection?.fields.some(
+        (f) => formData[f.key] && formData[f.key].trim() !== ""
+      );
+      
+      if (!hasAnyAnswered) {
+        showToast("Free Preview: You've reached the 10-question limit. Please unlock the tool or upgrade to access new sections.", "info", 5000);
+        setView("review");
+        return;
+      }
+    }
     setCurrentStep(step);
     setView("form");
-  }, []);
+  }, [isFreePreview, filledFieldsCount, sections, formData]);
 
   const handleEditStep = useCallback((step: number) => {
     setCurrentStep(step);
@@ -928,7 +970,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload }),
+        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
         signal: controller.signal,
       });
 
@@ -966,7 +1008,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload }),
+        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
         signal: controller.signal,
       });
 
@@ -1614,20 +1656,20 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                       "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
                   }}
                 >
-                  <ResultGate feature="smart_form_filler">
-                    <ReviewPage
-                      formData={formData}
-                      sections={sections}
-                      onEditStep={handleEditStep}
-                      onBackToForm={() => setView("form")}
-                      onPreviewPDF={handlePreviewPDF}
-                      onDownloadPDF={handleDownloadPDF}
-                      onSaveToVault={handleSaveToVault}
-                      isPreviewing={isPreviewing}
-                      isDownloading={isDownloading}
-                      isSavingToVault={isSavingToVault}
-                    />
-                  </ResultGate>
+                  <ReviewPage
+                    formData={formData}
+                    sections={sections}
+                    onEditStep={handleEditStep}
+                    onBackToForm={() => setView("form")}
+                    onPreviewPDF={handlePreviewPDF}
+                    onDownloadPDF={handleDownloadPDF}
+                    onSaveToVault={handleSaveToVault}
+                    isPreviewing={isPreviewing}
+                    isDownloading={isDownloading}
+                    isSavingToVault={isSavingToVault}
+                    isFreePreview={isFreePreview}
+                    onUpgradeClick={() => setShowUpgradeModal(true)}
+                  />
                 </div>
               )}
             </div>
