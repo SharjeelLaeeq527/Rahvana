@@ -31,7 +31,7 @@ const INTERVIEW_MODE_FEATURES: Record<
     icon: BookOpen,
     color: "#0d7377",
     features: [
-      "Full Interview Question Bank (all topics)",
+      "Full Interview Question Bank",
       "Prep Mode (full access)",
       "AI Answer Builder (core feature)",
       "Improve clarity & structure",

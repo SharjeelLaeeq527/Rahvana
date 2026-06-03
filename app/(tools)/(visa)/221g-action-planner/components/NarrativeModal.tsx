@@ -13,6 +13,8 @@ import {
   Sparkles,
   Folder,
   Layers,
+  Zap,
+  Mic,
 } from "lucide-react";
 
 interface Scene {
@@ -32,6 +34,73 @@ const colors = {
   sageGrey: "#89a4a0",
   white: "#ffffff",
   lightBg: "#f8fbfc",
+};
+
+const badgeConfig = {
+  Basic: {
+    bg: "bg-[#e4f4f2]",
+    border: "border-[#98d0ca]",
+    text: "text-[#0f4040]",
+  },
+  Premium: {
+    bg: "bg-[#f2f4ff]",
+    border: "border-[#d8ddff]",
+    text: "text-[#24327f]",
+  },
+  Executive: {
+    bg: "bg-[#fdf4d8]",
+    border: "border-[#e4cc88]",
+    text: "text-[#5a3808]",
+  },
+};
+
+const interviewModes = {
+  prep: {
+    label: "Prep Mode",
+    icon: BookOpen,
+    color: "#0d7377",
+    plans: ["Basic"],
+    features: [
+      "Full Interview Question Bank",
+      "Prep Mode (full access)",
+      "AI Answer Builder (core feature)",
+      "Improve clarity & structure",
+      "Make answers interview-ready",
+      "Save & edit answers anytime",
+    ],
+  },
+
+  rapid: {
+    label: "Rapid Fire",
+    icon: Zap,
+    color: "#6b5b7b",
+    plans: ["Premium", "Executive"],
+    features: [
+      "Rapid Fire Mode",
+      "Timed questions (pressure simulation)",
+      "Fast recall training",
+      "Adaptive practice flow",
+      "Smart summaries after sessions",
+      "Performance review insights",
+      "Confidence-building repetition",
+    ],
+  },
+
+  mock: {
+    label: "Mock Interview",
+    icon: Mic,
+    color: "#9e4a5a",
+    plans: ["Executive"],
+    features: [
+      "Mock Interview Mode (full simulation)",
+      "Voice-based interview experience",
+      "Speech-to-Text (STT)",
+      "Text-to-Speech (TTS)",
+      "Real-time interview flow (no UI hints)",
+      "Performance analytics",
+      "Interview behavior feedback",
+    ],
+  },
 };
 
 const scenes221g: Scene[] = [
@@ -987,15 +1056,6 @@ const scenesPolioVaccination: Scene[] = [
 
 const scenesInterviewPrep: Scene[] = [
   {
-    id: "welcome",
-    title: "Welcome to Interview Prep",
-    titleLines: ["Master Your", "Visa Interview"],
-    description:
-      "Practice realistic embassy interview questions, improve your confidence, and prepare for the questions consular officers actually ask.",
-    illustration: "welcome",
-  },
-
-  {
     id: "what-is",
     title: "What Is Interview Prep?",
     titleLines: ["What Is", "Interview Prep?"],
@@ -1090,125 +1150,7 @@ const scenesInterviewPrep: Scene[] = [
 
     extraContent: (
       <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
-        {[
-          {
-            title: "Rapid Fire Practice",
-            plans: ["Premium", "Executive"],
-            features: [
-              "Timed recall & quick-response practice",
-              "Adaptive question flow",
-              "Performance feedback & improvement insights",
-            ],
-          },
-          {
-            title: "Mock Interview",
-            plans: ["Executive"],
-            features: [
-              "Full interview simulation experience",
-              "Voice-based interaction (STT + TTS)",
-              "Real-time interview flow without hints",
-            ],
-          },
-        ].map((mode, i) => (
-          <motion.div
-            key={mode.title}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              delay: 0.3 + i * 0.15,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
-          >
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h4 className="text-base font-bold" style={{ color: colors.deepTeal }}>
-                {mode.title}
-              </h4>
-
-              <div className="flex gap-2">
-                {mode.plans.map((plan) => (
-                  <span
-                    key={plan}
-                    className="rounded-full border border-[#afdbdb]/30 bg-[#edf8f8] px-3 py-1 text-xs font-semibold text-[#0d7377]"
-                  >
-                    {plan}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {mode.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-3 text-sm">
-                  <CheckCircle
-                    className="h-4 w-4 flex-shrink-0"
-                    style={{ color: colors.deepTeal }}
-                  />
-                  <span>{feature}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    ),
-  },
-
-  {
-    id: "output",
-    title: "Performance Reports",
-    titleLines: ["Performance &", "Reports"],
-    description:
-      "Every practice session ends with actionable feedback so you know exactly what to improve before interview day.",
-    illustration: "output",
-
-    extraContent: (
-      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
-        {[
-          {
-            title: "Rapid Fire Summary Report",
-            items: [
-              "Overall readiness score",
-              "Answer review (what’s right/wrong)",
-              "Coverage analysis (covered / partial / missed / skipped)",
-            ],
-          },
-          {
-            title: "Mock Interview Analytics",
-            items: [
-              "Overall interview score & response time",
-              "Completion percentage & focus level",
-              "Strengths, weaknesses & improvement areas",
-            ],
-          },
-        ].map((report, i) => (
-          <motion.div
-            key={report.title}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.3 + i * 0.15,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
-          >
-            <h4 className="mb-3 text-base font-bold" style={{ color: colors.deepTeal }}>
-              {report.title}
-            </h4>
-
-            <div className="space-y-2">
-              {report.items.map((item) => (
-                <div key={item} className="flex items-center gap-3 text-sm">
-                  <CheckCircle
-                    className="h-4 w-4 flex-shrink-0"
-                    style={{ color: colors.deepTeal }}
-                  />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
+        <ModeCarousel />
       </div>
     ),
   },
@@ -1897,6 +1839,70 @@ function SimpleSceneIllustration({
         />
       </div>
     </div>
+  );
+}
+
+function ModeCarousel() {
+  const [index, setIndex] = useState(0);
+
+  const modes = Object.values(interviewModes);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % modes.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const mode = modes[index];
+
+  const Icon = mode.icon;
+
+  return (
+    <motion.div
+      key={mode.label}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+    >
+      {/* header */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4" style={{ color: mode.color }} />
+          <h4 className="font-bold" style={{ color: colors.deepTeal }}>
+            {mode.label}
+          </h4>
+        </div>
+
+        <div className="flex gap-2">
+          {mode.plans.map((plan) => {
+            const style = badgeConfig[plan as keyof typeof badgeConfig];
+
+            return (
+              <span
+                key={plan}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold ${style.bg} ${style.border} ${style.text}`}
+              >
+                {plan}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* features */}
+      <div className="space-y-2">
+        {mode.features.map((f) => (
+          <div key={f} className="flex items-center gap-3 text-sm">
+            <CheckCircle className="h-4 w-4" style={{ color: mode.color }} />
+            <span>{f}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 }
 
