@@ -725,7 +725,7 @@ export function MockInterviewModePage({
 
   if (phase === "intro") {
     return (
-      <div className="relative min-h-screen overflow-hidden flex items-start justify-center px-4 pt-8 pb-12 sm:pt-10 sm:pb-16">
+      <div className="relative min-h-screen overflow-hidden flex items-start justify-center px-4 pt-4 pb-4 sm:pt-6 sm:pb-6">
         <div className="relative w-full max-w-2xl">
           <div className="rounded-3xl border border-[rgba(13,115,119,0.08)] bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.2)] p-8 sm:p-10 relative overflow-hidden">
             {/* Decorative radial glow */}
@@ -838,7 +838,7 @@ export function MockInterviewModePage({
 
           {showAnsweringFlowModal && (
             <div className="fixed inset-0 z-10000 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4">
-              <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]">
+              <div className="w-full max-w-lg rounded-3xl border bg-[#fffdfd] border-[#f0d6dc] p-6 sm:p-8 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-semibold text-slate-900">
                     Choose your answering flow
@@ -854,27 +854,27 @@ export function MockInterviewModePage({
                     onClick={() => setAnsweringFlowMode("pushToTalk")}
                     className={`w-full rounded-2xl border p-4 text-left transition ${
                       answeringFlowMode === "pushToTalk"
-                        ? "border-[#0d7377] bg-[#e8f6f6]"
-                        : "border-slate-200 bg-white hover:border-[#0d7377]/30 hover:bg-slate-50"
+                        ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
+                        : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
+                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#db8090]">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            answeringFlowMode === "pushToTalk" ? "bg-[#0d7377]" : "bg-transparent"
+                            answeringFlowMode === "pushToTalk" ? "bg-[#db8090]" : "bg-transparent"
                           }`}
                         />
                       </span>
                       <div>
-                        <div className="font-semibold text-slate-900">
+                        <div className="font-semibold text-[#4b3b46]">
                           Flow 1: Hold Space to Talk
                         </div>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-[#8b7280]">
                           Hold Space to speak and release to stop, while the answer button still
                           works.
                         </p>
-                        <span className="mt-2 inline-flex rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-xs font-medium text-[#0d7377]">
+                        <span className="mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-medium bg-[#f3ede7] text-[#9c6f38]">
                           Most Popular
                         </span>
                       </div>
@@ -886,23 +886,23 @@ export function MockInterviewModePage({
                     onClick={() => setAnsweringFlowMode("toggle")}
                     className={`w-full rounded-2xl border p-4 text-left transition ${
                       answeringFlowMode === "toggle"
-                        ? "border-[#0d7377] bg-[#e8f6f6]"
-                        : "border-slate-200 bg-white hover:border-[#0d7377]/30 hover:bg-slate-50"
+                      ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
+                      : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#0d7377]">
+                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#db8090]">
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            answeringFlowMode === "toggle" ? "bg-[#0d7377]" : "bg-transparent"
+                            answeringFlowMode === "toggle" ? "bg-[#db8090]" : "bg-transparent"
                           }`}
                         />
                       </span>
                       <div>
-                        <div className="font-semibold text-slate-900">
+                        <div className="font-semibold text-[#4b3b46]">
                           Flow 2: Button or Space Toggle
                         </div>
-                        <p className="mt-1 text-sm text-slate-600">
+                        <p className="mt-1 text-sm text-[#8b7280]">
                           Use the answer button or press Space to start and stop.
                         </p>
                       </div>
@@ -913,13 +913,17 @@ export function MockInterviewModePage({
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     variant="outline"
-                    className="h-12 flex-1 border-slate-200 text-slate-700 hover:bg-slate-50"
+                    className="h-12 flex-1 border-[#f0d6dc]
+                    text-slate-700
+                    hover:bg-[#fff7f8]"
                     onClick={() => setShowAnsweringFlowModal(false)}
                   >
                     Cancel
                   </Button>
                   <Button
-                    className="h-12 flex-1 bg-[#0d7377] text-white font-semibold hover:bg-[#0a5a5d]"
+                    className="h-12 flex-1 bg-[#db8090]
+                    hover:bg-[#c96f80]
+                    shadow-[0_4px_16px_-4px_rgba(219,128,144,0.35)] text-white font-semibold"
                     onClick={() => {
                       setShowAnsweringFlowModal(false);
                       void startInterview();

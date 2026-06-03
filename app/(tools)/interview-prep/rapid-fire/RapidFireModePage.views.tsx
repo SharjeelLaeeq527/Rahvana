@@ -342,10 +342,10 @@ export const RapidFireResultsView = ({
                     <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
                       <div>
                         <div className="flex justify-between items-start mb-4">
-                          <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
+                          <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium">
                             {reviewQuestion.category}
                           </span>
-                          <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
+                          <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded-full">
                             Review Mode
                           </span>
                         </div>
@@ -519,7 +519,7 @@ export const RapidFireTrainingView = ({
                 }`}
                 style={{
                   background:
-                    "linear-gradient(145deg, #ffffff 0%, #fafffe 40%, #f0faf9 70%, #edf7f6 100%)",
+                    "linear-gradient(145deg, #ffffff 0%, #fdfbf8 35%, #faf6f0 70%, #f7f1e8 100%)",
                 }}
               >
                 {/* Soft radial glow */}
@@ -534,7 +534,7 @@ export const RapidFireTrainingView = ({
                 </div>
                 <div>
                   <div className="flex justify-between items-start mb-3 sm:mb-4">
-                    <span className="bg-[#afdbdb] text-[#0d7377] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold">
+                    <span className="bg-[#f3ede7] text-[#9c6f38] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-semibold">
                       {currentQuestion.category}
                     </span>
                   </div>
@@ -588,7 +588,7 @@ export const RapidFireTrainingView = ({
                         </svg>
 
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl px-2 sm:px-4 py-1 sm:py-2">
+                          <div className="text-center backdrop-blur-sm rounded-xl px-2 sm:px-4 py-1 sm:py-2">
                             <div
                               className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${timeLeft <= 3 ? "text-[#db8090]" : "text-[#0d7377]"} transition-all duration-500 ${timeLeft <= 3 ? "scale-105" : ""}`}
                             >

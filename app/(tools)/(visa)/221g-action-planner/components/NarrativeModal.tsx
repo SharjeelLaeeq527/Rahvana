@@ -985,6 +985,281 @@ const scenesPolioVaccination: Scene[] = [
   },
 ];
 
+const scenesInterviewPrep: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Interview Prep",
+    titleLines: ["Master Your", "Visa Interview"],
+    description:
+      "Practice realistic embassy interview questions, improve your confidence, and prepare for the questions consular officers actually ask.",
+    illustration: "welcome",
+  },
+
+  {
+    id: "what-is",
+    title: "What Is Interview Prep?",
+    titleLines: ["What Is", "Interview Prep?"],
+    description:
+      "An AI-powered visa interview simulator designed to help applicants practice, improve answers, and build confidence before their embassy interview.",
+    illustration: "document",
+
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-4 text-left">
+        {[
+          "Realistic embassy-style interview questions",
+          "Personalized feedback after every session",
+          "Practice tailored to your visa category",
+          "Confidence-building interview simulations",
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.1,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+          >
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: colors.deepTeal }}
+            />
+
+            <span
+              className="text-[15px] font-semibold leading-snug"
+              style={{ color: colors.deepTeal }}
+            >
+              {item}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "pitfalls",
+    title: "Avoid Common Mistakes",
+    titleLines: ["Avoid Common", "Mistakes"],
+    description:
+      "Many applicants know their case well but struggle to communicate it effectively during the interview.",
+    illustration: "warning",
+
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-4 text-left">
+        {[
+          "Giving incomplete or vague answers",
+          "Appearing nervous or unprepared",
+          "Missing key supporting details",
+          "Providing overly long or confusing responses",
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.12,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-center gap-3 rounded-xl border border-[#db8090]/20 bg-white p-4 shadow-sm"
+          >
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: colors.dustyRose }}
+            />
+
+            <span
+              className="text-[15px] font-semibold leading-snug"
+              style={{ color: colors.deepTeal }}
+            >
+              {item}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "workflow",
+    title: "Practice Modes & Plans",
+    titleLines: ["Practice Modes", "& Plans"],
+    description: "Choose the interview preparation experience that best fits your needs.",
+    illustration: "checklist",
+
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          {
+            title: "Rapid Fire Practice",
+            plans: ["Premium", "Executive"],
+            features: [
+              "Timed recall & quick-response practice",
+              "Adaptive question flow",
+              "Performance feedback & improvement insights",
+            ],
+          },
+          {
+            title: "Mock Interview",
+            plans: ["Executive"],
+            features: [
+              "Full interview simulation experience",
+              "Voice-based interaction (STT + TTS)",
+              "Real-time interview flow without hints",
+            ],
+          },
+        ].map((mode, i) => (
+          <motion.div
+            key={mode.title}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h4 className="text-base font-bold" style={{ color: colors.deepTeal }}>
+                {mode.title}
+              </h4>
+
+              <div className="flex gap-2">
+                {mode.plans.map((plan) => (
+                  <span
+                    key={plan}
+                    className="rounded-full border border-[#afdbdb]/30 bg-[#edf8f8] px-3 py-1 text-xs font-semibold text-[#0d7377]"
+                  >
+                    {plan}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {mode.features.map((feature) => (
+                <div key={feature} className="flex items-center gap-3 text-sm">
+                  <CheckCircle
+                    className="h-4 w-4 flex-shrink-0"
+                    style={{ color: colors.deepTeal }}
+                  />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "output",
+    title: "Performance Reports",
+    titleLines: ["Performance &", "Reports"],
+    description:
+      "Every practice session ends with actionable feedback so you know exactly what to improve before interview day.",
+    illustration: "output",
+
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          {
+            title: "Rapid Fire Summary Report",
+            items: [
+              "Overall readiness score",
+              "Answer review (what’s right/wrong)",
+              "Coverage analysis (covered / partial / missed / skipped)",
+            ],
+          },
+          {
+            title: "Mock Interview Analytics",
+            items: [
+              "Overall interview score & response time",
+              "Completion percentage & focus level",
+              "Strengths, weaknesses & improvement areas",
+            ],
+          },
+        ].map((report, i) => (
+          <motion.div
+            key={report.title}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <h4 className="mb-3 text-base font-bold" style={{ color: colors.deepTeal }}>
+              {report.title}
+            </h4>
+
+            <div className="space-y-2">
+              {report.items.map((item) => (
+                <div key={item} className="flex items-center gap-3 text-sm">
+                  <CheckCircle
+                    className="h-4 w-4 flex-shrink-0"
+                    style={{ color: colors.deepTeal }}
+                  />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "wizard",
+    title: "How This Works",
+    titleLines: ["Ready To", "Practice?"],
+    description:
+      "Start preparing today and walk into your embassy interview with greater confidence, clearer answers, and fewer surprises.",
+    illustration: "wizard",
+
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Answer realistic embassy interview questions.",
+          "Review feedback and scores.",
+          "Improve weak areas and practice again.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+];
+
 interface NarrativeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -999,7 +1274,8 @@ interface NarrativeModalProps {
     | "police-verification"
     | "marriage-registration"
     | "birth-certificate"
-    | "polio-vaccination";
+    | "polio-vaccination"
+    | "interview-prep";
 }
 
 const SCENE_DURATION = 9000;
@@ -1021,6 +1297,7 @@ export function NarrativeModal({
     "marriage-registration": scenesMarriageRegistration,
     "birth-certificate": scenesBirthCertificate,
     "polio-vaccination": scenesPolioVaccination,
+    "interview-prep": scenesInterviewPrep,
   } as const;
 
   const scenes = scenesByVariant[variant];
@@ -1050,6 +1327,7 @@ export function NarrativeModal({
     "marriage-registration": "Marriage",
     "birth-certificate": "Birth",
     "polio-vaccination": "Polio",
+    "interview-prep": "Interview",
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";

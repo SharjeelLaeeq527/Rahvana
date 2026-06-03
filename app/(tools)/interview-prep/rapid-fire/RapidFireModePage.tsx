@@ -960,7 +960,7 @@ export const RapidFireModePage = ({
                         className="absolute inset-0 backface-hidden rounded-xl flex flex-col justify-between text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] border border-[rgba(13,115,119,0.08)] overflow-hidden"
                         style={{
                           background:
-                            "linear-gradient(145deg, #ffffff 0%, #fafffe 40%, #f0faf9 70%, #edf7f6 100%)",
+                            "linear-gradient(145deg, #ffffff 0%, #fdfbf8 35%, #faf6f0 70%, #f7f1e8 100%)",
                         }}
                       >
                         {/* Soft radial glow */}
@@ -972,10 +972,10 @@ export const RapidFireModePage = ({
                         <div className="p-6 flex flex-col justify-between flex-1 relative z-10">
                           <div>
                             <div className="flex justify-between items-start mb-4">
-                              <span className="bg-[#afdbdb] text-[#0d7377] px-2 py-1 rounded text-xs font-semibold">
+                              <span className="bg-[#f3ede7] text-[#9c6f38] px-2 py-1 rounded-full text-xs font-semibold">
                                 {reviewQuestion.category}
                               </span>
-                              <span className="text-[#89a4a0] text-xs bg-[#89a4a0]/10 px-2 py-1 rounded font-medium">
+                              <span className="text-[#89a4a0] text-xs bg-[#89a4a0]/10 px-2 py-1 rounded-full font-medium">
                                 Review Mode
                               </span>
                             </div>

@@ -21,6 +21,7 @@ import CountrySelectionModal from "../../components/interview-prep/CountrySelect
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { NarrativeModal } from "../(visa)/221g-action-planner/components/NarrativeModal";
 
 import type {
   InterviewCategoryConfig,
@@ -35,6 +36,10 @@ export default function InterviewPreparation() {
   const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
 
   const [step, setStep] = useState<number>(0);
+  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const hasInitializedModal = useRef(false);
+
   const [formData, setFormData] = useState<Partial<InterviewFormData>>({
     caseType: "",
   });
@@ -59,8 +64,9 @@ export default function InterviewPreparation() {
 
   // NEW: Confirmation modal state for session restoration
   const [restoreSessionModalOpen, setRestoreSessionModalOpen] = useState(false);
-  const [pendingRestoreSession, setPendingRestoreSession] =
-    useState<RestorableSession | null>(null);
+  const [pendingRestoreSession, setPendingRestoreSession] = useState<RestorableSession | null>(
+    null
+  );
   const [isRedirectingSession, setIsRedirectingSession] = useState(false);
 
   const { user } = useAuth();
@@ -170,7 +176,7 @@ export default function InterviewPreparation() {
 
   const restoreSessionData = async (
     session: RestorableSession,
-    getCategoryFn: (slug: string) => InterviewCategoryConfig | undefined,
+    getCategoryFn: (slug: string) => InterviewCategoryConfig | undefined
   ) => {
     try {
       setSessionId(session.id);
@@ -186,9 +192,7 @@ export default function InterviewPreparation() {
         setSelectedCategory(category);
 
         // Load questionnaire for the restored category
-        const catDataResponse = await fetch(
-          `/api/interview-prep?category_slug=${categorySlug}`,
-        );
+        const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
         const catData = await catDataResponse.json();
 
         if (catData.success) {
@@ -202,11 +206,9 @@ export default function InterviewPreparation() {
           // Restore form data (questionnaire answers)
           if (session.answers && Array.isArray(session.answers)) {
             const answersMap: Record<string, unknown> = {};
-            session.answers.forEach(
-              (answer: { question_key: string; answer_value: unknown }) => {
-                answersMap[answer.question_key] = answer.answer_value;
-              },
-            );
+            session.answers.forEach((answer: { question_key: string; answer_value: unknown }) => {
+              answersMap[answer.question_key] = answer.answer_value;
+            });
             setFormData((prev) => ({
               ...prev,
               ...answersMap,
@@ -306,6 +308,31 @@ export default function InterviewPreparation() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only on initial mount to avoid auto-restoring when categories load
+
+  useEffect(() => {
+    if (hasInitializedModal.current) return;
+    if (step !== 0) return;
+
+    hasInitializedModal.current = true;
+
+    const localHide =
+      typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_interview_narrative") === "true";
+
+    // show only if not hidden by session or localStorage
+    if (!localHide) {
+      setShowWhatsThis(true);
+    } else {
+      setShowWhatsThis(false);
+    }
+  }, []);
+
+  const handleCloseIntro = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
+      localStorage.setItem("dont_show_interview_narrative", "true");
+    }
+    setShowWhatsThis(false);
+  };
 
   const handleInputChange = (key: string, value: unknown) => {
     const updatedFormData = { ...formData, [key]: value };
@@ -413,9 +440,7 @@ export default function InterviewPreparation() {
       localStorage.setItem("interviewPrepSessionId", newSessionId);
 
       // Load questionnaire
-      const catDataResponse = await fetch(
-        `/api/interview-prep?category_slug=${categorySlug}`,
-      );
+      const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
 
       const catData = await catDataResponse.json();
 
@@ -830,6 +855,15 @@ export default function InterviewPreparation() {
 
   return (
     <>
+      <NarrativeModal
+        isOpen={showWhatsThis}
+        onClose={handleCloseIntro}
+        onComplete={handleCloseIntro}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="interview-prep"
+      />
+
       <CountrySelectionModal
         isOpen={showCountryModal}
         onCountrySelected={handleCountrySelected}
@@ -887,15 +921,10 @@ export default function InterviewPreparation() {
               setLoadingMessage("Restoring your interview session...");
               localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
 
-              await restoreSessionData(
-                pendingRestoreSession,
-                (categorySlug: string) => {
-                  const category = availableCategories.find(
-                    (c) => c.categorySlug === categorySlug,
-                  );
-                  return category;
-                },
-              );
+              await restoreSessionData(pendingRestoreSession, (categorySlug: string) => {
+                const category = availableCategories.find((c) => c.categorySlug === categorySlug);
+                return category;
+              });
 
               setRestoreSessionModalOpen(false);
             } catch (error) {

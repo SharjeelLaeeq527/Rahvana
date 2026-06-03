@@ -15,6 +15,7 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { getEntitlement } from "@/lib/entitlements/config";
+import { InterviewModeTabs } from "@/app/components/interview-prep/InterviewModeTabs";
 
 interface ResultPageProps {
   sessionId: string;
@@ -297,65 +298,17 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         <div className="pointer-events-none absolute top-20 -left-32 w-96 h-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
         <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
         <div className="relative z-10 text-center mb-8">
-          <div className="flex flex-col md:flex-row justify-center gap-4 mb-4">
-            <Button onClick={() => setMode("prep")} variant="outline" className="w-full md:w-auto">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Prep Mode
-            </Button>
-            <div className="relative w-full md:w-auto">
-              <Button
-                onClick={handleRapidFireModeClick}
-                variant="outline"
-                className="w-full md:w-auto"
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                Rapid Fire Mode
-              </Button>
-              {plan.tier === "basic" && (
-                <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
-                  <Image
-                    src="/icons/ribbon.png"
-                    alt="Premium feature ribbon"
-                    width={52}
-                    height={52}
-                    priority={false}
-                    className="object-contain drop-shadow-lg"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="relative w-full md:w-auto">
-              <Button
-                onClick={handleMockInterviewPageStart}
-                variant="default"
-                className="w-full md:w-auto"
-                title={
-                  !canAccessMockInterview()
-                    ? "Upgrade to Executive to unlock Mock Interview Mode"
-                    : ""
-                }
-              >
-                <Mic className="h-4 w-4 mr-2" />
-                Mock Interview Mode
-              </Button>
-              {(plan.tier === "basic" || plan.tier === "premium") && (
-                <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
-                  <Image
-                    src="/icons/ribbon.png"
-                    alt="Executive feature ribbon"
-                    width={52}
-                    height={52}
-                    priority={false}
-                    className="object-contain drop-shadow-lg"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          <InterviewModeTabs
+            mode={mode}
+            plan={plan}
+            onPrep={() => setMode("prep")}
+            onRapid={handleRapidFireModeClick}
+            onMock={handleMockInterviewPageStart}
+          />
 
           <h2 className="text-3xl font-bold text-slate-900 mb-2">Mock Interview Mode</h2>
           <p className="text-slate-600">
-            Fullscreen voice interview simulation with a 15-minute timer
+            Immersive voice interview simulation designed to mirror real interview experiences{" "}
           </p>
         </div>
 
@@ -388,83 +341,13 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
         <div className="">
           <div className="text-center mb-8">
-            <div className="flex flex-col md:flex-row justify-center gap-4 mb-4">
-              <Button
-                onClick={() => setMode("prep")}
-                variant={mode === "prep" ? "default" : "outline"}
-                className={`w-full md:w-auto transition-all duration-200 ${
-                  mode === "prep"
-                    ? "bg-[#0d7377] hover:bg-[#0a5a5d] shadow-[0_4px_16px_-4px_rgba(13,115,119,0.4)]"
-                    : ""
-                }`}
-              >
-                <BookOpen
-                  className={`h-4 w-4 mr-2 ${mode === "prep" ? "text-white" : "text-[#0d7377]"}`}
-                />
-                Prep Mode
-              </Button>
-              <div className="relative w-full md:w-auto">
-                <Button
-                  onClick={handleRapidFireModeClick}
-                  variant={mode === "rapid" ? "default" : "outline"}
-                  className={`w-full md:w-auto transition-all duration-200 ${
-                    mode === "rapid"
-                      ? "bg-[#6b5b7b] hover:bg-[#5a4a6a] shadow-[0_4px_16px_-4px_rgba(107,91,123,0.4)]"
-                      : ""
-                  }`}
-                >
-                  <Zap
-                    className={`h-4 w-4 mr-2 ${mode === "rapid" ? "text-white" : "text-[#cdadcc]"}`}
-                  />
-                  Rapid Fire Mode
-                </Button>
-                {plan.tier === "basic" && (
-                  <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
-                    <Image
-                      src="/icons/ribbon.png"
-                      alt="Premium feature ribbon"
-                      width={52}
-                      height={52}
-                      priority={false}
-                      className="object-contain drop-shadow-lg"
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="relative w-full md:w-auto">
-                <Button
-                  onClick={handleMockInterviewPageStart}
-                  variant={mode === "mock" ? "default" : "outline"}
-                  className={`w-full md:w-auto transition-all duration-200 ${
-                    mode === "mock"
-                      ? "bg-slate-800 hover:bg-slate-700 shadow-[0_4px_16px_-4px_rgba(30,41,59,0.4)]"
-                      : ""
-                  }`}
-                  title={
-                    !canAccessMockInterview()
-                      ? "Upgrade to Executive to unlock Mock Interview Mode"
-                      : ""
-                  }
-                >
-                  <Mic
-                    className={`h-4 w-4 mr-2 ${mode === "mock" ? "text-white" : "text-[#db8090]"}`}
-                  />
-                  Mock Interview Mode
-                </Button>
-                {(plan.tier === "basic" || plan.tier === "premium") && (
-                  <div className="absolute -top-2 -right-4 z-20 pointer-events-none">
-                    <Image
-                      src="/icons/ribbon.png"
-                      alt="Executive feature ribbon"
-                      width={52}
-                      height={52}
-                      priority={false}
-                      className="object-contain drop-shadow-lg"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+            <InterviewModeTabs
+              mode={mode}
+              plan={plan}
+              onPrep={() => setMode("prep")}
+              onRapid={handleRapidFireModeClick}
+              onMock={handleMockInterviewPageStart}
+            />
 
             <h2 className="text-3xl font-bold text-slate-900 mb-2">
               {mode === "prep"
@@ -499,7 +382,10 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
             <div className="flex justify-center gap-4 mb-6">
               <Button
                 onClick={handleShuffle}
-                className="flex items-center gap-2 bg-[#0d7377] hover:bg-[#0a5a5d] text-white font-semibold px-6 py-2 rounded-lg transition-all duration-200 shadow-[0_4px_16px_-4px_rgba(13,115,119,0.4)] hover:shadow-[0_8px_24px_-4px_rgba(13,115,119,0.5)] hover:-translate-y-0.5"
+                className="flex items-center gap-2 bg-[#6b5b7b]
+                hover:bg-[#5a4a6a]
+                text-white
+                shadow-[0_4px_16px_-4px_rgba(107,91,123,0.35)] font-semibold px-6 py-2 rounded-lg transition-all duration-200 hover:-translate-y-0.5"
               >
                 <Shuffle className="h-4 w-4" />
                 Shuffle Questions
@@ -544,14 +430,14 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           onClick={() => handleQuestionSelect(item)}
                           className={`w-full cursor-pointer p-4 rounded-lg transition-all duration-200 border group hover:shadow-[0_4px_16px_-6px_rgba(13,115,119,0.15)] ${
                             selectedQuestion?.id === item.id
-                              ? "bg-[#afdbdb]/40 border-2 border-[#0d7377]/40 shadow-[0_4px_16px_-6px_rgba(13,115,119,0.2)]"
-                              : "bg-white hover:bg-[#afdbdb]/15 border-[rgba(13,115,119,0.08)] hover:border-[#0d7377]/20"
+                              ? "bg-[#cdadcc] border-[#faf8fb] border-2 shadow-[0_4px_16px_-6px_rgba(107,91,123,0.2)]"
+                              : "bg-white hover:bg-[#faf8fb] border-[#f0e7f1] hover:border-[#cdadcc] hover:shadow-[0_4px_12px_-6px_rgba(107,91,123,0.12)]"
                           }`}
                         >
                           <div className="flex items-start gap-3">
                             <span
                               className={`shrink-0 w-6 h-6 rounded-full text-white text-xs flex items-center justify-center font-medium mt-1 transition-colors duration-200 ${
-                                selectedQuestion?.id === item.id ? "bg-[#0d7377]" : "bg-[#89a4a0]"
+                                selectedQuestion?.id === item.id ? "bg-[#6b5b7b]" : "bg-[#89a4a0]"
                               }`}
                             >
                               {index + 1}
@@ -561,7 +447,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                 {item.selectedQuestion || item.question}
                               </p>
                               <div className="mt-2">
-                                <span className="text-xs text-[#0d7377] bg-[#afdbdb]/50 px-1.5 py-0.5 rounded font-medium">
+                                <span className="text-xs bg-[#f3ede7] text-[#9c6f38] px-1.5 py-0.5 rounded-full font-medium">
                                   {item.category}
                                 </span>
                               </div>
@@ -623,7 +509,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           className="absolute inset-0 backface-hidden rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] border border-[rgba(13,115,119,0.08)] relative overflow-hidden"
                           style={{
                             background:
-                                "linear-gradient(145deg, #ffffff 0%, #fafffe 40%, #f0faf9 70%, #edf7f6 100%)",
+                              "linear-gradient(145deg, #ffffff 0%, #fdfbf8 35%, #faf6f0 70%, #f7f1e8 100%)",
                           }}
                         >
                           {/* Soft radial glow top-right */}
@@ -634,7 +520,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           </div>
                           <div className="space-y-2 sm:space-y-3 relative z-10">
                             <div className="flex justify-between items-start gap-2 sm:gap-4">
-                              <span className="bg-[#afdbdb] text-[#0d7377] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+                              <span className="bg-[#f3ede7] text-[#9c6f38] px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold whitespace-nowrap">
                                 {selectedQuestion.category}
                               </span>
                               {selectedQuestion.tooltip && (
@@ -858,7 +744,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                     <div className="flex gap-4 justify-center">
                       <Button
                         onClick={handleRapidFirePageStart}
-                        className="bg-[#6b5b7b] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
+                        className="bg-[#6b5b7b] hover:bg-[#5a4a6a] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
                       >
                         Start Rapid Fire Session
                       </Button>
