@@ -514,7 +514,10 @@ const AvailabilityGrid = () => {
                             className={cn(
                               "group relative flex items-center justify-between p-2 rounded-lg border transition-all cursor-pointer hover:shadow-sm",
                               slot.status === "available"
-                                ? "bg-white border-teal-100 hover:border-teal-400 hover:bg-teal-50/10"
+                                ? (slot.localStart.getTime() < Date.now()
+                                    ? "bg-gray-50 border-gray-150 grayscale opacity-70 hover:border-gray-300"
+                                    : "bg-white border-teal-100 hover:border-teal-400 hover:bg-teal-50/10"
+                                  )
                                 : slot.status === "confirmed"
                                   ? "bg-green-50 border-green-200 hover:border-green-400"
                                   : slot.status === "pending"
@@ -535,7 +538,7 @@ const AvailabilityGrid = () => {
                                 className={cn(
                                   "text-[9px] uppercase font-black",
                                   slot.status === "available"
-                                    ? "text-teal-600"
+                                    ? (slot.localStart.getTime() < Date.now() ? "text-gray-400" : "text-teal-600")
                                     : slot.status === "confirmed"
                                       ? "text-green-600"
                                       : slot.status === "pending"
@@ -543,11 +546,15 @@ const AvailabilityGrid = () => {
                                         : "text-gray-400"
                                 )}
                               >
-                                {slot.status}
+                                {slot.status === "available" && slot.localStart.getTime() < Date.now() ? "expired" : slot.status}
                               </span>
                             </div>
                             {slot.status === "available" ? (
-                              <Check className="h-3 w-3 text-teal-300 group-hover:text-teal-500 transition-colors" />
+                              slot.localStart.getTime() < Date.now() ? (
+                                <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
+                              ) : (
+                                <Check className="h-3 w-3 text-teal-300 group-hover:text-teal-500 transition-colors" />
+                              )
                             ) : slot.status === "unavailable" ? (
                               <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
                             ) : (

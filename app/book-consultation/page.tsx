@@ -544,7 +544,9 @@ const ConsultationBookingPage = () => {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setUserBookings(data);
+        // Filter by current logged-in user's email so they only see their own requests
+        const myBookings = data.filter((booking: any) => booking.email === user?.email);
+        setUserBookings(myBookings);
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -558,6 +560,13 @@ const ConsultationBookingPage = () => {
       fetchUserBookings(searchQuery);
     }
   }, [activeView, searchQuery]);
+
+  // Load user bookings whenever the user auth state is verified
+  useEffect(() => {
+    if (user) {
+      fetchUserBookings("");
+    }
+  }, [user]);
 
   useEffect(() => {
     let isMounted = true;
@@ -1473,6 +1482,17 @@ const ConsultationBookingPage = () => {
         const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const { startHour, endHour, hoursRange } = getHourBoundaries();
 
+        const visibleSlots = availableSlots.filter(slot => {
+          if (slot.available) return true; // Show all available slots
+          
+          // If it's booked/unavailable, only show it if the current user booked it
+          const isBookedByMe = userBookings.some(booking => 
+            booking.email === user?.email &&
+            new Date(booking.selected_slot).getTime() === slot.date.getTime()
+          );
+          return isBookedByMe;
+        });
+
         const handlePrevDate = () => {
           setCurrentCalendarDate((prev) => {
             const next = new Date(prev);
@@ -1580,7 +1600,7 @@ const ConsultationBookingPage = () => {
             </div>
 
             {/* Calendar Main Grid Area */}
-            {availableSlots.length > 0 ? (
+            {visibleSlots.length > 0 ? (
               <div>
                 {/* 1. WEEK VIEW */}
                 {calendarView === "week" && (
@@ -1651,7 +1671,7 @@ const ConsultationBookingPage = () => {
                             
                             {/* Vertical daily slot containers */}
                             {weekDates.map((colDate, colIdx) => {
-                              const daySlots = availableSlots.filter(slot => isSameDay(slot.date, colDate));
+                              const daySlots = visibleSlots.filter(slot => isSameDay(slot.date, colDate));
                               
                               return (
                                 <div key={colIdx} className="relative h-full border-r border-gray-100 last:border-r-0">
@@ -1664,6 +1684,12 @@ const ConsultationBookingPage = () => {
                                     const pos = getSlotPosition(slot, startHour, endHour);
                                     const isPast = slot.date.getTime() < Date.now();
                                     const isSelectable = slot.available && !isPast;
+                                    
+                                    const matchingBooking = userBookings.find(booking => 
+                                      booking.email === user?.email &&
+                                      new Date(booking.selected_slot).getTime() === slot.date.getTime()
+                                    );
+                                    const isCancelled = matchingBooking?.status === "cancelled" || matchingBooking?.status === "canceled";
                                     
                                     return (
                                       <div
@@ -1684,11 +1710,16 @@ const ConsultationBookingPage = () => {
                                             ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
                                             : isSelectable
                                               ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
-                                              : isPast
-                                                ? "bg-gray-100/40 border-gray-150 text-gray-400"
-                                                : "bg-gray-100/80 border-gray-200 text-gray-500"
+                                              : isCancelled
+                                                ? "bg-red-50 border-red-200 text-red-800 z-30 animate-pulse"
+                                                : !slot.available
+                                                  ? (isPast 
+                                                      ? "bg-purple-50/60 border-purple-150 text-purple-500" 
+                                                      : "bg-purple-50 border-purple-200 text-purple-800"
+                                                    )
+                                                  : "bg-gray-100/40 border-gray-150 text-gray-400"
                                         )}
-                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isPast ? 'Passed' : slot.available ? 'Click to Select' : 'Booked'}`}
+                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Booked (Expired)' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
                                       >
                                         <div className="flex flex-col justify-center">
                                           <span className={cn(
@@ -1697,11 +1728,13 @@ const ConsultationBookingPage = () => {
                                               ? "text-white/90" 
                                               : isSelectable 
                                                 ? "text-teal-700" 
-                                                : isPast
-                                                  ? "text-gray-400"
-                                                  : "text-gray-500"
+                                                : isCancelled
+                                                  ? "text-red-700 font-extrabold"
+                                                  : !slot.available
+                                                    ? (isPast ? "text-purple-500/80" : "text-purple-800")
+                                                    : "text-gray-400"
                                           )}>
-                                            {isSelectedPrimary ? "Selected" : isPast ? "Passed" : slot.available ? "Available" : "Booked"}
+                                            {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Booked (Expired)" : "Booked") : isPast ? "Passed" : "Available"}
                                           </span>
                                           <span className="text-[10px] font-black block mt-0.5 leading-tight">
                                             {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1780,16 +1813,25 @@ const ConsultationBookingPage = () => {
 
                           {/* Slots list absolute representation */}
                           <div className="relative h-full w-full">
-                            {availableSlots
+                            {visibleSlots
                               .filter(slot => isSameDay(slot.date, currentCalendarDate))
                               .map((slot) => {
                                 const isSelectedPrimary = formData.selected_slot?.getTime() === slot.date.getTime();
                                 const pos = getSlotPosition(slot, startHour, endHour);
+                                const isPast = slot.date.getTime() < Date.now();
+                                const isSelectable = slot.available && !isPast;
+
+                                const matchingBooking = userBookings.find(booking => 
+                                  booking.email === user?.email &&
+                                  new Date(booking.selected_slot).getTime() === slot.date.getTime()
+                                );
+                                const isCancelled = matchingBooking?.status === "cancelled" || matchingBooking?.status === "canceled";
 
                                 return (
                                   <div
                                     key={slot.id}
                                     onClick={() => {
+                                      if (!isSelectable) return;
                                       if (formData.selected_slot?.getTime() === slot.date.getTime()) {
                                         handleInputChange("selected_slot", null);
                                       } else {
@@ -1804,9 +1846,14 @@ const ConsultationBookingPage = () => {
                                         ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
                                         : isSelectable
                                           ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
-                                          : isPast
-                                            ? "bg-gray-100/40 border-gray-150 text-gray-400"
-                                            : "bg-gray-100/80 border-gray-200 text-gray-500"
+                                          : isCancelled
+                                            ? "bg-red-50 border-red-200 text-red-800 z-30 animate-pulse"
+                                            : !slot.available
+                                              ? (isPast 
+                                                  ? "bg-purple-50/60 border-purple-150 text-purple-500" 
+                                                  : "bg-purple-50 border-purple-200 text-purple-800"
+                                                )
+                                              : "bg-gray-100/40 border-gray-150 text-gray-400"
                                     )}
                                   >
                                     <div className="flex items-center gap-2">
@@ -1816,11 +1863,13 @@ const ConsultationBookingPage = () => {
                                           ? "text-white/90" 
                                           : isSelectable 
                                             ? "text-teal-700" 
-                                            : isPast
-                                              ? "text-gray-400"
-                                              : "text-gray-500"
+                                            : isCancelled
+                                              ? "text-red-700 font-extrabold"
+                                              : !slot.available
+                                                ? (isPast ? "text-purple-500/80" : "text-purple-800")
+                                                : "text-gray-400"
                                       )}>
-                                        {isSelectedPrimary ? "Selected" : isPast ? "Passed" : slot.available ? "Available" : "Booked"}
+                                        {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Booked (Expired)" : "Booked") : isPast ? "Passed" : "Available"}
                                       </div>
                                       <span className="text-[10px] font-black">
                                         {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1833,9 +1882,11 @@ const ConsultationBookingPage = () => {
                                         ? "bg-white/20 border-white/30 text-white"
                                         : isSelectable
                                           ? "bg-white border-teal-200/60 text-teal-700 hover:border-teal-400 hover:bg-teal-50"
-                                          : "bg-gray-50 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
+                                          : isCancelled
+                                            ? "bg-red-100 border-red-200 text-red-700 font-extrabold"
+                                            : "bg-gray-50 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
                                     )}>
-                                      {isPast ? "Passed" : slot.available ? "Select" : "Booked"}
+                                      {isPast && slot.available ? "Passed" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Booked" : "Booked") : "Select"}
                                     </span>
                                   </div>
                                 );
@@ -1864,7 +1915,7 @@ const ConsultationBookingPage = () => {
                       {monthDates.map((date, idx) => {
                         const isCurrentMonth = date.getMonth() === currentCalendarDate.getMonth();
                         const active = isToday(date);
-                        const daySlots = availableSlots.filter(slot => isSameDay(slot.date, date));
+                        const daySlots = visibleSlots.filter(slot => isSameDay(slot.date, date));
                         
                         return (
                           <div
@@ -1901,6 +1952,12 @@ const ConsultationBookingPage = () => {
                                 const isPast = slot.date.getTime() < Date.now();
                                 const isSelectable = slot.available && !isPast;
                                  
+                                const matchingBooking = userBookings.find(booking => 
+                                  booking.email === user?.email &&
+                                  new Date(booking.selected_slot).getTime() === slot.date.getTime()
+                                );
+                                const isCancelled = matchingBooking?.status === "cancelled" || matchingBooking?.status === "canceled";
+
                                 return (
                                   <div
                                     key={slot.id}
@@ -1920,15 +1977,20 @@ const ConsultationBookingPage = () => {
                                         ? "bg-teal-600 border-teal-700 text-white font-black"
                                         : isSelectable
                                           ? "bg-teal-50/50 border-teal-100 text-teal-800 hover:bg-teal-100 hover:border-teal-200"
-                                          : isPast
-                                            ? "bg-gray-100/40 border-gray-150 text-gray-400"
-                                            : "bg-gray-100 border-gray-200 text-gray-500"
+                                          : isCancelled
+                                            ? "bg-red-50 border-red-200 text-red-800"
+                                            : !slot.available
+                                              ? (isPast 
+                                                  ? "bg-purple-50/60 border-purple-150 text-purple-500" 
+                                                  : "bg-purple-50 border-purple-200 text-purple-800"
+                                                )
+                                              : "bg-gray-100/40 border-gray-150 text-gray-400"
                                     )}
-                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isPast ? 'Passed' : slot.available ? 'Click to Select' : 'Booked'}`}
+                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Booked (Expired)' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
                                   >
                                     <span className="truncate">
                                       {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                      {!slot.available && " (Booked)"}
+                                      {isCancelled ? " (Canceled)" : !slot.available && (isPast ? " (Booked)" : " (Booked)")}
                                     </span>
                                   </div>
                                 );
@@ -1971,7 +2033,7 @@ const ConsultationBookingPage = () => {
                           <div className="grid grid-cols-7 gap-y-1 gap-x-0.5 text-center flex-1">
                             {days.map((date, idx) => {
                               const isCurrentMonth = date.getMonth() === monthIdx;
-                              const hasSlots = availableSlots.some(slot => isSameDay(slot.date, date));
+                              const hasSlots = visibleSlots.some(slot => isSameDay(slot.date, date));
                               const active = isToday(date);
                               
                               return (
@@ -1992,7 +2054,7 @@ const ConsultationBookingPage = () => {
                                           ? "bg-teal-50 text-teal-800 border border-teal-200/50 hover:bg-teal-100 font-black"
                                           : "text-gray-500 hover:bg-gray-100"
                                   )}
-                                  title={hasSlots ? `${availableSlots.filter(s => isSameDay(s.date, date)).length} available slots` : ""}
+                                  title={hasSlots ? `${visibleSlots.filter(s => isSameDay(s.date, date)).length} available slots` : ""}
                                 >
                                   {date.getDate()}
                                 </div>
@@ -2036,7 +2098,7 @@ const ConsultationBookingPage = () => {
                         {formData.selected_slot.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                       </h5>
                       <p className="text-xs text-gray-500 font-bold mt-0.5">
-                        {availableSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || ""}
+                        {visibleSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || ""}
                       </p>
                     </div>
                     <button
