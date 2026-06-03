@@ -473,6 +473,182 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     }
     return checks;
   },
+
+  // ─── Chapter 3 — Medical + Interview ──────────────────────────────────────
+
+  // Step 3.1 — Schedule Medical Examination (completeness + timeline)
+  step_3_1: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const scheduled =
+      state.metadata?.med_appt_saved === "true" || !!state.metadata?.med_date;
+    const interviewDate = state.metadata?.interviewDate as string | undefined;
+    if (!scheduled) {
+      checks.push({
+        level: interviewDate ? "warning" : "info",
+        title: interviewDate
+          ? "Medical exam not scheduled yet — book now"
+          : "Schedule your medical exam early",
+        hint: "The medical exam must be completed before your interview, and approved panel-physician slots fill up fast. Book as soon as your interview is set and record the appointment here.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 3.2 — Polio Vaccination Certificate (completeness — mandatory compliance)
+  step_3_2: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const launched = state.metadata?.polio_launched === "true";
+    const polioChecks = state.metadata?.polio_checks as
+      | Record<string, boolean>
+      | undefined;
+    const anyChecked = polioChecks && Object.values(polioChecks).some(Boolean);
+    if (!launched && !anyChecked) {
+      checks.push({
+        level: "info",
+        title: "Get your polio vaccination certificate before the medical exam",
+        hint: "Pakistan-origin applicants must present an original polio vaccination certificate. The panel physician reviews it at the medical exam and you must bring the original to the interview — arrange it now so it doesn't hold up your exam.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 3.3 — Fresh Police Clearance Certificate (completeness + freshness)
+  step_3_3: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const saved = state.metadata?.pcc_saved === "true";
+    const received = state.metadata?.pcc_received === "true";
+    if (!saved && !received) {
+      checks.push({
+        level: "warning",
+        title: "Apply for a fresh police certificate now",
+        hint: "The interview requires a fresh PCC — not the one submitted during NVC processing. It can take several weeks, so apply early and bring the original to your interview.",
+      });
+    } else if (saved && !received) {
+      checks.push({
+        level: "info",
+        title: "Track your police certificate until you hold the original",
+        hint: "You've applied — keep following up until the original PCC is in hand. Confirm it is still within your embassy's validity window for the interview date.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 3.4 — Attend Medical Exam (process — sealed results)
+  step_3_4: ({ state }) => {
+    const checks: StepCheck[] = [];
+    // Relevant once the exam is on the calendar.
+    if (state.metadata?.med_appt_saved === "true" || state.metadata?.med_date) {
+      checks.push({
+        level: "info",
+        title: "Do not open the sealed medical envelope",
+        hint: "Bring your polio certificate, passport, and appointment letter. The physician seals the results and sends them to the embassy — never open the envelope, and confirm the clinic will transmit your results before your interview date.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 3.6 — Gather Original Documents (completeness + consistency)
+  step_3_6: ({ state, step }) => {
+    const checks: StepCheck[] = [];
+    const groups = step?.tool_data?.doc_gathering?.groups as any[] | undefined;
+    // Read the "Required" original-document groups straight from the roadmap JSON
+    // rather than hardcoding which documents to bring.
+    const requiredGroups = Array.isArray(groups)
+      ? groups
+          .filter(
+            (g) =>
+              typeof g?.badge === "string" &&
+              g.badge.toLowerCase().startsWith("required")
+          )
+          .map((g) => String(g?.label || "").replace(/^Bring\s*[—-]\s*/i, "").trim())
+          .filter(Boolean)
+      : [];
+    if (requiredGroups.length > 0) {
+      checks.push({
+        level: "info",
+        title: "Bring every required original to your interview",
+        hint: `Organize originals (not photocopies) for: ${requiredGroups.join(
+          "; "
+        )}. Keep each foreign-language civil document together with its certified English translation, and bring the fresh police certificate — not the one filed at NVC.`,
+      });
+    }
+    checks.push({
+      level: "info",
+      title: "Originals must match what you filed",
+      hint: "The consular officer compares your originals and answers against your filed DS-260 and I-864. Make sure names, dates, and record details on your documents stay consistent with the forms NVC already has.",
+    });
+    return checks;
+  },
+
+  // Step 3.7 — Prepare for Interview (consistency — primary at interview stage)
+  step_3_7: ({ eligibilityAnswers }) => {
+    const checks: StepCheck[] = [];
+    checks.push({
+      level: "info",
+      title: "Your interview answers must match your DS-260",
+      hint: "Re-read every DS-260 section before interview day. The officer's questions about your relationship, dates, and history are checked against your filed answers — inconsistencies are the most common cause of 221(g) holds.",
+    });
+    // Anything disclosed at eligibility will likely come up — be ready to explain it.
+    for (const d of interviewDisclosureReminders(eligibilityAnswers)) checks.push(d);
+    return checks;
+  },
+
+  // Step 3.8 — Attend Visa Interview (final readiness gate)
+  step_3_8: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    if (!done("step_3_6")) {
+      checks.push({
+        level: "warning",
+        title: "Original documents not gathered yet",
+        hint: "Finish gathering and organizing your original documents (Step 6) before interview day — the officer may ask for any of them.",
+      });
+    }
+    if (!done("step_3_7")) {
+      checks.push({
+        level: "info",
+        title: "Run interview prep before you go",
+        hint: "Practice your answers and re-read your DS-260 (Step 7) so your responses stay calm, concise, and consistent.",
+      });
+    }
+    checks.push({
+      level: "info",
+      title: "No electronics — arrive 20–30 minutes early",
+      hint: "Bring the printed appointment letter and your organized packet. Phones and electronic devices are not allowed inside U.S. Embassy Islamabad, and latecomers may be turned away.",
+    });
+    return checks;
+  },
+
+  // Step 3.9 — Confirm Interview Outcome (tracking)
+  step_3_9: ({ state }) => {
+    const checks: StepCheck[] = [];
+    if (!state.metadata?.interviewOutcome) {
+      checks.push({
+        level: "info",
+        title: "Record your interview outcome",
+        hint: "Saving whether you were approved or issued a 221(g) unlocks the correct next steps for your situation.",
+      });
+    }
+    return checks;
+  },
+
+  // Step 3.10 — Track Visa Issuance (evidence accuracy — approved path)
+  step_3_10: () => [
+    {
+      level: "info",
+      title: "Verify your visa details when the passport arrives",
+      hint: "Check that your name, date of birth, visa category, and expiry date are all correct. Report any error to the embassy immediately — you must enter the U.S. before the visa expires.",
+    },
+  ],
+
+  // Step 3.11 — Submit 221(g) Documents (completeness + accuracy)
+  step_3_11: () => [
+    {
+      level: "warning",
+      title: "Submit exactly what the 221(g) requested",
+      hint: "Provide every requested item — nothing more, nothing less — using the method and any deadline stated in the notice. Keep a complete copy of everything you submit, then monitor CEAC weekly.",
+    },
+  ],
 };
 
 // ─── Chapter 2 helper: DS-260 mandatory-disclosure reminders ────────────────
@@ -522,6 +698,59 @@ function ds260Disclosures(
       level: "warning",
       title: "Disclose the prior U.S. overstay on DS-260",
       hint: "Declare any unlawful presence. A provisional waiver (I-601A) may be needed before the interview.",
+    });
+  }
+  return checks;
+}
+
+// ─── Chapter 3 helper: interview-readiness disclosure reminders ─────────────
+
+/**
+ * At interview prep, anything the user declared at eligibility is likely to come
+ * up at the window. These are framed for the interview (be ready to explain /
+ * bring originals) rather than the DS-260 disclosure framing in
+ * `ds260Disclosures`. Consistency with the filed DS-260 is the goal.
+ */
+function interviewDisclosureReminders(
+  answers:
+    | Record<string, Record<string, string | string[]> | undefined>
+    | null
+    | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const get = (q: string, s: string) => {
+    const v = answers?.[q]?.[s];
+    return typeof v === "string" ? v : undefined;
+  };
+
+  const q3s1 = get("q3", "q3s1");
+  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
+    checks.push({
+      level: "info",
+      title: "Be ready to explain the prior marriage",
+      hint: "Expect questions about how a prior marriage ended. Your answer must match the dates and termination documents in your DS-260 and civil records.",
+    });
+  }
+  if (get("q5", "q5s1") === "yes") {
+    checks.push({
+      level: "info",
+      title: "Be ready to explain the past visa refusal",
+      hint: "The officer can see prior U.S. visa refusals. Answer consistently with what you declared on the DS-260.",
+    });
+  }
+  if (get("q5", "q5s2") === "yes") {
+    checks.push({
+      level: "info",
+      title: "Bring originals for the court/police record",
+      hint: "If you disclosed an arrest or charge, bring the certified court and police records and be ready to explain the outcome briefly and truthfully.",
+    });
+  }
+  if (get("q5", "q5s4") === "yes") {
+    checks.push({
+      level: "info",
+      title: "Be ready to explain the prior U.S. overstay",
+      hint: "If you disclosed unlawful presence, be prepared to explain it. Confirm whether a waiver applies to your case before the interview.",
     });
   }
   return checks;

@@ -1158,354 +1158,246 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 }
 
 export function TwoWaysSection() {
-  const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
-  const reduceMotion = useReducedMotion();
-  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [hoveredSide, setHoveredSide] = useState<"left" | "right" | null>(null);
+  const [roadmapImageIdx, setRoadmapImageIdx] = useState(0);
+  const [toolsImageIdx, setToolsImageIdx] = useState(0);
+const [showChoiceModal, setShowChoiceModal] = useState(false);
 
-  const selectPath = (idx: TwoWaysIndex) => {
-    setActiveIndex(idx);
-  };
+  const journeyHref = "/visa-category/ir-category/ir1-journey";
+  const toolsHref = "/tools";
 
-  const activePath = twoWaysPaths[activeIndex];
+  const roadmapImages = [
+    "/assets/images/guided_roadmap_image.png",
+    "/assets/images/guided_roadmap_image2.png"
+  ];
+  const toolsImages = [
+    "/assets/images/tool_icons_image.png",
+    "/assets/images/tool_icons_image2.png"
+  ];
 
   return (
     <>
-      {/* ── Desktop (lg+): scroll-driven sticky ─────────────────────────── */}
-      <section id="path" aria-label="Two ways to use Rahvana" className="relative hidden lg:block">
-        <div
-          style={{
-            minHeight: "auto",
-            display: "flex",
-            alignItems: "center",
-            background: "transparent",
-            paddingBlock: "clamp(20px,3vh,35px)",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* Main grid */}
-          <div
-            className="relative mx-auto w-full px-12 xl:px-16"
-            style={{
-              maxWidth: 1300,
-              display: "grid",
-              gridTemplateColumns: "minmax(0,340px) minmax(0,1fr)",
-              gap: "clamp(30px,4vw,80px)",
-              alignItems: "center",
-            }}
-          >
-            {/* Left Column: Headings, Selectors, and CTAs */}
-            <div className="flex flex-col">
+      <section id="path" className="block">
+      <div className="w-full px-6 py-8 md:py-12">
+        
+        {/* Main Content Card Wrapper */}
+        <div className="relative z-10 w-full mx-auto flex flex-col items-center justify-start max-w-5xl">
+          
+          {/* Header Block */}
+          <div className="text-center max-w-2xl mb-6">
+            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#0d7377] mb-1">
+              Two Ways to Move Forward
+            </p>
+            <h2 className="text-xl sm:text-3xl font-extrabold text-[#162126] tracking-tight leading-tight mb-2">
+              How should I use Rahvana?
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl mx-auto font-medium">
+              Select the support style that matches your visa experience. Follow our step-by-step roadmap or access advanced tools directly.
+            </p>
+          </div>
+
+          {/* Arrow Split Layout */}
+          <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-8 sm:py-6 lg:px-10 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
+            
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center w-full max-w-5xl">
               
-              {/* Header Block */}
-              <div className="mb-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#0d7377] mb-1">
-                  Two Ways to Move Forward
+              {/* Left Side Option: Follow Roadmap */}
+              <motion.div
+                className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-4 rounded-2xl border ${
+                  hoveredSide === "left"
+                    ? "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
+                    : "border-transparent bg-transparent"
+                }`}
+                onMouseEnter={() => setHoveredSide("left")}
+                onMouseLeave={() => setHoveredSide(null)}
+                animate={hoveredSide === "right" ? { opacity: 0.5, scale: 0.98 } : { opacity: 1, scale: 1 }}
+              >
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#0d7377] mb-1.5 px-2 py-0.5 bg-teal-50 border border-teal-100 rounded-full">
+                  Beginners
+                </span>
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                  Follow IR-1 Roadmap
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                  Ideal for beginners seeking structured, step-by-step guidance and progress tracking.
                 </p>
-                <h2
-                  className="mt-2.5 mb-0 font-extrabold text-[#162126]"
-                  style={{
-                    fontSize: "clamp(22px,2.4vw,28px)",
-                    lineHeight: 1.08,
-                    maxWidth: 440,
-                  }}
+                <Link
+                  href={journeyHref}
+                  className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20 text-white transition-all duration-200 no-underline mb-5"
                 >
-                  Choose how you want to use Rahvana
-                </h2>
-                <p
-                  className="mt-2 mb-0 text-[12px] leading-relaxed text-[#4a5c62]"
-                  style={{
-                    maxWidth: 420,
-                  }}
-                >
-                  Follow the guided IR-1 roadmap, use focused tools and resources independently, and choose the support style that fits what you need right now.
-                </p>
-              </div>
+                  Start Roadmap
+                  <ArrowRight size={14} />
+                </Link>
 
-              {/* Options Selector Container */}
-              <div className="flex flex-col gap-2">
-                {twoWaysPaths.map((path, i) => {
-                  const isActive = activeIndex === i;
-                  const isJourney = i === 0;
-                  
-                  return (
+                {/* Image Preview Block with Cycle controls */}
+                <div className="w-full max-w-[280px] flex flex-col items-center lg:items-end">
+                  <div className="relative w-full aspect-video flex items-center justify-center">
+                    <img
+                      src={roadmapImages[roadmapImageIdx]}
+                      alt="Guided Roadmap Preview"
+                      className="w-full h-full object-contain transition-all duration-300"
+                    />
+                  </div>
+                  {/* Control Arrows Bar */}
+                  <div className="flex items-center justify-between w-full mt-2 px-1">
                     <button
-                      key={path.title}
-                      type="button"
-                      onClick={() => selectPath(i as TwoWaysIndex)}
-                      aria-current={isActive ? "true" : undefined}
-                      className={`group flex w-full flex-col text-left p-3 rounded-xl border transition-all duration-300 ${
-                        isActive
-                          ? isJourney
-                            ? "border-teal-500 bg-teal-50/40 shadow-[0_8px_20px_rgba(13,115,119,0.06)]"
-                            : "border-slate-800 bg-slate-50 shadow-[0_8px_20px_rgba(30,41,59,0.05)]"
-                          : "border-slate-200 bg-transparent hover:border-slate-300"
-                      }`}
-                      style={{ cursor: "pointer", WebkitTapHighlightColor: "transparent" }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setRoadmapImageIdx((prev) => (prev === 0 ? roadmapImages.length - 1 : prev - 1));
+                      }}
+                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-teal-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
+                      title="Previous Image"
                     >
-                      {/* Top Row: Eyebrow + Pill */}
-                      <div className="flex items-center justify-between gap-3 w-full mb-1">
-                        <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? "text-teal-600" : "text-slate-400"}`}>
-                          {path.eyebrow}
-                        </span>
-                        <span className={`text-[7.5px] px-1.5 py-0.5 rounded-full font-bold border transition-colors ${
-                          isActive
-                            ? isJourney
-                              ? "bg-teal-100 text-teal-800 border-teal-200"
-                              : "bg-indigo-100 text-indigo-800 border-indigo-200"
-                            : "bg-slate-100 text-slate-500 border-slate-200"
-                        }`}>
-                          {isJourney ? "Beginners" : "Experienced"}
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <h3 className={`text-[13px] font-black transition-colors ${
-                        isActive ? "text-slate-900" : "text-slate-700 group-hover:text-slate-950"
-                      }`}>
-                        {path.title}
-                      </h3>
-
-                      {/* Subtitle / Teaser */}
-                      <p className={`text-[10px] mt-0.5 leading-relaxed transition-colors ${
-                        isActive ? "text-slate-600" : "text-slate-400 group-hover:text-slate-500"
-                      }`}>
-                        {path.teaser}
-                      </p>
+                      <ChevronLeft size={14} />
                     </button>
-                  );
-                })}
-              </div>
-
-              {/* Context-Aware Primary CTA Button */}
-              <div className="border-t border-slate-100 pt-3 mt-3">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeIndex}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <Link
-                      href={activePath.href}
-                      className={`inline-flex items-center justify-center gap-2 w-full py-2.5 px-6 rounded-xl text-[12.5px] font-black text-white shadow-md transition-all duration-200 no-underline ${
-                        activeIndex === 0
-                          ? "bg-teal-600 hover:bg-teal-700 shadow-[0_8px_20px_rgba(13,115,119,0.18)]"
-                          : "bg-slate-800 hover:bg-slate-950 shadow-[0_8px_20px_rgba(30,41,59,0.12)]"
-                      }`}
-                    >
-                      {activePath.cta}
-                      <ArrowRight size={13} />
-                    </Link>
-                    <p className="text-center text-[10px] text-slate-400 mt-1.5 font-semibold">
-                      Not sure yet?{" "}
-                      <button
-                        type="button"
-                        onClick={() => setShowChoiceModal(true)}
-                        className="underline hover:text-slate-600 transition-colors font-bold bg-transparent border-none p-0 cursor-pointer"
-                      >
-                        Click here to compare options.
-                      </button>
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-            </div>
-
-            {/* Right Column: Visual Scene & Details */}
-            <div className="flex flex-col gap-4 w-full min-w-0">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={activeIndex}
-                  className="flex flex-col gap-4"
-                  initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  
-                  {/* Descriptive content header */}
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[9px] font-black tracking-widest text-teal-600 uppercase">
-                      {activePath.eyebrow} DETAILS
+                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded select-none">
+                      Roadmap Variant {roadmapImageIdx + 1}
                     </span>
-                    {/* <h2 className="text-lg md:text-xl font-black text-slate-900 leading-snug">
-                      {activePath.shortTitle}
-                    </h2> */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setRoadmapImageIdx((prev) => (prev === roadmapImages.length - 1 ? 0 : prev + 1));
+                      }}
+                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-teal-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
+                      title="Next Image"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
                   </div>
+                </div>
+              </motion.div>
 
-                  {/* Best for box - Placed ABOVE the Visual Demo */}
-                  <div className={`flex items-start gap-2.5 rounded-xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
-                    <span className="font-extrabold text-sm text-teal-600 shrink-0">•</span>
-                    <p className="text-[11px] leading-relaxed font-semibold">
-                      <strong>Best for:</strong> {activePath.bestFor}
-                    </p>
+              {/* Center Split SVG Graphic */}
+              <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-1">
+                
+                {/* Symmetrical Curved SVG Split Arrows */}
+                <svg
+                  width="320"
+                  height="160"
+                  viewBox="0 0 320 160"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="drop-shadow-[0_8px_16px_rgba(22,33,38,0.06)]"
+                >
+                  {/* Left Arrow Path */}
+                  <motion.path
+                    d="M 152,160 C 152,100 135,60 60,60 L 60,75 L 25,50 L 60,25 L 60,40 C 145,40 168,90 168,160 Z"
+                    fill={hoveredSide === "left" ? "#0d7377" : "#1e293b"}
+                    className="transition-colors duration-300"
+                    whileHover={{ scale: 1.01 }}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => window.location.href = journeyHref}
+                    onMouseEnter={() => setHoveredSide("left")}
+                    onMouseLeave={() => setHoveredSide(null)}
+                  />
+                  
+                  {/* Right Arrow Path */}
+                  <motion.path
+                    d="M 168,160 C 168,100 185,60 260,60 L 260,75 L 295,50 L 260,25 L 260,40 C 175,40 152,90 152,160 Z"
+                    fill={hoveredSide === "right" ? "#b5451b" : "#4a5c62"}
+                    className="transition-colors duration-300"
+                    whileHover={{ scale: 1.01 }}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => window.location.href = toolsHref}
+                    onMouseEnter={() => setHoveredSide("right")}
+                    onMouseLeave={() => setHoveredSide(null)}
+                  />
+                </svg>
+
+                {/* Icon Overlay inside Left Arrow Curve */}
+                <div 
+                  className={`absolute left-[54px] top-[40px] flex items-center justify-center w-8 h-8 rounded-full pointer-events-none transition-all duration-300 ${
+                    hoveredSide === "left" ? "bg-white text-teal-600 scale-110 shadow-md" : "text-white/80"
+                  }`}
+                >
+                  <Compass size={16} className={hoveredSide === "left" ? "animate-spin-slow" : ""} />
+                </div>
+
+                {/* Icon Overlay inside Right Arrow Curve */}
+                <div 
+                  className={`absolute right-[54px] top-[40px] flex items-center justify-center w-8 h-8 rounded-full pointer-events-none transition-all duration-300 ${
+                    hoveredSide === "right" ? "bg-white text-orange-600 scale-110 shadow-md" : "text-white/80"
+                  }`}
+                >
+                  <PenTool size={16} />
+                </div>
+
+              </div>
+
+              {/* Right Side Option: Use Tools */}
+              <motion.div
+                className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-4 rounded-2xl border ${
+                  hoveredSide === "right"
+                    ? "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
+                    : "border-transparent bg-transparent"
+                }`}
+                onMouseEnter={() => setHoveredSide("right")}
+                onMouseLeave={() => setHoveredSide(null)}
+                animate={hoveredSide === "left" ? { opacity: 0.5, scale: 0.98 } : { opacity: 1, scale: 1 }}
+              >
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#b5451b] mb-1.5 px-2 py-0.5 bg-orange-50 border border-orange-100 rounded-full">
+                  Experienced
+                </span>
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                  Use Independent Tools
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                  Suitable for experienced users who prefer flexibility and focused self-direction.
+                </p>
+                <Link
+                  href={toolsHref}
+                  className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20 text-white transition-all duration-200 no-underline mb-5"
+                >
+                  Browse Resources
+                  <ArrowRight size={14} />
+                </Link>
+
+                {/* Image Preview Block with Cycle controls */}
+                <div className="w-full max-w-[280px] flex flex-col items-center lg:items-start">
+                  <div className="relative w-full aspect-video flex items-center justify-center">
+                    <img
+                      src={toolsImages[toolsImageIdx]}
+                      alt="Independent Tools Preview"
+                      className="w-full h-full object-contain transition-all duration-300"
+                    />
                   </div>
-
-                  {/* Demo Section (Visual Scene) - Increased height and set clean width & height limits */}
-                  <div className="w-full max-w-[620px] border border-slate-100 bg-white rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.04)] overflow-hidden">
-                    <ResponsiveVisual index={activeIndex} />
+                  {/* Control Arrows Bar */}
+                  <div className="flex items-center justify-between w-full mt-2 px-1">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setToolsImageIdx((prev) => (prev === 0 ? toolsImages.length - 1 : prev - 1));
+                      }}
+                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
+                      title="Previous Image"
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded select-none">
+                      Tools Variant {toolsImageIdx + 1}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setToolsImageIdx((prev) => (prev === toolsImages.length - 1 ? 0 : prev + 1));
+                      }}
+                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
+                      title="Next Image"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
                   </div>
+                </div>
+              </motion.div>
 
-                </motion.div>
-              </AnimatePresence>
             </div>
 
           </div>
+
         </div>
-      </section>
 
-      {/* ── Mobile / tablet (below lg) ───────────────────────────────────── */}
-      <section
-        aria-label="Two ways to use Rahvana"
-        className="block lg:hidden"
-        style={{
-          background: "transparent",
-        }}
-      >
-        <div
-          className="relative mx-auto px-5 sm:px-8 md:px-10 py-12 sm:py-16"
-          style={{ maxWidth: 1360 }}
-        >
-          {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-start">
-            {/* Left: heading + selectors + CTAs */}
-            <div className="flex flex-col">
-              
-              <div className="mb-6">
-                <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
-                  TWO WAYS TO MOVE FORWARD
-                </p>
-                <h2
-                  className="mt-3 mb-0 font-extrabold text-[#162126]"
-                  style={{ fontSize: "clamp(26px,5.5vw,42px)", lineHeight: 1.08 }}
-                >
-                  Choose how you want to use Rahvana
-                </h2>
-                <p
-                  className="mt-3 mb-0 text-[#4a5c62]"
-                  style={{ fontSize: "clamp(14px,2vw,16px)", lineHeight: 1.65 }}
-                >
-                  Follow the guided IR-1 roadmap, use focused tools and resources independently, and choose the support style that fits what you need right now.
-                </p>
-              </div>
-
-              {/* Selector buttons */}
-              <div className="flex flex-col gap-2.5">
-                {twoWaysPaths.map((path, i) => {
-                  const isActive = activeIndex === i;
-                  const isJourney = i === 0;
-                  
-                  return (
-                    <button
-                      key={path.title}
-                      type="button"
-                      onClick={() => setActiveIndex(i as TwoWaysIndex)}
-                      aria-current={activeIndex === i ? "true" : undefined}
-                      className={`group flex w-full flex-col text-left p-4 rounded-xl border transition-all duration-300 ${
-                        activeIndex === i
-                          ? isJourney
-                            ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_6px_15px_rgba(13,115,119,0.06)]"
-                            : "border-slate-800 bg-slate-50 shadow-[0_6px_15px_rgba(30,41,59,0.05)]"
-                          : "border-[#d7e6e2] bg-white/80"
-                      }`}
-                    >
-                      {/* Top row with badges */}
-                      <div className="flex items-center justify-between gap-3 w-full mb-1.5">
-                        <span className={`text-[8.5px] font-black uppercase tracking-wider ${isActive ? "text-[#0d7377]" : "text-slate-400"}`}>
-                          {path.eyebrow}
-                        </span>
-                        <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border transition-colors ${
-                          isActive
-                            ? isJourney
-                              ? "bg-teal-100 text-teal-800 border-teal-200"
-                              : "bg-indigo-100 text-indigo-800 border-indigo-200"
-                            : "bg-slate-100 text-slate-500 border-slate-200"
-                        }`}>
-                          {isJourney ? "Beginners" : "Experienced"}
-                        </span>
-                      </div>
-                      
-                      <div className="text-[14px] font-black text-slate-900 leading-tight">
-                        {path.title}
-                      </div>
-                      <div className="text-[11px] leading-snug text-slate-500 mt-1">
-                        {path.teaser}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Dynamic Context-Aware CTA */}
-              <div className="border-t border-slate-100 pt-5 mt-5">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeIndex}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <Link
-                      href={activePath.href}
-                      className={`inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl text-[14px] font-black text-white shadow-md transition-all duration-200 no-underline ${
-                        activeIndex === 0
-                          ? "bg-[#0d7377] hover:bg-[#0b5e61] shadow-[0_8px_20px_rgba(13,115,119,0.18)]"
-                          : "bg-slate-800 hover:bg-slate-950 shadow-[0_8px_20px_rgba(30,41,59,0.12)]"
-                      }`}
-                    >
-                      {activePath.cta}
-                      <ArrowRight size={15} />
-                    </Link>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-            </div>
-
-            {/* Right: details and visual underneath */}
-            <div className="flex flex-col gap-6">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={activeIndex}
-                  className="flex flex-col gap-5"
-                  initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  {/* Heading details */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[10px] font-black tracking-widest text-[#0d7377] uppercase">
-                      {activePath.eyebrow} DETAILS
-                    </span>
-                    <h3 className="text-[16px] sm:text-[18px] font-extrabold text-[#162126] leading-snug">
-                      {activePath.shortTitle}
-                    </h3>
-                  </div>
-
-                  {/* Best for box - Placed ABOVE visual */}
-                  <div className={`flex items-start gap-2.5 rounded-2xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
-                    <span className="font-extrabold text-sm text-teal-600 mt-0.5">•</span>
-                    <p className="text-[11px] leading-relaxed font-semibold">
-                      <strong>Best for:</strong> {activePath.bestFor}
-                    </p>
-                  </div>
-
-                  {/* Live Visual Canvas - Set clean max width limits */}
-                  <div className="w-full max-w-[620px] border border-slate-100 bg-white rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.04)] overflow-hidden">
-                    <ResponsiveVisual index={activeIndex} />
-                  </div>
-
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-          </div>
-        </div>
-      </section>
+      </div>
+    </section>
 
       <PlatformChoiceModal
         isOpen={showChoiceModal}

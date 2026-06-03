@@ -361,7 +361,7 @@ export default function CombinedIntakeForm({
   const [outputs, setOutputs] = useState<{
     actionPlan: string;
     checklist: string;
-    coverLetter: string;
+    // coverLetter: string;
   } | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -474,12 +474,12 @@ export default function CombinedIntakeForm({
     // Generate outputs based on the logic from the reference JS
     const actionPlan = generateActionPlan();
     const packetChecklist = generatePacketChecklist();
-    const coverLetter = generateCoverLetter();
+    // const coverLetter = generateCoverLetter();
 
     setOutputs({
       actionPlan,
       checklist: packetChecklist,
-      coverLetter,
+      // coverLetter,
     });
 
     setCurrentStep(4);
@@ -966,7 +966,7 @@ export default function CombinedIntakeForm({
     let checklist = `# PACKET ASSEMBLY CHECKLIST\n\n`;
     checklist += `Assemble your documents in this order:\n\n`;
 
-    checklist += `* Cover Letter (see Cover Letter tab)\n`;
+    // checklist += `* Cover Letter (see Cover Letter tab)\n`;
     checklist += `* Copy of 221(g) Letter (recommended)\n`;
 
     // Beneficiary documents
@@ -1063,173 +1063,174 @@ export default function CombinedIntakeForm({
     }
 
     checklist += `\n\n## BEFORE YOU SUBMIT - FINAL CHECKS\n\n`;
-    checklist += `â˜ Cover letter is signed and dated\n`;
-    checklist += `â˜ All documents are in the correct order\n`;
-    checklist += `â˜ Originals are included where required (not photocopies)\n`;
-    checklist += `â˜ All signatures are in blue ink where required\n`;
-    checklist += `â˜ All forms are dated within 6 months\n`;
-    checklist += `â˜ Translations are certified and complete\n`;
-    checklist += `â˜ Names and dates are consistent across all documents\n`;
-    checklist += `â˜ You have kept photocopies of everything\n`;
-    checklist += `â˜ Courier tracking number is recorded\n`;
-    checklist += `â˜ You know how to check CEAC status\n\n`;
+    // checklist += `â˜ Cover letter is signed and dated\n`;
+    checklist += `- All documents are in the correct order\n`;
+    checklist += `- Originals are included where required (not photocopies)\n`;
+    checklist += `- All signatures are in blue ink where required\n`;
+    checklist += `- All forms are dated within 6 months\n`;
+    checklist += `- Translations are certified and complete\n`;
+    checklist += `- Names and dates are consistent across all documents\n`;
+    checklist += `- You have kept photocopies of everything\n`;
+    checklist += `- Courier tracking number is recorded\n`;
+    checklist += `- You know how to check CEAC status\n\n`;
 
     checklist += `**REMEMBER:** Follow your embassy's 221(g) letter instructions if anything differs from this checklist.\n`;
 
     return checklist;
   };
 
-  const generateCoverLetter = () => {
-    const cb = formData;
-    const cl = selected221gItems;
+  // const generateCoverLetter = () => {
+  //   const cb = formData;
+  //   const cl = selected221gItems;
 
-    const today = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  //   const today = new Date().toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //   });
 
-    const visaUnitType =
-      cb.visaType?.toLowerCase() === "nonimmigrant" ? "Nonimmigrant" : "Immigrant";
-    const visaCategoryFull =
-      VISA_CATEGORIES.find((c) => c.value === cb.visaCategory)?.label || cb.visaCategory;
+  //   const visaUnitType =
+  //     cb.visaType?.toLowerCase() === "nonimmigrant" ? "Nonimmigrant" : "Immigrant";
+  //   const visaCategoryFull =
+  //     VISA_CATEGORIES.find((c) => c.value === cb.visaCategory)?.label || cb.visaCategory;
 
-    let letter = `${today}\n\n`;
-    letter += `${cb.consularPost}\n`;
-    letter += `${visaUnitType} Visa Unit\n\n`;
-    letter += `**Subject: Response to INA 221(g) Refusal`;
-    if (cb.caseNumber) letter += ` â€“ Case Number: ${cb.caseNumber}`;
-    if (cb.beneficiaryName) letter += ` â€“ ${cb.beneficiaryName}`;
-    letter += `**\n\n`;
+  //   let letter = `${today}\n\n`;
+  //   letter += `${cb.consularPost}\n`;
+  //   letter += `${visaUnitType} Visa Unit\n\n`;
+  //   letter += `**Subject: Response to INA 221(g) Refusal`;
+  //   if (cb.caseNumber) letter += ` â€“ Case Number: ${cb.caseNumber}`;
+  //   if (cb.beneficiaryName) letter += ` â€“ ${cb.beneficiaryName}`;
+  //   letter += `**\n\n`;
 
-    letter += `Dear Consular Officer,\n\n`;
+  //   letter += `Dear Consular Officer,\n\n`;
 
-    letter += `I am writing in response to the Section 221(g) refusal issued following my ${visaUnitType.toLowerCase()} visa interview on ${formatDate(cb.interviewDate)}. `;
-    letter += `I am submitting the requested documents as instructed.\n\n`;
+  //   letter += `I am writing in response to the Section 221(g) refusal issued following my ${visaUnitType.toLowerCase()} visa interview on ${formatDate(cb.interviewDate)}. `;
+  //   letter += `I am submitting the requested documents as instructed.\n\n`;
 
-    letter += `**Applicant Information:**\n`;
-    if (cb.beneficiaryName) letter += `- Full Name: ${cb.beneficiaryName}\n`;
-    if (cb.passportNumber) letter += `- Passport Number: ${cb.passportNumber}\n`;
-    letter += `- Interview Date: ${formatDate(cb.interviewDate)}\n`;
-    if (cb.caseNumber) letter += `- Case Number: ${cb.caseNumber}\n`;
-    letter += `- Visa Category: ${visaCategoryFull}\n`;
-    if (cb.ceacStatus) letter += `- Current CEAC Status: ${cb.ceacStatus}\n`;
-    letter += `\n`;
+  //   letter += `**Applicant Information:**\n`;
+  //   if (cb.beneficiaryName) letter += `- Full Name: ${cb.beneficiaryName}\n`;
+  //   if (cb.passportNumber) letter += `- Passport Number: ${cb.passportNumber}\n`;
+  //   letter += `- Interview Date: ${formatDate(cb.interviewDate)}\n`;
+  //   if (cb.caseNumber) letter += `- Case Number: ${cb.caseNumber}\n`;
+  //   letter += `- Visa Category: ${visaCategoryFull}\n`;
+  //   if (cb.ceacStatus) letter += `- Current CEAC Status: ${cb.ceacStatus}\n`;
+  //   letter += `\n`;
 
-    if (smartModeEnabled && cl.i864_affidavit && cl.i864_sponsor_structure) {
-      letter += `**Financial Sponsorship Structure:**\n`;
-      letter += `- Structure: ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
-      if (cl.i864_petitioner_name) {
-        letter += `- Petitioner: ${cl.i864_petitioner_name}\n`;
-      }
-      if (cl.i864_joint_sponsor_name) {
-        letter += `- Joint Sponsor: ${cl.i864_joint_sponsor_name}\n`;
-      }
-      if (cl.i864_household_member_name) {
-        letter += `- Household Member: ${cl.i864_household_member_name}\n`;
-      }
-      if (cl.i864_tax_years) {
-        letter += `- Tax Years: ${cl.i864_tax_years}\n`;
-      }
-      letter += `\n`;
-    }
+  //   if (smartModeEnabled && cl.i864_affidavit && cl.i864_sponsor_structure) {
+  //     letter += `**Financial Sponsorship Structure:**\n`;
+  //     letter += `- Structure: ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
+  //     if (cl.i864_petitioner_name) {
+  //       letter += `- Petitioner: ${cl.i864_petitioner_name}\n`;
+  //     }
+  //     if (cl.i864_joint_sponsor_name) {
+  //       letter += `- Joint Sponsor: ${cl.i864_joint_sponsor_name}\n`;
+  //     }
+  //     if (cl.i864_household_member_name) {
+  //       letter += `- Household Member: ${cl.i864_household_member_name}\n`;
+  //     }
+  //     if (cl.i864_tax_years) {
+  //       letter += `- Tax Years: ${cl.i864_tax_years}\n`;
+  //     }
+  //     letter += `\n`;
+  //   }
 
-    letter += `**Enclosed Documents:**\n\n`;
+  //   letter += `**Enclosed Documents:**\n\n`;
 
-    // Build document list
-    const docList = [];
-    if (cl.passport) docList.push("Passport (original)");
-    if (cl.medical_examination) docList.push("Medical examination results (sealed)");
+  //   // Build document list
+  //   const docList = [];
+  //   if (cl.passport) docList.push("Passport (original)");
+  //   if (cl.medical_examination) docList.push("Medical examination results (sealed)");
 
-    if (cl.i864_affidavit) {
-      if (cl.i864_affidavit) {
-        docList.push("I-864 Affidavit of Support from petitioner");
-        docList.push("Tax and financial evidence for petitioner");
-        if (cl.i864a) {
-          docList.push("I-864A Contract with household member");
-        }
-      }
-      if (cl.i864_joint_sponsor) {
-        docList.push("I-864 Affidavit of Support from joint sponsor");
-        docList.push("Tax and financial evidence for joint sponsor");
-        if (cl.i864a) {
-          docList.push("I-864A Contract with joint sponsor household member");
-        }
-      }
-      if (!cl.i864_petitioner && !cl.i864_joint_sponsor) {
-        docList.push("I-864 Affidavit of Support package");
-      }
-    }
+  //   if (cl.i864_affidavit) {
+  //     if (cl.i864_affidavit) {
+  //       docList.push("I-864 Affidavit of Support from petitioner");
+  //       docList.push("Tax and financial evidence for petitioner");
+  //       if (cl.i864a) {
+  //         docList.push("I-864A Contract with household member");
+  //       }
+  //     }
+  //     if (cl.i864_joint_sponsor) {
+  //       docList.push("I-864 Affidavit of Support from joint sponsor");
+  //       docList.push("Tax and financial evidence for joint sponsor");
+  //       if (cl.i864a) {
+  //         docList.push("I-864A Contract with joint sponsor household member");
+  //       }
+  //     }
+  //     if (!cl.i864_petitioner && !cl.i864_joint_sponsor) {
+  //       docList.push("I-864 Affidavit of Support package");
+  //     }
+  //   }
 
-    if (cl.nadra_family_reg)
-      docList.push(
-        `NADRA Family Registration Certificate (original)${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
-      );
-    if (cl.nadra_birth_cert && cl.nadra_birth_cert_petitioner) {
-      docList.push(`NADRA Birth Certificate (petitioner) (original)`);
-    }
-    if (cl.nadra_birth_cert && !cl.nadra_birth_cert_petitioner) {
-      docList.push(`NADRA Birth Certificate (beneficiary) (original)`);
-    }
-    if (cl.nadra_marriage_cert) docList.push("NADRA Marriage Certificate (original)");
-    if (cl.nikah_nama) {
-      docList.push("Original Nikah Nama");
-      docList.push("Computerized Marriage Registration Certificate (MRC) (original)");
-      docList.push("Beneficiary's CNIC showing husband's name (copy)");
-    }
-    if (cl.nadra_divorce_cert && cl.nadra_divorce_cert_petitioner)
-      docList.push(`NADRA Divorce Certificate (petitioner) (original)`);
-    if (cl.nadra_divorce_cert && !cl.nadra_divorce_cert_petitioner)
-      docList.push(`NADRA Divorce Certificate (beneficiary) (original) `);
-    if (cl.us_divorce_decree) docList.push("U.S. Divorce Decree (original or certified copy)");
-    if (cl.death_certificate)
-      docList.push(
-        `Death Certificate (original)${cl.death_certificate_name ? ` – ${cl.death_certificate_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
-      );
-    if (cl.police_certificate)
-      docList.push(
-        `Police Certificate from ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"} (original)`
-      );
-    if (cl.english_translation)
-      docList.push(
-        `Certified English translation of ${cl.english_translation_document || "[INFORMATION MISSING - please go back and specify documents that needs to be translated]"}`
-      );
-    if (cl.dna_test)
-      docList.push(
-        `DNA test results for ${cl.dna_test_name || "[INFORMATION MISSING - please go back and specify parties]"}`
-      );
+  //   if (cl.nadra_family_reg)
+  //     docList.push(
+  //       `NADRA Family Registration Certificate (original)${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
+  //     );
+  //   if (cl.nadra_birth_cert && cl.nadra_birth_cert_petitioner) {
+  //     docList.push(`NADRA Birth Certificate (petitioner) (original)`);
+  //   }
+  //   if (cl.nadra_birth_cert && !cl.nadra_birth_cert_petitioner) {
+  //     docList.push(`NADRA Birth Certificate (beneficiary) (original)`);
+  //   }
+  //   if (cl.nadra_marriage_cert) docList.push("NADRA Marriage Certificate (original)");
+  //   if (cl.nikah_nama) {
+  //     docList.push("Original Nikah Nama");
+  //     docList.push("Computerized Marriage Registration Certificate (MRC) (original)");
+  //     docList.push("Beneficiary's CNIC showing husband's name (copy)");
+  //   }
+  //   if (cl.nadra_divorce_cert && cl.nadra_divorce_cert_petitioner)
+  //     docList.push(`NADRA Divorce Certificate (petitioner) (original)`);
+  //   if (cl.nadra_divorce_cert && !cl.nadra_divorce_cert_petitioner)
+  //     docList.push(`NADRA Divorce Certificate (beneficiary) (original) `);
+  //   if (cl.us_divorce_decree) docList.push("U.S. Divorce Decree (original or certified copy)");
+  //   if (cl.death_certificate)
+  //     docList.push(
+  //       `Death Certificate (original)${cl.death_certificate_name ? ` – ${cl.death_certificate_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
+  //     );
+  //   if (cl.police_certificate)
+  //     docList.push(
+  //       `Police Certificate from ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"} (original)`
+  //     );
+  //   if (cl.english_translation)
+  //     docList.push(
+  //       `Certified English translation of ${cl.english_translation_document || "[INFORMATION MISSING - please go back and specify documents that needs to be translated]"}`
+  //     );
+  //   if (cl.dna_test)
+  //     docList.push(
+  //       `DNA test results for ${cl.dna_test_name || "[INFORMATION MISSING - please go back and specify parties]"}`
+  //     );
 
-    if (cl.other && cl.other_details) {
-      docList.push(cl.other_details);
-    }
+  //   if (cl.other && cl.other_details) {
+  //     docList.push(cl.other_details);
+  //   }
 
-    // Format as table
-    letter += `| # | Document |\n`;
-    letter += `|---|----------|\n`;
-    docList.forEach((doc, index) => {
-      letter += `| ${index + 1} | ${doc} |\n`;
-    });
+  //   // Format as table
+  //   letter += `| # | Document |\n`;
+  //   letter += `|---|----------|\n`;
+  //   docList.forEach((doc, index) => {
+  //     letter += `| ${index + 1} | ${doc} |\n`;
+  //   });
 
-    letter += `\n`;
-    letter += `All documents are submitted in accordance with the instructions provided in the 221(g) letter. `;
-    letter += `I have included originals where required and have retained photocopies for my records.\n\n`;
+  //   letter += `\n`;
+  //   letter += `All documents are submitted in accordance with the instructions provided in the 221(g) letter. `;
+  //   letter += `I have included originals where required and have retained photocopies for my records.\n\n`;
 
-    letter += `I respectfully request that you review these documents at your earliest convenience. `;
-    letter += `Please do not hesitate to contact me if additional information is needed.\n\n`;
+  //   letter += `I respectfully request that you review these documents at your earliest convenience. `;
+  //   letter += `Please do not hesitate to contact me if additional information is needed.\n\n`;
 
-    letter += `Thank you for your time and consideration.\n\n`;
-    letter += `Sincerely,\n\n`;
-    letter += `${cb.beneficiaryName || "[Your Full Name]"}\n`;
-    if (cb.passportNumber) letter += `Passport: ${cb.passportNumber}\n`;
-    letter += `[Your Email Address]\n`;
-    letter += `[Your Phone Number]\n`;
+  //   letter += `Thank you for your time and consideration.\n\n`;
+  //   letter += `Sincerely,\n\n`;
+  //   letter += `${cb.beneficiaryName || "[Your Full Name]"}\n`;
+  //   if (cb.passportNumber) letter += `Passport: ${cb.passportNumber}\n`;
+  //   letter += `[Your Email Address]\n`;
+  //   letter += `[Your Phone Number]\n`;
 
-    return letter;
-  };
+  //   return letter;
+  // };
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Progress Indicator
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  
   const ProgressIndicator = () => (
     <div className="flex items-center justify-between mb-8 px-2 max-w-2xl mx-auto">
       {STEPS.map((step, idx) => (
@@ -2314,11 +2315,11 @@ export default function CombinedIntakeForm({
         subtitle: "Track required documents before final submission.",
         icon: ListChecks,
       },
-      coverLetter: {
-        title: "Cover Letter",
-        subtitle: "Ready-to-print letter for embassy packet assembly.",
-        icon: Mail,
-      },
+      // coverLetter: {
+      //   title: "Cover Letter",
+      //   subtitle: "Ready-to-print letter for embassy packet assembly.",
+      //   icon: Mail,
+      // },
     } as const;
 
     return (
@@ -2331,7 +2332,7 @@ export default function CombinedIntakeForm({
         </div>
 
         <Tabs defaultValue="actionPlan" className="w-full">
-          <TabsList className="mb-5 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-3">
+          <TabsList className="mb-5 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2">
             <TabsTrigger
               value="actionPlan"
               className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm"
@@ -2344,15 +2345,15 @@ export default function CombinedIntakeForm({
             >
               Packet Checklist
             </TabsTrigger>
-            <TabsTrigger
+            {/* <TabsTrigger
               value="coverLetter"
               className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm"
             >
               Cover Letter
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
-          {(["actionPlan", "checklist", "coverLetter"] as const).map((key) => {
+          {(["actionPlan", "checklist"] as const).map((key) => {
             const config = docConfig[key];
             const Icon = config.icon;
 
@@ -2768,7 +2769,7 @@ export default function CombinedIntakeForm({
             <ResultGate
               feature="action_221g"
               title="Action Packet Ready"
-              description="Upgrade to Executive to download, print, or copy your personalized 221(g) response plan, cover letter, and document packet checklist."
+              description="Upgrade to Executive to download, print, or copy your personalized 221(g) response plan and document packet checklist."
             >
               <StepExportPacket />
             </ResultGate>

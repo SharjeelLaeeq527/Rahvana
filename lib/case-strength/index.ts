@@ -33,5 +33,6 @@ export {
 export {
   aggregateChapter1Issues,
   aggregateChapter2Issues,
+  aggregateChapter3Issues,
   type AggregatedIssue,
 } from "./aggregate-issues";
