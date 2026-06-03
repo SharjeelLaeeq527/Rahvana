@@ -40,7 +40,7 @@ export const ExpandableTooltip = ({
 
       {isOpen && (
         <div className="px-4 py-3 border-t border-[#14a0a6]/30 bg-white">
-          <p className="text-sm text-[#0d7377] leading-relaxed">{message}</p>
+          <p className="text-xs text-[#0d7377] leading-relaxed">{message}</p>
         </div>
       )}
     </div>
