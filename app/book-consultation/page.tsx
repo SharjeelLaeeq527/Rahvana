@@ -171,7 +171,6 @@ const ConsultationBookingPage = () => {
   // Google Calendar View States
   const [calendarView, setCalendarView] = useState<"day" | "week" | "month" | "year">("week");
   const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(new Date());
-  const [selectionMode, setSelectionMode] = useState<"primary" | "alternate">("primary");
 
   // Automatically switch to single Day view on mobile screen width
   useEffect(() => {
@@ -215,7 +214,7 @@ const ConsultationBookingPage = () => {
   // Automatically scroll calendar timeline to 8 AM on view change so users do not start at midnight
   useEffect(() => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 384; // 8 hours * 48px row height = 384px
+      scrollContainerRef.current.scrollTop = 640; // 8 hours * 80px row height = 640px
     }
   }, [calendarView, currentStep]);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
@@ -672,22 +671,6 @@ const ConsultationBookingPage = () => {
     e.preventDefault();
     setIsDraggingFiles(false);
     handleFileDrop(e.dataTransfer.files);
-  };
-
-  const handleAlternateSlotSelect = (slot: TimeSlot) => {
-    if (formData.alternate_slots.some((s) => s.getTime() === slot.date.getTime())) {
-      setFormData((prev) => ({
-        ...prev,
-        alternate_slots: prev.alternate_slots.filter((s) => s.getTime() !== slot.date.getTime()),
-      }));
-    } else {
-      if (formData.alternate_slots.length < 2) {
-        setFormData((prev) => ({
-          ...prev,
-          alternate_slots: [...prev.alternate_slots, slot.date],
-        }));
-      }
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1529,7 +1512,7 @@ const ConsultationBookingPage = () => {
               <div className="flex items-center gap-3">
                 <Info className="h-5 w-5 text-teal-600 mt-0.5" />
                 <p className="text-sm text-teal-800 font-medium">
-                  Select your primary consultation slot using the Calendar below. Toggle the Alternate mode to add backup options!
+                  Select your preferred consultation slot using the Calendar below.
                 </p>
               </div>
               <div className="flex justify-end items-center gap-2">
@@ -1577,38 +1560,8 @@ const ConsultationBookingPage = () => {
                 </h3>
               </div>
 
-              {/* Right Side: Selection Mode Toggle & View Filter Dropdown */}
+              {/* Right Side: View Filter Dropdown */}
               <div className="flex flex-wrap items-center gap-3">
-                {/* Selection Mode Selector */}
-                <div className="flex items-center bg-gray-200/60 p-1 rounded-2xl border border-gray-200/40 shadow-xs">
-                  <button
-                    type="button"
-                    onClick={() => setSelectionMode("primary")}
-                    className={cn(
-                      "px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer flex items-center gap-1.5 select-none",
-                      selectionMode === "primary"
-                        ? "bg-teal-600 text-white shadow-md shadow-teal-100"
-                        : "text-gray-600 hover:text-gray-900"
-                    )}
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full bg-current" />
-                    Primary Slot
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectionMode("alternate")}
-                    className={cn(
-                      "px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer flex items-center gap-1.5 select-none",
-                      selectionMode === "alternate"
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                        : "text-gray-600 hover:text-gray-900"
-                    )}
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full bg-current animate-pulse" />
-                    Alternates ({formData.alternate_slots.length}/2)
-                  </button>
-                </div>
-
                 {/* View Dropdown Dropdown (Using Project's CustomDropdown) */}
                 <div className="min-w-32 select-none z-50">
                   <CustomDropdown
@@ -1667,12 +1620,12 @@ const ConsultationBookingPage = () => {
                         className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]" 
                         style={{ height: '500px' }}
                       >
-                        {/* 24 hours * 48px height = 1152px vertical height */}
-                        <div className="flex flex-1 relative min-w-[800px]" style={{ height: '1152px' }}>
+                        {/* 24 hours * 80px height = 1920px vertical height */}
+                        <div className="flex flex-1 relative min-w-[800px]" style={{ height: '1920px' }}>
                           {/* Side Hour Labels Column */}
                           <div className="w-18 border-r border-gray-100 flex flex-col select-none relative z-10 bg-white/95 backdrop-blur-xs">
                             {hoursRange.map((hour) => (
-                              <div key={hour} className="relative h-12 flex items-center justify-end pr-3 select-none">
+                              <div key={hour} className="relative h-20 flex items-center justify-end pr-3 select-none">
                                 {hour === 0 && (
                                   <span className="absolute top-0 right-3 text-[9px] font-bold text-gray-400">
                                     {getGMTOffset()}
@@ -1708,49 +1661,47 @@ const ConsultationBookingPage = () => {
                                   
                                   {daySlots.map((slot) => {
                                     const isSelectedPrimary = formData.selected_slot?.getTime() === slot.date.getTime();
-                                    const isSelectedAlternate = formData.alternate_slots.some(s => s.getTime() === slot.date.getTime());
                                     const pos = getSlotPosition(slot, startHour, endHour);
+                                    const isPast = slot.date.getTime() < Date.now();
+                                    const isSelectable = slot.available && !isPast;
                                     
                                     return (
                                       <div
                                         key={slot.id}
                                         onClick={() => {
-                                          if (selectionMode === "primary") {
-                                            if (formData.alternate_slots.some(s => s.getTime() === slot.date.getTime())) {
-                                              handleInputChange("alternate_slots", formData.alternate_slots.filter(s => s.getTime() !== slot.date.getTime()));
-                                            }
-                                            if (formData.selected_slot?.getTime() === slot.date.getTime()) {
-                                              handleInputChange("selected_slot", null);
-                                            } else {
-                                              handleSlotSelect(slot);
-                                            }
+                                          if (!isSelectable) return;
+                                          if (formData.selected_slot?.getTime() === slot.date.getTime()) {
+                                            handleInputChange("selected_slot", null);
                                           } else {
-                                            if (formData.selected_slot?.getTime() === slot.date.getTime()) {
-                                              showToast("This slot is already selected as your primary slot.", "warning");
-                                              return;
-                                            }
-                                            handleAlternateSlotSelect(slot);
+                                            handleSlotSelect(slot);
                                           }
                                         }}
-                                        style={{ top: pos.top }}
+                                        style={{ top: pos.top, height: pos.height }}
                                         className={cn(
-                                          "absolute left-1 right-1 rounded-2xl border px-3 py-1 cursor-pointer transition-all duration-300 shadow-xs flex flex-col justify-center overflow-hidden select-none hover:scale-102 hover:shadow-md z-20 h-[46px]",
+                                          "absolute left-1 right-1 rounded-2xl border px-3 py-0.5 transition-all duration-300 shadow-xs flex flex-col justify-center overflow-hidden select-none z-20 min-h-[36px]",
+                                          isSelectable ? "cursor-pointer hover:scale-102 hover:shadow-md" : "pointer-events-none opacity-60 grayscale",
                                           isSelectedPrimary
                                             ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
-                                            : isSelectedAlternate
-                                              ? "bg-blue-600 border-blue-700 text-white z-30 ring-2 ring-blue-200"
-                                              : slot.available
-                                                ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
-                                                : "bg-gray-100 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
+                                            : isSelectable
+                                              ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
+                                              : isPast
+                                                ? "bg-gray-100/40 border-gray-150 text-gray-400"
+                                                : "bg-gray-100/80 border-gray-200 text-gray-500"
                                         )}
-                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Primary Selected' : isSelectedAlternate ? 'Alternate Selected' : 'Click to Select'}`}
+                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isPast ? 'Passed' : slot.available ? 'Click to Select' : 'Booked'}`}
                                       >
                                         <div className="flex flex-col justify-center">
                                           <span className={cn(
                                             "text-[9px] font-black uppercase tracking-wider block leading-tight",
-                                            isSelectedPrimary || isSelectedAlternate ? "text-white/90" : "text-teal-700"
+                                            isSelectedPrimary 
+                                              ? "text-white/90" 
+                                              : isSelectable 
+                                                ? "text-teal-700" 
+                                                : isPast
+                                                  ? "text-gray-400"
+                                                  : "text-gray-500"
                                           )}>
-                                            {isSelectedPrimary ? "Primary" : isSelectedAlternate ? "Alternate" : "Available"}
+                                            {isSelectedPrimary ? "Selected" : isPast ? "Passed" : slot.available ? "Available" : "Booked"}
                                           </span>
                                           <span className="text-[10px] font-black block mt-0.5 leading-tight">
                                             {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1798,12 +1749,12 @@ const ConsultationBookingPage = () => {
                       className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]" 
                       style={{ height: '500px' }}
                     >
-                      {/* 24 hours * 48px height = 1152px vertical height */}
-                      <div className="flex flex-1 relative w-full" style={{ height: '1152px' }}>
+                      {/* 24 hours * 80px height = 1920px vertical height */}
+                      <div className="flex flex-1 relative w-full" style={{ height: '1920px' }}>
                         {/* Hours column */}
                         <div className="w-18 border-r border-gray-100 flex flex-col select-none relative z-10 bg-white/95 backdrop-blur-xs">
                           {hoursRange.map((hour) => (
-                            <div key={hour} className="relative h-12 flex items-center justify-end pr-3 select-none">
+                            <div key={hour} className="relative h-20 flex items-center justify-end pr-3 select-none">
                               {hour === 0 && (
                                 <span className="absolute top-0 right-3 text-[9px] font-semibold text-gray-400">
                                   {getGMTOffset()}
@@ -1833,48 +1784,43 @@ const ConsultationBookingPage = () => {
                               .filter(slot => isSameDay(slot.date, currentCalendarDate))
                               .map((slot) => {
                                 const isSelectedPrimary = formData.selected_slot?.getTime() === slot.date.getTime();
-                                const isSelectedAlternate = formData.alternate_slots.some(s => s.getTime() === slot.date.getTime());
                                 const pos = getSlotPosition(slot, startHour, endHour);
 
                                 return (
                                   <div
                                     key={slot.id}
                                     onClick={() => {
-                                      if (selectionMode === "primary") {
-                                        if (formData.alternate_slots.some(s => s.getTime() === slot.date.getTime())) {
-                                          handleInputChange("alternate_slots", formData.alternate_slots.filter(s => s.getTime() !== slot.date.getTime()));
-                                        }
-                                        if (formData.selected_slot?.getTime() === slot.date.getTime()) {
-                                          handleInputChange("selected_slot", null);
-                                        } else {
-                                          handleSlotSelect(slot);
-                                        }
+                                      if (formData.selected_slot?.getTime() === slot.date.getTime()) {
+                                        handleInputChange("selected_slot", null);
                                       } else {
-                                        if (formData.selected_slot?.getTime() === slot.date.getTime()) {
-                                          showToast("This slot is already selected as your primary slot.", "warning");
-                                          return;
-                                        }
-                                        handleAlternateSlotSelect(slot);
+                                        handleSlotSelect(slot);
                                       }
                                     }}
-                                    style={{ top: pos.top }}
+                                    style={{ top: pos.top, height: pos.height }}
                                     className={cn(
-                                      "absolute left-4 right-4 rounded-2xl border px-4 py-1 cursor-pointer transition-all duration-300 shadow-xs flex items-center justify-between hover:scale-101 hover:shadow-md z-20 select-none h-[46px]",
+                                      "absolute left-4 right-4 rounded-2xl border px-4 py-0.5 transition-all duration-300 shadow-xs flex items-center justify-between z-20 select-none min-h-[36px]",
+                                      isSelectable ? "cursor-pointer hover:scale-101 hover:shadow-md" : "pointer-events-none opacity-60 grayscale",
                                       isSelectedPrimary
                                         ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
-                                        : isSelectedAlternate
-                                          ? "bg-blue-600 border-blue-700 text-white z-30 ring-2 ring-blue-200"
-                                          : slot.available
-                                            ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
-                                            : "bg-gray-100 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
+                                        : isSelectable
+                                          ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
+                                          : isPast
+                                            ? "bg-gray-100/40 border-gray-150 text-gray-400"
+                                            : "bg-gray-100/80 border-gray-200 text-gray-500"
                                     )}
                                   >
                                     <div className="flex items-center gap-2">
                                       <div className={cn(
                                         "text-[9px] font-black uppercase tracking-wider",
-                                        isSelectedPrimary || isSelectedAlternate ? "text-white/90" : "text-teal-700"
+                                        isSelectedPrimary 
+                                          ? "text-white/90" 
+                                          : isSelectable 
+                                            ? "text-teal-700" 
+                                            : isPast
+                                              ? "text-gray-400"
+                                              : "text-gray-500"
                                       )}>
-                                        {isSelectedPrimary ? "Primary Selected" : isSelectedAlternate ? "Alternate Selected" : "Available"}
+                                        {isSelectedPrimary ? "Selected" : isPast ? "Passed" : slot.available ? "Available" : "Booked"}
                                       </div>
                                       <span className="text-[10px] font-black">
                                         {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1883,11 +1829,13 @@ const ConsultationBookingPage = () => {
                                     
                                     <span className={cn(
                                       "text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full select-none border transition-all duration-300",
-                                      isSelectedPrimary || isSelectedAlternate
+                                      isSelectedPrimary
                                         ? "bg-white/20 border-white/30 text-white"
-                                        : "bg-white border-teal-200/60 text-teal-700 hover:border-teal-400 hover:bg-teal-50"
+                                        : isSelectable
+                                          ? "bg-white border-teal-200/60 text-teal-700 hover:border-teal-400 hover:bg-teal-50"
+                                          : "bg-gray-50 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
                                     )}>
-                                      Select
+                                      {isPast ? "Passed" : slot.available ? "Select" : "Booked"}
                                     </span>
                                   </div>
                                 );
@@ -1950,42 +1898,37 @@ const ConsultationBookingPage = () => {
                             <div className="flex-1 flex flex-col gap-1 overflow-y-auto mt-1 max-h-16 scrollbar-none">
                               {daySlots.map((slot) => {
                                 const isSelectedPrimary = formData.selected_slot?.getTime() === slot.date.getTime();
-                                const isSelectedAlternate = formData.alternate_slots.some(s => s.getTime() === slot.date.getTime());
-                                
+                                const isPast = slot.date.getTime() < Date.now();
+                                const isSelectable = slot.available && !isPast;
+                                 
                                 return (
                                   <div
                                     key={slot.id}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      if (selectionMode === "primary") {
-                                        if (formData.alternate_slots.some(s => s.getTime() === slot.date.getTime())) {
-                                          handleInputChange("alternate_slots", formData.alternate_slots.filter(s => s.getTime() !== slot.date.getTime()));
-                                        }
-                                        if (formData.selected_slot?.getTime() === slot.date.getTime()) {
-                                          handleInputChange("selected_slot", null);
-                                        } else {
-                                          handleSlotSelect(slot);
-                                        }
+                                      if (!isSelectable) return;
+                                      if (formData.selected_slot?.getTime() === slot.date.getTime()) {
+                                        handleInputChange("selected_slot", null);
                                       } else {
-                                        if (formData.selected_slot?.getTime() === slot.date.getTime()) {
-                                          showToast("This slot is already selected as your primary slot.", "warning");
-                                          return;
-                                        }
-                                        handleAlternateSlotSelect(slot);
+                                        handleSlotSelect(slot);
                                       }
                                     }}
                                     className={cn(
-                                      "text-[9px] px-2 py-1 rounded-md font-bold truncate cursor-pointer transition border flex items-center justify-between shadow-xs select-none",
+                                      "text-[9px] px-2 py-1 rounded-md font-bold truncate transition border flex items-center justify-between shadow-xs select-none",
+                                      isSelectable ? "cursor-pointer" : "pointer-events-none opacity-60 grayscale",
                                       isSelectedPrimary
                                         ? "bg-teal-600 border-teal-700 text-white font-black"
-                                        : isSelectedAlternate
-                                          ? "bg-blue-600 border-blue-700 text-white font-black"
-                                          : "bg-teal-50/50 border-teal-100 text-teal-800 hover:bg-teal-100 hover:border-teal-200"
+                                        : isSelectable
+                                          ? "bg-teal-50/50 border-teal-100 text-teal-800 hover:bg-teal-100 hover:border-teal-200"
+                                          : isPast
+                                            ? "bg-gray-100/40 border-gray-150 text-gray-400"
+                                            : "bg-gray-100 border-gray-200 text-gray-500"
                                     )}
-                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Primary Selected' : isSelectedAlternate ? 'Alternate Selected' : 'Click to Select'}`}
+                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isPast ? 'Passed' : slot.available ? 'Click to Select' : 'Booked'}`}
                                   >
                                     <span className="truncate">
                                       {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                      {!slot.available && " (Booked)"}
                                     </span>
                                   </div>
                                 );
@@ -2080,58 +2023,31 @@ const ConsultationBookingPage = () => {
             )}
             
             {/* Visual Selected Summary cards below the calendar */}
-            {(formData.selected_slot || formData.alternate_slots.length > 0) && (
+            {formData.selected_slot && (
               <div className="bg-slate-50 border border-slate-200/80 p-5 rounded-3xl space-y-4 shadow-2xs">
-                <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">Your Booking Selections</h4>
+                <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">Your Booking Selection</h4>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="max-w-md">
                   {/* Primary Selection Summary Card */}
-                  {formData.selected_slot && (
-                    <div className="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">Primary Slot</span>
-                        <h5 className="font-extrabold text-sm text-gray-800 mt-1.5">
-                          {formData.selected_slot.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </h5>
-                        <p className="text-xs text-gray-500 font-bold mt-0.5">
-                          {availableSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || ""}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleInputChange("selected_slot", null)}
-                        className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition"
-                        title="Remove Selection"
-                      >
-                        <CloseIcon className="h-4.5 w-4.5" />
-                      </button>
+                  <div className="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between gap-2 border-l-4 border-teal-500">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">Selected Slot</span>
+                      <h5 className="font-extrabold text-sm text-gray-800 mt-1.5">
+                        {formData.selected_slot.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </h5>
+                      <p className="text-xs text-gray-500 font-bold mt-0.5">
+                        {availableSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || ""}
+                      </p>
                     </div>
-                  )}
-
-                  {/* Alternate Slots summary display */}
-                  {formData.alternate_slots.map((slotDate, index) => (
-                    <div key={index} className="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">Alternate Slot {index + 1}</span>
-                        <h5 className="font-extrabold text-sm text-gray-800 mt-1.5">
-                          {slotDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </h5>
-                        <p className="text-xs text-gray-500 font-bold mt-0.5">
-                          {availableSlots.find(s => s.date.getTime() === slotDate.getTime())?.formattedTime || ""}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleInputChange("alternate_slots", formData.alternate_slots.filter(s => s.getTime() !== slotDate.getTime()));
-                        }}
-                        className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition"
-                        title="Remove Alternate Slot"
-                      >
-                        <CloseIcon className="h-4.5 w-4.5" />
-                      </button>
-                    </div>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange("selected_slot", null)}
+                      className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition"
+                      title="Remove Selection"
+                    >
+                      <CloseIcon className="h-4.5 w-4.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -2233,34 +2149,6 @@ const ConsultationBookingPage = () => {
                       </div>
                     </div>
                   </div>
-
-                  {formData.alternate_slots && formData.alternate_slots.length > 0 && (
-                    <div className="mt-6 pt-5 border-t border-slate-100">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Alternative Slots</p>
-                      <div className="mt-2 space-y-2">
-                        {formData.alternate_slots.map((slotDate, idx) => {
-                          const formattedAltDate = slotDate.toLocaleDateString(undefined, {
-                            weekday: "long",
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric"
-                          });
-                          const altSlotTime = availableSlots.find(s => s.date.getTime() === slotDate.getTime())?.formattedTime || "";
-                          return (
-                            <div key={idx} className="flex items-center gap-3 bg-slate-50 border border-slate-100/60 p-3 rounded-xl">
-                              <div className="bg-slate-500 text-white rounded-lg p-1.5 flex items-center justify-center">
-                                <Clock className="h-4 w-4" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-bold text-slate-900">{formattedAltDate}</p>
-                                <p className="text-[11px] font-semibold text-slate-500 mt-0.5">{altSlotTime}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Secure checkout info */}
