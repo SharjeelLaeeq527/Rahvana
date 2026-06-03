@@ -98,7 +98,7 @@ export const PRODUCTS = {
       price: 49,
       priceId: STRIPE_PRICES.ADDONS["case-strength"],
     },
-    interview-prep: {
+    "interview-prep": {
       name: "Interview Prep",
       price: 200,
       priceId: STRIPE_PRICES.ADDONS["interview-prep"],
