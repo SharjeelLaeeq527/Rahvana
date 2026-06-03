@@ -23,6 +23,7 @@ import type { UploadedDocument } from "@/lib/document-vault/types";
 import {
   aggregateChapter1Issues,
   aggregateChapter2Issues,
+  aggregateChapter3Issues,
   type AggregatedIssue,
 } from "@/lib/case-strength/aggregate-issues";
 
@@ -129,9 +130,10 @@ export function DashboardCriticalCard({
   const issues = useMemo(() => {
     const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments });
     const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments });
-    // Keep chapter order (Ch1 before Ch2), but float criticals to the top within.
+    const ch3 = aggregateChapter3Issues({ chapters, state, uploadedDocuments });
+    // Keep chapter order (Ch1 → Ch2 → Ch3), but float criticals to the top within.
     const order = { critical: 0, warning: 1, info: 2 };
-    return [...ch1, ...ch2].sort((a, b) => {
+    return [...ch1, ...ch2, ...ch3].sort((a, b) => {
       if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
       return a.chapterIdx - b.chapterIdx;
     });

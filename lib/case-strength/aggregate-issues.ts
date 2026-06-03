@@ -10,6 +10,7 @@ import type { UploadedDocument } from "@/lib/document-vault/types";
 import { runStepChecks, IR1_STEP_CHECKERS, type StepChecker } from "./step-checkers";
 import { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 import { computeCaseStrength } from "./doc-scoring";
+import { getActiveStepsForStage } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/v2/journeyHelpers";
 
 export interface AggregatedIssue {
   level: "critical" | "warning" | "info";
@@ -184,6 +185,67 @@ export function aggregateChapter2Issues({
         stepName: step.step_name ?? stepKey,
         stepNumber: getStepNumber(step, i),
         chapterIdx: 1,
+        stepIdx: i,
+      });
+    }
+  }
+
+  const order = { critical: 0, warning: 1, info: 2 };
+  return issues.sort((a, b) => order[a.level] - order[b.level]);
+}
+
+/**
+ * Aggregate Chapter 3 (Medical + Interview) issues for the dashboard.
+ *
+ * Chapter 3 has interview-outcome-gated steps (visible_when on interviewOutcome
+ * / outcome221gSubtype). We use the canonical `getActiveStepsForStage` helper to
+ * decide which steps are visible, then run the per-step checkers only for those —
+ * so we never surface, say, the "Track Visa Issuance" check on a 221(g) case.
+ * (CLAUDE.md: never evaluate visible_when inline.) `stepIdx` stays the raw index
+ * into `chapter.steps`, matching how the step view navigates.
+ */
+export function aggregateChapter3Issues({
+  chapters,
+  state,
+  uploadedDocuments,
+  registry = IR1_STEP_CHECKERS,
+}: AggregateContext): AggregatedIssue[] {
+  const issues: AggregatedIssue[] = [];
+
+  const eligibilityAnswers =
+    (state.answers?.["eligibility-suite"] as any) ??
+    (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+  const chapter3 = chapters?.[2];
+  if (!chapter3) return [];
+
+  const steps = chapter3.steps || [];
+
+  const visibleKeys = new Set(
+    getActiveStepsForStage({ chapters } as any, 2, state.metadata, state.filingType).map(
+      (s: any) => s.step_key || s.id
+    )
+  );
+
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    const stepKey = step.step_key as string;
+    if (!stepKey || !visibleKeys.has(stepKey)) continue;
+
+    const checks = runStepChecks(
+      stepKey,
+      { state, uploadedDocuments, eligibilityAnswers, step },
+      registry
+    );
+    for (const c of checks) {
+      issues.push({
+        level: c.level,
+        title: c.title,
+        hint: c.hint,
+        stepKey,
+        stepName: step.step_name ?? stepKey,
+        stepNumber: getStepNumber(step, i),
+        chapterIdx: 2,
         stepIdx: i,
       });
     }
