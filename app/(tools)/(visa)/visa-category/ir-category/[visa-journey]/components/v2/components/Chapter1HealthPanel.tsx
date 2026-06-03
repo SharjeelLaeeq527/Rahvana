@@ -34,7 +34,8 @@ export function Chapter1HealthPanel({
   checkerRegistry,
 }: Chapter1HealthPanelProps) {
   const sId = currentStep?.step_key || currentStep?.id || "";
-  const isCsaChapter = sId.startsWith("step_1_") || sId.startsWith("step_2_");
+  const isCsaChapter =
+    sId.startsWith("step_1_") || sId.startsWith("step_2_") || sId.startsWith("step_3_");
   const [open, setOpen] = useState(true);
 
   if (!isCsaChapter) return null;

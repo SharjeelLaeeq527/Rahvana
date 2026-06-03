@@ -13,6 +13,8 @@ import {
   Sparkles,
   Folder,
   Layers,
+  Zap,
+  Mic,
 } from "lucide-react";
 
 interface Scene {
@@ -32,6 +34,73 @@ const colors = {
   sageGrey: "#89a4a0",
   white: "#ffffff",
   lightBg: "#f8fbfc",
+};
+
+const badgeConfig = {
+  Basic: {
+    bg: "bg-[#e4f4f2]",
+    border: "border-[#98d0ca]",
+    text: "text-[#0f4040]",
+  },
+  Premium: {
+    bg: "bg-[#f2f4ff]",
+    border: "border-[#d8ddff]",
+    text: "text-[#24327f]",
+  },
+  Executive: {
+    bg: "bg-[#fdf4d8]",
+    border: "border-[#e4cc88]",
+    text: "text-[#5a3808]",
+  },
+};
+
+const interviewModes = {
+  prep: {
+    label: "Prep Mode",
+    icon: BookOpen,
+    color: "#0d7377",
+    plans: ["Basic"],
+    features: [
+      "Full Interview Question Bank",
+      "Prep Mode (full access)",
+      "AI Answer Builder (core feature)",
+      "Improve clarity & structure",
+      "Make answers interview-ready",
+      "Save & edit answers anytime",
+    ],
+  },
+
+  rapid: {
+    label: "Rapid Fire",
+    icon: Zap,
+    color: "#6b5b7b",
+    plans: ["Premium", "Executive"],
+    features: [
+      "Rapid Fire Mode",
+      "Timed questions (pressure simulation)",
+      "Fast recall training",
+      "Adaptive practice flow",
+      "Smart summaries after sessions",
+      "Performance review insights",
+      "Confidence-building repetition",
+    ],
+  },
+
+  mock: {
+    label: "Mock Interview",
+    icon: Mic,
+    color: "#9e4a5a",
+    plans: ["Executive"],
+    features: [
+      "Mock Interview Mode (full simulation)",
+      "Voice-based interview experience",
+      "Speech-to-Text (STT)",
+      "Text-to-Speech (TTS)",
+      "Real-time interview flow (no UI hints)",
+      "Performance analytics",
+      "Interview behavior feedback",
+    ],
+  },
 };
 
 const scenes221g: Scene[] = [
@@ -985,6 +1054,154 @@ const scenesPolioVaccination: Scene[] = [
   },
 ];
 
+const scenesInterviewPrep: Scene[] = [
+  {
+    id: "what-is",
+    title: "What Is Interview Prep?",
+    titleLines: ["What Is", "Interview Prep?"],
+    description:
+      "An AI-powered visa interview simulator designed to help applicants practice, improve answers, and build confidence before their embassy interview.",
+    illustration: "document",
+
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-4 text-left">
+        {[
+          "Realistic embassy-style interview questions",
+          "Personalized feedback after every session",
+          "Practice tailored to your visa category",
+          "Confidence-building interview simulations",
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.1,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+          >
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: colors.deepTeal }}
+            />
+
+            <span
+              className="text-[15px] font-semibold leading-snug"
+              style={{ color: colors.deepTeal }}
+            >
+              {item}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "pitfalls",
+    title: "Avoid Common Mistakes",
+    titleLines: ["Avoid Common", "Mistakes"],
+    description:
+      "Many applicants know their case well but struggle to communicate it effectively during the interview.",
+    illustration: "warning",
+
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-4 text-left">
+        {[
+          "Giving incomplete or vague answers",
+          "Appearing nervous or unprepared",
+          "Missing key supporting details",
+          "Providing overly long or confusing responses",
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.12,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-center gap-3 rounded-xl border border-[#db8090]/20 bg-white p-4 shadow-sm"
+          >
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: colors.dustyRose }}
+            />
+
+            <span
+              className="text-[15px] font-semibold leading-snug"
+              style={{ color: colors.deepTeal }}
+            >
+              {item}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "workflow",
+    title: "Practice Modes & Plans",
+    titleLines: ["Practice Modes", "& Plans"],
+    description: "Choose the interview preparation experience that best fits your needs.",
+    illustration: "checklist",
+
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        <ModeCarousel />
+      </div>
+    ),
+  },
+
+  {
+    id: "wizard",
+    title: "How This Works",
+    titleLines: ["Ready To", "Practice?"],
+    description:
+      "Start preparing today and walk into your embassy interview with greater confidence, clearer answers, and fewer surprises.",
+    illustration: "wizard",
+
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Answer realistic embassy interview questions.",
+          "Review feedback and scores.",
+          "Improve weak areas and practice again.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+];
+
 interface NarrativeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -999,7 +1216,8 @@ interface NarrativeModalProps {
     | "police-verification"
     | "marriage-registration"
     | "birth-certificate"
-    | "polio-vaccination";
+    | "polio-vaccination"
+    | "interview-prep";
 }
 
 const SCENE_DURATION = 9000;
@@ -1021,6 +1239,7 @@ export function NarrativeModal({
     "marriage-registration": scenesMarriageRegistration,
     "birth-certificate": scenesBirthCertificate,
     "polio-vaccination": scenesPolioVaccination,
+    "interview-prep": scenesInterviewPrep,
   } as const;
 
   const scenes = scenesByVariant[variant];
@@ -1050,6 +1269,7 @@ export function NarrativeModal({
     "marriage-registration": "Marriage",
     "birth-certificate": "Birth",
     "polio-vaccination": "Polio",
+    "interview-prep": "Interview",
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";
@@ -1619,6 +1839,70 @@ function SimpleSceneIllustration({
         />
       </div>
     </div>
+  );
+}
+
+function ModeCarousel() {
+  const [index, setIndex] = useState(0);
+
+  const modes = Object.values(interviewModes);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % modes.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const mode = modes[index];
+
+  const Icon = mode.icon;
+
+  return (
+    <motion.div
+      key={mode.label}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+    >
+      {/* header */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4" style={{ color: mode.color }} />
+          <h4 className="font-bold" style={{ color: colors.deepTeal }}>
+            {mode.label}
+          </h4>
+        </div>
+
+        <div className="flex gap-2">
+          {mode.plans.map((plan) => {
+            const style = badgeConfig[plan as keyof typeof badgeConfig];
+
+            return (
+              <span
+                key={plan}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold ${style.bg} ${style.border} ${style.text}`}
+              >
+                {plan}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* features */}
+      <div className="space-y-2">
+        {mode.features.map((f) => (
+          <div key={f} className="flex items-center gap-3 text-sm">
+            <CheckCircle className="h-4 w-4" style={{ color: mode.color }} />
+            <span>{f}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 }
 

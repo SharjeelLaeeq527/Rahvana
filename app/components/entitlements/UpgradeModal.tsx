@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Check, Zap, ShoppingCart, Loader2 } from "lucide-react";
+import { X, Check, Zap, ShoppingCart, Loader2, BookOpen, Mic } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
 import {
@@ -18,7 +18,56 @@ interface UpgradeModalProps {
   feature: string;
   onClose: () => void;
   onConfirm?: (action: "upgrade" | "addon", target?: PlanTier | string) => void;
+  /** When set, shows interview-prep-specific feature breakdown before the general tier list */
+  interviewMode?: "prep" | "rapid" | "mock";
 }
+
+const INTERVIEW_MODE_FEATURES: Record<
+  "prep" | "rapid" | "mock",
+  { label: string; icon: typeof BookOpen; color: string; features: string[] }
+> = {
+  prep: {
+    label: "Prep Mode",
+    icon: BookOpen,
+    color: "#0d7377",
+    features: [
+      "Full Interview Question Bank",
+      "Prep Mode (full access)",
+      "AI Answer Builder (core feature)",
+      "Improve clarity & structure",
+      "Make answers interview-ready",
+      "Save & edit answers anytime",
+    ],
+  },
+  rapid: {
+    label: "Rapid Fire",
+    icon: Zap,
+    color: "#6b5b7b",
+    features: [
+      "Rapid Fire Mode",
+      "Timed questions (pressure simulation)",
+      "Fast recall training",
+      "Adaptive practice flow",
+      "Smart summaries after sessions",
+      "Performance review insights",
+      "Confidence-building repetition",
+    ],
+  },
+  mock: {
+    label: "Mock Interview",
+    icon: Mic,
+    color: "#9e4a5a",
+    features: [
+      "Mock Interview Mode (full simulation)",
+      "Voice-based interview experience",
+      "Speech-to-Text (STT)",
+      "Text-to-Speech (TTS)",
+      "Real-time interview flow (no UI hints)",
+      "Performance analytics",
+      "Interview behavior feedback",
+    ],
+  },
+};
 
 const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
   free: [],
@@ -173,7 +222,7 @@ const scrollbarHideStyle: React.CSSProperties = {
   msOverflowStyle: "none",
 };
 
-export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps) {
+export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
   const { tier: currentTier } = usePlan();
   const e = getEntitlement(feature, currentTier);
 
@@ -191,6 +240,9 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
       ? "premium"
       : (fullUpgradeTiers[0] ?? upgradeTiers[0] ?? "basic");
   const [selectedTier, setSelectedTier] = useState<PlanTier>(defaultTier);
+  const [interviewTab, setInterviewTab] = useState<"prep" | "rapid" | "mock">(
+    interviewMode ?? "prep"
+  );
   // ── Separate loading states for each button ──
   const [isAddonProcessing, setIsAddonProcessing] = useState(false);
   const [isUpgradeProcessing, setIsUpgradeProcessing] = useState(false);
@@ -366,7 +418,7 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
               </div>
             </div>
             <p className="text-[12px] font-medium text-primary/80">
-              Buy once, or get it included with a plan upgrade
+              Get it included with a plan upgrade, or buy once
             </p>
           </div>
 
@@ -375,53 +427,50 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
             className="overflow-y-auto overscroll-contain flex-1 px-4 py-4 flex flex-col gap-3"
             style={scrollbarHideStyle}
           >
-            {/* Buy individually */}
-            <div
-              className={`rounded-2xl ${addonStyle.featureBg} border ${addonStyle.badgeBorder} p-4`}
-            >
-              <p
-                className={`text-[10px] font-bold uppercase tracking-widest ${addonStyle.badgeText} mb-2`}
-              >
-                Buy Once
-              </p>
-              <div className="flex items-baseline gap-1.5 mb-1">
-                <span className={`text-[28px] font-black ${addonStyle.priceText} leading-none`}>
-                  ${addon.price}
-                </span>
-                {addon.unit && (
-                  <span className={`text-[12px] ${addonStyle.badgeText} opacity-60 font-medium`}>
-                    · {addon.unit}
-                  </span>
-                )}
-              </div>
-              <p className={`text-[11px] ${addonStyle.badgeText} opacity-50 mb-3`}>
-                One-time purchase · No subscription required
-              </p>
-
-              <button
-                disabled={isAddonProcessing || isUpgradeProcessing}
-                onClick={() => handleCheckout("addon", addon.id, setIsAddonProcessing)}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-60 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
-              >
-                {isAddonProcessing ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <ShoppingCart size={14} strokeWidth={2.5} />
-                )}
-                {isAddonProcessing
-                  ? "Redirecting to payment..."
-                  : `Buy ${addon.name} · $${addon.price}`}
-              </button>
-            </div>
-
-            {/* Divider */}
-            {showInclusionSection && (
-              <div className="flex items-center gap-3">
-                <div className="flex-1 border-t border-neutral-200" />
-                <span className="text-[11px] text-neutral-400 font-semibold">
-                  or get it included
-                </span>
-                <div className="flex-1 border-t border-neutral-200" />
+            {/* ── Interview-prep-specific mode breakdown ── */}
+            {interviewMode && (
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/60 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2.5">
+                  Interview Prep Features
+                </p>
+                <div className="flex gap-1 bg-white rounded-xl p-1 mb-3 ring-1 ring-slate-200/60">
+                  {(["prep", "rapid", "mock"] as const).map((mode) => {
+                    const cfg = INTERVIEW_MODE_FEATURES[mode];
+                    const Icon = cfg.icon;
+                    const isActive = interviewTab === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setInterviewTab(mode)}
+                        className={`flex-1 py-2 rounded-lg text-[10.5px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          isActive
+                            ? "shadow-sm text-white"
+                            : "text-slate-500 hover:text-slate-700 bg-transparent"
+                        }`}
+                        style={isActive ? { backgroundColor: cfg.color } : {}}
+                      >
+                        <Icon size={12} strokeWidth={2.5} />
+                        {cfg.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <ul className="flex flex-col gap-1.5">
+                  {INTERVIEW_MODE_FEATURES[interviewTab].features.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-[11.5px] text-slate-600 leading-snug"
+                    >
+                      <Check
+                        size={12}
+                        strokeWidth={2.5}
+                        className="shrink-0 mt-0.5"
+                        style={{ color: INTERVIEW_MODE_FEATURES[interviewTab].color }}
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
@@ -525,6 +574,56 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
                 </button>
               </div>
             )}
+
+            {/* Divider */}
+            {showInclusionSection && (
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t border-neutral-200" />
+                <span className="text-[11px] text-neutral-400 font-semibold">
+                  or buy once
+                </span>
+                <div className="flex-1 border-t border-neutral-200" />
+              </div>
+            )}
+
+            {/* Buy individually */}
+            <div
+              className={`rounded-2xl ${addonStyle.featureBg} border ${addonStyle.badgeBorder} p-4`}
+            >
+              <p
+                className={`text-[10px] font-bold uppercase tracking-widest ${addonStyle.badgeText} mb-2`}
+              >
+                Buy Once
+              </p>
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className={`text-[28px] font-black ${addonStyle.priceText} leading-none`}>
+                  ${addon.price}
+                </span>
+                {addon.unit && (
+                  <span className={`text-[12px] ${addonStyle.badgeText} opacity-60 font-medium`}>
+                    · {addon.unit}
+                  </span>
+                )}
+              </div>
+              <p className={`text-[11px] ${addonStyle.badgeText} opacity-50 mb-3`}>
+                One-time purchase · No subscription required
+              </p>
+
+              <button
+                disabled={isAddonProcessing || isUpgradeProcessing}
+                onClick={() => handleCheckout("addon", addon.id, setIsAddonProcessing)}
+                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-60 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                {isAddonProcessing ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <ShoppingCart size={14} strokeWidth={2.5} />
+                )}
+                {isAddonProcessing
+                  ? "Redirecting to payment..."
+                  : `Buy ${addon.name} · $${addon.price}`}
+              </button>
+            </div>
 
             <p
               className="text-center text-[11px] text-neutral-400"
@@ -635,6 +734,65 @@ export function UpgradeModal({ feature, onClose, onConfirm }: UpgradeModalProps)
           )}
 
           {/* Feature highlights */}
+          {/* ── Interview-prep-specific mode breakdown ── */}
+          {interviewMode && (
+            <div className="rounded-2xl bg-slate-50 border border-slate-200/60 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2.5">
+                Interview Prep Features
+              </p>
+              <div className="flex gap-1 bg-white rounded-xl p-1 mb-3 ring-1 ring-slate-200/60">
+                {(["prep", "rapid", "mock"] as const).map((mode) => {
+                  const cfg = INTERVIEW_MODE_FEATURES[mode];
+                  const Icon = cfg.icon;
+                  const isActive = interviewTab === mode;
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => setInterviewTab(mode)}
+                      className={`flex-1 py-2 rounded-lg text-[10.5px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                        isActive
+                          ? "shadow-sm text-white"
+                          : "text-slate-500 hover:text-slate-700 bg-transparent"
+                      }`}
+                      style={isActive ? { backgroundColor: cfg.color } : {}}
+                    >
+                      <Icon size={12} strokeWidth={2.5} />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {INTERVIEW_MODE_FEATURES[interviewTab].features.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-[11.5px] text-slate-600 leading-snug"
+                  >
+                    <Check
+                      size={12}
+                      strokeWidth={2.5}
+                      className="shrink-0 mt-0.5"
+                      style={{ color: INTERVIEW_MODE_FEATURES[interviewTab].color }}
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* ── Divider ── */}
+          {interviewMode && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border-t border-neutral-200" />
+              <span className="text-[11px] text-neutral-400 font-semibold">
+                What you get with your plan
+              </span>
+              <div className="flex-1 border-t border-neutral-200" />
+            </div>
+          )}
+
+          {/* ── General plan highlights ── */}
           <ul className="flex flex-col gap-1.5">
             {TIER_HIGHLIGHTS[selectedTier].map((item) => (
               <li

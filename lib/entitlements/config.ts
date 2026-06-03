@@ -116,13 +116,7 @@ export const ADDON: Record<string, AddonInfo> = {
     price: 49,
     unit: "one-time",
   },
-  mock: { id: "mock", name: "Mock Interview", price: 39, unit: "one-time" },
-  rapid: {
-    id: "rapid",
-    name: "Interview Rapid Fire Mode",
-    price: 39,
-    unit: "one-time",
-  },
+  interviewPrep: { id: "interview-prep", name: "Interview Prep", price: 200, unit: "one-time" },
   action221g: {
     id: "221g",
     name: "221(g) Action Planner",
@@ -348,7 +342,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
   /** Interview Prep — Rapid Fire Mode. */
   interview_rapid_fire: {
     free: full(),
-    basic: lockedBuy(ADDON.rapid, "premium"),
+    basic: lockedBuy(ADDON.interviewPrep, "premium"),
     premium: full(),
     executive: full(),
   },
@@ -467,8 +461,8 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
    */
   mock_interview: {
     free: full(),
-    basic: lockedBuy(ADDON.mock, "executive"),
-    premium: lockedBuy(ADDON.mock, "executive"),
+    basic: lockedBuy(ADDON.interviewPrep, "executive"),
+    premium: lockedBuy(ADDON.interviewPrep, "executive"),
     executive: full(),
   },
 

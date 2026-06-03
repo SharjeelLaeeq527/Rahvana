@@ -19,9 +19,7 @@ import {
   QuestionCooldownMap,
   reduceCooldowns,
 } from "@/lib/interview-prep/round-engine";
-import {
-  RapidFireTrainingView,
-} from "./RapidFireModePage.views";
+import { RapidFireTrainingView } from "./RapidFireModePage.views";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 const QUESTIONS_PER_ROUND = 12;
@@ -64,18 +62,10 @@ const buildProgressEndpoint = (sessionId: string) =>
   `/api/interview-prep/sessions/${sessionId}/progress`;
 
 const computeRoundSummary = (responses: QuestionResponse[]): RoundSummary => {
-  const coveredCount = responses.filter(
-    (response) => response.response === "covered",
-  ).length;
-  const partialCount = responses.filter(
-    (response) => response.response === "partial",
-  ).length;
-  const missedCount = responses.filter(
-    (response) => response.response === "missed",
-  ).length;
-  const skippedCount = responses.filter(
-    (response) => response.response === "skipped",
-  ).length;
+  const coveredCount = responses.filter((response) => response.response === "covered").length;
+  const partialCount = responses.filter((response) => response.response === "partial").length;
+  const missedCount = responses.filter((response) => response.response === "missed").length;
+  const skippedCount = responses.filter((response) => response.response === "skipped").length;
 
   const earnedPoints = coveredCount * 10 + partialCount * 5;
   const possiblePoints = (coveredCount + partialCount + missedCount) * 10;
@@ -86,15 +76,9 @@ const computeRoundSummary = (responses: QuestionResponse[]): RoundSummary => {
     skippedCount,
     earnedPoints,
     possiblePoints,
-    readinessScore:
-      possiblePoints > 0
-        ? Math.round((earnedPoints / possiblePoints) * 100)
-        : 0,
+    readinessScore: possiblePoints > 0 ? Math.round((earnedPoints / possiblePoints) * 100) : 0,
     weakQuestionIds: responses
-      .filter(
-        (response) =>
-          response.response === "missed" || response.response === "skipped",
-      )
+      .filter((response) => response.response === "missed" || response.response === "skipped")
       .map((response) => response.question.id),
   };
 };
@@ -103,7 +87,7 @@ const computeRoundSummary = (responses: QuestionResponse[]): RoundSummary => {
 // Client no longer derives retry lists; server endpoint computes next-round payload.
 
 const loadPersistedAdaptiveTraining = async (
-  sessionId: string,
+  sessionId: string
 ): Promise<PersistedAdaptiveTraining | null> => {
   try {
     const response = await fetch(buildProgressEndpoint(sessionId), {
@@ -149,9 +133,7 @@ const loadPersistedAdaptiveTraining = async (
   }
 };
 
-const savePersistedAdaptiveTraining = async (
-  state: PersistedAdaptiveTraining,
-) => {
+const savePersistedAdaptiveTraining = async (state: PersistedAdaptiveTraining) => {
   const payload: Partial<InterviewPrepSessionProgressInput> = {
     current_round: state.currentRound,
     current_question_index: state.currentQuestionIndex,
@@ -245,23 +227,19 @@ export const RapidFireModePage = ({
   const [totalScore, setTotalScore] = useState<number | null>(null);
   const [screen, setScreen] = useState<AdaptiveScreen>("training");
   const [roundSummary, setRoundSummary] = useState<RoundSummary | null>(null);
-  const [resumeProgress, setResumeProgress] =
-    useState<PersistedAdaptiveTraining | null>(null);
+  const [resumeProgress, setResumeProgress] = useState<PersistedAdaptiveTraining | null>(null);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isHydratingProgress, setIsHydratingProgress] = useState(true);
   const [skippedQuestions, setSkippedQuestions] = useState<number>(0);
   const [questionResponses, setQuestionResponses] = useState<QuestionResponse[]>([]);
   const [reviewQuestion, setReviewQuestion] = useState<GeneratedQuestion | null>(null);
   const [isReviewFlipped, setIsReviewFlipped] = useState(false);
-  const [questionCooldowns, setQuestionCooldowns] =
-    useState<QuestionCooldownMap>({});
+  const [questionCooldowns, setQuestionCooldowns] = useState<QuestionCooldownMap>({});
 
   // States for retry rounds
   const [currentRound, setCurrentRound] = useState(1);
   const [usedQuestionIds, setUsedQuestionIds] = useState<string[]>([]);
-  const [completedQuestionIds, setCompletedQuestionIds] = useState<string[]>(
-    [],
-  );
+  const [completedQuestionIds, setCompletedQuestionIds] = useState<string[]>([]);
   const [retryQuestionIds, setRetryQuestionIds] = useState<string[]>([]);
   const [masteredQuestionIds, setMasteredQuestionIds] = useState<string[]>([]);
   const [totalRoundsCompleted, setTotalRoundsCompleted] = useState(0);
@@ -296,7 +274,9 @@ export const RapidFireModePage = ({
   // NOTE: `buildQuestionRound` moved to server-side; client no longer performs full round computation.
 
   const [shuffledQuestions, setShuffledQuestions] = useState<GeneratedQuestion[]>(() =>
-    shuffleArray(questions).filter((q) => q.applicable).slice(0, questionsPerRound),
+    shuffleArray(questions)
+      .filter((q) => q.applicable)
+      .slice(0, questionsPerRound)
   );
   const roundQuestionCount = questionsPerRound;
   const currentQuestion = shuffledQuestions[currentQuestionIndex];
@@ -304,7 +284,7 @@ export const RapidFireModePage = ({
 
   const getProgressGradient = (percent: number) => {
     return {
-      background: `linear-gradient(to right, #0d9488 ${percent}%, #e5e7eb ${percent}%)`,
+      background: `linear-gradient(to right, #0d7377 ${percent}%, #e5e7eb ${percent}%)`,
     };
   };
 
@@ -329,21 +309,18 @@ export const RapidFireModePage = ({
         // ROUND ALREADY FINISHED -> AUTO START NEXT ROUND
         if (savedProgress.screen === "results") {
           try {
-            const resp = await fetch(
-              `/api/interview-prep/sessions/${sessionId}/next-round`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  questionResponses: savedProgress.questionResponses,
-                  allQuestions: questions,
-                  completedQuestionIds: savedProgress.completedQuestionIds,
-                  currentRound: savedProgress.currentRound,
-                }),
+            const resp = await fetch(`/api/interview-prep/sessions/${sessionId}/next-round`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
               },
-            );
+              body: JSON.stringify({
+                questionResponses: savedProgress.questionResponses,
+                allQuestions: questions,
+                completedQuestionIds: savedProgress.completedQuestionIds,
+                currentRound: savedProgress.currentRound,
+              }),
+            });
 
             if (resp.ok) {
               const data = await resp.json();
@@ -396,9 +373,7 @@ export const RapidFireModePage = ({
         setQuestionResponses(savedProgress.questionResponses);
 
         const restoredQuestions = savedProgress.shuffledQuestionIds
-          .map((questionId) =>
-            questions.find((question) => question.id === questionId),
-          )
+          .map((questionId) => questions.find((question) => question.id === questionId))
           .filter(Boolean) as GeneratedQuestion[];
 
         if (restoredQuestions.length > 0) {
@@ -519,8 +494,7 @@ export const RapidFireModePage = ({
       index: currentQuestionIndex,
     };
 
-    const responsePoints =
-      response === "covered" ? 10 : response === "partial" ? 5 : 0;
+    const responsePoints = response === "covered" ? 10 : response === "partial" ? 5 : 0;
 
     setQuestionResponses((prev) => {
       const existingIndex = prev.findIndex((r) => r.index === currentQuestionIndex);
@@ -533,27 +507,17 @@ export const RapidFireModePage = ({
     });
 
     setUsedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
-    setCompletedQuestionIds((prev) => [
-      ...new Set([...prev, currentQuestion.id]),
-    ]);
+    setCompletedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
 
     if (response === "covered" || response === "partial") {
-      setMasteredQuestionIds((prev) => [
-        ...new Set([...prev, currentQuestion.id]),
-      ]);
+      setMasteredQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
 
-      setRetryQuestionIds((prev) =>
-        prev.filter((id) => id !== currentQuestion.id),
-      );
+      setRetryQuestionIds((prev) => prev.filter((id) => id !== currentQuestion.id));
     } else if (response === "missed") {
-      setRetryQuestionIds((prev) => [
-        ...new Set([...prev, currentQuestion.id]),
-      ]);
+      setRetryQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
     }
 
-    const previousResponse = questionResponses.find(
-      (item) => item.index === currentQuestionIndex,
-    );
+    const previousResponse = questionResponses.find((item) => item.index === currentQuestionIndex);
     const previousPoints =
       previousResponse?.response === "covered"
         ? 10
@@ -601,28 +565,21 @@ export const RapidFireModePage = ({
   };
 
   const finalizeRound = () => {
-    const normalizedResponses: QuestionResponse[] = shuffledQuestions.map(
-      (question, index) => {
-        const existingResponse = questionResponses.find(
-          (response) => response.index === index,
-        );
+    const normalizedResponses: QuestionResponse[] = shuffledQuestions.map((question, index) => {
+      const existingResponse = questionResponses.find((response) => response.index === index);
 
-        return (existingResponse ?? {
-          question,
-          response: "missed",
-          index,
-        }) as QuestionResponse;
-      },
-    );
+      return (existingResponse ?? {
+        question,
+        response: "missed",
+        index,
+      }) as QuestionResponse;
+    });
 
     const summary = computeRoundSummary(normalizedResponses);
 
     const reducedCooldowns = reduceCooldowns(questionCooldowns);
 
-    const updatedCooldowns = computeQuestionCooldowns(
-      normalizedResponses,
-      reducedCooldowns,
-    );
+    const updatedCooldowns = computeQuestionCooldowns(normalizedResponses, reducedCooldowns);
 
     setQuestionCooldowns(updatedCooldowns);
 
@@ -635,8 +592,7 @@ export const RapidFireModePage = ({
 
     const isTrainingComplete =
       summary.weakQuestionIds.length === 0 &&
-      questions.filter((q) => q.applicable && !completedIds.includes(q.id))
-        .length === 0;
+      questions.filter((q) => q.applicable && !completedIds.includes(q.id)).length === 0;
 
     setQuestionResponses(normalizedResponses);
     setRoundSummary(summary);
@@ -661,19 +617,16 @@ export const RapidFireModePage = ({
   const startNextRound = async () => {
     if (screen === "completed") return;
 
-    const resp = await fetch(
-      `/api/interview-prep/sessions/${sessionId}/next-round`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          questionResponses,
-          allQuestions: questions,
-          completedQuestionIds,
-          currentRound,
-        }),
-      },
-    );
+    const resp = await fetch(`/api/interview-prep/sessions/${sessionId}/next-round`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        questionResponses,
+        allQuestions: questions,
+        completedQuestionIds,
+        currentRound,
+      }),
+    });
 
     if (!resp.ok) {
       console.error("Failed to fetch next round", await resp.text());
@@ -699,9 +652,7 @@ export const RapidFireModePage = ({
     setSkippedQuestions(0);
     setCurrentQuestionIndex(0);
     setResumeProgress(null);
-    setTotalRoundsCompleted((prev) =>
-      Math.max(prev, data.currentRound ?? currentRound + 1),
-    );
+    setTotalRoundsCompleted((prev) => Math.max(prev, data.currentRound ?? currentRound + 1));
 
     setScreen(data.isTrainingComplete ? "completed" : "training");
   };
@@ -729,14 +680,10 @@ export const RapidFireModePage = ({
     setShowAnswer(true);
     setIsFlipped(true);
     setUsedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
-    setCompletedQuestionIds((prev) => [
-      ...new Set([...prev, currentQuestion.id]),
-    ]);
+    setCompletedQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
     setRetryQuestionIds((prev) => [...new Set([...prev, currentQuestion.id])]);
 
-    setMasteredQuestionIds((prev) =>
-      prev.filter((id) => id !== currentQuestion.id),
-    );
+    setMasteredQuestionIds((prev) => prev.filter((id) => id !== currentQuestion.id));
   };
 
   const handleReviewQuestionClick = (question: GeneratedQuestion) => {
@@ -758,15 +705,17 @@ export const RapidFireModePage = ({
 
   if (!currentQuestion) {
     return (
-      <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
+      <div className="interview-dots-bg bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 site-main-py site-main-px min-h-screen relative overflow-hidden">
+        <div className="pointer-events-none absolute top-20 -left-32 w-96 h-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
         <div className="">
-          <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-[0_8px_30px_rgba(13,115,119,0.08)] p-8 border border-[rgba(13,115,119,0.08)]">
             <h3 className="text-xl font-bold mb-4">No Questions Available</h3>
             <p className="text-slate-600 mb-6">
               No applicable questions found for rapid fire mode.
             </p>
             <div className="flex gap-3 justify-center">
-              <Button onClick={onSwitchToPrep} className="bg-teal-600 hover:bg-teal-700">
+              <Button onClick={onSwitchToPrep} className="bg-[#0d7377] hover:bg-[#0a5a5d]">
                 Switch to Prep Mode
               </Button>
               <Button onClick={onExit} variant="outline"></Button>
@@ -793,9 +742,7 @@ export const RapidFireModePage = ({
           <div className="w-16 h-16 rounded-2xl bg-[#0d7377]/10 text-[#0d7377] flex items-center justify-center mx-auto mb-6">
             <Zap className="w-8 h-8" />
           </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-3">
-            Restoring Rapid Fire
-          </h3>
+          <h3 className="text-2xl font-bold text-slate-900 mb-3">Restoring Rapid Fire</h3>
           <p className="text-slate-500 leading-relaxed">
             Resuming your last round and restoring timer state.
           </p>
@@ -812,105 +759,105 @@ export const RapidFireModePage = ({
         description="Upgrade to Basic or above to view your readiness score, question breakdown, and performance review."
         minHeight="400px"
       >
-        <div className="bg-linear-to-br from-slate-50 to-teal-50 site-main-py site-main-px">
-          <div className="">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              {screen === "completed" ? "Training Complete!" : "Round Complete"}
-            </h1>
-            <p className="text-slate-600">
-              {screen === "completed"
-                ? "Your final readiness assessment"
-                : `Round ${currentRound} performance summary`}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+        <div className="interview-dots-bg bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 site-main-py site-main-px min-h-screen relative overflow-hidden">
+          {/* Ambient gradient blobs */}
+          <div className="pointer-events-none absolute top-20 -left-32 w-96 h-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
+          <div className="relative z-10">
             <div className="text-center mb-8">
-              <div className="relative inline-block mb-6">
-                <div className="w-40 h-40 rounded-full border-8 border-teal-200 flex items-center justify-center bg-linear-to-br from-teal-50 to-teal-100">
-                  <div className="text-center">
-                    <span className="text-4xl font-bold text-teal-700">
-                      {roundScore ?? totalScore ?? 0}%
-                    </span>
-                    <div className="text-sm text-teal-600 font-medium mt-1">Readiness Score</div>
-                  </div>
-                </div>
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                  <div
-                    className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                      (roundScore ?? totalScore ?? 0) >= 80
-                        ? "bg-green-100 text-green-800"
-                        : (roundScore ?? totalScore ?? 0) >= 60
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {(roundScore ?? totalScore ?? 0) >= 80
-                      ? "Excellent"
-                      : (roundScore ?? totalScore ?? 0) >= 60
-                        ? "Good"
-                        : "Needs Practice"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-lg text-slate-700 font-medium">
-                  {(roundScore ?? totalScore ?? 0) >= 80
-                    ? "Outstanding interview preparation!"
-                    : (roundScore ?? totalScore ?? 0) >= 60
-                      ? "Solid foundation established!"
-                      : "Keep practicing to build confidence"}
-                </p>
-                <p className="text-slate-500">
-                  You scored{" "}
-                  <span className="font-semibold text-teal-600">
-                    {roundSummary?.earnedPoints ?? score}
-                  </span>{" "}
-                  points out of{" "}
-                  <span className="font-semibold">
-                    {roundSummary?.possiblePoints ??
-                      (shuffledQuestions.length - skippedQuestions) * 10}
-                  </span>{" "}
-                  possible
-                </p>
-                <div className="flex justify-center gap-2 mt-4">
-                  <div className="bg-slate-100 px-3 py-1 rounded-full text-sm">
-                    Questions: {shuffledQuestions.length}
-                  </div>
-                  <div className="bg-slate-100 px-3 py-1 rounded-full text-sm">
-                    Time: {shuffledQuestions.length * 10}s
-                  </div>
-                </div>
-              </div>
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">
+                {screen === "completed" ? "Training Complete!" : "Round Complete"}
+              </h1>
+              <p className="text-slate-600">
+                {screen === "completed"
+                  ? "Your final readiness assessment"
+                  : `Round ${currentRound} performance summary`}
+              </p>
             </div>
+
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.1)] p-8 border border-[rgba(13,115,119,0.08)]">
+              <div className="text-center mb-8">
+                <div className="relative inline-block mb-6">
+                  <div className="w-40 h-40 rounded-full border-8 border-[#afdbdb] flex items-center justify-center bg-linear-to-br from-[#f0faf9] to-[#afdbdb]/20">
+                    <div className="text-center">
+                      <span className="text-4xl font-bold text-[#0d7377]">
+                        {roundScore ?? totalScore ?? 0}%
+                      </span>
+                      <div className="text-sm text-[#0d7377] font-medium mt-1">Readiness Score</div>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                    <div
+                      className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                        (roundScore ?? totalScore ?? 0) >= 80
+                          ? "bg-green-100 text-green-800"
+                          : (roundScore ?? totalScore ?? 0) >= 60
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {(roundScore ?? totalScore ?? 0) >= 80
+                        ? "Excellent"
+                        : (roundScore ?? totalScore ?? 0) >= 60
+                          ? "Good"
+                          : "Needs Practice"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-lg text-slate-700 font-medium">
+                    {(roundScore ?? totalScore ?? 0) >= 80
+                      ? "Outstanding interview preparation!"
+                      : (roundScore ?? totalScore ?? 0) >= 60
+                        ? "Solid foundation established!"
+                        : "Keep practicing to build confidence"}
+                  </p>
+                  <p className="text-slate-500">
+                    You scored{" "}
+                    <span className="font-semibold text-teal-600">
+                      {roundSummary?.earnedPoints ?? score}
+                    </span>{" "}
+                    points out of{" "}
+                    <span className="font-semibold">
+                      {roundSummary?.possiblePoints ??
+                        (shuffledQuestions.length - skippedQuestions) * 10}
+                    </span>{" "}
+                    possible
+                  </p>
+                  <div className="flex justify-center gap-2 mt-4">
+                    <div className="bg-slate-100 px-3 py-1 rounded-full text-sm">
+                      Questions: {shuffledQuestions.length}
+                    </div>
+                    <div className="bg-slate-100 px-3 py-1 rounded-full text-sm">
+                      Time: {shuffledQuestions.length * 10}s
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <>
                 <div className="grid grid-cols-3 gap-4 mb-8">
-                  <div className="text-center p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-                    <div className="text-2xl font-bold text-emerald-600">
+                  <div className="text-center p-4 bg-[#0d7377]/8 rounded-lg border border-[#0d7377]/15">
+                    <div className="text-2xl font-bold text-[#0d7377]">
                       {roundSummary?.coveredCount ??
-                        questionResponses.filter((r) => r.response === "covered")
-                          .length}
+                        questionResponses.filter((r) => r.response === "covered").length}
                     </div>
-                    <div className="text-sm text-emerald-700">Covered Well</div>
+                    <div className="text-sm text-[#0d7377]/80">Covered Well</div>
                   </div>
-                  <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
-                    <div className="text-2xl font-bold text-amber-600">
+                  <div className="text-center p-4 bg-[#cdadcc]/12 rounded-lg border border-[#cdadcc]/25">
+                    <div className="text-2xl font-bold text-[#6b5b7b]">
                       {roundSummary?.partialCount ??
-                        questionResponses.filter((r) => r.response === "partial")
-                          .length}
+                        questionResponses.filter((r) => r.response === "partial").length}
                     </div>
-                    <div className="text-sm text-amber-700">Partial Coverage</div>
+                    <div className="text-sm text-[#6b5b7b]/80">Partial Coverage</div>
                   </div>
-                  <div className="text-center p-4 bg-rose-50 rounded-lg border border-rose-100">
-                    <div className="text-2xl font-bold text-rose-600">
+                  <div className="text-center p-4 bg-[#db8090]/10 rounded-lg border border-[#db8090]/20">
+                    <div className="text-2xl font-bold text-[#9e4a5a]">
                       {roundSummary?.missedCount ??
-                        questionResponses.filter((r) => r.response === "missed")
-                          .length}
+                        questionResponses.filter((r) => r.response === "missed").length}
                     </div>
-                    <div className="text-sm text-rose-700">Missed</div>
+                    <div className="text-sm text-[#9e4a5a]/80">Missed</div>
                   </div>
                 </div>
 
@@ -918,44 +865,38 @@ export const RapidFireModePage = ({
                   <div className="text-center mb-6">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
                       <span className="text-slate-600">Questions skipped:</span>
-                      <span className="font-bold text-slate-800">
-                        {skippedQuestions}
-                      </span>
+                      <span className="font-bold text-slate-800">{skippedQuestions}</span>
                     </div>
                   </div>
                 )}
 
                 {/* Reviewable Progress Bar */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                    Performance Review
-                  </h3>
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm text-blue-800">
-                      <span className="font-medium">Note:</span> Click on any of the
-                      color-coded tabs to review the Q&A.
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Performance Review</h3>
+                  <div className="mt-4 p-3 bg-[#afdbdb]/30 rounded-lg border border-[#afdbdb]/50">
+                    <p className="text-sm text-[#0d7377]">
+                      <span className="font-medium">Note:</span> Click on any of the color-coded
+                      tabs to review the Q&A.
                     </p>
                   </div>
                   <div className="flex gap-1 mb-4 mt-2">
                     {shuffledQuestions.map((_, index) => {
-                      const response = questionResponses.find(
-                        (r) => r.index === index,
-                      );
-                      let bgColor = "bg-gray-300"; // Gray for unanswered/skipped
+                      const response = questionResponses.find((r) => r.index === index);
+                      let bgColor = "bg-[#89a4a0]/30"; // Muted for unanswered/skipped
 
                       if (response) {
                         switch (response.response) {
                           case "covered":
-                            bgColor = "bg-green-500";
+                            bgColor = "bg-[#0d7377]";
                             break;
                           case "partial":
-                            bgColor = "bg-amber-500";
+                            bgColor = "bg-[#cdadcc]";
                             break;
                           case "missed":
-                            bgColor = "bg-red-500";
+                            bgColor = "bg-[#db8090]";
                             break;
                           case "skipped":
-                            bgColor = "bg-gray-400";
+                            bgColor = "bg-[#89a4a0]/50";
                             break;
                         }
                       }
@@ -965,9 +906,7 @@ export const RapidFireModePage = ({
                           key={index}
                           className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
                           onClick={() => {
-                            const questionResp = questionResponses.find(
-                              (r) => r.index === index,
-                            );
+                            const questionResp = questionResponses.find((r) => r.index === index);
                             if (questionResp) {
                               handleReviewQuestionClick(questionResp.question);
                             }
@@ -979,19 +918,19 @@ export const RapidFireModePage = ({
                   </div>
                   <div className="flex justify-center gap-6 text-sm text-slate-600">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                      <div className="w-3 h-3 bg-[#0d7377] rounded-sm"></div>
                       <span>Covered Well</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
+                      <div className="w-3 h-3 bg-[#cdadcc] rounded-sm"></div>
                       <span>Partial Coverage</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                      <div className="w-3 h-3 bg-[#db8090] rounded-sm"></div>
                       <span>Missed</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-gray-400 rounded-sm"></div>
+                      <div className="w-3 h-3 bg-[#89a4a0]/50 rounded-sm"></div>
                       <span>Skipped</span>
                     </div>
                   </div>
@@ -999,16 +938,10 @@ export const RapidFireModePage = ({
 
                 {/* Review Question Card */}
                 {reviewQuestion && (
-                  <div className="mb-8 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                  <div className="mb-8 bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-[rgba(13,115,119,0.08)] shadow-[0_8px_30px_rgba(13,115,119,0.08)]">
                     <div className="flex justify-between items-center mb-4">
-                      <h4 className="font-semibold text-slate-900 text-lg">
-                        Question Review
-                      </h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setReviewQuestion(null)}
-                      >
+                      <h4 className="font-semibold text-slate-900 text-lg">Question Review</h4>
+                      <Button variant="ghost" size="sm" onClick={() => setReviewQuestion(null)}>
                         Close
                       </Button>
                     </div>
@@ -1023,28 +956,41 @@ export const RapidFireModePage = ({
                       onClick={handleReviewCardClick}
                     >
                       {/* Front of Card - Question */}
-                      <div className="absolute inset-0 backface-hidden bg-linear-to-br from-teal-500 to-teal-700 rounded-xl p-6 flex flex-col justify-between text-white shadow-lg border border-teal-400/30">
-                        <div>
-                          <div className="flex justify-between items-start mb-4">
-                            <span className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
-                              {reviewQuestion.category}
-                            </span>
-                            <span className="text-teal-200 text-xs bg-white/10 px-2 py-1 rounded">
-                              Review Mode
-                            </span>
-                          </div>
-                          <h3 className="text-lg font-bold leading-tight">
-                            {reviewQuestion.selectedQuestion ||
-                              reviewQuestion.question}
-                          </h3>
+                      <div
+                        className="absolute inset-0 backface-hidden rounded-xl flex flex-col justify-between text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] border border-[rgba(13,115,119,0.08)] overflow-hidden"
+                        style={{
+                          background:
+                            "linear-gradient(145deg, #ffffff 0%, #fdfbf8 35%, #faf6f0 70%, #f7f1e8 100%)",
+                        }}
+                      >
+                        {/* Soft radial glow */}
+                        <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#afdbdb]/15 blur-2xl" />
+                        {/* Decorative watermark */}
+                        <div className="pointer-events-none absolute bottom-6 right-6 opacity-[0.035]">
+                          <Zap className="w-28 h-28 text-[#0d7377]" strokeWidth={1} />
                         </div>
-                        <div className="text-center">
-                          <p className="text-teal-100 text-sm">
-                            Click to see answer and guidance
-                          </p>
-                          <div className="flex justify-center mt-2">
-                            <div className="w-6 h-6 border-2 border-white/50 rounded-full animate-bounce flex items-center justify-center">
-                              <div className="w-1.5 h-1.5 bg-white/80 rounded-full"></div>
+                        <div className="p-6 flex flex-col justify-between flex-1 relative z-10">
+                          <div>
+                            <div className="flex justify-between items-start mb-4">
+                              <span className="bg-[#f3ede7] text-[#9c6f38] px-2 py-1 rounded-full text-xs font-semibold">
+                                {reviewQuestion.category}
+                              </span>
+                              <span className="text-[#89a4a0] text-xs bg-[#89a4a0]/10 px-2 py-1 rounded-full font-medium">
+                                Review Mode
+                              </span>
+                            </div>
+                            <h3 className="text-lg font-bold leading-tight text-slate-800">
+                              {reviewQuestion.selectedQuestion || reviewQuestion.question}
+                            </h3>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[#89a4a0] text-sm">
+                              Click to see answer and guidance
+                            </p>
+                            <div className="flex justify-center mt-2">
+                              <div className="w-6 h-6 border-2 border-[#0d7377]/30 rounded-full animate-bounce flex items-center justify-center">
+                                <div className="w-1.5 h-1.5 bg-[#0d7377]/50 rounded-full"></div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1093,9 +1039,7 @@ export const RapidFireModePage = ({
                         </div>
 
                         <div className="text-center mt-4">
-                          <p className="text-slate-300 text-xs">
-                            Click to flip back
-                          </p>
+                          <p className="text-slate-300 text-xs">Click to flip back</p>
                         </div>
                       </div>
                     </div>
@@ -1103,33 +1047,33 @@ export const RapidFireModePage = ({
                 )}
               </>
 
-            <div className="flex gap-3 justify-center">
-              <Button
-                onClick={() => {
-                  onExit();
-                }}
-                className="bg-teal-600 hover:bg-teal-700 cursor-pointer"
-              >
-                Continue Training Later
-              </Button>
-              <Button
-                onClick={startNextRound}
-                className="bg-orange-600 hover:bg-orange-700 cursor-pointer"
-                disabled={screen === "completed"}
-              >
-                Start Next Round
-              </Button>
-              {/* <Button
+              <div className="flex gap-3 justify-center">
+                <Button
+                  onClick={() => {
+                    onExit();
+                  }}
+                  className="bg-[#0d7377] hover:bg-[#0a5a5d] cursor-pointer shadow-[0_4px_16px_-4px_rgba(13,115,119,0.4)] transition-all duration-200"
+                >
+                  Continue Training Later
+                </Button>
+                <Button
+                  onClick={startNextRound}
+                  className="bg-[#6b5b7b] hover:bg-[#7d6d8d] cursor-pointer shadow-[0_4px_16px_-4px_rgba(107,91,123,0.4)] transition-all duration-200"
+                  disabled={screen === "completed"}
+                >
+                  Start Next Round
+                </Button>
+                {/* <Button
                 onClick={restartRapidFire}
                 variant="outline"
                 className="cursor-pointer"
               >
                 Restart Training
               </Button> */}
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </ResultGate>
     );
   }
@@ -1154,4 +1098,3 @@ export const RapidFireModePage = ({
     />
   );
 };
-
