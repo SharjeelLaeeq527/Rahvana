@@ -887,36 +887,50 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
     const payload: Record<string, string | undefined> = {};
 
-    config.formFields.forEach((field: ConfigField) => {
-      const value = formData[field.key];
-      if (!value || (field.condition && !field.condition(formData))) return;
+    const processField = (field: ConfigField) => {
+      if (field.condition && !field.condition(formData)) {
+        return;
+      }
 
-      if (field.type === "radio" && field.options) {
-        const selected = field.options.find(
-          (opt: { value: string; pdfKey?: string }) => opt.value === value
-        );
-        if (selected && selected.pdfKey) {
-          payload[selected.pdfKey] = "Yes";
-          field.options
-            .filter((opt: { value: string; pdfKey?: string }) => opt.value !== value)
-            .forEach((opt: { value: string; pdfKey?: string }) => {
-              if (opt.pdfKey) {
-                payload[opt.pdfKey] = "Off";
-              }
-            });
-        }
-      } else if (field.type === "checkbox") {
-        const isChecked = value === "Yes" || String(value) === "true" || value === "on";
-        const pdfKey = field.pdfKey as string | undefined;
-        if (pdfKey) {
-          payload[pdfKey] = isChecked ? "Yes" : "Off";
-        }
-      } else {
-        const pdfKey = field.pdfKey as string | undefined;
-        if (pdfKey) {
-          payload[pdfKey] = value;
+      const value = formData[field.key];
+      if (value) {
+        if (field.type === "radio" && field.options) {
+          const selected = field.options.find(
+            (opt: { value: string; pdfKey?: string }) => opt.value === value
+          );
+          if (selected && selected.pdfKey) {
+            payload[selected.pdfKey] = "Yes";
+            field.options
+              .filter((opt: { value: string; pdfKey?: string }) => opt.value !== value)
+              .forEach((opt: { value: string; pdfKey?: string }) => {
+                if (opt.pdfKey) {
+                  payload[opt.pdfKey] = "Off";
+                }
+              });
+          }
+        } else if (field.type === "checkbox") {
+          const isChecked = value === "Yes" || String(value) === "true" || value === "on";
+          const pdfKey = field.pdfKey as string | undefined;
+          if (pdfKey) {
+            payload[pdfKey] = isChecked ? "Yes" : "Off";
+          }
+        } else {
+          const pdfKey = field.pdfKey as string | undefined;
+          if (pdfKey) {
+            payload[pdfKey] = value;
+          }
         }
       }
+
+      if (field.subQuestions) {
+        field.subQuestions.forEach((subQ) => {
+          processField(subQ as unknown as ConfigField);
+        });
+      }
+    };
+
+    config.formFields.forEach((field: ConfigField) => {
+      processField(field);
     });
 
     // Add dynamic overflow handling for additional addresses
