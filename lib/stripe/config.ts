@@ -21,8 +21,7 @@ export const STRIPE_PRICES = {
   ADDONS: {
     "221g": process.env.STRIPE_ADDON_221G || "",
     "case-strength": process.env.STRIPE_ADDON_CASE_STRENGTH || "",
-    mock: process.env.STRIPE_ADDON_INTERVIEW_MOCK || "",
-    rapid: process.env.STRIPE_ADDON_INTERVIEW_RAPID || "",
+    "interview-prep": process.env.STRIPE_ADDON_INTERVIEW_PREP || "",
     pdf: process.env.STRIPE_ADDON_PDF_TOOLKIT || "",
     photo: process.env.STRIPE_ADDON_PHOTO_BOOTH || "",
     smart: process.env.STRIPE_ADDON_SMART_FORM || "",

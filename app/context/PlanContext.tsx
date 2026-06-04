@@ -27,7 +27,7 @@ interface PlanContextValue {
   /** Dev-only: override the active tier for UI testing. null = use real tier. */
   devOverride: PlanTier | null;
   setDevOverride: (t: PlanTier | null) => void;
-  /** Add-on IDs purchased by this user (e.g. ["sponsor", "mock"]). */
+  /** Add-on IDs purchased by this user (e.g. ["sponsor", "interview-prep"]). */
   purchasedAddons: string[];
   /** Re-fetch the user's plan from DB (call after successful payment). */
   refresh: () => void;
