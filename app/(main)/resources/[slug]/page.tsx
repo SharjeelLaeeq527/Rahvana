@@ -12,7 +12,7 @@ import ResourceGallery from "./ResourceGallery";
 import AddToOrderButton from "./AddToOrderButton";
 import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
-import { getSlugTheme } from "./iconMap";
+import { getSlugTheme, getIcon } from "./iconMap";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 // A small, deliberate accent set drawn from the site's brand tokens. Each section
@@ -381,7 +381,7 @@ export default async function ResourceDetailPage({
             <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((r) => {
                 const rt = getSlugTheme(r.slug);
-                const mono = r.addon!.title.trim().charAt(0).toUpperCase();
+                const RIcon = getIcon(rt.icon);
                 return (
                   <Link
                     key={r.slug}
@@ -391,10 +391,10 @@ export default async function ResourceDetailPage({
                   >
                     <span
                       aria-hidden
-                      className="leading-none"
-                      style={{ fontFamily: SERIF, color: rt.accent, fontSize: 34 }}
+                      className="flex h-11 w-11 items-center justify-center rounded-[12px] transition-transform duration-300 group-hover:scale-105"
+                      style={{ backgroundColor: rt.tint, color: rt.accent }}
                     >
-                      {mono}
+                      <RIcon className="h-[22px] w-[22px]" strokeWidth={1.75} />
                     </span>
                     <span
                       className="mb-4 mt-3 block h-[2px] w-7 rounded-full transition-all duration-300 group-hover:w-12"

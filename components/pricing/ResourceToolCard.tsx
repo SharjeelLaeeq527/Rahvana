@@ -5,9 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Plus } from "lucide-react";
 
 import { RESOURCE_DETAILS } from "@/app/(main)/pricing/data/resourceDetails";
-import { getSlugTheme } from "@/app/(main)/resources/[slug]/iconMap";
-
-const SERIF = '"DM Serif Display", Georgia, serif';
+import { getSlugTheme, getIcon } from "@/app/(main)/resources/[slug]/iconMap";
 
 export type ResourceCardAddon = {
   id: string;
@@ -34,9 +32,10 @@ export default function ResourceToolCard({
   onToggle: (id: string) => void;
 }) {
   const detail = RESOURCE_DETAILS[addon.id];
-  const { accent } = getSlugTheme(addon.id);
+  const theme = getSlugTheme(addon.id);
+  const { accent, tint } = theme;
+  const Icon = getIcon(theme.icon);
   const title = addon.title ?? addon.id;
-  const monogram = title.trim().charAt(0).toUpperCase();
 
   return (
     <Link
@@ -48,14 +47,14 @@ export default function ResourceToolCard({
           : "0 1px 2px rgba(0,0,0,0.05), 0 12px 28px -22px rgba(0,0,0,0.3)",
       }}
     >
-      {/* Top: serif drop-cap monogram + badge / added check */}
+      {/* Top: tool icon tile + badge / added check */}
       <div className="flex items-start justify-between px-5 pt-5">
         <span
           aria-hidden
-          className="leading-none"
-          style={{ fontFamily: SERIF, color: accent, fontSize: 38 }}
+          className="flex h-11 w-11 items-center justify-center rounded-[12px] transition-transform duration-300 group-hover:scale-105"
+          style={{ backgroundColor: tint, color: accent }}
         >
-          {monogram}
+          <Icon className="h-[22px] w-[22px]" strokeWidth={1.75} />
         </span>
 
         {isAdded ? (
