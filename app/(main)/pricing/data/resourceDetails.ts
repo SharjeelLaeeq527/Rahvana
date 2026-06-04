@@ -52,6 +52,14 @@ const img = (slug: string, file: string, alt: string, caption?: string): Resourc
   caption,
 });
 
+// For images that live directly under /tools (not in a per-slug subfolder).
+const imgFile = (file: string, alt: string, caption?: string): ResourceMedia => ({
+  type: "image",
+  src: `/assets/images/tools/${file}`,
+  alt,
+  caption,
+});
+
 export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
   // ───────────────────────────────────────────────────────────────────────────
   "case-strength": {
@@ -91,8 +99,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["Does it use my real data?", "Yes, it can pull directly from your Rahvana profile so you don't re-enter anything. Your data stays private."],
     ],
     media: [
-      img("case-strength", "hero.png", "Case Strength Analyzer score screen", "Your instant 0–100 case strength score with flagged gaps"),
-      img("case-strength", "gallery-1.png", "Prioritized list of gaps to fix", "Every gap explained and ranked by severity"),
+      imgFile("case-strength_hero.jpg", "Case Strength Analyzer score screen", "Your instant 0–100 case strength score with flagged gaps"),
+      imgFile("case_strength_Sub_img.jpg", "Prioritized list of gaps to fix", "Every gap explained and ranked by severity"),
+      imgFile("case_Strength_Sub.jpg", "Case Strength Analyzer detail view"),
     ],
     related: ["smart", "sponsor", "doc-review"],
   },
@@ -135,8 +144,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["How long does the add-on last?", "It stays available until the end of your visa journey."],
     ],
     media: [
-      img("221g", "hero.png", "221(g) Action Planner roadmap", "Your personalized step-by-step 221(g) plan"),
-      img("221g", "gallery-1.png", "221(g) reason and document intake", "Tell us what your slip says"),
+      imgFile("221g-hero.jpg", "221(g) Action Planner roadmap", "Your personalized step-by-step 221(g) plan"),
+      imgFile("221g-sub_img.jpg", "221(g) reason and document intake", "Tell us what your slip says"),
+      imgFile("221g-second_Sub_img.jpg", "221(g) Action Planner detail view"),
     ],
     related: ["doc-review", "consultation", "case-strength"],
   },
@@ -178,8 +188,10 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["Do I need a microphone?", "For the mock interview, yes — answering out loud gives you response insights. Guided prep and rapid-fire drills work without one."],
     ],
     media: [
-      img("interview-prep", "hero.png", "AI voice mock interview screen"),
-      img("interview-prep", "gallery-1.png", "Interview Prep performance summary"),
+      imgFile("interview_prep.jpg", "Interview Prep guided questions", "Build strong answers tailored to your case"),
+      imgFile("rapidfire.jpg", "Timed rapid-fire drills", "Sharpen recall against the clock"),
+      imgFile("mock_interviw.jpg", "AI voice mock interview", "Hear realistic consular questions and answer aloud"),
+      imgFile("result_Rapid.jpg", "Performance summary", "Instant breakdown of pace and responses"),
     ],
     related: ["case-strength", "consultation", "221g"],
   },
@@ -221,8 +233,8 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["Can I edit before downloading?", "Yes — you review and confirm every field, with a completion summary, before the final PDF is generated."],
     ],
     media: [
-      img("smart", "hero.png", "Auto-filled USCIS form preview", "Your official form, auto-filled from your profile"),
-      img("smart", "gallery-1.png", "Review screen and ready-to-upload PDF"),
+      imgFile("autoform_hero.jpg", "Auto-filled USCIS form preview", "Your official form, auto-filled from your profile"),
+      imgFile("autoform.jpg", "Review screen and ready-to-upload PDF"),
     ],
     related: ["case-strength", "sponsor", "doc-review"],
   },
@@ -264,8 +276,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["Does it cover assets, not just income?", "Yes, it factors in convertible assets (with the 3×/5× rules) and household size, and accounts for joint sponsors."],
     ],
     media: [
-      img("sponsor", "hero.png", "Sponsorship Calculator result", "Your income vs the I-864 requirement"),
-      img("sponsor", "gallery-1.png", "What you still need summary"),
+      imgFile("affidavit_main_hero.jpg", "Sponsorship Calculator result", "Your income vs the I-864 requirement"),
+      imgFile("affidavit_hero.jpg", "Income and household intake", "Enter your income, household size and assets"),
+      imgFile("affidavit.jpg", "Sponsorship Calculator detail view"),
     ],
     related: ["case-strength", "smart", "doc-review"],
   },

@@ -51,7 +51,10 @@ export default function ResourceGallery({
       {/* Stage */}
       <div
         className="relative aspect-[16/10] w-full overflow-hidden rounded-[24px] border shadow-sm"
-        style={{ borderColor: `${accent}22` }}
+        style={{
+          borderColor: `${accent}22`,
+          background: `linear-gradient(160deg, ${tint} 0%, #ffffff 70%)`,
+        }}
       >
         {showFallback ? (
           Placeholder
@@ -71,7 +74,7 @@ export default function ResourceGallery({
             alt={current.alt}
             fill
             sizes="(max-width: 1024px) 100vw, 640px"
-            className="object-cover"
+            className="object-contain"
             onError={() => setErrored((e) => ({ ...e, [active]: true }))}
             priority
           />
@@ -115,7 +118,8 @@ export default function ResourceGallery({
                     alt={m.alt}
                     fill
                     sizes="96px"
-                    className="object-cover"
+                    className="object-contain"
+                    style={{ backgroundColor: tint }}
                     onError={() => setErrored((e) => ({ ...e, [i]: true }))}
                   />
                 )}
