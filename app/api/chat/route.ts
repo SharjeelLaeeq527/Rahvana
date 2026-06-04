@@ -49,7 +49,6 @@ export async function POST(req: NextRequest) {
     console.error("❌ Chat API Error:", error);
     return NextResponse.json(
       {
-      {
         response: "Sorry, I'm having trouble connecting to the assistant. Please try again.",
         error: msg(E.TOOL_CHAT_SERVER_ERROR),
       },

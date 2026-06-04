@@ -522,7 +522,9 @@ const AvailabilityGrid = () => {
                                   ? "bg-green-50 border-green-200 hover:border-green-400"
                                   : slot.status === "pending"
                                     ? "bg-yellow-50 border-yellow-200 hover:border-yellow-400"
-                                    : "bg-gray-50 border-gray-200 grayscale opacity-70 hover:border-gray-400"
+                                    : slot.status === "canceled" || slot.status === "cancelled"
+                                      ? "bg-red-50 border-red-200 hover:border-red-400"
+                                      : "bg-gray-50 border-gray-200 grayscale opacity-70 hover:border-gray-400"
                             )}
                             onClick={() => handleOpenEditModal(slot)}
                           >
@@ -543,7 +545,9 @@ const AvailabilityGrid = () => {
                                       ? "text-green-600"
                                       : slot.status === "pending"
                                         ? "text-yellow-600"
-                                        : "text-gray-400"
+                                        : slot.status === "canceled" || slot.status === "cancelled"
+                                          ? "text-red-600 font-extrabold"
+                                          : "text-gray-400"
                                 )}
                               >
                                 {slot.status === "available" && slot.localStart.getTime() < Date.now() ? "expired" : slot.status}
@@ -557,6 +561,8 @@ const AvailabilityGrid = () => {
                               )
                             ) : slot.status === "unavailable" ? (
                               <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
+                            ) : slot.status === "canceled" || slot.status === "cancelled" ? (
+                              <X className="h-3 w-3 text-red-400" />
                             ) : (
                               <Edit2 className="h-3 w-3 text-gray-300 opacity-0 group-hover:opacity-100 group-hover:text-teal-500 transition-all" />
                             )}

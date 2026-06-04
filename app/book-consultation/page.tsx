@@ -1483,14 +1483,19 @@ const ConsultationBookingPage = () => {
         const { startHour, endHour, hoursRange } = getHourBoundaries();
 
         const visibleSlots = availableSlots.filter(slot => {
-          if (slot.available) return true; // Show all available slots
-          
-          // If it's booked/unavailable, only show it if the current user booked it
-          const isBookedByMe = userBookings.some(booking => 
+          const isPast = slot.date.getTime() < Date.now();
+          const hasUserBooking = userBookings.some(booking => 
             booking.email === user?.email &&
             new Date(booking.selected_slot).getTime() === slot.date.getTime()
           );
-          return isBookedByMe;
+
+          if (isPast) {
+            // In the past, only show if the current user booked/canceled it
+            return hasUserBooking;
+          } else {
+            // In the future, show if it is available OR if the current user booked/canceled it
+            return slot.available || hasUserBooking;
+          }
         });
 
         const handlePrevDate = () => {
@@ -1719,7 +1724,7 @@ const ConsultationBookingPage = () => {
                                                     )
                                                   : "bg-gray-100/40 border-gray-150 text-gray-400"
                                         )}
-                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Booked (Expired)' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
+                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Completed' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
                                       >
                                         <div className="flex flex-col justify-center">
                                           <span className={cn(
@@ -1734,7 +1739,7 @@ const ConsultationBookingPage = () => {
                                                     ? (isPast ? "text-purple-500/80" : "text-purple-800")
                                                     : "text-gray-400"
                                           )}>
-                                            {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Booked (Expired)" : "Booked") : isPast ? "Passed" : "Available"}
+                                            {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Available"}
                                           </span>
                                           <span className="text-[10px] font-black block mt-0.5 leading-tight">
                                             {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1869,7 +1874,7 @@ const ConsultationBookingPage = () => {
                                                 ? (isPast ? "text-purple-500/80" : "text-purple-800")
                                                 : "text-gray-400"
                                       )}>
-                                        {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Booked (Expired)" : "Booked") : isPast ? "Passed" : "Available"}
+                                        {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Available"}
                                       </div>
                                       <span className="text-[10px] font-black">
                                         {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1986,7 +1991,7 @@ const ConsultationBookingPage = () => {
                                                 )
                                               : "bg-gray-100/40 border-gray-150 text-gray-400"
                                     )}
-                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Booked (Expired)' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
+                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Completed' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
                                   >
                                     <span className="truncate">
                                       {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
