@@ -7,6 +7,7 @@ import { VISA_CATEGORIES } from "@/app/(main)/pricing/data/pricing";
 import { reconcileUserPlan } from "@/lib/plan/reconcile";
 import * as fs from "fs";
 import * as path from "path";
+import { E, msg } from "@/lib/errors";
 
 function logDebug(msg: string, obj?: any) {
   try {
@@ -32,7 +33,10 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!userId) {
       logDebug("Returning 400 User ID is required");
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[userId]" }) },
+        { status: 400 }
+      );
     }
 
     // Get user email from Supabase
@@ -137,10 +141,7 @@ export async function POST(request: NextRequest) {
       if (tierLower === "executive") product = PRODUCTS.EXECUTIVE;
 
       if (!product) {
-        return NextResponse.json(
-          { error: `Product tier '${productTier}' not found` },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
       }
 
       // Subscription mode for all journey plans

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail, getFeatureAnnouncementEmailHtml } from "@/lib/email/resend";
 import { createServerClient } from "@supabase/ssr";
+import { E, msg } from "@/lib/errors";
 
 // Specific admin emails - ONLY these emails can access admin panel
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
@@ -33,9 +34,9 @@ async function checkAdminRole(request: NextRequest) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) return { isAdmin: false, error: "Authentication required" };
+  if (userError || !user) return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED) };
   if (!user.email || !ADMIN_EMAILS.includes(user.email))
-    return { isAdmin: false, error: "Admin access required" };
+    return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED_ADMIN) };
 
   const supabaseAdmin = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,7 +55,8 @@ async function checkAdminRole(request: NextRequest) {
     return { isAdmin: false, error: "Profile verification failed" };
   }
 
-  if (!profile || profile.role !== "admin") return { isAdmin: false, error: "Admin role required" };
+  if (!profile || profile.role !== "admin")
+    return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED_ADMIN) };
 
   return { isAdmin: true, error: null };
 }

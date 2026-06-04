@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-
+import { E, msg } from "@/lib/errors";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -21,18 +21,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const adminNotes = formData.get("adminNotes") as string | undefined;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
     }
 
     // Validate file type (PDF only)
     if (!file.type.includes("pdf")) {
-      return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.UPLOAD_INVALID_PDF) }, { status: 400 });
     }
 
     // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json({ error: `File size exceeds 50MB limit` }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 50 }) },
+        { status: 400 }
+      );
     }
 
     const supabase = getStorageSupabase();
@@ -46,6 +49,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (checkError || !existing) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Allow upload for PENDING, IN_REVIEW, or CHANGES_REQUESTED statuses
@@ -80,6 +84,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (uploadError) {
       console.error("Upload error:", uploadError);
       return NextResponse.json({ error: "Failed to upload translated file" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
     }
 
     // Determine new version
@@ -114,9 +119,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       success: true,
       status: updated.status,
       message: "Translated document uploaded successfully. User can now review it.",
+      message: msg(E.UPLOAD_TRANSLATION_SUCCESS),
     });
   } catch (error) {
     console.error("Upload translation error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

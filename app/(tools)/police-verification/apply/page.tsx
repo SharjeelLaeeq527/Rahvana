@@ -27,6 +27,7 @@ import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { E, msg } from "@/lib/errors";
 
 function PoliceApplyContent() {
   // const searchParams = useSearchParams();
@@ -222,7 +223,9 @@ function PoliceApplyContent() {
       if (!formData.passportIssue) isValid = false;
       if (!formData.passportExpiry) isValid = false;
 
-      if (!isValid) showToast("Please fill all required fields in Step 1", "error");
+      if (!isValid) {
+        showToast(msg(E.POLICE_STEP1_INCOMPLETE), "error");
+      }
     }
 
     if (step === 2) {
@@ -261,12 +264,13 @@ function PoliceApplyContent() {
         if (!files.judgmentCopy) isValid = false;
       }
 
-      if (!isValid)
+      if (!isValid) {
         showToast(
           "Please upload all required documents" +
             (formData.arrested === "Yes" ? " including arrest details." : "."),
           "error"
         );
+      }
     }
 
     return isValid;
@@ -320,10 +324,7 @@ function PoliceApplyContent() {
 
         await Promise.all(fileUploadPromises);
 
-        showToast(
-          `Application Submitted Successfully! Your Request ID is: ${requestId}`,
-          "success"
-        );
+        showToast(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }), "success");
         // router.push("/user-dashboard");
       } catch (error) {
         console.error(error);
@@ -1518,10 +1519,7 @@ function PoliceApplyContent() {
                 )}
               </button>
               {showUpgradeModal && (
-                <UpgradeModal
-                  feature="pcc_filing"
-                  onClose={() => setShowUpgradeModal(false)}
-                />
+                <UpgradeModal feature="pcc_filing" onClose={() => setShowUpgradeModal(false)} />
               )}
             </>
           )}

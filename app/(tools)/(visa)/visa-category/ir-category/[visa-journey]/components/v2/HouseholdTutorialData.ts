@@ -48,7 +48,6 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     instruction:
       "Inside the sponsorship section, select the appropriate option to add a participant. The two options — household member and joint sponsor — are handled through the same CEAC area but have different implications.",
     note: "Remember: joint sponsors do not require relationship-proof documents. Household members do — the checklist below will generate the correct items once you define who they are.",
-    media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/choose_sponsor.png" },
     vlabel: "Add Participant",
     visual: `
       <div class="mock-card">

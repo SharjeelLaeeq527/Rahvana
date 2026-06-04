@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from '@/lib/errors';
 
 export async function GET(request: Request) {
   try {
@@ -7,7 +8,7 @@ export async function GET(request: Request) {
     const slug = searchParams.get("slug");
 
     if (!slug) {
-      return NextResponse.json({ error: "Guide slug is required" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[slug]' }) }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     // 1. Get the session for this guide
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
 
     if (sessionError) {
       console.error("Error fetching session:", sessionError);
-      return NextResponse.json({ error: "Failed to fetch session" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
     if (!session) {
@@ -59,6 +60,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Unexpected error in /api/guides/progress:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 import { journeyService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import { progressService } from "@/lib/journey/service";
@@ -12,7 +13,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Get journey
     const journey = await db.getJourneyDB(journeyId);
     if (!journey) {
-      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
+      return NextResponse.json(
+        { error: msg(E.JOURNEY_NOT_FOUND), code: "NOT_FOUND" },
+        { status: 404 }
+      );
     }
 
     // Get chapters
@@ -44,14 +48,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     console.error(`Error in GET /api/journeys/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
+      return NextResponse.json(
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to get journey details",
+        error: msg(E.JOURNEYS_FETCH_FAILED),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
@@ -100,18 +106,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     console.error(`Error in PATCH /api/journeys/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
+      return NextResponse.json(
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
     }
 
     if (error instanceof Error && error.message?.includes("Journey not found")) {
-      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
+      return NextResponse.json(
+        { error: msg(E.JOURNEY_NOT_FOUND), code: "NOT_FOUND" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to update journey",
+        error: msg(E.CHAPTER_SERVER_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
@@ -133,18 +144,23 @@ export async function DELETE(
     console.error(`Error in DELETE /api/journeys/[id]:`, error);
 
     if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
+      return NextResponse.json(
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
     }
 
     if (error instanceof Error && error.message?.includes("Journey not found")) {
-      return NextResponse.json({ error: "Journey not found", code: "NOT_FOUND" }, { status: 404 });
+      return NextResponse.json(
+        { error: msg(E.JOURNEY_NOT_FOUND), code: "NOT_FOUND" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to delete journey",
+        error: msg(E.JOURNEYS_DELETE_FAILED),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

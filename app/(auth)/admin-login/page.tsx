@@ -3,14 +3,17 @@
 import { useState, FormEvent, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/spinner";
+import { msg, E, errorCode } from "@/lib/errors";
 
 function AdminLoginPageContent() {
   const router = useRouter();
   const { signIn, user, isLoading, isAdmin, verifyMFALogin, mfaPending } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -36,7 +39,7 @@ function AdminLoginPageContent() {
     } = await signIn(email, password);
 
     if (error) {
-      setError("Invalid admin credentials");
+      setError(`${msg(E.AUTH_ADMIN_LOGIN_FAILED)}`);
       setIsSubmitting(false);
       return;
     }
@@ -67,10 +70,10 @@ function AdminLoginPageContent() {
       if (success) {
         router.replace("/admin");
       } else {
-        setError(mfaError || "Invalid authentication code");
+        setError(mfaError || `${msg(E.AUTH_MFA_CODE_INVALID)}`);
       }
     } catch {
-      setError("Failed to verify authentication code");
+      setError(`${msg(E.AUTH_MFA_VERIFY_FAILED)}`);
     } finally {
       setIsSubmitting(false);
     }

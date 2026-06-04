@@ -12,6 +12,7 @@
 // Owner / admin accessing Supabase Storage directly sees ONLY encrypted garbage.
 
 import { NextRequest, NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { createClient as createClientJs } from "@supabase/supabase-js";
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[download] Unauthorized:", authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -37,7 +39,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const document = await dbStorage.getDocument(id, user.id);
 
     if (!document) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // ── 3. Download encrypted blob from Supabase Storage ──────────────────────

@@ -8,6 +8,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createInterviewSession, getInterviewSession } from "@/lib/interview-prep/service";
 import { categoryLoader } from "@/lib/interview-prep/category-loader";
+import { E, msg } from "@/lib/errors";
 
 /**
  * POST /api/interview-prep
@@ -15,8 +16,8 @@ import { categoryLoader } from "@/lib/interview-prep/category-loader";
  *
  * Body:
  * - category_slug: string (e.g., 'ir-1-spouse')
- * - user_email: string 
- * - user_name: string 
+ * - user_email: string
+ * - user_name: string
  */
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +26,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!category_slug) {
-      return NextResponse.json({ error: "Category slug is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[category_slug]" }) },
+        { status: 400 }
+      );
     }
 
     // Validate category exists and is active
@@ -54,11 +58,11 @@ export async function POST(request: NextRequest) {
       },
       {
         status: result.alreadyExists ? 200 : 201,
-      },
+      }
     );
   } catch (error) {
     console.error("Error creating interview session:", error);
-    return NextResponse.json({ error: "Failed to create interview session" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.TOOL_INTERVIEW_SESSION_FAILED) }, { status: 500 });
   }
 }
 
@@ -94,14 +98,17 @@ export async function GET(request: NextRequest) {
 
   // If sessionId provided, return session data
   if (!sessionId) {
-    return NextResponse.json({ error: "Session ID or category_slug is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[sessionId]" }) },
+      { status: 400 }
+    );
   }
 
   try {
     const session = await getInterviewSession(sessionId);
 
     if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, session });

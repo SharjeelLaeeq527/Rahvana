@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as db from "@/lib/journey/data-access";
 import { getTracker } from "@/lib/easypost/tracker";
+import { E, msg } from "@/lib/errors";
 
 /**
  * POST /api/cron/update-tracking
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     const cronSecret = request.headers.get("X-CRON-SECRET");
     if (!process.env.CRON_SECRET || cronSecret !== process.env.CRON_SECRET) {
       console.warn("[Cron API] Unauthorized cron request");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     console.log("[Cron API] Starting tracking status update job");
@@ -101,12 +102,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("[Cron API] Unexpected error:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.CEAC_SERVER_ERROR) }, { status: 500 });
   }
 }

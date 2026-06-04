@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 import { DocumentFileManager } from "@/lib/document-vault/storage-server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { getCategoryFolderName } from "@/lib/document-vault/file-utils";
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     // Get query parameters
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
     const documents = await dbStorage.getAllDocuments(user.id);
 
     if (documents.length === 0) {
-      return NextResponse.json({ error: "No documents to export" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.VAULT_NO_DOCUMENTS_TO_EXPORT) }, { status: 400 });
     }
 
     // Create ZIP

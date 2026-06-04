@@ -9,6 +9,7 @@ import {
   PDFRef,
 } from "pdf-lib";
 import { generateRequiredDocumentsList, DocumentItem } from "./documentDefinitions";
+import { E, msg } from "@/lib/errors";
 import { FormSelections } from "../types/221g";
 
 interface PDFGeneratorOptions {
@@ -386,7 +387,7 @@ export const generatePDFPacket = async (options: PDFGeneratorOptions): Promise<v
     localStorage.removeItem("221gActionPlanProgress");
   } catch (error) {
     console.error("Error generating PDF packet:", error);
-    throw new Error("Failed to generate PDF packet");
+    throw new Error(msg(E.PDF_GENERATION_FAILED));
   }
 };
 

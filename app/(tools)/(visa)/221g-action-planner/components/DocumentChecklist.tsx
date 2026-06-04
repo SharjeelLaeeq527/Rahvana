@@ -14,6 +14,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, AlertTriangle, XCircle, FileText, Upload, Package, Eye } from "lucide-react";
+import { E, msg } from "@/lib/errors";
 import { FormSelections } from "../types/221g";
 import { manualChecklists, ChecklistItem } from "../utils/manualChecklists";
 import { DocumentType } from "../utils/documentValidation";
@@ -267,9 +268,7 @@ export default function DocumentChecklist({
                                   }
                                 } catch (error) {
                                   console.error("Validation error:", error);
-                                  setValidationErrors([
-                                    `Error validating document: ${error instanceof Error ? error.message : "Unknown error"}. Please try again.`,
-                                  ]);
+                                  setValidationErrors([msg(E.TOOL_DOC_VALIDATION_FAILED)]);
                                   setShowErrorDialog(true);
                                 }
                               };

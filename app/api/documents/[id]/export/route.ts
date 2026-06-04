@@ -3,6 +3,7 @@
 // Exports single document as ZIP with original + compressed versions (if exists)
 
 import { NextRequest, NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentFileManager } from "@/lib/document-vault/storage-server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
@@ -20,6 +21,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[documents/export] Unauthorized:", authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -31,6 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Get document definition for naming
@@ -86,6 +90,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!readResult.success || !readResult.buffer) {
       return NextResponse.json({ error: readResult.error || "File not found" }, { status: 404 });
+      console.error("[documents/export] read error:", readResult.error);
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     return new NextResponse(new Uint8Array(readResult.buffer), {
@@ -97,6 +103,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
   } catch (error) {
+    console.error("Export document error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Export document error:", error);
     console.error("Export document error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

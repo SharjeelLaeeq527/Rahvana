@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { VisaCheckerSupabaseService } from "@/lib/visa-checker/supabase";
+import { E, msg } from "@/lib/errors";
 
 export async function GET(
   request: NextRequest,

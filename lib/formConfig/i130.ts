@@ -166,7 +166,7 @@ export const formFields: Field[] = [
   {
     key: "full_name_group",
     pdfKey: "N/A",
-    label: "",
+    label: "Provide your name details",
     type: "hidden",
     section: "Information About You (Petitioner)",
     subQuestions: [
@@ -276,7 +276,7 @@ export const formFields: Field[] = [
   {
     key: "current_in_care_of",
     pdfKey: "current_in_care_of",
-    label: "Is there someone else's name on your mail? (Optional)",
+    label: "Is there someone else's name on your mail? If yes then provide full name. (Optional)",
     type: "text",
     section: "Mailing Address",
   },

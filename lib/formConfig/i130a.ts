@@ -183,7 +183,9 @@ export const formFields: Field[] = [
         key: "p1_addr1_state",
         pdfKey: "p1_addr1_state",
         label: "In which state do you currently live?",
-        type: "text", // Or select list of states
+        type: "dropdown",
+        isState: true, // Or select list of states
+    placeholder:"Select a state",
       },
       {
         key: "p1_addr1_zip",
@@ -411,7 +413,9 @@ export const formFields: Field[] = [
         key: "p2_emp1_state",
         pdfKey: "p2_emp1_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p2_emp1_zip",
@@ -507,7 +511,9 @@ export const formFields: Field[] = [
         key: "p2_emp2_state",
         pdfKey: "p2_emp2_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
         section: "Part 2. Information About Your Employment",
       },
       {
@@ -615,7 +621,9 @@ export const formFields: Field[] = [
         key: "p3_emp3_state",
         pdfKey: "p3_emp3_state",
         label: "In which state or region?",
-        type: "text",
+      type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p3_emp3_zip",
@@ -794,7 +802,9 @@ export const formFields: Field[] = [
         key: "p5_interp_state",
         pdfKey: "p5_interp_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p5_interp_zip",
@@ -927,7 +937,9 @@ export const formFields: Field[] = [
         key: "p6_prep_state",
         pdfKey: "p6_prep_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p6_prep_zip",

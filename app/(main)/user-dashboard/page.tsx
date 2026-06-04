@@ -18,6 +18,7 @@ import {
 import StatCard from "@/app/components/shared/StatCard";
 import { Loader } from "@/components/ui/spinner";
 import { useAuth } from "@/app/context/AuthContext";
+import { E, msg } from "@/lib/errors";
 
 type Analytics = {
   journeys: { total: number };
@@ -41,7 +42,7 @@ const UserDashboard = () => {
       try {
         const res = await fetch("/api/user-dashboard/analytics");
 
-        if (!res.ok) throw new Error("Failed to fetch analytics");
+        if (!res.ok) throw new Error(msg(E.ANALYTICS_FETCH_FAILED));
 
         const data = await res.json();
         setAnalytics(data);
@@ -60,7 +61,7 @@ const UserDashboard = () => {
           `/api/journeys?journey_type=${encodeURIComponent(journeyTypeValue)}`
         );
 
-        if (!res.ok) throw new Error("Failed to fetch journeys");
+        if (!res.ok) throw new Error(msg(E.JOURNEY_NOT_FOUND));
 
         const data = await res.json();
         console.log(data);

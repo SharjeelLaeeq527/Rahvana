@@ -28,7 +28,7 @@ import { UploadedDocument } from "@/lib/document-vault/types";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
-
+import { msg, E, errorCode } from "@/lib/errors";
 interface PendingUpload {
   id: string;
   file: File | null;
@@ -227,12 +227,12 @@ export function MultipleDocumentUploadModal({
 
   const processFile = (id: string, file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size must be less than 10MB");
+      toast.error(msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 10 }));
       return;
     }
     const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Invalid file type. Please upload PDF or image.");
+      toast.error(msg(E.TOOL_FILE_TYPE_UNSUPPORTED));
       return;
     }
     updatePendingUpload(id, { file });
@@ -285,7 +285,7 @@ export function MultipleDocumentUploadModal({
     const validUploads = pendingUploads.filter((p) => p.file && p.type);
     if (validUploads.length === 0) return;
     if (!config) {
-      toast.error("Document Vault is not configured. Please refresh.");
+      toast.error(`${msg(E.VAULT_NOT_CONFIGURED)}`);
       return;
     }
 
@@ -403,9 +403,9 @@ export function MultipleDocumentUploadModal({
           body: formData,
         });
 
-        const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error || "Upload failed");
+          toast.error(`${msg(E.UPLOAD_FAILED)}`, { id: "multi-upload-progress" });
+          return;
         }
       }
 
@@ -421,9 +421,7 @@ export function MultipleDocumentUploadModal({
       addPendingUpload();
     } catch (error) {
       console.error("Multi-upload error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to upload all documents", {
-        id: "multi-upload-progress",
-      });
+      toast.error(`${msg(E.UPLOAD_NETWORK_ERROR)}`, { id: "multi-upload-progress" });
     } finally {
       setUploading(false);
     }
@@ -447,7 +445,7 @@ export function MultipleDocumentUploadModal({
       setDeleteModalOpen(false);
       setSelectedDeleteId(null);
     } catch (error) {
-      toast.error("Failed to delete document");
+      toast.error(`${msg(E.VAULT_DELETE_FAILED)}`);
     } finally {
       setDeleteLoading(false);
     }

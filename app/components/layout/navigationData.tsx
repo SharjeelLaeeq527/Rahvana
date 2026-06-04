@@ -900,13 +900,16 @@ export const NAV_DATA: Record<string, NavSection> = {
           //   href: "#",
           //   disabled: true,
           // },
-          
-          //   description: "Done-for-you police certificate filing for Sindh.",
-          //   href: "/police-verification/apply?province=Sindh",
-          //   disabled: false,
-          //   // href: "/guides/police-verification-guide",
-          //   // badge: "Soon",
-          // },
+          {
+            icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
+            title: "PCC Filing Service — Sindh",
+            translationKey: "pccSindh",
+            description: "Done-for-you police certificate filing for Sindh.",
+            href: "/police-verification/apply?province=Sindh",
+            disabled: false,
+            // href: "/guides/police-verification-guide",
+            // badge: "Soon",
+          },
           {
             icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
             title: "PCC Filing Service — Punjab (Coming Soon)",

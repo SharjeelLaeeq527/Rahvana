@@ -3,6 +3,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 
 export async function PATCH() {
@@ -29,5 +30,7 @@ export async function PATCH() {
   } catch (error) {
     console.error("Mark documents as read error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Mark documents as read error:", error);
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

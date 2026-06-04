@@ -2,7 +2,7 @@
 // Admin lists documents (with filters)
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-
+import { E, msg } from "@/lib/errors";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("Query error:", error);
-      return NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -47,6 +47,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("List documents error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

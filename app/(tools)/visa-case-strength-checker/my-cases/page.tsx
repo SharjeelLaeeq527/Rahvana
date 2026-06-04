@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { E, msg } from "@/lib/errors";
 import { FileText, Calendar, Eye, Plus, CheckCircle, AlertTriangle, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
@@ -103,12 +104,13 @@ export default function MyCases() {
         if (response.ok) {
           setCases(data);
         } else {
-          setError(data.error || "Failed to fetch cases");
+          console.error("Failed to fetch cases:", data.error ?? data);
+          setError(msg(E.TOOL_CASE_ANALYZE_FAILED));
           setCases([]);
         }
       } catch (error) {
         console.error("Error fetching user cases:", error);
-        setError("Failed to load cases");
+        setError(msg(E.TOOL_CASE_ANALYZE_FAILED));
         setCases([]);
       } finally {
         setLoading(false);
@@ -166,7 +168,7 @@ export default function MyCases() {
       setSelectedSessionId(null);
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Failed to delete session", "error");
+      alert(msg(E.TOOL_CASE_ANALYZE_FAILED));
     } finally {
       setLoadingDelete(false);
     }

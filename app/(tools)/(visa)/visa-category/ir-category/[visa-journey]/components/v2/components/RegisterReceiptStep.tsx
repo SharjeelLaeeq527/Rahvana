@@ -1,5 +1,6 @@
 // components/RegisterReceiptStep.tsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { E, msg } from "@/lib/errors";
 import { Globe, Lock } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
@@ -247,7 +248,7 @@ async function postReceipt(
     });
     const data = await res.json();
     if (!res.ok || "error" in data) {
-      return { record: null, error: data.error ?? "Failed to save receipt." };
+      return { record: null, error: msg(E.JOURNEY_RECEIPT_SAVE_FAILED) };
     }
     const record: ReceiptRecord = {
       receiptNumber: data.receipt_number,
@@ -262,7 +263,7 @@ async function postReceipt(
     };
     return { record, error: "" };
   } catch {
-    return { record: null, error: "Network error — please try again." };
+    return { record: null, error: msg(E.JOURNEY_RECEIPT_SAVE_FAILED) };
   }
 }
 
@@ -270,8 +271,7 @@ async function fetchReceipt(journeyId: string) {
   try {
     const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
     const data = await res.json();
-    if (!res.ok || data.error)
-      return { record: null, error: data.error || "Failed to fetch receipt" };
+    if (!res.ok || data.error) return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
     const record: ReceiptRecord = {
       receiptNumber: data.receipt_number,
       noticeDate: data.notice_date,
@@ -285,7 +285,7 @@ async function fetchReceipt(journeyId: string) {
     };
     return { record, error: "" };
   } catch {
-    return { record: null, error: "Network error while fetching receipt" };
+    return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
   }
 }
 
@@ -628,7 +628,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
     setLoading(true);
     setError("");
     if (!uploadFile) {
-      setError("Please select a receipt notice file to upload.");
+      setError(msg(E.UPLOAD_NO_FILE));
       setLoading(false);
       return;
     }
@@ -646,12 +646,12 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       });
       const data = await response.json();
       if (!response.ok) {
-        setError(data.error || "Failed to upload receipt notice to vault.");
+        setError(msg(E.JOURNEY_RECEIPT_SAVE_FAILED));
         setLoading(false);
         return;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unexpected error during upload.");
+      setError(msg(E.JOURNEY_RECEIPT_SAVE_FAILED));
       setLoading(false);
       return;
     }
@@ -746,7 +746,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
               lower.endsWith(".jpg") ||
               lower.endsWith(".jpeg");
             if (!ok) {
-              setError("Please drop a PDF, PNG, or JPG file.");
+              setError(msg(E.TOOL_FILE_TYPE_UNSUPPORTED));
               return;
             }
             setError("");

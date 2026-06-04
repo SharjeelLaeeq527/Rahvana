@@ -22,9 +22,10 @@ interface DynamicQuestionStepProps {
   section: QuestionnaireSection;
   formData: Record<string, unknown>;
   onChange: (key: string, value: unknown) => void;
-  onNext: () => void;
-  onBack: () => void;
+  onNext: () => Promise<void> | void;
+  onBack: () => Promise<void> | void;
   setError: (msg: string | null) => void;
+  error?: string | null;
 }
 
 // Section-based icon mapping - using consistent teal color
@@ -92,6 +93,7 @@ export function DynamicQuestionStep({
   onNext,
   onBack,
   setError,
+  error,
 }: DynamicQuestionStepProps) {
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});

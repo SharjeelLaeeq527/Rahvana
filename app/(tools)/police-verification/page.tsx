@@ -36,6 +36,7 @@ import {
   Download,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { E, msg } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { Loader } from "@/components/ui/spinner";
@@ -187,52 +188,34 @@ export default function PoliceVerificationPage() {
             )}
 
             {step === 2 && (
-              <ResultGate feature="pcc_filing" title="Police Verification Guide" description="Upgrade your plan to access step-by-step instructions and letter generation.">
+              <ResultGate
+                feature="pcc_filing"
+                title="Police Verification Guide"
+                description="Upgrade your plan to access step-by-step instructions and letter generation."
+              >
                 <motion.div key="step2" {...fadeIn} className="h-full">
                   {province === "Sindh" ? (
                     <SindhInstructions
                       onGenerateLetter={() => setIsLetterModalOpen(true)}
-                      onApply={() =>
-                        router.push(
-                          `/police-verification/apply?province=${province}`,
-                        )
-                      }
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
                     />
                   ) : province === "Punjab" ? (
                     <PunjabInstructions
                       onGenerateLetter={() => setIsLetterModalOpen(true)}
-                      onGenerateAuthorityLetter={() =>
-                        setIsAuthorityModalOpen(true)
-                      }
-                      onApply={() =>
-                        router.push(
-                          `/police-verification/apply?province=${province}`,
-                        )
-                      }
+                      onGenerateAuthorityLetter={() => setIsAuthorityModalOpen(true)}
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
                     />
                   ) : province === "Balochistan" ? (
                     <BalochistanInstructions
                       onGenerateLetter={() => setIsLetterModalOpen(true)}
-                      onGenerateAuthorityLetter={() =>
-                        setIsAuthorityModalOpen(true)
-                      }
-                      onApply={() =>
-                        router.push(
-                          `/police-verification/apply?province=${province}`,
-                        )
-                      }
+                      onGenerateAuthorityLetter={() => setIsAuthorityModalOpen(true)}
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
                     />
                   ) : province === "KPK" ? (
                     <KPKInstructions
                       onGenerateLetter={() => setIsLetterModalOpen(true)}
-                      onGenerateAuthorityLetter={() =>
-                        setIsAuthorityModalOpen(true)
-                      }
-                      onApply={() =>
-                        router.push(
-                          `/police-verification/apply?province=${province}`,
-                        )
-                      }
+                      onGenerateAuthorityLetter={() => setIsAuthorityModalOpen(true)}
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
@@ -244,8 +227,8 @@ export default function PoliceVerificationPage() {
                           Instructions Not Available
                         </h2>
                         <p className="text-muted-foreground">
-                          We are currently updating our database for {province}.
-                          Detailed instructions will be available soon.
+                          We are currently updating our database for {province}. Detailed
+                          instructions will be available soon.
                         </p>
                       </div>
                       <button
@@ -801,7 +784,7 @@ function PKMLocator({ province }: { province: string }) {
     setLoading(true);
     setError(null);
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
+      setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
       setLoading(false);
       return;
     }
@@ -814,7 +797,7 @@ function PKMLocator({ province }: { province: string }) {
         setLoading(false);
       },
       () => {
-        setError("Unable to retrieve your location. Please check permissions or enter manually.");
+        setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
         setLoading(false);
       }
     );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { msg, E } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -152,12 +153,13 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       }
     } catch (error: unknown) {
       console.error("Error loading answers:", error);
+      showToast(msg(E.TOOL_INTERVIEW_SESSION_FAILED), "error");
     }
   }, [sessionId]);
 
   useEffect(() => {
     if (results === undefined || results === null) {
-      setError("No results found. Please try again.");
+      setError(msg(E.TOOL_INTERVIEW_NO_SESSION));
       setLoading(false);
     } else if (results?.questions) {
       // Initialize with original order
@@ -175,7 +177,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
     const answerText = userAnswers[questionId];
 
     if (!answerText || answerText.trim().length < 10) {
-      showToast("Please write at least 10 characters", "error");
+      showToast(msg(E.INTERVIEW_ANSWER_TOO_SHORT), "error");
       return;
     }
 
@@ -192,7 +194,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to save answer");
+      if (!response.ok) throw new Error(msg(E.TOOL_INTERVIEW_SAVE_FAILED));
 
       // Update savedAnswers to reflect the newly saved answer
       setSavedAnswers((prev) => ({
@@ -202,7 +204,10 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
       showToast("Answer saved successfully!", "success");
     } catch (error: unknown) {
-      showToast(error instanceof Error ? error.message : "Failed to save answer", "error");
+      showToast(
+        error instanceof Error ? error.message : msg(E.TOOL_INTERVIEW_SAVE_FAILED),
+        "error"
+      );
     } finally {
       setSavingAnswers((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -217,7 +222,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
     const answerText = userAnswers[questionId];
 
     if (!answerText) {
-      showToast("Write an answer first", "error");
+      showToast(msg(E.INTERVIEW_ANSWER_TOO_SHORT), "error");
       return;
     }
 
@@ -236,7 +241,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to improve answer");
+      if (!response.ok) throw new Error(msg(E.TOOL_INTERVIEW_IMPROVE_FAILED));
 
       const data = await response.json();
       setImprovedAnswers((prev) => ({
@@ -245,7 +250,10 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       }));
       showToast("Answer improved successfully!", "success");
     } catch (error: unknown) {
-      showToast(error instanceof Error ? error.message : "Failed to improve answer", "error");
+      showToast(
+        error instanceof Error ? error.message : msg(E.TOOL_INTERVIEW_IMPROVE_FAILED),
+        "error"
+      );
     } finally {
       setAiImproving((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -916,7 +924,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
   return (
     <div className="text-center py-8">
-      <p className="text-slate-600">No results found. Please try again.</p>
+      <p className="text-slate-600">{msg(E.TOOL_INTERVIEW_NO_SESSION)}</p>
       <Button onClick={onRestart} className="mt-4 bg-[#0d7377] hover:bg-[#0a5a5d] text-white">
         Restart
       </Button>

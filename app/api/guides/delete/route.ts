@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from '@/lib/errors';
 
 export async function DELETE(request: Request) {
   try {
@@ -10,7 +11,7 @@ export async function DELETE(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { sessionId, deleteAll } = await request.json();
@@ -24,14 +25,14 @@ export async function DELETE(request: Request) {
 
       if (deleteError) {
         console.error("Error deleting all guides:", deleteError);
-        return NextResponse.json({ error: "Failed to delete all guides" }, { status: 500 });
+        return NextResponse.json({ error: msg(E.CASE_DATA_SAVE_FAILED) }, { status: 500 });
       }
 
       return NextResponse.json({ message: "All guide sessions deleted" });
     }
 
     if (!sessionId) {
-      return NextResponse.json({ error: "sessionId is required" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[sessionId]' }) }, { status: 400 });
     }
 
     // Delete a specific session
@@ -49,6 +50,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "Guide session deleted" });
   } catch (error) {
     console.error("Unexpected error in /api/guides/delete:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

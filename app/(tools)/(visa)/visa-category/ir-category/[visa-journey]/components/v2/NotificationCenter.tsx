@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { E, msg } from '@/lib/errors';
 import {
   Bell,
   X,
@@ -122,7 +123,8 @@ export default function NotificationCenter({ journeyId, onClose }: NotificationC
       const data = await res.json();
       setReminders(data.reminders ?? []);
     } catch (err) {
-      setError("Could not load notifications.");
+      console.error('Error loading reminders:', err);
+      setError(msg(E.JOURNEY_NOTIFICATIONS_FAILED));
     } finally {
       setLoading(false);
     }

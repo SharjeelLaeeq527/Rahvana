@@ -16,6 +16,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { CeacReminderEngine } from "@/lib/ceac-tracking/CeacReminderEngine";
 import { isValidTransition, isTrackingActive } from "@/lib/ceac-tracking/stateMachine";
 import type { CeacStatus, RefusedSubType } from "@/lib/ceac-tracking/types";
+import { E, msg } from "@/lib/errors";
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/ceac/status
@@ -29,7 +30,11 @@ export async function POST(req: NextRequest) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user)
+      return NextResponse.json(
+        { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
+        { status: 401 }
+      );
 
     const body = await req.json();
     const { journeyId, newStatus, refusedSubType } = body as {
@@ -39,7 +44,14 @@ export async function POST(req: NextRequest) {
     };
 
     if (!journeyId || !newStatus) {
-      return NextResponse.json({ error: "journeyId and newStatus are required" }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: E.CEAC_STATUS_FIELDS_REQUIRED,
+          message: msg(E.CEAC_STATUS_FIELDS_REQUIRED, { fields: "journeyId, newStatus" }),
+        },
+        { status: 400 }
+      );
     }
 
     // Verify journey belongs to this user
@@ -50,7 +62,11 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .single();
 
-    if (!journey) return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+    if (!journey)
+      return NextResponse.json(
+        { success: false, code: E.JOURNEY_NOT_FOUND, message: msg(E.JOURNEY_NOT_FOUND) },
+        { status: 404 }
+      );
 
     // Tracking only starts past at_nvc
     if (!isTrackingActive(newStatus)) {
@@ -69,7 +85,14 @@ export async function POST(req: NextRequest) {
     // Validate transition
     if (!isValidTransition(previousStatus, newStatus)) {
       return NextResponse.json(
-        { error: `Invalid transition: ${previousStatus} → ${newStatus}` },
+        {
+          success: false,
+          code: E.CEAC_INVALID_TRANSITION,
+          message: msg(E.CEAC_INVALID_TRANSITION, {
+            from: String(previousStatus),
+            to: String(newStatus),
+          }),
+        },
         { status: 422 }
       );
     }
@@ -93,7 +116,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, scheduled: true, newStatus });
   } catch (err: any) {
     console.error("[/api/ceac/status POST]", err);
-    return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, code: E.CEAC_SERVER_ERROR, message: msg(E.CEAC_SERVER_ERROR) },
+      { status: 500 }
+    );
   }
 }
 
@@ -110,7 +136,11 @@ export async function PATCH(req: NextRequest) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user)
+      return NextResponse.json(
+        { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
+        { status: 401 }
+      );
 
     const body = await req.json();
     const { journeyId, action, refusedSubType } = body as {
@@ -120,7 +150,14 @@ export async function PATCH(req: NextRequest) {
     };
 
     if (!journeyId || !action) {
-      return NextResponse.json({ error: "journeyId and action required" }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          code: E.CEAC_STATUS_FIELDS_REQUIRED,
+          message: msg(E.CEAC_STATUS_FIELDS_REQUIRED, { fields: "journeyId, action" }),
+        },
+        { status: 400 }
+      );
     }
 
     // Verify ownership
@@ -131,7 +168,11 @@ export async function PATCH(req: NextRequest) {
       .eq("user_id", user.id)
       .single();
 
-    if (!journey) return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+    if (!journey)
+      return NextResponse.json(
+        { success: false, code: E.JOURNEY_NOT_FOUND, message: msg(E.JOURNEY_NOT_FOUND) },
+        { status: 404 }
+      );
 
     const adminSupabase = createAdminClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -145,7 +186,11 @@ export async function PATCH(req: NextRequest) {
       // Global Rule 8: user explicitly tells us 221(g) or final denial
       if (!refusedSubType || refusedSubType === "pending_clarification") {
         return NextResponse.json(
-          { error: "refusedSubType required (refusal_221g or refusal_final)" },
+          {
+            success: false,
+            code: E.CEAC_STATUS_FIELDS_REQUIRED,
+            message: msg(E.CEAC_STATUS_FIELDS_REQUIRED, { fields: "refusedSubType" }),
+          },
           { status: 400 }
         );
       }
@@ -163,9 +208,15 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ ok: true, action });
     }
 
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, code: E.CEAC_INVALID_INPUT, message: msg(E.CEAC_INVALID_INPUT) },
+      { status: 400 }
+    );
   } catch (err: any) {
     console.error("[/api/ceac/status PATCH]", err);
-    return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, code: E.CEAC_SERVER_ERROR, message: msg(E.CEAC_SERVER_ERROR) },
+      { status: 500 }
+    );
   }
 }

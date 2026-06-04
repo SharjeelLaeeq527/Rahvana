@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +13,8 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[guides/hide-intro] Unauthorized:", userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     // Get guide slug from body
@@ -20,7 +22,7 @@ export async function POST(request: Request) {
     const slug = body.slug;
 
     if (!slug) {
-      return NextResponse.json({ error: "Guide slug is required" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
     }
 
     // Fetch the user_guide session for this guide slug
@@ -38,11 +40,11 @@ export async function POST(request: Request) {
 
     if (sessionError) {
       console.error("Error fetching session:", sessionError);
-      return NextResponse.json({ error: "Failed to fetch user guide session" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
     if (!session) {
-      return NextResponse.json({ error: "User guide session not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 404 });
     }
 
     // Update hide_intro_modal to true
@@ -55,15 +57,12 @@ export async function POST(request: Request) {
 
     if (updateError) {
       console.error("Error updating hide_intro_modal:", updateError);
-      return NextResponse.json({ error: "Failed to update hide_intro_modal" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
-    return NextResponse.json({
-      message: "Intro modal hidden successfully",
-      session: updated,
-    });
+    return NextResponse.json({ session: updated });
   } catch (error) {
     console.error("Unexpected error in /api/guides/hide-intro:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

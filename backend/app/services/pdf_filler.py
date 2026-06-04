@@ -101,10 +101,17 @@ class PDFFillerService:
                     if widget.field_name == pdf_field_name or \
                        widget.field_name.split('.')[-1] == pdf_field_name.split('.')[-1]:
                         try:
-                            if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
-                                is_checked = str(value).lower() in ["yes", "true", "1", "on"]
+                             if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
+                                val_lower = str(value).lower().strip()
+                                is_checked = val_lower in ["yes", "true", "1", "on"]
+                                if not is_checked:
+                                    field_lower = (widget.field_name or "").lower()
+                                    if val_lower == "male" and "male" in field_lower and "female" not in field_lower:
+                                        is_checked = True
+                                    elif val_lower == "female" and "female" in field_lower:
+                                        is_checked = True
                                 widget.field_value = "Yes" if is_checked else "Off"
-                            else:
+                             else:
                                 widget.field_value = str_value
                                 
                                 # Fix for Urdu/Arabic alignment and cutting
@@ -117,9 +124,9 @@ class PDFFillerService:
                                     # Set multi-line flag (1 << 12) which sometimes changes vertical alignment behavior
                                     widget.field_flags |= 4096 
                                     
-                                widget.update()
-                            filled_count += 1
-                            field_found = True
+                             widget.update()
+                             filled_count += 1
+                             field_found = True
                         except Exception as e:
                             logger.error(f"Error filling {pdf_field_name}: {e}")
             

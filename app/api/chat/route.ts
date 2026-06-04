@@ -1,12 +1,16 @@
 // app/api/chat/route.ts
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server"
+import { E, msg } from '@/lib/errors'
 
 export async function POST(req: NextRequest) {
   try {
     const { query } = await req.json();
 
     if (!query || query.trim() === "") {
-      return NextResponse.json({ error: "Query cannot be empty" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.TOOL_CHAT_EMPTY_QUERY) },
+        { status: 400 }
+      )
     }
 
     // --- SMART URL LOGIC START ---
@@ -46,7 +50,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         response: "Sorry, I'm having trouble connecting to the assistant. Please try again.",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: msg(E.TOOL_CHAT_SERVER_ERROR),
       },
       { status: 500 }
     );

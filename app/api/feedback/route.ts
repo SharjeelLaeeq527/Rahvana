@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 import { appendFeedbackToSheet } from "@/lib/googleSheets";
 
 /** Convert a URL path to a human-readable page name */
@@ -174,6 +175,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Feedback submitted successfully" });
   } catch (error) {
     console.error("Feedback API error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.FEEDBACK_GUIDE_SAVE_FAILED) }, { status: 500 });
   }
 }

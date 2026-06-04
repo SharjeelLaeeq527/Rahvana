@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { E, msg } from '@/lib/errors'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SENSITIVE FIELDS — these are encrypted before DB write and decrypted on read
@@ -120,7 +121,8 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('[Profile API] unauthorized:', userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -131,7 +133,7 @@ export async function GET() {
 
     if (profileError) {
       console.error("[Profile API] Error fetching profile:", profileError);
-      return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.PROFILE_FETCH_FAILED) }, { status: 500 });
     }
 
     if (!profile) {
@@ -161,13 +163,10 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({
-      profile: decryptedProfile,
-      profileCompleted: profile.profile_completed || false,
-    });
+    return NextResponse.json({ profile: decryptedProfile, profileCompleted: profile.profile_completed || false });
   } catch (error) {
     console.error("[Profile API] Unexpected error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.PROFILE_FETCH_FAILED) }, { status: 500 });
   }
 }
 
@@ -185,7 +184,8 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('[Profile API] POST unauthorized:', userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const body = await request.json();
@@ -255,7 +255,7 @@ export async function POST(request: Request) {
 
     if (result.error) {
       console.error("Error saving profile:", result.error);
-      return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.PROFILE_SAVE_FAILED) }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -264,6 +264,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Unexpected error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.PROFILE_SAVE_FAILED) }, { status: 500 });
   }
 }

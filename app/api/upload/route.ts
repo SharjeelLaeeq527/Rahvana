@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { msg, E } from "@/lib/errors";
 import { createServerClient } from "@supabase/ssr";
 
 export async function POST(req: NextRequest) {
@@ -12,13 +13,13 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null;
 
     if (!appointmentId || !fileType || !file) {
-      return Response.json({ error: "Missing required fields" }, { status: 400 });
+      return Response.json({ error: msg(E.UPLOAD_MISSING_FIELDS) }, { status: 400 });
     }
 
     // Validate file type
     const validFileTypes = ["scannedPassport", "kOneLetter", "appointmentConfirmationLetter"];
     if (!validFileTypes.includes(fileType)) {
-      return Response.json({ error: "Invalid file type" }, { status: 400 });
+      return Response.json({ error: msg(E.UPLOAD_INVALID_FILE_TYPE) }, { status: 400 });
     }
 
     // Use service role client to bypass RLS policies
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     if (uploadError) {
       console.error("Error uploading file:", uploadError);
-      return Response.json({ error: "Failed to upload file" }, { status: 500 });
+      return Response.json({ error: msg(E.UPLOAD_UPLOAD_FAILED) }, { status: 500 });
     }
 
     // Get the public URL of the uploaded file
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
         updateField = "appointment_confirmation_letter_url";
         break;
       default:
-        return Response.json({ error: "Invalid file type" }, { status: 400 });
+        return Response.json({ error: msg(E.UPLOAD_INVALID_FILE_TYPE) }, { status: 400 });
     }
 
     const { error: updateError } = await supabase
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest) {
 
     if (updateError) {
       console.error("Error updating appointment with file URL:", updateError);
-      return Response.json({ error: "Failed to update appointment record" }, { status: 500 });
+      return Response.json({ error: msg(E.UPLOAD_UPDATE_FAILED) }, { status: 500 });
     }
 
     return Response.json({
@@ -94,6 +95,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Unexpected error in file upload:", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return Response.json({ error: msg(E.UPLOAD_UPLOAD_FAILED) }, { status: 500 });
   }
 }

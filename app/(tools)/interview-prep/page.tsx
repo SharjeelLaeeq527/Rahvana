@@ -27,6 +27,7 @@ import type {
   InterviewCategoryConfig,
   DynamicQuestionnaire,
 } from "@/data/interview-categories/schema";
+import { E, msg } from "@/lib/errors";
 
 export default function InterviewPreparation() {
   const [selectedCategory, setSelectedCategory] = useState<InterviewCategoryConfig | null>(null);
@@ -161,7 +162,7 @@ export default function InterviewPreparation() {
       }
     } catch (err) {
       console.error("Error loading categories:", err);
-      setError("Failed to load visa categories");
+      setError(msg(E.TOOL_INTERVIEW_CATEGORIES_FAILED));
       setNoDataMessage(null);
     } finally {
       setLoading(false);
@@ -270,7 +271,7 @@ export default function InterviewPreparation() {
           const sessionData = await response.json();
 
           if (response.ok && sessionData.session && sessionData.session.completed === false) {
-            await restoreSessionData(sessionData.session, (categorySlug) => {
+            await restoreSessionData(sessionData.session, (categorySlug: string) => {
               const category = availableCategories.find((c) => c.categorySlug === categorySlug);
               return category;
             });
@@ -392,7 +393,7 @@ export default function InterviewPreparation() {
   // Handle progressing from category selection to questions
   const handleCategorySelectionNext = async () => {
     if (!selectedCategory) {
-      setError("Please select a visa category");
+      setError(msg(E.TOOL_INTERVIEW_SELECT_CATEGORY));
       return;
     }
 
@@ -417,7 +418,7 @@ export default function InterviewPreparation() {
       const sessionResult = await sessionResponse.json();
 
       if (!sessionResponse.ok || !sessionResult.success) {
-        setError("Failed to create interview session");
+        setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
         return;
       }
 
@@ -463,7 +464,7 @@ export default function InterviewPreparation() {
     } catch (err) {
       console.error("Error in category selection next:", err);
 
-      setError(err instanceof Error ? err.message : "Failed to proceed");
+      setError(err instanceof Error ? err.message : msg(E.TOOL_INTERVIEW_SESSION_FAILED));
     } finally {
       setLoading(false);
       setLoadingMessage("");
@@ -473,7 +474,7 @@ export default function InterviewPreparation() {
   const nextStep = async () => {
     // At step 0, validate category selection
     if (step === 0 && !selectedCategory) {
-      setError("Please select a visa category");
+      setError(msg(E.TOOL_INTERVIEW_SELECT_CATEGORY));
       return;
     }
 
@@ -525,7 +526,7 @@ export default function InterviewPreparation() {
 
   const handleSubmit = async () => {
     if (!sessionId) {
-      setError("No session found. Please restart the assessment.");
+      setError(msg(E.TOOL_INTERVIEW_NO_SESSION));
       return;
     }
 
@@ -581,15 +582,11 @@ export default function InterviewPreparation() {
       } else {
         const errorData = await submitResponse.text();
         console.error("Submit response error:", errorData);
-        throw new Error("Failed to generate interview prep materials");
+        throw new Error(msg(E.TOOL_INTERVIEW_GENERATE_FAILED));
       }
     } catch (err) {
       console.error("Error submitting for interview prep:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to generate interview prep materials. Please try again."
-      );
+      setError(err instanceof Error ? err.message : msg(E.TOOL_INTERVIEW_GENERATE_FAILED));
     } finally {
       setLoading(false);
     }

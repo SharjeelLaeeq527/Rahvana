@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 
 // export const dynamic = "force-dynamic";
 
@@ -13,7 +14,8 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[user-dashboard/analytics] Unauthorized:", userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const userId = user.id;
@@ -69,6 +71,6 @@ export async function GET() {
   } catch (error) {
     console.error("Dashboard analytics error:", error);
 
-    return NextResponse.json({ error: "Failed to fetch dashboard analytics" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.ANALYTICS_FETCH_FAILED) }, { status: 500 });
   }
 }

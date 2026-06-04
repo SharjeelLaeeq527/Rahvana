@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { consultationService } from "@/lib/services/consultationService";
+import { E, msg } from "@/lib/errors";
 
-// Helper function to handle service errors
+// Helper function to handle service errors (localized)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
   console.error(defaultMessage, error);
   const errorMessage = error instanceof Error ? error.message : String(error);
+  if (defaultMessage.toLowerCase().includes("fetch")) {
+    return NextResponse.json(
+      { error: msg(E.CONSULTATION_FETCH_FAILED), details: errorMessage },
+      { status: 500 }
+    );
+  }
+  if (defaultMessage.toLowerCase().includes("create")) {
+    return NextResponse.json(
+      { error: msg(E.CONSULTATION_CREATE_FAILED), details: errorMessage },
+      { status: 500 }
+    );
+  }
   return NextResponse.json(
-    {
-      error: defaultMessage,
-      details: errorMessage,
-    },
+    { error: msg(E.CONSULTATION_CREATE_FAILED), details: errorMessage },
     { status: 500 }
   );
 };
@@ -26,16 +36,38 @@ export async function GET(request: NextRequest) {
     };
 
     const slots = await consultationService.getTimeSlots(filters);
+    const bookings = await consultationService.getAllBookings();
 
     // Return slots with proper timezone info
     // Database stores in UTC, so we'll send back the raw data
     // and let the frontend handle the display timezone conversion
     return NextResponse.json(
-      slots.map((slot) => ({
-        ...slot,
-        // Add a flag to indicate this is stored in UTC
-        timezone: "UTC",
-      }))
+      slots.map((slot) => {
+        // Find if there is a booking matching this slot
+        const dateStr = slot.date instanceof Date 
+          ? slot.date.toISOString().split("T")[0] 
+          : String(slot.date);
+        
+        // start_time is a string like "09:00:00" or "09:00"
+        const timeStr = String(slot.start_time).substring(0, 8);
+        const slotDate = new Date(`${dateStr}T${timeStr}Z`);
+        
+        const matchingBooking = bookings.find((b) => {
+          return new Date(b.selected_slot).getTime() === slotDate.getTime();
+        });
+
+        let displayStatus = slot.status;
+        if (slot.status === "confirmed" && matchingBooking && (matchingBooking.status === "canceled" || matchingBooking.status === "cancelled")) {
+          displayStatus = "canceled";
+        }
+
+        return {
+          ...slot,
+          status: displayStatus,
+          // Add a flag to indicate this is stored in UTC
+          timezone: "UTC",
+        };
+      })
     );
   } catch (error) {
     return handleServiceError(error, "Error fetching time slots");
@@ -48,7 +80,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!data.date || !data.start_time || !data.end_time) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.AUTH_SIGNUP_FIELDS_REQUIRED, { fields: "[date, start_time, end_time]" }) },
+        { status: 400 }
+      );
     }
 
     // Create new time slot with UTC times (which are already converted by frontend)
@@ -89,7 +124,10 @@ export async function PUT(request: NextRequest) {
     }
 
     if (!id) {
-      return NextResponse.json({ error: "Slot ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.AUTH_SIGNUP_FIELDS_REQUIRED, { fields: "[id]" }) },
+        { status: 400 }
+      );
     }
 
     // Update the time slot

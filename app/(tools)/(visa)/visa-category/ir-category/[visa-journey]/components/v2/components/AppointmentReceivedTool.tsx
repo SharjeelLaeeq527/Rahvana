@@ -2,6 +2,7 @@
 
 import React from "react";
 import { toast } from "sonner";
+import { E, msg } from "@/lib/errors";
 import { APPOINTMENT_RECEIVED_DATA } from "../AppointmentReceivedData";
 
 interface AppointmentReceivedToolProps {
@@ -51,18 +52,18 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
     today.setHours(0, 0, 0, 0);
 
     if (!interviewDate) {
-      newErrors.interviewDate = "Interview date is required.";
+      newErrors.interviewDate = msg(E.APPOINTMENT_INTERVIEW_DATE_REQUIRED);
     } else if (new Date(interviewDate) < today) {
-      newErrors.interviewDate = "Interview date cannot be in the past.";
+      newErrors.interviewDate = msg(E.APPOINTMENT_INTERVIEW_DATE_PAST);
     }
 
     const loc = consulateLocation.trim();
     if (!loc) {
-      newErrors.consulateLocation = "Location is required.";
+      newErrors.consulateLocation = msg(E.APPOINTMENT_LOCATION_REQUIRED);
     } else if (loc.length < 2) {
-      newErrors.consulateLocation = "Must be at least 2 characters.";
+      newErrors.consulateLocation = msg(E.APPOINTMENT_LOCATION_TOO_SHORT);
     } else if (!/^[a-zA-Z\s\-,\.]+$/.test(loc)) {
-      newErrors.consulateLocation = "Only letters, spaces, dashes, and commas allowed.";
+      newErrors.consulateLocation = msg(E.APPOINTMENT_LOCATION_INVALID);
     }
 
     return newErrors;
@@ -138,7 +139,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
               const validationErrors = validateAppointmentFields();
               if (Object.keys(validationErrors).length > 0) {
                 setErrors(validationErrors);
-                toast.error("Please fix the errors before saving.");
+                toast.error(msg(E.APPOINTMENT_FIX_ERRORS));
                 return;
               }
               setIsSaving(true);
@@ -150,7 +151,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
                   consulateLocation,
                   letterDate,
                 });
-                toast.success("Appointment saved!");
+                toast.success(msg(E.APPOINTMENT_SAVED_SUCCESS));
               } finally {
                 setIsSaving(false);
               }

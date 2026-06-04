@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { msg, E, errorCode } from "@/lib/errors";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export default function TranslationUploadModal({
     if (!selected) return;
 
     if (selected.type !== "application/pdf") {
-      toast.error("Only PDF files are allowed");
+      toast.error(msg(E.UPLOAD_INVALID_PDF));
       return;
     }
 
@@ -70,7 +71,7 @@ export default function TranslationUploadModal({
     if (!droppedFile) return;
 
     if (droppedFile.type !== "application/pdf") {
-      toast.error("Only PDF files are allowed");
+      toast.error(msg(E.UPLOAD_INVALID_PDF));
       return;
     }
 
@@ -92,10 +93,9 @@ export default function TranslationUploadModal({
         body: formData,
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Upload failed");
+        toast.error(`${msg(E.UPLOAD_FAILED)}`);
+        return;
       }
 
       setFile(null);
@@ -105,7 +105,8 @@ export default function TranslationUploadModal({
 
       toast.success("Translated document uploaded successfully!");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Network error");
+      console.error("Translation upload failed:", error);
+      toast.error(`${msg(E.UPLOAD_NETWORK_ERROR)}`);
     } finally {
       setUploading(false);
     }
