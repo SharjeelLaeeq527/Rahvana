@@ -1,0 +1,136 @@
+"use client";
+
+import type { CSSProperties } from "react";
+import Link from "next/link";
+import { ArrowRight, Check, Plus } from "lucide-react";
+
+import { RESOURCE_DETAILS } from "@/app/(main)/pricing/data/resourceDetails";
+import { getSlugTheme } from "@/app/(main)/resources/[slug]/iconMap";
+
+const SERIF = '"DM Serif Display", Georgia, serif';
+
+export type ResourceCardAddon = {
+  id: string;
+  title?: string;
+  price: number;
+  unit: string;
+  copy: string;
+};
+
+/**
+ * Attractive, clickable add-on card. The whole card links to the tool's detail
+ * page (/resources/[slug]); the "Add to order" button toggles selection without
+ * navigating (stopPropagation + preventDefault).
+ */
+export default function ResourceToolCard({
+  addon,
+  isAdded,
+  disabled = false,
+  onToggle,
+}: {
+  addon: ResourceCardAddon;
+  isAdded: boolean;
+  disabled?: boolean;
+  onToggle: (id: string) => void;
+}) {
+  const detail = RESOURCE_DETAILS[addon.id];
+  const { accent } = getSlugTheme(addon.id);
+  const title = addon.title ?? addon.id;
+  const monogram = title.trim().charAt(0).toUpperCase();
+
+  return (
+    <Link
+      href={`/resources/${addon.id}`}
+      className="group relative flex flex-col rounded-[18px] bg-card transition-all duration-300 hover:-translate-y-[3px]"
+      style={{
+        boxShadow: isAdded
+          ? `0 0 0 1.5px ${accent}, 0 14px 34px -18px ${accent}66`
+          : "0 1px 2px rgba(0,0,0,0.05), 0 12px 28px -22px rgba(0,0,0,0.3)",
+      }}
+    >
+      {/* Top: serif drop-cap monogram + badge / added check */}
+      <div className="flex items-start justify-between px-5 pt-5">
+        <span
+          aria-hidden
+          className="leading-none"
+          style={{ fontFamily: SERIF, color: accent, fontSize: 38 }}
+        >
+          {monogram}
+        </span>
+
+        {isAdded ? (
+          <span
+            className="flex h-6 w-6 items-center justify-center rounded-full text-white"
+            style={{ backgroundColor: accent }}
+          >
+            <Check className="h-3.5 w-3.5" />
+          </span>
+        ) : (
+          detail?.badge && (
+            <span
+              className="mt-1 text-[10px] font-semibold uppercase tracking-[0.13em]"
+              style={{ color: accent }}
+            >
+              {detail.badge}
+            </span>
+          )
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="flex flex-1 flex-col px-5 pb-5">
+        {/* thin accent rule that grows on hover */}
+        <span
+          className="mb-4 mt-3 block h-[2px] w-7 rounded-full transition-all duration-300 group-hover:w-12"
+          style={{ backgroundColor: accent }}
+        />
+        <h3 className="text-[15.5px] font-semibold leading-snug text-foreground">{title}</h3>
+        <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-muted-foreground">
+          {addon.copy}
+        </p>
+
+        {/* "View details" affordance */}
+        <span
+          className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100"
+          style={{ color: accent }}
+        >
+          View details <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+        </span>
+
+        {/* Footer */}
+        <div className="mt-auto flex items-end justify-between pt-3">
+          <div>
+            <div className="font-serif text-[20px] leading-none text-foreground" style={{ fontFamily: '"DM Serif Display", serif' }}>
+              ${addon.price}
+            </div>
+            <div className="mt-1 text-[10px] text-muted-foreground">{addon.unit}</div>
+          </div>
+
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggle(addon.id);
+            }}
+            className={`addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+              isAdded ? "is-added" : ""
+            }`}
+            style={{ ["--pill" as string]: accent } as CSSProperties}
+          >
+            {isAdded ? (
+              <>
+                <Check className="h-3.5 w-3.5" /> Added
+              </>
+            ) : (
+              <>
+                <Plus className="h-3.5 w-3.5" /> Add to order
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </Link>
+  );
+}

@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
 import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
+import ResourceToolCard from "@/components/pricing/ResourceToolCard";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -83,8 +84,7 @@ const ADDON_CONFIG: Record<
 > = {
   "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
   "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  mock: { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
-  rapid: { icon: Zap, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  "interview-prep": { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   photo: { icon: Camera, iconBg: "bg-rose-600 dark:bg-rose-500" },
   smart: { icon: Wand2, iconBg: "bg-cyan-600 dark:bg-cyan-500" },
   sponsor: { icon: Calculator, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
@@ -106,7 +106,7 @@ const RESOURCE_CATS = [
   {
     id: "popular",
     label: "Most Popular",
-    ids: ["case-strength", "smart", "consultation", "mock"],
+    ids: ["case-strength", "smart", "consultation", "interview-prep"],
   },
   {
     id: "forms",
@@ -116,7 +116,7 @@ const RESOURCE_CATS = [
   {
     id: "interview",
     label: "Interview & Embassy",
-    ids: ["mock", "rapid", "photo"],
+    ids: ["interview-prep", "photo"],
   },
   {
     id: "docs",
@@ -131,8 +131,8 @@ const RESOURCE_CATS = [
 ];
 
 const PLAN_RECS: Record<string, string[]> = {
-  basic: ["smart", "case-strength", "sponsor", "rapid", "civil-guid"],
-  premium: ["mock", "doc-review", "consultation", "221g"],
+  basic: ["smart", "case-strength", "sponsor", "interview-prep", "civil-guid"],
+  premium: ["interview-prep", "doc-review", "consultation", "221g"],
   executive: ["case-manager", "consultation", "translate"],
 };
 
@@ -541,7 +541,9 @@ function PricingContent() {
     const plan = searchParams.get("plan");
     const addons = searchParams.get("addons");
     const visaCat = searchParams.get("visa");
+    const modeParam = searchParams.get("mode");
     const autoCheckout = searchParams.get("auto_checkout") === "true";
+    if (modeParam === "resources" || modeParam === "plans") setMode(modeParam);
     if (plan) setSelectedPlan(plan);
     if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
     if (visaCat) setVisa(visaCat);
@@ -1267,69 +1269,17 @@ function PricingContent() {
                   ))}
                 </div>
 
-                {/* Resource cards — matching resources page style */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {resourcesForCat.map((addon) => {
-                    const isAdded = selectedAddons.has(addon.id);
-                    const cfg = ADDON_CONFIG[addon.id];
-                    const Icon = cfg?.icon ?? Wand2;
-                    return (
-                      <article
-                        key={addon.id}
-                        className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
-                      >
-                        <div
-                          className={`resource-fcard-frame ${
-                            cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
-                              ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                              : cfg?.iconBg.includes("indigo") || cfg?.iconBg.includes("blue")
-                                ? "bg-[#EAF1FB] text-[#1A5FA3]"
-                                : cfg?.iconBg.includes("amber") || cfg?.iconBg.includes("yellow")
-                                  ? "bg-[#FBF2E3] text-[#9B6220]"
-                                  : cfg?.iconBg.includes("violet") || cfg?.iconBg.includes("purple")
-                                    ? "bg-[#F3EFFE] text-[#5C3DAA]"
-                                    : "bg-[#FEF0F0] text-[#903030]"
-                          }`}
-                        >
-                          {/* Film holes top */}
-                          {/* <div className="resource-fhole-row top">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div key={i} className="resource-fhole" />
-                            ))}
-                          </div> */}
-
-                          <Icon className="w-7 h-7 opacity-70" />
-
-                          {/* Film holes bottom */}
-                          {/* <div className="resource-fhole-row bot">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div key={i} className="resource-fhole" />
-                            ))}
-                          </div> */}
-                        </div>
-
-                        <div className="resource-fcard-body">
-                          <h3 className="resource-fcard-name">{addon.title}</h3>
-                          <p className="resource-fcard-desc">{addon.copy}</p>
-
-                          <div className="resource-fcard-foot">
-                            <div>
-                              <div className="resource-fcard-price">${addon.price}</div>
-                              <div className="resource-fcard-unit">{addon.unit}</div>
-                            </div>
-
-                            <button
-                              disabled={isAnyCheckoutLoading}
-                              className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                              onClick={() => toggleAddon(addon.id)}
-                            >
-                              {isAdded ? "✓ Added to order" : "+ Add to order"}
-                            </button>
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
+                {/* Resource cards — clickable, open the tool detail page */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {resourcesForCat.map((addon) => (
+                    <ResourceToolCard
+                      key={addon.id}
+                      addon={addon}
+                      isAdded={selectedAddons.has(addon.id)}
+                      disabled={isAnyCheckoutLoading}
+                      onToggle={toggleAddon}
+                    />
+                  ))}
                 </div>
 
                 <div className="mt-6 text-center">

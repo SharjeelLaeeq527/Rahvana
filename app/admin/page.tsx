@@ -15,6 +15,7 @@ import {
   Languages,
   ShieldCheck,
   Clock,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
@@ -26,6 +27,7 @@ import ConsultationRequestsTable from "./components/consultation-requests/Consul
 import AvailabilityGrid from "./components/consultation-requests/AvailabilityGrid";
 import VisaCasesTable from "./components/visa-cases/VisaCasesTable";
 import CollapsibleSection from "./components/CollapsibleSection";
+import ReviewsTable from "./components/reviews/ReviewsTable";
 import { FeatureAnnouncementModal } from "./components/feature-announcement/FeatureAnnouncementModal";
 
 export default function AdminPanel() {
@@ -196,6 +198,17 @@ export default function AdminPanel() {
             description="Manage police clearance certificate verifications"
           >
             <PoliceVerificationTable />
+          </CollapsibleSection>
+
+          {/* Section 6: Tool Reviews */}
+          <CollapsibleSection
+            title="Tool Reviews"
+            icon={<Star className="h-5 w-5" />}
+            description="Approve, reject, or remove user-submitted reviews for individual tools"
+            badge="MODERATION"
+            badgeColor="bg-amber-100 text-amber-800"
+          >
+            <ReviewsTable />
           </CollapsibleSection>
 
           <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
