@@ -1160,19 +1160,15 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 export function TwoWaysSection() {
   const [hoveredSide, setHoveredSide] = useState<"left" | "right" | null>(null);
   const [roadmapImageIdx, setRoadmapImageIdx] = useState(0);
-  const [toolsImageIdx, setToolsImageIdx] = useState(0);
-const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [signpostStyle, setSignpostStyle] = useState<"A" | "B">("A");
 
   const journeyHref = "/visa-category/ir-category/ir1-journey";
   const toolsHref = "/tools";
 
   const roadmapImages = [
     "/assets/images/guided_roadmap_image.png",
-    "/assets/images/guided_roadmap_image2.png"
-  ];
-  const toolsImages = [
-    "/assets/images/tool_icons_image.png",
-    "/assets/images/tool_icons_image2.png"
+    // "/assets/images/guided_roadmap_image2.png"
   ];
 
   return (
@@ -1181,7 +1177,7 @@ const [showChoiceModal, setShowChoiceModal] = useState(false);
       <div className="w-full px-6 py-8 md:py-12">
         
         {/* Main Content Card Wrapper */}
-        <div className="relative z-10 w-full mx-auto flex flex-col items-center justify-start max-w-5xl">
+        <div className="relative z-10 w-full mx-auto flex flex-col items-center justify-start max-w-6xl">
           
           {/* Header Block */}
           <div className="text-center max-w-2xl mb-6">
@@ -1230,7 +1226,7 @@ const [showChoiceModal, setShowChoiceModal] = useState(false);
                 </Link>
 
                 {/* Image Preview Block with Cycle controls */}
-                <div className="w-full max-w-[280px] flex flex-col items-center lg:items-end">
+                <div className="w-full max-w-[300px] flex flex-col items-center lg:items-end">
                   <div className="relative w-full aspect-video flex items-center justify-center">
                     <img
                       src={roadmapImages[roadmapImageIdx]}
@@ -1238,32 +1234,7 @@ const [showChoiceModal, setShowChoiceModal] = useState(false);
                       className="w-full h-full object-contain transition-all duration-300"
                     />
                   </div>
-                  {/* Control Arrows Bar */}
-                  <div className="flex items-center justify-between w-full mt-2 px-1">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setRoadmapImageIdx((prev) => (prev === 0 ? roadmapImages.length - 1 : prev - 1));
-                      }}
-                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-teal-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
-                      title="Previous Image"
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded select-none">
-                      Roadmap Variant {roadmapImageIdx + 1}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setRoadmapImageIdx((prev) => (prev === roadmapImages.length - 1 ? 0 : prev + 1));
-                      }}
-                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-teal-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
-                      title="Next Image"
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
+                  
                 </div>
               </motion.div>
 
@@ -1352,41 +1323,34 @@ const [showChoiceModal, setShowChoiceModal] = useState(false);
                   <ArrowRight size={14} />
                 </Link>
 
-                {/* Image Preview Block with Cycle controls */}
-                <div className="w-full max-w-[280px] flex flex-col items-center lg:items-start">
-                  <div className="relative w-full aspect-video flex items-center justify-center">
-                    <img
-                      src={toolsImages[toolsImageIdx]}
-                      alt="Independent Tools Preview"
-                      className="w-full h-full object-contain transition-all duration-300"
-                    />
-                  </div>
-                  {/* Control Arrows Bar */}
-                  <div className="flex items-center justify-between w-full mt-2 px-1">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setToolsImageIdx((prev) => (prev === 0 ? toolsImages.length - 1 : prev - 1));
-                      }}
-                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
-                      title="Previous Image"
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded select-none">
-                      Tools Variant {toolsImageIdx + 1}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setToolsImageIdx((prev) => (prev === toolsImages.length - 1 ? 0 : prev + 1));
-                      }}
-                      className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 transition-all flex items-center justify-center animate-none"
-                      title="Next Image"
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
+                {/* Style Toggle Pills
+                <div className="flex items-center gap-1.5 mb-4 p-0.5 bg-slate-100 rounded-full border border-slate-200/60 shadow-inner">
+                  <button
+                    onClick={() => setSignpostStyle("A")}
+                    className={`px-3 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer ${
+                      signpostStyle === "A"
+                        ? "bg-white text-slate-800 shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Style A (Scroll)
+                  </button>
+                  <button
+                    onClick={() => setSignpostStyle("B")}
+                    className={`px-3 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer ${
+                      signpostStyle === "B"
+                        ? "bg-slate-800 text-white shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Style B (3D Spin)
+                  </button>
+                </div> */}
+
+                {/* Animated Vector Tools Signpost */}
+                <div className="w-full max-w-[380px] flex flex-col items-center lg:items-start">
+                  {/* {signpostStyle === "A" ? <AnimatedToolsSignpost /> : <SpinningToolsSignpost />} */}
+                  <SpinningToolsSignpost />
                 </div>
               </motion.div>
 
@@ -3871,3 +3835,608 @@ export function JourneyConsultationBand({ children }: { children: React.ReactNod
     </div>
   );
 }
+
+// ── Interactive Animated Tools Signpost Vector Component ──
+const signpostTools = [
+  {
+    id: "photo-booth",
+    title: "Photo Booth",
+    description: "Make a compliant passport/visa photo in minutes.",
+    icon: Camera,
+    color: "#F43F5E", // Rose
+    href: "/passport",
+  },
+  {
+    id: "pdf-toolkit",
+    title: "PDF Tool Kit",
+    description: "Merge • compress • convert • edit — all in one toolkit.",
+    icon: Files,
+    color: "#EC4899", // Pink
+    href: "/pdf-processing",
+  },
+  {
+    id: "action-planner",
+    title: "221(g) Action Planner",
+    description: "Step-by-step next moves after 221(g) or Administrative Processing.",
+    icon: LifeBuoy,
+    color: "#6366F1", // Indigo
+    href: "/221g-action-planner",
+  },
+  {
+    id: "form-filler",
+    title: "Smart Form Filler",
+    description: "Auto-fills your official form and generates a ready-to-upload PDF.",
+    icon: Wand2,
+    color: "#06B6D4", // Cyan
+    href: "/visa-forms",
+  },
+  {
+    id: "case-strength",
+    title: "Case Strength Analyzer",
+    description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
+    icon: Brain,
+    color: "#8B5CF6", // Violet
+    href: "/visa-case-strength-checker",
+  },
+  {
+    id: "interview-prep",
+    title: "Interview Prep",
+    description: "Prepare smarter and deliver confident answers when it matters most.",
+    icon: MessageSquare,
+    color: "#A78BFA", // Violet/Purple
+    href: "/interview-prep",
+  },
+  {
+    id: "sponsorship-calc",
+    title: "Sponsorship Calculator",
+    description: "Auto-check income/assets and tell you what you still need.",
+    icon: Calculator,
+    color: "#10B981", // Emerald
+    href: "/affidavit-support-calculator",
+  },
+  {
+    id: "status-check",
+    title: "DQ Status Check",
+    description: "Track interview scheduling movement and trends by category.",
+    icon: Clock,
+    color: "#F59E0B", // Amber
+    href: "/iv-tool",
+  },
+  {
+    id: "snap-sign",
+    title: "Snap & Sign",
+    description: "Create a clean digital signature for your forms.",
+    icon: PenTool,
+    color: "#EF4444", // Red
+    href: "/signature-image-processing",
+  },
+];
+
+export function AnimatedToolsSignpost() {
+  const [index, setIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (reduceMotion || isHovered) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => prev + 1);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [reduceMotion, isHovered]);
+
+  // We show index - 1 (exiting), index, index + 1 (bottom card), and index + 2 (entering)
+  const visibleRange = [index - 1, index, index + 1, index + 2];
+
+  const cardVariants = {
+    animate: (k: number) => ({
+      rotate: [0, -1.2, 1.2, -0.6, 0.6, 0],
+      transition: {
+        duration: 5,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: (k % 3) * 0.4,
+      },
+    }),
+    hover: {
+      scale: 1.025,
+      rotate: [-2.5, 2.5, -1, 1, 0],
+      transition: { duration: 0.5, ease: "easeInOut" },
+    },
+  };
+
+  const iconVariants = {
+    animate: (k: number) => ({
+      rotate: [0, 1.5, -1.5, 0.8, -0.8, 0],
+      transition: {
+        duration: 4.5,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: (k % 3) * 0.3,
+      },
+    }),
+    hover: {
+      scale: 1.08,
+      rotate: [-3.5, 3.5, -1.5, 1.5, 0],
+      transition: { duration: 0.45, ease: "easeInOut" },
+    },
+  };
+
+  return (
+    <div
+      className="relative w-full max-w-[380px] h-[186px] overflow-hidden bg-transparent select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Decorative subtle background bloom */}
+      <div className="absolute inset-0 bg-radial from-slate-100/10 to-transparent pointer-events-none" />
+
+      {/* Center Pole (Centered precisely at 50%) */}
+      <div className="absolute left-[calc(50%-3px)] top-[2px] bottom-[2px] w-[6px] bg-gradient-to-b from-slate-300 via-slate-400 to-slate-300 border-x border-slate-500/20 z-10 shadow-[inset_0.5px_0_0.5px_rgba(255,255,255,0.45)]" />
+      
+      {/* Cylindrical Top Cap Ellipse (Centered precisely at 50%) */}
+      <div className="absolute left-[calc(50%-6px)] top-0 w-[12px] h-[5px] rounded-full bg-white border-2 border-slate-500 z-20 shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.15)]" />
+      
+      {/* Cylindrical Bottom Cap Ellipse (Centered precisely at 50%) */}
+      <div className="absolute left-[calc(50%-6px)] bottom-0 w-[12px] h-[5px] rounded-full bg-slate-300 border-2 border-slate-500 z-20 shadow-[inset_0_-0.5px_1px_rgba(0,0,0,0.15)]" />
+
+      {visibleRange.map((k) => {
+        const toolIndex = ((k % signpostTools.length) + signpostTools.length) % signpostTools.length;
+        const tool = signpostTools[toolIndex];
+        const slot = k - index;
+
+        let y = 0;
+        let opacity = 0;
+        let pointerEvents: "auto" | "none" = "none";
+
+        if (slot === -1) {
+          y = -68;
+          opacity = 0;
+          pointerEvents = "none";
+        } else if (slot === 0) {
+          y = 20; // 20px top margin
+          opacity = 1;
+          pointerEvents = "auto";
+        } else if (slot === 1) {
+          y = 102; // ends at 102 + 64 = 166px (20px bottom margin from 186px height)
+          opacity = 1;
+          pointerEvents = "auto";
+        } else if (slot === 2) {
+          y = 186;
+          opacity = 0;
+          pointerEvents = "none";
+        }
+
+        const isLeftIcon = k % 2 === 1;
+        const IconComponent = tool.icon;
+
+        return (
+          <motion.div
+            key={k}
+            initial={{ y: 186, opacity: 0 }}
+            animate={{
+              y,
+              opacity,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 120,
+              damping: 18,
+              mass: 0.75,
+            }}
+            className="absolute left-0 right-0 h-[64px] flex items-center justify-between z-20"
+            style={{ width: "100%", pointerEvents }}
+          >
+            {isLeftIcon ? (
+              <>
+                {/* Left Icon */}
+                <Link href={tool.href} className="no-underline z-20" style={{ left: "calc(18% - 18px)", top: "14px", position: "absolute" }}>
+                  <motion.div
+                    variants={iconVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    className="w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white border-2 z-20 cursor-pointer"
+                    style={{
+                      borderColor: tool.color,
+                      color: tool.color,
+                      boxShadow: `0 4px 12px ${tool.color}1c, inset 0 1px 2px rgba(255,255,255,0.9)`,
+                      transformOrigin: "top center",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                    }}
+                  >
+                    <IconComponent size={18} strokeWidth={2.2} />
+                  </motion.div>
+                </Link>
+
+                {/* Horizontal Connector Line */}
+                <div className="absolute left-[18%] w-[32%] h-[2px] bg-slate-200/80 z-0 top-[31px]" />
+
+                {/* Right Description Card */}
+                <Link href={tool.href} className="no-underline z-20" style={{ left: "52%", right: "3%", position: "absolute", height: "64px" }}>
+                  <motion.div
+                    variants={cardVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    style={{
+                      transformOrigin: "top left",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                      backfaceVisibility: "hidden",
+                      transform: "translate3d(0, 0, 0)",
+                    }}
+                    className="w-full h-[64px] p-2.5 flex flex-col justify-center rounded-xl bg-white border border-slate-200/80 shadow-[0_3px_10px_rgba(0,0,0,0.03)] cursor-pointer text-left transition-all duration-300 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(0,0,0,0.05)]"
+                  >
+                    <span className="text-[10px] font-black text-slate-800 leading-snug tracking-tight truncate">
+                      {tool.title}
+                    </span>
+                    <span 
+                     title={tool.description}
+                    className="text-[8.5px] font-semibold text-slate-500 leading-normal mt-0.5 line-clamp-2">
+                      {tool.description}
+                    </span>
+                  </motion.div>
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* Left Description Card */}
+                <Link href={tool.href} className="no-underline z-20" style={{ left: "3%", right: "52%", position: "absolute", height: "64px" }}>
+                  <motion.div
+                    variants={cardVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    style={{
+                      transformOrigin: "top right",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                      backfaceVisibility: "hidden",
+                      transform: "translate3d(0, 0, 0)",
+                    }}
+                    className="w-full h-[64px] p-2.5 flex flex-col justify-center rounded-xl bg-white border border-slate-200/80 shadow-[0_3px_10px_rgba(0,0,0,0.03)] cursor-pointer text-left transition-all duration-300 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(0,0,0,0.05)]"
+                  >
+                    <span className="text-[10px] font-black text-slate-800 leading-snug tracking-tight truncate">
+                      {tool.title}
+                    </span>
+                    <span className="text-[8.5px] font-semibold text-slate-500 leading-normal mt-0.5 line-clamp-2">
+                      {tool.description}
+                    </span>
+                  </motion.div>
+                </Link>
+
+                {/* Horizontal Connector Line */}
+                <div className="absolute left-[50%] w-[32%] h-[2px] bg-slate-200/80 z-0 top-[31px]" />
+
+                {/* Right Icon */}
+                <Link href={tool.href} className="no-underline z-20" style={{ right: "calc(18% - 18px)", top: "14px", position: "absolute" }}>
+                  <motion.div
+                    variants={iconVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    className="w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white border-2 z-20 cursor-pointer"
+                    style={{
+                      borderColor: tool.color,
+                      color: tool.color,
+                      boxShadow: `0 4px 12px ${tool.color}1c, inset 0 1px 2px rgba(255,255,255,0.9)`,
+                      transformOrigin: "top center",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                    }}
+                  >
+                    <IconComponent size={18} strokeWidth={2.2} />
+                  </motion.div>
+                </Link>
+              </>
+            )}
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Helper SVG Arrow Components for Style B ──
+function RightArrowSvg({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 125 44" className="w-full h-full drop-shadow-[0_2.5px_4px_rgba(0,0,0,0.06)]">
+      <path
+        d="M 5 2 H 105 L 121 22 L 105 42 H 5 A 3 3 0 0 1 2 39 V 5 A 3 3 0 0 1 5 2 Z"
+        fill="#ffffff"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function LeftArrowSvg({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 125 44" className="w-full h-full drop-shadow-[0_2.5px_4px_rgba(0,0,0,0.06)]">
+      <path
+        d="M 120 2 H 20 L 4 22 L 20 42 H 120 A 3 3 0 0 0 123 39 V 5 A 3 3 0 0 0 120 2 Z"
+        fill="#ffffff"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function SpinningToolsSignpost() {
+  const [activeSetIndex, setActiveSetIndex] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (reduceMotion || isHovered) return;
+    const timer = setInterval(() => {
+      // Trigger a 360-degree rotation spin
+      setRotation((r) => r + 360);
+      // Midway through the spin (425ms), update the tool dataset
+      setTimeout(() => {
+        setActiveSetIndex((prev) => (prev + 1) % 3);
+      }, 425);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [reduceMotion, isHovered]);
+
+  // Extract the 3 tools for the active set
+  const startIndex = activeSetIndex * 3;
+  const activeTools = signpostTools.slice(startIndex, startIndex + 3);
+
+  const cardVariants = {
+    animate: (k: number) => ({
+      rotate: [0, -1.2, 1.2, -0.6, 0.6, 0],
+      transition: {
+        duration: 5,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: (k % 3) * 0.4,
+      },
+    }),
+    hover: {
+      scale: 1.035,
+      rotate: [-2.5, 2.5, -1, 1, 0],
+      transition: { duration: 0.5, ease: "easeInOut" },
+    },
+  };
+
+  const circleVariants = {
+    hover: {
+      scale: 1.08,
+      rotate: [0, -5, 5, 0],
+      transition: { duration: 0.4, ease: "easeInOut" },
+    },
+  };
+
+  // Top, middle, and bottom slot positions (Symmetrical 18px top/bottom margins and gaps)
+  const slotYCoordinates = [18, 71, 124];
+  const slotColors = ["#f59e0b", "#0d5cb3", "#0f9648"];
+
+  return (
+    <div
+      className="relative w-full max-w-[380px] h-[186px] overflow-hidden bg-transparent select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ perspective: 800 }}
+    >
+      <motion.div
+        animate={{ rotateY: rotation }}
+        transition={{
+          duration: 0.85,
+          ease: "easeInOut",
+        }}
+        style={{
+          transformStyle: "preserve-3d",
+          width: "100%",
+          height: "100%",
+          position: "relative",
+        }}
+      >
+        {/* Center Pole (Solid deep-blue cylinder pole) */}
+        <div 
+          className="absolute left-[calc(50%-5px)] top-[3px] bottom-[6px] w-[10px] z-10 shadow-[inset_1px_0_1.5px_rgba(255,255,255,0.35),0_2px_4px_rgba(0,0,0,0.15)]"
+          style={{
+            background: "linear-gradient(90deg, #091a2f 0%, #16365f 50%, #091a2f 100%)",
+            borderLeft: "1px solid #071424",
+            borderRight: "1px solid #071424",
+          }}
+        />
+        
+        {/* Cylindrical Top Cap Ellipse/Collar */}
+        <div 
+          className="absolute left-[calc(50%-9px)] top-0 w-[18px] h-[10px] rounded-[3px] z-20 shadow-[0_1.5px_3px_rgba(0,0,0,0.3)]"
+          style={{
+            background: "linear-gradient(180deg, #224d80 0%, #0f2747 100%)",
+            border: "1.5px solid #071424",
+          }}
+        />
+        
+        {/* Cylindrical Bottom Cap Ellipse/Collar */}
+        <div 
+          className="absolute left-[calc(50%-9px)] bottom-[6px] w-[18px] h-[10px] rounded-[3px] z-20 shadow-[0_1.5px_3px_rgba(0,0,0,0.3)]"
+          style={{
+            background: "linear-gradient(180deg, #224d80 0%, #0f2747 100%)",
+            border: "1.5px solid #071424",
+          }}
+        />
+
+        {/* Small ground shadow for the pole */}
+        <div className="absolute left-[calc(50%-12px)] bottom-0 w-[24px] h-[6px] rounded-full bg-slate-950/20 blur-[1px] z-0" />
+
+        {activeTools.map((tool, idx) => {
+          const k = startIndex + idx;
+          const y = slotYCoordinates[idx];
+          const slotColor = slotColors[idx];
+          
+          // Row 0 and Row 2 have Left Icon. Row 1 has Right Icon.
+          const isLeftIcon = idx % 2 === 0;
+          const IconComponent = tool.icon;
+
+          return (
+            <div
+              key={tool.id}
+              className="absolute left-0 right-0 h-[44px] z-20"
+              style={{
+                width: "100%",
+                top: `${y}px`,
+                transformStyle: "preserve-3d",
+                backfaceVisibility: "hidden",
+              }}
+            >
+              {isLeftIcon ? (
+                <>
+                  {/* Left Circle (on left side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={circleVariants}
+                      whileHover="hover"
+                      className="w-[42px] h-[42px] absolute z-20 rounded-full border-[2.5px] bg-white flex items-center justify-center shadow-[0_3px_6px_rgba(0,0,0,0.12)] cursor-pointer"
+                      style={{
+                        left: "calc(50% - 116px)",
+                        top: "1px",
+                        borderColor: slotColor,
+                      }}
+                    >
+                      <div 
+                        className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-white"
+                        style={{ backgroundColor: slotColor }}
+                      >
+                        <IconComponent size={16} strokeWidth={2.5} />
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Left Bracket (Circle to Pole) */}
+                  <div 
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      left: "calc(50% - 95px)",
+                      width: "95px",
+                    }}
+                  />
+
+                  {/* Right Bracket (Pole to Card) */}
+                  <div 
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      left: "50%",
+                      width: "15px",
+                    }}
+                  />
+
+                  {/* Right Card (pointing right, on right side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={cardVariants}
+                      animate="animate"
+                      whileHover="hover"
+                      custom={k}
+                      style={{
+                        left: "calc(50% + 15px)",
+                        width: "125px",
+                        height: "44px",
+                        position: "absolute",
+                        transformOrigin: "left center",
+                        transformStyle: "preserve-3d",
+                        backfaceVisibility: "hidden",
+                        WebkitFontSmoothing: "subpixel-antialiased",
+                      }}
+                    >
+                      <RightArrowSvg color={slotColor} />
+                      <div 
+                        className="absolute left-[20px] right-[20px] top-0 bottom-0 flex items-center justify-center font-extrabold text-[10px] text-[#0f294a] tracking-tight leading-tight text-center"
+                        style={{ WebkitFontSmoothing: "subpixel-antialiased" }}
+                      >
+                        {tool.title}
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {/* Left Card (pointing left, on left side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={cardVariants}
+                      animate="animate"
+                      whileHover="hover"
+                      custom={k}
+                      style={{
+                        right: "calc(50% + 15px)",
+                        width: "125px",
+                        height: "44px",
+                        position: "absolute",
+                        transformOrigin: "right center",
+                        transformStyle: "preserve-3d",
+                        backfaceVisibility: "hidden",
+                        WebkitFontSmoothing: "subpixel-antialiased",
+                      }}
+                    >
+                      <LeftArrowSvg color={slotColor} />
+                      <div 
+                        className="absolute left-[20px] right-[20px] top-0 bottom-0 flex items-center justify-center font-extrabold text-[10px] text-[#0f294a] tracking-tight leading-tight text-center"
+                        style={{ WebkitFontSmoothing: "subpixel-antialiased" }}
+                      >
+                        {tool.title}
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Left Bracket (Card to Pole) */}
+                  <div 
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      right: "50%",
+                      width: "15px",
+                    }}
+                  />
+
+                  {/* Right Bracket (Pole to Circle) */}
+                  <div 
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      left: "50%",
+                      width: "95px",
+                    }}
+                  />
+
+                  {/* Right Circle (on right side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={circleVariants}
+                      whileHover="hover"
+                      className="w-[42px] h-[42px] absolute z-20 rounded-full border-[2.5px] bg-white flex items-center justify-center shadow-[0_3px_6px_rgba(0,0,0,0.12)] cursor-pointer"
+                      style={{
+                        right: "calc(50% - 116px)",
+                        top: "1px",
+                        borderColor: slotColor,
+                      }}
+                    >
+                      <div 
+                        className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-white"
+                        style={{ backgroundColor: slotColor }}
+                      >
+                        <IconComponent size={16} strokeWidth={2.5} />
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+}
+
+
+
