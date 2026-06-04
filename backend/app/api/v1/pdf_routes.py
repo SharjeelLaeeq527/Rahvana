@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import Dict, Any
 
 import fitz
+import io
 
 from app.services.pdf_filler import PDFFillerService
 from app.services.ds260_generator import DS260GeneratorService
@@ -16,6 +17,7 @@ router = APIRouter()
 class FillRequest(BaseModel):
     formId: str
     data: Dict[str, Any]
+    onlyFirstPage: bool = False
 
 @router.post("/fill-pdf")
 async def fill_pdf(request: FillRequest):
@@ -34,6 +36,18 @@ async def fill_pdf(request: FillRequest):
              pdf_service = PDFFillerService(form_id=request.formId)
              output = pdf_service.fill_pdf(form_data=request.data)
         
+        # If requested, slice only the first page
+        if request.onlyFirstPage:
+            pdf_bytes = output.getvalue()
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+            if len(doc) > 0:
+                doc.select([0])
+                new_output = io.BytesIO()
+                doc.save(new_output, garbage=4, deflate=True, clean=True)
+                new_output.seek(0)
+                output = new_output
+            doc.close()
+
         return StreamingResponse(
             output,
             media_type="application/pdf",

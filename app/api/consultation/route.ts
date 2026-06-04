@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ConsultationRequest } from "@/types/consultation";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
+import { triggerConsultationNotification } from "@/lib/notifications";
 
 // Helper function to handle service errors (returns localized messages)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
@@ -168,7 +169,13 @@ export async function PUT(request: NextRequest) {
     // Get the updated booking
     const updatedBooking = await consultationService.getBookingById(id);
 
-    // In a real app, you would send notifications to the user here
+    // Trigger notification when appointment status changes
+    try {
+      await triggerConsultationNotification(id);
+    } catch (notifError) {
+      console.error("Failed to send consultation status update notification:", notifError);
+    }
+
     console.log(
       `Booking ${updatedBooking.reference_id} status updated to ${updatedBooking.status}`
     );

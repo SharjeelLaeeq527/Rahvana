@@ -28,6 +28,8 @@ interface ReviewPageProps {
   isPreviewing?: boolean;
   isDownloading?: boolean;
   isSavingToVault?: boolean;
+  isFreePreview?: boolean;
+  onUpgradeClick?: () => void;
 }
 
 export function ReviewPage({
@@ -41,6 +43,8 @@ export function ReviewPage({
   isPreviewing,
   isDownloading,
   isSavingToVault,
+  isFreePreview = false,
+  onUpgradeClick,
 }: ReviewPageProps) {
   const { t } = useLanguage();
   const [expandedSections, setExpandedSections] = useState<Set<number>>(
@@ -63,6 +67,31 @@ export function ReviewPage({
   const totalCount = sections.length;
   return (
     <div className="space-y-6">
+      {/* Free Preview Banner */}
+      {isFreePreview && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 bg-amber-100/80 rounded-xl text-amber-700 shrink-0">
+              <Lock size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-amber-900">
+                Free Preview Mode (10 Questions Limit)
+              </h4>
+              <p className="text-xs text-amber-800/85 leading-relaxed mt-1">
+                You are currently in Free Preview mode. You can fill up to 10 questions and print/preview the <strong>first page</strong> of your completed PDF to test the tool.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onUpgradeClick}
+            className="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white text-xs font-bold rounded-lg shadow-sm transition-all duration-150 shrink-0 active:scale-[0.98] flex items-center gap-1.5"
+          >
+            Unlock Full PDF
+          </button>
+        </div>
+      )}
+
       {/* Header with Stats */}
       <div
         className="rounded-2xl p-6 md:p-8 border-2"
@@ -243,29 +272,43 @@ export function ReviewPage({
             <button
               onClick={onPreviewPDF}
               disabled={isPreviewing || isDownloading || isSavingToVault}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm whitespace-nowrap"
             >
-              <Eye className="w-4 h-4" />
-              {isPreviewing ? "Previewing..." : "Preview PDF"}
+              <Eye className="w-4 h-4 shrink-0" />
+              {isFreePreview ? (
+                <>
+                  {isPreviewing ? "Previewing..." : "Preview Page 1"}
+                  <span className="ml-1 text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-extrabold tracking-wide uppercase shrink-0">Free</span>
+                </>
+              ) : (
+                isPreviewing ? "Previewing..." : "Preview PDF"
+              )}
             </button>
 
             <button
               onClick={onDownloadPDF}
               disabled={isPreviewing || isDownloading || isSavingToVault}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all text-sm whitespace-nowrap"
             >
-              <Download className="w-4 h-4" />
-              {isDownloading ? "Downloading..." : "Download PDF"}
+              <Download className="w-4 h-4 shrink-0" />
+              {isFreePreview ? (
+                <>
+                  {isDownloading ? "Downloading..." : "Download Page 1"}
+                  <span className="ml-1 text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-extrabold tracking-wide uppercase shrink-0">Free</span>
+                </>
+              ) : (
+                isDownloading ? "Downloading..." : "Download PDF"
+              )}
             </button>
 
-            <div className="flex-[1.5] flex flex-col gap-1.5 min-w-[150px]">
+            <div className="flex-[1.5] flex flex-col gap-1.5 min-w-[150px] w-full md:w-auto">
               <button
-                onClick={onSaveToVault}
-                disabled={isPreviewing || isDownloading || isSavingToVault}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0d7377] to-[#14a0a6] hover:from-[#0a5a5d] hover:to-[#0d7377] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#0d7377]/20 text-sm"
+                onClick={isFreePreview ? onUpgradeClick : onSaveToVault}
+                disabled={!isFreePreview && (isPreviewing || isDownloading || isSavingToVault)}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0d7377] to-[#14a0a6] hover:from-[#0a5a5d] hover:to-[#0d7377] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#0d7377]/20 text-sm whitespace-nowrap"
               >
-                <Save className="w-4 h-4" />
-                {isSavingToVault ? "Saving..." : "Save to Vault"}
+                {isFreePreview ? <Lock className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                {isFreePreview ? "Unlock Save to Vault" : (isSavingToVault ? "Saving..." : "Save to Vault")}
               </button>
               <div className="flex items-center justify-center gap-1 text-[10px] text-slate-500 font-semibold leading-none py-0.5">
                 <Lock className="w-3 h-3 text-emerald-600 shrink-0" />

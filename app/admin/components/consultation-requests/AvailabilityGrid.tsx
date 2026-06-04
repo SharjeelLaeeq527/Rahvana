@@ -514,12 +514,17 @@ const AvailabilityGrid = () => {
                             className={cn(
                               "group relative flex items-center justify-between p-2 rounded-lg border transition-all cursor-pointer hover:shadow-sm",
                               slot.status === "available"
-                                ? "bg-white border-teal-100 hover:border-teal-400 hover:bg-teal-50/10"
+                                ? (slot.localStart.getTime() < Date.now()
+                                    ? "bg-gray-50 border-gray-150 grayscale opacity-70 hover:border-gray-300"
+                                    : "bg-white border-teal-100 hover:border-teal-400 hover:bg-teal-50/10"
+                                  )
                                 : slot.status === "confirmed"
                                   ? "bg-green-50 border-green-200 hover:border-green-400"
                                   : slot.status === "pending"
                                     ? "bg-yellow-50 border-yellow-200 hover:border-yellow-400"
-                                    : "bg-gray-50 border-gray-200 grayscale opacity-70 hover:border-gray-400"
+                                    : slot.status === "canceled" || slot.status === "cancelled"
+                                      ? "bg-red-50 border-red-200 hover:border-red-400"
+                                      : "bg-gray-50 border-gray-200 grayscale opacity-70 hover:border-gray-400"
                             )}
                             onClick={() => handleOpenEditModal(slot)}
                           >
@@ -535,21 +540,29 @@ const AvailabilityGrid = () => {
                                 className={cn(
                                   "text-[9px] uppercase font-black",
                                   slot.status === "available"
-                                    ? "text-teal-600"
+                                    ? (slot.localStart.getTime() < Date.now() ? "text-gray-400" : "text-teal-600")
                                     : slot.status === "confirmed"
                                       ? "text-green-600"
                                       : slot.status === "pending"
                                         ? "text-yellow-600"
-                                        : "text-gray-400"
+                                        : slot.status === "canceled" || slot.status === "cancelled"
+                                          ? "text-red-600 font-extrabold"
+                                          : "text-gray-400"
                                 )}
                               >
-                                {slot.status}
+                                {slot.status === "available" && slot.localStart.getTime() < Date.now() ? "expired" : slot.status}
                               </span>
                             </div>
                             {slot.status === "available" ? (
-                              <Check className="h-3 w-3 text-teal-300 group-hover:text-teal-500 transition-colors" />
+                              slot.localStart.getTime() < Date.now() ? (
+                                <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
+                              ) : (
+                                <Check className="h-3 w-3 text-teal-300 group-hover:text-teal-500 transition-colors" />
+                              )
                             ) : slot.status === "unavailable" ? (
                               <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
+                            ) : slot.status === "canceled" || slot.status === "cancelled" ? (
+                              <X className="h-3 w-3 text-red-400" />
                             ) : (
                               <Edit2 className="h-3 w-3 text-gray-300 opacity-0 group-hover:opacity-100 group-hover:text-teal-500 transition-all" />
                             )}
