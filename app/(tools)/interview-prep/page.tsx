@@ -21,6 +21,7 @@ import CountrySelectionModal from "../../components/interview-prep/CountrySelect
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { NarrativeModal } from "../(visa)/221g-action-planner/components/NarrativeModal";
 
 import type {
   InterviewCategoryConfig,
@@ -36,6 +37,10 @@ export default function InterviewPreparation() {
   const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
 
   const [step, setStep] = useState<number>(0);
+  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const hasInitializedModal = useRef(false);
+
   const [formData, setFormData] = useState<Partial<InterviewFormData>>({
     caseType: "",
   });
@@ -304,6 +309,31 @@ export default function InterviewPreparation() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only on initial mount to avoid auto-restoring when categories load
+
+  useEffect(() => {
+    if (hasInitializedModal.current) return;
+    if (step !== 0) return;
+
+    hasInitializedModal.current = true;
+
+    const localHide =
+      typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_interview_narrative") === "true";
+
+    // show only if not hidden by session or localStorage
+    if (!localHide) {
+      setShowWhatsThis(true);
+    } else {
+      setShowWhatsThis(false);
+    }
+  }, []);
+
+  const handleCloseIntro = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
+      localStorage.setItem("dont_show_interview_narrative", "true");
+    }
+    setShowWhatsThis(false);
+  };
 
   const handleInputChange = (key: string, value: unknown) => {
     const updatedFormData = { ...formData, [key]: value };
@@ -822,6 +852,15 @@ export default function InterviewPreparation() {
 
   return (
     <>
+      <NarrativeModal
+        isOpen={showWhatsThis}
+        onClose={handleCloseIntro}
+        onComplete={handleCloseIntro}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="interview-prep"
+      />
+
       <CountrySelectionModal
         isOpen={showCountryModal}
         onCountrySelected={handleCountrySelected}

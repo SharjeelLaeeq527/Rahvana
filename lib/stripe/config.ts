@@ -98,15 +98,10 @@ export const PRODUCTS = {
       price: 49,
       priceId: STRIPE_PRICES.ADDONS["case-strength"],
     },
-    mock: {
-      name: "Interview Prep - Mock Interview",
-      price: 39,
-      priceId: STRIPE_PRICES.ADDONS["mock"],
-    },
-    rapid: {
-      name: "Interview Prep - Rapid Fire Mode",
-      price: 39,
-      priceId: STRIPE_PRICES.ADDONS["rapid"],
+    "interview-prep": {
+      name: "Interview Prep",
+      price: 200,
+      priceId: STRIPE_PRICES.ADDONS["interview-prep"],
     },
     pdf: { name: "PDF Tool Kit", price: 69, priceId: STRIPE_PRICES.ADDONS["pdf"] },
     photo: { name: "Photo Booth", price: 15, priceId: STRIPE_PRICES.ADDONS["photo"] },
