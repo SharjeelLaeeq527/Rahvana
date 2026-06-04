@@ -83,8 +83,7 @@ const ADDON_CONFIG: Record<
 > = {
   "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
   "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  mock: { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
-  rapid: { icon: Zap, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  "interview-prep": { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   photo: { icon: Camera, iconBg: "bg-rose-600 dark:bg-rose-500" },
   smart: { icon: Wand2, iconBg: "bg-cyan-600 dark:bg-cyan-500" },
   sponsor: { icon: Calculator, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
@@ -106,7 +105,7 @@ const RESOURCE_CATS = [
   {
     id: "popular",
     label: "Most Popular",
-    ids: ["case-strength", "smart", "consultation", "mock"],
+    ids: ["case-strength", "smart", "consultation", "interview-prep"],
   },
   {
     id: "forms",
@@ -116,7 +115,7 @@ const RESOURCE_CATS = [
   {
     id: "interview",
     label: "Interview & Embassy",
-    ids: ["mock", "rapid", "photo"],
+    ids: ["interview-prep", "photo"],
   },
   {
     id: "docs",
@@ -131,8 +130,8 @@ const RESOURCE_CATS = [
 ];
 
 const PLAN_RECS: Record<string, string[]> = {
-  basic: ["smart", "case-strength", "sponsor", "rapid", "civil-guid"],
-  premium: ["mock", "doc-review", "consultation", "221g"],
+  basic: ["smart", "case-strength", "sponsor", "interview-prep", "civil-guid"],
+  premium: ["interview-prep", "doc-review", "consultation", "221g"],
   executive: ["case-manager", "consultation", "translate"],
 };
 

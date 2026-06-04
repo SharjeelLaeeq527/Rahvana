@@ -21,15 +21,6 @@ export type ResourceMedia = {
   poster?: string;
 };
 
-export type ResourceReview = {
-  name: string;
-  /** e.g. "Lahore" or "Petitioner · Texas" */
-  location?: string;
-  /** 1–5 */
-  rating: number;
-  quote: string;
-};
-
 export type ResourceDetail = {
   slug: string;
   /** small ribbon shown on the hero + card, e.g. "AI-Powered" */
@@ -50,12 +41,6 @@ export type ResourceDetail = {
   faqs: [string, string][];
   /** hero + gallery media (placeholders until real screenshots arrive) */
   media: ResourceMedia[];
-  /** average star rating (sample) */
-  rating: number;
-  /** number of reviews (sample) */
-  reviewCount: number;
-  /** sample customer reviews — replace with real testimonials */
-  reviews: ResourceReview[];
   /** related add-on slugs to cross-sell */
   related: string[];
 };
@@ -109,13 +94,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       img("case-strength", "hero.png", "Case Strength Analyzer score screen", "Your instant 0–100 case strength score with flagged gaps"),
       img("case-strength", "gallery-1.png", "Prioritized list of gaps to fix", "Every gap explained and ranked by severity"),
     ],
-    rating: 4.8,
-    reviewCount: 124,
-    reviews: [
-      { name: "Ayesha K.", location: "Lahore", rating: 5, quote: "I had no idea our evidence was thin until I ran this. The score and the gap list told me exactly what to fix before NVC." },
-      { name: "Daniel R.", location: "Petitioner · Texas", rating: 5, quote: "Ran it a few times as I added documents. Watching the score climb gave me real peace of mind." },
-      { name: "Faisal M.", location: "Karachi", rating: 4, quote: "Caught an inconsistency in our timeline I'd never have noticed. Worth far more than the price." },
-    ],
     related: ["smart", "sponsor", "doc-review"],
   },
 
@@ -160,36 +138,29 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       img("221g", "hero.png", "221(g) Action Planner roadmap", "Your personalized step-by-step 221(g) plan"),
       img("221g", "gallery-1.png", "221(g) reason and document intake", "Tell us what your slip says"),
     ],
-    rating: 4.7,
-    reviewCount: 86,
-    reviews: [
-      { name: "Sana T.", location: "Islamabad", rating: 5, quote: "We got a 221(g) and panicked. The action plan laid out every step and what to send — the PDF packet was a lifesaver." },
-      { name: "Omar S.", location: "Petitioner · California", rating: 5, quote: "The embassy guidance and document checklist made our response clean and complete on the first try." },
-      { name: "Hina A.", location: "Lahore", rating: 4, quote: "Clear timeline expectations stopped me from over-following-up. Felt in control for the first time." },
-    ],
     related: ["doc-review", "consultation", "case-strength"],
   },
 
   // ───────────────────────────────────────────────────────────────────────────
-  mock: {
-    slug: "mock",
-    badge: "AI Voice Practice",
-    tagline: "Walk into your interview like you've already done it.",
+  "interview-prep": {
+    slug: "interview-prep",
+    badge: "AI Interview Coach",
+    tagline: "Walk into your consular interview like you've already done it.",
     overview: [
-      "The consular interview can decide everything in a few minutes. The Mock Interview is an AI-guided voice session built around the questions officers actually ask — you hear each question read aloud and answer out loud, just like the real thing.",
-      "You'll practice your delivery, tighten your answers, and get an instant performance summary so the real interview feels familiar.",
+      "The consular interview can decide everything in a few minutes. Interview Prep is your complete practice suite — guided question prep, timed rapid-fire drills, and an AI-guided voice mock interview, all built around the questions officers actually ask.",
+      "You build and tighten your answers, drill them until they're automatic, then rehearse out loud in a realistic mock session — and get an instant performance summary so the real interview feels familiar.",
     ],
     highlights: [
       { icon: "MessageSquare", title: "Real consular questions", text: "Drawn from the questions officers commonly ask spouse-visa applicants." },
-      { icon: "Video", title: "Voice-based practice", text: "Questions are spoken to you and you answer aloud — realistic interview conditions." },
-      { icon: "Target", title: "Focused on your case", text: "Practice the areas most relevant to your situation." },
+      { icon: "Zap", title: "Timed rapid-fire drills", text: "Short, sharp questions on a countdown that build fast, clear recall." },
+      { icon: "Video", title: "AI voice mock interview", text: "Questions are spoken to you and you answer aloud — realistic interview conditions." },
       { icon: "ClipboardCheck", title: "Instant performance summary", text: "Completion, pace and response insights with strengths and areas to improve." },
     ],
     steps: [
-      { title: "Start your session", text: "Launch the mock interview whenever you're ready to practice." },
-      { title: "Answer out loud", text: "Hear realistic consular questions and respond by speaking, hands-free." },
+      { title: "Build your answers", text: "Work through guided questions tailored to your case and shape strong responses." },
+      { title: "Drill rapid-fire", text: "Practice against the clock until your answers are sharp and automatic." },
+      { title: "Run a mock interview", text: "Hear realistic consular questions and respond out loud, hands-free." },
       { title: "Get your summary", text: "See an instant breakdown of what's working and what to refine." },
-      { title: "Walk in ready", text: "Show up to the real interview calm and prepared." },
     ],
     audience: [
       "Applicants with an interview scheduled",
@@ -197,77 +168,20 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Couples who want their stories to align",
     ],
     outcomes: [
-      "A guided voice mock interview session",
+      "Guided answer prep, rapid-fire drills and a voice mock session",
       "An instant performance summary with insights",
       "A confidence boost for the real day",
     ],
     faqs: [
-      ["Is it a live person or AI?", "It's an AI-guided voice session — questions are read aloud and your spoken answers are captured, so you can rehearse realistically anytime. It is not a live human interviewer."],
-      ["Do I need a microphone?", "Yes — the session works best with your microphone enabled so you can answer out loud and get response insights."],
-      ["What should I prepare?", "Just your case basics — the session guides you through realistic consular questions."],
+      ["What's included?", "Three practice modes in one tool — guided question prep, timed rapid-fire drilling, and an AI-guided voice mock interview — all built around real consular questions."],
+      ["Is the mock a live person or AI?", "It's an AI-guided voice session — questions are read aloud and your spoken answers are captured, so you can rehearse realistically anytime. It is not a live human interviewer."],
+      ["Do I need a microphone?", "For the mock interview, yes — answering out loud gives you response insights. Guided prep and rapid-fire drills work without one."],
     ],
     media: [
-      img("mock", "hero.png", "AI voice mock interview screen"),
-      img("mock", "gallery-1.png", "Mock interview performance summary"),
+      img("interview-prep", "hero.png", "AI voice mock interview screen"),
+      img("interview-prep", "gallery-1.png", "Interview Prep performance summary"),
     ],
-    rating: 4.6,
-    reviewCount: 73,
-    reviews: [
-      { name: "Bilal R.", location: "Rawalpindi", rating: 5, quote: "Speaking my answers out loud to the AI made the real interview feel familiar. The feedback was spot on." },
-      { name: "Maria G.", location: "Petitioner · Florida", rating: 5, quote: "I freeze under pressure. Practicing the actual consular questions calmed my nerves completely." },
-      { name: "Zoya K.", location: "Karachi", rating: 4, quote: "Loved hearing the questions read aloud. The summary showed me exactly what to tighten." },
-    ],
-    related: ["rapid", "case-strength", "consultation"],
-  },
-
-  // ───────────────────────────────────────────────────────────────────────────
-  rapid: {
-    slug: "rapid",
-    badge: "Unlimited Drills",
-    tagline: "Train your answers until they're automatic.",
-    overview: [
-      "Rapid Fire Mode is timed Q&A drilling for the consular interview. Quick questions, a ticking clock, and instant repetition train you to answer clearly and confidently — without freezing or over-explaining.",
-      "Run it as many times as you want. An adaptive engine brings back the questions you struggle with until you've mastered them.",
-    ],
-    highlights: [
-      { icon: "Zap", title: "Timed Q&A drills", text: "Short, sharp questions on a countdown that build fast, clear recall." },
-      { icon: "Repeat", title: "Unlimited rounds", text: "Practice as often as you like — no per-session limit." },
-      { icon: "Brain", title: "Adaptive repetition", text: "Questions you miss come back around until you've got them down." },
-      { icon: "Gauge", title: "Round readiness score", text: "Each round summarizes what you covered, missed and mastered." },
-    ],
-    steps: [
-      { title: "Start a round", text: "Launch a timed Rapid Fire round whenever you have a few minutes." },
-      { title: "Answer fast", text: "Respond to quick consular-style questions against the clock." },
-      { title: "Review your round", text: "See covered, partial and missed questions with a readiness score." },
-      { title: "Run the next round", text: "The engine re-surfaces weak spots until you're interview-fluent." },
-    ],
-    audience: [
-      "Applicants who want repetition and speed",
-      "Self-starters who like to practice solo",
-      "Anyone prone to over-explaining answers",
-    ],
-    outcomes: [
-      "Unlimited Rapid Fire rounds",
-      "Faster, clearer interview answers",
-      "A readiness score that climbs as you improve",
-    ],
-    faqs: [
-      ["How is this different from Mock Interview?", "Mock Interview is a guided AI voice session that mirrors the real interview. Rapid Fire is unlimited self-serve timed drilling you can repeat anytime to build recall."],
-      ["Is there a session limit?", "No — this add-on includes unlimited Rapid Fire rounds."],
-      ["Does it adapt to me?", "Yes — questions you miss are brought back in later rounds until you've mastered them."],
-    ],
-    media: [
-      img("rapid", "hero.png", "Rapid Fire timed question screen"),
-      img("rapid", "gallery-1.png", "Rapid Fire round readiness summary"),
-    ],
-    rating: 4.7,
-    reviewCount: 91,
-    reviews: [
-      { name: "Hamza N.", location: "Faisalabad", rating: 5, quote: "Ten seconds per question forced me to stop rambling. After a few rounds my answers were sharp." },
-      { name: "Aisha M.", location: "Multan", rating: 5, quote: "Unlimited rounds meant I could drill every spare minute. By interview day it was automatic." },
-      { name: "Kevin L.", location: "Petitioner · Ohio", rating: 4, quote: "The round summaries showed which questions I kept missing. Surprisingly addictive practice." },
-    ],
-    related: ["mock", "case-strength"],
+    related: ["case-strength", "consultation", "221g"],
   },
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -309,13 +223,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     media: [
       img("smart", "hero.png", "Auto-filled USCIS form preview", "Your official form, auto-filled from your profile"),
       img("smart", "gallery-1.png", "Review screen and ready-to-upload PDF"),
-    ],
-    rating: 4.8,
-    reviewCount: 152,
-    reviews: [
-      { name: "Usman F.", location: "Lahore", rating: 5, quote: "It pulled everything from my profile and filled the I-130 in minutes. No more re-typing the same details." },
-      { name: "Rachel D.", location: "Petitioner · New York", rating: 5, quote: "Generated a clean, ready-to-upload PDF. Saved me an entire weekend of form headaches." },
-      { name: "Nida S.", location: "Islamabad", rating: 4, quote: "I reviewed every field before downloading. Accurate and stress-free." },
     ],
     related: ["case-strength", "sponsor", "doc-review"],
   },
@@ -360,13 +267,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       img("sponsor", "hero.png", "Sponsorship Calculator result", "Your income vs the I-864 requirement"),
       img("sponsor", "gallery-1.png", "What you still need summary"),
     ],
-    rating: 4.9,
-    reviewCount: 138,
-    reviews: [
-      { name: "Ahmed Z.", location: "Karachi", rating: 5, quote: "Told me instantly I qualified and by how much. No more guessing with the poverty guidelines." },
-      { name: "Jessica P.", location: "Petitioner · Arizona", rating: 5, quote: "When I fell short it showed the exact gap and that a joint sponsor would fix it. Incredibly clear." },
-      { name: "Tariq H.", location: "Lahore", rating: 5, quote: "Recalculated as my income changed and the household math was handled for me." },
-    ],
     related: ["case-strength", "smart", "doc-review"],
   },
 
@@ -410,13 +310,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       img("photo", "hero.png", "Photo Booth compliant photo output", "From a normal photo to a compliant one"),
       img("photo", "gallery-1.png", "Background removal and country presets"),
     ],
-    rating: 4.7,
-    reviewCount: 210,
-    reviews: [
-      { name: "Saad M.", location: "Lahore", rating: 5, quote: "Made a compliant photo from a normal picture in minutes. Skipped the studio entirely." },
-      { name: "Emily W.", location: "Petitioner · Washington", rating: 5, quote: "Background removal and correct sizing were perfect. Accepted with no issues." },
-      { name: "Rabia K.", location: "Peshawar", rating: 4, quote: "My earlier photo got rejected. This one passed the first time." },
-    ],
     related: ["smart", "civil-guid"],
   },
 
@@ -458,13 +351,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     media: [
       img("doc-review", "hero.png", "Expert Case Review feedback", "A specialist's written feedback on your packet"),
-    ],
-    rating: 4.8,
-    reviewCount: 64,
-    reviews: [
-      { name: "Fatima R.", location: "Islamabad", rating: 5, quote: "A real expert caught two gaps in our packet before we submitted. The written notes were clear and actionable." },
-      { name: "Michael B.", location: "Petitioner · Illinois", rating: 5, quote: "Came back in two days with feedback that genuinely strengthened our case." },
-      { name: "Imran S.", location: "Lahore", rating: 4, quote: "Worth every bit for the peace of mind of a human second opinion." },
     ],
     related: ["case-strength", "consultation", "221g"],
   },
@@ -508,14 +394,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     media: [
       img("consultation", "hero.png", "Expert Consultation booking and video session"),
     ],
-    rating: 4.9,
-    reviewCount: 57,
-    reviews: [
-      { name: "Hira J.", location: "Karachi", rating: 5, quote: "Thirty focused minutes answered every what-if we had. Walked away with a clear plan." },
-      { name: "Sarah T.", location: "Petitioner · Georgia", rating: 5, quote: "The specialist understood our exact situation and booking was quick and easy." },
-      { name: "Asad K.", location: "Lahore", rating: 5, quote: "The best money we spent — straight, situation-specific advice, not generic tips." },
-    ],
-    related: ["doc-review", "221g", "mock"],
+    related: ["doc-review", "221g", "interview-prep"],
   },
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -556,13 +435,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     media: [
       img("translate", "hero.png", "Certified document translation", "Source document to embassy-ready translation"),
-    ],
-    rating: 4.6,
-    reviewCount: 48,
-    reviews: [
-      { name: "Noor A.", location: "Lahore", rating: 5, quote: "Certified translation came back embassy-ready and on time. Smooth process from upload to download." },
-      { name: "Bushra M.", location: "Faisalabad", rating: 5, quote: "Uploaded our marriage certificate and got back a clean certified translation. No back and forth." },
-      { name: "Daniyal R.", location: "Karachi", rating: 4, quote: "Correct formatting meant it was accepted without questions." },
     ],
     related: ["civil-guid", "doc-review"],
   },
@@ -606,13 +478,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     media: [
       img("civil-guid", "hero.png", "Civil Document Guides library"),
     ],
-    rating: 4.7,
-    reviewCount: 39,
-    reviews: [
-      { name: "Areeba S.", location: "Islamabad", rating: 5, quote: "The guide told me exactly where to go for my document. Saved me from wrong offices." },
-      { name: "Waleed K.", location: "Lahore", rating: 5, quote: "Step-by-step and country-specific. Followed it start to finish without confusion." },
-      { name: "Mehwish T.", location: "Multan", rating: 4, quote: "Kept access to reuse the guide for my sibling's case later." },
-    ],
     related: ["translate", "photo"],
   },
 
@@ -653,13 +518,6 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     media: [
       img("case-manager", "hero.png", "Dedicated Case Manager dashboard"),
-    ],
-    rating: 4.8,
-    reviewCount: 22,
-    reviews: [
-      { name: "Junaid A.", location: "Karachi", rating: 5, quote: "Having one person who knew our case end to end made everything calmer." },
-      { name: "Laura M.", location: "Petitioner · Nevada", rating: 5, quote: "My case manager coordinated reviews and kept us on track all year." },
-      { name: "Sadia R.", location: "Lahore", rating: 4, quote: "Never had to re-explain our situation. Continuity you can feel." },
     ],
     related: ["consultation", "doc-review"],
   },

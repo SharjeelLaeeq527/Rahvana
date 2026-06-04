@@ -21,8 +21,7 @@ export const STRIPE_PRICES = {
   ADDONS: {
     "221g": process.env.STRIPE_ADDON_221G || "",
     "case-strength": process.env.STRIPE_ADDON_CASE_STRENGTH || "",
-    mock: process.env.STRIPE_ADDON_INTERVIEW_MOCK || "",
-    rapid: process.env.STRIPE_ADDON_INTERVIEW_RAPID || "",
+    "interview-prep": process.env.STRIPE_ADDON_INTERVIEW_PREP || "",
     pdf: process.env.STRIPE_ADDON_PDF_TOOLKIT || "",
     photo: process.env.STRIPE_ADDON_PHOTO_BOOTH || "",
     smart: process.env.STRIPE_ADDON_SMART_FORM || "",
@@ -98,15 +97,10 @@ export const PRODUCTS = {
       price: 49,
       priceId: STRIPE_PRICES.ADDONS["case-strength"],
     },
-    mock: {
-      name: "Interview Prep - Mock Interview",
-      price: 39,
-      priceId: STRIPE_PRICES.ADDONS["mock"],
-    },
-    rapid: {
-      name: "Interview Prep - Rapid Fire Mode",
-      price: 39,
-      priceId: STRIPE_PRICES.ADDONS["rapid"],
+    "interview-prep": {
+      name: "Interview Prep",
+      price: 200,
+      priceId: STRIPE_PRICES.ADDONS["interview-prep"],
     },
     pdf: { name: "PDF Tool Kit", price: 69, priceId: STRIPE_PRICES.ADDONS["pdf"] },
     photo: { name: "Photo Booth", price: 15, priceId: STRIPE_PRICES.ADDONS["photo"] },

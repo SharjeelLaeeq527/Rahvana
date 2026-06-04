@@ -107,8 +107,7 @@ export function getIcon(name?: string): LucideIcon {
 export const SLUG_THEME: Record<string, { accent: string; tint: string; icon: string }> = {
   "case-strength": { accent: "#5C3DAA", tint: "#F3EFFE", icon: "Brain" },
   "221g": { accent: "#5C3DAA", tint: "#F3EFFE", icon: "LifeBuoy" },
-  mock: { accent: "#1A5FA3", tint: "#EAF1FB", icon: "MessageSquare" },
-  rapid: { accent: "#5C3DAA", tint: "#F3EFFE", icon: "Zap" },
+  "interview-prep": { accent: "#1A5FA3", tint: "#EAF1FB", icon: "MessageSquare" },
   photo: { accent: "#903030", tint: "#FEF0F0", icon: "Camera" },
   smart: { accent: "#0E7490", tint: "#E0F2FE", icon: "Wand2" },
   sponsor: { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Calculator" },

@@ -87,55 +87,31 @@ export default async function ResourceDetailPage({
     .map((rs) => ({ slug: rs, detail: RESOURCE_DETAILS[rs], addon: getAddon(rs) }))
     .filter((r) => r.detail && r.addon);
 
-  // Real (DB) reviews + the curated seed samples from resourceDetails.ts.
-  // Real reviews show first; the seed keeps pages populated and blends into the
-  // aggregate so the rating reflects both until real reviews take over.
+  // Real, approved reviews only — no seeded or sample data.
   const [dbReviews, dbStats] = await Promise.all([
     getApprovedReviews(slug),
     getReviewStats(slug),
   ]);
 
-  const seedDist = ratingDistribution(detail.rating, detail.reviewCount).map((d) => d.count);
-  const blendedDistCounts: [number, number, number, number, number] = [
-    seedDist[0] + dbStats.distribution[0],
-    seedDist[1] + dbStats.distribution[1],
-    seedDist[2] + dbStats.distribution[2],
-    seedDist[3] + dbStats.distribution[3],
-    seedDist[4] + dbStats.distribution[4],
-  ];
-  const displayCount = detail.reviewCount + dbStats.count;
-  const displayRating =
-    displayCount > 0
-      ? Math.round(
-          ((detail.rating * detail.reviewCount + dbStats.average * dbStats.count) / displayCount) * 10
-        ) / 10
-      : detail.rating;
+  const displayCount = dbStats.count;
+  const displayRating = dbStats.average;
+  const hasReviews = displayCount > 0;
 
-  const totalForBars = blendedDistCounts.reduce((a, b) => a + b, 0) || 1;
+  const totalForBars = dbStats.distribution.reduce((a, b) => a + b, 0) || 1;
   const distribution = [5, 4, 3, 2, 1].map((star, i) => ({
     star,
-    count: blendedDistCounts[i],
-    pct: Math.round((blendedDistCounts[i] / totalForBars) * 100),
+    count: dbStats.distribution[i],
+    pct: Math.round((dbStats.distribution[i] / totalForBars) * 100),
   }));
 
-  // Unified review feed: real reviews (with accurate verified badge) first,
-  // then the curated seed testimonials (shown without a verified-purchase badge).
-  const displayReviews = [
-    ...dbReviews.map((r) => ({
-      name: r.reviewerName,
-      location: r.location,
-      rating: r.rating,
-      quote: r.body,
-      verified: r.verifiedPurchase,
-    })),
-    ...detail.reviews.map((r) => ({
-      name: r.name,
-      location: r.location ?? null,
-      rating: r.rating,
-      quote: r.quote,
-      verified: false,
-    })),
-  ];
+  // Real review feed only — shown with the accurate verified-purchase badge.
+  const displayReviews = dbReviews.map((r) => ({
+    name: r.reviewerName,
+    location: r.location,
+    rating: r.rating,
+    quote: r.body,
+    verified: r.verifiedPurchase,
+  }));
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -172,11 +148,15 @@ export default async function ResourceDetailPage({
             </p>
 
             {/* Rating */}
-            <div className="mt-5 flex items-center gap-2.5 text-[13.5px]">
-              <Stars value={displayRating} />
-              <span className="font-semibold text-foreground">{displayRating.toFixed(1)}</span>
-              <span className="text-muted-foreground">· {displayCount} reviews</span>
-            </div>
+            {hasReviews ? (
+              <div className="mt-5 flex items-center gap-2.5 text-[13.5px]">
+                <Stars value={displayRating} />
+                <span className="font-semibold text-foreground">{displayRating.toFixed(1)}</span>
+                <span className="text-muted-foreground">· {displayCount} reviews</span>
+              </div>
+            ) : (
+              <p className="mt-5 text-[13px] text-muted-foreground">No reviews yet</p>
+            )}
 
             {/* Price */}
             <div className="mt-9 flex items-baseline gap-2.5">
@@ -313,6 +293,8 @@ export default async function ResourceDetailPage({
           <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[290px_1fr]">
             {/* Summary + distribution */}
             <div className="h-fit lg:sticky lg:top-24">
+              {hasReviews ? (
+              <>
               <div className="flex items-baseline gap-2">
                 <span className="text-[44px] leading-none text-foreground" style={{ fontFamily: SERIF }}>
                   {displayRating.toFixed(1)}
@@ -340,12 +322,23 @@ export default async function ResourceDetailPage({
                   </div>
                 ))}
               </div>
+              </>
+              ) : (
+                <p className="text-[14px] leading-relaxed text-muted-foreground">
+                  No reviews yet — be the first to share your experience.
+                </p>
+              )}
 
               <ReviewForm slug={slug} accent={TEAL} tint={TEAL_PALE} />
             </div>
 
             {/* Feed */}
             <div className="space-y-5">
+              {displayReviews.length === 0 && (
+                <p className="text-[14px] leading-relaxed text-muted-foreground">
+                  No reviews yet. Once verified customers leave reviews, they&apos;ll appear here.
+                </p>
+              )}
               {displayReviews.map((r, i) => (
                 <figure key={i} className="border-t border-border pt-6 first:border-t-0 first:pt-0">
                   <div className="flex items-start justify-between gap-3">
@@ -388,13 +381,25 @@ export default async function ResourceDetailPage({
             <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((r) => {
                 const rt = getSlugTheme(r.slug);
+                const mono = r.addon!.title.trim().charAt(0).toUpperCase();
                 return (
                   <Link
                     key={r.slug}
                     href={`/resources/${r.slug}`}
-                    className="group flex flex-col rounded-[16px] border border-border bg-card p-6 transition-colors"
-                    style={{ borderTop: `3px solid ${rt.accent}` }}
+                    className="group flex flex-col rounded-[18px] bg-card p-6 transition-all duration-300 hover:-translate-y-[3px]"
+                    style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 12px 28px -22px rgba(0,0,0,0.3)" }}
                   >
+                    <span
+                      aria-hidden
+                      className="leading-none"
+                      style={{ fontFamily: SERIF, color: rt.accent, fontSize: 34 }}
+                    >
+                      {mono}
+                    </span>
+                    <span
+                      className="mb-4 mt-3 block h-[2px] w-7 rounded-full transition-all duration-300 group-hover:w-12"
+                      style={{ backgroundColor: rt.accent }}
+                    />
                     <h3 className="text-[15.5px] font-semibold text-foreground">{r.addon!.title}</h3>
                     <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">
                       {r.detail!.tagline}
@@ -443,24 +448,6 @@ export default async function ResourceDetailPage({
       </div>
     </div>
   );
-}
-
-// Derives a believable 5→1 star distribution from the average rating + count.
-// Display-only for the sample reviews; replace when real review data exists.
-function ratingDistribution(rating: number, count: number) {
-  const profile =
-    rating >= 4.8
-      ? [84, 12, 2, 1, 1]
-      : rating >= 4.6
-      ? [74, 18, 5, 2, 1]
-      : rating >= 4.4
-      ? [64, 23, 8, 3, 2]
-      : [55, 27, 11, 4, 3];
-  return [5, 4, 3, 2, 1].map((star, i) => ({
-    star,
-    pct: profile[i],
-    count: Math.round((profile[i] / 100) * count),
-  }));
 }
 
 function Stars({ value, size = 15 }: { value: number; size?: number }) {

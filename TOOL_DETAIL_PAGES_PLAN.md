@@ -7,13 +7,18 @@
 > khulega — bilkul kisi e‑commerce product page ki tarah (overview, features,
 > how‑it‑works, images/video, FAQ, price + "Add to order").
 
+> **Status (implemented):** Saare pieces ban chuke hain. **"Interview Prep" ab ek
+> hi tool hai** (`interview-prep`, $200) — pehle ke do alag add‑ons `mock` (Mock
+> Interview) + `rapid` (Rapid Fire) isi mein merge ho gaye. Ek hi resource card +
+> ek hi detail page jo guided prep + rapid‑fire + mock teeno modes cover karta hai.
+
 ---
 
 ## 1. Aaj kya hai (current state)
 
-- **Data:** `app/(main)/pricing/data/pricing.ts` → `ADDONS[]` (12 items, har ek mein
-  `id, title, price, unit, copy, note`). `case-manager` ka `title` commented hai,
-  isliye effectively **11 cards** dikhte hain.
+- **Data:** `app/(main)/pricing/data/pricing.ts` → `ADDONS[]` (11 items, har ek mein
+  `id, title, price, unit, copy, note`; `mock` + `rapid` ab ek `interview-prep`).
+  `case-manager` ka `title` commented hai, isliye effectively **10 cards** dikhte hain.
 - **Render:** `app/(main)/pricing/page.tsx`
   - `mode === "resources"` block (lines ~1212‑1369) — main grid jise screenshot mein
     dikhaya gaya hai.
@@ -47,8 +52,8 @@
    └─ Sticky CTA: "Add to order – $X" ──▶ /pricing?mode=resources&addons=<id>
 ```
 
-**Slugs = addon `id`** (already URL‑safe): `221g`, `case-strength`, `mock`,
-`rapid`, `photo`, `smart`, `sponsor`, `doc-review`, `consultation`, `translate`,
+**Slugs = addon `id`** (already URL‑safe): `221g`, `case-strength`, `interview-prep`,
+`photo`, `smart`, `sponsor`, `doc-review`, `consultation`, `translate`,
 `civil-guid` (+ optional `case-manager`).
 
 ---
@@ -164,40 +169,36 @@ Video ho to `.mp4` (H.264) + ek poster image. File names exactly jaise neeche li
    - `hero.png` → generated **action roadmap / step‑by‑step plan** screen.
    - `gallery-1.png` → intake form ya 221(g) reason selection.
 
-3. **`mock`** — Interview Prep (Mock Interview)
-   - `hero.png` → live mock interview UI (question + camera/answer area).
-   - `gallery-1.png` → feedback/score screen.
+3. **`interview-prep`** — Interview Prep (guided prep + rapid‑fire + mock, ek hi tool)
+   - `hero.png` → AI voice mock interview UI (question + answer area).
+   - `gallery-1.png` → performance/score summary screen.
 
-4. **`rapid`** — Interview Prep (Rapid Fire)
-   - `hero.png` → timed Q&A drill screen (timer + question).
-   - `gallery-1.png` → progress/streak ya question bank.
-
-5. **`smart`** — Smart Form Filler
+4. **`smart`** — Smart Form Filler
    - `hero.png` → auto‑filled **I‑130/I‑130A** form preview (filled fields).
    - `gallery-1.png` → "ready‑to‑upload PDF" download screen.
 
-6. **`sponsor`** — Sponsorship Calculator
+5. **`sponsor`** — Sponsorship Calculator
    - `hero.png` → income/assets vs **I‑864 poverty guideline** result.
    - `gallery-1.png` → "what you still need" summary.
 
-7. **`photo`** — Photo Booth
+6. **`photo`** — Photo Booth
    - `hero.png` → compliant passport/visa photo output (before/after ya crop guide).
    - `gallery-1.png` → background removal / compliance check screen.
 
-8. **`doc-review`** — Expert Case Review
+7. **`doc-review`** — Expert Case Review
    - `hero.png` → reviewed packet with written feedback / annotations.
    - (optional) reviewer/expert visual.
 
-9. **`consultation`** — Expert Consultation
+8. **`consultation`** — Expert Consultation
    - `hero.png` → video call / booking calendar screen.
 
-10. **`translate`** — Document Translation
+9. **`translate`** — Document Translation
     - `hero.png` → certified translation side‑by‑side (source → embassy‑ready).
 
-11. **`civil-guid`** — Civil Document Guides
+10. **`civil-guid`** — Civil Document Guides
     - `hero.png` → guide library / a sample country‑specific guide.
 
-12. **`case-manager`** *(optional, abhi hidden)* — Dedicated Case Manager
+11. **`case-manager`** *(optional, abhi hidden)* — Dedicated Case Manager
     - `hero.png` → case manager dashboard / chat.
 
 **Video (optional):** kisi bhi tool ke liye `demo.mp4` + `demo-poster.png` dे dein,
