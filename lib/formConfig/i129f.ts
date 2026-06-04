@@ -2097,9 +2097,10 @@ export const formFields: RichField[] = [
     key: "pt1_l51a_State",
     pdfKey: "pt1_l51a_state",
     label: "State 2 (Residence 2)?",
-    type: "text",
+    type: "dropdown",
+    isState: true,
     section: "Part 1: Other Information",
-    placeholder: "State",
+    placeholder: "Select a state",
     skip: "Not applicable",
     subQuestions: [
       {
