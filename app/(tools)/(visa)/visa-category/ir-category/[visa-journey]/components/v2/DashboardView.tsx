@@ -26,6 +26,7 @@ import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
+import { E, msg } from "@/lib/errors";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -359,10 +360,10 @@ export function DashboardView({
           setNvcCaseNum(data.details.nvcCaseNum);
           setNvcInvoice(data.details.nvcInvoice);
         } else if (!cancelled) {
-          setNvcError("No details found");
+          setNvcError(msg(E.DASH_NVC_DETAILS_MISSING));
         }
       } catch {
-        if (!cancelled) setNvcError("Failed to fetch NVC fields");
+        if (!cancelled) setNvcError(msg(E.PORTAL_WALLET_FETCH_FAILED));
       } finally {
         if (!cancelled) setNvcLoading(false);
       }

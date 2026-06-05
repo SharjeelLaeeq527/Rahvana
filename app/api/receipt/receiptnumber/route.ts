@@ -2,7 +2,8 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { getReceiptRecord } from "@/lib/supabase/receipts";
+import { listReceiptRecords } from "@/lib/supabase/receipts";
+import { E, msg } from '@/lib/errors';
 
 export async function GET(req: Request, { params }: { params: { receiptNumber: string } }) {
   const cookieStore = await cookies();
@@ -23,15 +24,19 @@ export async function GET(req: Request, { params }: { params: { receiptNumber: s
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    console.error('[receipt/receiptnumber] Unauthorized access');
+    return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
   }
 
-  // Pass authenticated supabase so RLS works — receipt number param is ignored
-  const { data, error } = await getReceiptRecord("", user.id, supabase);
+  // Use legacy listReceiptRecords (returns array) and pick latest
+  const { data: records, error: listError } = await listReceiptRecords(user.id);
 
-  if (error) {
-    return NextResponse.json({ error }, { status: 500 });
+  if (listError) {
+    console.error('Error listing receipt records:', listError);
+    return NextResponse.json({ error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) }, { status: 500 });
   }
+
+  const data = (records && records.length > 0) ? records[0] : null;
 
   if (!data) {
     return NextResponse.json({ error: "Receipt not found" }, { status: 404 });

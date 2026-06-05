@@ -212,14 +212,10 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
             </button>
           )}
 
-          {/* DEV ONLY — reset button, uncomment for local testing
-          <button
+          {/* DEV ONLY — reset button, uncomment for local testing */}
+          {/* <button
             onClick={async () => {
-              if (
-                confirm(
-                  "Are you sure you want to reset your progress? This cannot be undone.",
-                )
-              ) {
+              if (confirm("Are you sure you want to reset your progress? This cannot be undone.")) {
                 await actions.resetProgress();
                 window.location.reload();
               }
@@ -265,6 +261,8 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
               data={data}
               state={state}
               onBack={handleBackToChapter}
+              onSelectChapter={handleSelectChapter}
+              onSelectStep={handleSelectStep}
               actions={actions}
             />
           </Suspense>

@@ -7,6 +7,7 @@
 // Instead: download encrypted blob → decrypt server-side → stream to browser.
 
 import { NextRequest, NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { createClient as createClientJs } from "@supabase/supabase-js";
@@ -22,7 +23,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[preview] Unauthorized:", authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const document = await dbStorage.getDocument(id, user.id);
 
     if (!document) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // ── 3. Download encrypted blob from Supabase Storage ──────────────────────
@@ -40,7 +42,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json({ error: "Storage not configured" }, { status: 500 });
+      console.error("[preview] Storage not configured");
+      return NextResponse.json({ error: msg(E.VAULT_NOT_CONFIGURED) }, { status: 500 });
     }
 
     const storageSupabase = createClientJs(supabaseUrl, serviceRoleKey);
@@ -64,7 +67,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         fileBuffer = decryptFile(encryptedBuffer, user.id);
       } catch (decryptError) {
         console.error("[preview] Decryption failed:", decryptError);
-        return NextResponse.json({ error: "Failed to decrypt file" }, { status: 500 });
+        return NextResponse.json({ error: msg(E.VAULT_DECRYPT_FAILED) }, { status: 500 });
       }
     } else {
       // Legacy unencrypted file — serve as-is
@@ -90,5 +93,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   } catch (error) {
     console.error("[preview] Unexpected error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("[preview] Unexpected error:", error);
+    return NextResponse.json({ error: msg(E.VAULT_DOWNLOAD_FAILED) }, { status: 500 });
   }
 }

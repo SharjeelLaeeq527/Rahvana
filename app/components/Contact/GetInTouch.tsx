@@ -14,6 +14,7 @@ import {
 import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
+import * as Errors from "@/lib/errors";
 const XIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298l13.312 17.403z" />
@@ -42,17 +43,11 @@ export default function GetInTouch() {
         formRef.current?.reset();
       } else {
         setStatus("error");
-        setErrorMessage(
-          result.error ||
-            t("homePage.contactSection.error") ||
-            "Something went wrong. Please try again."
-        );
+        setErrorMessage(result.error || Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED));
       }
     } catch {
       setStatus("error");
-      setErrorMessage(
-        t("homePage.contactSection.error") || "An unexpected error occurred. Please try again."
-      );
+      setErrorMessage(Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED));
     } finally {
       setIsSubmitting(false);
     }

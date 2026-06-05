@@ -5,6 +5,7 @@ import { X, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { MEDICAL_EXAM_DATA } from "../MedicalExamData";
 import Link from "next/link";
+import { E, msg } from "@/lib/errors";
 
 interface MedicalExamToolProps {
   state: any;
@@ -274,29 +275,28 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({ actions, medSt
                       today.setHours(0, 0, 0, 0);
 
                       if (!medDate) {
-                        saveErrors.medDate = "Date is required.";
+                        saveErrors.medDate = msg(E.JOURNEY_MEDICAL_DATE_REQUIRED);
                       } else if (new Date(medDate) < today) {
-                        saveErrors.medDate = "Appointment date cannot be in the past.";
+                        saveErrors.medDate = msg(E.JOURNEY_MEDICAL_DATE_PAST);
                       }
 
                       const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
                       if (!medTime || !timeRegex.test(medTime)) {
-                        saveErrors.medTime = "Enter a valid time (e.g. 09:30 AM).";
+                        saveErrors.medTime = msg(E.JOURNEY_MEDICAL_TIME_INVALID);
                       }
 
                       const clinic = medClinic.trim();
                       if (!clinic) {
-                        saveErrors.medClinic = "Clinic name is required.";
+                        saveErrors.medClinic = msg(E.JOURNEY_MEDICAL_CLINIC_REQUIRED);
                       } else if (clinic.length < 2) {
-                        saveErrors.medClinic = "Must be at least 2 characters.";
+                        saveErrors.medClinic = msg(E.JOURNEY_MEDICAL_CLINIC_TOO_SHORT);
                       } else if (!/^[a-zA-Z0-9\s\-\.,\/]+$/.test(clinic)) {
-                        saveErrors.medClinic =
-                          "Only letters, numbers, spaces, and basic punctuation allowed.";
+                        saveErrors.medClinic = msg(E.JOURNEY_MEDICAL_CLINIC_INVALID);
                       }
 
                       if (Object.keys(saveErrors).length > 0) {
                         setMedErrors(saveErrors);
-                        toast.error("Please fix the errors before saving.");
+                        toast.error(msg(E.JOURNEY_MEDICAL_FIX_ERRORS));
                         return;
                       }
                       setIsSaving(true);

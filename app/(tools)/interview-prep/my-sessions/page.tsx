@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { E, msg } from "@/lib/errors";
 import { BookOpen, Plus, AlertTriangle, CheckCircle, BarChart3, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
@@ -133,12 +134,13 @@ export default function MyInterviewSessions() {
         if (response.ok) {
           setSessions(data.sessions);
         } else {
-          setError(data.error || "Failed to fetch sessions");
+          console.error("Failed to fetch user sessions:", data.error ?? data);
+          setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
           setSessions([]);
         }
       } catch (error) {
         console.error("Error fetching user sessions:", error);
-        setError("Failed to load sessions");
+        setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
         setSessions([]);
       } finally {
         setLoading(false);
@@ -235,7 +237,7 @@ export default function MyInterviewSessions() {
       setSelectedSessionId(null);
     } catch (err) {
       console.error(err);
-      showToast(err instanceof Error ? err.message : "Failed to delete session", "error");
+      alert(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
     } finally {
       setLoadingDelete(false);
     }

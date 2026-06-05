@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 
 export async function DELETE(req: Request, context: { params: Promise<{ portalType: string }> }) {
   try {

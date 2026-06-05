@@ -26,6 +26,7 @@ import {
 } from "../utils/actionPlanGenerator";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { toast } from "sonner";
+import { msg, E, errorCode } from '@/lib/errors';
 
 interface ActionPlanResultsProps {
   formData: FormData | null;
@@ -358,7 +359,7 @@ export default function ActionPlanResults({
       URL.revokeObjectURL(url);
       toast.success("Documents downloaded!");
     } catch {
-      toast.error("Download failed. Please try again.");
+      toast.error(`${msg(E.VAULT_DOWNLOAD_FAILED)}`);
     } finally {
       setIsDownloading(false);
     }

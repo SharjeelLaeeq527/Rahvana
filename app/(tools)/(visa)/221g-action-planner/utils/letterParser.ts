@@ -1,4 +1,5 @@
 import Tesseract from "tesseract.js";
+import { E, msg } from "@/lib/errors";
 
 export async function parse221gLetter(file: File): Promise<string[]> {
   try {
@@ -34,11 +35,11 @@ export async function parse221gLetter(file: File): Promise<string[]> {
     // Flag blurry if confidence low (Tesseract provides confidence)
     if (text.length < 100) {
       // Simple blurry check (short text = poor scan)
-      throw new Error("Blurry scan");
+      throw new Error(msg(E.TOOL_OCR_PROCESS_FAILED));
     }
 
     return items;
   } catch {
-    throw new Error("Parsing failed - blurry or invalid file");
+    throw new Error(msg(E.TOOL_OCR_PROCESS_FAILED));
   }
 }

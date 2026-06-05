@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { motion } from "framer-motion";
 import { X, Eye, Download } from "lucide-react";
+import { E, msg } from "@/lib/errors";
 
 interface AuthorityFormData {
   fullName: string;
@@ -100,7 +101,7 @@ export function AuthorityLetterModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      showToast("Failed to generate PDF. Please try again.", "error");
+      alert(msg(E.PDF_CONVERTER_FAILED));
     }
   };
 
@@ -395,7 +396,7 @@ export function AuthorityLetterPreviewModal({
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      alert(msg(E.PDF_CONVERTER_FAILED));
     }
   };
 

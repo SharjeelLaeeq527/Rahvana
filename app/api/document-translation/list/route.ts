@@ -2,6 +2,7 @@
 // User lists their own documents
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,8 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[document-translation/list] Unauthorized:", userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("Query error:", error);
-      return NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
     // Generate signed URLs
@@ -75,6 +77,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("List documents error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

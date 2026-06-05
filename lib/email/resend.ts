@@ -1,5 +1,6 @@
 // lib/email/resend.ts
 import { Resend } from "resend";
+import * as Errors from '@/lib/errors'
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -26,7 +27,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
     return { success: true, data };
   } catch (error) {
     console.error("Email send error:", error);
-    return { success: false, error: "Failed to send email" };
+    return { success: false, error: Errors.msg(Errors.E.EMAIL_SEND_FAILED) };
   }
 }
 

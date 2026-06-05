@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { E, msg } from "@/lib/errors";
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 interface USCISCaseStatus {
@@ -231,11 +232,11 @@ export default function CaseStatusPage() {
   const handleCheck = async () => {
     const normalized = receipt.trim().toUpperCase().replace(/[-\s]/g, "");
     if (!normalized) {
-      setError("Please enter your USCIS receipt number.");
+      setError(msg(E.TOOL_CASE_MISSING_ANSWER, { questionLabel: "USCIS receipt number" }));
       return;
     }
     if (normalized.length !== 13) {
-      setError("Receipt number must be 13 characters — 3 letters followed by 10 digits.");
+      setError(msg(E.TOOL_CASE_RECEIPT_LENGTH));
       return;
     }
 
@@ -253,7 +254,8 @@ export default function CaseStatusPage() {
       const json = await res.json();
 
       if (!res.ok || json.error) {
-        setError(json.error ?? "Unable to retrieve case status. Please try again.");
+        console.error("Error fetching case status:", json.error ?? json);
+        setError(msg(E.TOOL_CASE_FETCH_FAILED));
         return;
       }
 
@@ -262,11 +264,8 @@ export default function CaseStatusPage() {
       setResult(parsed);
       saveHistory(parsed);
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "Network error. Please check your connection and try again."
-      );
+      console.error("Network error fetching case status:", e);
+      setError(msg(E.TOOL_CASE_FETCH_FAILED));
     } finally {
       setLoading(false);
     }
@@ -440,13 +439,21 @@ export default function CaseStatusPage() {
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center gap-2.5 mb-2">
                 <CheckCircle2 className="w-6 h-6 text-primary" />
-                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">Current Status</h3>
+                <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                  Current Status
+                </h3>
               </div>
 
-              <div className={`bg-white rounded-2xl shadow-xl border overflow-hidden ${theme.border}`}>
-                <div className={`px-6 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${theme.bg} border-b ${theme.border}`}>
+              <div
+                className={`bg-white rounded-2xl shadow-xl border overflow-hidden ${theme.border}`}
+              >
+                <div
+                  className={`px-6 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${theme.bg} border-b ${theme.border}`}
+                >
                   <div className="flex items-start gap-4">
-                    <div className={`w-3 h-3 rounded-full mt-2 shrink-0 animate-pulse ${theme.dot}`} />
+                    <div
+                      className={`w-3 h-3 rounded-full mt-2 shrink-0 animate-pulse ${theme.dot}`}
+                    />
                     <div>
                       <h4 className={`text-xl md:text-2xl font-black leading-tight ${theme.color}`}>
                         {result.status || "Status Unavailable"}
@@ -457,7 +464,9 @@ export default function CaseStatusPage() {
                       </p>
                     </div>
                   </div>
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-[12px] font-black uppercase tracking-widest ${theme.bg} ${theme.color} ${theme.border}`}>
+                  <div
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-[12px] font-black uppercase tracking-widest ${theme.bg} ${theme.color} ${theme.border}`}
+                  >
                     {theme.label}
                   </div>
                 </div>
@@ -465,9 +474,26 @@ export default function CaseStatusPage() {
                 <div className="p-6 md:p-8 space-y-8">
                   {/* Details Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    <ResultCell icon={<Hash className="w-4 h-4" />} label="Receipt Number" value={result.receiptNumber} mono />
-                    {result.formType && <ResultCell icon={<FileText className="w-4 h-4" />} label="Form Type" value={result.formType} />}
-                    {result.modifiedDate && <ResultCell icon={<Calendar className="w-4 h-4" />} label="Last Updated" value={result.modifiedDate} />}
+                    <ResultCell
+                      icon={<Hash className="w-4 h-4" />}
+                      label="Receipt Number"
+                      value={result.receiptNumber}
+                      mono
+                    />
+                    {result.formType && (
+                      <ResultCell
+                        icon={<FileText className="w-4 h-4" />}
+                        label="Form Type"
+                        value={result.formType}
+                      />
+                    )}
+                    {result.modifiedDate && (
+                      <ResultCell
+                        icon={<Calendar className="w-4 h-4" />}
+                        label="Last Updated"
+                        value={result.modifiedDate}
+                      />
+                    )}
                   </div>
 
                   {/* Case Description */}
@@ -490,9 +516,14 @@ export default function CaseStatusPage() {
                       </h5>
                       <div className="space-y-3">
                         {result.nextSteps.map((step, i) => (
-                          <div key={i} className="flex gap-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100/50 group hover:border-emerald-200 transition-all">
+                          <div
+                            key={i}
+                            className="flex gap-4 p-4 rounded-xl bg-emerald-50/50 border border-emerald-100/50 group hover:border-emerald-200 transition-all"
+                          >
                             <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
-                            <p className="text-[15px] font-bold text-emerald-900 leading-relaxed">{step.text}</p>
+                            <p className="text-[15px] font-bold text-emerald-900 leading-relaxed">
+                              {step.text}
+                            </p>
                           </div>
                         ))}
                       </div>

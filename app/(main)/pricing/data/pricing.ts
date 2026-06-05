@@ -339,14 +339,15 @@ export const ADDONS = [
     copy: "Checks your income and assets against the I-864 poverty guidelines and tells you exactly what you still need.",
     note: "Unlimited recalculations for your case",
   },
-  {
-    id: "doc-review",
-    title: "Expert Case Review",
-    price: 59,
-    unit: "per request",
-    copy: "Human review of your application packet with written feedback on completeness, quality, and flagged issues.",
-    note: "Returned within 2 business days",
-  },
+  // Temporarily disabled — service not currently offered.
+  // {
+  //   id: "doc-review",
+  //   title: "Expert Case Review",
+  //   price: 59,
+  //   unit: "per request",
+  //   copy: "Human review of your application packet with written feedback on completeness, quality, and flagged issues.",
+  //   note: "Returned within 2 business days",
+  // },
   {
     id: "consultation",
     title: "Expert Consultation",
@@ -363,14 +364,15 @@ export const ADDONS = [
     copy: "Certified translation with embassy-ready formatting. Covers standard civil documents (CNIC, birth cert, etc.).",
     note: "Delivered within 3 business days",
   },
-  {
-    id: "case-manager",
-    // title: "Dedicated Case Manager",
-    price: 300,
-    unit: "per year",
-    copy: "A named support contact who follows your case end-to-end, answers questions, and coordinates reviews.",
-    note: "Available across all plan tiers",
-  },
+  // Temporarily disabled — service not currently offered.
+  // {
+  //   id: "case-manager",
+  //   title: "Dedicated Case Manager",
+  //   price: 300,
+  //   unit: "per year",
+  //   copy: "A named support contact who follows your case end-to-end, answers questions, and coordinates reviews.",
+  //   note: "Available across all plan tiers",
+  // },
   {
     id: "civil-guid",
     title: "Civil Document Guides",

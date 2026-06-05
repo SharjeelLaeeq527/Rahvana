@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { msg, E } from "@/lib/errors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -6,8 +7,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Upload, CheckCircle, AlertTriangle, XCircle, FileText, Eye, Scan } from "lucide-react";
-import Image from "next/image";
 import {
   DocumentType,
   DocumentValidationResult,
@@ -81,14 +80,38 @@ const DocumentValidator = ({
     try {
       // Check if file is valid before processing
       if (file.size === 0) {
-        throw new Error("File is empty");
+        const errorResult: DocumentValidationResult = {
+          isValid: false,
+          issues: [
+            {
+              severity: "critical",
+              message: msg(E.UPLOAD_FILE_EMPTY),
+              suggestion: "Please select a non-empty document and try again.",
+            },
+          ],
+          score: 0,
+        };
+        setValidationResult(errorResult);
+        onValidationComplete(errorResult);
+        return errorResult;
       }
 
-      // Validate file type before processing
+      // Validate file type before processing — return a clear user-facing error without leaking MIME
       if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-        throw new Error(
-          `Unsupported file type: ${file.type}. Please upload an image (JPG, PNG) or PDF.`
-        );
+        const errorResult: DocumentValidationResult = {
+          isValid: false,
+          issues: [
+            {
+              severity: "critical",
+              message: msg(E.TOOL_FILE_TYPE_UNSUPPORTED),
+              suggestion: "Please upload a JPG, PNG, or PDF file.",
+            },
+          ],
+          score: 0,
+        };
+        setValidationResult(errorResult);
+        onValidationComplete(errorResult);
+        return errorResult;
       }
 
       // Use the new OCR processor that handles both images and PDFs
@@ -134,7 +157,7 @@ const DocumentValidator = ({
         issues: [
           {
             severity: "critical",
-            message: `Failed to process document: ${errorMessage}`,
+            message: msg(E.TOOL_DOC_VALIDATION_FAILED),
             suggestion,
           },
         ],

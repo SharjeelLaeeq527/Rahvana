@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stepService } from "@/lib/journey/service";
 import type { StepInput } from "@/lib/journey/types";
+import { E, msg, normalizeError } from "@/lib/errors";
 
 // POST /api/steps - Create a new step
 export async function POST(request: NextRequest) {
@@ -59,22 +60,26 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error in POST /api/steps:", error);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
+    const norm = normalizeError(error, E.CHAPTERS_SERVER_ERROR);
+
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
+      return NextResponse.json(
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
     }
 
-    if (error instanceof Error && error.message.includes("Chapter not found")) {
+    if (norm.code === E.CHAPTER_NOT_FOUND) {
       return NextResponse.json(
-        { error: "Chapter not found or not owned", code: "NOT_FOUND" },
+        { error: msg(E.CHAPTER_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 }
       );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to create step",
+        error: msg(E.CHAPTERS_SERVER_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
@@ -113,22 +118,26 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error in GET /api/steps:", error);
 
-    if (error instanceof Error && error.message === "Unauthorized") {
-      return NextResponse.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, { status: 401 });
+    const norm = normalizeError(error, E.CHAPTERS_SERVER_ERROR);
+
+    if (norm.code === E.AUTH_UNAUTHORIZED) {
+      return NextResponse.json(
+        { error: msg(E.AUTH_UNAUTHORIZED), code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
     }
 
-    if (error instanceof Error && error.message.includes("Chapter not found")) {
+    if (norm.code === E.CHAPTER_NOT_FOUND) {
       return NextResponse.json(
-        { error: "Chapter not found or not owned", code: "NOT_FOUND" },
+        { error: msg(E.CHAPTER_NOT_FOUND), code: "NOT_FOUND" },
         { status: 404 }
       );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to fetch steps",
+        error: msg(E.AUTH_UNEXPECTED_ERROR),
         code: "SERVER_ERROR",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

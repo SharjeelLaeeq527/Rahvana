@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader } from "@/components/ui/spinner";
+import { E, msg } from "@/lib/errors";
 
 interface CheckoutButtonProps {
   productTier?: string;
@@ -51,18 +52,18 @@ export default function CheckoutButton({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create checkout session");
+        throw new Error(msg(E.PAYMENT_CHECKOUT_FAILED));
       }
 
       // Redirect to Stripe checkout
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL returned");
+        throw new Error(msg(E.DASH_CHECKOUT_NO_URL));
       }
     } catch (err: unknown) {
       console.error("Checkout error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      const errorMessage = err instanceof Error ? err.message : msg(E.PAYMENT_CHECKOUT_FAILED);
       setError(errorMessage);
       setIsLoading(false);
       onLoadingChange?.(false);

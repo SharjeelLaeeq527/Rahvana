@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { DocumentVaultConfig } from "@/lib/document-vault/types";
+import { E, msg } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -34,7 +35,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Get config error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
 
@@ -66,7 +67,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!config.visaCategory) {
-      return NextResponse.json({ error: "Missing required fields: visaCategory" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[visaCategory]" }) },
+        { status: 400 }
+      );
     }
 
     // Save configuration
@@ -80,6 +84,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Save config error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { E, msg } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const journeyId = searchParams.get("journeyId");
 
   if (!journeyId) {
-    return NextResponse.json({ error: "Missing journeyId" }, { status: 400 });
+    return NextResponse.json(
+      { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journeyId]" }) },
+      { status: 400 }
+    );
   }
 
   const supabase = createClient(

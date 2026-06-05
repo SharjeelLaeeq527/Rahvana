@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Crop, Move, Check } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import * as Errors from "@/lib/errors";
 
 interface CropBox {
   x: number;
@@ -329,7 +330,7 @@ export default function CropTool({
       onApplyCrop(finalImageData);
     } catch (error) {
       console.error("Crop error:", error);
-      alert(t("pdfProcessing.editor.signature.failed"));
+      alert(Errors.msg(Errors.E.PDF_CROP_FAILED));
     }
   };
 

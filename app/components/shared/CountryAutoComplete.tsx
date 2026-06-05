@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Loader } from "@/components/ui/spinner";
+import { E, msg } from '@/lib/errors';
 
 export interface CountryAutocompleteProps {
   /** Form data object containing the country value (e.g. formData) */
@@ -28,6 +29,7 @@ export default function CountryAutocomplete({
   inputClassName,
   placeholder = "Start typing country...",
 }: CountryAutocompleteProps) {
+  // (imports at top provide E/msg)
   const key = valueKey ?? DEFAULT_VALUE_KEY;
   const initialValue = (formData[key] as string | undefined) ?? "";
   const [query, setQuery] = useState(initialValue);
@@ -82,7 +84,7 @@ export default function CountryAutocomplete({
 
       try {
         if (!GEOAPIFY_KEY) {
-          throw new Error("Geoapify key missing");
+          throw new Error(msg(E.GEOAPIFY_KEY_MISSING));
         }
 
         const res = await fetch(
@@ -100,6 +102,9 @@ export default function CountryAutocomplete({
           "Geoapify error (using fallback countries):",
           error instanceof Error ? error.message : error
         );
+
+        // Informational: local fallback used
+        console.info(msg(E.GEOAPIFY_FALLBACK_USED));
 
         // Fallback: simple local filter
         const lowerValue = value.toLowerCase();

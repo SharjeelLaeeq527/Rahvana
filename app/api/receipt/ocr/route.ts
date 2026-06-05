@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 import { isValidReceiptNumber, normalizeReceipt } from "@/lib/register-receipt";
 
 const OCR_SPACE_ENDPOINT = "https://api.ocr.space/parse/image";
@@ -211,8 +212,8 @@ export async function POST(request: NextRequest) {
     const { data: authData, error: authError } = await supabase.auth.getUser();
 
     if (authError || !authData.user) {
-      console.log("[receipt/ocr] Authentication failed:", authError?.message);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[receipt/ocr] Authentication failed:", authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     console.log("[receipt/ocr] User authenticated:", authData.user.id);
@@ -226,8 +227,8 @@ export async function POST(request: NextRequest) {
     );
 
     if (!(file instanceof File)) {
-      console.log("[receipt/ocr] File validation failed: not a File instance");
-      return NextResponse.json({ error: "Missing file" }, { status: 400 });
+      console.warn("[receipt/ocr] File validation failed: not a File instance");
+      return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
     }
 
     console.log(
@@ -244,8 +245,9 @@ export async function POST(request: NextRequest) {
       );
       return NextResponse.json(
         {
-          error:
-            "OCR.space free API supports files up to 1 MB. This file is too large for automatic receipt extraction, but you can still save it manually after entering the fields.",
+          error: msg(E.UPLOAD_FILE_TOO_LARGE, {
+            maxSize: OCR_FREE_FILE_LIMIT_BYTES / (1024 * 1024),
+          }),
         },
         { status: 413 }
       );
@@ -280,8 +282,11 @@ export async function POST(request: NextRequest) {
 
     const responseJson = (await ocrResponse.json().catch(() => null)) as OcrSpaceResponse | null;
     if (!ocrResponse.ok || !responseJson) {
-      console.log("[receipt/ocr] OCR service request failed");
-      return NextResponse.json({ error: "OCR service request failed." }, { status: 502 });
+      console.error("[receipt/ocr] OCR service request failed", {
+        status: ocrResponse.status,
+        statusText: ocrResponse.statusText,
+      });
+      return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 502 });
     }
 
     const parsedResults = Array.isArray(responseJson.ParsedResults)
@@ -342,9 +347,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[receipt/ocr] Unhandled error:", error);
-    return NextResponse.json(
-      { error: "Failed to run OCR on the uploaded receipt notice." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
   }
 }

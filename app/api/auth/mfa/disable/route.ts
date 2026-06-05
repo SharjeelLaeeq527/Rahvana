@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, getMFADisabledEmailHtml } from "@/lib/email/resend";
+import { E, msg } from "@/lib/errors";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +13,8 @@ export async function POST(req: NextRequest) {
       error: sessionError,
     } = await supabase.auth.getSession();
     if (sessionError || !session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("auth/mfa/disable unauthorized:", sessionError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const body = await req.json();
@@ -37,7 +39,8 @@ export async function POST(req: NextRequest) {
     });
 
     if (verifyError) {
-      return NextResponse.json({ error: "Invalid authentication code" }, { status: 400 });
+      console.warn("auth/mfa/disable invalid auth code:", verifyError);
+      return NextResponse.json({ error: msg(E.AUTH_MFA_VERIFY_FAILED) }, { status: 400 });
     }
 
     // Fetch all MFA factors
@@ -63,7 +66,8 @@ export async function POST(req: NextRequest) {
       });
 
       if (unenrollError) {
-        return NextResponse.json({ error: "Failed to disable MFA" }, { status: 500 });
+        console.error("auth/mfa/disable unenroll error:", unenrollError);
+        return NextResponse.json({ error: msg(E.AUTH_MFA_DISABLE_FAILED) }, { status: 500 });
       }
     }
 
@@ -122,6 +126,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Disable MFA error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_MFA_DISABLE_FAILED) }, { status: 500 });
   }
 }

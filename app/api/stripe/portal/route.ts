@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/config";
 import { paymentService } from "@/lib/services/paymentService";
+import { E, msg } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json();
 
     if (!userId) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[userId]" }) },
+        { status: 400 }
+      );
     }
 
     // Get user's Stripe customer ID
@@ -31,7 +35,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error("Error creating portal session:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to create portal session";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

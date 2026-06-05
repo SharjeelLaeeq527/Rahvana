@@ -6,10 +6,13 @@ import { syncCaseDataToProfile } from "@/lib/autoFill/journeyProfileBridge";
 import type { MasterProfile } from "@/types/profile";
 
 // SECURE SERVER-SIDE BRIDGE: Mirrors roadmap case_data changes back to standard user_profile fields
-async function syncJourneyMetadataToUserProfile(userId: string, updatedMetadata: Record<string, any>) {
+async function syncJourneyMetadataToUserProfile(
+  userId: string,
+  updatedMetadata: Record<string, any>
+) {
   try {
     const supabase = await createClient();
-    
+
     // 1. Fetch current profile
     const { data: profileRow, error: fetchError } = await supabase
       .from("user_profiles")
@@ -23,7 +26,7 @@ async function syncJourneyMetadataToUserProfile(userId: string, updatedMetadata:
     }
 
     const currentProfile = (profileRow?.profile_details || {}) as Record<string, any>;
-    
+
     // 2. Map the new journey metadata changes to profile paths
     const profileDelta = syncCaseDataToProfile(updatedMetadata, currentProfile as MasterProfile);
 
@@ -34,7 +37,7 @@ async function syncJourneyMetadataToUserProfile(userId: string, updatedMetadata:
     // 3. Simple deep merge helper
     const deepMerge = (target: any, source: any) => {
       for (const [key, value] of Object.entries(source)) {
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
           if (!target[key]) target[key] = {};
           deepMerge(target[key], value);
         } else {
@@ -65,6 +68,7 @@ async function syncJourneyMetadataToUserProfile(userId: string, updatedMetadata:
     console.error("[case_data API] Unexpected error in user profile sync:", err);
   }
 }
+import { E, msg } from "@/lib/errors";
 
 // POST /api/case_data - Create or update case data
 export async function POST(request: NextRequest) {
@@ -113,7 +117,9 @@ export async function POST(request: NextRequest) {
 
       // Sync to UserProfile if authenticated
       const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         const metadataBatch: Record<string, any> = {};
         body.operations.forEach((op: any) => {
@@ -154,7 +160,9 @@ export async function POST(request: NextRequest) {
 
     // Sync to UserProfile if authenticated
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (user) {
       syncJourneyMetadataToUserProfile(user.id, { [body.data_key]: body.data_value });
     }
@@ -165,7 +173,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Internal server error",
+        code: E.CASE_DATA_SAVE_FAILED,
+        message: msg(E.CASE_DATA_SAVE_FAILED),
       },
       { status: 500 }
     );

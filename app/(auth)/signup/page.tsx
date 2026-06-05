@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { msg, E } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -94,13 +95,13 @@ export default function SignupPage() {
 
     // Validation
     if (!email.includes("@") || !email.includes(".")) {
-      return setError("Please enter a valid email address.");
+      return setError(msg(E.AUTH_EMAIL_FORMAT_INVALID));
     }
     if (password.length < 6) {
-      return setError("Password must be at least 6 characters long.");
+      return setError(msg(E.AUTH_PASSWORD_TOO_WEAK));
     }
     if (password !== confirmPassword) {
-      return setError("Passwords do not match.");
+      return setError(msg(E.AUTH_CLIENT_PASSWORD_MISMATCH));
     }
 
     setIsSubmitting(true);
@@ -108,19 +109,25 @@ export default function SignupPage() {
     try {
       const result = await signUp(email, password);
       if (result.error) {
-        if (result.error.message.includes("already exists")) {
-          setError("An account with this email already exists. Please sign in.");
-        } else if (result.error.message.includes("password")) {
-          setError("Password is too weak. Please use a stronger password.");
+        const errorCode = String(result.error.code || "");
+
+        if (errorCode === String(E.AUTH_SIGNUP_EMAIL_EXISTS)) {
+          setError(msg(E.AUTH_SIGNUP_EMAIL_EXISTS));
+        } else if (errorCode === String(E.AUTH_PASSWORD_TOO_WEAK)) {
+          setError(msg(E.AUTH_PASSWORD_TOO_WEAK));
+        } else if (errorCode === String(E.AUTH_SIGNUP_DISPOSABLE_EMAIL)) {
+          setError(result.error.message || msg(E.AUTH_SIGNUP_DISPOSABLE_EMAIL, { domain: "" }));
+        } else if (errorCode === String(E.AUTH_EMAIL_FORMAT_INVALID)) {
+          setError(result.error.message || msg(E.AUTH_EMAIL_FORMAT_INVALID));
         } else {
-          setError(result.error.message);
+          setError(result.error.message || msg(E.AUTH_UNEXPECTED_ERROR));
         }
       } else {
         // Email sent successfully
         setEmailSent(true);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_UNEXPECTED_ERROR));
     } finally {
       setIsSubmitting(false);
     }
@@ -132,11 +139,11 @@ export default function SignupPage() {
     try {
       const { error: googleError } = await signInWithGoogle();
       if (googleError) {
-        setError("Failed to sign up with Google. Please try again.");
+        setError(msg(E.AUTH_GOOGLE_SIGNUP_FAILED));
         setIsSubmitting(false);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_UNEXPECTED_ERROR));
       setIsSubmitting(false);
     }
   };
@@ -399,7 +406,7 @@ export default function SignupPage() {
                 </button>
               </div>
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-500">Passwords do not match</p>
+                <p className="text-xs text-red-500">{msg(E.AUTH_CLIENT_PASSWORD_MISMATCH)}</p>
               )}
               {confirmPassword && password === confirmPassword && (
                 <p className="text-xs text-green-500">Passwords match</p>

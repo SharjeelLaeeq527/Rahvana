@@ -16,6 +16,7 @@ import { journeyService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import { ConfigLoader } from "@/lib/journey/config-loader";
 import { decrypt } from "@/lib/encryption";
+import { E, msg } from "@/lib/errors";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     // Shared context to avoid redundant auth calls in data-access
@@ -69,7 +70,10 @@ export async function POST(req: NextRequest) {
 
     const { journey_type } = await req.json();
     if (!journey_type) {
-      return NextResponse.json({ error: "journey_type is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_type]" }) },
+        { status: 400 }
+      );
     }
 
     const bustCache = req.headers.get("x-cache-bust") === "1";
@@ -169,11 +173,6 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("[/api/journeys/initialize] Error:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Initialization failed",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 // app/api/auth/reset-password/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { E, msg } from "@/lib/errors";
 import crypto from "crypto";
 
 const supabaseAdmin = createClient(
@@ -28,19 +29,13 @@ export async function POST(request: NextRequest) {
     const { token, email, password } = await request.json();
 
     if (!token || !email || !password) {
-      return NextResponse.json(
-        { error: "Token, email, and password are required" },
-        { status: 400 }
-      );
+      console.warn("reset-password invalid request");
+      return NextResponse.json({ error: msg(E.AUTH_RESET_LINK_INVALID) }, { status: 400 });
     }
 
     if (!validatePassword(password)) {
-      return NextResponse.json(
-        {
-          error: "Password must contain uppercase, lowercase, number, symbol and be 8+ characters",
-        },
-        { status: 400 }
-      );
+      console.warn("reset-password weak password");
+      return NextResponse.json({ error: msg(E.AUTH_PASSWORD_TOO_WEAK) }, { status: 400 });
     }
 
     // Find user by email
@@ -51,13 +46,14 @@ export async function POST(request: NextRequest) {
 
     if (userError) {
       console.error("Error listing users:", userError);
-      return NextResponse.json({ error: "Server error" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.AUTH_PASSWORD_UPDATE_GENERIC) }, { status: 500 });
     }
 
     const user = users.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
 
     if (!user) {
-      return NextResponse.json({ error: "Invalid or expired reset link" }, { status: 400 });
+      console.warn("reset-password user not found");
+      return NextResponse.json({ error: msg(E.AUTH_RESET_LINK_INVALID) }, { status: 400 });
     }
 
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
@@ -69,6 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (new Date() > new Date(tokenExpiry)) {
+      console.warn("reset-password token expired");
       return NextResponse.json(
         { error: "Reset link has expired. Please request a new one." },
         { status: 400 }
@@ -90,10 +87,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to update password" }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Password has been reset successfully.",
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Reset password error:", error);
     return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });

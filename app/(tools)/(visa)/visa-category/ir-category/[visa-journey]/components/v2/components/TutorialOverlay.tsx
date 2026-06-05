@@ -35,6 +35,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   const dynamicStepsRaw = tool?.tutorial_steps;
 
   let dynamicSteps: any[] | null = null;
+  let commonSteps: any[] | null = null;
   let isDynamic = false;
   const effectivePath = tutorialPath || "household_member";
 
@@ -43,7 +44,18 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       dynamicSteps = dynamicStepsRaw;
       isDynamic = dynamicStepsRaw.length > 0;
     } else if (typeof dynamicStepsRaw === "object") {
-      dynamicSteps = (dynamicStepsRaw as any)[effectivePath];
+      const rawSteps = dynamicStepsRaw as any;
+      if (Array.isArray(rawSteps.common)) {
+        commonSteps = rawSteps.common;
+      }
+      const branchSteps = rawSteps[effectivePath];
+      if (tutorialPath && Array.isArray(commonSteps) && Array.isArray(branchSteps)) {
+        dynamicSteps = [...commonSteps, ...branchSteps];
+      } else if (Array.isArray(commonSteps) && !tutorialPath) {
+        dynamicSteps = commonSteps;
+      } else {
+        dynamicSteps = branchSteps;
+      }
       isDynamic = !!(dynamicSteps && dynamicSteps.length > 0);
     }
   }
@@ -56,6 +68,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         : USCIS_TUTORIAL_STEPS;
 
   const currentTutStep = steps[tutorialIdx];
+  const branchChoiceActive =
+    !tutorialPath && Array.isArray(commonSteps) && tutorialIdx === commonSteps.length - 1;
 
   // Specific rendering for Step 1.2 CEAC Guide if needed
   if (useCeacGuideData && currentStep?.step_key === "step_1_2") {
@@ -105,30 +119,90 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               }}
             />
 
-            <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)] bg-[#f8f9fb]">
-              <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
-                <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
-                <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
-                <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
-                <div className="flex-1 h-[20px] bg-[#fafcff] rounded-[5px] border border-[#d0e4f7] ml-[10px] flex items-center px-[10px]">
-                  <span className="text-[10px] text-[#6b8097] font-mono">ceac.state.gov</span>
+            {ceacTutStep.choiceOptions ? (
+              <div className="mb-5">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097] mb-2">
+                  {ceacTutStep.vlabel}
+                </div>
+                <div className="text-[15px] text-[#3a4f63] leading-[1.65] mb-4">
+                  Select the person you are adding so Rahvana can continue with the correct branch.
                 </div>
               </div>
+            ) : (
+              <div className="w-full rounded-[10px] overflow-hidden border-[1.5px] border-[#d0e4f7] mb-5 shadow-[0_2px_12px_rgba(12,27,51,0.06)] bg-[#f8f9fb]">
+                <div className="bg-[#eef3fa] border-b border-[#d0e4f7] h-[34px] flex items-center px-[14px] gap-[7px]">
+                  <div className="w-[10px] h-[10px] rounded-full bg-[#f87171]" />
+                  <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
+                  <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
+                  <div className="flex-1 h-[20px] bg-[#fafcff] rounded-[5px] border border-[#d0e4f7] ml-[10px] flex items-center px-[10px]">
+                    <span className="text-[10px] text-[#6b8097] font-mono">ceac.state.gov</span>
+                  </div>
+                </div>
 
-              <div
-                className="relative w-full p-[24px_28px] flex flex-col items-center justify-center overflow-hidden"
-                style={{ aspectRatio: "4/3" }}
-              >
-                <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] items-center justify-center">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
-                    {ceacTutStep.vlabel}
-                  </span>
-                  <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
-                    {ceacTutStep.heading}
+                <div
+                  className="relative w-full p-[24px_28px] flex flex-col items-center justify-center overflow-hidden"
+                  style={{ aspectRatio: "4/3" }}
+                >
+                  <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[28px] items-center justify-center">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#6b8097] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] shrink-0">
+                      {ceacTutStep.vlabel}
+                    </span>
+                    <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
+                      {ceacTutStep.heading}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {branchChoiceActive && (currentTutStep as any).choiceOptions && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-5">
+                {(currentTutStep as any).choiceOptions.map((option: any) => {
+                  const isHousehold = option.path === "household_member";
+                  return (
+                    <button
+                      key={option.path}
+                      onClick={() => {
+                        setTutorialPath(option.path);
+                        setTutorialIdx(commonSteps?.length || 0);
+                      }}
+                      className={`group relative overflow-hidden text-left rounded-[18px] border-[1.5px] p-[16px_16px_15px] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(12,27,51,0.08)] ${
+                        isHousehold
+                          ? "border-[#a8d9be] bg-[#f2fbf6] hover:border-[#7fc4a5]"
+                          : "border-[#d0e4f7] bg-[#f8fbff] hover:border-[#9dbfe9]"
+                      }`}
+                    >
+                      <div
+                        className={`absolute left-0 top-0 h-full w-[4px] ${
+                          isHousehold ? "bg-[#15744f]" : "bg-[#2f6fd4]"
+                        }`}
+                      />
+                      <div className="flex items-start justify-between gap-4 pl-2.5">
+                        <div>
+                          <div className="text-[15px] font-semibold text-[#0c1b33] leading-tight">
+                            {option.label}
+                          </div>
+                          <div className="text-[12px] text-[#5a6f85] mt-1.5 leading-[1.55] max-w-[250px]">
+                            {isHousehold
+                              ? "Use this when the person lives with the petitioner and their income will be counted as a household member."
+                              : "Use this when the person is a separate sponsor meeting the income requirement on their own."}
+                          </div>
+                        </div>
+                        <div
+                          className={`mt-0.5 flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full border text-[16px] font-semibold ${
+                            isHousehold
+                              ? "border-[#a8d9be] bg-white text-[#15744f]"
+                              : "border-[#cfe0f6] bg-white text-[#2f6fd4]"
+                          }`}
+                        >
+                          →
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {ceacTutStep.note && (
               <div className="bg-[#e8f5ef] border-l-4 border-[#15744f] p-[12px_14px] rounded-[4px] mb-5">
@@ -146,7 +220,14 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                     ← Back
                   </button>
                 )}
-                {tutorialIdx < ceacSteps.length - 1 ? (
+                {branchChoiceActive ? (
+                  <button
+                    onClick={() => setTutorialIdx(commonSteps?.length || 0)}
+                    className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
+                  >
+                    Continue after choosing
+                  </button>
+                ) : tutorialIdx < ceacSteps.length - 1 ? (
                   <button
                     onClick={() => setTutorialIdx(tutorialIdx + 1)}
                     className="flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"

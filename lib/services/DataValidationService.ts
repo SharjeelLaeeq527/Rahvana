@@ -20,6 +20,7 @@ import type {
   ToolKey,
   ValidationError,
 } from "@/types/journey-support";
+import { msg, E } from "@/lib/errors";
 
 // ─────────────────────────────────────────────────────────────
 // Constants
@@ -139,7 +140,7 @@ export function validateCreateDocument(body: unknown): ValidationError[] {
   const errors: ValidationError[] = [];
 
   if (!body || typeof body !== "object") {
-    return [{ field: "body", issue: "Request body must be a JSON object" }];
+    return [{ field: "body", issue: msg(E.VALIDATION_BAD_REQUEST_BODY) }];
   }
 
   const data = body as CreateJourneyDocumentBody & Record<string, unknown>;
@@ -206,7 +207,7 @@ export function validateUpdateDocument(body: unknown): ValidationError[] {
   const errors: ValidationError[] = [];
 
   if (!body || typeof body !== "object") {
-    return [{ field: "body", issue: "Request body must be a JSON object" }];
+    return [{ field: "body", issue: msg(E.VALIDATION_BAD_REQUEST_BODY) }];
   }
 
   const data = body as UpdateJourneyDocumentBody & Record<string, unknown>;
@@ -249,7 +250,7 @@ export function validateSaveToolSession(body: unknown, toolKey: string): Validat
   const errors: ValidationError[] = [];
 
   if (!body || typeof body !== "object") {
-    return [{ field: "body", issue: "Request body must be a JSON object" }];
+    return [{ field: "body", issue: msg(E.VALIDATION_BAD_REQUEST_BODY) }];
   }
 
   const data = body as SaveToolSessionBody & Record<string, unknown>;
@@ -308,7 +309,7 @@ export function validateCompleteToolSession(body: unknown): ValidationError[] {
   const errors: ValidationError[] = [];
 
   if (!body || typeof body !== "object") {
-    return [{ field: "body", issue: "Request body must be a JSON object" }];
+    return [{ field: "body", issue: msg(E.VALIDATION_BAD_REQUEST_BODY) }];
   }
 
   const data = body as CompleteToolSessionBody & Record<string, unknown>;
@@ -336,7 +337,7 @@ export function validateCreatePortalRecord(body: unknown): ValidationError[] {
   const errors: ValidationError[] = [];
 
   if (!body || typeof body !== "object") {
-    return [{ field: "body", issue: "Request body must be a JSON object" }];
+    return [{ field: "body", issue: msg(E.VALIDATION_BAD_REQUEST_BODY) }];
   }
 
   const data = body as CreatePortalRecordBody & Record<string, unknown>;
@@ -382,7 +383,7 @@ export function validateUpdatePortalRecord(body: unknown): ValidationError[] {
   const errors: ValidationError[] = [];
 
   if (!body || typeof body !== "object") {
-    return [{ field: "body", issue: "Request body must be a JSON object" }];
+    return [{ field: "body", issue: msg(E.VALIDATION_BAD_REQUEST_BODY) }];
   }
 
   const data = body as UpdatePortalRecordBody & Record<string, unknown>;
@@ -416,7 +417,7 @@ export function validateCreateAppointment(body: unknown): ValidationError[] {
   const errors: ValidationError[] = [];
 
   if (!body || typeof body !== "object") {
-    return [{ field: "body", issue: "Request body must be a JSON object" }];
+    return [{ field: "body", issue: msg(E.VALIDATION_BAD_REQUEST_BODY) }];
   }
 
   const data = body as CreateAppointmentBody & Record<string, unknown>;

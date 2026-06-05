@@ -8,7 +8,8 @@
       "Bash(grep -E \"BeneficiaryResidenceCapture|ConsistencyBaselineCapture|EvidenceStrengthMeter|EligibilityRiskBanner|eligibility-quest-detector|case-strength[/\\\\\\\\\\\\\\\\]\\(types|validators|risk-detector|evidence-classifier|index\\)|ReceiptFormatChip|StepView\\\\.tsx|QuestRenderer\\\\.tsx|RegisterReceiptStep\\\\.tsx\")",
       "Bash(echo \"---exit:$?---\")",
       "Bash(python *)",
-      "Bash(npx jest *)"
+      "Bash(npx jest *)",
+      "Bash(npx eslint *)"
     ]
   }
 }

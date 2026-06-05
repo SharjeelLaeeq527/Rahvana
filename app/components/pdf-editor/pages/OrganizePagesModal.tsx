@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import * as Errors from '@/lib/errors'
 
 interface PageItem {
   index: number;
@@ -103,7 +104,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
 
   const handleDeletePage = (index: number) => {
     if (pages.length <= 1) {
-      showToast("Cannot delete the last page!", "error");
+      showToast(Errors.msg(Errors.E.PDF_CANNOT_DELETE_LAST_PAGE), "error");
       return;
     }
     if (confirm("Are you sure you want to delete this page?")) {

@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
+import { E, msg } from "@/lib/errors";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { syncCaseDataToProfile, syncProfileToCaseData } from "@/lib/autoFill/journeyProfileBridge";
-
 
 export interface WizardState {
   currentStage: number;
@@ -57,7 +57,6 @@ export function useWizard(options: UseWizardOptions = {}) {
   const { profile, updateProfile } = useUserProfile();
 
   const activeRoadmap = externalRoadmapData;
-
 
   const [state, setState] = useState<WizardState>(DEFAULT_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -231,7 +230,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (cancelled) return;
         console.error("[useWizard] Initialize error:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
-        toast.error("Cloud synchronization failed.");
+        toast.error(msg(E.DASH_CLOUD_SYNC_FAILED));
         setIsLoaded(true);
       }
     }
@@ -327,7 +326,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         const currentState = stateRef.current;
         const { isLocked } = getJourneyLockStatus(currentState.metadata);
         if (isLocked) {
-          toast.error("Journey locked", {
+          toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED), {
             description:
               "This journey is in read-only mode. The 14-day window following your interview outcome has ended.",
             duration: 4000,
@@ -409,7 +408,7 @@ export function useWizard(options: UseWizardOptions = {}) {
             "[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync..."
           );
           // (Rest of the sync logic skipped for brevity, but would use functional updates)
-          toast.error(`Step not found in your journey. Please refresh the page.`);
+          toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED));
           return;
         }
 
@@ -481,7 +480,6 @@ export function useWizard(options: UseWizardOptions = {}) {
         } catch (err) {
           console.error("[useWizard] Failed to sync metadata to user profile context:", err);
         }
-
 
         if (currentState.backendId) {
           const ops = Object.entries(metadata).map(([key, val]) => ({
@@ -563,7 +561,7 @@ export function useWizard(options: UseWizardOptions = {}) {
                 useDocumentVaultStore.getState().reloadDocuments();
                 toast.success("Saved to vault", { id: "vault-upload" });
               })
-              .catch(() => toast.error("Vault save failed", { id: "vault-upload" }));
+              .catch(() => toast.error(msg(E.DASH_VAULT_SAVE_FAILED), { id: "vault-upload" }));
           }
           return {
             ...prev,

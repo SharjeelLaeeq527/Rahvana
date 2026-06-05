@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
+import { E, msg } from "@/lib/errors";
 
 export interface SecurityQuestion {
   id: string;
@@ -82,7 +83,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to save");
-      toast.success("Credentials saved successfully!");
+      toast.success(msg(E.CREDENTIAL_SAVE_SUCCESS));
       setIsWalletFormOpen(false);
       await fetchCredentials();
 
@@ -112,7 +113,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         if (!isCompleted) actions.toggleComplete("step_1_6");
       }
     } catch {
-      toast.error("Failed to save credentials. Please try again.");
+      toast.error(msg(E.VAULT_CREDENTIAL_SAVE_FAILED));
     } finally {
       setIsSubmittingCreds(false);
     }
@@ -154,13 +155,13 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete");
-      toast.success("Credentials deleted successfully!");
+      toast.success(msg(E.CREDENTIAL_DELETE_SUCCESS));
       if (portalType === "USCIS") setUscisCredentials(null);
       if (portalType === "NVC") setCeacCredentials(null);
       if (portalType === "COURIER") setCourierCredentials(null);
       setIsWalletViewOpen(false);
     } catch {
-      toast.error("Failed to delete credentials.");
+      toast.error(msg(E.VAULT_CREDENTIAL_DELETE_FAILED));
     } finally {
       setIsSubmittingCreds(false);
     }
