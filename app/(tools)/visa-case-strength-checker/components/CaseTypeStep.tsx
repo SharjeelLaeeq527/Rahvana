@@ -10,7 +10,7 @@ const CaseTypeStep = ({
   onNext,
   onBack,
 }: CaseTypeStepProps) => (
-  <div className="space-y-8 mt-10">
+  <div className="space-y-8 mt-14">
     <div className="text-center mb-8">
       <h2 className="text-3xl font-bold text-slate-900 mb-3">Select Case Type</h2>
       <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">

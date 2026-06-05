@@ -20,7 +20,7 @@ export default function CountrySelectionModal({
   isLoading = false,
   noDataMessage,
 }: CountrySelectionModalProps) {
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedCountry, setSelectedCountry] = useState<string>("United States");
 
   if (!isOpen) return null;
 
