@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BookOpen, Plus, AlertTriangle, CheckCircle, BarChart3, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
@@ -9,8 +9,9 @@ import { ElementType } from "react";
 import ActionMenu from "@/app/components/shared/ActionMenu";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { DataTable, Column } from "@/app/components/shared/table";
-import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
+import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { useSearchParams } from "next/navigation";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -109,6 +110,8 @@ export default function MyInterviewSessions() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
+
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
 
   // Filter states
@@ -190,6 +193,25 @@ export default function MyInterviewSessions() {
   useEffect(() => {
     if (selectedSessionId) setModalOpen(true);
   }, [selectedSessionId]);
+
+  const hasShownToast = useRef(false);
+
+  useEffect(() => {
+    if (hasShownToast.current) return;
+
+    const message = searchParams.get("message");
+
+    if (message === "session-exists") {
+      hasShownToast.current = true;
+
+      showToast(
+        "You already have a session for this visa category. Only one session per category is allowed.",
+        "info"
+      );
+
+      window.history.replaceState({}, "", "/interview-prep/my-sessions");
+    }
+  }, [searchParams, showToast]);
 
   const handleDelete = async (sessionId: string) => {
     if (!selectedSessionId) return;
@@ -384,7 +406,7 @@ export default function MyInterviewSessions() {
             )}
             <Button
               onClick={() => (window.location.href = "/interview-prep")}
-              className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg"
+              className={`bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg ${sessions.length === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <Plus className="w-5 h-5 mr-2" />
               New Session

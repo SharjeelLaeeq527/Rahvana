@@ -426,8 +426,11 @@ export default function InterviewPreparation() {
       if (sessionResult.alreadyExists) {
         setIsRedirectingSession(true);
         setLoadingMessage("Redirecting to your existing session...");
-
-        router.push("/interview-prep/my-sessions");
+      
+        router.push(
+          "/interview-prep/my-sessions?message=session-exists"
+        );
+      
         return;
       }
 
@@ -698,6 +701,25 @@ export default function InterviewPreparation() {
     return <div>Unknown step</div>;
   };
 
+  // Section color palette - matches review-step.tsx and dynamic-question-step.tsx
+  const getSectionColor = (sectionId: string): { color: string; lightColor: string } => {
+    const colorMap: Record<string, { color: string; lightColor: string }> = {
+      // Step 1: Marriage & Basic Info - Rose
+      marriage_and_basic_info: { color: "#db8090", lightColor: "#fce8ec" },
+      // Step 2: Relationship Origin - Rose
+      relationship_origin: { color: "#db8090", lightColor: "#fce8ec" },
+      // Step 3: Relationship Strength - Amber
+      relationship_strength: { color: "#9c6f38", lightColor: "#f3ede7" },
+      // Step 4: Family & Social - Sage
+      family_and_social: { color: "#89a4a0", lightColor: "#e8f0ed" },
+      // Step 5: Petitioner & Plans - Teal
+      petitioner_and_plans: { color: "#0d7377", lightColor: "#e8f6f6" },
+      // Step 6: Background Check - Rose
+      background_check: { color: "#db8090", lightColor: "#fce8ec" },
+    };
+    return colorMap[sectionId] || { color: "#0d7377", lightColor: "#e8f6f6" };
+  };
+
   const renderProgressSections = () => {
     if (!questionnaire || step === 0) return null;
 
@@ -705,6 +727,10 @@ export default function InterviewPreparation() {
     const currentSectionIndex = step - 1;
     const totalSteps = sections.length + 2; // +2 for review and results
     const progressPercentage = Math.round(((step - 1) / totalSteps) * 100);
+
+    // Get current section's color for progress bar
+    const currentSection = sections[currentSectionIndex];
+    const currentColor = currentSection ? getSectionColor(currentSection.id).color : "#0d7377";
 
     return (
       <div className="mb-8">
@@ -717,9 +743,10 @@ export default function InterviewPreparation() {
 
         <div className="w-full bg-slate-200 rounded-full h-3">
           <div
-            className="bg-teal-600 h-3 rounded-full transition-all duration-500 ease-in-out"
+            className="h-3 rounded-full transition-all duration-500 ease-in-out"
             style={{
               width: `${progressPercentage > 100 ? 100 : progressPercentage}%`,
+              backgroundColor: currentColor,
             }}
           ></div>
         </div>
@@ -729,51 +756,55 @@ export default function InterviewPreparation() {
           {sections.map((section, index) => {
             const isActive = index === currentSectionIndex;
             const isCompleted = index < currentSectionIndex;
+            const { color, lightColor } = getSectionColor(section.id);
 
             return (
               <div
                 key={index}
-                className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                style={
                   isActive
-                    ? "bg-teal-600 text-white border-2 border-teal-600"
+                    ? { backgroundColor: color, borderColor: color, color: "white" }
                     : isCompleted
-                      ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                      : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                }`}
+                      ? { backgroundColor: lightColor, borderColor: lightColor, color }
+                      : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+                }
               >
                 <div className="font-semibold truncate">
                   {section.title.substring(0, 20)}
                   {section.title.length > 20 ? "..." : ""}
                 </div>
-                <div className="text-[10px] mt-1">Step {index + 1}</div>
+                <div className="text-[10px] mt-1 opacity-80">Step {index + 1}</div>
               </div>
             );
           })}
 
           {/* Review Step Indicator */}
           <div
-            className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+            style={
               step === sections.length + 1
-                ? "bg-teal-600 text-white border-2 border-teal-600"
+                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
                 : step > sections.length + 1
-                  ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                  : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-            }`}
+                  ? { backgroundColor: "#e8f6f6", borderColor: "#e8f6f6", color: "#0d7377" }
+                  : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+            }
           >
             <div className="font-semibold">Review</div>
-            <div className="text-[10px] mt-1">Step {sections.length + 1}</div>
+            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 1}</div>
           </div>
 
           {/* Results Step Indicator */}
           <div
-            className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+            style={
               step === sections.length + 2
-                ? "bg-teal-600 text-white border-2 border-teal-600"
-                : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-            }`}
+                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
+                : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+            }
           >
             <div className="font-semibold">Results</div>
-            <div className="text-[10px] mt-1">Step {sections.length + 2}</div>
+            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 2}</div>
           </div>
         </div>
 
@@ -786,7 +817,10 @@ export default function InterviewPreparation() {
                 className="w-full flex justify-between items-center bg-slate-50 border-slate-200 shadow-sm text-slate-700"
               >
                 <span>View All Steps</span>
-                <span className="text-xs font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">
+                <span
+                  className="text-xs font-mono px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: currentColor + "20", color: currentColor }}
+                >
                   {step}/{totalSteps}
                 </span>
               </Button>
@@ -799,51 +833,74 @@ export default function InterviewPreparation() {
                 {sections.map((section, index) => {
                   const isActive = index === currentSectionIndex;
                   const isCompleted = index < currentSectionIndex;
+                  const { color, lightColor } = getSectionColor(section.id);
 
                   return (
                     <div
                       key={index}
-                      className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                      className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                      style={
                         isActive
-                          ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                          ? {
+                              backgroundColor: color,
+                              borderColor: color,
+                              color: "white",
+                              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                            }
                           : isCompleted
-                            ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                            : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                      }`}
+                            ? { backgroundColor: lightColor, borderColor: lightColor, color }
+                            : {
+                                backgroundColor: "#f1f5f9",
+                                borderColor: "#e2e8f0",
+                                color: "#64748b",
+                              }
+                      }
                     >
                       <div className="font-semibold truncate">
                         {section.title.substring(0, 20)}
                         {section.title.length > 20 ? "..." : ""}
                       </div>
-                      <div className="text-[10px] mt-1">Step {index + 1}</div>
+                      <div className="text-[10px] mt-1 opacity-80">Step {index + 1}</div>
                     </div>
                   );
                 })}
 
                 {/* Review Step Indicator */}
                 <div
-                  className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                  className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                  style={
                     step === sections.length + 1
-                      ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                      ? {
+                          backgroundColor: "#0d7377",
+                          borderColor: "#0d7377",
+                          color: "white",
+                          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                        }
                       : step > sections.length + 1
-                        ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                        : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                  }`}
+                        ? { backgroundColor: "#e8f6f6", borderColor: "#e8f6f6", color: "#0d7377" }
+                        : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+                  }
                 >
                   <div className="font-semibold">Review</div>
-                  <div className="text-[10px] mt-1">Step {sections.length + 1}</div>
+                  <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 1}</div>
                 </div>
 
                 {/* Results Step Indicator */}
                 <div
-                  className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                  className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                  style={
                     step === sections.length + 2
-                      ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
-                      : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                  }`}
+                      ? {
+                          backgroundColor: "#0d7377",
+                          borderColor: "#0d7377",
+                          color: "white",
+                          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                        }
+                      : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+                  }
                 >
                   <div className="font-semibold">Results</div>
-                  <div className="text-[10px] mt-1">Step {sections.length + 2}</div>
+                  <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 2}</div>
                 </div>
               </div>
             </SheetContent>
