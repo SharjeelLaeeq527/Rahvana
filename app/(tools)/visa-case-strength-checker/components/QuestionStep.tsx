@@ -168,7 +168,7 @@ const QuestionStep = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mt-14">
       <div className="text-center mb-8">
         <div className="text-sm font-bold text-teal-600 mb-2 uppercase tracking-wider">
           {questionnaire.title} Assessment

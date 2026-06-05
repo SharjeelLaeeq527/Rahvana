@@ -426,11 +426,9 @@ export default function InterviewPreparation() {
       if (sessionResult.alreadyExists) {
         setIsRedirectingSession(true);
         setLoadingMessage("Redirecting to your existing session...");
-      
-        router.push(
-          "/interview-prep/my-sessions?message=session-exists"
-        );
-      
+
+        router.push("/interview-prep/my-sessions?message=session-exists");
+
         return;
       }
 
@@ -489,40 +487,27 @@ export default function InterviewPreparation() {
     }
   };
 
-  const prevStep = async () => {
-    // Save answers before moving to previous step if we have a session ID
-    if (sessionId) {
-      try {
-        // Filter out non-question fields before saving
-        const answers: Record<string, unknown> = {};
-        Object.keys(formData).forEach((k) => {
-          if (k !== "caseType" && k !== "visaCategory") {
-            answers[k] = formData[k as keyof typeof formData];
-          }
-        });
-
-        const answersResponse = await fetch(`/api/interview-prep/sessions/${sessionId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "update-answers",
-            answers,
-          }),
-        });
-
-        if (!answersResponse.ok) {
-          console.error("Failed to save answers on step change:", await answersResponse.text());
-        }
-      } catch (err) {
-        console.error("Error saving answers on step change:", err);
-      }
-    }
-
+  const prevStep = () => {
+    // Navigate immediately — don't wait for the save
     setStep((prev) => prev - 1);
     if (error) {
       setError(null);
+    }
+
+    // Save answers in the background (fire-and-forget)
+    if (sessionId) {
+      const answers: Record<string, unknown> = {};
+      Object.keys(formData).forEach((k) => {
+        if (k !== "caseType" && k !== "visaCategory") {
+          answers[k] = formData[k as keyof typeof formData];
+        }
+      });
+
+      fetch(`/api/interview-prep/sessions/${sessionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update-answers", answers }),
+      }).catch((err) => console.error("Error saving answers on back:", err));
     }
   };
 
