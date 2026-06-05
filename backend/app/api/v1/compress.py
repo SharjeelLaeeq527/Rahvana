@@ -26,14 +26,22 @@ class PDFProcessor:
         decode/resize/encode, so calling this from a thread pool gives real
         parallelism."""
         pil_image = Image.open(io.BytesIO(image_bytes))
+
+        # Fast path: ask the JPEG decoder to load the image at a reduced scale
+        # directly (decode-time downscale). This is a no-op for non-JPEG formats
+        # but a big speed win for scanned PDFs — we avoid fully decoding a huge
+        # image only to shrink it right after.
+        pil_image.draft('RGB', (max_dimension, max_dimension))
+
         width, height = pil_image.size
 
-        # Resize only if needed
+        # Resize only if needed. BICUBIC is much faster than LANCZOS and the
+        # quality difference is negligible for document scans.
         if width > max_dimension or height > max_dimension:
             ratio = min(max_dimension / width, max_dimension / height)
             pil_image = pil_image.resize(
                 (int(width * ratio), int(height * ratio)),
-                Image.Resampling.LANCZOS,
+                Image.Resampling.BICUBIC,
             )
 
         if pil_image.mode != 'RGB':
