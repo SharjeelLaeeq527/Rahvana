@@ -155,7 +155,7 @@ export function ResultPage({ sessionId, onRestart, onEdit, onSaveToProfile }: Re
   };
 
   return (
-    <div className="site-main-px site-main-py">
+    <div className="site-main-px site-main-py mt-14">
       {/* Header Section */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-slate-900">Case Strength Analysis Complete</h1>
