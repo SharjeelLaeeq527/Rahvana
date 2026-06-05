@@ -325,7 +325,7 @@ export default async function ResourceDetailPage({
               </>
               ) : (
                 <p className="text-[14px] leading-relaxed text-muted-foreground">
-                  No reviews yet — be the first to share your experience.
+                  Be the first to share your experience.
                 </p>
               )}
 

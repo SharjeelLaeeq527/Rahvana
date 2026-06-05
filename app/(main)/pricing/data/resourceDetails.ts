@@ -67,7 +67,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     badge: "AI-Powered",
     tagline: "Know your case strength before the government does.",
     overview: [
-      "The Case Strength Analyzer reads your application the way a consular officer or NVC reviewer would — then hands you an instant, plain-English score out of 100 with the exact gaps that could slow you down or trigger an RFE.",
+      "The Case Strength Analyzer reads your application the way a consular officer or NVC reviewer would, then hands you an instant, plain-English score out of 100 with the exact gaps that could slow you down or trigger an RFE.",
       "It scores across income, relationship strength, document completeness and immigration history, and even screens for administrative-processing risks. Instead of guessing whether your packet is 'good enough,' you get a prioritized, fixable list: what's strong, what's weak, and what to do about it before you submit.",
     ],
     highlights: [
@@ -77,10 +77,10 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { icon: "ShieldCheck", title: "AP & RFE risk screening", text: "Catches inconsistencies and administrative-processing triggers before they cost you months." },
     ],
     steps: [
-      { title: "Share your case details", text: "Pull from your Rahvana profile or answer a short guided intake — no re-typing." },
+      { title: "Share your case details", text: "Pull from your Rahvana profile or answer a short guided intake, no re-typing." },
       { title: "AI reviews everything", text: "The analyzer checks income, relationship, documents and history for gaps and risks." },
       { title: "Get your score + gaps", text: "See your 0–100 strength score with each gap explained in plain English." },
-      { title: "Fix and re-run", text: "Resolve items and re-analyze — your case analysis isn't capped." },
+      { title: "Fix and re-run", text: "Resolve items and re-analyze, your case analysis isn't capped." },
     ],
     audience: [
       "Applicants preparing for NVC document review",
@@ -95,7 +95,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     faqs: [
       ["Is this a guarantee of approval?", "No. It significantly improves the completeness and consistency of your application, but the final decision always rests with the U.S. government."],
-      ["How many times can I run it?", "The add-on covers one full case — you can re-analyze as you fix gaps; there's no fixed re-run limit."],
+      ["How many times can I run it?", "The add-on covers one full case; you can re-analyze as you fix gaps; there's no fixed re-run limit."],
       ["Does it use my real data?", "Yes, it can pull directly from your Rahvana profile so you don't re-enter anything. Your data stays private."],
     ],
     media: [
@@ -112,8 +112,8 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     badge: "Executive Tool",
     tagline: "Got a 221(g)? Here's exactly what to do next.",
     overview: [
-      "A 221(g) or 'administrative processing' notice is one of the most stressful moments in the journey — vague wording, no timeline, and a lot at stake. The 221(g) Action Planner turns that uncertainty into a clear, personalized roadmap.",
-      "Tell us what your slip says and we generate the precise next moves: which documents to send, embassy-specific submission guidance, what to expect, and how to follow up — then bundle it all into a ready-to-send PDF packet with a cover letter and your merged documents.",
+      "A 221(g) or 'administrative processing' notice is one of the most stressful moments in the journey: vague wording, no timeline, and a lot at stake. The 221(g) Action Planner turns that uncertainty into a clear, personalized roadmap.",
+      "Tell us what your slip says and we generate the precise next moves: which documents to send, embassy-specific submission guidance, what to expect, and how to follow up, then bundle it all into a ready-to-send PDF packet with a cover letter and your merged documents.",
     ],
     highlights: [
       { icon: "Map", title: "Personalized action roadmap", text: "Staged plan with timeframes, tailored to your specific 221(g) reason and embassy." },
@@ -139,8 +139,8 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Calm, confident next steps",
     ],
     faqs: [
-      ["Can this remove a 221(g)?", "It can't override the consulate, but it ensures you respond completely and correctly — the single biggest factor in resolving administrative processing faster."],
-      ["What's in the PDF packet?", "A cover letter addressed to your embassy, a document index, and your uploaded documents merged in order — ready to print or submit."],
+      ["Can this remove a 221(g)?", "It can't override the consulate, but it ensures you respond completely and correctly, which is the single biggest factor in resolving administrative processing faster."],
+      ["What's in the PDF packet?", "A cover letter addressed to your embassy, a document index, and your uploaded documents merged in order, ready to print or submit."],
       ["How long does the add-on last?", "It stays available until the end of your visa journey."],
     ],
     media: [
@@ -157,13 +157,13 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     badge: "AI Interview Coach",
     tagline: "Walk into your consular interview like you've already done it.",
     overview: [
-      "The consular interview can decide everything in a few minutes. Interview Prep is your complete practice suite — guided question prep, timed rapid-fire drills, and an AI-guided voice mock interview, all built around the questions officers actually ask.",
-      "You build and tighten your answers, drill them until they're automatic, then rehearse out loud in a realistic mock session — and get an instant performance summary so the real interview feels familiar.",
+      "The consular interview can decide everything in a few minutes. Interview Prep is your complete practice suite: guided question prep, timed rapid-fire drills, and an AI-guided voice mock interview, all built around the questions officers actually ask.",
+      "You build and tighten your answers, drill them until they're automatic, then rehearse out loud in a realistic mock session, then get an instant performance summary so the real interview feels familiar.",
     ],
     highlights: [
       { icon: "MessageSquare", title: "Real consular questions", text: "Drawn from the questions officers commonly ask spouse-visa applicants." },
       { icon: "Zap", title: "Timed rapid-fire drills", text: "Short, sharp questions on a countdown that build fast, clear recall." },
-      { icon: "Video", title: "AI voice mock interview", text: "Questions are spoken to you and you answer aloud — realistic interview conditions." },
+      { icon: "Video", title: "AI voice mock interview", text: "Questions are spoken to you and you answer aloud, under realistic interview conditions." },
       { icon: "ClipboardCheck", title: "Instant performance summary", text: "Completion, pace and response insights with strengths and areas to improve." },
     ],
     steps: [
@@ -183,9 +183,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "A confidence boost for the real day",
     ],
     faqs: [
-      ["What's included?", "Three practice modes in one tool — guided question prep, timed rapid-fire drilling, and an AI-guided voice mock interview — all built around real consular questions."],
-      ["Is the mock a live person or AI?", "It's an AI-guided voice session — questions are read aloud and your spoken answers are captured, so you can rehearse realistically anytime. It is not a live human interviewer."],
-      ["Do I need a microphone?", "For the mock interview, yes — answering out loud gives you response insights. Guided prep and rapid-fire drills work without one."],
+      ["What's included?", "Three practice modes in one tool: guided question prep, timed rapid-fire drilling, and an AI-guided voice mock interview, all built around real consular questions."],
+      ["Is the mock a live person or AI?", "It's an AI-guided voice session: questions are read aloud and your spoken answers are captured, so you can rehearse realistically anytime. It is not a live human interviewer."],
+      ["Do I need a microphone?", "For the mock interview, yes, since answering out loud gives you response insights. Guided prep and rapid-fire drills work without one."],
     ],
     media: [
       imgFile("interview_prep.jpg", "Interview Prep guided questions", "Build strong answers tailored to your case"),
@@ -203,7 +203,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     tagline: "Your official forms, filled and ready to upload.",
     overview: [
       "Government forms are long, repetitive, and unforgiving of small mistakes. Smart Form Filler auto-fills your official USCIS and DOS forms straight from your profile data and generates a clean, ready-to-upload PDF.",
-      "It supports the core spouse-visa filings — I-130, I-130A, I-129F, the I-864 family (I-864, I-864A, I-864EZ), I-693, I-912 and DS-260 — with field-level mapping, so you don't re-type the same details across pages.",
+      "It supports the core spouse-visa filings: I-130, I-130A, I-129F, the I-864 family (I-864, I-864A, I-864EZ), I-693, I-912 and DS-260, with field-level mapping, so you don't re-type the same details across pages.",
     ],
     highlights: [
       { icon: "Wand2", title: "Auto-fill from profile", text: "Pulls your saved data so you never re-enter the basics." },
@@ -230,7 +230,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     faqs: [
       ["Which forms are supported?", "I-130, I-130A, I-129F, I-864, I-864A, I-864EZ, I-693, I-912 and DS-260. More forms are added over time."],
       ["How many forms does one credit cover?", "One completed form per credit."],
-      ["Can I edit before downloading?", "Yes — you review and confirm every field, with a completion summary, before the final PDF is generated."],
+      ["Can I edit before downloading?", "Yes, you review and confirm every field, with a completion summary, before the final PDF is generated."],
     ],
     media: [
       imgFile("autoform_hero.jpg", "Auto-filled USCIS form preview", "Your official form, auto-filled from your profile"),
@@ -245,7 +245,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     badge: "Most Useful",
     tagline: "Find out instantly if your income qualifies.",
     overview: [
-      "The Affidavit of Support (I-864) trips up countless applicants. The Sponsorship Calculator checks your income and assets against the current poverty guidelines and tells you, in plain numbers, whether you qualify — and exactly what's missing if you don't.",
+      "The Affidavit of Support (I-864) trips up countless applicants. The Sponsorship Calculator checks your income and assets against the current poverty guidelines and tells you, in plain numbers, whether you qualify, and exactly what's missing if you don't.",
       "It handles household size, convertible assets, joint sponsors and even special cases like the active-duty military threshold and I-864EZ eligibility. No spreadsheets, no guesswork.",
     ],
     highlights: [
@@ -272,7 +272,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     faqs: [
       ["Which guidelines does it use?", "It checks against the current federal poverty guidelines used for the I-864, including the 100% active-duty military threshold where it applies."],
-      ["Can I recalculate?", "Yes — unlimited recalculations are included for your case."],
+      ["Can I recalculate?", "Yes, unlimited recalculations are included for your case."],
       ["Does it cover assets, not just income?", "Yes, it factors in convertible assets (with the 3×/5× rules) and household size, and accounts for joint sponsors."],
     ],
     media: [
@@ -287,14 +287,14 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
   photo: {
     slug: "photo",
     badge: "Minutes, Not Studios",
-    tagline: "A compliant visa photo — without the studio trip.",
+    tagline: "A compliant visa photo, without the studio trip.",
     overview: [
-      "Visa and passport photos get rejected for the smallest things: wrong size, busy background, off-center crop. Photo Booth makes a compliant biometric photo from a picture you already have — background removed, face-centered, and cropped to the exact dimensions for your country.",
+      "Visa and passport photos get rejected for the smallest things: wrong size, busy background, off-center crop. Photo Booth makes a compliant biometric photo from a picture you already have: background removed, face-centered, and cropped to the exact dimensions for your country.",
       "Skip the studio queue and the do-overs. Upload, pick your country preset, download.",
     ],
     highlights: [
       { icon: "Scissors", title: "Automatic background removal", text: "Clean white background with the subject centered, powered by smart cutout." },
-      { icon: "Crop", title: "Country size presets", text: "Outputs the exact dimensions for US, UK, India, Canada — or a custom size." },
+      { icon: "Crop", title: "Country size presets", text: "Outputs the exact dimensions for US, UK, India, Canada, or a custom size." },
       { icon: "Camera", title: "Face-centered crop", text: "Automatically positions and crops your face to spec." },
       { icon: "Image", title: "Download-ready output", text: "Get a print- and upload-ready JPG in one click." },
     ],
@@ -317,11 +317,11 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     faqs: [
       ["What counts as one credit?", "Each credit produces one compliant photo output."],
       ["What photo should I upload?", "A clear, well-lit, front-facing photo with your full face visible works best."],
-      ["Will it definitely be accepted?", "It outputs to the standard size for your selected country and shows the requirements checklist — always double-check your specific post's instructions before submitting."],
+      ["Will it definitely be accepted?", "It outputs to the standard size for your selected country and shows the requirements checklist, but always double-check your specific post's instructions before submitting."],
     ],
     media: [
-      img("photo", "hero.png", "Photo Booth compliant photo output", "From a normal photo to a compliant one"),
-      img("photo", "gallery-1.png", "Background removal and country presets"),
+      imgFile("photobooth.webp", "Your original photo (before)", "Before: a normal photo you upload"),
+      imgFile("photobooth-after.jpg", "Compliant passport photo (after)", "After: a fully compliant biometric photo"),
     ],
     related: ["smart", "civil-guid"],
   },
@@ -333,7 +333,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     tagline: "A real expert reads your packet before the officer does.",
     overview: [
       "Sometimes you just want a human to look it over. Expert Case Review is a hands-on review of your application packet by a specialist, returned with clear written feedback on completeness, quality and anything that could raise a flag.",
-      "It's the second set of eyes that catches what self-review misses — before it reaches the government.",
+      "It's the second set of eyes that catches what self-review misses, before it reaches the government.",
     ],
     highlights: [
       { icon: "FileSearch", title: "Full packet review", text: "A specialist reviews your documents end to end." },
@@ -360,7 +360,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     faqs: [
       ["Is this legal advice?", "It's a structural and quality review, not legal representation. For complex legal situations we recommend a licensed attorney."],
       ["How fast is it?", "Feedback is typically returned within 2 business days of submission."],
-      ["What can I submit?", "Your application packet documents — forms, evidence and supporting materials."],
+      ["What can I submit?", "Your application packet documents: forms, evidence and supporting materials."],
     ],
     media: [
       img("doc-review", "hero.png", "Expert Case Review feedback", "A specialist's written feedback on your packet"),
@@ -375,7 +375,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     tagline: "Talk it through with someone who knows the process.",
     overview: [
       "Some questions need a conversation. Expert Consultation is a focused 30-minute video session with a specialist who understands your situation and gives you straight, situation-specific guidance.",
-      "Book a slot, bring your case, your worries, your what-ifs — and leave with a clear plan.",
+      "Book a slot, bring your case, your worries, your what-ifs, and leave with a clear plan.",
     ],
     highlights: [
       { icon: "Video", title: "30-minute video call", text: "A focused one-on-one session with a specialist." },
@@ -400,7 +400,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Scheduled within 3 business days",
     ],
     faqs: [
-      ["Is this legal representation?", "No — it's expert guidance on the process. For legal representation, consult a licensed immigration attorney."],
+      ["Is this legal representation?", "No, it's expert guidance on the process. For legal representation, consult a licensed immigration attorney."],
       ["How long is the session?", "Each session is 30 minutes of focused one-on-one time."],
       ["How soon can I be seen?", "You book from available slots, and sessions are typically scheduled within 3 business days."],
     ],
@@ -416,7 +416,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     badge: "Certified",
     tagline: "Embassy-ready certified translations, done right.",
     overview: [
-      "Civil documents in another language need certified translations that meet embassy formatting standards — get it wrong and your case stalls. Document Translation delivers certified, embassy-ready translations of your standard civil documents.",
+      "Civil documents in another language need certified translations that meet embassy formatting standards; get it wrong and your case stalls. Document Translation delivers certified, embassy-ready translations of your standard civil documents.",
       "Upload a document, track its status, and download the finished certified translation when it's ready.",
     ],
     highlights: [
@@ -443,7 +443,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     faqs: [
       ["What documents are covered?", "Standard civil documents such as marriage, birth, death and divorce certificates."],
-      ["Is it certified?", "Yes — translations are prepared as certified, embassy-ready documents."],
+      ["Is it certified?", "Yes, translations are prepared as certified, embassy-ready documents."],
       ["How do I get it back?", "You track the request status in-app and download the finished translation once it's ready."],
     ],
     media: [
@@ -459,7 +459,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     tagline: "Exactly how and where to get every document.",
     overview: [
       "Tracking down civil documents in the right format is half the battle. Civil Document Guides are country-specific, step-by-step walkthroughs that tell you precisely how and where to obtain each required document.",
-      "From CNIC and birth certificates to police certificates, FRC, marriage registration and polio vaccination — clear instructions, and your progress is saved as you go.",
+      "From CNIC and birth certificates to police certificates, FRC, marriage registration and polio vaccination: clear instructions, and your progress is saved as you go.",
     ],
     highlights: [
       { icon: "Globe", title: "Country-specific", text: "Instructions tailored to where you actually are." },
@@ -468,7 +468,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { icon: "BookOpen", title: "Permanent access", text: "Keep access to every guide you purchase." },
     ],
     steps: [
-      { title: "Pick your document", text: "Choose the civil document you need — CNIC, birth, police certificate and more." },
+      { title: "Pick your document", text: "Choose the civil document you need: CNIC, birth, police certificate and more." },
       { title: "Open the guide", text: "Get country-specific, step-by-step instructions." },
       { title: "Follow the steps", text: "Know where to go and what to ask for; your progress saves automatically." },
       { title: "Collect & proceed", text: "Obtain the document in the correct format." },
@@ -485,7 +485,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     faqs: [
       ["Which documents have guides?", "Guides cover documents like CNIC, birth certificate, police character certificate, FRC, marriage registration (Nikah Nama) and polio vaccination."],
-      ["Are guides specific to my country?", "Yes — guides are country-specific so the steps actually apply to you."],
+      ["Are guides specific to my country?", "Yes, guides are country-specific so the steps actually apply to you."],
       ["Do I keep access?", "Yes, you keep permanent access to any guide you purchase, and your progress is saved."],
     ],
     media: [
@@ -500,7 +500,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     badge: "Concierge",
     tagline: "One named expert who follows your case end to end.",
     overview: [
-      "When you want a single point of contact through the whole journey, a Dedicated Case Manager is your named support contact — someone who knows your case, answers your questions, and coordinates reviews from start to finish.",
+      "When you want a single point of contact through the whole journey, a Dedicated Case Manager is your named support contact: someone who knows your case, answers your questions, and coordinates reviews from start to finish.",
       "Continuity and accountability across every stage, available on any plan tier.",
     ],
     highlights: [
@@ -526,7 +526,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Available across all plan tiers",
     ],
     faqs: [
-      ["Is it the same person each time?", "Yes — a dedicated case manager follows your case end to end."],
+      ["Is it the same person each time?", "Yes, a dedicated case manager follows your case end to end."],
       ["How long does it last?", "It's an annual service available across all plan tiers."],
     ],
     media: [

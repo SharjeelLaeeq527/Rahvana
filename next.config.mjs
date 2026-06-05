@@ -1,9 +1,8 @@
-// /** @type {import('next').NextConfig} */
-// import path from 'path';
-// import { fileURLToPath } from 'url';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // const nextConfig = {
 //   webpack: (config) => {
@@ -88,9 +87,25 @@ const nextConfig = {
     ];
   },
 
+  // pdfjs-dist optionally requires the native `canvas` package on the server,
+  // which has no prebuilt `canvas.node` binary here. Alias it away so the
+  // bundler never enters the canvas package (browser pdfjs doesn't need it).
   webpack: (config) => {
-    config.resolve.fallback = { canvas: false };
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      canvas: false,
+    };
     return config;
+  },
+
+  // Turbopack (used by `next build --turbopack`) doesn't accept `false` as an
+  // alias, so point `canvas` at a harmless mock module instead.
+  turbopack: {
+    resolve: {
+      alias: {
+        canvas: path.join(__dirname, 'lib/mock-canvas.js'),
+      },
+    },
   },
 
   eslint: {
