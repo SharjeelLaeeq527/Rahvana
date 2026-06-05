@@ -11,7 +11,6 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { DataTable, Column } from "@/app/components/shared/table";
 import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import { useSearchParams } from "next/navigation";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -111,7 +110,6 @@ export default function MyInterviewSessions() {
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
 
-  const searchParams = useSearchParams();
   const { showToast } = useToast();
 
   // Filter states
@@ -199,11 +197,10 @@ export default function MyInterviewSessions() {
   useEffect(() => {
     if (hasShownToast.current) return;
 
-    const message = searchParams.get("message");
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
 
     if (message === "session-exists") {
-      hasShownToast.current = true;
-
       showToast(
         "You already have a session for this visa category. Only one session per category is allowed.",
         "info"
@@ -211,7 +208,7 @@ export default function MyInterviewSessions() {
 
       window.history.replaceState({}, "", "/interview-prep/my-sessions");
     }
-  }, [searchParams, showToast]);
+  }, []);
 
   const handleDelete = async (sessionId: string) => {
     if (!selectedSessionId) return;
