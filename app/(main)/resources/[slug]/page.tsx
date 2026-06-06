@@ -30,7 +30,14 @@ const AMBER = "#8a6200";
 const GOLD = "#d99a00";
 const SERIF = '"DM Serif Display", Georgia, serif';
 
-type AddonMeta = { title: string; price: number; unit: string; copy: string; note: string };
+type AddonMeta = {
+  title: string;
+  price: number;
+  unit: string;
+  copy: string;
+  note: string;
+  kind: "tools" | "services" | "guides";
+};
 
 // case-manager has its title commented out in ADDONS — provide safe fallbacks.
 const TITLE_FALLBACK: Record<string, string> = {
@@ -46,6 +53,7 @@ function getAddon(slug: string): AddonMeta | undefined {
     unit: a.unit,
     copy: a.copy,
     note: a.note,
+    kind: (a as { kind?: AddonMeta["kind"] }).kind ?? "tools",
   };
 }
 
@@ -118,8 +126,15 @@ export default async function ResourceDetailPage({
       <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-[88px] sm:px-8 lg:px-10">
         {/* Breadcrumb */}
         <nav className="mb-8 text-[13px] text-muted-foreground">
-          <Link href="/pricing?mode=resources" className="transition-colors hover:text-foreground">
-            Individual Resources
+          <Link
+            href={`/pricing?mode=${addon.kind}`}
+            className="transition-colors hover:text-foreground"
+          >
+            {addon.kind === "services"
+              ? "Services"
+              : addon.kind === "guides"
+                ? "Guides"
+                : "Tools"}
           </Link>
           <span className="px-2 text-border">/</span>
           <span className="text-foreground">{addon.title}</span>
@@ -174,10 +189,10 @@ export default async function ResourceDetailPage({
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
               <Link
-                href="/pricing?mode=resources"
+                href={`/pricing?mode=${addon.kind}`}
                 className="text-[14px] font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
               >
-                Browse all tools
+                Browse all
               </Link>
             </div>
 
@@ -429,7 +444,7 @@ export default async function ResourceDetailPage({
             <p className="mt-1.5 text-[14px] text-white/70">No full journey plan required.</p>
           </div>
           <Link
-            href={`/pricing?mode=resources&addons=${encodeURIComponent(slug)}`}
+            href={`/pricing?mode=${addon.kind}&addons=${encodeURIComponent(slug)}`}
             className="inline-flex shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[15px] font-semibold transition-transform duration-200 hover:-translate-y-0.5"
             style={{ color: TEAL_DARK }}
           >
@@ -439,10 +454,10 @@ export default async function ResourceDetailPage({
 
         <div className="mt-10">
           <Link
-            href="/pricing?mode=resources"
+            href={`/pricing?mode=${addon.kind}`}
             className="text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            ← Back to all tools
+            ← Back to all
           </Link>
         </div>
       </div>

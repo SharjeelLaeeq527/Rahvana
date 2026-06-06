@@ -14,6 +14,7 @@ import {
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import AddResourceCard from "@/components/resources/AddResourceCard";
 
 // --- Types ---
 interface Service {
@@ -61,6 +62,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
   const [selectedCategoryId, setSelectedCategoryId] = useState("All");
   const [visibleCount, setVisibleCount] = useState(7); // Default to all
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const plan = usePlan();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -179,6 +181,14 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     })
     .sort((a, b) => a.title.localeCompare(b.title));
 
+  // "My Resources" (embedded) view: only the services the user has unlocked
+  // (via plan tier or purchased add-ons); free services always show.
+  const isOwned = (feature?: string) =>
+    !feature || (!plan.isLoading && !plan.isLocked(feature));
+  const displayServices = isEmbedded
+    ? filteredServices.filter((service) => isOwned(service.entitlementFeature))
+    : filteredServices;
+
   return (
     <div
       className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${isEmbedded ? "" : "pt-16"
@@ -196,7 +206,8 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
       </div>
 
       <div className="w-full site-main-px site-main-py">
-        {/* Hero Section */}
+        {/* Hero Section — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
         <section className={`text-center mb-5 md:mb-10 pt-1`}>
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
             {t("pages.services.heroTitle")}
@@ -205,8 +216,10 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
             {t("pages.services.heroDescription")}
           </p>
         </section>
+        )}
 
         {/* Search Bar */}
+        {!isEmbedded && (
         <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
           <input
@@ -217,8 +230,10 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
           />
         </div>
+        )}
 
-        {/* Categories */}
+        {/* Categories — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
         <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           {/* Hidden container for measuring */}
           <div
@@ -286,19 +301,26 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
             )}
           </div>
         </div>
+        )}
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
-          {filteredServices.length > 0 ? (
-            filteredServices.map((service, index) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                index={index}
-                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
-              />
-            ))
-          ) : (
+          {displayServices.map((service, index) => (
+            <ServiceCard
+              key={service.id}
+              service={service}
+              index={index}
+              onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+            />
+          ))}
+          {isEmbedded && (
+            <AddResourceCard
+              href="/pricing?mode=services"
+              label="Add service"
+              index={displayServices.length}
+            />
+          )}
+          {!isEmbedded && displayServices.length === 0 && (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               {t("pages.services.noResults")}
             </div>

@@ -119,12 +119,13 @@ export default function Footer() {
               {t("footer.tools") || "Tools"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
-              <Link
+              {/* Temporarily hidden — Case Strength Analyzer (Executive-only feature). */}
+              {/* <Link
                 href="/visa-case-strength-checker"
                 className="text-slate-400 hover:text-white transition-colors"
               >
                 {t("toolsPage.toolsItems.case-strength-analyzer.title")}
-              </Link>
+              </Link> */}
               <Link
                 href="/visa-eligibility"
                 className="text-slate-400 hover:text-white transition-colors"

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { usePlan } from "@/app/context/PlanContext";
+import AddResourceCard from "@/components/resources/AddResourceCard";
 
 // --- Data & Types ---
 
@@ -203,6 +204,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
   const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
   const [visibleCount, setVisibleCount] = useState(7);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const plan = usePlan();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -268,6 +270,14 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
+  // "My Resources" (embedded) view: only the guides the user has unlocked
+  // (via plan tier or purchased add-ons); free guides always show.
+  const isOwned = (feature?: string) =>
+    !feature || (!plan.isLoading && !plan.isLocked(feature));
+  const displayGuides = isEmbedded
+    ? filteredGuides.filter((guide) => isOwned(guide.entitlementFeature))
+    : filteredGuides;
+
   return (
     <div
       className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${isEmbedded ? "" : "pt-16"
@@ -284,7 +294,8 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Hero Section */}
+        {/* Hero Section — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
         <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
           <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
             <Link
@@ -303,8 +314,10 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
             common pitfalls to avoid.
           </p>
         </section>
+        )}
 
         {/* Search Bar */}
+        {!isEmbedded && (
         <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
           <input
@@ -315,8 +328,10 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
           />
         </div>
+        )}
 
-        {/* Categories */}
+        {/* Categories — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
         <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           <div
             ref={measureRef}
@@ -375,19 +390,26 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
             )}
           </div>
         </div>
+        )}
 
         {/* Guides Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
-          {filteredGuides.length > 0 ? (
-            filteredGuides.map((guide, index) => (
-              <GuideCard
-                key={guide.id}
-                guide={guide}
-                index={index}
-                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
-              />
-            ))
-          ) : (
+          {displayGuides.map((guide, index) => (
+            <GuideCard
+              key={guide.id}
+              guide={guide}
+              index={index}
+              onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+            />
+          ))}
+          {isEmbedded && (
+            <AddResourceCard
+              href="/pricing?mode=guides"
+              label="Add guides"
+              index={displayGuides.length}
+            />
+          )}
+          {!isEmbedded && displayGuides.length === 0 && (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               No guides found matching your search.
             </div>

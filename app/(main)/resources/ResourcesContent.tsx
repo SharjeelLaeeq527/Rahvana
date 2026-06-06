@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export type ResourceTab = "toolbox" | "guides" | "services";
 
 const tabs: { id: ResourceTab; icon: React.ElementType; label: string }[] = [
-  { id: "toolbox", icon: Wrench, label: "Toolbox" },
+  { id: "toolbox", icon: Wrench, label: "Tools" },
   { id: "guides", icon: BookOpen, label: "Guides" },
   { id: "services", icon: Briefcase, label: "Services" },
 ];
@@ -33,8 +33,18 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
         <div className="absolute bottom-[20%] right-[10%] w-[40rem] h-[40rem] bg-[#32e0c4]/5 rounded-full blur-3xl" />
       </div>
 
+      {/* Page heading */}
+      <div className="text-center pt-24 pb-2">
+        <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+          My Resources
+        </h1>
+        <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+          Everything you own in one place — your tools, guides, and services. Add more anytime.
+        </p>
+      </div>
+
       {/* Tab Selector Section */}
-      <div className="flex justify-center pt-24 pb-8">
+      <div className="flex justify-center pt-6 pb-8">
         <div className="flex gap-2 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200 dark:border-slate-700/50 shadow-sm backdrop-blur-md relative">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;

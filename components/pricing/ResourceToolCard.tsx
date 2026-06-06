@@ -37,10 +37,19 @@ export default function ResourceToolCard({
   const Icon = getIcon(theme.icon);
   const title = addon.title ?? addon.id;
 
+  // Some add-ons (e.g. individual document guides) have no rich detail page.
+  // For those the card must not navigate — it would 404. The whole card only
+  // links through when a RESOURCE_DETAILS entry exists.
+  const navigable = Boolean(detail);
+
   return (
     <Link
-      href={`/resources/${addon.id}`}
-      className="group relative flex flex-col rounded-[18px] bg-card transition-all duration-300 hover:-translate-y-[3px]"
+      href={navigable ? `/resources/${addon.id}` : "#"}
+      onClick={navigable ? undefined : (e) => e.preventDefault()}
+      aria-disabled={navigable ? undefined : true}
+      className={`group relative flex flex-col rounded-[18px] bg-card transition-all duration-300 hover:-translate-y-[3px] ${
+        navigable ? "" : "cursor-default"
+      }`}
       style={{
         boxShadow: isAdded
           ? `0 0 0 1.5px ${accent}, 0 14px 34px -18px ${accent}66`
@@ -88,13 +97,15 @@ export default function ResourceToolCard({
           {addon.copy}
         </p>
 
-        {/* "View details" affordance */}
-        <span
-          className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100"
-          style={{ color: accent }}
-        >
-          View details <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-        </span>
+        {/* "View details" affordance — only when a detail page exists */}
+        {navigable && (
+          <span
+            className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100"
+            style={{ color: accent }}
+          >
+            View details <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        )}
 
         {/* Footer */}
         <div className="mt-auto flex items-end justify-between pt-3">

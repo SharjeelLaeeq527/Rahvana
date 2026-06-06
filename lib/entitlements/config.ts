@@ -306,10 +306,13 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
     executive: full(),
   },
 
-  /** Basic Interview Prep (non-mock general practice). */
+  /**
+   * Interview Prep tool. Paid: free & basic must buy the $200 Interview Prep
+   * add-on (or upgrade to Premium); Premium & Executive include it.
+   */
   basic_interview_prep: {
-    free: full(), // lockedUpgrade('basic'),
-    basic: full(),
+    free: lockedBuy(ADDON.interviewPrep, "premium"),
+    basic: lockedBuy(ADDON.interviewPrep, "premium"),
     premium: full(),
     executive: full(),
   },
@@ -331,11 +334,15 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
     executive: full(),
   },
 
-  /** Case Strength Analyzer tool. */
+  /**
+   * Case Strength Analyzer tool.
+   * Executive-only — no longer sold as a standalone add-on and not included in
+   * Premium. Free / Basic / Premium must upgrade to Executive to unlock.
+   */
   case_strength: {
-    free: lockedBuy(ADDON.caseStrength, "premium"),
-    basic: lockedBuy(ADDON.caseStrength, "premium"),
-    premium: full(),
+    free: lockedUpgrade("executive"),
+    basic: lockedUpgrade("executive"),
+    premium: lockedUpgrade("executive"),
     executive: full(),
   },
 

@@ -581,7 +581,7 @@ export function SiteHeader({
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                Resources
+                My Resources
                 <ChevronDown
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "resources" ? "rotate-180" : ""}`}
                 />
@@ -821,7 +821,7 @@ export function SiteHeader({
                   href="/resources"
                   className="block py-2 px-2 text-sm font-semibold text-[#0d7377] hover:underline transition-colors"
                 >
-                  View all Resources &rarr;
+                  View all My Resources &rarr;
                 </Link>
               </div>
             </motion.div>
@@ -1349,7 +1349,7 @@ export function SiteHeader({
                 >
                   <div className="flex items-center gap-3">
                     <ToolCase className="w-5 h-5 text-[#db8090] dark:text-[#db8090]" />
-                    <span className="font-bold">Resources</span>
+                    <span className="font-bold">My Resources</span>
                   </div>
                   <ChevronDown
                     className={`h-4 w-4 transition-transform duration-400 ${
@@ -1391,10 +1391,11 @@ export function SiteHeader({
                         </Link>
                         <div className="my-1 border-t border-slate-100" />
                         <Link
-                          href="#"
+                          href="/resources"
+                          onClick={() => setIsMenuOpen(false)}
                           className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
                         >
-                          View all Resources &rarr;
+                          View all My Resources &rarr;
                         </Link>
                       </div>
                     </motion.div>

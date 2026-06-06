@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
 import {
-  Brain,
+  // Brain, // unused — Case Strength Analyzer commented out
   LifeBuoy,
   MessageSquare,
   Zap,
@@ -83,7 +83,8 @@ const ADDON_CONFIG: Record<
   }
 > = {
   "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  // Temporarily hidden — Case Strength Analyzer commented out.
+  // "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
   "interview-prep": { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   photo: { icon: Camera, iconBg: "bg-rose-600 dark:bg-rose-500" },
   smart: { icon: Wand2, iconBg: "bg-cyan-600 dark:bg-cyan-500" },
@@ -99,39 +100,39 @@ const ADDON_CONFIG: Record<
 };
 
 /* ===========================================================================
-   RESOURCE CATEGORIES + PLAN RECOMMENDATIONS
-   =========================================================================== */
-const RESOURCE_CATS = [
-  { id: "all", label: "All", ids: [] },
-  {
-    id: "popular",
-    label: "Most Popular",
-    ids: ["case-strength", "smart", "consultation", "interview-prep"],
+   RESOURCE TABS + PLAN RECOMMENDATIONS
+   ===========================================================================
+   The à la carte resources are split into three top-level tabs by add-on
+   `kind` (tools | services | guides), mirroring the /resources page. */
+type ResourceMode = "tools" | "services" | "guides";
+
+const RESOURCE_TABS: Record<
+  ResourceMode,
+  { label: string; sub: string; heading: string; blurb: string }
+> = {
+  tools: {
+    label: "Tools",
+    sub: "Self-serve tools",
+    heading: "Buy individual tools",
+    blurb: "Self-serve tools you can use right away — no full journey plan required.",
   },
-  {
-    id: "forms",
-    label: "Forms & Case",
-    ids: ["smart", "sponsor", "case-strength", "221g"],
+  services: {
+    label: "Services",
+    sub: "Expert help",
+    heading: "Expert services",
+    blurb: "Human-delivered help when you want a specialist on your case.",
   },
-  {
-    id: "interview",
-    label: "Interview & Embassy",
-    ids: ["interview-prep", "photo"],
+  guides: {
+    label: "Guides",
+    sub: "Step-by-step guides",
+    heading: "Document guides",
+    blurb: "Country-specific, step-by-step guides for obtaining each required document.",
   },
-  {
-    id: "docs",
-    label: "Document Help",
-    ids: ["doc-review", "translate", "civil-guid"],
-  },
-  {
-    id: "support",
-    label: "Premium Support",
-    ids: ["consultation", "case-manager"],
-  },
-];
+};
 
 const PLAN_RECS: Record<string, string[]> = {
-  basic: ["smart", "case-strength", "sponsor", "interview-prep", "civil-guid"],
+  // "case-strength" temporarily hidden — Case Strength Analyzer commented out.
+  basic: ["smart", "sponsor", "interview-prep", "civil-guid"],
   premium: ["interview-prep", "doc-review", "consultation", "221g"],
   executive: ["case-manager", "consultation", "translate"],
 };
@@ -449,7 +450,7 @@ function PricingContent() {
 
   const isAnyCheckoutLoading = isProcessingAutoCheckout || isManualCheckoutLoading;
 
-  const [mode, setMode] = useState<"plans" | "resources">("plans");
+  const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
 
   const [visa, setVisa] = useState("IR-1 / CR-1");
@@ -460,7 +461,6 @@ function PricingContent() {
 
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
-  const [resourceCat, setResourceCat] = useState("popular");
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
 
   // Derived
@@ -483,18 +483,12 @@ function PricingContent() {
     [selectedPlan]
   );
 
-  const resourcesForCat = useMemo(() => {
-    if (resourceCat === "all") {
-      const titledAddons = ADDONS.filter(
-        (addon): addon is (typeof ADDONS)[number] & { title: string } =>
-          typeof addon.title === "string"
-      );
-      return [...titledAddons].sort((a, b) => a.title.localeCompare(b.title));
-    }
-    const cat = RESOURCE_CATS.find((c) => c.id === resourceCat);
-    if (!cat) return ADDONS;
-    return ADDONS.filter((a) => cat.ids.includes(a.id));
-  }, [resourceCat]);
+  const resourcesForMode = useMemo(() => {
+    if (mode === "plans") return [];
+    return ADDONS.filter((a) => a.kind === mode).sort((a, b) =>
+      a.title.localeCompare(b.title)
+    );
+  }, [mode]);
 
   // Handlers
   const handleCheckout = useCallback(
@@ -543,7 +537,19 @@ function PricingContent() {
     const visaCat = searchParams.get("visa");
     const modeParam = searchParams.get("mode");
     const autoCheckout = searchParams.get("auto_checkout") === "true";
-    if (modeParam === "resources" || modeParam === "plans") setMode(modeParam);
+    if (
+      modeParam === "plans" ||
+      modeParam === "tools" ||
+      modeParam === "services" ||
+      modeParam === "guides"
+    ) {
+      setMode(modeParam);
+    } else if (modeParam === "resources") {
+      // Legacy alias — route to the tab that owns the first deep-linked add-on.
+      const firstAddon = addons?.split(",").filter(Boolean)[0];
+      const found = firstAddon ? ADDONS.find((a) => a.id === firstAddon) : undefined;
+      setMode((found?.kind as ResourceMode) ?? "tools");
+    }
     if (plan) setSelectedPlan(plan);
     if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
     if (visaCat) setVisa(visaCat);
@@ -632,11 +638,13 @@ function PricingContent() {
                 label: "Journey Plans",
                 sub: "Full roadmap guidance",
               },
+              { id: "tools" as const, label: RESOURCE_TABS.tools.label, sub: RESOURCE_TABS.tools.sub },
               {
-                id: "resources" as const,
-                label: "Individual Resources",
-                sub: "Buy à la carte",
+                id: "services" as const,
+                label: RESOURCE_TABS.services.label,
+                sub: RESOURCE_TABS.services.sub,
               },
+              { id: "guides" as const, label: RESOURCE_TABS.guides.label, sub: RESOURCE_TABS.guides.sub },
             ] as const
           ).map(({ id, label, sub }) => (
             <button
@@ -1235,43 +1243,26 @@ function PricingContent() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          INDIVIDUAL RESOURCES MODE
+          INDIVIDUAL RESOURCES MODE — Tools / Services / Guides tabs
           ═══════════════════════════════════════════════════════════════════════ */}
-      {mode === "resources" && (
+      {mode !== "plans" && (
         <div className="animate-in fade-in duration-300">
           <section className={`${W} pt-7 pb-5`}>
-            <div className={eyebrow}>Individual Resources</div>
+            <div className={eyebrow}>{RESOURCE_TABS[mode].label}</div>
             <h1 className="text-[clamp(24px,3.5vw,42px)] font-bold leading-[1.1] tracking-tight m-0">
-              Buy individual tools and services
+              {RESOURCE_TABS[mode].heading}
             </h1>
             <p className="mt-2 text-muted-foreground text-[14.5px] max-w-[520px]">
-              Choose only the help you need — no full journey plan required.
+              {RESOURCE_TABS[mode].blurb}
             </p>
           </section>
 
           <div className={`${W}`}>
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_284px] gap-6 items-start">
               <div>
-                {/* Category tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-1 mb-5">
-                  {RESOURCE_CATS.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setResourceCat(cat.id)}
-                      className={`px-4 py-[7px] rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 cursor-pointer transition-all ${
-                        resourceCat === cat.id
-                          ? "bg-primary text-white shadow-sm"
-                          : "bg-muted border border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Resource cards — clickable, open the tool detail page */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {resourcesForCat.map((addon) => (
+                  {resourcesForMode.map((addon) => (
                     <ResourceToolCard
                       key={addon.id}
                       addon={addon}

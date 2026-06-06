@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Search,
-  Brain,
+  // Brain, // unused — Case Strength Analyzer tool commented out
   LifeBuoy,
   Compass,
   MessageSquare,
@@ -27,6 +27,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "../../context/PlanContext";
 import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
 import { ROUTE_FEATURE_MAP } from "@/lib/entitlements/routeFeatureMap";
+import AddResourceCard from "@/components/resources/AddResourceCard";
 
 import {
   DropdownMenu,
@@ -60,17 +61,18 @@ interface Tool {
 
 const TOOLS: Tool[] = [
   // AI & Planning
-  {
-    id: "case-strength-analyzer",
-    title: "Case Strength Analyzer",
-    description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
-    category: "AI & Planning",
-    href: "/visa-case-strength-checker",
-    icon: Brain,
-    iconSrc: "/icons/case-strength-analyser.svg",
-    badge: "Live",
-    entitlementFeature: "case_strength",
-  },
+  // Temporarily hidden — Case Strength Analyzer tool commented out.
+  // {
+  //   id: "case-strength-analyzer",
+  //   title: "Case Strength Analyzer",
+  //   description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
+  //   category: "AI & Planning",
+  //   href: "/visa-case-strength-checker",
+  //   icon: Brain,
+  //   iconSrc: "/icons/case-strength-analyser.svg",
+  //   badge: "Live",
+  //   entitlementFeature: "case_strength",
+  // },
   {
     id: "221g-planner",
     title: "221(g) Action Planner",
@@ -221,6 +223,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   const [visibleCount, setVisibleCount] = useState(7);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const { t } = useLanguage();
+  const plan = usePlan();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -282,6 +285,14 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
+  // "My Resources" (embedded) view: only the tools the user actually owns —
+  // free/public tools plus anything unlocked by their plan or purchased add-ons.
+  const isOwned = (feature?: string) =>
+    !feature || (!plan.isLoading && !plan.isLocked(feature));
+  const displayTools = isEmbedded
+    ? filteredTools.filter((tool) => isOwned(tool.entitlementFeature))
+    : filteredTools;
+
   return (
     <div
       className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${isEmbedded ? "" : "pt-16"}`}
@@ -298,18 +309,21 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
       </div>
 
       <div className="site-main-px site-main-py">
-        {/* Hero */}
-        <section className="text-center mb-5 md:mb-10 pt-1">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-            {t("toolsPage.heroTitle") || "Create. Check. Comply."}
-          </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            {t("toolsPage.heroDescription") ||
-              "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
-          </p>
-        </section>
+        {/* Hero — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
+          <section className="text-center mb-5 md:mb-10 pt-1">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+              {t("toolsPage.heroTitle") || "Create. Check. Comply."}
+            </h1>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+              {t("toolsPage.heroDescription") ||
+                "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
+            </p>
+          </section>
+        )}
 
         {/* Search */}
+        {!isEmbedded && (
         <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
           <input
@@ -320,8 +334,10 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
             className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
           />
         </div>
+        )}
 
-        {/* Category tabs */}
+        {/* Category tabs — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
         <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
           <div
             ref={measureRef}
@@ -374,19 +390,26 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
             )}
           </div>
         </div>
+        )}
 
         {/* Tools grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
-          {filteredTools.length > 0 ? (
-            filteredTools.map((tool, index) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                index={index}
-                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
-              />
-            ))
-          ) : (
+          {displayTools.map((tool, index) => (
+            <ToolCard
+              key={tool.id}
+              tool={tool}
+              index={index}
+              onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+            />
+          ))}
+          {isEmbedded && (
+            <AddResourceCard
+              href="/pricing?mode=tools"
+              label="Add tool"
+              index={displayTools.length}
+            />
+          )}
+          {!isEmbedded && displayTools.length === 0 && (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               {t("toolsPage.noToolsFound") || "No tools found matching your search."}
             </div>

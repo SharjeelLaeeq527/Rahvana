@@ -116,6 +116,13 @@ export const SLUG_THEME: Record<string, { accent: string; tint: string; icon: st
   translate: { accent: "#9B6220", tint: "#FBF2E3", icon: "FileUp" },
   "civil-guid": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Globe" },
   "case-manager": { accent: "#1A5FA3", tint: "#EAF1FB", icon: "UserCheck" },
+  // Individual document guides (buyable à la carte on the pricing Guides tab).
+  "guide-passport": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Globe" },
+  "guide-police": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "ShieldCheck" },
+  "guide-cnic": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "FileText" },
+  "guide-birth-cert": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "FileText" },
+  "guide-frc": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "FileBadge" },
+  "guide-nikah-nama": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "ScrollText" },
 };
 
 export function getSlugTheme(slug: string) {

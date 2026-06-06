@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { ADDONS } from "@/app/(main)/pricing/data/pricing";
 
 /**
- * Detail-page CTA. Deep-links back to the pricing page in "Individual Resources"
- * mode with this add-on pre-selected, so it lands straight in the order summary.
+ * Detail-page CTA. Deep-links back to the pricing page on the add-on's tab
+ * (Tools / Services / Guides) with this add-on pre-selected, so it lands
+ * straight in the order summary.
  */
 export default function AddToOrderButton({
   slug,
@@ -21,7 +23,9 @@ export default function AddToOrderButton({
   variant?: "solid" | "outline";
   className?: string;
 }) {
-  const href = `/pricing?mode=resources&addons=${encodeURIComponent(slug)}`;
+  const kind =
+    (ADDONS.find((a) => a.id === slug) as { kind?: string } | undefined)?.kind ?? "tools";
+  const href = `/pricing?mode=${kind}&addons=${encodeURIComponent(slug)}`;
 
   if (variant === "outline") {
     return (

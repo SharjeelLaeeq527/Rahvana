@@ -15,7 +15,7 @@ import {
   Syringe,
   MessageSquare,
   FileUp,
-  Brain,
+  // Brain, // unused — Case Strength Analyzer commented out
   LifeBuoy,
   Compass,
   Calculator,
@@ -537,13 +537,14 @@ export const NAV_DATA: Record<string, NavSection> = {
         id: "ai-planning",
         label: "AI & Planning",
         items: [
-          {
-            icon: <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
-            title: "Case Strength Analyzer",
-            description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
-            href: "/visa-case-strength-checker",
-            // badge: "Live",
-          },
+          // Temporarily hidden — Case Strength Analyzer (Executive-only feature).
+          // {
+          //   icon: <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
+          //   title: "Case Strength Analyzer",
+          //   description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
+          //   href: "/visa-case-strength-checker",
+          //   // badge: "Live",
+          // },
           {
             icon: <LifeBuoy className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
             title: "221(g) Action Planner",
