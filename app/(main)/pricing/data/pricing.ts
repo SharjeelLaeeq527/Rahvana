@@ -67,7 +67,7 @@ export const defaultPlans: PlanData[] = [
     false,
     "The full self-guided roadmap. Every step visible with checklists and core tools. No hand-holding needed.",
     [
-      "Full roadmap — all steps & chapters visible",
+      "Full roadmap: all steps & chapters visible",
       "Checklist engine for your case",
       "Portal wallet (save credentials securely)",
       "Visa Bulletin Monitor & DQ Status Check",
@@ -86,7 +86,7 @@ export const defaultPlans: PlanData[] = [
     [
       "Everything in Basic",
       "Step-by-step guides in every step",
-      "Document vault — upload & auto-extract",
+      "Document vault: upload & auto-extract",
       "Tracker & reminders (DQ, interview, case status)",
       "Smart Form Filler (I-130 / I-130A)",
       "Case Strength Analyzer & Sponsorship Calculator",
@@ -107,10 +107,10 @@ export const defaultPlans: PlanData[] = [
       "Everything in Premium",
       "221(g) Action Planner",
       "Mock interview sessions",
-      "Expert case review — 2 sessions included",
-      "Expert consultation calls — 2 sessions included",
+      "Expert case review: 2 sessions included",
+      "Expert consultation calls: 2 sessions included",
       "PCC filing assistance (Sindh only)",
-      "Document translation — 2 documents included",
+      "Document translation: 2 documents included",
     ]
   ),
 ];
@@ -141,7 +141,7 @@ export const CR2Plans: PlanData[] = [
     false,
     "The full self-guided roadmap. Every step visible with checklists and core tools.",
     [
-      "Full roadmap — all steps & chapters visible",
+      "Full roadmap: all steps & chapters visible",
       "Checklist engine for your case",
       "Portal wallet (save credentials securely)",
       "Visa Bulletin Monitor & DQ Status Check",
@@ -160,7 +160,7 @@ export const CR2Plans: PlanData[] = [
     [
       "Everything in Basic",
       "Step-by-step guides in every step",
-      "Document vault — upload & auto-extract",
+      "Document vault: upload & auto-extract",
       "Tracker & reminders (DQ, interview, case status)",
       "Smart Form Filler (I-130 / I-130A)",
       "Case Strength Analyzer & Sponsorship Calculator",
@@ -181,10 +181,10 @@ export const CR2Plans: PlanData[] = [
       "Everything in Premium",
       "221(g) Action Planner",
       "Mock interview sessions",
-      "Expert case review — 2 sessions included",
-      "Expert consultation calls — 2 sessions included",
+      "Expert case review: 2 sessions included",
+      "Expert consultation calls: 2 sessions included",
       "PCC filing assistance (Sindh only)",
-      "Document translation — 2 documents included",
+      "Document translation: 2 documents included",
     ]
   ),
 ];
@@ -203,7 +203,7 @@ export const VISA_CATEGORIES: VisaCategoryData[] = [
 export const HELPER_DATA = [
   {
     title: "The confident self-starter",
-    copy: "You want structure and automation. You'll drive the process yourself — no hand-holding needed.",
+    copy: "You want structure and automation. You'll drive the process yourself, no hand-holding needed.",
     plan: "basic",
   },
   {
@@ -232,15 +232,15 @@ export const COMPARISON_GROUPS = [
   {
     label: "Core Journey Platform",
     rows: [
-      ["Full visa roadmap — all chapters & steps", "Included", "Included", "Included"],
+      ["Full visa roadmap: all chapters & steps", "Included", "Included", "Included"],
       ["Checklist engine for your case", "Included", "Included", "Included"],
       ["Step-by-step guides in every step", "—", "Included", "Included"],
-      ["Document vault — upload & auto-extract", "—", "Included", "Included"],
+      ["Document vault: upload & auto-extract", "—", "Included", "Included"],
       ["Tracker & reminders", "—", "Included", "Included"],
     ],
   },
   {
-    label: "Tools — Included in All Paid Plans",
+    label: "Tools: Included in All Paid Plans",
     rows: [
       ["Portal Wallet (credential storage)", "Included", "Included", "Included"],
       ["Visa Bulletin Monitor", "Included", "Included", "Included"],
@@ -251,7 +251,7 @@ export const COMPARISON_GROUPS = [
     ],
   },
   {
-    label: "Tools — Premium Upgrades (Add-on for Basic)",
+    label: "Tools: Premium Upgrades (Add-on for Basic)",
     rows: [
       ["Case Strength Analyzer", "—", "Included", "Included"],
       ["Rapid Fire Interview Prep", "—", "Included", "Included"],
@@ -263,7 +263,7 @@ export const COMPARISON_GROUPS = [
     ],
   },
   {
-    label: "Tools — Executive Only (Add-on for Basic & Premium)",
+    label: "Tools: Executive Only (Add-on for Basic & Premium)",
     rows: [
       ["221(g) Action Planner", "—", "—", "Included"],
       ["Mock Interview", "—", "—", "Included"],
@@ -320,7 +320,7 @@ export const ADDONS = [
     title: "Photo Booth",
     price: 15,
     unit: "per photo",
-    copy: "Make a fully compliant biometric passport or visa photo in minutes — no studio visit needed.",
+    copy: "Make a fully compliant biometric passport or visa photo in minutes, no studio visit needed.",
     note: "One compliant photo output per credit",
   },
   {
@@ -387,15 +387,15 @@ export const ADDONS = [
 export const FAQS: [string, string][] = [
   [
     "How does billing work?",
-    "Your Rahvana plan is billed monthly at a fixed rate — $29/mo for Basic, $58/mo for Premium, or $92/mo for Executive. You are committing to the full plan total (e.g. $699 for Premium) which is collected in monthly installments over the life of your journey. You are not charged all at once, but the full amount is your financial commitment.",
+    "Your Rahvana plan is billed monthly at a fixed rate: $29/mo for Basic, $58/mo for Premium, or $92/mo for Executive. You are committing to the full plan total (e.g. $699 for Premium) which is collected in monthly installments over the life of your journey. You are not charged all at once, but the full amount is your financial commitment.",
   ],
   [
     "Are government fees included?",
-    "No. USCIS, NVC, embassy, and medical examination fees are paid separately and are not included in any Rahvana plan. Our platform supports you through the process — it does not cover government-mandated costs.",
+    "No. USCIS, NVC, embassy, and medical examination fees are paid separately and are not included in any Rahvana plan. Our platform supports you through the process. It does not cover government-mandated costs.",
   ],
   [
     "Can I upgrade later?",
-    "Yes. You can upgrade from Basic to Premium or Executive at any time during your journey. Your existing progress, data, and add-ons carry over — you only pay the difference.",
+    "Yes. You can upgrade from Basic to Premium or Executive at any time during your journey. Your existing progress, data, and add-ons carry over, so you only pay the difference.",
   ],
   [
     "What are add-ons and how do they work?",
@@ -407,11 +407,11 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Does Rahvana replace an immigration lawyer?",
-    "Rahvana provides guided workflows, automation, checklists, and structural reviews to help you navigate the process independently. For highly complex cases — prior visa denials, criminal history, or unusual circumstances — we recommend consulting a licensed immigration attorney.",
+    "Rahvana provides guided workflows, automation, checklists, and structural reviews to help you navigate the process independently. For highly complex cases (prior visa denials, criminal history, or unusual circumstances), we recommend consulting a licensed immigration attorney.",
   ],
   [
     "How long do I have access after purchasing?",
-    "Your plan covers your full immigration journey from the date of purchase. Once purchased, plans cannot be cancelled after the grace period — please review features carefully before committing. You can upgrade to a higher tier at any time, and your journey data and progress are always preserved.",
+    "Your plan covers your full immigration journey from the date of purchase. Once purchased, plans cannot be cancelled after the grace period. Please review features carefully before committing. You can upgrade to a higher tier at any time, and your journey data and progress are always preserved.",
   ],
   [
     "Do you offer refunds?",

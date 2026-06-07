@@ -28,49 +28,91 @@ interface DynamicQuestionStepProps {
   error?: string | null;
 }
 
-// Section-based icon mapping - using consistent teal color
-const SECTION_CONFIG: Record<string, { icon: React.ReactNode }> = {
-  marriage_and_basic_info: {
-    icon: <Heart className="w-8 h-8" />,
-  },
-  relationship_origin: {
-    icon: <Users className="w-8 h-8" />,
-  },
-  relationship_strength: {
-    icon: <Heart className="w-8 h-8" />,
-  },
-  financial_profile: {
-    icon: <DollarSign className="w-8 h-8" />,
-  },
-  immigration_history: {
-    icon: <Shield className="w-8 h-8" />,
-  },
-  documentation: {
-    icon: <FileText className="w-8 h-8" />,
-  },
-  work_and_education: {
-    icon: <Briefcase className="w-8 h-8" />,
-  },
-  living_situation: {
-    icon: <Home className="w-8 h-8" />,
-  },
-  education_background: {
-    icon: <GraduationCap className="w-8 h-8" />,
-  },
-  visa_and_interview: {
-    icon: <FileText className="w-8 h-8" />,
-  },
-  health_and_medical: {
-    icon: <CheckCircle2 className="w-8 h-8" />,
-  },
-  employment_and_income: {
-    icon: <Briefcase className="w-8 h-8" />,
-  },
-};
+// Section-based icon and color mapping
+const SECTION_CONFIG: Record<string, { icon: React.ReactNode; color: string; colorLight: string }> =
+  {
+    marriage_and_basic_info: {
+      icon: <Heart className="w-8 h-8" />,
+      color: "#db8090",
+      colorLight: "#fce8ec",
+    },
+    relationship_origin: {
+      icon: <Heart className="w-8 h-8" />,
+      color: "#db8090",
+      colorLight: "#fce8ec",
+    },
+    relationship_strength: {
+      icon: <Heart className="w-8 h-8" />,
+      color: "#9c6f38",
+      colorLight: "#f3ede7",
+    },
+    financial_profile: {
+      icon: <DollarSign className="w-8 h-8" />,
+      color: "#9c6f38",
+      colorLight: "#f3ede7",
+    },
+    immigration_history: {
+      icon: <Shield className="w-8 h-8" />,
+      color: "#89a4a0",
+      colorLight: "#e8f0ed",
+    },
+    documentation: {
+      icon: <FileText className="w-8 h-8" />,
+      color: "#6b5b7b",
+      colorLight: "#efe8f3",
+    },
+    work_and_education: {
+      icon: <Briefcase className="w-8 h-8" />,
+      color: "#6b5b7b",
+      colorLight: "#efe8f3",
+    },
+    living_situation: {
+      icon: <Home className="w-8 h-8" />,
+      color: "#6b5b7b",
+      colorLight: "#efe8f3",
+    },
+    education_background: {
+      icon: <GraduationCap className="w-8 h-8" />,
+      color: "#89a4a0",
+      colorLight: "#e8f0ed",
+    },
+    visa_and_interview: {
+      icon: <FileText className="w-8 h-8" />,
+      color: "#0d7377",
+      colorLight: "#e8f6f6",
+    },
+    health_and_medical: {
+      icon: <CheckCircle2 className="w-8 h-8" />,
+      color: "#89a4a0",
+      colorLight: "#e8f0ed",
+    },
+    employment_and_income: {
+      icon: <Briefcase className="w-8 h-8" />,
+      color: "#9c6f38",
+      colorLight: "#f3ede7",
+    },
+    family_and_social: {
+      icon: <Users className="w-8 h-8" />,
+      color: "#89a4a0",
+      colorLight: "#e8f0ed",
+    },
+    petitioner_and_plans: {
+      icon: <Briefcase className="w-8 h-8" />,
+      color: "#0d7377",
+      colorLight: "#e8f6f6",
+    },
+    background_check: {
+      icon: <Shield className="w-8 h-8" />,
+      color: "#db8090",
+      colorLight: "#fce8ec",
+    },
+  };
 
-// Fallback icon
+// Fallback icon and color
 const DEFAULT_CONFIG = {
   icon: <BookOpen className="w-8 h-8" />,
+  color: "#0d7377",
+  colorLight: "#e8f6f6",
 };
 
 // Color Palette
@@ -98,8 +140,10 @@ export function DynamicQuestionStep({
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Get section-specific icon
+  // Get section-specific icon and colors
   const sectionConfig = SECTION_CONFIG[section.id] || DEFAULT_CONFIG;
+  const sectionColor = sectionConfig.color;
+  const sectionColorLight = sectionConfig.colorLight;
 
   const processTemplate = (template: string): string => {
     if (!template) return template;
@@ -340,53 +384,51 @@ export function DynamicQuestionStep({
       case "boolean":
         return (
           <div className="grid grid-cols-2 gap-3">
-            {["Yes", "No"].map((option) => (
-              <button
-                key={option}
-                onClick={() => handleInputChange(question.key, option === "Yes")}
-                className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
-                style={{
-                  borderColor:
-                    (option === "Yes" && value === true) || (option === "No" && value === false)
-                      ? COLORS.primary
-                      : COLORS.border,
-                  backgroundColor:
-                    (option === "Yes" && value === true) || (option === "No" && value === false)
-                      ? COLORS.primaryLight
-                      : "white",
-                  color:
-                    (option === "Yes" && value === true) || (option === "No" && value === false)
-                      ? COLORS.primary
-                      : "#374151",
-                }}
-              >
-                {option}
-              </button>
-            ))}
+            {["Yes", "No"].map((option) => {
+              const isOptionSelected =
+                (option === "Yes" && value === true) || (option === "No" && value === false);
+              return (
+                <button
+                  key={option}
+                  onClick={() => handleInputChange(question.key, option === "Yes")}
+                  className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
+                  style={{
+                    borderColor: isOptionSelected ? sectionColor : COLORS.border,
+                    backgroundColor: isOptionSelected ? sectionColorLight : "white",
+                    color: isOptionSelected ? sectionColor : "#374151",
+                  }}
+                >
+                  {option}
+                </button>
+              );
+            })}
           </div>
         );
 
       case "select":
         const optionCount = question.options?.length || 0;
 
-        // For 2 or 4 options: Use button-based selection (like page.tsx)
+        // For 2 or 4 options: Use button-based selection
         if (optionCount === 2 || optionCount === 4) {
           return (
             <div className={`grid gap-3 ${optionCount === 2 ? "grid-cols-2" : "grid-cols-2"}`}>
-              {question.options?.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => handleInputChange(question.key, option)}
-                  className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
-                  style={{
-                    borderColor: value === option ? COLORS.primary : COLORS.border,
-                    backgroundColor: value === option ? COLORS.primaryLight : "white",
-                    color: value === option ? COLORS.primary : "#374151",
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
+              {question.options?.map((option) => {
+                const isOptionSelected = value === option;
+                return (
+                  <button
+                    key={option}
+                    onClick={() => handleInputChange(question.key, option)}
+                    className="p-4 rounded-xl border-2 transition-all font-semibold text-base"
+                    style={{
+                      borderColor: isOptionSelected ? sectionColor : COLORS.border,
+                      backgroundColor: isOptionSelected ? sectionColorLight : "white",
+                      color: isOptionSelected ? sectionColor : "#374151",
+                    }}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
             </div>
           );
         }
@@ -422,12 +464,12 @@ export function DynamicQuestionStep({
         <div className="mb-10 sm:mb-14 text-center">
           <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg text-white"
-            style={{ backgroundColor: COLORS.primary }}
+            style={{ backgroundColor: sectionColor }}
           >
             {sectionConfig.icon}
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: COLORS.primary }}>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: sectionColor }}>
             {section.title}
           </h2>
 
@@ -458,7 +500,7 @@ export function DynamicQuestionStep({
                     <div>
                       <label
                         className="text-lg font-semibold block"
-                        style={{ color: COLORS.primary }}
+                        style={{ color: sectionColor }}
                       >
                         {processTemplate(question.label)}
                         {question.required && <span style={{ color: COLORS.warning }}> *</span>}
@@ -475,7 +517,7 @@ export function DynamicQuestionStep({
                     <div>
                       <label
                         className="text-lg font-semibold block"
-                        style={{ color: COLORS.primary }}
+                        style={{ color: sectionColor }}
                       >
                         {processTemplate(question.label)}
                         {question.required && <span style={{ color: COLORS.warning }}> *</span>}
@@ -502,8 +544,8 @@ export function DynamicQuestionStep({
             onClick={onBack}
             className="px-6 py-2 rounded-lg font-semibold text-sm border-2 transition-all bg-white hover:bg-slate-50"
             style={{
-              borderColor: COLORS.primary,
-              color: COLORS.primary,
+              borderColor: sectionColor,
+              color: sectionColor,
             }}
           >
             ← Back
@@ -511,9 +553,10 @@ export function DynamicQuestionStep({
 
           <button
             onClick={handleNext}
-            className="px-6 py-2 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90"
+            className="px-6 py-2 rounded-lg font-semibold text-sm text-white transition-all hover:opacity-90 shadow-lg"
             style={{
-              backgroundColor: COLORS.primary,
+              backgroundColor: sectionColor,
+              boxShadow: `0 8px 20px -6px ${sectionColor}40`,
             }}
           >
             Next →

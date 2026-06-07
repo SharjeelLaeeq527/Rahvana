@@ -763,9 +763,9 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
             )}
           </div>
 
-          {/* NEW: Answer Modal */}
+          {/* Answer Modal */}
           {showAnswerModal && selectedQuestion && (
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] animate-in fade-in duration-200">
               <div className="bg-white rounded-2xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.35)] max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-[rgba(13,115,119,0.08)] animate-in zoom-in-95 duration-200">
                 {/* Modal Header */}
                 <div
@@ -815,7 +815,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                           placeholder="Write your answer here... (minimum 10 characters)"
                           className="min-h-40 text-base border-2 border-slate-200 focus:border-teal-500 rounded-lg pr-12"
                         />
-                        {/* NEW: Only show AI icon if answer is saved */}
+                        {/* Only show AI icon if answer is saved */}
                         {savedAnswers[selectedQuestion.id] && (
                           <button
                             onClick={() =>
