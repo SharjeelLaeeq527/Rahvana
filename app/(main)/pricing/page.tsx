@@ -17,6 +17,8 @@ import {
   FileUp,
   UserCheck,
   Globe,
+  Stethoscope,
+  ShieldCheck,
   ArrowLeft,
   ArrowRight,
 } from "lucide-react";
@@ -92,6 +94,8 @@ const ADDON_CONFIG: Record<
   "doc-review": { icon: FileSearch, iconBg: "bg-amber-600 dark:bg-amber-500" },
   consultation: { icon: Users, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   translate: { icon: FileUp, iconBg: "bg-amber-600 dark:bg-amber-500" },
+  medical: { icon: Stethoscope, iconBg: "bg-rose-600 dark:bg-rose-500" },
+  pcc: { icon: ShieldCheck, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
   "case-manager": {
     icon: UserCheck,
     iconBg: "bg-indigo-600 dark:bg-indigo-500",

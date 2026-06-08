@@ -46,6 +46,7 @@ import {
   CalendarRange,
   LifeBuoy,
   FileUp,
+  Stethoscope,
   type LucideIcon,
 } from "lucide-react";
 
@@ -97,6 +98,7 @@ const ICONS: Record<string, LucideIcon> = {
   CalendarRange,
   LifeBuoy,
   FileUp,
+  Stethoscope,
 };
 
 export function getIcon(name?: string): LucideIcon {
@@ -114,6 +116,8 @@ export const SLUG_THEME: Record<string, { accent: string; tint: string; icon: st
   "doc-review": { accent: "#9B6220", tint: "#FBF2E3", icon: "FileSearch" },
   consultation: { accent: "#1A5FA3", tint: "#EAF1FB", icon: "Users" },
   translate: { accent: "#9B6220", tint: "#FBF2E3", icon: "FileUp" },
+  medical: { accent: "#903030", tint: "#FEF0F0", icon: "Stethoscope" },
+  pcc: { accent: "#3A6E4A", tint: "#EEF6F0", icon: "ShieldCheck" },
   "civil-guid": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Globe" },
   "case-manager": { accent: "#1A5FA3", tint: "#EAF1FB", icon: "UserCheck" },
   // Individual document guides (buyable à la carte on the pricing Guides tab).

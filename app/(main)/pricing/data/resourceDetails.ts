@@ -453,6 +453,90 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
   },
 
   // ───────────────────────────────────────────────────────────────────────────
+  medical: {
+    slug: "medical",
+    badge: "Done-for-You",
+    tagline: "We book your panel physician medical exam, so you don't have to.",
+    overview: [
+      "The immigrant visa medical exam has to be done by an embassy-approved panel physician, and getting a slot can mean phone calls, waitlists and confusion over which clinic is authorised. The Book Medical Appointment service hands that off to Rahvana.",
+      "Tell us where you are and your preferred timing, and we coordinate the booking with an approved panel clinic on your behalf, then confirm the appointment back to you.",
+    ],
+    highlights: [
+      { icon: "CalendarCheck", title: "We do the booking", text: "Rahvana coordinates your appointment with an approved panel physician for you." },
+      { icon: "Stethoscope", title: "Approved panel clinics", text: "Booked only with embassy-authorised panel physicians for the immigrant visa exam." },
+      { icon: "Clock", title: "No waitlist chasing", text: "Skip the phone calls and back-and-forth, we line up the slot." },
+      { icon: "BellRing", title: "Confirmation back to you", text: "You receive the confirmed date, time and clinic details once it's set." },
+    ],
+    steps: [
+      { title: "Submit your request", text: "Share your location and preferred timing for the medical exam." },
+      { title: "We coordinate the slot", text: "Rahvana contacts an approved panel clinic and arranges your appointment." },
+      { title: "Get your confirmation", text: "Receive the confirmed appointment details: date, time and clinic." },
+      { title: "Attend your exam", text: "Show up prepared, with what to bring laid out for you in advance." },
+    ],
+    audience: [
+      "Applicants who've reached the medical exam stage",
+      "Anyone unsure which clinics are panel-approved",
+      "People who'd rather hand off the scheduling",
+    ],
+    outcomes: [
+      "One panel physician appointment booked per request",
+      "A confirmed date, time and clinic",
+      "No waitlist chasing or guesswork on approved clinics",
+    ],
+    faqs: [
+      ["Are government or clinic fees included?", "No. This covers the booking coordination only. The panel physician's exam fee is paid separately, directly to the clinic."],
+      ["Which doctor will I see?", "An embassy-approved panel physician authorised to perform the immigrant visa medical exam in your area."],
+      ["How fast can I get an appointment?", "It depends on the panel clinic's availability, but we line up the earliest workable slot and confirm it back to you."],
+    ],
+    media: [
+      img("medical", "hero.png", "Book Medical Appointment service"),
+    ],
+    related: ["consultation", "guide-passport"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  pcc: {
+    slug: "pcc",
+    badge: "Done-for-You",
+    tagline: "Hand off your Sindh police certificate filing to us.",
+    overview: [
+      "A Police Character Certificate (PCC) is required for the visa, but the Sindh filing process means documents, fees and follow-ups with the authorities. The PCC Filing service does it for you, end to end, for Sindh.",
+      "You provide the required documents and we handle the submission and follow-up so you don't have to navigate the process yourself.",
+    ],
+    highlights: [
+      { icon: "Shield", title: "Done-for-you filing", text: "We submit and follow up on your Sindh PCC application on your behalf." },
+      { icon: "MapPin", title: "Sindh province", text: "Specialised handling for the Sindh police certificate workflow." },
+      { icon: "FileCheck2", title: "Document checklist", text: "We tell you exactly what to provide before filing so nothing stalls." },
+      { icon: "ClipboardCheck", title: "Status updates", text: "Stay informed as your application moves through the process." },
+    ],
+    steps: [
+      { title: "Submit your request", text: "Start your Sindh PCC filing and tell us about your case." },
+      { title: "Provide your documents", text: "Share the required documents from the checklist we give you." },
+      { title: "We file & follow up", text: "Rahvana submits the application and follows up with the authorities." },
+      { title: "Receive your certificate", text: "Get your Police Character Certificate once issued." },
+    ],
+    audience: [
+      "Applicants who need a Sindh police certificate for the visa",
+      "Anyone who'd rather not navigate the filing themselves",
+      "People short on time to chase the authorities",
+    ],
+    outcomes: [
+      "Done-for-you PCC filing for Sindh",
+      "A clear document checklist up front",
+      "Status updates through to issuance",
+    ],
+    faqs: [
+      ["Which provinces are covered?", "This service covers Sindh only."],
+      ["Are government fees included?", "No. The official PCC fee is paid separately. This service covers the filing and coordination on your behalf."],
+      ["What do I need to provide?", "We give you a checklist up front: typically your CNIC, passport copy, a recent photo, a utility bill and a verification letter."],
+    ],
+    media: [
+      img("pcc", "hero.png", "PCC Filing (Sindh) service"),
+    ],
+    related: ["guide-police", "consultation"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
   // Individual document guides. All copy below is sourced verbatim from the guide
   // wizard data in /data/<doc>-guide-data.json (whats_this, sections, document_need,
   // roadmap). Nothing here is invented — it mirrors the content of each live guide.

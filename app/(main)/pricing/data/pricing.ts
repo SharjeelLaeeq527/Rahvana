@@ -259,7 +259,7 @@ export const COMPARISON_GROUPS = [
       ["Smart Form Filler (I-130 / I-130A)", "—", "Included", "Included"],
       ["Sponsorship Calculator", "—", "Included", "Included"],
       ["Photo Booth", "—", "2 included", "Unlimited"],
-      ["Medical Appointment Booking", "—", "Included", "Included"],
+      ["Medical Appointment Booking", "Add On · $5", "Included", "Included"],
       ["Civil Document Guides", "—", "Included", "Included"],
     ],
   },
@@ -281,7 +281,7 @@ export const COMPARISON_GROUPS = [
   {
     label: "Services",
     rows: [
-      ["PCC Filing (Sindh Only)", "—", "—", "Included"],
+      ["PCC Filing (Sindh Only)", "Add On · $25", "Add On · $25", "Included"],
       ["Document Translation", "—", "—", "2 included"],
       // ["Dedicated Case Manager",                    "—",             "—",             "—"],
     ],
@@ -290,8 +290,8 @@ export const COMPARISON_GROUPS = [
 
 // ─── Add-on catalog (purchasable items; matches ADDON in config.ts) ───────────
 // NOT included: pdf_toolkit and snap_sign (included in Basic+).
-// NOT included: medical_booking (must upgrade to Premium, not purchasable as add-on).
-// NOT included: pcc_filing (must upgrade to Executive, not purchasable as add-on).
+// Medical Appointment Booking and PCC Filing (Sindh) are also sold as standalone
+// service add-ons here, in addition to being bundled into Premium / Executive.
 export const ADDONS = [
   {
     id: "221g",
@@ -376,6 +376,24 @@ export const ADDONS = [
     copy: "Certified translation with embassy-ready formatting. Covers standard civil documents (CNIC, birth cert, etc.).",
     note: "Delivered within 3 business days",
   },
+  {
+    id: "medical",
+    kind: "services",
+    title: "Book Medical Appointment",
+    price: 5,
+    unit: "per request",
+    copy: "We book your panel physician medical exam appointment for you and coordinate the scheduling through Rahvana.",
+    note: "One appointment booking per request",
+  },
+  {
+    id: "pcc",
+    kind: "services",
+    title: "PCC Filing (Sindh Only)",
+    price: 25,
+    unit: "per request",
+    copy: "Done-for-you police character certificate filing for Sindh, handled end-to-end on your behalf.",
+    note: "Sindh province only",
+  },
   // Temporarily disabled — service not currently offered.
   // {
   //   id: "case-manager",
@@ -453,6 +471,8 @@ export const ADDONS = [
 export const SERVICE_FLOW_HREF: Record<string, string> = {
   consultation: "/book-consultation",
   translate: "/document-translation",
+  medical: "/book-appointment",
+  pcc: "/police-verification/apply?province=Sindh",
 };
 
 // ─── FAQs ─────────────────────────────────────────────────────────────────────
