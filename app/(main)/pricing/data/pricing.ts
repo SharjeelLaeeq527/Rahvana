@@ -444,6 +444,17 @@ export const ADDONS = [
   },
 ];
 
+// ─── Service flows ────────────────────────────────────────────────────────────
+// Service-kind add-ons are NOT added to the cart like tools/guides. Instead the
+// user clicks "Explore" → lands on the service's /resources/[slug] info page →
+// then a CTA there sends them to a guided flow page that collects the required
+// info and lets them pay at checkout (e.g. /book-consultation). Map each service
+// add-on id to its flow route here (single source of truth for card + detail page).
+export const SERVICE_FLOW_HREF: Record<string, string> = {
+  consultation: "/book-consultation",
+  translate: "/document-translation",
+};
+
 // ─── FAQs ─────────────────────────────────────────────────────────────────────
 export const FAQS: [string, string][] = [
   [

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { ADDONS } from "@/app/(main)/pricing/data/pricing";
+import { ADDONS, SERVICE_FLOW_HREF } from "@/app/(main)/pricing/data/pricing";
 import {
   RESOURCE_DETAILS,
   RESOURCE_SLUGS,
@@ -90,6 +90,11 @@ export default async function ResourceDetailPage({
   const detail = getResourceDetail(slug);
   const addon = getAddon(slug);
   if (!detail || !addon) notFound();
+
+  // Services aren't added to the cart — they route to a guided flow page that
+  // collects info and handles payment at checkout (e.g. /book-consultation).
+  const serviceFlowHref =
+    addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
 
   const related = detail.related
     .map((rs) => ({ slug: rs, detail: RESOURCE_DETAILS[rs], addon: getAddon(rs) }))
@@ -187,7 +192,18 @@ export default async function ResourceDetailPage({
 
             {/* CTAs */}
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
+              {serviceFlowHref ? (
+                <Link
+                  href={serviceFlowHref}
+                  className="inline-flex items-center justify-center rounded-full px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ backgroundColor: TEAL }}
+                >
+                  Add {addon.title} info to checkout
+                  <span className="ml-2 font-normal text-white/80">→</span>
+                </Link>
+              ) : (
+                <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
+              )}
               <Link
                 href={`/pricing?mode=${addon.kind}`}
                 className="text-[14px] font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
@@ -439,16 +455,24 @@ export default async function ResourceDetailPage({
         >
           <div>
             <h2 className="text-[24px] leading-tight text-white" style={{ fontFamily: SERIF }}>
-              Add {addon.title} to your order
+              {serviceFlowHref
+                ? `Ready to start ${addon.title}?`
+                : `Add ${addon.title} to your order`}
             </h2>
-            <p className="mt-1.5 text-[14px] text-white/70">No full journey plan required.</p>
+            <p className="mt-1.5 text-[14px] text-white/70">
+              {serviceFlowHref
+                ? "Give us your details, then check out at the end."
+                : "No full journey plan required."}
+            </p>
           </div>
           <Link
-            href={`/pricing?mode=${addon.kind}&addons=${encodeURIComponent(slug)}`}
+            href={
+              serviceFlowHref ?? `/pricing?mode=${addon.kind}&addons=${encodeURIComponent(slug)}`
+            }
             className="inline-flex shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[15px] font-semibold transition-transform duration-200 hover:-translate-y-0.5"
             style={{ color: TEAL_DARK }}
           >
-            Add to order · ${addon.price}
+            {serviceFlowHref ? `Add ${addon.title} info to checkout →` : `Add to order · $${addon.price}`}
           </Link>
         </section>
 
