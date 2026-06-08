@@ -30,7 +30,7 @@ export function useQuestionSpeech() {
       synth.resume();
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1;
+      utterance.rate = 0.95;
       utterance.pitch = 1;
       utterance.volume = 1;
       utterance.lang = "en-US";
@@ -39,8 +39,15 @@ export function useQuestionSpeech() {
       // console.log("Available voices:", voices.length);
 
       const preferred =
-        voices.find((voice) => voice.name.includes("Google")) ||
-        voices.find((voice) => voice.lang === "en-US") ||
+        voices.find((v) => v.name === "Google US English") ||
+        voices.find(
+          (v) => v.name === "Microsoft Aria Online (Natural) - English (United States)"
+        ) ||
+        voices.find(
+          (v) => v.name === "Microsoft Jenny Online (Natural) - English (United States)"
+        ) ||
+        voices.find((v) => v.lang === "en-US" && v.localService) ||
+        voices.find((v) => v.lang.startsWith("en")) ||
         voices[0];
 
       if (preferred) {
