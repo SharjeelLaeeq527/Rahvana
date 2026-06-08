@@ -182,6 +182,26 @@ export async function GET(request: NextRequest) {
       activated = true;
     }
 
+    // ── 3e. POLICE VERIFICATION (one-time) ───────────────────────────────────
+    else if (productType === "pcc_filing" && productId) {
+      await supabase
+        .from("police_verification_requests")
+        .update({ payment_status: "paid" })
+        .eq("id", productId);
+
+      activated = true;
+    }
+
+    // ── 3e. Document Translation (one-time) ───────────────────────────────────
+    else if (productType === "document_translation" && productId) {
+      await supabase
+        .from("document_translations")
+        .update({ payment_status: "paid" })
+        .eq("id", productId);
+
+      activated = true;
+    }
+
     // 4. Mark payment record as succeeded (idempotent)
     await supabase
       .from("payments")

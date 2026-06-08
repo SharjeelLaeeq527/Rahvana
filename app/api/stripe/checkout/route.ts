@@ -27,8 +27,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     logDebug("Request body:", body);
-    const { productTier, userId, consultationId, appointmentId, policeVerificationId, addons, visaCategory, isUpgrade, currentTier } =
-      body;
+    const {
+      productTier,
+      userId,
+      consultationId,
+      appointmentId,
+      policeVerificationId,
+      documentTranslationId,
+      addons,
+      visaCategory,
+      isUpgrade,
+      currentTier,
+    } = body;
 
     // Validate required fields
     if (!userId) {
@@ -356,7 +366,10 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (requestError || !requestRecord) {
-        return NextResponse.json({ error: "Police verification request not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Police verification request not found" },
+          { status: 404 }
+        );
       }
 
       const pccPrice = 25; // $25 per police verification request
@@ -381,9 +394,48 @@ export async function POST(request: NextRequest) {
         product_type: "pcc_filing",
         product_id: policeVerificationId,
       };
+    } else if (documentTranslationId) {
+      const { data: requestRecord, error: requestError } = await supabase
+        .from("document_translations")
+        .select("*")
+        .eq("id", documentTranslationId)
+        .single();
+
+      if (requestError || !requestRecord) {
+        return NextResponse.json(
+          { error: "Document translation request not found" },
+          { status: 404 }
+        );
+      }
+
+      const documentTranslationPrice = 25; // $25 per document translation request
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Document Translation",
+              description: `Document Translation for ${requestRecord.full_name} (${requestRecord.documentType})`,
+            },
+            unit_amount: documentTranslationPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "document_translation",
+        product_id: documentTranslationId,
+      };
     } else {
       return NextResponse.json(
-        { error: "Either productTier, addons, consultationId, appointmentId, or policeVerificationId is required" },
+        {
+          error:
+            "Either productTier, addons, consultationId, appointmentId, documentTranslationId,  or policeVerificationId is required",
+        },
         { status: 400 }
       );
     }
@@ -413,7 +465,8 @@ export async function POST(request: NextRequest) {
     const dbProductType =
       sessionParams.metadata?.product_type === "standalone_addon"
         ? "journey_plan"
-        : (sessionParams.metadata?.product_type === "medical_booking" || sessionParams.metadata?.product_type === "pcc_filing")
+        : sessionParams.metadata?.product_type === "medical_booking" ||
+            sessionParams.metadata?.product_type === "pcc_filing"
           ? "consultation"
           : (sessionParams.metadata?.product_type as any) || "journey_plan";
 
