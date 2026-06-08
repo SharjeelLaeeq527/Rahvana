@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     logDebug("Request body:", body);
-    const { productTier, userId, consultationId, addons, visaCategory, isUpgrade, currentTier } =
+    const { productTier, userId, consultationId, appointmentId, policeVerificationId, addons, visaCategory, isUpgrade, currentTier } =
       body;
 
     // Validate required fields
@@ -315,9 +315,75 @@ export async function POST(request: NextRequest) {
         product_id: consultationId,
         consultation_reference: consultation.reference_id,
       };
+    } else if (appointmentId) {
+      const { data: appointment, error: appointmentError } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("id", appointmentId)
+        .single();
+
+      if (appointmentError || !appointment) {
+        return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+      }
+
+      const appointmentPrice = 5; // $5 per medical appointment booking
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Book Medical Appointment",
+              description: `Appointment for ${appointment.full_name} (${appointment.location})`,
+            },
+            unit_amount: appointmentPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "medical_booking",
+        product_id: appointmentId,
+      };
+    } else if (policeVerificationId) {
+      const { data: requestRecord, error: requestError } = await supabase
+        .from("police_verification_requests")
+        .select("*")
+        .eq("id", policeVerificationId)
+        .single();
+
+      if (requestError || !requestRecord) {
+        return NextResponse.json({ error: "Police verification request not found" }, { status: 404 });
+      }
+
+      const pccPrice = 25; // $25 per police verification request
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "PCC Filing (Sindh Only)",
+              description: `Police Verification for ${requestRecord.full_name} (${requestRecord.district})`,
+            },
+            unit_amount: pccPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "pcc_filing",
+        product_id: policeVerificationId,
+      };
     } else {
       return NextResponse.json(
-        { error: "Either productTier, addons, or consultationId is required" },
+        { error: "Either productTier, addons, consultationId, appointmentId, or policeVerificationId is required" },
         { status: 400 }
       );
     }
@@ -342,16 +408,23 @@ export async function POST(request: NextRequest) {
     // Save payment record in Supabase
 
     // FIX: Map standalone_addon to journey_plan for the DB insert to satisfy the check constraint,
-    // but keep it as standalone_addon in the Stripe metadata so the webhook works perfectly.
+    // and map medical_booking / pcc_filing to consultation to satisfy the check constraint as well,
+    // but keep it as medical_booking / pcc_filing in the Stripe metadata so the webhook/verify-session works perfectly.
     const dbProductType =
       sessionParams.metadata?.product_type === "standalone_addon"
         ? "journey_plan"
-        : (sessionParams.metadata?.product_type as any) || "journey_plan";
+        : (sessionParams.metadata?.product_type === "medical_booking" || sessionParams.metadata?.product_type === "pcc_filing")
+          ? "consultation"
+          : (sessionParams.metadata?.product_type as any) || "journey_plan";
 
     const dbProductId =
       sessionParams.metadata?.product_type === "standalone_addon"
         ? addons?.[0] || "addon"
-        : String(sessionParams.metadata?.product_id || "");
+        : sessionParams.metadata?.product_type === "medical_booking"
+          ? appointmentId
+          : sessionParams.metadata?.product_type === "pcc_filing"
+            ? policeVerificationId
+            : String(sessionParams.metadata?.product_id || "");
 
     await paymentService.createPayment({
       user_id: userId,

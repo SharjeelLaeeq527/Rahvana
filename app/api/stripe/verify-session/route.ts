@@ -172,6 +172,16 @@ export async function GET(request: NextRequest) {
       activated = true;
     }
 
+    // ── 3d. MEDICAL APPOINTMENT (one-time) ───────────────────────────────────
+    else if (productType === "medical_booking" && productId) {
+      await supabase
+        .from("appointments")
+        .update({ payment_status: "paid" })
+        .eq("id", productId);
+
+      activated = true;
+    }
+
     // 4. Mark payment record as succeeded (idempotent)
     await supabase
       .from("payments")
