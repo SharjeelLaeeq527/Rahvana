@@ -206,7 +206,7 @@ export const ADDON: Record<string, AddonInfo> = {
     name: "PDF Tool Kit",
     price: 69,
     unit: "one-time",
-  }
+  },
   // caseManager: {
   //   id: "case-manager",
   //   name: "Dedicated Case Manager",
@@ -300,7 +300,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** DQ Status Check tool. */
   dq_status_check: {
-    free: full(),//lockedUpgrade('basic'),
+    free: full(), //lockedUpgrade('basic'),
     basic: full(),
     premium: full(),
     executive: full(),
@@ -349,7 +349,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
   /** Interview Prep — Rapid Fire Mode. */
   interview_rapid_fire: {
     free: full(),
-    basic: lockedBuy(ADDON.interviewPrep, "premium"),
+    basic: limited(5),
     premium: full(),
     executive: full(),
   },
@@ -464,12 +464,12 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /**
    * Interview Prep — Mock Interview.
-   * Executive included; Basic & Premium can purchase as standalone add-on.
+   * Executive: full access. Premium & Basic: 5-question demo. Free: 5-question demo.
    */
   mock_interview: {
     free: full(),
-    basic: lockedBuy(ADDON.interviewPrep, "executive"),
-    premium: lockedBuy(ADDON.interviewPrep, "executive"),
+    basic: limited(5),
+    premium: limited(5),
     executive: full(),
   },
 

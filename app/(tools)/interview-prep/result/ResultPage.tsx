@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { msg, E } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
@@ -72,13 +72,40 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
   const canAccessRapidFire = (): boolean => {
     const entitlement = getEntitlement("interview_rapid_fire", plan.tier);
-    return entitlement.state === "full";
+    return entitlement.state === "full" || entitlement.state === "limited";
   };
 
   const canAccessMockInterview = (): boolean => {
     const entitlement = getEntitlement("mock_interview", plan.tier);
-    return entitlement.state === "full";
+    return entitlement.state === "full" || entitlement.state === "limited";
   };
+
+  // Check if tier has limited access (should only see free-tier questions)
+  const hasLimitedRapidFire = (): boolean => {
+    const entitlement = getEntitlement("interview_rapid_fire", plan.tier);
+    return entitlement.state === "limited";
+  };
+
+  const hasLimitedMockInterview = (): boolean => {
+    const entitlement = getEntitlement("mock_interview", plan.tier);
+    return entitlement.state === "limited";
+  };
+
+  // Filter questions for rapid fire mode - limited tiers only see free-tier questions
+  const rapidFireQuestions = useMemo(() => {
+    if (hasLimitedRapidFire()) {
+      return questionsList.filter((q) => q.tier === "free");
+    }
+    return questionsList;
+  }, [questionsList, plan.tier]);
+
+  // Filter questions for mock mode - limited tiers only see free-tier questions
+  const mockInterviewQuestions = useMemo(() => {
+    if (hasLimitedMockInterview()) {
+      return questionsList.filter((q) => q.tier === "free");
+    }
+    return questionsList;
+  }, [questionsList, plan.tier]);
 
   // Shuffle algorithm
   const shuffleQuestions = (questions: GeneratedQuestion[]): GeneratedQuestion[] => {
@@ -308,7 +335,6 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         <div className="relative z-10 text-center mb-8">
           <InterviewModeTabs
             mode={mode}
-            plan={plan}
             onPrep={() => setMode("prep")}
             onRapid={handleRapidFireModeClick}
             onMock={handleMockInterviewPageStart}
@@ -322,7 +348,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
         <MockInterviewModePage
           sessionId={sessionId}
-          questions={questionsList}
+          questions={mockInterviewQuestions}
           onExit={handleMockInterviewPageExit}
         />
       </div>
@@ -333,7 +359,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
     return (
       <RapidFireModePage
         sessionId={sessionId}
-        questions={questionsList}
+        questions={rapidFireQuestions}
         onExit={handleRapidFirePageExit}
         onSwitchToPrep={handleSwitchToPrep}
         savedAnswers={savedAnswers}
@@ -351,7 +377,6 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
           <div className="text-center mb-8">
             <InterviewModeTabs
               mode={mode}
-              plan={plan}
               onPrep={() => setMode("prep")}
               onRapid={handleRapidFireModeClick}
               onMock={handleMockInterviewPageStart}

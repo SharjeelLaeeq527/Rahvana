@@ -213,8 +213,10 @@ export const RapidFireModePage = ({
 }: RapidFireModeProps) => {
   const plan = usePlan();
   const isFreeTier = plan.tier === "free";
+  const isBasicTier = plan.tier === "basic";
 
-  const questionsPerRound = isFreeTier ? 5 : QUESTIONS_PER_ROUND;
+  // Free and Basic tiers get limited 5 questions per round
+  const questionsPerRound = isFreeTier || isBasicTier ? 5 : QUESTIONS_PER_ROUND;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [score, setScore] = useState(0);
