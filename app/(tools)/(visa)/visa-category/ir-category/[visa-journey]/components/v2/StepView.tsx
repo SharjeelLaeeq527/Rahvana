@@ -58,7 +58,7 @@ import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
@@ -311,6 +311,8 @@ export const StepView: React.FC<StepViewProps> = ({
   const isDocQuestionnaireCompleted = state.metadata?.docQuestionnaireCompleted === true;
   const [showDocQuestionnaire, setShowDocQuestionnaire] = useState(false);
   const [showPrerequisiteModal, setShowPrerequisiteModal] = useState(false);
+
+  const { showToast } = useToast();
 
   // Derive document-questionnaire answers from Step 1 eligibility quest answers
   // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
@@ -980,7 +982,7 @@ export const StepView: React.FC<StepViewProps> = ({
   const handleSaveNvcFee = (newData: any) => {
     actions.updateMetadata({ nvcFeeStatus: newData });
     setIsNvcFeeModalOpen(false);
-    toast.success("Payment status saved to your Portal Wallet!");
+    showToast("Payment status saved to your Portal Wallet!", "success");
     // Auto-complete step if both are paid
     if (newData.aos === "Paid" && newData.iv === "Paid") {
       if (!isCompleted) handleToggleComplete();
@@ -1051,7 +1053,7 @@ export const StepView: React.FC<StepViewProps> = ({
   const handleSaveApUpdate = (newData: any) => {
     actions.updateMetadata({ apUpdateStatus: newData });
     setIsApUpdateModalOpen(false);
-    toast.success("AP status saved!");
+    showToast("AP status saved!", "success");
   };
 
   const renderDocActionModal = () => {
@@ -3937,9 +3939,9 @@ export const StepView: React.FC<StepViewProps> = ({
 
           try {
             await deleteDocument(docId);
-            toast.success("Document deleted successfully");
+            showToast("Document deleted successfully", "success");
           } catch (err) {
-            toast.error(msg(E.VAULT_DELETE_FAILED));
+            showToast(`${msg(E.VAULT_DELETE_FAILED)}`, "error");
           }
         }}
       />
@@ -4879,7 +4881,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       gathering_status: JSON.stringify(next),
                     });
                     setIsGatheringGuideOpen(false);
-                    toast.success("Document marked as packed!");
+                    showToast("Document marked as packed!", "success");
                   }}
                   disabled={gatheringStatus[selectedGatheringItem.id] === "reviewed"}
                   className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[14px] sm:text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"

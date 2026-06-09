@@ -154,8 +154,11 @@ export function DashboardView({
         action: {
           label: "Interview Prep Guide",
           onAction: () => {
-            actions.setStage(2);
-            actions.setCurrentStep(3);
+            if (onSelectStep) onSelectStep(2, 6);
+            else {
+              actions.setStage(2);
+              actions.setCurrentStep(6);
+            }
           },
         },
       });
@@ -511,7 +514,13 @@ export function DashboardView({
                   description="Your visa was approved at interview. Continue in Chapter 3 to track issuance and prepare for arrival."
                   status="complete"
                   actionLabel="Track Visa Issuance"
-                  onAction={() => actions.setStage(2)}
+                  onAction={() => {
+                    if (onSelectStep) onSelectStep(2, 9);
+                    else {
+                      actions.setStage(2);
+                      actions.setCurrentStep(9);
+                    }
+                  }}
                 />
               )}
 
@@ -523,7 +532,10 @@ export function DashboardView({
                   description="Complete the follow-up steps in Chapter 3 to respond to the 221(g) and track your case status."
                   status="action-needed"
                   actionLabel="Continue Chapter 3"
-                  onAction={() => actions.setStage(2)}
+                  onAction={() => {
+                    if (onSelectStep) onSelectStep(2, 0);
+                    else actions.setStage(2);
+                  }}
                 />
               )}
 
@@ -536,7 +548,13 @@ export function DashboardView({
                   date={trackingStatus.ap_date}
                   status="waiting"
                   actionLabel="Go to Step 9"
-                  actionUrl="/visa-category/ir-category/ir1-journey"
+                  onAction={() => {
+                    if (onSelectStep) onSelectStep(2, 8);
+                    else {
+                      actions.setStage(2);
+                      actions.setCurrentStep(8);
+                    }
+                  }}
                 />
               )}
 
@@ -915,8 +933,11 @@ export function DashboardView({
                     status="complete"
                     actionLabel="Interview Prep Guide"
                     onAction={() => {
-                      actions.setStage(2);
-                      actions.setCurrentStep(3);
+                      if (onSelectStep) onSelectStep(2, 6);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(6);
+                      }
                     }}
                   />
                 )}
@@ -929,7 +950,13 @@ export function DashboardView({
                     date={trackingStatus.ap_date}
                     status="waiting"
                     actionLabel="Go to Step 9"
-                    actionUrl="/visa-category/ir-category/ir1-journey"
+                    onAction={() => {
+                      if (onSelectStep) onSelectStep(2, 8);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(8);
+                      }
+                    }}
                   />
                 )}
 
@@ -1222,8 +1249,11 @@ export function DashboardView({
                     status="complete"
                     actionLabel="Interview Prep"
                     onAction={() => {
-                      actions.setStage(2);
-                      actions.setCurrentStep(3);
+                      if (onSelectStep) onSelectStep(2, 6);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(6);
+                      }
                     }}
                   />
                 )}
@@ -1235,7 +1265,13 @@ export function DashboardView({
                     date={trackingStatus.ap_date}
                     status="waiting"
                     actionLabel="Go to Step 9"
-                    actionUrl="/visa-category/ir-category/ir1-journey"
+                    onAction={() => {
+                      if (onSelectStep) onSelectStep(2, 8);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(8);
+                      }
+                    }}
                   />
                 )}
                 {alerts.length > 0 && (

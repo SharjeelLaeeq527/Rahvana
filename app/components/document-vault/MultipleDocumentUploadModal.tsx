@@ -21,7 +21,7 @@ import {
   History,
   Lock,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 import { UploadedDocument } from "@/lib/document-vault/types";
@@ -72,6 +72,7 @@ export function MultipleDocumentUploadModal({
     addNamedDynamicSlot,
   } = useDocumentVaultStore();
   const { t } = useLanguage();
+  const { showToast } = useToast();
 
   // Find the base document definition
   const documentDef = useMemo<DocumentDefinition>(() => {
@@ -227,12 +228,12 @@ export function MultipleDocumentUploadModal({
 
   const processFile = (id: string, file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 10 }));
+      showToast(msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 10 }), "error");
       return;
     }
     const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error(msg(E.TOOL_FILE_TYPE_UNSUPPORTED));
+      showToast(msg(E.TOOL_FILE_TYPE_UNSUPPORTED), "error");
       return;
     }
     updatePendingUpload(id, { file });
@@ -285,12 +286,12 @@ export function MultipleDocumentUploadModal({
     const validUploads = pendingUploads.filter((p) => p.file && p.type);
     if (validUploads.length === 0) return;
     if (!config) {
-      toast.error(`${msg(E.VAULT_NOT_CONFIGURED)}`);
+      showToast(`${msg(E.VAULT_NOT_CONFIGURED)}`, "error");
       return;
     }
 
     setUploading(true);
-    toast.loading(`Uploading ${validUploads.length} document(s)...`, {
+    showToast(`Uploading ${validUploads.length} document(s)...`, "loading", {
       id: "multi-upload-progress",
     });
 
@@ -404,12 +405,12 @@ export function MultipleDocumentUploadModal({
         });
 
         if (!response.ok) {
-          toast.error(`${msg(E.UPLOAD_FAILED)}`, { id: "multi-upload-progress" });
+          showToast(`${msg(E.UPLOAD_FAILED)}`, "error", { id: "multi-upload-progress" });
           return;
         }
       }
 
-      toast.success(`Successfully uploaded ${validUploads.length} document(s)`, {
+      showToast(`Successfully uploaded ${validUploads.length} document(s)`, "success", {
         id: "multi-upload-progress",
       });
 
@@ -421,7 +422,7 @@ export function MultipleDocumentUploadModal({
       addPendingUpload();
     } catch (error) {
       console.error("Multi-upload error:", error);
-      toast.error(`${msg(E.UPLOAD_NETWORK_ERROR)}`, { id: "multi-upload-progress" });
+      showToast(`${msg(E.UPLOAD_NETWORK_ERROR)}`, "error", { id: "multi-upload-progress" });
     } finally {
       setUploading(false);
     }
@@ -441,11 +442,11 @@ export function MultipleDocumentUploadModal({
     try {
       setDeleteLoading(true);
       await deleteDocument(selectedDeleteId);
-      toast.success("Document deleted successfully");
+      showToast("Document deleted successfully", "success");
       setDeleteModalOpen(false);
       setSelectedDeleteId(null);
     } catch (error) {
-      toast.error(`${msg(E.VAULT_DELETE_FAILED)}`);
+      showToast(`${msg(E.VAULT_DELETE_FAILED)}`, "error");
     } finally {
       setDeleteLoading(false);
     }
