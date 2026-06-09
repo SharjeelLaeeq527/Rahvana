@@ -1194,7 +1194,7 @@ export function TwoWaysSection() {
             </div>
 
             {/* Arrow Split Layout */}
-            <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-5 sm:py-6 lg:px-5 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
+            <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-55 sm:py-6 lg:px-5 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center w-full max-w-7xl">
                 {/* Left Side Option: Follow Roadmap */}
                 <motion.div
@@ -4271,6 +4271,82 @@ function LeftArrowSvg({ color }: { color: string }) {
 export function ToolsBucketDiagram() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
+  const tools = [
+    {
+      id: "photo",
+      title: "Photo Booth",
+      desc: "Create passport & visa photos instantly.",
+      color: "amber",
+      icon: Camera,
+      link: "/passport",
+    },
+    {
+      id: "pdf",
+      title: "PDF Tool Kit",
+      desc: "Merge, split, compress PDFs easily.",
+      color: "blue",
+      icon: FileText,
+      link: "/pdf-processing",
+    },
+    {
+      id: "planner",
+      title: "221(g) Planner",
+      desc: "Step-by-step guidance to resolve your 221(g) case.",
+      color: "emerald",
+      icon: LifeBuoy,
+      link: "/221g-action-planner",
+    },
+    // add more tools here anytime
+  ];
+
+  const [startIndex, setStartIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStartIndex((prev) => (prev + 1) % tools.length);
+    }, 3500); // adjust speed
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const leftTool = tools[startIndex % tools.length];
+  const bottomTool = tools[(startIndex + 1) % tools.length];
+  const rightTool = tools[(startIndex + 2) % tools.length];
+
+  function ToolCard({ tool, position }: any) {
+    const Icon = tool.icon;
+
+    const positionClasses =
+      position === "left"
+        ? "left-[50px] top-[90px]"
+        : position === "right"
+          ? "left-[390px] top-[90px]"
+          : "left-[220px] top-[255px]";
+
+    return (
+      <motion.div
+        layout
+        layoutId={tool.id}
+        className={`absolute ${positionClasses} -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20`}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      >
+        {/* Badge */}
+        <div className="relative w-14 h-14 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full bg-white border border-slate-100 shadow-sm" />
+          <motion.div className="z-10 flex size-10 items-center justify-center rounded-full bg-white shadow-md">
+            <Icon size={18} />
+          </motion.div>
+        </div>
+
+        {/* Card */}
+        <motion.div className="mt-3 w-[120px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center">
+          <h4 className="text-[10px] font-black">{tool.title}</h4>
+          <p className="text-[8px] text-slate-500 mt-1">{tool.desc}</p>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
   return (
     <div className="relative w-full max-w-[480px] h-[420px] mx-auto select-none mt-6 overflow-visible">
       {/* Background SVG for Dotted Connections */}
@@ -4383,126 +4459,13 @@ export function ToolsBucketDiagram() {
       </div>
 
       {/* 2. Left Tool: Photo Booth */}
-      <div
-        className="absolute left-[50px] top-[90px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20"
-        onMouseEnter={() => setHoveredNode("photo")}
-        onMouseLeave={() => setHoveredNode(null)}
-      >
-        {/* 3D Camera Badge Base */}
-        <div className="relative w-14 h-14 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-slate-200/50 translate-y-1 blur-[1px]" />
-          <div className="absolute inset-0 rounded-full bg-white border border-slate-100 shadow-sm" />
-          <motion.div
-            animate={hoveredNode === "photo" ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
-            className="z-10 flex size-10 items-center justify-center rounded-full bg-amber-500 text-white shadow-md"
-          >
-            <Camera size={18} strokeWidth={2.2} />
-          </motion.div>
-        </div>
-
-        {/* Card */}
-        <motion.div
-          animate={
-            hoveredNode === "photo"
-              ? { y: -3, scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.08)" }
-              : { y: 0, scale: 1, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }
-          }
-          className="mt-3 w-[110px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center transition-all duration-300"
-        >
-          <h4 className="text-[10px] font-black text-slate-850 leading-tight">Photo Booth</h4>
-          <p className="text-[8px] text-slate-500 font-medium leading-snug mt-1 h-[24px] overflow-hidden">
-            Create passport & visa photos instantly.
-          </p>
-          <Link
-            href="/passport"
-            className="inline-flex items-center justify-center gap-1 text-[8px] font-black text-amber-600 border border-amber-500/30 rounded-full px-2 py-0.5 mt-2 hover:bg-amber-50 no-underline transition-colors duration-150"
-          >
-            Use Tool <ArrowRight size={8} strokeWidth={3} />
-          </Link>
-        </motion.div>
-      </div>
+      <ToolCard tool={leftTool} position="left" />
 
       {/* 3. Right Tool: PDF Tool Kit */}
-      <div
-        className="absolute left-[390px] top-[90px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20"
-        onMouseEnter={() => setHoveredNode("pdf")}
-        onMouseLeave={() => setHoveredNode(null)}
-      >
-        {/* 3D PDF Badge Base */}
-        <div className="relative w-14 h-14 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-slate-200/50 translate-y-1 blur-[1px]" />
-          <div className="absolute inset-0 rounded-full bg-white border border-slate-100 shadow-sm" />
-          <motion.div
-            animate={hoveredNode === "pdf" ? { scale: 1.1, rotate: -5 } : { scale: 1, rotate: 0 }}
-            className="z-10 flex size-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-md"
-          >
-            <FileText size={18} strokeWidth={2.2} />
-          </motion.div>
-        </div>
-
-        {/* Card */}
-        <motion.div
-          animate={
-            hoveredNode === "pdf"
-              ? { y: -3, scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.08)" }
-              : { y: 0, scale: 1, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }
-          }
-          className="mt-3 w-[110px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center transition-all duration-300"
-        >
-          <h4 className="text-[10px] font-black text-slate-850 leading-tight">PDF Tool Kit</h4>
-          <p className="text-[8px] text-slate-500 font-medium leading-snug mt-1 h-[24px] overflow-hidden">
-            Merge, split, compress PDFs easily.
-          </p>
-          <Link
-            href="/pdf-processing"
-            className="inline-flex items-center justify-center gap-1 text-[8px] font-black text-blue-600 border border-blue-500/30 rounded-full px-2 py-0.5 mt-2 hover:bg-blue-50 no-underline transition-colors duration-150"
-          >
-            Use Tool <ArrowRight size={8} strokeWidth={3} />
-          </Link>
-        </motion.div>
-      </div>
+      <ToolCard tool={rightTool} position="right" />
 
       {/* 4. Bottom Tool: 221(g) Action Planner */}
-      <div
-        className="absolute left-[220px] top-[255px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20"
-        onMouseEnter={() => setHoveredNode("planner")}
-        onMouseLeave={() => setHoveredNode(null)}
-      >
-        {/* 3D Lifebuoy Badge Base */}
-        <div className="relative w-14 h-14 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-slate-200/50 translate-y-1 blur-[1px]" />
-          <div className="absolute inset-0 rounded-full bg-white border border-slate-100 shadow-sm" />
-          <motion.div
-            animate={
-              hoveredNode === "planner" ? { scale: 1.1, rotate: 10 } : { scale: 1, rotate: 0 }
-            }
-            className="z-10 flex size-10 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md"
-          >
-            <LifeBuoy size={18} strokeWidth={2.2} />
-          </motion.div>
-        </div>
-
-        {/* Card */}
-        <motion.div
-          animate={
-            hoveredNode === "planner"
-              ? { y: -3, scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.08)" }
-              : { y: 0, scale: 1, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }
-          }
-          className="mt-3 w-[130px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center transition-all duration-300"
-        >
-          <h4 className="text-[10px] font-black text-slate-850 leading-tight">221(g) Planner</h4>
-          <p className="text-[8px] text-slate-500 font-medium leading-snug mt-1 h-[24px] overflow-hidden">
-            Step-by-step guidance to resolve your 221(g) case.
-          </p>
-          <Link
-            href="/221g-action-planner"
-            className="inline-flex items-center justify-center gap-1 text-[8px] font-black text-emerald-600 border border-emerald-500/30 rounded-full px-2 py-0.5 mt-2 hover:bg-emerald-50 no-underline transition-colors duration-150"
-          >
-            Use Tool <ArrowRight size={8} strokeWidth={3} />
-          </Link>
-        </motion.div>
-      </div>
+      <ToolCard tool={bottomTool} position="bottom" />
     </div>
   );
 }
