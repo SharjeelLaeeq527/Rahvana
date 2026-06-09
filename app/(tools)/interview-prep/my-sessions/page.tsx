@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
 import { ElementType } from "react";
-import ActionMenu from "@/app/components/shared/ActionMenu";
-import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { DataTable, Column } from "@/app/components/shared/table";
 import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
@@ -107,10 +105,7 @@ export default function MyInterviewSessions() {
   const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
-
+  
   const { showToast } = useToast();
 
   // Filter states
@@ -189,11 +184,6 @@ export default function MyInterviewSessions() {
     setCurrentPage(1);
   }, [sessions, selectedCategory, selectedStatus, selectedTime]);
 
-  // open modal when session is selected
-  useEffect(() => {
-    if (selectedSessionId) setModalOpen(true);
-  }, [selectedSessionId]);
-
   const hasShownToast = useRef(false);
 
   useEffect(() => {
@@ -211,37 +201,6 @@ export default function MyInterviewSessions() {
       window.history.replaceState({}, "", "/interview-prep/my-sessions");
     }
   }, []);
-
-  const handleDelete = async (sessionId: string) => {
-    if (!selectedSessionId) return;
-    setLoadingDelete(true);
-
-    try {
-      const res = await fetch(`/api/interview-prep/sessions/${sessionId}/delete`, {
-        method: "DELETE",
-      });
-
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = null;
-      }
-
-      if (!res.ok) {
-        throw new Error(data?.error || "Failed to delete session");
-      }
-
-      setSessions((prev) => prev.filter((s) => s.id !== selectedSessionId));
-      setModalOpen(false);
-      setSelectedSessionId(null);
-    } catch (err) {
-      console.error(err);
-      alert(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
-    } finally {
-      setLoadingDelete(false);
-    }
-  };
 
   // pagination calculations
   const totalPages = Math.max(1, Math.ceil(filteredSessions.length / ITEMS_PER_PAGE));
@@ -314,10 +273,15 @@ export default function MyInterviewSessions() {
       width: "25%",
       className: "text-right",
       render: (session) => (
-        <ActionMenu
-          onView={() => (window.location.href = `/interview-prep/result?sessionId=${session.id}`)}
-          onDelete={() => setSelectedSessionId(session.id)}
-        />
+        <Button
+          size="sm"
+          onClick={() =>
+            (window.location.href = `/interview-prep/result?sessionId=${session.id}`)
+          }
+          className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white"
+        >
+          View Session
+        </Button>
       ),
     },
   ];
@@ -456,22 +420,6 @@ export default function MyInterviewSessions() {
           </>
         )}
       </div>
-
-      <ConfirmationModal
-        open={modalOpen}
-        onOpenChange={(open) => {
-          setModalOpen(open);
-          if (!open) setSelectedSessionId(null);
-        }}
-        title="Confirm Delete"
-        description="Are you sure you want to delete this session? This action cannot be undone and all your answers will be lost."
-        confirmText="Delete"
-        confirmVariant="danger"
-        onConfirm={() => {
-          if (selectedSessionId) handleDelete(selectedSessionId);
-        }}
-        loading={loadingDelete}
-      />
     </div>
   );
 }
