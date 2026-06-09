@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback, Suspense } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
@@ -109,6 +109,10 @@ const ADDON_CONFIG: Record<
    The à la carte resources are split into three top-level tabs by add-on
    `kind` (tools | services | guides), mirroring the /resources page. */
 type ResourceMode = "tools" | "services" | "guides";
+
+// sessionStorage key for the persisted add-on cart — survives navigation to a
+// tool/service/guide detail page and back. Cleared after a successful checkout.
+const CART_STORAGE_KEY = "rahvana_pricing_cart_addons";
 
 const RESOURCE_TABS: Record<
   ResourceMode,
@@ -466,6 +470,7 @@ function PricingContent() {
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
+  const [checkoutCanceled, setCheckoutCanceled] = useState(false);
 
   // Derived
   const activeVisaCategory = useMemo(
@@ -535,12 +540,17 @@ function PricingContent() {
       return next;
     });
 
+  // Apply deep-link params (mode / plan / addons / visa) into state. This must
+  // run ONLY when the URL actually changes — never when other state (e.g. the
+  // recreated handleCheckout callback) changes, otherwise every user edit to the
+  // selection would be instantly reverted back to the URL value. We key the
+  // effect off the stringified params so it is stable across unrelated renders.
+  const searchParamsString = searchParams.toString();
   useEffect(() => {
     const plan = searchParams.get("plan");
     const addons = searchParams.get("addons");
     const visaCat = searchParams.get("visa");
     const modeParam = searchParams.get("mode");
-    const autoCheckout = searchParams.get("auto_checkout") === "true";
     if (
       modeParam === "plans" ||
       modeParam === "tools" ||
@@ -555,13 +565,85 @@ function PricingContent() {
       setMode((found?.kind as ResourceMode) ?? "tools");
     }
     if (plan) setSelectedPlan(plan);
-    if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
+    // MERGE deep-linked add-ons into the existing cart (don't replace) — opening
+    // a tool's detail page and adding it should keep items already in the order.
+    const urlAddons = (addons || "").split(",").filter(Boolean);
+    if (urlAddons.length) setSelectedAddons((prev) => new Set([...prev, ...urlAddons]));
     if (visaCat) setVisa(visaCat);
+    // Restore the order-summary (review) step when deep-linked back to it.
+    if (searchParams.get("step") === "review") setPurchaseStep("review");
+    // Returning from a canceled Stripe checkout — show a non-blocking notice and
+    // strip the flag from the URL so a refresh doesn't keep re-showing it.
+    if (searchParams.get("checkout_canceled") === "1") {
+      setCheckoutCanceled(true);
+      const cleaned = new URLSearchParams(searchParamsString);
+      cleaned.delete("checkout_canceled");
+      const qs = cleaned.toString();
+      window.history.replaceState({}, "", qs ? `?${qs}` : window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsString]);
+
+  // Auto-checkout — fire once the user is known. Kept separate from the param
+  // parsing above so a recreated handleCheckout never re-applies URL state.
+  useEffect(() => {
+    const autoCheckout = searchParams.get("auto_checkout") === "true";
     if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
+      const plan = searchParams.get("plan");
+      const addons = searchParams.get("addons");
       window.history.replaceState({}, "", window.location.pathname);
       handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
     }
-  }, [searchParams, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsString, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
+
+  // ── Cart persistence ─────────────────────────────────────────────────────
+  // The selected add-ons (the "cart") live in component state, so navigating to
+  // a tool/service/guide detail page (a separate route) would normally wipe
+  // them. Persist the cart in sessionStorage so it survives navigation, and
+  // restore it on mount. Hydrate via effect (not a lazy initializer) to avoid an
+  // SSR/client hydration mismatch.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(CART_STORAGE_KEY);
+      if (raw) {
+        const stored: string[] = JSON.parse(raw);
+        if (Array.isArray(stored) && stored.length) {
+          setSelectedAddons((prev) => new Set([...prev, ...stored]));
+        }
+      }
+    } catch {
+      /* sessionStorage unavailable — non-fatal */
+    }
+  }, []);
+
+  // Persist on every change. Skip the very first run so the initial empty state
+  // doesn't clobber the cart before the hydration effect above has restored it.
+  const cartPersistInitialized = useRef(false);
+  useEffect(() => {
+    if (!cartPersistInitialized.current) {
+      cartPersistInitialized.current = true;
+      return;
+    }
+    try {
+      sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(Array.from(selectedAddons)));
+    } catch {
+      /* sessionStorage unavailable — non-fatal */
+    }
+  }, [selectedAddons]);
+
+  // If the user redirects to Stripe and then hits Back, the page is restored
+  // from the bfcache with these loading flags still true — leaving the order
+  // summary stuck on "Processing". Clear them whenever the page is re-shown.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setIsProcessingAutoCheckout(false);
+      setIsManualCheckoutLoading(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -684,6 +766,27 @@ function PricingContent() {
           ))}
         </nav>
       </div>
+
+      {/* ── Checkout-canceled notice — shown when the user returns from Stripe
+          without paying. Non-blocking; their selection is preserved. ───────── */}
+      {checkoutCanceled && (
+        <div className={`${W} pt-4`}>
+          <div className="flex items-start gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20">
+            <IcoInfo className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="flex-1 text-[13px] leading-relaxed text-amber-800 dark:text-amber-300">
+              <strong className="font-semibold">Checkout canceled — no charge was made.</strong>{" "}
+              Your selection is saved below. Continue whenever you&apos;re ready.
+            </div>
+            <button
+              onClick={() => setCheckoutCanceled(false)}
+              className="shrink-0 rounded-full p-1 text-amber-600 transition-colors hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/40"
+              aria-label="Dismiss"
+            >
+              <IconX className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           JOURNEY PLANS — BROWSE

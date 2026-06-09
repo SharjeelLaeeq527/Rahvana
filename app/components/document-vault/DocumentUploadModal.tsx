@@ -9,8 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, X, Lock } from "lucide-react";
+import { Upload, X, Lock, ScanLine } from "lucide-react";
 import { toast } from "sonner";
+import { getOcrConfig } from "@/lib/document-ocr/registry";
+import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
+import type { PassportFields } from "@/lib/document-ocr/passportParser";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 
 interface DocumentUploadModalProps {
   open: boolean;
@@ -34,6 +38,92 @@ export function DocumentUploadModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { config, replaceDocumentId, deleteDocument } = useDocumentVaultStore();
   const { t } = useLanguage();
+  const { refreshProfile } = useUserProfile();
+
+  // ── Inline OCR auto-fill (passport, etc.) ──
+  // If this document type supports OCR, after a successful upload we read the
+  // same file and offer to auto-fill the user's profile. Nothing is saved until
+  // the user confirms. OCR is a bonus — failure never blocks the upload.
+  const ocrConfig = getOcrConfig(documentDef.id);
+  const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
+  const [ocrFields, setOcrFields] = useState<PassportFields>({});
+  const [ocrConfidence, setOcrConfidence] = useState<
+    Partial<Record<keyof PassportFields, number>>
+  >({});
+  const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
+  const [ocrSaving, setOcrSaving] = useState(false);
+
+  const OCR_FIELD_ORDER: { key: keyof PassportFields; label: string }[] =
+    ocrConfig?.target === "beneficiary"
+      ? [
+          { key: "name.first", label: "Given name" },
+          { key: "name.last", label: "Surname" },
+          { key: "dateOfBirth", label: "Date of birth" },
+        ]
+      : [
+          { key: "name.first", label: "Given name" },
+          { key: "name.last", label: "Surname" },
+          { key: "dateOfBirth", label: "Date of birth" },
+          { key: "sex", label: "Sex" },
+          { key: "nationality", label: "Nationality" },
+          { key: "passportNumber", label: "Passport number" },
+          { key: "passportExpiry", label: "Passport expiry" },
+          { key: "passportCountry", label: "Issuing country" },
+        ];
+
+  const runOcr = async (file: File) => {
+    if (!ocrConfig) return;
+    setOcrPhase("reading");
+    try {
+      const prepared = await resizeImageIfNeeded(file);
+      const formData = new FormData();
+      formData.append("file", prepared, prepared.name);
+      const res = await fetch("/api/documents/extract-passport", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json) {
+        toast.info("Uploaded. We couldn't auto-read this document — you can fill details manually.");
+        handleClose();
+        return;
+      }
+      setOcrFields(json.fields || {});
+      setOcrConfidence(json.confidence || {});
+      setOcrWarnings(json.warnings || []);
+      setOcrPhase("confirm");
+    } catch {
+      toast.info("Uploaded. We couldn't auto-read this document — you can fill details manually.");
+      handleClose();
+    }
+  };
+
+  const updateOcrField = (key: keyof PassportFields, value: string) => {
+    setOcrFields((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveOcr = async () => {
+    setOcrSaving(true);
+    try {
+      const res = await fetch("/api/profile/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: ocrFields, target: ocrConfig?.target }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        toast.error(json?.error || "Could not save details to your profile.");
+        return;
+      }
+      await refreshProfile();
+      toast.success("Details saved to your profile.");
+      handleClose();
+    } catch {
+      toast.error("Something went wrong while saving.");
+    } finally {
+      setOcrSaving(false);
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -171,7 +261,13 @@ export function DocumentUploadModal({
       // Call completion handler to refresh the list
       await onUploadComplete();
 
-      handleClose();
+      // OCR-eligible doc? Keep the modal open and offer to auto-fill the profile
+      // from the same file. Otherwise close as before.
+      if (ocrConfig && selectedFile) {
+        await runOcr(selectedFile);
+      } else {
+        handleClose();
+      }
     } catch (error) {
       console.error("Upload error:", error);
       toast.error(
@@ -192,6 +288,10 @@ export function DocumentUploadModal({
     setRole(documentDef.roles[0]);
     setExpirationDate("");
     setNotes("");
+    setOcrPhase("idle");
+    setOcrFields({});
+    setOcrConfidence({});
+    setOcrWarnings([]);
     onClose();
   };
 
@@ -231,7 +331,92 @@ export function DocumentUploadModal({
             </div>
           )}
 
-          <div className="space-y-4 sm:space-y-6">
+          {/* ── Inline OCR auto-fill panel (shown after upload for OCR docs) ── */}
+          {ocrPhase !== "idle" && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-[#0c1b33]">
+                <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
+                  <ScanLine className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm">
+                    {ocrPhase === "reading"
+                      ? "Reading your document…"
+                      : "Confirm the details we read"}
+                  </p>
+                  <p className="text-xs text-[#6b8097]">
+                    {ocrConfig?.target === "beneficiary"
+                      ? "These will be saved to your spouse's (beneficiary) details."
+                      : "These will be saved to your profile."}
+                  </p>
+                </div>
+              </div>
+
+              {ocrPhase === "reading" && (
+                <div className="flex items-center justify-center gap-3 py-10 text-[#6b8097]">
+                  <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+                  <span className="text-sm font-medium">Extracting fields…</span>
+                </div>
+              )}
+
+              {ocrPhase === "confirm" && (
+                <>
+                  {ocrWarnings.length > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                      <p className="font-semibold mb-1">Please double-check these</p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {ocrWarnings.map((w, i) => (
+                          <li key={i}>{w}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {OCR_FIELD_ORDER.map(({ key, label }) => {
+                      const conf = ocrConfidence[key];
+                      return (
+                        <div key={key} className="space-y-1">
+                          <Label htmlFor={`ocr-${key}`} className="flex items-center gap-2">
+                            {label}
+                            {typeof conf === "number" && conf < 0.6 && (
+                              <span className="text-xs text-amber-600">(low confidence)</span>
+                            )}
+                          </Label>
+                          <Input
+                            id={`ocr-${key}`}
+                            value={ocrFields[key] ?? ""}
+                            onChange={(e) => updateOcrField(key, e.target.value)}
+                            placeholder={`Enter ${label.toLowerCase()}`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex gap-3 pt-2 pb-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleClose}
+                      disabled={ocrSaving}
+                      className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 font-semibold"
+                    >
+                      Skip
+                    </Button>
+                    <Button
+                      onClick={handleSaveOcr}
+                      disabled={ocrSaving}
+                      className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold"
+                    >
+                      {ocrSaving ? "Saving…" : "Confirm & Save"}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className={`space-y-4 sm:space-y-6 ${ocrPhase !== "idle" ? "hidden" : ""}`}>
             {/* File upload area */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-[#3a4f63]">

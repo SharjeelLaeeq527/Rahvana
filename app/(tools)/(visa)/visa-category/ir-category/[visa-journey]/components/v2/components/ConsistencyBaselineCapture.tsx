@@ -15,7 +15,7 @@
 // Pure additive UI — does not modify the I-130 form data, only stores a
 // separate Rahvana baseline.
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ShieldAlert, AlertTriangle, Save, Check } from "lucide-react";
 import { detectRiskFlags } from "@/lib/case-strength";
 import type { RiskFlag } from "@/lib/case-strength";
@@ -46,6 +46,26 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
   const [petitionerDob, setPetitionerDob] = useState(baseline?.petitionerDateOfBirth ?? "");
   const [beneficiaryDob, setBeneficiaryDob] = useState(baseline?.beneficiaryDateOfBirth ?? "");
   const [justSaved, setJustSaved] = useState(false);
+
+  // The parent feeds defaults derived from the user's profile (e.g. dates auto-filled
+  // from passport OCR), which can arrive after first render (profile loads async).
+  //
+  // DOBs follow the passport: whenever the incoming value CHANGES (a passport was
+  // uploaded/updated) we sync the field to it so this step never disagrees with the
+  // Step 2 passport. The dependency array gates the effect to only fire on an actual
+  // prop change, so a correction the user types between uploads is never clobbered.
+  // Marriage date has no passport source, so it's only seeded when still empty.
+  useEffect(() => {
+    if (baseline?.marriageDate) setMarriageDate((v) => v || baseline.marriageDate!);
+  }, [baseline?.marriageDate]);
+
+  useEffect(() => {
+    if (baseline?.petitionerDateOfBirth) setPetitionerDob(baseline.petitionerDateOfBirth);
+  }, [baseline?.petitionerDateOfBirth]);
+
+  useEffect(() => {
+    if (baseline?.beneficiaryDateOfBirth) setBeneficiaryDob(baseline.beneficiaryDateOfBirth);
+  }, [baseline?.beneficiaryDateOfBirth]);
 
   const handleSave = () => {
     const next: ConsistencyBaseline = {
