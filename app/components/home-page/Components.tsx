@@ -4318,8 +4318,11 @@ export function ToolsBucketDiagram() {
       <motion.div
         layout
         layoutId={tool.id}
+        initial={{ opacity: 0, scale: 0.96, y: 6 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: -6 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
         className={`absolute ${positionClasses} -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20`}
-        transition={{ type: "spring", stiffness: 110, damping: 11 }}
       >
         {/* Badge */}
         <div className="relative w-14 h-14 flex items-center justify-center">
@@ -4456,13 +4459,19 @@ export function ToolsBucketDiagram() {
       </div>
 
       {/* 2. Left Tool: Photo Booth */}
-      <ToolCard tool={leftTool} position="left" />
+      <AnimatePresence mode="popLayout">
+        <ToolCard key={`left-${leftTool?.id ?? "left"}`} tool={leftTool} position="left" />
+      </AnimatePresence>
 
       {/* 3. Right Tool: PDF Tool Kit */}
-      <ToolCard tool={rightTool} position="right" />
+      <AnimatePresence mode="popLayout">
+        <ToolCard key={`right-${rightTool?.id ?? "right"}`} tool={rightTool} position="right" />
+      </AnimatePresence>
 
       {/* 4. Bottom Tool: 221(g) Action Planner */}
-      <ToolCard tool={bottomTool} position="bottom" />
+      <AnimatePresence mode="popLayout">
+        <ToolCard key={`bottom-${bottomTool?.id ?? "bottom"}`} tool={bottomTool} position="bottom" />
+      </AnimatePresence>
     </div>
   );
 }
