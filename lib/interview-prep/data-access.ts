@@ -5,11 +5,12 @@ import {
   InterviewAnswer,
   InterviewResult,
   InterviewSessionInput,
+  InterviewSessionSource,
   InterviewPrepSessionProgress,
   InterviewPrepSessionProgressInput,
 } from "./types";
 
-async function getSupabaseWithUser() {
+export async function getSupabaseWithUser() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -20,7 +21,7 @@ async function getSupabaseWithUser() {
   return { supabase, user };
 }
 
-// Create new session
+// Create new session - now supports source and journey_id
 export async function createInterviewSessionDB(
   sessionData: Omit<InterviewSessionInput, "user_id">
 ): Promise<InterviewSession> {
@@ -35,6 +36,9 @@ export async function createInterviewSessionDB(
         user_name: user.user_metadata?.full_name || null,
         category_slug: sessionData.category_slug,
         completed: false,
+        source: sessionData.source || "tool",
+        journey_id: sessionData.journey_id || null,
+        status: sessionData.status || "ready",
       },
     ])
     .select()
@@ -69,11 +73,14 @@ export async function getInterviewSessionByCategory(
 ): Promise<InterviewSession | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
+  // Only return tool-based sessions for category lookup
+  // Journey sessions should be accessed via journey_id
   const { data, error } = await supabase
     .from("interview_prep_sessions")
     .select("*")
     .eq("user_id", user.id)
     .eq("category_slug", category_slug)
+    .eq("source", "tool")
     .maybeSingle();
 
   if (error) {
@@ -83,7 +90,142 @@ export async function getInterviewSessionByCategory(
   return data as InterviewSession | null;
 }
 
-// Get latest incomplete session for current user
+// Get session by journey_id - for journey-based sessions
+export async function getInterviewSessionByJourneyId(
+  journey_id: string
+): Promise<InterviewSession | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("journey_id", journey_id)
+    .eq("source", "journey")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as InterviewSession | null;
+}
+
+// Create journey-based session - auto-created when journey starts
+export async function createJourneyInterviewSessionDB(
+  journey_id: string,
+  category_slug: string
+): Promise<InterviewSession> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // First check if a journey session already exists
+  const { data: existing } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("journey_id", journey_id)
+    .eq("source", "journey")
+    .maybeSingle();
+
+  if (existing) {
+    return existing as InterviewSession;
+  }
+
+  // Create new journey session with status 'ready'
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .insert([
+      {
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.full_name || null,
+        category_slug,
+        completed: false,
+        source: "journey",
+        journey_id,
+        status: "ready",
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as InterviewSession;
+}
+
+// Check if journey is active (for access control)
+export async function isJourneyActive(journey_id: string): Promise<boolean> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("journeys")
+    .select("status")
+    .eq("id", journey_id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !data) return false;
+
+  // Journey is active if status is 'in_progress' or 'not_started'
+  return data.status === "in_progress" || data.status === "not_started";
+}
+
+// Get active journey session for user (if any)
+export async function getActiveJourneySession(
+  journey_type: string = "IR1"
+): Promise<{ session: InterviewSession; journey_status: string } | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // First get the active journey
+  const { data: journey, error: journeyError } = await supabase
+    .from("journeys")
+    .select("id, status")
+    .eq("user_id", user.id)
+    .eq("journey_type", journey_type)
+    .in("status", ["in_progress", "not_started"])
+    .maybeSingle();
+
+  if (journeyError || !journey) return null;
+
+  // Then get the associated interview session
+  const { data: session, error: sessionError } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("journey_id", journey.id)
+    .eq("source", "journey")
+    .maybeSingle();
+
+  if (sessionError || !session) return null;
+
+  return {
+    session: session as InterviewSession,
+    journey_status: journey.status,
+  };
+}
+
+// Archive all interview sessions linked to a journey (called when journey completes)
+// Preserves journey_id for historical tracking
+export async function archiveJourneySessions(journey_id: string): Promise<void> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const { error } = await supabase
+    .from("interview_prep_sessions")
+    .update({
+      status: "completed",
+      archived_at: new Date().toISOString(),
+    })
+    .eq("journey_id", journey_id)
+    .eq("source", "journey");
+
+  if (error) {
+    console.error("[archiveJourneySessions] Failed:", error.message);
+  }
+}
+
+// Get latest incomplete session for current user (tool-based sessions only)
+// Journey sessions are handled separately via getActiveJourneySession
 export async function getLatestIncompleteSessionDB(): Promise<InterviewSession | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -92,6 +234,7 @@ export async function getLatestIncompleteSessionDB(): Promise<InterviewSession |
     .select("*")
     .eq("user_id", user.id)
     .eq("completed", false)
+    .eq("source", "tool") // Only return tool-based sessions
     .order("updated_at", { ascending: false })
     .limit(1)
     .single();
@@ -111,7 +254,11 @@ export async function getAllUserSessionsDB(
 ): Promise<InterviewSession[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
-  let query = supabase.from("interview_prep_sessions").select("*").eq("user_id", user.id);
+  let query = supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("source", "tool"); // Only return tool-based sessions in list view. Journey sessions are accessed via journey_id or getActiveJourneySession.
 
   // Optional filter by completion status
   if (completed !== undefined) {
@@ -242,7 +389,7 @@ export async function getInterviewResultsDB(sessionId: string): Promise<Intervie
 }
 
 export async function getInterviewSessionProgressDB(
-  sessionId: string,
+  sessionId: string
 ): Promise<InterviewPrepSessionProgress | null> {
   const { supabase } = await getSupabaseWithUser();
 
@@ -262,7 +409,7 @@ export async function getInterviewSessionProgressDB(
 
 export async function upsertInterviewSessionProgressDB(
   sessionId: string,
-  payload: InterviewPrepSessionProgressInput,
+  payload: InterviewPrepSessionProgressInput
 ): Promise<InterviewPrepSessionProgress> {
   const { supabase } = await getSupabaseWithUser();
 
@@ -276,7 +423,7 @@ export async function upsertInterviewSessionProgressDB(
         session_id: sessionId,
         ...payload,
       },
-      { onConflict: "session_id" },
+      { onConflict: "session_id" }
     )
     .select("*")
     .single();
@@ -286,9 +433,7 @@ export async function upsertInterviewSessionProgressDB(
   return data as InterviewPrepSessionProgress;
 }
 
-export async function deleteInterviewSessionProgressDB(
-  sessionId: string,
-): Promise<void> {
+export async function deleteInterviewSessionProgressDB(sessionId: string): Promise<void> {
   const { supabase } = await getSupabaseWithUser();
 
   const session = await getInterviewSessionDB(sessionId);

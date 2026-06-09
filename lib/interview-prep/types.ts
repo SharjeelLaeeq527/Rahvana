@@ -1,3 +1,9 @@
+// Session source type - determines how the session was created
+export type InterviewSessionSource = "journey" | "tool";
+
+// Session status type - tracks lifecycle
+export type InterviewSessionStatus = "ready" | "in_progress" | "completed";
+
 // Types for the Interview Preparation Tool
 export interface InterviewSession {
   id: string;
@@ -8,6 +14,11 @@ export interface InterviewSession {
   completed: boolean;
   created_at: string;
   updated_at: string;
+  // New fields for journey integration
+  source: InterviewSessionSource;
+  journey_id: string | null;
+  status: InterviewSessionStatus;
+  archived_at: string | null;
   answers?: unknown[];
   output?: unknown[];
 }
@@ -17,6 +28,10 @@ export interface InterviewSessionInput {
   user_id?: string;
   user_email: string;
   user_name: string;
+  // New fields for journey integration
+  source?: InterviewSessionSource;
+  journey_id?: string | null;
+  status?: InterviewSessionStatus;
 }
 
 export interface InterviewAnswer {
@@ -126,7 +141,7 @@ export interface QuestionBankEntry {
   sampleAnswer: string;
   guidance: string;
   tooltip: string;
-  tier?: 'free' | 'basic' | 'premium' | 'executive';
+  tier?: "free" | "basic" | "premium" | "executive";
   mockInterviewOrder?: number;
 }
 
@@ -145,7 +160,7 @@ export interface GeneratedQuestion {
   selectedQuestion?: string;
   guidance: string;
   tooltip: string;
-  tier?: 'free' | 'basic' | 'premium' | 'executive';
+  tier?: "free" | "basic" | "premium" | "executive";
   applicable: boolean;
   priority: "high" | "medium" | "low";
   mockInterviewOrder?: number;
