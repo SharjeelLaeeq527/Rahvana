@@ -1194,7 +1194,7 @@ export function TwoWaysSection() {
             </div>
 
             {/* Arrow Split Layout */}
-            <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-8 sm:py-6 lg:px-10 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
+            <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-6 sm:py-6 lg:px-5 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center w-full max-w-7xl">
                 {/* Left Side Option: Follow Roadmap */}
                 <motion.div
@@ -4275,7 +4275,7 @@ export function ToolsBucketDiagram() {
     <div className="relative w-full max-w-[480px] h-[420px] mx-auto select-none mt-6 overflow-visible">
       {/* Background SVG for Dotted Connections */}
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none z-0"
+        className="absolute left-0 top-0 w-[440px] h-[420px] pointer-events-none z-0"
         viewBox="0 0 440 420"
         fill="none"
       >
@@ -4317,7 +4317,6 @@ export function ToolsBucketDiagram() {
           strokeDasharray="3 3"
         />
 
-        {/* Dotted Arcs connecting Left/Right to Bottom (Smooth continuous lines, no arrows) */}
         {/* Dotted Arcs connecting Left/Right to Bottom (Smooth continuous lines, no arrows) */}
         <path
           d="M 65,110 C 65,200 100,290 155,290"
