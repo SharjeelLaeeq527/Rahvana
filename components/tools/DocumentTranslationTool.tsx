@@ -206,15 +206,16 @@ export default function DocumentTranslationTool({
       // }
       if (!canUseTranslation && user?.id) {
         try {
+          // The upload API returns { documentId } (not id). Send that to Stripe.
+          const payload = { documentTranslationId: String(result.documentId), userId: user.id };
+          console.debug("/api/stripe/checkout payload:", payload);
+
           const stripeRes = await fetch("/api/stripe/checkout", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              documentTranslationId: result.id,
-              userId: user.id,
-            }),
+            body: JSON.stringify(payload),
           });
 
           const stripeData = await stripeRes.json();
@@ -231,7 +232,6 @@ export default function DocumentTranslationTool({
         } catch (stripeErr: any) {
           console.error("Checkout redirection failed:", stripeErr);
           setCheckoutError(stripeErr.message || "Checkout redirection failed");
-          // setLoading(false);
           return;
         }
       }
@@ -652,9 +652,9 @@ export default function DocumentTranslationTool({
         onClose={() => setShowAuthModal(false)}
         redirectTo="/document-translation"
       />
-      {showUpgradeModal && (
+      {/* {showUpgradeModal && (
         <UpgradeModal feature="document_translation" onClose={() => setShowUpgradeModal(false)} />
-      )}
+      )} */}
     </div>
   );
 }

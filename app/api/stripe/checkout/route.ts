@@ -395,8 +395,9 @@ export async function POST(request: NextRequest) {
         product_id: policeVerificationId,
       };
     } else if (documentTranslationId) {
+      // Note: document upload route stores records in `translation_documents`
       const { data: requestRecord, error: requestError } = await supabase
-        .from("document_translations")
+        .from("translation_documents")
         .select("*")
         .eq("id", documentTranslationId)
         .single();
@@ -427,7 +428,7 @@ export async function POST(request: NextRequest) {
 
       sessionParams.metadata = {
         ...sessionParams.metadata,
-        product_type: "document_translation",
+        product_type: "document_translations",
         product_id: documentTranslationId,
       };
     } else {
@@ -466,7 +467,8 @@ export async function POST(request: NextRequest) {
       sessionParams.metadata?.product_type === "standalone_addon"
         ? "journey_plan"
         : sessionParams.metadata?.product_type === "medical_booking" ||
-            sessionParams.metadata?.product_type === "pcc_filing"
+            sessionParams.metadata?.product_type === "pcc_filing" ||
+            sessionParams.metadata?.product_type === "document_translations"
           ? "consultation"
           : (sessionParams.metadata?.product_type as any) || "journey_plan";
 
@@ -477,24 +479,100 @@ export async function POST(request: NextRequest) {
           ? appointmentId
           : sessionParams.metadata?.product_type === "pcc_filing"
             ? policeVerificationId
-            : String(sessionParams.metadata?.product_id || "");
+            : sessionParams.metadata?.product_type === "document_translations"
+              ? documentTranslationId
+              : String(sessionParams.metadata?.product_id || "");
 
-    await paymentService.createPayment({
-      user_id: userId,
-      stripe_checkout_session_id: session.id,
-      amount: (session.amount_total ?? 0) / 100,
-      currency: session.currency || "usd",
-      status: "pending",
-      product_type: dbProductType,
-      product_id: dbProductId,
-      metadata: {
-        product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
-        customer_email: userEmail,
-        stripe_customer_id: stripeCustomerId!,
-        original_product_type: sessionParams.metadata?.product_type, // keep reference
-      },
-    });
-    logDebug("Payment record created successfully");
+    let paymentId: string | null = null;
+    try {
+      const payment = await paymentService.createPayment({
+        user_id: userId,
+        stripe_checkout_session_id: session.id,
+        amount: (session.amount_total ?? 0) / 100,
+        currency: session.currency || "usd",
+        status: "pending",
+        product_type: dbProductType,
+        product_id: dbProductId,
+        metadata: {
+          product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
+          customer_email: userEmail,
+          stripe_customer_id: stripeCustomerId!,
+          original_product_type: sessionParams.metadata?.product_type || "",
+        },
+      });
+      paymentId = payment.id;
+      logDebug("Payment record created successfully:", { paymentId });
+
+      // Link payment to translation document if this is a document translation purchase
+      if (
+        sessionParams.metadata?.product_type === "document_translations" &&
+        documentTranslationId &&
+        paymentId
+      ) {
+        const { error: updateErr } = await supabase
+          .from("translation_documents")
+          .update({ payment_id: paymentId, payment_status: "pending" })
+          .eq("id", documentTranslationId);
+
+        if (updateErr) {
+          logDebug("Warning: Failed to link payment_id to translation_documents:", updateErr);
+          // Don't throw - the payment was created successfully, this is just linking
+        } else {
+          logDebug("Successfully linked payment_id to translation_documents");
+        }
+      }
+
+      // Link payment to appointment if this is a medical booking purchase
+      if (
+        sessionParams.metadata?.product_type === "medical_booking" &&
+        appointmentId &&
+        paymentId
+      ) {
+        const { error: updateErr } = await supabase
+          .from("appointments")
+          .update({ payment_id: paymentId, payment_status: "pending" })
+          .eq("id", appointmentId);
+
+        if (updateErr) {
+          logDebug("Warning: Failed to link payment_id to appointments:", updateErr);
+        } else {
+          logDebug("Successfully linked payment_id to appointment");
+        }
+      }
+
+      // Link payment to police verification document if this is a police verification purchase
+      if (
+        sessionParams.metadata?.product_type === "pcc_filing" &&
+        policeVerificationId &&
+        paymentId
+      ) {
+        const { error: updateErr } = await supabase
+          .from("police_verification_requests")
+          .update({ payment_id: paymentId, payment_status: "pending" })
+          .eq("id", policeVerificationId);
+
+        if (updateErr) {
+          logDebug(
+            "Warning: Failed to link payment_id to police_verification_requests:",
+            updateErr
+          );
+        } else {
+          logDebug("Successfully linked payment_id to police_verification_requests");
+        }
+      }
+    } catch (payErr: any) {
+      // Log detailed Supabase error for debugging and return a clearer message
+      logDebug(
+        "paymentService.createPayment failed:",
+        payErr && payErr.message ? payErr.message : String(payErr)
+      );
+      try {
+        logDebug("paymentService.createPayment error (full):", JSON.stringify(payErr));
+      } catch (e) {
+        // ignore JSON stringify errors
+      }
+      return NextResponse.json({ error: msg(E.PAYMENT_CREATE_FAILED) }, { status: 500 });
+    }
 
     logDebug("Returning 200 with session details");
     return NextResponse.json({

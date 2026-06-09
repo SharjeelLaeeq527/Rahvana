@@ -174,10 +174,7 @@ export async function GET(request: NextRequest) {
 
     // ── 3d. MEDICAL APPOINTMENT (one-time) ───────────────────────────────────
     else if (productType === "medical_booking" && productId) {
-      await supabase
-        .from("appointments")
-        .update({ payment_status: "paid" })
-        .eq("id", productId);
+      await supabase.from("appointments").update({ payment_status: "paid" }).eq("id", productId);
 
       activated = true;
     }
@@ -193,9 +190,9 @@ export async function GET(request: NextRequest) {
     }
 
     // ── 3e. Document Translation (one-time) ───────────────────────────────────
-    else if (productType === "document_translation" && productId) {
+    else if (productType === "document_translations" && productId) {
       await supabase
-        .from("document_translations")
+        .from("translation_documents")
         .update({ payment_status: "paid" })
         .eq("id", productId);
 
