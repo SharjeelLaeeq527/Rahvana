@@ -2382,7 +2382,7 @@ const ConsultationBookingPage = () => {
 
   if (activeView === ("requests" as "booking" | "requests")) {
     return (
-      <div className="bg-gray-50 pb-12">
+      <div className="bg-gray-50 pb-12 pt-[55px]">
         <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-12 mb-10 shadow-lg relative overflow-hidden">
           <div className="w-full px-4 relative z-10">
             <div className="flex justify-between items-center mb-4">
@@ -2582,7 +2582,7 @@ const ConsultationBookingPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 pb-12">
+    <div className="bg-gray-50 pb-12 pt-[55px]">
       <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-16 mb-10 relative overflow-hidden">
         <div className="w-full px-4 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
