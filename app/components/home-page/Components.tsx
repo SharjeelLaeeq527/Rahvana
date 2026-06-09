@@ -60,6 +60,7 @@ import {
 } from "@/data/home-page-data";
 import ir1Data from "@/data/visa-category/ir-1.json";
 import { StepQuestDemo } from "./StepQuestDemo";
+import { NAV_DATA } from "@/app/components/layout/navigationData";
 
 export const journeyHref = "/visa-category/ir-category/ir1-journey";
 export const toolsHref = "/tools";
@@ -4271,51 +4272,41 @@ function LeftArrowSvg({ color }: { color: string }) {
 export function ToolsBucketDiagram() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
-  const tools = [
-    {
-      id: "photo",
-      title: "Photo Booth",
-      desc: "Create passport & visa photos instantly.",
-      color: "amber",
-      icon: Camera,
-      link: "/passport",
-    },
-    {
-      id: "pdf",
-      title: "PDF Tool Kit",
-      desc: "Merge, split, compress PDFs easily.",
-      color: "blue",
-      icon: FileText,
-      link: "/pdf-processing",
-    },
-    {
-      id: "planner",
-      title: "221(g) Planner",
-      desc: "Step-by-step guidance to resolve your 221(g) case.",
-      color: "emerald",
-      icon: LifeBuoy,
-      link: "/221g-action-planner",
-    },
-    // add more tools here anytime
-  ];
+  const tools = useMemo(
+    () =>
+      (NAV_DATA.tools.tabs ?? [])
+        .flatMap((tab) =>
+          (tab?.items ?? [])
+            .filter((item) => !item.disabled)
+            .map((item) => ({
+              id: item.href ?? item.title,
+              title: item.title,
+              desc: item.description,
+              href: item.href ?? "/resources?tab=toolbox",
+              icon: item.icon,
+            }))
+        )
+        .filter(Boolean),
+    []
+  );
 
   const [startIndex, setStartIndex] = useState(0);
 
   useEffect(() => {
+    if (!tools.length) return;
+
     const interval = setInterval(() => {
       setStartIndex((prev) => (prev + 1) % tools.length);
-    }, 3500); // adjust speed
+    }, 3500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [tools.length]);
 
-  const leftTool = tools[startIndex % tools.length];
+  const rightTool = tools[startIndex % tools.length];
   const bottomTool = tools[(startIndex + 1) % tools.length];
-  const rightTool = tools[(startIndex + 2) % tools.length];
+  const leftTool = tools[(startIndex + 2) % tools.length];
 
   function ToolCard({ tool, position }: any) {
-    const Icon = tool.icon;
-
     const positionClasses =
       position === "left"
         ? "left-[50px] top-[90px]"
@@ -4328,13 +4319,13 @@ export function ToolsBucketDiagram() {
         layout
         layoutId={tool.id}
         className={`absolute ${positionClasses} -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20`}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        transition={{ type: "spring", stiffness: 110, damping: 11 }}
       >
         {/* Badge */}
         <div className="relative w-14 h-14 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-white border border-slate-100 shadow-sm" />
-          <motion.div className="z-10 flex size-10 items-center justify-center rounded-full bg-white shadow-md">
-            <Icon size={18} />
+          <motion.div className="z-10 flex size-10 items-center justify-center rounded-full bg-white shadow-md text-slate-700">
+            {tool.icon}
           </motion.div>
         </div>
 
@@ -4342,6 +4333,12 @@ export function ToolsBucketDiagram() {
         <motion.div className="mt-3 w-[120px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center">
           <h4 className="text-[10px] font-black">{tool.title}</h4>
           <p className="text-[8px] text-slate-500 mt-1">{tool.desc}</p>
+          <Link
+            href={tool.href}
+            className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[8px] font-black text-slate-700 no-underline hover:bg-slate-50"
+          >
+            Use Tool <ArrowRight size={8} strokeWidth={3} />
+          </Link>
         </motion.div>
       </motion.div>
     );
