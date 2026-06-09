@@ -47,6 +47,13 @@ import {
   LifeBuoy,
   FileUp,
   Stethoscope,
+  Combine,
+  Minimize2,
+  RefreshCw,
+  PenLine,
+  Eraser,
+  FileImage,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 
@@ -99,6 +106,13 @@ const ICONS: Record<string, LucideIcon> = {
   LifeBuoy,
   FileUp,
   Stethoscope,
+  Combine,
+  Minimize2,
+  RefreshCw,
+  PenLine,
+  Eraser,
+  FileImage,
+  Smartphone,
 };
 
 export function getIcon(name?: string): LucideIcon {
@@ -113,6 +127,8 @@ export const SLUG_THEME: Record<string, { accent: string; tint: string; icon: st
   photo: { accent: "#903030", tint: "#FEF0F0", icon: "Camera" },
   smart: { accent: "#0E7490", tint: "#E0F2FE", icon: "Wand2" },
   sponsor: { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Calculator" },
+  pdf: { accent: "#9B2C4A", tint: "#FCE9EF", icon: "Combine" },
+  snap: { accent: "#0E7490", tint: "#E0F2FE", icon: "PenLine" },
   "doc-review": { accent: "#9B6220", tint: "#FBF2E3", icon: "FileSearch" },
   consultation: { accent: "#1A5FA3", tint: "#EAF1FB", icon: "Users" },
   translate: { accent: "#9B6220", tint: "#FBF2E3", icon: "FileUp" },
