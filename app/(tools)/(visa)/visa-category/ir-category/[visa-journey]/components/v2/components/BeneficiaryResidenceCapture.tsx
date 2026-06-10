@@ -14,7 +14,7 @@
 // Saved to state.metadata.beneficiaryBaseline. Pure additive UI — does not
 // modify the I-130A form data.
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { MapPin, Plus, X, FileCheck, AlertTriangle, Save, Check, Globe } from "lucide-react";
 
 export interface BeneficiaryBaseline {
@@ -53,6 +53,18 @@ export function BeneficiaryResidenceCapture({
   const [additional, setAdditional] = useState<string[]>(baseline?.additionalCountries ?? []);
   const [newCountry, setNewCountry] = useState("");
   const [justSaved, setJustSaved] = useState(false);
+
+  // The parent feeds defaults derived from the profile (e.g. the beneficiary's
+  // country from passport OCR), which can arrive after first render (profile loads
+  // async). Seed-only (`v || ...`) so we fill an empty field but never clobber what
+  // the user is typing — residence is user-authoritative, the profile is just a hint.
+  useEffect(() => {
+    if (baseline?.currentCountry) setCurrentCountry((v) => v || baseline.currentCountry!);
+  }, [baseline?.currentCountry]);
+
+  useEffect(() => {
+    if (baseline?.currentCity) setCurrentCity((v) => v || baseline.currentCity!);
+  }, [baseline?.currentCity]);
 
   const addCountry = () => {
     const trimmed = newCountry.trim();
@@ -266,7 +278,7 @@ export function BeneficiaryResidenceCapture({
               </ul>
               <p className="text-[11px] mt-2 leading-relaxed italic" style={{ color: "#0e7490" }}>
                 Refer to the <strong>travel.state.gov Reciprocity Schedule</strong> for each
-                country's police certificate process and any exemptions.
+                country&apos;s police certificate process and any exemptions.
                 {config?.exempt_country_note ? ` ${config.exempt_country_note}` : ""}
               </p>
             </div>

@@ -12,7 +12,7 @@
 // Phase 3: add more entries here (birth certificate, marriage certificate, …)
 // alongside their parsers — the upload flow needs no further changes.
 
-export type OcrDocType = "passport";
+export type OcrDocType = "passport" | "marriage";
 export type OcrTarget = "self" | "beneficiary";
 
 export interface OcrDocConfig {
@@ -20,6 +20,49 @@ export interface OcrDocConfig {
   docType: OcrDocType;
   /** Whose MasterProfile section the extracted fields belong to. */
   target: OcrTarget;
+}
+
+/** A single editable field shown in the upload modal's confirm panel. */
+export interface OcrFieldDescriptor {
+  /** MasterProfile dot-path the value is saved to (e.g. "dateOfBirth"). */
+  key: string;
+  label: string;
+}
+
+/** Per-docType wiring: which API endpoint to call and which fields to confirm. */
+export interface OcrDocTypeMeta {
+  endpoint: string;
+  fields: OcrFieldDescriptor[];
+}
+
+// Both petitioner (self) and beneficiary passports carry the same biographic
+// fields; the profile stores them for either person.
+const PASSPORT_FIELDS: OcrFieldDescriptor[] = [
+  { key: "name.first", label: "Given name" },
+  { key: "name.last", label: "Surname" },
+  { key: "dateOfBirth", label: "Date of birth" },
+  { key: "sex", label: "Sex" },
+  { key: "nationality", label: "Nationality" },
+  { key: "passportNumber", label: "Passport number" },
+  { key: "passportExpiry", label: "Passport expiry" },
+  { key: "passportCountry", label: "Issuing country" },
+];
+
+// Marriage proof (NADRA MRC / Nikah Nama). The journey needs the marriage date;
+// place of marriage is a best-effort bonus.
+const MARRIAGE_FIELDS: OcrFieldDescriptor[] = [
+  { key: "relationship.marriageDate", label: "Marriage date" },
+  { key: "relationship.marriagePlace.city", label: "Place of marriage (city)" },
+];
+
+const OCR_DOCTYPE_META: Record<OcrDocType, OcrDocTypeMeta> = {
+  passport: { endpoint: "/api/documents/extract-passport", fields: PASSPORT_FIELDS },
+  marriage: { endpoint: "/api/documents/extract-marriage", fields: MARRIAGE_FIELDS },
+};
+
+/** Endpoint + field set for a docType (drives the modal's confirm panel). */
+export function getOcrDocTypeMeta(docType: OcrDocType): OcrDocTypeMeta {
+  return OCR_DOCTYPE_META[docType];
 }
 
 // Keyed by Document Vault definition id (see lib/document-vault/journey-mapping.ts).
@@ -33,6 +76,11 @@ const OCR_DOCS: Record<string, OcrDocConfig> = {
   // A birth/naturalization certificate simply yields no MRZ → fields stay blank
   // for manual entry (graceful), exactly like a blurry passport scan.
   "citizenship-proof-petitioner": { docType: "passport", target: "self" },
+  // Marriage proofs — doc-agnostic: Nikah Nama or NADRA MRC (or any page carrying
+  // the marriage date). The marriage date maps to relationship.marriageDate on the
+  // top-level (self) profile, which feeds the I-130 / DS-260 consistency widgets.
+  "nikah-nama": { docType: "marriage", target: "self" },
+  "nadra-mrc": { docType: "marriage", target: "self" },
 };
 
 /** Returns the OCR config for a vault definition id, or null if not OCR-eligible. */

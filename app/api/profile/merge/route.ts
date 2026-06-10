@@ -29,6 +29,11 @@ const ALLOWED_PATHS = new Set([
   "passportNumber",
   "passportExpiry",
   "passportCountry",
+  // Marriage proof (NADRA MRC / Nikah Nama) → relationship.* on the top-level
+  // profile. Feeds the I-130 (step 1.4) and DS-260 (step 2.3) consistency widgets.
+  "relationship.marriageDate",
+  "relationship.marriagePlace.city",
+  "relationship.marriagePlace.country",
 ]);
 
 // When the document belongs to the beneficiary (foreign spouse) rather than the
@@ -38,6 +43,11 @@ const BENEFICIARY_PATH_MAP: Record<string, string> = {
   "name.first": "beneficiary.name.first",
   "name.last": "beneficiary.name.last",
   dateOfBirth: "beneficiary.dateOfBirth",
+  nationality: "beneficiary.nationality",
+  sex: "beneficiary.sex",
+  passportNumber: "beneficiary.passportNumber",
+  passportExpiry: "beneficiary.passportExpiry",
+  passportCountry: "beneficiary.passportCountry",
 };
 
 function isObject(val: unknown): val is Record<string, unknown> {

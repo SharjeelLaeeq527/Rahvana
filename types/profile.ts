@@ -121,10 +121,19 @@ export interface MasterProfile {
   };
 
   // Beneficiary Information (when user is the sponsor petitioning for someone)
+  // Mirrors the biographic fields forms (I-130A, DS-260) ask about the beneficiary,
+  // so they can be captured once (passport/birth-cert OCR) and auto-filled everywhere.
   beneficiary?: {
     name: PersonName;
     dateOfBirth: string;
     countryOfResidence?: string;
+    nationality?: string; // Country of citizenship (e.g. from passport OCR)
+    sex?: "Male" | "Female";
+    placeOfBirth?: { city?: string; state?: string; country?: string };
+    passportNumber?: string;
+    passportIssueDate?: string;
+    passportExpiry?: string;
+    passportCountry?: string;
   };
 
   // Family Background (Parents are critical for almost all forms)
