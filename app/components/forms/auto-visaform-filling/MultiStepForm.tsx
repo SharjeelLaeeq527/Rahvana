@@ -715,8 +715,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       
       const isNextFieldEmpty = !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
       
-      if (filledFieldsCount >= 10 && isNextFieldEmpty) {
-        showToast("Free Preview: You've reached the 10-question limit. Redirecting to review page...", "info", 6000);
+      if (filledFieldsCount >= 15 && isNextFieldEmpty) {
+        showToast("Free Preview: You've reached the 15-question limit. Redirecting to review page...", "info", 6000);
         setView("review");
         return;
       }
@@ -825,7 +825,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }, []);
 
   const handleJumpToQuestion = useCallback((stepIdx: number, questionIdx: number) => {
-    if (isFreePreview && filledFieldsCount >= 10) {
+    if (isFreePreview && filledFieldsCount >= 15) {
       const targetSection = sections[stepIdx];
       const targetField = targetSection?.fields.filter(
         (f) => !f.condition || f.condition(formData)
@@ -834,7 +834,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const isTargetEmpty = !targetField || !formData[targetField.key] || formData[targetField.key].trim() === "";
       
       if (isTargetEmpty) {
-        showToast("Free Preview: You've reached the 10-question limit. Please unlock the tool or upgrade to access new questions.", "info", 5000);
+        showToast("Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.", "info", 5000);
         setView("review");
         return;
       }
@@ -845,14 +845,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }, [isFreePreview, filledFieldsCount, sections, formData]);
 
   const handleGoToStep = useCallback((step: number) => {
-    if (isFreePreview && filledFieldsCount >= 10) {
+    if (isFreePreview && filledFieldsCount >= 15) {
       const targetSection = sections[step - 1];
       const hasAnyAnswered = targetSection?.fields.some(
         (f) => formData[f.key] && formData[f.key].trim() !== ""
       );
       
       if (!hasAnyAnswered) {
-        showToast("Free Preview: You've reached the 10-question limit. Please unlock the tool or upgrade to access new sections.", "info", 5000);
+        showToast("Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.", "info", 5000);
         setView("review");
         return;
       }

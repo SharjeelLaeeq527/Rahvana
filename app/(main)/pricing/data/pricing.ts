@@ -348,6 +348,24 @@ export const ADDONS = [
     copy: "Checks your income and assets against the I-864 poverty guidelines and tells you exactly what you still need.",
     note: "Unlimited recalculations for your case",
   },
+  {
+    id: "pdf",
+    kind: "tools",
+    title: "PDF Tool Kit",
+    price: 69,
+    unit: "one-time",
+    copy: "Merge, edit, compress and convert your PDFs in one place — get every document into the exact format the embassy expects.",
+    note: "Included free with Basic, Premium & Executive",
+  },
+  {
+    id: "snap",
+    kind: "tools",
+    title: "Snap & Sign",
+    price: 5,
+    unit: "per signature",
+    copy: "Snap a photo of your handwritten signature and get a clean, background-free digital signature ready to drop into your forms.",
+    note: "Included free with Basic, Premium & Executive",
+  },
   // Temporarily disabled — service not currently offered.
   // {
   //   id: "doc-review",

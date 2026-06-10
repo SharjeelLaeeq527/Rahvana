@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader } from "@/components/ui/spinner";
 import { E, msg } from "@/lib/errors";
 
@@ -28,6 +28,19 @@ export default function CheckoutButton({
 }: CheckoutButtonProps & { onLoadingChange?: (loading: boolean) => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // After redirecting to Stripe, hitting the browser Back button restores this
+  // page from the bfcache with React state intact — leaving the button stuck on
+  // "Processing...". Reset the loading state whenever the page is shown again.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setIsLoading(false);
+      onLoadingChange?.(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [onLoadingChange]);
 
   const handleCheckout = async () => {
     setIsLoading(true);

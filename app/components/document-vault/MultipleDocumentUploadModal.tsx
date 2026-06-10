@@ -7,6 +7,7 @@ import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Upload,
@@ -20,6 +21,7 @@ import {
   // ChevronUp,
   History,
   Lock,
+  ScanLine,
 } from "lucide-react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
@@ -29,6 +31,11 @@ import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { msg, E, errorCode } from "@/lib/errors";
+import { getOcrConfig, type OcrTarget } from "@/lib/document-ocr/registry";
+import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
+import type { PassportFields } from "@/lib/document-ocr/passportParser";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import type { MasterProfile } from "@/types/profile";
 interface PendingUpload {
   id: string;
   file: File | null;
@@ -73,6 +80,141 @@ export function MultipleDocumentUploadModal({
   } = useDocumentVaultStore();
   const { t } = useLanguage();
   const { showToast } = useToast();
+  const { profile, refreshProfile, updateProfile } = useUserProfile();
+
+  // ── Inline OCR auto-fill (passport) ──
+  // When one of the uploaded items is a passport (e.g. the petitioner picks
+  // "U.S. passport" under "Proof of U.S. Citizenship"), we read that same file
+  // and offer to auto-fill the profile. Target ("self" / "beneficiary") comes
+  // from the selected type's OCR config — nothing is saved until the user confirms.
+  const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
+  const [ocrFields, setOcrFields] = useState<PassportFields>({});
+  const [ocrConfidence, setOcrConfidence] = useState<
+    Partial<Record<keyof PassportFields, number>>
+  >({});
+  const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
+  const [ocrSaving, setOcrSaving] = useState(false);
+  const [ocrTarget, setOcrTarget] = useState<OcrTarget>("self");
+
+  const OCR_FIELD_ORDER: { key: keyof PassportFields; label: string }[] =
+    ocrTarget === "beneficiary"
+      ? [
+          { key: "name.first", label: "Given name" },
+          { key: "name.last", label: "Surname" },
+          { key: "dateOfBirth", label: "Date of birth" },
+        ]
+      : [
+          { key: "name.first", label: "Given name" },
+          { key: "name.last", label: "Surname" },
+          { key: "dateOfBirth", label: "Date of birth" },
+          { key: "sex", label: "Sex" },
+          { key: "nationality", label: "Nationality" },
+          { key: "passportNumber", label: "Passport number" },
+          { key: "passportExpiry", label: "Passport expiry" },
+          { key: "passportCountry", label: "Issuing country" },
+        ];
+
+  // Did OCR actually read anything? Drives whether the panel says "Confirm what we
+  // read" (auto-filled) or "Add your details" (blank → user types). A person's DOB
+  // is the same on every document, so even a doc we can't auto-read still lets the
+  // user capture it manually here and push it to the profile / journey steps.
+  const ocrAnyDetected = OCR_FIELD_ORDER.some(
+    ({ key }) => (ocrFields[key] ?? "").toString().trim() !== ""
+  );
+
+  // Reset OCR panel and leave a fresh blank upload row so the user can continue.
+  const dismissOcr = () => {
+    setOcrPhase("idle");
+    setOcrFields({});
+    setOcrConfidence({});
+    setOcrWarnings([]);
+    setPendingUploads([]);
+    addPendingUpload();
+  };
+
+  const runOcr = async (file: File, target: OcrTarget) => {
+    setOcrTarget(target);
+    setOcrPhase("reading");
+    try {
+      const prepared = await resizeImageIfNeeded(file);
+      const formData = new FormData();
+      formData.append("file", prepared, prepared.name);
+      const res = await fetch("/api/documents/extract-passport", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json) {
+        showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
+        dismissOcr();
+        return;
+      }
+      setOcrFields(json.fields || {});
+      setOcrConfidence(json.confidence || {});
+      setOcrWarnings(json.warnings || []);
+      setOcrPhase("confirm");
+    } catch {
+      showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
+      dismissOcr();
+    }
+  };
+
+  const updateOcrField = (key: keyof PassportFields, value: string) => {
+    setOcrFields((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveOcr = async () => {
+    setOcrSaving(true);
+    try {
+      const res = await fetch("/api/profile/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: ocrFields, target: ocrTarget }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        showToast(json?.error || "Could not save details to your profile.", "error");
+        return;
+      }
+
+      // The merge already persisted the values server-side (with the right
+      // encryption + deep-merge). Now reflect them in the in-memory profile so
+      // dependent steps (e.g. the Ch.1 Step 4 baseline) update immediately. When a
+      // profile is already loaded we optimistically deep-merge — safe, the rest of
+      // the object stays intact — so it works even if a refetch would fail under
+      // server load. If nothing is loaded yet, fall back to a refetch.
+      if (profile) {
+        const name: Record<string, string> = {};
+        if (ocrFields["name.first"]) name.first = ocrFields["name.first"]!;
+        if (ocrFields["name.last"]) name.last = ocrFields["name.last"]!;
+        const partial: Record<string, unknown> = {};
+        if (ocrTarget === "beneficiary") {
+          const ben: Record<string, unknown> = {};
+          if (Object.keys(name).length) ben.name = name;
+          if (ocrFields.dateOfBirth) ben.dateOfBirth = ocrFields.dateOfBirth;
+          partial.beneficiary = ben;
+        } else {
+          if (Object.keys(name).length) partial.name = name;
+          if (ocrFields.dateOfBirth) partial.dateOfBirth = ocrFields.dateOfBirth;
+          if (ocrFields.sex) partial.sex = ocrFields.sex;
+          if (ocrFields.nationality) partial.nationality = ocrFields.nationality;
+          if (ocrFields.passportNumber) partial.passportNumber = ocrFields.passportNumber;
+          if (ocrFields.passportExpiry) partial.passportExpiry = ocrFields.passportExpiry;
+          if (ocrFields.passportCountry) partial.passportCountry = ocrFields.passportCountry;
+        }
+        updateProfile(partial as Partial<MasterProfile>, { silent: true });
+      } else {
+        await refreshProfile();
+      }
+
+      showToast("Details saved to your profile.", "success");
+      dismissOcr();
+    } catch {
+      showToast("Something went wrong while saving.", "error");
+    } finally {
+      setOcrSaving(false);
+    }
+  };
 
   // Find the base document definition
   const documentDef = useMemo<DocumentDefinition>(() => {
@@ -417,9 +559,26 @@ export function MultipleDocumentUploadModal({
       // Provide completion callbacks
       await onUploadComplete();
 
-      // Keep modal open, but clear completed files and add a blank row
-      setPendingUploads([]);
-      addPendingUpload();
+      // If one of the just-uploaded items is a passport, read that file and offer
+      // to auto-fill the profile (petitioner U.S. passport → self, etc.). Otherwise
+      // just clear the rows and leave a blank one so the user can keep adding.
+      // Identity docs (passport, birth certificate, naturalization…) all carry the
+      // person's name + DOB. If the selected type OR the whole category is
+      // OCR-registered, show the capture panel: a passport auto-fills via MRZ, other
+      // docs come up blank for the user to type in. Either way the DOB lands in the
+      // profile and flows to steps like Ch.1 Step 4. Target ("self"/"beneficiary")
+      // comes from the type's config, otherwise the category's.
+      const ocrItem = validUploads.find(
+        (u) => u.file && (getOcrConfig(mapDocumentNameToId(u.type)) || getOcrConfig(categoryId))
+      );
+      if (ocrItem?.file) {
+        const cfg = getOcrConfig(mapDocumentNameToId(ocrItem.type)) || getOcrConfig(categoryId);
+        await runOcr(ocrItem.file, cfg?.target || "self");
+      } else {
+        // Keep modal open, but clear completed files and add a blank row
+        setPendingUploads([]);
+        addPendingUpload();
+      }
     } catch (error) {
       console.error("Multi-upload error:", error);
       showToast(`${msg(E.UPLOAD_NETWORK_ERROR)}`, "error", { id: "multi-upload-progress" });
@@ -480,6 +639,105 @@ export function MultipleDocumentUploadModal({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-premium px-5 sm:px-7 pb-5 sm:pb-7">
+          {/* ── Inline OCR auto-fill panel (shown after a passport upload) ── */}
+          {ocrPhase !== "idle" && (
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-2 text-[#0c1b33]">
+                <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
+                  <ScanLine className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm">
+                    {ocrPhase === "reading"
+                      ? "Reading your document…"
+                      : ocrAnyDetected
+                        ? "Confirm the details we read"
+                        : "Add your details"}
+                  </p>
+                  <p className="text-xs text-[#6b8097]">
+                    {ocrPhase === "confirm" && !ocrAnyDetected
+                      ? ocrTarget === "beneficiary"
+                        ? "We couldn't auto-read this — please type them in. Saved to your spouse's (beneficiary) details."
+                        : "We couldn't auto-read this — please type them in. Saved to your profile."
+                      : ocrTarget === "beneficiary"
+                        ? "These will be saved to your spouse's (beneficiary) details."
+                        : "These will be saved to your profile."}
+                  </p>
+                </div>
+              </div>
+
+              {ocrPhase === "reading" && (
+                <div className="flex items-center justify-center gap-3 py-10 text-[#6b8097]">
+                  <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+                  <span className="text-sm font-medium">Extracting fields…</span>
+                </div>
+              )}
+
+              {ocrPhase === "confirm" && (
+                <>
+                  {!ocrAnyDetected ? (
+                    <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-xl p-4 text-sm text-[#3a4f63]">
+                      We couldn&apos;t automatically read this document. Please type the
+                      details below — they&apos;ll be saved just the same.
+                    </div>
+                  ) : (
+                    ocrWarnings.length > 0 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                        <p className="font-semibold mb-1">Please double-check these</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                          {ocrWarnings.map((w, i) => (
+                            <li key={i}>{w}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {OCR_FIELD_ORDER.map(({ key, label }) => {
+                      const conf = ocrConfidence[key];
+                      return (
+                        <div key={key} className="space-y-1">
+                          <Label htmlFor={`ocr-${key}`} className="flex items-center gap-2">
+                            {label}
+                            {typeof conf === "number" && conf < 0.6 && (
+                              <span className="text-xs text-amber-600">(low confidence)</span>
+                            )}
+                          </Label>
+                          <Input
+                            id={`ocr-${key}`}
+                            value={ocrFields[key] ?? ""}
+                            onChange={(e) => updateOcrField(key, e.target.value)}
+                            placeholder={`Enter ${label.toLowerCase()}`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex gap-3 pt-2 pb-2">
+                    <Button
+                      variant="outline"
+                      onClick={dismissOcr}
+                      disabled={ocrSaving}
+                      className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 font-semibold"
+                    >
+                      Skip
+                    </Button>
+                    <Button
+                      onClick={handleSaveOcr}
+                      disabled={ocrSaving}
+                      className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold"
+                    >
+                      {ocrSaving ? "Saving…" : "Confirm & Save"}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className={ocrPhase !== "idle" ? "hidden" : ""}>
           {/* Already Uploaded List */}
           {uploadedDocuments.length > 0 && (
             <div className="mb-8">
@@ -863,10 +1121,15 @@ export function MultipleDocumentUploadModal({
             <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
           </div>
+          </div>
         </div>
 
         {/* Action Footer */}
-        <div className="flex gap-4 px-5 sm:px-7 pb-5 sm:pb-7 pt-4 border-t border-slate-100 shrink-0 bg-white">
+        <div
+          className={`flex gap-4 px-5 sm:px-7 pb-5 sm:pb-7 pt-4 border-t border-slate-100 shrink-0 bg-white ${
+            ocrPhase !== "idle" ? "hidden" : ""
+          }`}
+        >
           <Button
             variant="outline"
             onClick={handleClose}

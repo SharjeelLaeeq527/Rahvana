@@ -74,6 +74,7 @@ import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUpl
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
@@ -306,6 +307,10 @@ export const StepView: React.FC<StepViewProps> = ({
     isOpen: false,
     doc: null,
   });
+
+  // Profile feeds OCR-extracted values (e.g. DOBs from passport upload) into the
+  // step_1_4 consistency baseline so the user doesn't re-type them by hand.
+  const { profile } = useUserProfile();
 
   // Document Questionnaire State (Chapter 1, Step 2)
   const isDocQuestionnaireCompleted = state.metadata?.docQuestionnaireCompleted === true;
@@ -1979,12 +1984,38 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* CONSISTENCY BASELINE CAPTURE — step_1_4 (Fill I-130) */}
-          {sId === "step_1_4" && (
-            <ConsistencyBaselineCapture
-              baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
-              onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
-            />
-          )}
+          {sId === "step_1_4" &&
+            (() => {
+              // Merge any saved baseline with profile-derived defaults (petitioner =
+              // account holder, beneficiary = spouse) so OCR'd dates pre-fill the form.
+              //
+              // DOBs: the passport is the source of truth. When a passport-derived DOB
+              // exists in the profile it WINS over any previously-saved baseline value,
+              // so the I-130 dates always stay in sync with the uploaded passport (no
+              // mismatch between Step 2's passport and this step). Marriage date keeps
+              // saved-first priority since no passport supplies it.
+              const savedBaseline = state.metadata?.consistencyBaseline as
+                | ConsistencyBaseline
+                | undefined;
+              const prof = profile as Record<string, any> | null;
+              const derivedBaseline: ConsistencyBaseline = {
+                ...savedBaseline,
+                marriageDate:
+                  savedBaseline?.marriageDate || prof?.relationship?.marriageDate || undefined,
+                petitionerDateOfBirth:
+                  prof?.dateOfBirth || savedBaseline?.petitionerDateOfBirth || undefined,
+                beneficiaryDateOfBirth:
+                  prof?.beneficiary?.dateOfBirth ||
+                  savedBaseline?.beneficiaryDateOfBirth ||
+                  undefined,
+              };
+              return (
+                <ConsistencyBaselineCapture
+                  baseline={derivedBaseline}
+                  onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
+                />
+              );
+            })()}
 
           {/* DS-260 CROSS-FORM CONSISTENCY CAPTURE — step_2_3 (Fill DS-260) */}
           {sId === "step_2_3" && (

@@ -284,6 +284,90 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
   },
 
   // ───────────────────────────────────────────────────────────────────────────
+  pdf: {
+    slug: "pdf",
+    badge: "All-in-One",
+    tagline: "Every PDF fix the embassy needs, in one place.",
+    overview: [
+      "Embassies and USCIS are unforgiving about file format: pages out of order, files too large to upload, the wrong format entirely. The PDF Tool Kit puts merge, edit, compress and convert in one place so every document goes in exactly the way it's supposed to.",
+      "Combine multiple scans into a single packet, shrink an oversized file under the upload limit, convert images or office files to PDF, and edit pages — all in your browser, no extra software to install.",
+    ],
+    highlights: [
+      { icon: "Combine", title: "Merge into one packet", text: "Combine multiple PDFs and scans into a single, correctly ordered document." },
+      { icon: "Minimize2", title: "Compress to fit limits", text: "Shrink oversized files under portal upload size limits without losing legibility." },
+      { icon: "RefreshCw", title: "Convert formats", text: "Turn images and office files into clean PDFs (and between formats) ready to submit." },
+      { icon: "PenLine", title: "Edit pages", text: "Reorder, rotate and tidy pages so your packet reads exactly right." },
+    ],
+    steps: [
+      { title: "Upload your file", text: "Drop in the PDF, image or document you need to fix." },
+      { title: "Pick a tool", text: "Choose merge, compress, convert or edit." },
+      { title: "Process in-browser", text: "The toolkit handles it instantly — nothing to install." },
+      { title: "Download", text: "Get a clean, submission-ready PDF." },
+    ],
+    audience: [
+      "Anyone whose upload was rejected for size or format",
+      "Applicants combining multiple scans into one packet",
+      "Anyone preparing documents for NVC or embassy upload",
+    ],
+    outcomes: [
+      "Merged, correctly ordered document packets",
+      "Files compressed under portal upload limits",
+      "Format conversion to embassy-ready PDFs",
+    ],
+    faqs: [
+      ["Is this included in my plan?", "Yes — the PDF Tool Kit is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
+      ["Do my files stay private?", "Processing happens in your browser session; your documents aren't shared."],
+      ["What can it convert?", "Common images and office files to PDF, plus merging, compressing and editing existing PDFs."],
+    ],
+    media: [
+      imgFile("pdf-toolkit_hero.jpg", "PDF Tool Kit — merge, compress, convert, edit"),
+    ],
+    related: ["smart", "snap", "photo"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  snap: {
+    slug: "snap",
+    badge: "Clean Signatures",
+    tagline: "A clean digital signature from a quick photo.",
+    overview: [
+      "Forms often need a signature image, but a phone photo of your signature comes with a grey background and shadows that look messy on an official document. Snap & Sign cleans that up: it removes the background and gives you a crisp, transparent signature you can drop straight into your forms.",
+      "Snap a photo of your handwritten signature on paper, upload it, and download a clean, ready-to-place signature image — no scanner or design tool needed.",
+    ],
+    highlights: [
+      { icon: "Eraser", title: "Background removed", text: "Strips the paper, shadows and noise so only your signature remains." },
+      { icon: "FileImage", title: "Transparent output", text: "Get a clean transparent image that sits naturally on any form." },
+      { icon: "Smartphone", title: "Just use your phone", text: "A normal photo of your signature on paper is all you need — no scanner." },
+      { icon: "Zap", title: "Ready in seconds", text: "Upload, preview and download — done in moments." },
+    ],
+    steps: [
+      { title: "Sign on paper", text: "Write your signature clearly on plain white paper." },
+      { title: "Snap & upload", text: "Take a photo with your phone and upload it." },
+      { title: "We clean it up", text: "The background is removed automatically." },
+      { title: "Download & place", text: "Drop the clean signature into your forms." },
+    ],
+    audience: [
+      "Anyone signing forms that need a signature image",
+      "Applicants without a scanner",
+      "Anyone whose signature photo looked messy on a document",
+    ],
+    outcomes: [
+      "A clean, background-free signature image",
+      "A transparent file ready to place on forms",
+      "No scanner or design software required",
+    ],
+    faqs: [
+      ["Is this included in my plan?", "Yes — Snap & Sign is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
+      ["What should I upload?", "A clear photo of your handwritten signature on plain white paper, well lit, works best."],
+      ["Is the output transparent?", "Yes — the background is removed so the signature drops cleanly onto your forms."],
+    ],
+    media: [
+      imgFile("snap-and-sign_hero.jpg", "Snap & Sign — clean digital signature"),
+    ],
+    related: ["pdf", "smart", "photo"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
   photo: {
     slug: "photo",
     badge: "Minutes, Not Studios",

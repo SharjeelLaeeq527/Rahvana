@@ -35,6 +35,12 @@ export function mapDocumentNameToId(name: string): string {
     "passport photos": "passport-photos",
 
     // Supporting fallbacks
+    // NOTE: the petitioner's I-02 entry is the combined "U.S. Passport/Birth
+    // Certificate". Without this exact key the substring search below would pick
+    // the longer "birth certificate" match (→ beneficiary birth cert), routing
+    // the petitioner's passport to the wrong person and skipping passport OCR.
+    "u.s. passport/birth certificate": "passport-petitioner",
+    "u.s. passport or birth certificate (petitioner)": "passport-petitioner",
     "pakistani passport": "passport-beneficiary",
     "u.s. passport": "passport-petitioner",
     "passport biographic page": "passport-beneficiary",

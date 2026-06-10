@@ -27,7 +27,6 @@ export default function ReviewForm({
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
-  const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [location, setLocation] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -95,7 +94,6 @@ export default function ReviewForm({
         body: JSON.stringify({
           toolSlug: slug,
           rating,
-          title: title.trim() || undefined,
           body: body.trim(),
           location: location.trim() || undefined,
         }),
@@ -144,24 +142,17 @@ export default function ReviewForm({
         )}
       </div>
 
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        maxLength={120}
-        placeholder="Add a headline (optional)"
-        className="mt-4 w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13.5px] outline-none transition focus:border-foreground/30"
-      />
-
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
         maxLength={2000}
         rows={4}
         placeholder="Share how this tool helped your case…"
-        className="mt-3 w-full resize-y rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13.5px] leading-relaxed outline-none transition focus:border-foreground/30"
+        className="mt-4 w-full resize-y rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13.5px] leading-relaxed outline-none transition focus:border-foreground/30"
       />
       <div className="mt-1 text-right text-[11px] text-muted-foreground">{body.length}/2000</div>
+
+      {error && <p className="mt-2 text-[12.5px] font-medium text-red-600">{error}</p>}
 
       <input
         type="text"
@@ -169,10 +160,8 @@ export default function ReviewForm({
         onChange={(e) => setLocation(e.target.value)}
         maxLength={80}
         placeholder="Your city or role (optional, e.g. Lahore)"
-        className="mt-1 w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13.5px] outline-none transition focus:border-foreground/30"
+        className="mt-3 w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13.5px] outline-none transition focus:border-foreground/30"
       />
-
-      {error && <p className="mt-3 text-[12.5px] font-medium text-red-600">{error}</p>}
 
       <div className="mt-4 flex items-center gap-2.5">
         <button
