@@ -48,7 +48,15 @@ import {
 import Image from "next/image";
 import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep";
 // import { ProgressBar } from "@/app/components/forms/auto-visaform-filling/ProgressBar";
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  cloneElement,
+  isValidElement,
+} from "react";
 import Link from "next/link";
 import { PlatformChoiceModal } from "@/app/components/shared/PlatformChoiceModal";
 import {
@@ -64,6 +72,29 @@ import { NAV_DATA } from "@/app/components/layout/navigationData";
 
 export const journeyHref = "/visa-category/ir-category/ir1-journey";
 export const toolsHref = "/tools";
+
+function getToolAccentClass(icon: React.ReactNode) {
+  if (!isValidElement(icon)) return "bg-slate-700";
+
+  const className =
+    typeof icon.props === "object" && icon.props && "className" in icon.props
+      ? String(icon.props.className ?? "")
+      : "";
+
+  const toneMatch = className.match(/text-(violet|emerald|amber|rose|cyan)-(\d{2,3})/);
+
+  if (!toneMatch) return "bg-slate-700";
+
+  const toneMap = {
+    violet: "bg-violet-600",
+    emerald: "bg-emerald-600",
+    amber: "bg-amber-600",
+    rose: "bg-rose-600",
+    cyan: "bg-cyan-600",
+  } as const;
+
+  return toneMap[toneMatch[1] as keyof typeof toneMap] ?? "bg-slate-700";
+}
 
 export function ProductFrame({
   children,
@@ -4269,6 +4300,58 @@ function LeftArrowSvg({ color }: { color: string }) {
   );
 }
 
+function ToolCard({ tool, position }: any) {
+  const positionClasses =
+    position === "left"
+      ? "left-[50px] top-[90px]"
+      : position === "right"
+        ? "left-[390px] top-[90px]"
+        : "left-[220px] top-[255px]";
+
+  const iconNode = isValidElement(tool.icon)
+    ? cloneElement(tool.icon as React.ReactElement, {
+        className: "h-5 w-5 text-white",
+        style: { color: "#fff" },
+      })
+    : tool.icon;
+
+  return (
+    <motion.div
+      layout
+      layoutId={tool.id}
+      initial={{ opacity: 0, scale: 0.96, y: 6 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.92, y: -6 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className={`absolute ${positionClasses} -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20`}
+    >
+      {/* Badge */}
+      <div className="relative w-14 h-14 flex items-center justify-center">
+        <div
+          className={`absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm`}
+        />
+        <motion.div
+          className={`z-10 flex size-10 items-center justify-center rounded-full ${tool.accentClass ?? "bg-slate-700"} shadow-md text-white`}
+        >
+          {iconNode}
+        </motion.div>
+      </div>
+
+      {/* Card */}
+      <motion.div className="mt-3 w-[120px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center">
+        <h4 className="text-[10px] font-black">{tool.title}</h4>
+        <p className="text-[8px] text-slate-500 mt-1">{tool.desc}</p>
+        <Link
+          href={tool.href}
+          className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[8px] font-black text-slate-700 no-underline hover:bg-slate-50"
+        >
+          Use Tool <ArrowRight size={8} strokeWidth={3} />
+        </Link>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function ToolsBucketDiagram() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
@@ -4284,6 +4367,7 @@ export function ToolsBucketDiagram() {
               desc: item.description,
               href: item.href ?? "/resources?tab=toolbox",
               icon: item.icon,
+              accentClass: getToolAccentClass(item.icon),
             }))
         )
         .filter(Boolean),
@@ -4305,47 +4389,6 @@ export function ToolsBucketDiagram() {
   const rightTool = tools[startIndex % tools.length];
   const bottomTool = tools[(startIndex + 1) % tools.length];
   const leftTool = tools[(startIndex + 2) % tools.length];
-
-  function ToolCard({ tool, position }: any) {
-    const positionClasses =
-      position === "left"
-        ? "left-[50px] top-[90px]"
-        : position === "right"
-          ? "left-[390px] top-[90px]"
-          : "left-[220px] top-[255px]";
-
-    return (
-      <motion.div
-        layout
-        layoutId={tool.id}
-        initial={{ opacity: 0, scale: 0.96, y: 6 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: -6 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        className={`absolute ${positionClasses} -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20`}
-      >
-        {/* Badge */}
-        <div className="relative w-14 h-14 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-white border border-slate-100 shadow-sm" />
-          <motion.div className="z-10 flex size-10 items-center justify-center rounded-full bg-white shadow-md text-slate-700">
-            {tool.icon}
-          </motion.div>
-        </div>
-
-        {/* Card */}
-        <motion.div className="mt-3 w-[120px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center">
-          <h4 className="text-[10px] font-black">{tool.title}</h4>
-          <p className="text-[8px] text-slate-500 mt-1">{tool.desc}</p>
-          <Link
-            href={tool.href}
-            className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[8px] font-black text-slate-700 no-underline hover:bg-slate-50"
-          >
-            Use Tool <ArrowRight size={8} strokeWidth={3} />
-          </Link>
-        </motion.div>
-      </motion.div>
-    );
-  }
 
   return (
     <div className="relative w-full max-w-[480px] h-[420px] mx-auto select-none mt-6 overflow-visible">
@@ -4470,7 +4513,11 @@ export function ToolsBucketDiagram() {
 
       {/* 4. Bottom Tool: 221(g) Action Planner */}
       <AnimatePresence mode="popLayout">
-        <ToolCard key={`bottom-${bottomTool?.id ?? "bottom"}`} tool={bottomTool} position="bottom" />
+        <ToolCard
+          key={`bottom-${bottomTool?.id ?? "bottom"}`}
+          tool={bottomTool}
+          position="bottom"
+        />
       </AnimatePresence>
     </div>
   );
