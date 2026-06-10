@@ -1,7 +1,7 @@
 // lib/notifications.ts
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from "resend";
-import * as Errors from '@/lib/errors'
+import * as Errors from "@/lib/errors";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -127,10 +127,156 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
   }
 }
 
+// ---------------------------------------------------------------------------
+//  In-App Notification Helpers
+// ---------------------------------------------------------------------------
+
+interface InAppNotificationContent {
+  title: string;
+  body: string;
+  priority: "low" | "normal" | "high" | "critical";
+  actionLabel?: string;
+  actionUrl?: string;
+}
+
+/**
+ * Build user-facing notification content based on appointment status.
+ */
+function getAppointmentNotificationContent(
+  status: string,
+  appointmentType: string,
+  medicalWebsite: string
+): InAppNotificationContent | null {
+  const service = appointmentType ? `${appointmentType} (${medicalWebsite})` : medicalWebsite;
+
+  switch (status) {
+    case "in_progress":
+      return {
+        title: "Appointment In Progress",
+        body: `Your ${service} appointment request is now being processed by our team. You'll be notified once it's confirmed.`,
+        priority: "normal",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "confirmed":
+    case "completed":
+      return {
+        title: "Appointment Confirmed",
+        body: `Great news! Your ${service} appointment has been confirmed. Please check your email for full details and make sure to arrive on time with all required documents.`,
+        priority: "high",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "cancelled":
+      return {
+        title: "Appointment Cancelled",
+        body: `Your ${service} appointment request has been cancelled. If you believe this was an error, please contact our support team.`,
+        priority: "critical",
+        actionLabel: "Contact Support",
+        actionUrl: "/#contact",
+      };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Create an in-app notification for the user who owns the appointment.
+ * Looks up user_id from the appointment row, or falls back to email-based lookup.
+ */
+async function createInAppNotification(appointmentId: string, appointment: Record<string, any>) {
+  try {
+    const { createServerClient } = await import("@supabase/ssr");
+
+    const supabaseAdmin = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    // Resolve the user_id
+    let userId: string | null = appointment.user_id ?? null;
+
+    if (!userId && appointment.email) {
+      // Fallback: look up the user by email in the profiles table
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .ilike("email", appointment.email)
+        .maybeSingle();
+
+      userId = profile?.id ?? null;
+    }
+
+    if (!userId) {
+      console.warn(
+        `[InAppNotif] No user_id found for appointment ${appointmentId} (email: ${appointment.email}). Skipping in-app notification.`
+      );
+      return;
+    }
+
+    const content = getAppointmentNotificationContent(
+      appointment.status,
+      appointment.appointment_type || "",
+      appointment.medical_website || ""
+    );
+
+    if (!content) {
+      console.warn(`[InAppNotif] No notification content for status: ${appointment.status}`);
+      return;
+    }
+
+    const { error } = await supabaseAdmin.from("app_notifications").insert({
+      user_id: userId,
+      type: "appointment_status",
+      title: content.title,
+      body: content.body,
+      priority: content.priority,
+      action_label: content.actionLabel || null,
+      action_url: content.actionUrl || null,
+      metadata: {
+        appointment_id: appointmentId,
+        status: appointment.status,
+        appointment_type: appointment.appointment_type,
+        medical_website: appointment.medical_website,
+      },
+    });
+
+    if (error) {
+      console.error("[InAppNotif] Error inserting notification:", error);
+    } else {
+      console.log(
+        `[InAppNotif] ✅ Created in-app notification for user ${userId} (status: ${appointment.status})`
+      );
+    }
+  } catch (err) {
+    console.error("[InAppNotif] Unexpected error creating in-app notification:", err);
+  }
+}
+
 // Function to trigger notification when appointment status changes
 export async function triggerAppointmentNotification(appointmentId: string) {
   try {
-    const supabase = await createClient();
+    const { createServerClient } = await import("@supabase/ssr");
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
 
     // Get appointment details
     const { data: appointment, error } = await supabase
@@ -144,7 +290,7 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       return { error: Errors.msg(Errors.E.APPOINTMENT_NOT_FOUND) };
     }
 
-    // Send notification based on status
+    // Send email notification based on status
     const notificationData: AppointmentNotificationData = {
       email: appointment.email,
       fullName: appointment.full_name,
@@ -155,6 +301,11 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       appointmentTime: appointment.preferred_time,
       status: appointment.status,
     };
+
+    // Create in-app notification (non-blocking — don't let it fail the email)
+    createInAppNotification(appointmentId, appointment).catch((err) => {
+      console.error("[InAppNotif] Background error:", err);
+    });
 
     return await sendAppointmentNotification(notificationData);
   } catch (error) {
@@ -192,11 +343,13 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
     const formatSlotDate = (date: Date | string) => {
       try {
         const d = new Date(date);
-        return d.toLocaleString("en-US", {
-          timeZone: "America/New_York",
-          dateStyle: "medium",
-          timeStyle: "short",
-        }) + " (ET)";
+        return (
+          d.toLocaleString("en-US", {
+            timeZone: "America/New_York",
+            dateStyle: "medium",
+            timeStyle: "short",
+          }) + " (ET)"
+        );
       } catch (err) {
         return String(date);
       }
@@ -241,12 +394,16 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             
             <p>Our consultation experts look forward to speaking with you. Please ensure you are online and ready at the scheduled time.</p>
             
-            ${adminNotes ? `
+            ${
+              adminNotes
+                ? `
             <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
               <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Important Notes:</strong>
               <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
             </div>
-            ` : ""}
+            `
+                : ""
+            }
             
             <p>If you need to make changes or have any urgent questions, please feel free to reach out to us.</p>
             ${footerHtml}
@@ -255,10 +412,16 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
       `;
     } else if (status === "alternatives_proposed") {
       subject = `Alternative Consultation Slots Proposed - Ref: ${referenceId}`;
-      
-      const slotsList = alternateSlots && alternateSlots.length > 0
-        ? alternateSlots.map(slot => `<li style="margin: 8px 0; font-weight: 600; color: #4f46e5;">${formatSlotDate(slot)}</li>`).join("")
-        : `<li style="margin: 8px 0; font-style: italic; color: #6b7280;">No explicit alternative slots proposed</li>`;
+
+      const slotsList =
+        alternateSlots && alternateSlots.length > 0
+          ? alternateSlots
+              .map(
+                (slot) =>
+                  `<li style="margin: 8px 0; font-weight: 600; color: #4f46e5;">${formatSlotDate(slot)}</li>`
+              )
+              .join("")
+          : `<li style="margin: 8px 0; font-style: italic; color: #6b7280;">No explicit alternative slots proposed</li>`;
 
       htmlContent = `
         <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
@@ -275,12 +438,16 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
               </ul>
             </div>
 
-            ${adminNotes ? `
+            ${
+              adminNotes
+                ? `
             <div style="background-color: #fef3c7; border-left: 4px solid #d97706; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #92400e;">
               <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Message from Admin:</strong>
               <p style="margin: 0; font-style: italic;">${adminNotes}</p>
             </div>
-            ` : ""}
+            `
+                : ""
+            }
             
             <p>Please visit your booking portal to select one of these preferred slots or propose different times.</p>
             ${footerHtml}
@@ -320,14 +487,18 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             <p>Dear ${fullName},</p>
             <p>We are writing to let you know that your consultation request with reference <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span> has been cancelled.</p>
             
-            ${adminNotes ? `
+            ${
+              adminNotes
+                ? `
             <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #991b1b;">
               <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Cancellation Note:</strong>
               <p style="margin: 0; font-style: italic;">${adminNotes}</p>
             </div>
-            ` : `
+            `
+                : `
             <p>If you believe this was done in error or if you would like to reschedule, please visit our website and submit a new request.</p>
-            `}
+            `
+            }
             
             <p>Best regards,<br/>The Arachnie Team</p>
             ${footerHtml}
