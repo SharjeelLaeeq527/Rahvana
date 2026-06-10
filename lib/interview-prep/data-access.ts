@@ -205,22 +205,20 @@ export async function getActiveJourneySession(
   };
 }
 
-// Archive all interview sessions linked to a journey (called when journey completes)
-// Preserves journey_id for historical tracking
-export async function archiveJourneySessions(journey_id: string): Promise<void> {
+// Delete all interview sessions linked to a journey
+// Called when journey completes or is deleted to free the uniqueness slot
+// so a new journey can create a fresh session for the same category
+export async function deleteJourneySessions(journey_id: string): Promise<void> {
   const { supabase } = await getSupabaseWithUser();
 
   const { error } = await supabase
     .from("interview_prep_sessions")
-    .update({
-      status: "completed",
-      archived_at: new Date().toISOString(),
-    })
+    .delete()
     .eq("journey_id", journey_id)
     .eq("source", "journey");
 
   if (error) {
-    console.error("[archiveJourneySessions] Failed:", error.message);
+    console.error("[deleteJourneySessions] Failed:", error.message);
   }
 }
 

@@ -174,6 +174,21 @@ export async function deleteAllUserJourneys(userId: string): Promise<boolean> {
 
   try {
     const supabase = createClient();
+
+    // Fetch journey IDs before deletion to clean up interview sessions
+    const { data: journeys } = await supabase.from("journeys").select("id").eq("user_id", userId);
+
+    // Delete associated interview sessions BEFORE deleting journeys
+    if (journeys && journeys.length > 0) {
+      for (const j of journeys) {
+        await supabase
+          .from("interview_prep_sessions")
+          .delete()
+          .eq("journey_id", j.id)
+          .eq("source", "journey");
+      }
+    }
+
     const { error } = await withTimeout<any>(
       supabase.from("journeys").delete().eq("user_id", userId)
     );
@@ -255,12 +270,28 @@ export async function deleteJourneyProgress(userId: string, journeyId: string): 
       journeyId
     );
 
+    // Fetch journey IDs before deletion to clean up interview sessions
+    const fetchQuery = supabase.from("journeys").select("id").eq("user_id", userId);
+
+    const { data: journeys } = await withTimeout<any>(
+      isUUID ? fetchQuery.eq("id", journeyId) : fetchQuery.eq("journey_type", journeyId)
+    );
+
+    if (journeys && journeys.length > 0) {
+      for (const j of journeys) {
+        await supabase
+          .from("interview_prep_sessions")
+          .delete()
+          .eq("journey_id", j.id)
+          .eq("source", "journey");
+      }
+    }
+
     let query = supabase.from("journeys").delete().eq("user_id", userId);
 
     if (isUUID) {
       query = query.eq("id", journeyId);
     } else {
-      // Assume it's a journey_type (e.g., 'IR1', 'F1', etc.)
       query = query.eq("journey_type", journeyId);
     }
 

@@ -18,7 +18,6 @@ export interface InterviewSession {
   source: InterviewSessionSource;
   journey_id: string | null;
   status: InterviewSessionStatus;
-  archived_at: string | null;
   answers?: unknown[];
   output?: unknown[];
 }

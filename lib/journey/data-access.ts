@@ -208,6 +208,15 @@ export async function deleteJourneyDB(
   const existing = await getJourneyDB(journeyId, { supabase, user });
   if (!existing) throw new Error("Journey not found or not owned");
 
+  // Delete associated interview sessions BEFORE deleting journey
+  // (FK ON DELETE SET NULL would nullify journey_id, making cleanup impossible)
+  try {
+    const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+    await deleteJourneySessions(journeyId);
+  } catch (e) {
+    console.warn("[deleteJourneyDB] Could not delete interview sessions:", e);
+  }
+
   const { error } = await supabase
     .from("journeys")
     .delete()
@@ -233,6 +242,16 @@ export async function deleteAllJourneysDB(client?: { supabase: any; user: any })
 
   if (!journeys || journeys.length === 0) {
     return 0; // No journeys to delete
+  }
+
+  // Delete associated interview sessions BEFORE deleting journeys
+  try {
+    const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+    for (const journey of journeys) {
+      await deleteJourneySessions(journey.id);
+    }
+  } catch (e) {
+    console.warn("[deleteAllJourneysDB] Could not delete interview sessions:", e);
   }
 
   const { error: deleteError, count } = await supabase

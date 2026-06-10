@@ -69,12 +69,12 @@ export class ProgressCalculationService {
       if (completionPercentage === 100) {
         await db.updateJourneyDB(journeyId, { status: "completed" });
 
-        // Archive associated interview sessions (preserve journey_id for history)
+        // Delete associated interview sessions to free uniqueness slot for future journeys
         try {
-          const { archiveJourneySessions } = await import("@/lib/interview-prep/data-access");
-          await archiveJourneySessions(journeyId);
-        } catch (archiveError) {
-          console.warn("[JourneyService] Failed to archive interview sessions:", archiveError);
+          const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+          await deleteJourneySessions(journeyId);
+        } catch (deleteError) {
+          console.warn("[JourneyService] Failed to delete interview sessions:", deleteError);
         }
       }
 
