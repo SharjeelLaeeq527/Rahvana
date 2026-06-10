@@ -533,8 +533,7 @@ export function DashboardView({
                   status="action-needed"
                   actionLabel="Continue Chapter 3"
                   onAction={() => {
-                    if (onSelectStep) onSelectStep(2, 0);
-                    else actions.setStage(2);
+                    if (onSelectChapter) onSelectChapter(2);
                   }}
                 />
               )}

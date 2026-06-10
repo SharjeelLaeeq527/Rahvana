@@ -220,6 +220,7 @@ export function DashboardCriticalCard({
 
   const critCount = issues.filter((i) => i.level === "critical").length;
   const warnCount = issues.filter((i) => i.level === "warning").length;
+  const infoCount = issues.filter((i) => i.level === "info").length;
 
   return (
     <div className="relative">
@@ -308,6 +309,18 @@ export function DashboardCriticalCard({
                       }}
                     >
                       {warnCount} warning{warnCount !== 1 ? "s" : ""}
+                    </span>
+                  )}
+
+                  {infoCount > 0 && (
+                    <span
+                      className="text-[9.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+                      style={{
+                        background: LEVEL.info.chipBg,
+                        color: LEVEL.info.chipFg,
+                      }}
+                    >
+                      {infoCount} info{infoCount !== 1 ? "s" : ""}
                     </span>
                   )}
                 </div>
