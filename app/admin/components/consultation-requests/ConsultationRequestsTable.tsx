@@ -46,6 +46,7 @@ import {
   Info,
 } from "lucide-react";
 import { ConsultationBooking, TimeSlot } from "@/types/consultation";
+import { shouldShowConsultationForAdmin } from "@/lib/services/consultationVisibility";
 import {
   Sheet,
   SheetContent,
@@ -95,7 +96,7 @@ const ConsultationRequestsTable = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/consultation");
+      const response = await fetch("/api/consultation?paid_only=true");
       if (response.ok) {
         const data = await response.json();
         // Convert date strings to Date objects if they aren't already
@@ -117,6 +118,7 @@ const ConsultationRequestsTable = () => {
             selected_slot: new Date(req.selected_slot!),
             alternate_slots: req.alternate_slots,
             status: req.status || "pending_approval",
+            payment_status: req.payment_status ?? null,
             admin_notes: req.admin_notes,
             created_at: new Date(req.created_at!),
             updated_at: new Date(req.updated_at!),
@@ -124,7 +126,11 @@ const ConsultationRequestsTable = () => {
           };
           return typedReq;
         });
-        setRequests(formattedData);
+        const visibleRequests = formattedData.filter((req: ConsultationBooking) =>
+          shouldShowConsultationForAdmin(req)
+        );
+
+        setRequests(visibleRequests);
       } else {
         console.error(
           "Failed to fetch consultation requests:",

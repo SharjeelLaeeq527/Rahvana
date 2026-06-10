@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     const filters = {
       status: status || undefined,
       search: search || undefined,
+      paidOnly: searchParams.get("paid_only") === "true",
     };
 
     const bookings = await consultationService.getAllBookings(filters);
@@ -79,6 +80,8 @@ export async function POST(request: NextRequest) {
       alternate_slots: data.alternate_slots
         ? data.alternate_slots.map((date) => new Date(date))
         : undefined,
+      payment_status: data.payment_status || "paid",
+      status: data.status || "pending_approval",
     });
 
     // In a real app, you would send an email/SMS notification here
