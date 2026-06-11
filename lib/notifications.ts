@@ -534,9 +534,154 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
   }
 }
 
+/**
+ * Build user-facing notification content based on consultation booking status.
+ */
+function getConsultationNotificationContent(
+  status: string,
+  issueCategory: string,
+  adminNotes?: string
+): InAppNotificationContent | null {
+  const category = issueCategory || "General Consultation";
+
+  switch (status) {
+    case "confirmed":
+      return {
+        title: "Consultation Confirmed",
+        body: `Your consultation for "${category}" has been confirmed! Please check your email for full details and schedule.`,
+        priority: "high",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "alternatives_proposed":
+      return {
+        title: "New Slots Proposed",
+        body: `Alternative slots have been proposed for your "${category}" consultation. Please check your email to review and select a slot.`,
+        priority: "normal",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "needs_more_info":
+      return {
+        title: "Consultation Info Required",
+        body: `More information is needed for your "${category}" consultation. Details: ${adminNotes || "Please check your email or contact support."}`,
+        priority: "high",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "canceled":
+      return {
+        title: "Consultation Cancelled",
+        body: `Your consultation request for "${category}" has been cancelled. ${adminNotes ? `Reason: ${adminNotes}` : "Please contact support for details."}`,
+        priority: "critical",
+        actionLabel: "Contact Support",
+        actionUrl: "/#contact",
+      };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Create an in-app notification for the user who owns the consultation.
+ * Looks up user_id by matching the booking email to profiles.
+ */
+async function createConsultationInAppNotification(
+  bookingId: string,
+  booking: Record<string, any>
+) {
+  try {
+    const { createServerClient } = await import("@supabase/ssr");
+
+    const supabaseAdmin = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    // Resolve the user_id by looking up the email in profiles
+    let userId: string | null = null;
+    if (booking.email) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .ilike("email", booking.email)
+        .maybeSingle();
+
+      userId = profile?.id ?? null;
+    }
+
+    if (!userId) {
+      console.warn(
+        `[ConsultationInAppNotif] No user profile found for email ${booking.email}. Skipping in-app notification.`
+      );
+      return;
+    }
+
+    const content = getConsultationNotificationContent(
+      booking.status,
+      booking.issue_category || "",
+      booking.admin_notes || ""
+    );
+
+    if (!content) {
+      console.warn(
+        `[ConsultationInAppNotif] No notification content for status: ${booking.status}`
+      );
+      return;
+    }
+
+    const { error } = await supabaseAdmin.from("app_notifications").insert({
+      user_id: userId,
+      type: "consultation_status",
+      title: content.title,
+      body: content.body,
+      priority: content.priority,
+      action_label: content.actionLabel || null,
+      action_url: content.actionUrl || null,
+      metadata: {
+        booking_id: bookingId,
+        reference_id: booking.reference_id,
+        status: booking.status,
+        issue_category: booking.issue_category,
+        visa_category: booking.visa_category,
+      },
+    });
+
+    if (error) {
+      console.error("[ConsultationInAppNotif] Error inserting notification:", error);
+    } else {
+      console.log(
+        `[ConsultationInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${booking.status})`
+      );
+    }
+  } catch (err) {
+    console.error("[ConsultationInAppNotif] Unexpected error creating in-app notification:", err);
+  }
+}
+
 export async function triggerConsultationNotification(bookingId: string) {
   try {
-    const supabase = await createClient();
+    const { createServerClient } = await import("@supabase/ssr");
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
 
     // Get consultation booking details
     const { data: booking, error } = await supabase
@@ -561,6 +706,11 @@ export async function triggerConsultationNotification(bookingId: string) {
       status: booking.status,
       adminNotes: booking.admin_notes,
     };
+
+    // Create in-app notification (non-blocking)
+    createConsultationInAppNotification(bookingId, booking).catch((err) => {
+      console.error("[ConsultationInAppNotif] Background error:", err);
+    });
 
     return await sendConsultationNotification(notificationData);
   } catch (error) {
