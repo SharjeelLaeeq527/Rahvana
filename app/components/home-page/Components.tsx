@@ -1264,10 +1264,12 @@ export function TwoWaysSection() {
                   {/* Image Preview Block with Cycle controls */}
                   <div className="w-full max-w-[300px] flex flex-col items-center lg:items-end">
                     <div className="relative w-full aspect-video flex items-center justify-center">
-                      <img
+                      <Image
                         src={roadmapImages[roadmapImageIdx]}
                         alt="Guided Roadmap Preview"
-                        className="w-full h-full object-contain transition-all duration-300"
+                        fill
+                        unoptimized
+                        className="object-contain transition-all duration-300"
                       />
                     </div>
                   </div>
@@ -1477,7 +1479,7 @@ export function TwoWaysSection() {
                   </div> */}
 
                   {/* New Tools Bucket Diagram UI */}
-                  <div className="w-full max-w-[480px] flex flex-col items-center lg:items-start">
+                  <div className="w-full max-w-[510px] flex flex-col items-center lg:items-start">
                     <ToolsBucketDiagram />
                   </div>
                 </motion.div>
@@ -4303,9 +4305,9 @@ function LeftArrowSvg({ color }: { color: string }) {
 function ToolCard({ tool, position }: any) {
   const positionClasses =
     position === "left"
-      ? "left-[50px] top-[90px]"
+      ? "left-[35px] top-[90px]"
       : position === "right"
-        ? "left-[390px] top-[90px]"
+        ? "left-[405px] top-[90px]"
         : "left-[220px] top-[255px]";
 
   const iconNode = isValidElement(tool.icon)
@@ -4338,12 +4340,12 @@ function ToolCard({ tool, position }: any) {
       </div>
 
       {/* Card */}
-      <motion.div className="mt-3 w-[120px] bg-white border border-slate-100 rounded-xl p-2 flex flex-col items-center text-center">
-        <h4 className="text-[10px] font-black">{tool.title}</h4>
-        <p className="text-[8px] text-slate-500 mt-1">{tool.desc}</p>
+      <motion.div className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center">
+        <h4 className="text-[11px] font-black leading-tight">{tool.title}</h4>
+        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug">{tool.desc}</p>
         <Link
           href={tool.href}
-          className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[8px] font-black text-slate-700 no-underline hover:bg-slate-50"
+          className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[9px] font-black text-slate-700 no-underline hover:bg-slate-50"
         >
           Use Tool <ArrowRight size={8} strokeWidth={3} />
         </Link>
@@ -4395,9 +4397,10 @@ export function ToolsBucketDiagram() {
     const updateScale = () => {
       const parentWidth = el.parentElement ? el.parentElement.clientWidth : el.clientWidth;
       if (parentWidth > 0) {
-        // We use 460px as the target width for content layout (-10px to 450px card limits)
-        // Leaving 32px of margin (16px on each side) for proper spacing on small screens
-        setScale(Math.min(1, (parentWidth - 32) / 460));
+        // Target content layout width is 505px (left card left edge is 35 - 67.5 = -32.5px,
+        // right card right edge is 405 + 67.5 = 472.5px. Total width = 505px).
+        // Leaving 12px of margin total (6px on each side) to maximize size on mobile screens
+        setScale(Math.min(1, (parentWidth - 12) / 505));
       }
     };
 
@@ -4417,9 +4420,9 @@ export function ToolsBucketDiagram() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-[480px] mx-auto select-none mt-6 overflow-hidden"
+      className="relative w-full max-w-[510px] mx-auto select-none mt-6 overflow-hidden"
       style={{
-        height: `${Math.round(420 * scale)}px`,
+        height: `${Math.round(450 * scale)}px`,
       }}
     >
       <div
@@ -4431,6 +4434,7 @@ export function ToolsBucketDiagram() {
           position: "absolute",
           left: "50%",
           marginLeft: "-220px",
+          top: "28px",
         }}
       >
         {/* Background SVG for Dotted Connections */}
@@ -4441,7 +4445,7 @@ export function ToolsBucketDiagram() {
         >
           {/* Dotted Ellipses under Tool Bases */}
           <ellipse
-            cx="50"
+            cx="35"
             cy="118"
             rx="30"
             ry="10"
@@ -4450,7 +4454,7 @@ export function ToolsBucketDiagram() {
             strokeDasharray="3 3"
           />
           <ellipse
-            cx="390"
+            cx="405"
             cy="118"
             rx="30"
             ry="10"
@@ -4479,14 +4483,14 @@ export function ToolsBucketDiagram() {
 
           {/* Dotted Arcs connecting Left/Right to Bottom (Smooth continuous lines, no arrows) */}
           <path
-            d="M 65,110 C 65,200 100,290 155,290"
+            d="M 50,110 C 50,200 100,290 155,290"
             stroke="#cbd5e1"
             strokeWidth="1.5"
             strokeDasharray="3 3"
             strokeLinecap="round"
           />
           <path
-            d="M 375,110 C 375,200 340,290 285,290"
+            d="M 390,110 C 390,200 340,290 285,290"
             stroke="#cbd5e1"
             strokeWidth="1.5"
             strokeDasharray="3 3"
@@ -4494,8 +4498,8 @@ export function ToolsBucketDiagram() {
           />
 
           {/* Green Checkpoint Dots on Paths */}
-          <circle cx="89.4" cy="233.8" r="3.5" fill="#22c55e" />
-          <circle cx="350.6" cy="233.8" r="3.5" fill="#22c55e" />
+          <circle cx="81.9" cy="233.8" r="3.5" fill="#22c55e" />
+          <circle cx="358.1" cy="233.8" r="3.5" fill="#22c55e" />
         </svg>
 
         {/* 1. Center Bucket & Everything You Need Card */}
@@ -4512,10 +4516,12 @@ export function ToolsBucketDiagram() {
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             className="relative w-[120px] h-[90px] flex items-center justify-center filter drop-shadow-lg z-10"
           >
-            <img
+            <Image
               src="/assets/images/blue-tools-bucket.png"
               alt="Blue Tools Bucket"
-              className="w-full h-full object-contain"
+              fill
+              unoptimized
+              className="object-contain"
             />
           </motion.div>
 
@@ -4526,16 +4532,16 @@ export function ToolsBucketDiagram() {
                 ? { scale: 1.02, y: -2, boxShadow: "0 12px 24px rgba(0,0,0,0.08)" }
                 : { scale: 1, y: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.04)" }
             }
-            className="mt-1 w-[210px] bg-white border border-slate-100 rounded-[20px] p-3 flex items-center gap-3 text-left transition-all duration-300 z-20"
+            className="mt-1 w-[220px] bg-white border border-slate-100 rounded-[20px] p-3 flex items-center gap-3 text-left transition-all duration-300 z-20"
           >
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#e8f1fe] text-[#1a73e8] border border-blue-100/30">
               <FolderOpen size={16} strokeWidth={2.2} />
             </div>
             <div className="min-w-0">
-              <h4 className="text-[11px] font-black text-slate-850 leading-none">
+              <h4 className="text-[12px] font-black text-slate-850 leading-none">
                 Everything you need
               </h4>
-              <p className="text-[8.5px] text-slate-500 font-semibold leading-normal mt-1">
+              <p className="text-[9.5px] text-slate-500 font-semibold leading-normal mt-1">
                 All tools and resources in one place.
               </p>
             </div>
