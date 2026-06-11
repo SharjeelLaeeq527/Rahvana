@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { DocumentDefinition, DocumentRole } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
@@ -11,9 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Upload, X, Lock, ScanLine } from "lucide-react";
-import { getOcrConfig } from "@/lib/document-ocr/registry";
+import { getOcrConfig, getOcrDocTypeMeta } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
-import type { PassportFields } from "@/lib/document-ocr/passportParser";
+import { crossCheckFields } from "@/lib/document-ocr/crossCheck";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 
 interface DocumentUploadModalProps {
@@ -21,6 +21,16 @@ interface DocumentUploadModalProps {
   onClose: () => void;
   documentDef: DocumentDefinition;
   onUploadComplete: () => void;
+}
+
+/** Read a dot-path value off the in-memory profile, as a trimmed string ("" if absent). */
+function readProfilePath(obj: unknown, path: string): string {
+  let cur: unknown = obj;
+  for (const k of path.split(".")) {
+    if (cur && typeof cur === "object") cur = (cur as Record<string, unknown>)[k];
+    else return "";
+  }
+  return cur == null ? "" : String(cur).trim();
 }
 
 export function DocumentUploadModal({
@@ -38,38 +48,22 @@ export function DocumentUploadModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { config, replaceDocumentId, deleteDocument } = useDocumentVaultStore();
   const { t } = useLanguage();
-  const { refreshProfile } = useUserProfile();
+  const { refreshProfile, profile } = useUserProfile();
 
   // ── Inline OCR auto-fill (passport, etc.) ──
   // If this document type supports OCR, after a successful upload we read the
   // same file and offer to auto-fill the user's profile. Nothing is saved until
   // the user confirms. OCR is a bonus — failure never blocks the upload.
   const ocrConfig = getOcrConfig(documentDef.id);
+  // Endpoint + field set come from the docType (passport, marriage, …) so this one
+  // modal serves every OCR-eligible document without per-type branching here.
+  const ocrMeta = ocrConfig ? getOcrDocTypeMeta(ocrConfig.docType) : null;
+  const OCR_FIELD_ORDER = ocrMeta?.fields ?? [];
   const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
-  const [ocrFields, setOcrFields] = useState<PassportFields>({});
-  const [ocrConfidence, setOcrConfidence] = useState<
-    Partial<Record<keyof PassportFields, number>>
-  >({});
+  const [ocrFields, setOcrFields] = useState<Record<string, string>>({});
+  const [ocrConfidence, setOcrConfidence] = useState<Record<string, number>>({});
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [ocrSaving, setOcrSaving] = useState(false);
-
-  const OCR_FIELD_ORDER: { key: keyof PassportFields; label: string }[] =
-    ocrConfig?.target === "beneficiary"
-      ? [
-          { key: "name.first", label: "Given name" },
-          { key: "name.last", label: "Surname" },
-          { key: "dateOfBirth", label: "Date of birth" },
-        ]
-      : [
-          { key: "name.first", label: "Given name" },
-          { key: "name.last", label: "Surname" },
-          { key: "dateOfBirth", label: "Date of birth" },
-          { key: "sex", label: "Sex" },
-          { key: "nationality", label: "Nationality" },
-          { key: "passportNumber", label: "Passport number" },
-          { key: "passportExpiry", label: "Passport expiry" },
-          { key: "passportCountry", label: "Issuing country" },
-        ];
 
   const runOcr = async (file: File) => {
     if (!ocrConfig) return;
@@ -78,7 +72,7 @@ export function DocumentUploadModal({
       const prepared = await resizeImageIfNeeded(file);
       const formData = new FormData();
       formData.append("file", prepared, prepared.name);
-      const res = await fetch("/api/documents/extract-passport", {
+      const res = await fetch(ocrMeta?.endpoint ?? "/api/documents/extract-passport", {
         method: "POST",
         body: formData,
       });
@@ -98,9 +92,33 @@ export function DocumentUploadModal({
     }
   };
 
-  const updateOcrField = (key: keyof PassportFields, value: string) => {
+  const updateOcrField = (key: string, value: string) => {
     setOcrFields((prev) => ({ ...prev, [key]: value }));
   };
+
+  // ── Mismatch detection ──
+  // Compare what we just read against what's already on the profile, so the user
+  // can resolve conflicts (e.g. passport DOB ≠ saved DOB) BEFORE overwriting. Reads
+  // the in-memory (decrypted) profile — no extra fetch. Re-runs live as the user
+  // edits a field, so the banner clears the moment they reconcile a value.
+  const crossCheck = useMemo(() => {
+    if (ocrPhase !== "confirm" || !profile) return null;
+    const stored: Record<string, string> = {};
+    for (const { key } of OCR_FIELD_ORDER) {
+      // Beneficiary docs store under beneficiary.* (relationship.* is self-only).
+      const path = ocrConfig?.target === "beneficiary" ? `beneficiary.${key}` : key;
+      const v = readProfilePath(profile, path);
+      if (v) stored[key] = v;
+    }
+    return crossCheckFields(ocrFields, stored, OCR_FIELD_ORDER);
+    // OCR_FIELD_ORDER is stable for a given docType; the real drivers are below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ocrPhase, profile, ocrFields, ocrConfig?.target]);
+
+  const mismatchKeys = useMemo(
+    () => new Set((crossCheck?.mismatches ?? []).map((m) => m.key)),
+    [crossCheck]
+  );
 
   const handleSaveOcr = async () => {
     setOcrSaving(true);
@@ -376,9 +394,27 @@ export function DocumentUploadModal({
                     </div>
                   )}
 
+                  {crossCheck && crossCheck.mismatches.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
+                      <p className="font-semibold mb-1">
+                        These don&apos;t match what&apos;s already saved
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {crossCheck.mismatches.map((m) => (
+                          <li key={m.key}>
+                            <strong>{m.label}:</strong> this document says &ldquo;{m.newValue}
+                            &rdquo;, but your saved value is &ldquo;{m.oldValue}&rdquo;. Edit the
+                            field below to the correct one before saving.
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {OCR_FIELD_ORDER.map(({ key, label }) => {
                       const conf = ocrConfidence[key];
+                      const isMismatch = mismatchKeys.has(key);
                       return (
                         <div key={key} className="space-y-1">
                           <Label htmlFor={`ocr-${key}`} className="flex items-center gap-2">
@@ -386,12 +422,18 @@ export function DocumentUploadModal({
                             {typeof conf === "number" && conf < 0.6 && (
                               <span className="text-xs text-amber-600">(low confidence)</span>
                             )}
+                            {isMismatch && (
+                              <span className="text-xs text-red-600">(doesn&apos;t match saved)</span>
+                            )}
                           </Label>
                           <Input
                             id={`ocr-${key}`}
                             value={ocrFields[key] ?? ""}
                             onChange={(e) => updateOcrField(key, e.target.value)}
                             placeholder={`Enter ${label.toLowerCase()}`}
+                            className={
+                              isMismatch ? "border-red-400 focus-visible:ring-red-400" : undefined
+                            }
                           />
                         </div>
                       );

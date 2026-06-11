@@ -33,9 +33,20 @@ import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { msg, E, errorCode } from "@/lib/errors";
 import { getOcrConfig, type OcrTarget } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
+import { crossCheckFields } from "@/lib/document-ocr/crossCheck";
 import type { PassportFields } from "@/lib/document-ocr/passportParser";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import type { MasterProfile } from "@/types/profile";
+
+/** Read a dot-path value off the in-memory profile, as a trimmed string ("" if absent). */
+function readProfilePath(obj: unknown, path: string): string {
+  let cur: unknown = obj;
+  for (const k of path.split(".")) {
+    if (cur && typeof cur === "object") cur = (cur as Record<string, unknown>)[k];
+    else return "";
+  }
+  return cur == null ? "" : String(cur).trim();
+}
 interface PendingUpload {
   id: string;
   file: File | null;
@@ -96,23 +107,19 @@ export function MultipleDocumentUploadModal({
   const [ocrSaving, setOcrSaving] = useState(false);
   const [ocrTarget, setOcrTarget] = useState<OcrTarget>("self");
 
-  const OCR_FIELD_ORDER: { key: keyof PassportFields; label: string }[] =
-    ocrTarget === "beneficiary"
-      ? [
-          { key: "name.first", label: "Given name" },
-          { key: "name.last", label: "Surname" },
-          { key: "dateOfBirth", label: "Date of birth" },
-        ]
-      : [
-          { key: "name.first", label: "Given name" },
-          { key: "name.last", label: "Surname" },
-          { key: "dateOfBirth", label: "Date of birth" },
-          { key: "sex", label: "Sex" },
-          { key: "nationality", label: "Nationality" },
-          { key: "passportNumber", label: "Passport number" },
-          { key: "passportExpiry", label: "Passport expiry" },
-          { key: "passportCountry", label: "Issuing country" },
-        ];
+  // Both petitioner (self) and beneficiary passports carry the same biographic
+  // fields, and the profile now stores them for either person — so capture all of
+  // them regardless of target.
+  const OCR_FIELD_ORDER: { key: keyof PassportFields; label: string }[] = [
+    { key: "name.first", label: "Given name" },
+    { key: "name.last", label: "Surname" },
+    { key: "dateOfBirth", label: "Date of birth" },
+    { key: "sex", label: "Sex" },
+    { key: "nationality", label: "Nationality" },
+    { key: "passportNumber", label: "Passport number" },
+    { key: "passportExpiry", label: "Passport expiry" },
+    { key: "passportCountry", label: "Issuing country" },
+  ];
 
   // Did OCR actually read anything? Drives whether the panel says "Confirm what we
   // read" (auto-filled) or "Add your details" (blank → user types). A person's DOB
@@ -120,6 +127,33 @@ export function MultipleDocumentUploadModal({
   // user capture it manually here and push it to the profile / journey steps.
   const ocrAnyDetected = OCR_FIELD_ORDER.some(
     ({ key }) => (ocrFields[key] ?? "").toString().trim() !== ""
+  );
+
+  // ── Mismatch detection ──
+  // Compare what we read against the values already on the profile so the user can
+  // reconcile conflicts (e.g. passport DOB ≠ saved DOB) before overwriting. Beneficiary
+  // passports store under beneficiary.* ; self under the top-level keys. Re-runs live
+  // as the user edits, so the banner clears the moment a value is reconciled.
+  const crossCheck = useMemo(() => {
+    if (ocrPhase !== "confirm" || !profile) return null;
+    const stored: Record<string, string> = {};
+    for (const { key } of OCR_FIELD_ORDER) {
+      const path = ocrTarget === "beneficiary" ? `beneficiary.${key}` : key;
+      const v = readProfilePath(profile, path);
+      if (v) stored[key] = v;
+    }
+    return crossCheckFields(
+      ocrFields as Record<string, string | undefined>,
+      stored,
+      OCR_FIELD_ORDER
+    );
+    // OCR_FIELD_ORDER is a stable literal; ocrFields/profile/target drive recompute.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ocrPhase, profile, ocrFields, ocrTarget]);
+
+  const mismatchKeys = useMemo(
+    () => new Set((crossCheck?.mismatches ?? []).map((m) => m.key)),
+    [crossCheck]
   );
 
   // Reset OCR panel and leave a fresh blank upload row so the user can continue.
@@ -192,6 +226,11 @@ export function MultipleDocumentUploadModal({
           const ben: Record<string, unknown> = {};
           if (Object.keys(name).length) ben.name = name;
           if (ocrFields.dateOfBirth) ben.dateOfBirth = ocrFields.dateOfBirth;
+          if (ocrFields.sex) ben.sex = ocrFields.sex;
+          if (ocrFields.nationality) ben.nationality = ocrFields.nationality;
+          if (ocrFields.passportNumber) ben.passportNumber = ocrFields.passportNumber;
+          if (ocrFields.passportExpiry) ben.passportExpiry = ocrFields.passportExpiry;
+          if (ocrFields.passportCountry) ben.passportCountry = ocrFields.passportCountry;
           partial.beneficiary = ben;
         } else {
           if (Object.keys(name).length) partial.name = name;
@@ -693,9 +732,27 @@ export function MultipleDocumentUploadModal({
                     )
                   )}
 
+                  {crossCheck && crossCheck.mismatches.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
+                      <p className="font-semibold mb-1">
+                        These don&apos;t match what&apos;s already saved
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {crossCheck.mismatches.map((m) => (
+                          <li key={m.key}>
+                            <strong>{m.label}:</strong> this document says &ldquo;{m.newValue}
+                            &rdquo;, but your saved value is &ldquo;{m.oldValue}&rdquo;. Edit the
+                            field below to the correct one before saving.
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {OCR_FIELD_ORDER.map(({ key, label }) => {
                       const conf = ocrConfidence[key];
+                      const isMismatch = mismatchKeys.has(key);
                       return (
                         <div key={key} className="space-y-1">
                           <Label htmlFor={`ocr-${key}`} className="flex items-center gap-2">
@@ -703,12 +760,18 @@ export function MultipleDocumentUploadModal({
                             {typeof conf === "number" && conf < 0.6 && (
                               <span className="text-xs text-amber-600">(low confidence)</span>
                             )}
+                            {isMismatch && (
+                              <span className="text-xs text-red-600">(doesn&apos;t match saved)</span>
+                            )}
                           </Label>
                           <Input
                             id={`ocr-${key}`}
                             value={ocrFields[key] ?? ""}
                             onChange={(e) => updateOcrField(key, e.target.value)}
                             placeholder={`Enter ${label.toLowerCase()}`}
+                            className={
+                              isMismatch ? "border-red-400 focus-visible:ring-red-400" : undefined
+                            }
                           />
                         </div>
                       );

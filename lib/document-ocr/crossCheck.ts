@@ -127,3 +127,68 @@ export function crossCheckPassport(
 
   return { matches, mismatches, newFields };
 }
+
+// ─── Generic cross-check (any docType) ───────────────────────────────────────────
+// The upload modals are docType-agnostic (passport, marriage, …). They know the
+// fields to confirm only as `{ key, label }[]` descriptors from the OCR registry,
+// so they need a comparison that works on arbitrary dot-path keys rather than the
+// passport-specific shape above. Same normalization rules; key→normalizer is
+// chosen by the key name (sex/gender → sex, anything date-ish → date, else text).
+
+export interface GenericFieldComparison {
+  key: string;
+  label: string;
+  oldValue: string;
+  newValue: string;
+}
+
+export interface GenericCrossCheckResult {
+  matches: GenericFieldComparison[];
+  mismatches: GenericFieldComparison[];
+  newFields: GenericFieldComparison[];
+}
+
+/** Date-like dot-path keys: dateOfBirth, passportExpiry, relationship.marriageDate, … */
+const DATE_KEY_PATTERN = /(date|dob|expiry|birth)/i;
+const SEX_KEY_PATTERN = /(sex|gender)/i;
+
+function normalizeGeneric(key: string, value: string): string {
+  if (SEX_KEY_PATTERN.test(key)) return normalizeSex(value);
+  if (DATE_KEY_PATTERN.test(key)) return normalizeDate(value);
+  return normalizeText(value);
+}
+
+/**
+ * Compare freshly-extracted fields against stored values for a given field set.
+ *
+ * @param extracted values just read from the uploaded document (keyed by dot-path)
+ * @param stored    matching values currently on the profile (keyed by the same paths)
+ * @param fields    the field descriptors to check (from getOcrDocTypeMeta(...).fields)
+ */
+export function crossCheckFields(
+  extracted: Record<string, string | undefined>,
+  stored: Record<string, string | undefined>,
+  fields: ReadonlyArray<{ key: string; label: string }>
+): GenericCrossCheckResult {
+  const matches: GenericFieldComparison[] = [];
+  const mismatches: GenericFieldComparison[] = [];
+  const newFields: GenericFieldComparison[] = [];
+
+  for (const { key, label } of fields) {
+    const newValue = (extracted[key] ?? "").toString().trim();
+    if (!newValue) continue;
+
+    const oldValue = (stored[key] ?? "").toString().trim();
+    const comparison: GenericFieldComparison = { key, label, oldValue, newValue };
+
+    if (!oldValue) {
+      newFields.push(comparison);
+    } else if (normalizeGeneric(key, oldValue) === normalizeGeneric(key, newValue)) {
+      matches.push(comparison);
+    } else {
+      mismatches.push(comparison);
+    }
+  }
+
+  return { matches, mismatches, newFields };
+}
