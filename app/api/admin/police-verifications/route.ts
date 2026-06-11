@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
+import { triggerPoliceVerificationNotification } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,9 @@ export async function PUT(req: NextRequest) {
     if (error) {
       return Response.json({ error: error.message }, { status: 500 });
     }
+
+    // Trigger status update notifications (email and in-app)
+    await triggerPoliceVerificationNotification(id);
 
     return Response.json({ data });
   } catch (error) {

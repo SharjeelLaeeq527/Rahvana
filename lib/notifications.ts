@@ -1089,3 +1089,348 @@ export async function triggerTranslationNotification(documentId: string) {
     return { error: Errors.msg(Errors.E.TRANSLATION_TRIGGER_FAILED) };
   }
 }
+
+// ---------------------------------------------------------------------------
+//  Police Verification (PCC Sindh Service) Notification Helpers & Triggers
+// ---------------------------------------------------------------------------
+
+interface PoliceVerificationNotificationData {
+  email: string;
+  fullName: string;
+  id: string;
+  requestId: string;
+  status: string;
+  province?: string;
+  district?: string;
+}
+
+export async function sendPoliceVerificationNotification(data: PoliceVerificationNotificationData) {
+  try {
+    const {
+      email,
+      fullName,
+      id,
+      requestId,
+      status,
+      province,
+      district,
+    } = data;
+
+    let subject = "";
+    let htmlContent = "";
+
+    const headerHtml = `
+      <div style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Sindh Police Character Certificate</h1>
+        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Request Status Update</p>
+      </div>
+    `;
+
+    const footerHtml = `
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
+        <p>This is an automated notification from Arachnie. Please do not reply to this email.</p>
+        <p>&copy; ${new Date().getFullYear()} Arachnie. All rights reserved.</p>
+      </div>
+    `;
+
+    const cardStyles = `background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 20px 0;`;
+
+    if (status === "completed") {
+      subject = `Your Sindh PCC Request Has Been Completed!`;
+      htmlContent = `
+        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
+          ${headerHtml}
+          <div style="padding: 30px 20px;">
+            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #0f766e;">Character Certificate Ready!</h2>
+            <p>Dear ${fullName},</p>
+            <p>We are pleased to inform you that your Sindh Police Character Certificate (PCC) request has been successfully processed and completed.</p>
+            
+            <div style="${cardStyles}">
+              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
+              <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
+              <p style="margin: 8px 0;"><strong>Province:</strong> ${province || "Sindh"}</p>
+              <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
+              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0f766e; font-weight: 600;">COMPLETED</span></p>
+            </div>
+            
+            <p>You can retrieve and download your official Police Character Certificate from your user dashboard by clicking the button below.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
+                 style="background-color: #0f766e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                Go to Dashboard
+              </a>
+            </div>
+            
+            ${footerHtml}
+          </div>
+        </div>
+      `;
+    } else if (status === "in_progress") {
+      subject = `Your Sindh PCC Request is Now In Progress`;
+      htmlContent = `
+        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
+          ${headerHtml}
+          <div style="padding: 30px 20px;">
+            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Filing Request In Progress</h2>
+            <p>Dear ${fullName},</p>
+            <p>Your Sindh Police Character Certificate (PCC) request is now actively being processed and filed by our admin team.</p>
+            
+            <div style="${cardStyles}">
+              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
+              <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
+              <p style="margin: 8px 0;"><strong>Province:</strong> ${province || "Sindh"}</p>
+              <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
+              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0284c7; font-weight: 600;">IN PROGRESS</span></p>
+            </div>
+            
+            <p>Our team is handling the documentation and coordinating with the relevant department. We will notify you as soon as the certificate is finalized or if any further details are required.</p>
+            
+            <p>You can track the progress of your application on your user dashboard.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
+                 style="background-color: #0f766e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                Track Request
+              </a>
+            </div>
+            
+            ${footerHtml}
+          </div>
+        </div>
+      `;
+    } else if (status === "cancelled") {
+      subject = `Action Required: Sindh PCC Request Issue`;
+      htmlContent = `
+        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
+          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Sindh Police Character Certificate</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Action Required</p>
+          </div>
+          <div style="padding: 30px 20px;">
+            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #dc2626;">Request Discrepancy / Action Needed</h2>
+            <p>Dear ${fullName},</p>
+            <p>We encountered an issue while processing your Sindh Police Character Certificate (PCC) request.</p>
+            
+            <div style="${cardStyles}">
+              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
+              <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
+              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #dc2626; font-weight: 600;">ACTION REQUIRED / CANCELLED</span></p>
+            </div>
+            
+            <p>Please log in to your user dashboard to review the specific notes from the admin, update any incorrect details or uploads, and re-submit the request for filing.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
+                 style="background-color: #dc2626; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                Review Request Details
+              </a>
+            </div>
+            
+            ${footerHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    if (!subject || !htmlContent) {
+      console.warn(`No notification email layout implemented for status: ${status}`);
+      return { error: `No layout for status ${status}` };
+    }
+
+    const fromEmail = process.env.EMAIL_FROM || "onboarding@resend.dev";
+
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: subject,
+      html: htmlContent,
+    });
+
+    if (error) {
+      console.error("Error sending Sindh PCC email via Resend:", error);
+      return { error };
+    }
+
+    console.log("Sindh PCC status notification email sent successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in sendPoliceVerificationNotification:", error);
+    return { error: "Failed to send notification" };
+  }
+}
+
+function getPoliceVerificationNotificationContent(
+  status: string,
+  requestId: string
+): InAppNotificationContent | null {
+  const displayId = requestId || "PCC Request";
+
+  switch (status) {
+    case "pending":
+      return {
+        title: "PCC Sindh Request Received",
+        body: `Your Sindh Police Character Certificate request (${displayId}) has been received and is pending admin review.`,
+        priority: "normal",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "in_progress":
+      return {
+        title: "PCC Sindh In Progress",
+        body: `Your Sindh Police Character Certificate request (${displayId}) is now in progress.`,
+        priority: "high",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "completed":
+      return {
+        title: "PCC Sindh Completed",
+        body: `Your Sindh Police Character Certificate request (${displayId}) has been successfully completed.`,
+        priority: "high",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    case "cancelled":
+      return {
+        title: "PCC Sindh Action Required",
+        body: `Action required: There is an issue with your Sindh Police Character Certificate request (${displayId}). Please review admin notes.`,
+        priority: "critical",
+        actionLabel: "View Dashboard",
+        actionUrl: "/user-dashboard",
+      };
+    default:
+      return null;
+  }
+}
+
+async function createPoliceVerificationInAppNotification(
+  id: string,
+  request: Record<string, any>
+) {
+  try {
+    const { createServerClient } = await import("@supabase/ssr");
+
+    const supabaseAdmin = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    let userId: string | null = request.user_id ?? null;
+
+    if (!userId && request.email) {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .ilike("email", request.email)
+        .maybeSingle();
+
+      userId = profile?.id ?? null;
+    }
+
+    if (!userId) {
+      console.warn(
+        `[PCCInAppNotif] No user profile found for email ${request.email}. Skipping in-app notification.`
+      );
+      return;
+    }
+
+    const content = getPoliceVerificationNotificationContent(request.status, request.request_id);
+
+    if (!content) {
+      console.warn(`[PCCInAppNotif] No notification content for status: ${request.status}`);
+      return;
+    }
+
+    const { error } = await supabaseAdmin.from("app_notifications").insert({
+      user_id: userId,
+      type: "police_verification_status",
+      title: content.title,
+      body: content.body,
+      priority: content.priority,
+      action_label: content.actionLabel || null,
+      action_url: content.actionUrl || null,
+      metadata: {
+        request_uuid: id,
+        request_id: request.request_id,
+        status: request.status,
+      },
+    });
+
+    if (error) {
+      console.error("[PCCInAppNotif] Error inserting notification:", error);
+    } else {
+      console.log(
+        `[PCCInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${request.status})`
+      );
+    }
+  } catch (err) {
+    console.error("[PCCInAppNotif] Unexpected error creating in-app notification:", err);
+  }
+}
+
+export async function triggerPoliceVerificationNotification(id: string) {
+  try {
+    const { createServerClient } = await import("@supabase/ssr");
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    const { data: request, error } = await supabase
+      .from("police_verification_requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !request) {
+      console.error("Error fetching police verification request:", error);
+      return { error: Errors.msg(Errors.E.POLICE_VERIFICATION_NOT_FOUND) };
+    }
+
+    const email = request.email;
+    if (!email) {
+      console.warn(`[PCCNotif] No email found for request ${id}. Skipping email.`);
+    } else {
+      const notificationData: PoliceVerificationNotificationData = {
+        email: email,
+        fullName: request.full_name,
+        id: id,
+        requestId: request.request_id,
+        status: request.status,
+        province: request.province,
+        district: request.district,
+      };
+
+      sendPoliceVerificationNotification(notificationData).catch((err) => {
+        console.error("[PCCNotif] Email sending error:", err);
+      });
+    }
+
+    createPoliceVerificationInAppNotification(id, request).catch((err) => {
+      console.error("[PCCInAppNotif] Background error:", err);
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error triggering police verification notification:", error);
+    return { error: Errors.msg(Errors.E.POLICE_VERIFICATION_TRIGGER_FAILED) };
+  }
+}
+

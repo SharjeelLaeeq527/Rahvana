@@ -773,6 +773,19 @@ export const en: Record<ErrorId, string> = {
   // 2014 — Translation notifications: trigger failed
   2014: "We couldn't trigger the translation notification right now. Try again later.",
 
+  // 2015 — Police verification notifications: invalid data
+  2015: "Notification details look incorrect. Check the request fields and try again.",
+
+  // 2016 — Police verification notifications: email send failed
+  2016: "We couldn't send the police verification notification right now. Try again in a moment.",
+
+  // 2017 — Police verification notifications: request not found
+  2017: "Police verification request not found.",
+
+  // 2018 — Police verification notifications: trigger failed
+  2018: "We couldn't trigger the police verification notification right now. Try again later.",
+
+
 
 
   // ─── FEEDBACK & MISC ──────────────────────────────────────────────────────

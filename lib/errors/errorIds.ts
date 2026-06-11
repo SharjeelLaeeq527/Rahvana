@@ -764,6 +764,16 @@ export const E = {
   /** Translation notifications — trigger failed */
   TRANSLATION_TRIGGER_FAILED: 2014,
 
+  /** Police verification notifications — invalid data */
+  POLICE_VERIFICATION_NOTIFICATION_INVALID: 2015,
+  /** Police verification notifications — email send failed */
+  POLICE_VERIFICATION_NOTIFICATION_SEND_FAILED: 2016,
+  /** Police verification notifications — request not found */
+  POLICE_VERIFICATION_NOT_FOUND: 2017,
+  /** Police verification notifications — trigger failed */
+  POLICE_VERIFICATION_TRIGGER_FAILED: 2018,
+
+
 
 
   // ─── FEEDBACK & MISC (2100–2149) ──────────────────────────────────────────
