@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback, Suspense } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
 import {
-  Brain,
+  // Brain, // unused — Case Strength Analyzer commented out
   LifeBuoy,
   MessageSquare,
   Zap,
@@ -17,6 +17,8 @@ import {
   FileUp,
   UserCheck,
   Globe,
+  Stethoscope,
+  ShieldCheck,
   ArrowLeft,
   ArrowRight,
 } from "lucide-react";
@@ -83,7 +85,8 @@ const ADDON_CONFIG: Record<
   }
 > = {
   "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  // Temporarily hidden — Case Strength Analyzer commented out.
+  // "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
   "interview-prep": { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   photo: { icon: Camera, iconBg: "bg-rose-600 dark:bg-rose-500" },
   smart: { icon: Wand2, iconBg: "bg-cyan-600 dark:bg-cyan-500" },
@@ -91,6 +94,8 @@ const ADDON_CONFIG: Record<
   "doc-review": { icon: FileSearch, iconBg: "bg-amber-600 dark:bg-amber-500" },
   consultation: { icon: Users, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   translate: { icon: FileUp, iconBg: "bg-amber-600 dark:bg-amber-500" },
+  medical: { icon: Stethoscope, iconBg: "bg-rose-600 dark:bg-rose-500" },
+  pcc: { icon: ShieldCheck, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
   "case-manager": {
     icon: UserCheck,
     iconBg: "bg-indigo-600 dark:bg-indigo-500",
@@ -99,39 +104,43 @@ const ADDON_CONFIG: Record<
 };
 
 /* ===========================================================================
-   RESOURCE CATEGORIES + PLAN RECOMMENDATIONS
-   =========================================================================== */
-const RESOURCE_CATS = [
-  { id: "all", label: "All", ids: [] },
-  {
-    id: "popular",
-    label: "Most Popular",
-    ids: ["case-strength", "smart", "consultation", "interview-prep"],
+   RESOURCE TABS + PLAN RECOMMENDATIONS
+   ===========================================================================
+   The à la carte resources are split into three top-level tabs by add-on
+   `kind` (tools | services | guides), mirroring the /resources page. */
+type ResourceMode = "tools" | "services" | "guides";
+
+// sessionStorage key for the persisted add-on cart — survives navigation to a
+// tool/service/guide detail page and back. Cleared after a successful checkout.
+const CART_STORAGE_KEY = "rahvana_pricing_cart_addons";
+
+const RESOURCE_TABS: Record<
+  ResourceMode,
+  { label: string; sub: string; heading: string; blurb: string }
+> = {
+  tools: {
+    label: "Tools",
+    sub: "Self-serve tools",
+    heading: "Buy individual tools",
+    blurb: "Self-serve tools you can use right away — no full journey plan required.",
   },
-  {
-    id: "forms",
-    label: "Forms & Case",
-    ids: ["smart", "sponsor", "case-strength", "221g"],
+  services: {
+    label: "Services",
+    sub: "Expert help",
+    heading: "Expert services",
+    blurb: "Human-delivered help when you want a specialist on your case.",
   },
-  {
-    id: "interview",
-    label: "Interview & Embassy",
-    ids: ["interview-prep", "photo"],
+  guides: {
+    label: "Guides",
+    sub: "Step-by-step guides",
+    heading: "Document guides",
+    blurb: "Country-specific, step-by-step guides for obtaining each required document.",
   },
-  {
-    id: "docs",
-    label: "Document Help",
-    ids: ["doc-review", "translate", "civil-guid"],
-  },
-  {
-    id: "support",
-    label: "Premium Support",
-    ids: ["consultation", "case-manager"],
-  },
-];
+};
 
 const PLAN_RECS: Record<string, string[]> = {
-  basic: ["smart", "case-strength", "sponsor", "interview-prep", "civil-guid"],
+  // "case-strength" temporarily hidden — Case Strength Analyzer commented out.
+  basic: ["smart", "sponsor", "interview-prep", "civil-guid"],
   premium: ["interview-prep", "doc-review", "consultation", "221g"],
   executive: ["case-manager", "consultation", "translate"],
 };
@@ -449,7 +458,7 @@ function PricingContent() {
 
   const isAnyCheckoutLoading = isProcessingAutoCheckout || isManualCheckoutLoading;
 
-  const [mode, setMode] = useState<"plans" | "resources">("plans");
+  const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
 
   const [visa, setVisa] = useState("IR-1 / CR-1");
@@ -460,8 +469,8 @@ function PricingContent() {
 
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
-  const [resourceCat, setResourceCat] = useState("popular");
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
+  const [checkoutCanceled, setCheckoutCanceled] = useState(false);
 
   // Derived
   const activeVisaCategory = useMemo(
@@ -483,18 +492,12 @@ function PricingContent() {
     [selectedPlan]
   );
 
-  const resourcesForCat = useMemo(() => {
-    if (resourceCat === "all") {
-      const titledAddons = ADDONS.filter(
-        (addon): addon is (typeof ADDONS)[number] & { title: string } =>
-          typeof addon.title === "string"
-      );
-      return [...titledAddons].sort((a, b) => a.title.localeCompare(b.title));
-    }
-    const cat = RESOURCE_CATS.find((c) => c.id === resourceCat);
-    if (!cat) return ADDONS;
-    return ADDONS.filter((a) => cat.ids.includes(a.id));
-  }, [resourceCat]);
+  const resourcesForMode = useMemo(() => {
+    if (mode === "plans") return [];
+    return ADDONS.filter((a) => a.kind === mode).sort((a, b) =>
+      a.title.localeCompare(b.title)
+    );
+  }, [mode]);
 
   // Handlers
   const handleCheckout = useCallback(
@@ -537,21 +540,110 @@ function PricingContent() {
       return next;
     });
 
+  // Apply deep-link params (mode / plan / addons / visa) into state. This must
+  // run ONLY when the URL actually changes — never when other state (e.g. the
+  // recreated handleCheckout callback) changes, otherwise every user edit to the
+  // selection would be instantly reverted back to the URL value. We key the
+  // effect off the stringified params so it is stable across unrelated renders.
+  const searchParamsString = searchParams.toString();
   useEffect(() => {
     const plan = searchParams.get("plan");
     const addons = searchParams.get("addons");
     const visaCat = searchParams.get("visa");
     const modeParam = searchParams.get("mode");
-    const autoCheckout = searchParams.get("auto_checkout") === "true";
-    if (modeParam === "resources" || modeParam === "plans") setMode(modeParam);
+    if (
+      modeParam === "plans" ||
+      modeParam === "tools" ||
+      modeParam === "services" ||
+      modeParam === "guides"
+    ) {
+      setMode(modeParam);
+    } else if (modeParam === "resources") {
+      // Legacy alias — route to the tab that owns the first deep-linked add-on.
+      const firstAddon = addons?.split(",").filter(Boolean)[0];
+      const found = firstAddon ? ADDONS.find((a) => a.id === firstAddon) : undefined;
+      setMode((found?.kind as ResourceMode) ?? "tools");
+    }
     if (plan) setSelectedPlan(plan);
-    if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
+    // MERGE deep-linked add-ons into the existing cart (don't replace) — opening
+    // a tool's detail page and adding it should keep items already in the order.
+    const urlAddons = (addons || "").split(",").filter(Boolean);
+    if (urlAddons.length) setSelectedAddons((prev) => new Set([...prev, ...urlAddons]));
     if (visaCat) setVisa(visaCat);
+    // Restore the order-summary (review) step when deep-linked back to it.
+    if (searchParams.get("step") === "review") setPurchaseStep("review");
+    // Returning from a canceled Stripe checkout — show a non-blocking notice and
+    // strip the flag from the URL so a refresh doesn't keep re-showing it.
+    if (searchParams.get("checkout_canceled") === "1") {
+      setCheckoutCanceled(true);
+      const cleaned = new URLSearchParams(searchParamsString);
+      cleaned.delete("checkout_canceled");
+      const qs = cleaned.toString();
+      window.history.replaceState({}, "", qs ? `?${qs}` : window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsString]);
+
+  // Auto-checkout — fire once the user is known. Kept separate from the param
+  // parsing above so a recreated handleCheckout never re-applies URL state.
+  useEffect(() => {
+    const autoCheckout = searchParams.get("auto_checkout") === "true";
     if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
+      const plan = searchParams.get("plan");
+      const addons = searchParams.get("addons");
       window.history.replaceState({}, "", window.location.pathname);
       handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
     }
-  }, [searchParams, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsString, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
+
+  // ── Cart persistence ─────────────────────────────────────────────────────
+  // The selected add-ons (the "cart") live in component state, so navigating to
+  // a tool/service/guide detail page (a separate route) would normally wipe
+  // them. Persist the cart in sessionStorage so it survives navigation, and
+  // restore it on mount. Hydrate via effect (not a lazy initializer) to avoid an
+  // SSR/client hydration mismatch.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(CART_STORAGE_KEY);
+      if (raw) {
+        const stored: string[] = JSON.parse(raw);
+        if (Array.isArray(stored) && stored.length) {
+          setSelectedAddons((prev) => new Set([...prev, ...stored]));
+        }
+      }
+    } catch {
+      /* sessionStorage unavailable — non-fatal */
+    }
+  }, []);
+
+  // Persist on every change. Skip the very first run so the initial empty state
+  // doesn't clobber the cart before the hydration effect above has restored it.
+  const cartPersistInitialized = useRef(false);
+  useEffect(() => {
+    if (!cartPersistInitialized.current) {
+      cartPersistInitialized.current = true;
+      return;
+    }
+    try {
+      sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(Array.from(selectedAddons)));
+    } catch {
+      /* sessionStorage unavailable — non-fatal */
+    }
+  }, [selectedAddons]);
+
+  // If the user redirects to Stripe and then hits Back, the page is restored
+  // from the bfcache with these loading flags still true — leaving the order
+  // summary stuck on "Processing". Clear them whenever the page is re-shown.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setIsProcessingAutoCheckout(false);
+      setIsManualCheckoutLoading(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -632,11 +724,13 @@ function PricingContent() {
                 label: "Journey Plans",
                 sub: "Full roadmap guidance",
               },
+              { id: "tools" as const, label: RESOURCE_TABS.tools.label, sub: RESOURCE_TABS.tools.sub },
               {
-                id: "resources" as const,
-                label: "Individual Resources",
-                sub: "Buy à la carte",
+                id: "services" as const,
+                label: RESOURCE_TABS.services.label,
+                sub: RESOURCE_TABS.services.sub,
               },
+              { id: "guides" as const, label: RESOURCE_TABS.guides.label, sub: RESOURCE_TABS.guides.sub },
             ] as const
           ).map(({ id, label, sub }) => (
             <button
@@ -672,6 +766,27 @@ function PricingContent() {
           ))}
         </nav>
       </div>
+
+      {/* ── Checkout-canceled notice — shown when the user returns from Stripe
+          without paying. Non-blocking; their selection is preserved. ───────── */}
+      {checkoutCanceled && (
+        <div className={`${W} pt-4`}>
+          <div className="flex items-start gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20">
+            <IcoInfo className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="flex-1 text-[13px] leading-relaxed text-amber-800 dark:text-amber-300">
+              <strong className="font-semibold">Checkout canceled — no charge was made.</strong>{" "}
+              Your selection is saved below. Continue whenever you&apos;re ready.
+            </div>
+            <button
+              onClick={() => setCheckoutCanceled(false)}
+              className="shrink-0 rounded-full p-1 text-amber-600 transition-colors hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/40"
+              aria-label="Dismiss"
+            >
+              <IconX className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           JOURNEY PLANS — BROWSE
@@ -1235,43 +1350,26 @@ function PricingContent() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          INDIVIDUAL RESOURCES MODE
+          INDIVIDUAL RESOURCES MODE — Tools / Services / Guides tabs
           ═══════════════════════════════════════════════════════════════════════ */}
-      {mode === "resources" && (
+      {mode !== "plans" && (
         <div className="animate-in fade-in duration-300">
           <section className={`${W} pt-7 pb-5`}>
-            <div className={eyebrow}>Individual Resources</div>
+            <div className={eyebrow}>{RESOURCE_TABS[mode].label}</div>
             <h1 className="text-[clamp(24px,3.5vw,42px)] font-bold leading-[1.1] tracking-tight m-0">
-              Buy individual tools and services
+              {RESOURCE_TABS[mode].heading}
             </h1>
             <p className="mt-2 text-muted-foreground text-[14.5px] max-w-[520px]">
-              Choose only the help you need — no full journey plan required.
+              {RESOURCE_TABS[mode].blurb}
             </p>
           </section>
 
           <div className={`${W}`}>
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_284px] gap-6 items-start">
               <div>
-                {/* Category tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-1 mb-5">
-                  {RESOURCE_CATS.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setResourceCat(cat.id)}
-                      className={`px-4 py-[7px] rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 cursor-pointer transition-all ${
-                        resourceCat === cat.id
-                          ? "bg-primary text-white shadow-sm"
-                          : "bg-muted border border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Resource cards — clickable, open the tool detail page */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {resourcesForCat.map((addon) => (
+                  {resourcesForMode.map((addon) => (
                     <ResourceToolCard
                       key={addon.id}
                       addon={addon}

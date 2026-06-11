@@ -206,7 +206,7 @@ export const ADDON: Record<string, AddonInfo> = {
     name: "PDF Tool Kit",
     price: 69,
     unit: "one-time",
-  }
+  },
   // caseManager: {
   //   id: "case-manager",
   //   name: "Dedicated Case Manager",
@@ -300,16 +300,19 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** DQ Status Check tool. */
   dq_status_check: {
-    free: full(),//lockedUpgrade('basic'),
+    free: full(), //lockedUpgrade('basic'),
     basic: full(),
     premium: full(),
     executive: full(),
   },
 
-  /** Basic Interview Prep (non-mock general practice). */
+  /**
+   * Interview Prep tool. Paid: free & basic must buy the $200 Interview Prep
+   * add-on (or upgrade to Premium); Premium & Executive include it.
+   */
   basic_interview_prep: {
-    free: full(), // lockedUpgrade('basic'),
-    basic: full(),
+    free: lockedBuy(ADDON.interviewPrep, "premium"),
+    basic: lockedBuy(ADDON.interviewPrep, "premium"),
     premium: full(),
     executive: full(),
   },
@@ -331,18 +334,22 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
     executive: full(),
   },
 
-  /** Case Strength Analyzer tool. */
+  /**
+   * Case Strength Analyzer tool.
+   * Executive-only — no longer sold as a standalone add-on and not included in
+   * Premium. Free / Basic / Premium must upgrade to Executive to unlock.
+   */
   case_strength: {
-    free: lockedBuy(ADDON.caseStrength, "premium"),
-    basic: lockedBuy(ADDON.caseStrength, "premium"),
-    premium: full(),
+    free: lockedUpgrade("executive"),
+    basic: lockedUpgrade("executive"),
+    premium: lockedUpgrade("executive"),
     executive: full(),
   },
 
   /** Interview Prep — Rapid Fire Mode. */
   interview_rapid_fire: {
     free: full(),
-    basic: lockedBuy(ADDON.interviewPrep, "premium"),
+    basic: limited(5),
     premium: full(),
     executive: full(),
   },
@@ -457,12 +464,12 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /**
    * Interview Prep — Mock Interview.
-   * Executive included; Basic & Premium can purchase as standalone add-on.
+   * Executive: full access. Premium & Basic: 5-question demo. Free: 5-question demo.
    */
   mock_interview: {
     free: full(),
-    basic: lockedBuy(ADDON.interviewPrep, "executive"),
-    premium: lockedBuy(ADDON.interviewPrep, "executive"),
+    basic: limited(5),
+    premium: limited(5),
     executive: full(),
   },
 

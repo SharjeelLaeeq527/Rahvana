@@ -89,7 +89,7 @@ export const defaultPlans: PlanData[] = [
       "Document vault: upload & auto-extract",
       "Tracker & reminders (DQ, interview, case status)",
       "Smart Form Filler (I-130 / I-130A)",
-      "Case Strength Analyzer & Sponsorship Calculator",
+      "Sponsorship Calculator",
       "Rapid Fire interview prep",
       "Medical appointment booking via Rahvana",
       "Civil document guides",
@@ -105,6 +105,7 @@ export const defaultPlans: PlanData[] = [
     "Full-suite support for when things get complicated. Expert reviews, 221(g) planning, and more.",
     [
       "Everything in Premium",
+      "Case Strength Analyzer",
       "221(g) Action Planner",
       "Mock interview sessions",
       "Expert case review: 2 sessions included",
@@ -163,7 +164,7 @@ export const CR2Plans: PlanData[] = [
       "Document vault: upload & auto-extract",
       "Tracker & reminders (DQ, interview, case status)",
       "Smart Form Filler (I-130 / I-130A)",
-      "Case Strength Analyzer & Sponsorship Calculator",
+      "Sponsorship Calculator",
       "Rapid Fire interview prep",
       "Medical appointment booking via Rahvana",
       "Civil document guides",
@@ -179,6 +180,7 @@ export const CR2Plans: PlanData[] = [
     "Full-suite support for when things get complicated. Expert reviews, 221(g) planning, and more.",
     [
       "Everything in Premium",
+      "Case Strength Analyzer",
       "221(g) Action Planner",
       "Mock interview sessions",
       "Expert case review: 2 sessions included",
@@ -253,18 +255,18 @@ export const COMPARISON_GROUPS = [
   {
     label: "Tools: Premium Upgrades (Add-on for Basic)",
     rows: [
-      ["Case Strength Analyzer", "—", "Included", "Included"],
       ["Rapid Fire Interview Prep", "—", "Included", "Included"],
       ["Smart Form Filler (I-130 / I-130A)", "—", "Included", "Included"],
       ["Sponsorship Calculator", "—", "Included", "Included"],
       ["Photo Booth", "—", "2 included", "Unlimited"],
-      ["Medical Appointment Booking", "—", "Included", "Included"],
+      ["Medical Appointment Booking", "Add On · $5", "Included", "Included"],
       ["Civil Document Guides", "—", "Included", "Included"],
     ],
   },
   {
     label: "Tools: Executive Only (Add-on for Basic & Premium)",
     rows: [
+      ["Case Strength Analyzer", "—", "—", "Included"],
       ["221(g) Action Planner", "—", "—", "Included"],
       ["Mock Interview", "—", "—", "Included"],
     ],
@@ -279,7 +281,7 @@ export const COMPARISON_GROUPS = [
   {
     label: "Services",
     rows: [
-      ["PCC Filing (Sindh Only)", "—", "—", "Included"],
+      ["PCC Filing (Sindh Only)", "Add On · $25", "Add On · $25", "Included"],
       ["Document Translation", "—", "—", "2 included"],
       // ["Dedicated Case Manager",                    "—",             "—",             "—"],
     ],
@@ -288,27 +290,31 @@ export const COMPARISON_GROUPS = [
 
 // ─── Add-on catalog (purchasable items; matches ADDON in config.ts) ───────────
 // NOT included: pdf_toolkit and snap_sign (included in Basic+).
-// NOT included: medical_booking (must upgrade to Premium, not purchasable as add-on).
-// NOT included: pcc_filing (must upgrade to Executive, not purchasable as add-on).
+// Medical Appointment Booking and PCC Filing (Sindh) are also sold as standalone
+// service add-ons here, in addition to being bundled into Premium / Executive.
 export const ADDONS = [
   {
     id: "221g",
+    kind: "tools",
     title: "221(g) Action Planner",
     price: 199,
     unit: "one-time",
     copy: "Step-by-step next moves after 221(g) or Administrative Processing. Includes a personalised action roadmap.",
     note: "Expires at the end of your visa journey",
   },
-  {
-    id: "case-strength",
-    title: "Case Strength Analyzer",
-    price: 49,
-    unit: "one-time",
-    copy: "Instant AI case strength score with flagged gaps to fix before NVC review or your embassy interview.",
-    note: "Valid for one full case analysis",
-  },
+  // Temporarily hidden — Case Strength Analyzer add-on commented out.
+  // {
+  //   id: "case-strength",
+  //   kind: "tools",
+  //   title: "Case Strength Analyzer",
+  //   price: 49,
+  //   unit: "one-time",
+  //   copy: "Instant AI case strength score with flagged gaps to fix before NVC review or your embassy interview.",
+  //   note: "Valid for one full case analysis",
+  // },
   {
     id: "interview-prep",
+    kind: "tools",
     title: "Interview Prep",
     price: 200,
     unit: "one-time",
@@ -317,6 +323,7 @@ export const ADDONS = [
   },
   {
     id: "photo",
+    kind: "tools",
     title: "Photo Booth",
     price: 15,
     unit: "per photo",
@@ -325,6 +332,7 @@ export const ADDONS = [
   },
   {
     id: "smart",
+    kind: "tools",
     title: "Smart Form Filler",
     price: 39,
     unit: "per form",
@@ -333,15 +341,35 @@ export const ADDONS = [
   },
   {
     id: "sponsor",
+    kind: "tools",
     title: "Sponsorship Calculator",
     price: 15,
     unit: "one-time",
     copy: "Checks your income and assets against the I-864 poverty guidelines and tells you exactly what you still need.",
     note: "Unlimited recalculations for your case",
   },
+  {
+    id: "pdf",
+    kind: "tools",
+    title: "PDF Tool Kit",
+    price: 69,
+    unit: "one-time",
+    copy: "Merge, edit, compress and convert your PDFs in one place — get every document into the exact format the embassy expects.",
+    note: "Included free with Basic, Premium & Executive",
+  },
+  {
+    id: "snap",
+    kind: "tools",
+    title: "Snap & Sign",
+    price: 5,
+    unit: "per signature",
+    copy: "Snap a photo of your handwritten signature and get a clean, background-free digital signature ready to drop into your forms.",
+    note: "Included free with Basic, Premium & Executive",
+  },
   // Temporarily disabled — service not currently offered.
   // {
   //   id: "doc-review",
+  //   kind: "services",
   //   title: "Expert Case Review",
   //   price: 59,
   //   unit: "per request",
@@ -350,6 +378,7 @@ export const ADDONS = [
   // },
   {
     id: "consultation",
+    kind: "services",
     title: "Expert Consultation",
     price: 99,
     unit: "per 30 min",
@@ -358,30 +387,111 @@ export const ADDONS = [
   },
   {
     id: "translate",
+    kind: "services",
     title: "Document Translation",
     price: 25,
     unit: "per document",
     copy: "Certified translation with embassy-ready formatting. Covers standard civil documents (CNIC, birth cert, etc.).",
     note: "Delivered within 3 business days",
   },
+  {
+    id: "medical",
+    kind: "services",
+    title: "Book Medical Appointment",
+    price: 5,
+    unit: "per request",
+    copy: "We book your panel physician medical exam appointment for you and coordinate the scheduling through Rahvana.",
+    note: "One appointment booking per request",
+  },
+  {
+    id: "pcc",
+    kind: "services",
+    title: "PCC Filing (Sindh Only)",
+    price: 25,
+    unit: "per request",
+    copy: "Done-for-you police character certificate filing for Sindh, handled end-to-end on your behalf.",
+    note: "Sindh province only",
+  },
   // Temporarily disabled — service not currently offered.
   // {
   //   id: "case-manager",
+  //   kind: "services",
   //   title: "Dedicated Case Manager",
   //   price: 300,
   //   unit: "per year",
   //   copy: "A named support contact who follows your case end-to-end, answers questions, and coordinates reviews.",
   //   note: "Available across all plan tiers",
   // },
+  // Individual document guides — buyable à la carte so users can add only the
+  // one they need. IDs match the entitlement ADDON catalog in lib/entitlements/config.ts.
   {
-    id: "civil-guid",
-    title: "Civil Document Guides",
+    id: "guide-passport",
+    kind: "guides",
+    title: "Passport Guide",
     price: 5,
-    unit: "per guide",
-    copy: "Country-specific guides detailing exactly how and where to obtain each required civil document.",
-    note: "Permanent access to purchased guides",
+    unit: "one-time",
+    copy: "DGIP roadmap for MRP and ePassport applications, renewals, and lost or damaged cases.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-police",
+    kind: "guides",
+    title: "Police Character Certificate Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-cnic",
+    kind: "guides",
+    title: "CNIC Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "NADRA CNIC workflow for new issuance, corrections, and replacement or renewal applications.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-birth-cert",
+    kind: "guides",
+    title: "Birth Certificate Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "Union Council CBRC process for birth registration, correction, and replacement.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-frc",
+    kind: "guides",
+    title: "FRC Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "NADRA process to apply for a Family Registration Certificate and review registered family details.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-nikah-nama",
+    kind: "guides",
+    title: "Marriage Registration Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "Nikah Nama registration through Union Council and NADRA MRC issuance with the attestation pathway.",
+    note: "Permanent access to the purchased guide",
   },
 ];
+
+// ─── Service flows ────────────────────────────────────────────────────────────
+// Service-kind add-ons are NOT added to the cart like tools/guides. Instead the
+// user clicks "Explore" → lands on the service's /resources/[slug] info page →
+// then a CTA there sends them to a guided flow page that collects the required
+// info and lets them pay at checkout (e.g. /book-consultation). Map each service
+// add-on id to its flow route here (single source of truth for card + detail page).
+export const SERVICE_FLOW_HREF: Record<string, string> = {
+  consultation: "/book-consultation",
+  translate: "/document-translation",
+  medical: "/book-appointment",
+  pcc: "/police-verification/apply?province=Sindh",
+};
 
 // ─── FAQs ─────────────────────────────────────────────────────────────────────
 export const FAQS: [string, string][] = [

@@ -13,6 +13,7 @@ export type ResourceCardAddon = {
   price: number;
   unit: string;
   copy: string;
+  kind?: string;
 };
 
 /**
@@ -37,10 +38,25 @@ export default function ResourceToolCard({
   const Icon = getIcon(theme.icon);
   const title = addon.title ?? addon.id;
 
+  // Services are not "added to cart" — the user explores them, gives info on a
+  // guided flow page, and pays at checkout there. So a service card shows an
+  // "Explore" button (no toggle) that just follows the card link to its detail
+  // page, instead of the "Add to order" toggle used by tools/guides.
+  const isService = addon.kind === "services";
+
+  // Some add-ons (e.g. individual document guides) have no rich detail page.
+  // For those the card must not navigate — it would 404. The whole card only
+  // links through when a RESOURCE_DETAILS entry exists.
+  const navigable = Boolean(detail);
+
   return (
     <Link
-      href={`/resources/${addon.id}`}
-      className="group relative flex flex-col rounded-[18px] bg-card transition-all duration-300 hover:-translate-y-[3px]"
+      href={navigable ? `/resources/${addon.id}` : "#"}
+      onClick={navigable ? undefined : (e) => e.preventDefault()}
+      aria-disabled={navigable ? undefined : true}
+      className={`group relative flex flex-col rounded-[18px] bg-card transition-all duration-300 hover:-translate-y-[3px] ${
+        navigable ? "" : "cursor-default"
+      }`}
       style={{
         boxShadow: isAdded
           ? `0 0 0 1.5px ${accent}, 0 14px 34px -18px ${accent}66`
@@ -88,13 +104,15 @@ export default function ResourceToolCard({
           {addon.copy}
         </p>
 
-        {/* "View details" affordance */}
-        <span
-          className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100"
-          style={{ color: accent }}
-        >
-          View details <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-        </span>
+        {/* "View details" affordance — only when a detail page exists */}
+        {navigable && (
+          <span
+            className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100"
+            style={{ color: accent }}
+          >
+            View details <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        )}
 
         {/* Footer */}
         <div className="mt-auto flex items-end justify-between pt-3">
@@ -105,29 +123,39 @@ export default function ResourceToolCard({
             <div className="mt-1 text-[10px] text-muted-foreground">{addon.unit}</div>
           </div>
 
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggle(addon.id);
-            }}
-            className={`addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-              isAdded ? "is-added" : ""
-            }`}
-            style={{ ["--pill" as string]: accent } as CSSProperties}
-          >
-            {isAdded ? (
-              <>
-                <Check className="h-3.5 w-3.5" /> Added
-              </>
-            ) : (
-              <>
-                <Plus className="h-3.5 w-3.5" /> Add to order
-              </>
-            )}
-          </button>
+          {isService ? (
+            // Explore — follows the card link to the service's detail page (no toggle).
+            <span
+              className="addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150"
+              style={{ ["--pill" as string]: accent } as CSSProperties}
+            >
+              Explore <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+          ) : (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggle(addon.id);
+              }}
+              className={`addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+                isAdded ? "is-added" : ""
+              }`}
+              style={{ ["--pill" as string]: accent } as CSSProperties}
+            >
+              {isAdded ? (
+                <>
+                  <Check className="h-3.5 w-3.5" /> Added
+                </>
+              ) : (
+                <>
+                  <Plus className="h-3.5 w-3.5" /> Add to order
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </Link>

@@ -284,6 +284,90 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
   },
 
   // ───────────────────────────────────────────────────────────────────────────
+  pdf: {
+    slug: "pdf",
+    badge: "All-in-One",
+    tagline: "Every PDF fix the embassy needs, in one place.",
+    overview: [
+      "Embassies and USCIS are unforgiving about file format: pages out of order, files too large to upload, the wrong format entirely. The PDF Tool Kit puts merge, edit, compress and convert in one place so every document goes in exactly the way it's supposed to.",
+      "Combine multiple scans into a single packet, shrink an oversized file under the upload limit, convert images or office files to PDF, and edit pages — all in your browser, no extra software to install.",
+    ],
+    highlights: [
+      { icon: "Combine", title: "Merge into one packet", text: "Combine multiple PDFs and scans into a single, correctly ordered document." },
+      { icon: "Minimize2", title: "Compress to fit limits", text: "Shrink oversized files under portal upload size limits without losing legibility." },
+      { icon: "RefreshCw", title: "Convert formats", text: "Turn images and office files into clean PDFs (and between formats) ready to submit." },
+      { icon: "PenLine", title: "Edit pages", text: "Reorder, rotate and tidy pages so your packet reads exactly right." },
+    ],
+    steps: [
+      { title: "Upload your file", text: "Drop in the PDF, image or document you need to fix." },
+      { title: "Pick a tool", text: "Choose merge, compress, convert or edit." },
+      { title: "Process in-browser", text: "The toolkit handles it instantly — nothing to install." },
+      { title: "Download", text: "Get a clean, submission-ready PDF." },
+    ],
+    audience: [
+      "Anyone whose upload was rejected for size or format",
+      "Applicants combining multiple scans into one packet",
+      "Anyone preparing documents for NVC or embassy upload",
+    ],
+    outcomes: [
+      "Merged, correctly ordered document packets",
+      "Files compressed under portal upload limits",
+      "Format conversion to embassy-ready PDFs",
+    ],
+    faqs: [
+      ["Is this included in my plan?", "Yes — the PDF Tool Kit is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
+      ["Do my files stay private?", "Processing happens in your browser session; your documents aren't shared."],
+      ["What can it convert?", "Common images and office files to PDF, plus merging, compressing and editing existing PDFs."],
+    ],
+    media: [
+      imgFile("pdf-toolkit_hero.jpg", "PDF Tool Kit — merge, compress, convert, edit"),
+    ],
+    related: ["smart", "snap", "photo"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  snap: {
+    slug: "snap",
+    badge: "Clean Signatures",
+    tagline: "A clean digital signature from a quick photo.",
+    overview: [
+      "Forms often need a signature image, but a phone photo of your signature comes with a grey background and shadows that look messy on an official document. Snap & Sign cleans that up: it removes the background and gives you a crisp, transparent signature you can drop straight into your forms.",
+      "Snap a photo of your handwritten signature on paper, upload it, and download a clean, ready-to-place signature image — no scanner or design tool needed.",
+    ],
+    highlights: [
+      { icon: "Eraser", title: "Background removed", text: "Strips the paper, shadows and noise so only your signature remains." },
+      { icon: "FileImage", title: "Transparent output", text: "Get a clean transparent image that sits naturally on any form." },
+      { icon: "Smartphone", title: "Just use your phone", text: "A normal photo of your signature on paper is all you need — no scanner." },
+      { icon: "Zap", title: "Ready in seconds", text: "Upload, preview and download — done in moments." },
+    ],
+    steps: [
+      { title: "Sign on paper", text: "Write your signature clearly on plain white paper." },
+      { title: "Snap & upload", text: "Take a photo with your phone and upload it." },
+      { title: "We clean it up", text: "The background is removed automatically." },
+      { title: "Download & place", text: "Drop the clean signature into your forms." },
+    ],
+    audience: [
+      "Anyone signing forms that need a signature image",
+      "Applicants without a scanner",
+      "Anyone whose signature photo looked messy on a document",
+    ],
+    outcomes: [
+      "A clean, background-free signature image",
+      "A transparent file ready to place on forms",
+      "No scanner or design software required",
+    ],
+    faqs: [
+      ["Is this included in my plan?", "Yes — Snap & Sign is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
+      ["What should I upload?", "A clear photo of your handwritten signature on plain white paper, well lit, works best."],
+      ["Is the output transparent?", "Yes — the background is removed so the signature drops cleanly onto your forms."],
+    ],
+    media: [
+      imgFile("snap-and-sign_hero.jpg", "Snap & Sign — clean digital signature"),
+    ],
+    related: ["pdf", "smart", "photo"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
   photo: {
     slug: "photo",
     badge: "Minutes, Not Studios",
@@ -323,7 +407,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       imgFile("photobooth.webp", "Your original photo (before)", "Before: a normal photo you upload"),
       imgFile("photobooth-after.jpg", "Compliant passport photo (after)", "After: a fully compliant biometric photo"),
     ],
-    related: ["smart", "civil-guid"],
+    related: ["smart", "guide-passport"],
   },
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -449,49 +533,357 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     media: [
       img("translate", "hero.png", "Certified document translation", "Source document to embassy-ready translation"),
     ],
-    related: ["civil-guid", "doc-review"],
+    related: ["guide-nikah-nama", "doc-review"],
   },
 
   // ───────────────────────────────────────────────────────────────────────────
-  "civil-guid": {
-    slug: "civil-guid",
-    badge: "Step-by-Step",
-    tagline: "Exactly how and where to get every document.",
+  medical: {
+    slug: "medical",
+    badge: "Done-for-You",
+    tagline: "We book your panel physician medical exam, so you don't have to.",
     overview: [
-      "Tracking down civil documents in the right format is half the battle. Civil Document Guides are country-specific, step-by-step walkthroughs that tell you precisely how and where to obtain each required document.",
-      "From CNIC and birth certificates to police certificates, FRC, marriage registration and polio vaccination: clear instructions, and your progress is saved as you go.",
+      "The immigrant visa medical exam has to be done by an embassy-approved panel physician, and getting a slot can mean phone calls, waitlists and confusion over which clinic is authorised. The Book Medical Appointment service hands that off to Rahvana.",
+      "Tell us where you are and your preferred timing, and we coordinate the booking with an approved panel clinic on your behalf, then confirm the appointment back to you.",
     ],
     highlights: [
-      { icon: "Globe", title: "Country-specific", text: "Instructions tailored to where you actually are." },
-      { icon: "MapPin", title: "Where & how to obtain", text: "The right channels and offices for each document." },
-      { icon: "ListOrdered", title: "Step-by-step wizard", text: "Clear ordered steps from request to collection, with progress saved." },
-      { icon: "BookOpen", title: "Permanent access", text: "Keep access to every guide you purchase." },
+      { icon: "CalendarCheck", title: "We do the booking", text: "Rahvana coordinates your appointment with an approved panel physician for you." },
+      { icon: "Stethoscope", title: "Approved panel clinics", text: "Booked only with embassy-authorised panel physicians for the immigrant visa exam." },
+      { icon: "Clock", title: "No waitlist chasing", text: "Skip the phone calls and back-and-forth, we line up the slot." },
+      { icon: "BellRing", title: "Confirmation back to you", text: "You receive the confirmed date, time and clinic details once it's set." },
     ],
     steps: [
-      { title: "Pick your document", text: "Choose the civil document you need: CNIC, birth, police certificate and more." },
-      { title: "Open the guide", text: "Get country-specific, step-by-step instructions." },
-      { title: "Follow the steps", text: "Know where to go and what to ask for; your progress saves automatically." },
-      { title: "Collect & proceed", text: "Obtain the document in the correct format." },
+      { title: "Submit your request", text: "Share your location and preferred timing for the medical exam." },
+      { title: "We coordinate the slot", text: "Rahvana contacts an approved panel clinic and arranges your appointment." },
+      { title: "Get your confirmation", text: "Receive the confirmed appointment details: date, time and clinic." },
+      { title: "Attend your exam", text: "Show up prepared, with what to bring laid out for you in advance." },
     ],
     audience: [
-      "Applicants gathering civil documents",
-      "Anyone unsure where to obtain a document",
-      "People who want a clear, local roadmap",
+      "Applicants who've reached the medical exam stage",
+      "Anyone unsure which clinics are panel-approved",
+      "People who'd rather hand off the scheduling",
     ],
     outcomes: [
-      "Permanent access to purchased guides",
-      "Country-specific, step-by-step instructions",
-      "Saved progress you can return to anytime",
+      "One panel physician appointment booked per request",
+      "A confirmed date, time and clinic",
+      "No waitlist chasing or guesswork on approved clinics",
     ],
     faqs: [
-      ["Which documents have guides?", "Guides cover documents like CNIC, birth certificate, police character certificate, FRC, marriage registration (Nikah Nama) and polio vaccination."],
-      ["Are guides specific to my country?", "Yes, guides are country-specific so the steps actually apply to you."],
-      ["Do I keep access?", "Yes, you keep permanent access to any guide you purchase, and your progress is saved."],
+      ["Are government or clinic fees included?", "No. This covers the booking coordination only. The panel physician's exam fee is paid separately, directly to the clinic."],
+      ["Which doctor will I see?", "An embassy-approved panel physician authorised to perform the immigrant visa medical exam in your area."],
+      ["How fast can I get an appointment?", "It depends on the panel clinic's availability, but we line up the earliest workable slot and confirm it back to you."],
     ],
     media: [
-      img("civil-guid", "hero.png", "Civil Document Guides library"),
+      img("medical", "hero.png", "Book Medical Appointment service"),
     ],
-    related: ["translate", "photo"],
+    related: ["consultation", "guide-passport"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  pcc: {
+    slug: "pcc",
+    badge: "Done-for-You",
+    tagline: "Hand off your Sindh police certificate filing to us.",
+    overview: [
+      "A Police Character Certificate (PCC) is required for the visa, but the Sindh filing process means documents, fees and follow-ups with the authorities. The PCC Filing service does it for you, end to end, for Sindh.",
+      "You provide the required documents and we handle the submission and follow-up so you don't have to navigate the process yourself.",
+    ],
+    highlights: [
+      { icon: "Shield", title: "Done-for-you filing", text: "We submit and follow up on your Sindh PCC application on your behalf." },
+      { icon: "MapPin", title: "Sindh province", text: "Specialised handling for the Sindh police certificate workflow." },
+      { icon: "FileCheck2", title: "Document checklist", text: "We tell you exactly what to provide before filing so nothing stalls." },
+      { icon: "ClipboardCheck", title: "Status updates", text: "Stay informed as your application moves through the process." },
+    ],
+    steps: [
+      { title: "Submit your request", text: "Start your Sindh PCC filing and tell us about your case." },
+      { title: "Provide your documents", text: "Share the required documents from the checklist we give you." },
+      { title: "We file & follow up", text: "Rahvana submits the application and follows up with the authorities." },
+      { title: "Receive your certificate", text: "Get your Police Character Certificate once issued." },
+    ],
+    audience: [
+      "Applicants who need a Sindh police certificate for the visa",
+      "Anyone who'd rather not navigate the filing themselves",
+      "People short on time to chase the authorities",
+    ],
+    outcomes: [
+      "Done-for-you PCC filing for Sindh",
+      "A clear document checklist up front",
+      "Status updates through to issuance",
+    ],
+    faqs: [
+      ["Which provinces are covered?", "This service covers Sindh only."],
+      ["Are government fees included?", "No. The official PCC fee is paid separately. This service covers the filing and coordination on your behalf."],
+      ["What do I need to provide?", "We give you a checklist up front: typically your CNIC, passport copy, a recent photo, a utility bill and a verification letter."],
+    ],
+    media: [
+      img("pcc", "hero.png", "PCC Filing (Sindh) service"),
+    ],
+    related: ["guide-police", "consultation"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Individual document guides. All copy below is sourced verbatim from the guide
+  // wizard data in /data/<doc>-guide-data.json (whats_this, sections, document_need,
+  // roadmap). Nothing here is invented — it mirrors the content of each live guide.
+  // ───────────────────────────────────────────────────────────────────────────
+  "guide-passport": {
+    slug: "guide-passport",
+    badge: "Step-by-Step",
+    tagline: "DGIP • Immigration & International Travel",
+    overview: [
+      "The Pakistani Passport is an official travel document issued by the Directorate General of Immigration & Passports (DGIP). It is required for all international travel and serves as proof of Pakistani citizenship. This wizard guides you through the application process step by step.",
+      "A Pakistani passport is an official travel document issued for international travel that also proves Pakistani citizenship and identity.",
+    ],
+    highlights: [
+      { icon: "BookOpen", title: "Understanding Pakistani Passport", text: "Learn about the types of passports and why you need one." },
+      { icon: "Users", title: "Eligibility Criteria", text: "Check if you qualify to apply for a Pakistani passport." },
+      { icon: "FileText", title: "Required Documents", text: "Complete checklist of documents needed." },
+      { icon: "Globe", title: "Application Process (Online & Offline)", text: "Step-by-step guide to applying." },
+      { icon: "Clock", title: "Processing Time", text: "Expected timelines." },
+      { icon: "AlertTriangle", title: "Critical Tips & Common Mistakes", text: "Best practices & warnings." },
+    ],
+    steps: [
+      { title: "Fee Payment & Document Preparation", text: "Download or obtain the passport fee challan. Pay the required fee via bank challan or e-payment. Collect original CNIC with copy. For minors, bring B-Form and guardian's CNIC. Keep previous passport if applying for renewal." },
+      { title: "Visit Regional Passport Office (RPO)", text: "Visit your nearest Regional Passport Office (RPO) or Pakistan Mission. Present your paid fee receipt. Obtain a token number. Your photograph will be taken, fingerprints captured, and biometric verification completed." },
+      { title: "Application Verification & Processing", text: "Your application is reviewed by the Directorate General of Immigration & Passports (DGIP). Criminal record checks (ECL/BL) are performed. After successful verification, passport printing is initiated." },
+      { title: "Passport Collection or Delivery", text: "You will receive an SMS when your passport is ready. Collect it from the passport office or receive it via courier if delivery was selected. Verify name spelling, CNIC number, date of birth, and other details before leaving." },
+    ],
+    audience: [
+      "New Passport — First-time passport application or expired passport",
+      "Renewal — Renew your existing valid or recently expired passport",
+      "Lost / Damaged — Replace a lost, stolen, or damaged passport",
+    ],
+    outcomes: [
+      "Step-by-step guidance tailored to your passport application type",
+      "Fee calculator for MRP and ePassport options",
+      "Personalized roadmap with realistic time estimates",
+      "Office finder with RPO/EPO locations and timings",
+      "Immigration-ready validation checklist",
+    ],
+    faqs: [
+      ["What is a Pakistani Passport?", "A Pakistani passport is an official travel document issued for international travel that also proves Pakistani citizenship and identity."],
+      ["When is it required?", "Required for all international travel; most countries require at least 6 months validity on your passport beyond your planned stay."],
+      ["Who can apply?", "Every Pakistani citizen including newborns. No minimum age. Dual nationals must show their foreign passport with photocopy, NOC is required for government employees, and minors need both parents' IDs or legal guardianship documents."],
+      ["How long does processing take?", "Normal: approx. 10 working days. Urgent: approx. 4 working days. Fast Track: 2 working days at select offices. Online delivery via courier typically adds 2–3 additional days."],
+      ["Any pro tips?", "Renew 7–12 months before expiry. Use official DGIP portals/apps only. Keep your CNIC valid and complete all documents. Incorrect or incomplete documents cause rejections."],
+      ["Is this official legal advice?", "This wizard provides general guidance based on publicly available DGIP information and should not be considered legal advice. Requirements may vary and can change. Always verify current procedures with your local RPO/EPO office."],
+    ],
+    media: [
+      img("guide-passport", "hero.png", "Pakistani Passport guide"),
+    ],
+    related: ["guide-cnic", "guide-frc", "guide-nikah-nama"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  "guide-police": {
+    slug: "guide-police",
+    badge: "Step-by-Step",
+    tagline: "Character Certificate Process",
+    overview: [
+      "A Police Verification Certificate (PVC) or Police Clearance Certificate (PCC) is an official document issued by law enforcement, confirming an individual has no criminal record, active investigations, or adverse findings against them. A Police Character Certificate is often required for traveling abroad, international jobs, immigration, and general verification.",
+    ],
+    highlights: [
+      { icon: "FileText", title: "Original CNIC", text: "13-digit CNIC." },
+      { icon: "Camera", title: "Passport Size Photograph", text: "In .JPG or .PNG format." },
+      { icon: "FileText", title: "Passport Copy", text: "Clear copy of passport." },
+      { icon: "FileText", title: "Utility Bill", text: "Recent utility bill in .PDF." },
+      { icon: "FileBadge", title: "Verification Letter", text: "Official Verification Letter in .PDF." },
+    ],
+    steps: [
+      { title: "Select your province to get tailored instructions.", text: "" },
+      { title: "Review the required documents and steps.", text: "" },
+      { title: "Generate necessary forms or apply directly online where supported.", text: "" },
+    ],
+    audience: [
+      "Traveling abroad",
+      "International jobs",
+      "Immigration",
+      "General verification",
+    ],
+    outcomes: [
+      "Punjab — Rs 500, 3 working days",
+      "Balochistan — Rs 350, 3 working days",
+      "Sindh — Rs 500–1000, 7–15 working days",
+      "KPK — Rs 3000, varies by verification",
+    ],
+    faqs: [
+      ["What is a Police Character Certificate used for?", "It is often required for traveling abroad, international jobs, immigration, and general verification."],
+      ["Is this official legal advice?", "This guide provides general information based on public records. Always verify details with your local police station or PKM center."],
+    ],
+    media: [
+      img("guide-police", "hero.png", "Police Character Certificate guide"),
+    ],
+    related: ["guide-passport", "guide-cnic", "translate"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  "guide-cnic": {
+    slug: "guide-cnic",
+    badge: "Step-by-Step",
+    tagline: "NADRA • Identity & Official Purpose",
+    overview: [
+      "The Computerized National Identity Card (CNIC) is an official identity document for Pakistani citizens. It is required for voting, opening bank accounts, getting a passport, obtaining a driving license, and more.",
+    ],
+    highlights: [
+      { icon: "FileText", title: "Original B-Form (CRC)", text: "Or original Birth Certificate. Without originals, application may be rejected." },
+      { icon: "Users", title: "Parents' CNIC Copies", text: "Clear copies of at least one parent's CNIC (both is better)." },
+      { icon: "MapPin", title: "Proof of Residence", text: "Utility bill or domicile in your parent's/your name." },
+      { icon: "MessageSquare", title: "Active Mobile Number", text: "For OTP verification and SMS tracking." },
+    ],
+    steps: [
+      { title: "Token & Waiting", text: "Visit your nearest NADRA Registration Center, get a queue token, and wait for your turn. Visit early morning to avoid rush." },
+      { title: "Data Entry & Biometrics", text: "Biometric Verification (anyone of parents or sibling). Photographs and fingerprints are mandatory. Your data will be entered and reviewed. Attestation by anyone of the parents or siblings or by Gazetted officer. Interview by OIC. Fee submission." },
+      { title: "Review & Receipt", text: "Review the printed application form carefully. Sign it and collect your tracking receipt." },
+    ],
+    audience: [
+      "New CNIC — Applying for the very first time (age 18+)",
+      "Correction / Update — Fixing details (name, DOB, marital status, address)",
+      "Replacement / Renewal — CNIC is expired, lost, stolen, or damaged",
+    ],
+    outcomes: [
+      "Answer a few questions about your application type",
+      "Receive a custom roadmap and document checklist",
+      "Validate your application against pre-submission requirements",
+    ],
+    faqs: [
+      ["How long does it take and what does it cost?", "Around 7–10 days on the Executive track. Fees: Executive Rs 2500, Urgent Rs 1500, Normal Rs 750 (excluding delivery fee)."],
+      ["Is this official legal advice?", "This wizard provides general guidance based on publicly available information and should not be considered legal advice. Requirements may vary and can change over time. Always verify current procedures with your local NADRA office."],
+    ],
+    media: [
+      img("guide-cnic", "hero.png", "Pakistani CNIC guide"),
+    ],
+    related: ["guide-passport", "guide-frc", "guide-birth-cert"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  "guide-birth-cert": {
+    slug: "guide-birth-cert",
+    badge: "Step-by-Step",
+    tagline: "Union Council CBRC & NADRA B-Form",
+    overview: [
+      "The Birth Certificate is an official civil document issued by local Union Councils or NADRA in Pakistan. It serves as primary evidence of birth and is required for legal, educational, and immigration purposes (USCIS, NVC, etc.).",
+    ],
+    highlights: [
+      { icon: "Users", title: "Parents' CNIC / NICOP (Valid)", text: "Originals of both parents required for verification." },
+      { icon: "ScrollText", title: "Nikah Nama Copy", text: "Proof of parents' marriage — relationship verification." },
+      { icon: "MapPin", title: "Proof of Residence", text: "Utility bill, tenancy agreement, or domicile certificate." },
+      { icon: "FileText", title: "Hospital Discharge / Birth Notification Slip", text: "Required only for hospital births — primary evidence of birth." },
+      { icon: "Users", title: "2 Witness CNICs", text: "Required only for home births — witnesses must be non-relatives." },
+      { icon: "FileText", title: "Affidavit (Sworn Statement)", text: "Mandatory for home births or late registration; signed by both parents." },
+    ],
+    steps: [
+      { title: "Gather Evidence", text: "Collect mandatory proofs for your specific age group and birth setting. Original CNICs of parents and Nikah Nama are essential. Vaccination cards or hospital slips should be gathered if available." },
+      { title: "Union Council (CBRC)", text: "Visit your local Union Council or Municipal Corporation. Submit the application form along with required documents. Pay the applicable fee. Wait for the processing and pick up your computerized birth certificate (CBRC)." },
+      { title: "NADRA B-Form", text: "Present the UC CBRC at a NADRA Registration Center. Complete the biometric process for the child. Pay the NADRA fee (Normal Rs. 50 / Urgent Rs. 500). Receive the token." },
+      { title: "Collection", text: "Track your application status via 1777 or SMS. Visit the NADRA center to collect the final B-Form or CNIC. Verify all details and spellings on the document immediately." },
+    ],
+    audience: [
+      "New Registration — First-time CBRC registration at Union Council.",
+      "Correction — Fixing errors in existing birth records.",
+      "Replacement — Reissuing lost or damaged certificates.",
+    ],
+    outcomes: [
+      "Select the reason for your request and who the certificate is for",
+      "Choose the current age to help us determine the correct process and requirements.",
+      "Provide the information where the birth took place.",
+      "Get a tailored roadmap + checklist (what to request, verify, and upload).",
+      "Validate the final certificate before submission.",
+    ],
+    faqs: [
+      ["How long does it take?", "3–15 working days."],
+      ["Is this official legal advice?", "This wizard provides general guidance. Requirements vary by province and Union Council. Always verify with local authorities."],
+    ],
+    media: [
+      img("guide-birth-cert", "hero.png", "Birth Certificate guide"),
+    ],
+    related: ["guide-cnic", "guide-frc", "guide-nikah-nama"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  "guide-frc": {
+    slug: "guide-frc",
+    badge: "Step-by-Step",
+    tagline: "NADRA • Immigration & Official Purpose",
+    overview: [
+      "The Family Registration Certificate (FRC) is an official document issued by NADRA that lists your registered family members as recorded in their database. It is commonly required for visa applications, embassy submissions, and legal verification of family relationships.",
+    ],
+    highlights: [
+      { icon: "FileText", title: "Applicant CNIC/NICOP/POC", text: "Valid 13-digit identification document (original + copy)." },
+      { icon: "Users", title: "Family Members CNIC", text: "CNIC copies of all adult family members to be listed." },
+      { icon: "FileText", title: "Child Registration Certificate (CRC)", text: "Form-B for children under 18 years of age." },
+      { icon: "ScrollText", title: "Nikah Nama / Marriage Certificate", text: "Required if applying for FRC By Marriage category." },
+      { icon: "FileText", title: "Death Certificate (if applicable)", text: "For deceased family members — issued by Union Council or Municipal Corporation." },
+      { icon: "Camera", title: "Passport-size Photographs", text: "Recent photographs for online application via Pak Identity App." },
+    ],
+    steps: [
+      { title: "Gather Required Documents", text: "Collect your original CNIC and its copy. Gather B-Form for children if applicable. Keep marriage certificate, divorce certificate, or death certificate if relevant. Ensure your family data is correctly updated in NADRA records before visiting." },
+      { title: "Visit NADRA Registration Center", text: "Visit your nearest NADRA Registration Center (NRC). Take a token and wait for your turn. Inform the officer you want to apply for a Family Registration Certificate (FRC). Your family record will be retrieved from the system for verification." },
+      { title: "Biometric Verification & Processing", text: "Your CNIC will be verified through biometric authentication if required. The officer will cross-check your family details in NADRA database. After confirmation and fee payment, your FRC will be generated." },
+      { title: "Collect Printed FRC Certificate", text: "Receive your printed FRC certificate from the counter. Carefully verify names, CNIC numbers, and relationships before leaving the center. Report any errors immediately for correction." },
+    ],
+    audience: [
+      "New Certificate — First-time FRC registration with NADRA",
+      "Correction Needed — Fix errors in existing FRC document",
+      "Replacement — Lost or damaged FRC certificate",
+    ],
+    outcomes: [
+      "Answer a few questions about your FRC need",
+      "Receive a custom roadmap and document checklist",
+      "Validate your final certificate against immigration requirements",
+    ],
+    faqs: [
+      ["How long does it take?", "1–3 working days."],
+      ["Is this official legal advice?", "This wizard provides general guidance based on publicly available information and should not be considered legal advice. Requirements may vary and can change over time. Always verify current procedures with your local NADRA office and consult an immigration attorney for specific legal guidance."],
+    ],
+    media: [
+      img("guide-frc", "hero.png", "Family Registration Certificate (FRC) guide"),
+    ],
+    related: ["guide-cnic", "guide-birth-cert", "guide-nikah-nama"],
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  "guide-nikah-nama": {
+    slug: "guide-nikah-nama",
+    badge: "Step-by-Step",
+    tagline: "Union Council & NADRA • 2026 Official Guide",
+    overview: [
+      "A Nikah Nama is the official Islamic marriage contract in Pakistan, which must be registered with the local Union Council (local government office) to become legally recognized. The Union Council issues an attested copy, which is then used to obtain a Marriage Registration Certificate (MRC) from NADRA, a computerized document required for legal, immigration, and visa purposes.",
+    ],
+    highlights: [
+      { icon: "ScrollText", title: "Original Urdu Nikah Nama", text: "Signed by Nikah Khawan, Bride, Groom, and Witnesses." },
+      { icon: "FileText", title: "CNIC of Bride & Groom", text: "Valid original CNICs plus photocopies." },
+      { icon: "Users", title: "CNIC of Both Fathers", text: "Copies of bride's father and groom's father CNICs." },
+      { icon: "Camera", title: "Passport Photos", text: "Two passport-size photos with white background." },
+      { icon: "Globe", title: "Foreign Passport Copy", text: "Including entry stamp page to Pakistan (for a foreign partner)." },
+      { icon: "FileText", title: "Divorce or Death Certificate", text: "NADRA Divorce Certificate or Spouse's Death Certificate (for a second marriage)." },
+    ],
+    steps: [
+      { title: "Nikah Ceremony", text: "Licensed Nikah Khawan fills the handwritten Urdu Nikah Nama." },
+      { title: "UC Registration", text: "Submit Urdu Nikah Nama and CNICs to Union Council for registration." },
+      { title: "NADRA Issuance", text: "Collect the computerized Marriage Registration Certificate (MRC)." },
+      { title: "MOFA Attestation", text: "Get the certificate attested by Ministry of Foreign Affairs (Mandatory for Visas)." },
+    ],
+    audience: [
+      "Standard Registration — Both partners are Pakistani citizens (Single)",
+      "Foreign Partner — One partner is a foreign national (e.g. US/UK Citizen)",
+      "Second Marriage — One or both partners are Divorced or Widowed",
+      "Age-Specific Case — Bride is under the age of 18",
+    ],
+    outcomes: [
+      "Select your specific marriage case (Standard, Foreign Partner, etc.)",
+      "Review the estimated fee structure for 2026",
+      "Follow the step-by-step registration and attestation roadmap",
+      "Generate a personalized document checklist",
+      "Validate your final certificate details",
+    ],
+    faqs: [
+      ["How long does it take?", "10–20 days."],
+      ["What are the fees?", "Official UC fee: Rs 500–2,000 (standard). Urgent tracking: Rs 1,500–2,500. Lawyer/agent service: Rs 5,000–15,000. Consultant/legal firm: Rs 25,000–50,000. MOFA attestation and certified translations are charged separately."],
+      ["Is this official legal advice?", "Fees and procedures are subject to change by local Union Councils. Always confirm with your local UC Secretary."],
+    ],
+    media: [
+      img("guide-nikah-nama", "hero.png", "Marriage Registration (Nikah Nama) guide"),
+    ],
+    related: ["guide-birth-cert", "guide-frc", "translate"],
   },
 
   // ───────────────────────────────────────────────────────────────────────────

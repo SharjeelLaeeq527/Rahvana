@@ -3,7 +3,7 @@ import { stripe, PRODUCTS } from "@/lib/stripe/config";
 import { paymentService } from "@/lib/services/paymentService";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
-import { VISA_CATEGORIES } from "@/app/(main)/pricing/data/pricing";
+import { VISA_CATEGORIES, ADDONS } from "@/app/(main)/pricing/data/pricing";
 import { reconcileUserPlan } from "@/lib/plan/reconcile";
 import * as fs from "fs";
 import * as path from "path";
@@ -125,10 +125,45 @@ export async function POST(request: NextRequest) {
       stripeCustomerId = customer.id;
     }
 
+    // Base URL for redirects — derive from the incoming request origin so it
+    // works on whatever host the user is actually on (localhost in dev, the real
+    // domain in prod). Falls back to the env var if no origin header is present.
+    const origin =
+      request.headers.get("origin") ||
+      request.nextUrl.origin ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "";
+
+    // ── Cancel URL — industry-standard: return the user to where they started
+    // (the order summary) with their selection intact, NOT a dead-end "canceled"
+    // page. The pricing page reads these params, restores the order, and shows a
+    // subtle "checkout canceled, no charge made" notice.
+    const buildCancelUrl = () => {
+      const base = origin;
+      // Consultations have no order-summary concept — send back to booking.
+      if (!productTier && !(Array.isArray(addons) && addons.length > 0) && consultationId) {
+        return `${base}/book-consultation?checkout_canceled=1`;
+      }
+      const params = new URLSearchParams({ checkout_canceled: "1" });
+      if (productTier) {
+        params.set("mode", "plans");
+        params.set("plan", productTier);
+        params.set("step", "review");
+      } else if (Array.isArray(addons) && addons.length > 0) {
+        const firstKind =
+          (ADDONS.find((a) => a.id === addons[0]) as { kind?: string } | undefined)?.kind ??
+          "tools";
+        params.set("mode", firstKind);
+      }
+      if (Array.isArray(addons) && addons.length > 0) params.set("addons", addons.join(","));
+      if (effectiveVisaCategory) params.set("visa", effectiveVisaCategory);
+      return `${base}/pricing?${params.toString()}`;
+    };
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: stripeCustomerId,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
+      success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: buildCancelUrl(),
       automatic_tax: { enabled: true },
       billing_address_collection: "required",
       customer_update: { address: "auto" },

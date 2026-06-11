@@ -74,6 +74,7 @@ import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUpl
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
@@ -306,6 +307,10 @@ export const StepView: React.FC<StepViewProps> = ({
     isOpen: false,
     doc: null,
   });
+
+  // Profile feeds OCR-extracted values (e.g. DOBs from passport upload) into the
+  // step_1_4 consistency baseline so the user doesn't re-type them by hand.
+  const { profile } = useUserProfile();
 
   // Document Questionnaire State (Chapter 1, Step 2)
   const isDocQuestionnaireCompleted = state.metadata?.docQuestionnaireCompleted === true;
@@ -1977,31 +1982,112 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* CONSISTENCY BASELINE CAPTURE — step_1_4 (Fill I-130) */}
-          {sId === "step_1_4" && (
-            <ConsistencyBaselineCapture
-              baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
-              onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
-            />
-          )}
+          {sId === "step_1_4" &&
+            (() => {
+              // Merge any saved baseline with profile-derived defaults (petitioner =
+              // account holder, beneficiary = spouse) so OCR'd dates pre-fill the form.
+              //
+              // DOBs: the passport is the source of truth. When a passport-derived DOB
+              // exists in the profile it WINS over any previously-saved baseline value,
+              // so the I-130 dates always stay in sync with the uploaded passport (no
+              // mismatch between Step 2's passport and this step). Marriage date keeps
+              // saved-first priority since no passport supplies it.
+              const savedBaseline = state.metadata?.consistencyBaseline as
+                | ConsistencyBaseline
+                | undefined;
+              const prof = profile as Record<string, any> | null;
+              const derivedBaseline: ConsistencyBaseline = {
+                ...savedBaseline,
+                marriageDate:
+                  savedBaseline?.marriageDate || prof?.relationship?.marriageDate || undefined,
+                petitionerDateOfBirth:
+                  prof?.dateOfBirth || savedBaseline?.petitionerDateOfBirth || undefined,
+                beneficiaryDateOfBirth:
+                  prof?.beneficiary?.dateOfBirth ||
+                  savedBaseline?.beneficiaryDateOfBirth ||
+                  undefined,
+              };
+              return (
+                <ConsistencyBaselineCapture
+                  baseline={derivedBaseline}
+                  onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
+                />
+              );
+            })()}
 
           {/* DS-260 CROSS-FORM CONSISTENCY CAPTURE — step_2_3 (Fill DS-260) */}
-          {sId === "step_2_3" && (
-            <Ds260BaselineCapture
-              i130Baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
-              baseline={state.metadata?.ds260Baseline as Ds260Baseline | undefined}
-              onSave={(next) => actions.updateMetadata({ ds260Baseline: next })}
-            />
-          )}
+          {sId === "step_2_3" &&
+            (() => {
+              // Both baselines are derived from the profile the SAME way step_1_4
+              // derives the I-130 baseline: passport-derived DOBs win over any
+              // stale saved value, marriage date keeps saved-first priority. This
+              // (a) auto-fills the DS-260 dates from the uploaded passport, and
+              // (b) compares against an equally-fresh I-130 baseline, so the two
+              // forms agree by default and the user only sees a mismatch when they
+              // intentionally type a different DS-260 value.
+              const prof = profile as Record<string, any> | null;
+              const savedI130 = state.metadata?.consistencyBaseline as
+                | ConsistencyBaseline
+                | undefined;
+              const i130Derived: ConsistencyBaseline = {
+                ...savedI130,
+                marriageDate:
+                  savedI130?.marriageDate || prof?.relationship?.marriageDate || undefined,
+                petitionerDateOfBirth:
+                  prof?.dateOfBirth || savedI130?.petitionerDateOfBirth || undefined,
+                beneficiaryDateOfBirth:
+                  prof?.beneficiary?.dateOfBirth ||
+                  savedI130?.beneficiaryDateOfBirth ||
+                  undefined,
+              };
+              const savedDs260 = state.metadata?.ds260Baseline as Ds260Baseline | undefined;
+              const ds260Derived: Ds260Baseline = {
+                ...savedDs260,
+                marriageDate:
+                  savedDs260?.marriageDate || prof?.relationship?.marriageDate || undefined,
+                petitionerDateOfBirth:
+                  prof?.dateOfBirth || savedDs260?.petitionerDateOfBirth || undefined,
+                beneficiaryDateOfBirth:
+                  prof?.beneficiary?.dateOfBirth ||
+                  savedDs260?.beneficiaryDateOfBirth ||
+                  undefined,
+              };
+              return (
+                <Ds260BaselineCapture
+                  i130Baseline={i130Derived}
+                  baseline={ds260Derived}
+                  onSave={(next) => actions.updateMetadata({ ds260Baseline: next })}
+                />
+              );
+            })()}
 
           {/* BENEFICIARY RESIDENCE CAPTURE — step_1_5 (Fill I-130A) */}
-          {sId === "step_1_5" && (
-            <BeneficiaryResidenceCapture
-              baseline={state.metadata?.beneficiaryBaseline as BeneficiaryBaseline | undefined}
-              config={(currentStep as any).beneficiary_residence_capture}
-              petitionerCountry={state.metadata?.petitionerCountry as string | undefined}
-              onSave={(next) => actions.updateMetadata({ beneficiaryBaseline: next })}
-            />
-          )}
+          {sId === "step_1_5" &&
+            (() => {
+              // Seed the current country from the profile (beneficiary's residence,
+              // falling back to nationality from passport OCR) when nothing has been
+              // saved yet — so the user doesn't re-type what we already captured.
+              const savedBaseline = state.metadata?.beneficiaryBaseline as
+                | BeneficiaryBaseline
+                | undefined;
+              const prof = profile as Record<string, any> | null;
+              const derivedBaseline: BeneficiaryBaseline = {
+                ...savedBaseline,
+                currentCountry:
+                  savedBaseline?.currentCountry ||
+                  prof?.beneficiary?.countryOfResidence ||
+                  prof?.beneficiary?.nationality ||
+                  undefined,
+              };
+              return (
+                <BeneficiaryResidenceCapture
+                  baseline={derivedBaseline}
+                  config={(currentStep as any).beneficiary_residence_capture}
+                  petitionerCountry={state.metadata?.petitionerCountry as string | undefined}
+                  onSave={(next) => actions.updateMetadata({ beneficiaryBaseline: next })}
+                />
+              );
+            })()}
 
           {/* FILE QUALITY PRE-CHECK — step_1_8 (Upload, online path) */}
           {sId === "step_1_8" && <FileQualityPreCheck uploadedDocuments={uploadedDocuments} />}

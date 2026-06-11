@@ -639,7 +639,7 @@ export function SiteHeader({
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                Resources
+                My Resources
                 <ChevronDown
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "resources" ? "rotate-180" : ""}`}
                 />
@@ -856,15 +856,7 @@ export function SiteHeader({
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
                   <Wrench className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
-                  Tools
-                </Link>
-                <Link
-                  href="/resources?tab=guides"
-                  onClick={handleLinkClick}
-                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
-                >
-                  <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
-                  Guides
+                  My Tools
                 </Link>
                 <Link
                   href="/resources?tab=services"
@@ -872,14 +864,15 @@ export function SiteHeader({
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
                   <Briefcase className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-                  Services
+                  My Services
                 </Link>
-                <div className="my-2 border-t border-border" />
                 <Link
-                  href="/resources"
-                  className="block py-2 px-2 text-sm font-semibold text-[#0d7377] hover:underline transition-colors"
+                  href="/resources?tab=guides"
+                  onClick={handleLinkClick}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
-                  View all Resources &rarr;
+                  <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
+                  My Guides
                 </Link>
               </div>
             </motion.div>
@@ -1407,7 +1400,7 @@ export function SiteHeader({
                 >
                   <div className="flex items-center gap-3">
                     <ToolCase className="w-5 h-5 text-[#db8090] dark:text-[#db8090]" />
-                    <span className="font-bold">Resources</span>
+                    <span className="font-bold">My Resources</span>
                   </div>
                   <ChevronDown
                     className={`h-4 w-4 transition-transform duration-400 ${
@@ -1431,28 +1424,21 @@ export function SiteHeader({
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
-                          Tools
-                        </Link>
-                        <Link
-                          href="/resources?tab=guides"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
-                        >
-                          Guides
+                          My Tools
                         </Link>
                         <Link
                           href="/resources?tab=services"
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
-                          Services
+                          My Services
                         </Link>
-                        <div className="my-1 border-t border-slate-100" />
                         <Link
-                          href="#"
-                          className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
+                          href="/resources?tab=guides"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
-                          View all Resources &rarr;
+                          My Guides
                         </Link>
                       </div>
                     </motion.div>

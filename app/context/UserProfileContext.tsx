@@ -161,7 +161,9 @@ export function UserProfileProvider({
           "[UserProfileContext] Unexpected error fetching profile:",
           err
         );
-        setProfile(null);
+        // Keep any previously-loaded profile on a transient fetch error (e.g. a
+        // dev-server hiccup). Nulling it here would blank dependent UI such as the
+        // Ch.1 Step 4 consistency baseline right after the user saved their DOB.
       } finally {
         setIsProfileLoading(false);
       }

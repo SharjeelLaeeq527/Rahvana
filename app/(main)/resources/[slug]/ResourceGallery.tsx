@@ -27,11 +27,31 @@ export default function ResourceGallery({
   const [zoomed, setZoomed] = useState(false);
   const monogram = title.trim().charAt(0).toUpperCase();
 
-  // Close on Escape + lock body scroll while the lightbox is open
+  const items = media.length
+    ? media
+    : [{ type: "image" as const, src: "", alt: title }];
+
+  // Indices of image items only — the lightbox navigates between images, skipping videos.
+  const imageIndices = items
+    .map((m, i) => (m.type === "image" ? i : -1))
+    .filter((i) => i >= 0);
+  const hasMultipleImages = imageIndices.length > 1;
+
+  const goToImage = (dir: 1 | -1) => {
+    if (!hasMultipleImages) return;
+    const pos = imageIndices.indexOf(active);
+    const start = pos === -1 ? 0 : pos;
+    const next = (start + dir + imageIndices.length) % imageIndices.length;
+    setActive(imageIndices[next]);
+  };
+
+  // Close on Escape, navigate with arrows + lock body scroll while the lightbox is open
   useEffect(() => {
     if (!zoomed) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setZoomed(false);
+      else if (e.key === "ArrowRight") goToImage(1);
+      else if (e.key === "ArrowLeft") goToImage(-1);
     };
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -40,11 +60,9 @@ export default function ResourceGallery({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [zoomed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoomed, active, hasMultipleImages]);
 
-  const items = media.length
-    ? media
-    : [{ type: "image" as const, src: "", alt: title }];
   const current = items[active] ?? items[0];
   const showFallback = !current.src || errored[active];
 
@@ -171,10 +189,32 @@ export default function ResourceGallery({
             type="button"
             onClick={() => setZoomed(false)}
             aria-label="Close"
-            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
+
+          {/* Prev / Next arrows — only when there's more than one image */}
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); goToImage(-1); }}
+                aria-label="Previous image"
+                className="absolute left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); goToImage(1); }}
+                aria-label="Next image"
+                className="absolute right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
+            </>
+          )}
 
           {/* Image (stop propagation so clicking the image doesn't close) */}
           <div
@@ -183,6 +223,7 @@ export default function ResourceGallery({
           >
             <div className="relative h-[80vh] w-full">
               <Image
+                key={current.src}
                 src={current.src}
                 alt={current.alt}
                 fill
@@ -193,6 +234,11 @@ export default function ResourceGallery({
             </div>
             {current.caption && (
               <p className="mt-4 text-center text-sm font-medium text-white/90">{current.caption}</p>
+            )}
+            {hasMultipleImages && (
+              <p className="mt-2 text-center text-xs font-medium tracking-wide text-white/60">
+                {imageIndices.indexOf(active) + 1} / {imageIndices.length}
+              </p>
             )}
           </div>
         </div>
