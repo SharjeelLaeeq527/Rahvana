@@ -4354,6 +4354,8 @@ function ToolCard({ tool, position }: any) {
 
 export function ToolsBucketDiagram() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
 
   const tools = useMemo(
     () =>
@@ -4386,139 +4388,179 @@ export function ToolsBucketDiagram() {
     return () => clearInterval(interval);
   }, [tools.length]);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const updateScale = () => {
+      const parentWidth = el.parentElement ? el.parentElement.clientWidth : el.clientWidth;
+      if (parentWidth > 0) {
+        // We use 460px as the target width for content layout (-10px to 450px card limits)
+        // Leaving 32px of margin (16px on each side) for proper spacing on small screens
+        setScale(Math.min(1, (parentWidth - 32) / 460));
+      }
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(el);
+    if (el.parentElement) {
+      observer.observe(el.parentElement);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   const rightTool = tools[startIndex % tools.length];
   const bottomTool = tools[(startIndex + 1) % tools.length];
   const leftTool = tools[(startIndex + 2) % tools.length];
 
   return (
-    <div className="relative w-full max-w-[480px] h-[420px] mx-auto select-none mt-6 overflow-visible">
-      {/* Background SVG for Dotted Connections */}
-      <svg
-        className="absolute left-0 top-0 w-[440px] h-[420px] pointer-events-none z-0"
-        viewBox="0 0 440 420"
-        fill="none"
-      >
-        {/* Dotted Ellipses under Tool Bases */}
-        <ellipse
-          cx="50"
-          cy="118"
-          rx="30"
-          ry="10"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-          strokeDasharray="3 3"
-        />
-        <ellipse
-          cx="390"
-          cy="118"
-          rx="30"
-          ry="10"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-          strokeDasharray="3 3"
-        />
-        <ellipse
-          cx="220"
-          cy="283"
-          rx="35"
-          ry="12"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-          strokeDasharray="3 3"
-        />
-        <ellipse
-          cx="220"
-          cy="95"
-          rx="55"
-          ry="18"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-          strokeDasharray="3 3"
-        />
-
-        {/* Dotted Arcs connecting Left/Right to Bottom (Smooth continuous lines, no arrows) */}
-        <path
-          d="M 65,110 C 65,200 100,290 155,290"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-          strokeDasharray="3 3"
-          strokeLinecap="round"
-        />
-        <path
-          d="M 375,110 C 375,200 340,290 285,290"
-          stroke="#cbd5e1"
-          strokeWidth="1.5"
-          strokeDasharray="3 3"
-          strokeLinecap="round"
-        />
-
-        {/* Green Checkpoint Dots on Paths */}
-        <circle cx="89.4" cy="233.8" r="3.5" fill="#22c55e" />
-        <circle cx="350.6" cy="233.8" r="3.5" fill="#22c55e" />
-      </svg>
-
-      {/* 1. Center Bucket & Everything You Need Card */}
-      {/* Circular Backdrop Sphere for Bucket */}
-      <div className="absolute left-[220px] top-[40px] -translate-x-1/2 -translate-y-1/2 w-[130px] h-[130px] rounded-full bg-gradient-to-tr from-blue-50/50 via-indigo-50/30 to-white/10 border border-blue-100/40 z-0 shadow-inner pointer-events-none" />
-
+    <div
+      ref={containerRef}
+      className="relative w-full max-w-[480px] mx-auto select-none mt-6 overflow-hidden"
+      style={{
+        height: `${Math.round(420 * scale)}px`,
+      }}
+    >
       <div
-        className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
-        onMouseEnter={() => setHoveredNode("center")}
-        onMouseLeave={() => setHoveredNode(null)}
+        style={{
+          width: "440px",
+          height: "420px",
+          transformOrigin: "top center",
+          transform: `scale(${scale})`,
+          position: "absolute",
+          left: "50%",
+          marginLeft: "-220px",
+        }}
       >
-        <motion.div
-          animate={hoveredNode === "center" ? { scale: 1.05 } : { scale: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="relative w-[120px] h-[90px] flex items-center justify-center filter drop-shadow-lg z-10"
+        {/* Background SVG for Dotted Connections */}
+        <svg
+          className="absolute left-0 top-0 w-[440px] h-[420px] pointer-events-none z-0"
+          viewBox="0 0 440 420"
+          fill="none"
         >
-          <img
-            src="/assets/images/blue-tools-bucket.png"
-            alt="Blue Tools Bucket"
-            className="w-full h-full object-contain"
+          {/* Dotted Ellipses under Tool Bases */}
+          <ellipse
+            cx="50"
+            cy="118"
+            rx="30"
+            ry="10"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
           />
-        </motion.div>
+          <ellipse
+            cx="390"
+            cy="118"
+            rx="30"
+            ry="10"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="220"
+            cy="283"
+            rx="35"
+            ry="12"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="220"
+            cy="95"
+            rx="55"
+            ry="18"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
 
-        {/* Card: Everything you need */}
-        <motion.div
-          animate={
-            hoveredNode === "center"
-              ? { scale: 1.02, y: -2, boxShadow: "0 12px 24px rgba(0,0,0,0.08)" }
-              : { scale: 1, y: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.04)" }
-          }
-          className="mt-1 w-[210px] bg-white border border-slate-100 rounded-[20px] p-3 flex items-center gap-3 text-left transition-all duration-300 z-20"
+          {/* Dotted Arcs connecting Left/Right to Bottom (Smooth continuous lines, no arrows) */}
+          <path
+            d="M 65,110 C 65,200 100,290 155,290"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 375,110 C 375,200 340,290 285,290"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+            strokeLinecap="round"
+          />
+
+          {/* Green Checkpoint Dots on Paths */}
+          <circle cx="89.4" cy="233.8" r="3.5" fill="#22c55e" />
+          <circle cx="350.6" cy="233.8" r="3.5" fill="#22c55e" />
+        </svg>
+
+        {/* 1. Center Bucket & Everything You Need Card */}
+        {/* Circular Backdrop Sphere for Bucket */}
+        <div className="absolute left-[220px] top-[40px] -translate-x-1/2 -translate-y-1/2 w-[130px] h-[130px] rounded-full bg-gradient-to-tr from-blue-50/50 via-indigo-50/30 to-white/10 border border-blue-100/40 z-0 shadow-inner pointer-events-none" />
+
+        <div
+          className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
+          onMouseEnter={() => setHoveredNode("center")}
+          onMouseLeave={() => setHoveredNode(null)}
         >
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#e8f1fe] text-[#1a73e8] border border-blue-100/30">
-            <FolderOpen size={16} strokeWidth={2.2} />
-          </div>
-          <div className="min-w-0">
-            <h4 className="text-[11px] font-black text-slate-850 leading-none">
-              Everything you need
-            </h4>
-            <p className="text-[8.5px] text-slate-500 font-semibold leading-normal mt-1">
-              All tools and resources in one place.
-            </p>
-          </div>
-        </motion.div>
+          <motion.div
+            animate={hoveredNode === "center" ? { scale: 1.05 } : { scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="relative w-[120px] h-[90px] flex items-center justify-center filter drop-shadow-lg z-10"
+          >
+            <img
+              src="/assets/images/blue-tools-bucket.png"
+              alt="Blue Tools Bucket"
+              className="w-full h-full object-contain"
+            />
+          </motion.div>
+
+          {/* Card: Everything you need */}
+          <motion.div
+            animate={
+              hoveredNode === "center"
+                ? { scale: 1.02, y: -2, boxShadow: "0 12px 24px rgba(0,0,0,0.08)" }
+                : { scale: 1, y: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.04)" }
+            }
+            className="mt-1 w-[210px] bg-white border border-slate-100 rounded-[20px] p-3 flex items-center gap-3 text-left transition-all duration-300 z-20"
+          >
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#e8f1fe] text-[#1a73e8] border border-blue-100/30">
+              <FolderOpen size={16} strokeWidth={2.2} />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-[11px] font-black text-slate-850 leading-none">
+                Everything you need
+              </h4>
+              <p className="text-[8.5px] text-slate-500 font-semibold leading-normal mt-1">
+                All tools and resources in one place.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* 2. Left Tool: Photo Booth */}
+        <AnimatePresence mode="popLayout">
+          <ToolCard key={`left-${leftTool?.id ?? "left"}`} tool={leftTool} position="left" />
+        </AnimatePresence>
+
+        {/* 3. Right Tool: PDF Tool Kit */}
+        <AnimatePresence mode="popLayout">
+          <ToolCard key={`right-${rightTool?.id ?? "right"}`} tool={rightTool} position="right" />
+        </AnimatePresence>
+
+        {/* 4. Bottom Tool: 221(g) Action Planner */}
+        <AnimatePresence mode="popLayout">
+          <ToolCard
+            key={`bottom-${bottomTool?.id ?? "bottom"}`}
+            tool={bottomTool}
+            position="bottom"
+          />
+        </AnimatePresence>
       </div>
-
-      {/* 2. Left Tool: Photo Booth */}
-      <AnimatePresence mode="popLayout">
-        <ToolCard key={`left-${leftTool?.id ?? "left"}`} tool={leftTool} position="left" />
-      </AnimatePresence>
-
-      {/* 3. Right Tool: PDF Tool Kit */}
-      <AnimatePresence mode="popLayout">
-        <ToolCard key={`right-${rightTool?.id ?? "right"}`} tool={rightTool} position="right" />
-      </AnimatePresence>
-
-      {/* 4. Bottom Tool: 221(g) Action Planner */}
-      <AnimatePresence mode="popLayout">
-        <ToolCard
-          key={`bottom-${bottomTool?.id ?? "bottom"}`}
-          tool={bottomTool}
-          position="bottom"
-        />
-      </AnimatePresence>
     </div>
   );
 }
