@@ -2,6 +2,7 @@
 // Admin verifies and certifies the translation (final step)
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { triggerTranslationNotification } from "@/lib/notifications";
 
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -60,6 +61,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error("Update error:", updateError);
       return NextResponse.json({ error: "Failed to verify translation" }, { status: 500 });
     }
+
+    // Trigger user notification (email and in-app)
+    await triggerTranslationNotification(id);
 
     return NextResponse.json({
       success: true,

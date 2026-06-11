@@ -55,7 +55,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
           
           <p>If you have any questions, please contact our support team.</p>
           
-          <p>Best regards,<br/>The Arachnie Team</p>
+          <p>Best regards,<br/>The Rahvana Team</p>
         </div>
       `;
     } else if (status === "in_progress") {
@@ -76,7 +76,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
           
           <p>Thank you for your patience.</p>
           
-          <p>Best regards,<br/>The Arachnie Team</p>
+          <p>Best regards,<br/>The Rahvana Team</p>
         </div>
       `;
     } else if (status === "cancelled") {
@@ -95,7 +95,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
           
           <p>${message || "If you believe this was done in error, please contact our support team."}</p>
           
-          <p>Best regards,<br/>The Arachnie Team</p>
+          <p>Best regards,<br/>The Rahvana Team</p>
         </div>
       `;
     }
@@ -360,15 +360,15 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
 
     const headerHtml = `
       <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Arachnie Consultation</h1>
+        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Rahvana Consultation</h1>
         <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Appointment Status Update</p>
       </div>
     `;
 
     const footerHtml = `
       <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
-        <p>This is an automated notification from Arachnie. Please do not reply to this email.</p>
-        <p>&copy; ${new Date().getFullYear()} Arachnie. All rights reserved.</p>
+        <p>This is an automated notification from Rahvana. Please do not reply to this email.</p>
+        <p>&copy; ${new Date().getFullYear()} Rahvana. All rights reserved.</p>
       </div>
     `;
 
@@ -389,7 +389,6 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
               <p style="margin: 8px 0;"><strong>Reference ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span></p>
               <p style="margin: 8px 0;"><strong>Confirmed Date & Time:</strong> <span style="color: #4f46e5; font-weight: 600;">${formatSlotDate(selectedSlot)}</span></p>
               <p style="margin: 8px 0;"><strong>Issue Category:</strong> ${issueCategory}</p>
-              <p style="margin: 8px 0;"><strong>Visa Category:</strong> ${visaCategory}</p>
             </div>
             
             <p>Our consultation experts look forward to speaking with you. Please ensure you are online and ready at the scheduled time.</p>
@@ -500,7 +499,7 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             `
             }
             
-            <p>Best regards,<br/>The Arachnie Team</p>
+            <p>Best regards,<br/>The Rahvana Team</p>
             ${footerHtml}
           </div>
         </div>
@@ -716,5 +715,377 @@ export async function triggerConsultationNotification(bookingId: string) {
   } catch (error) {
     console.error("Error triggering consultation notification:", error);
     return { error: "Failed to trigger consultation notification" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Translation Notification Helpers & Triggers
+// ---------------------------------------------------------------------------
+
+interface TranslationNotificationData {
+  email: string;
+  fullName: string;
+  documentId: string;
+  documentType: string;
+  version: number;
+  status: string;
+  adminNotes?: string;
+  originalFilename?: string;
+  translatedFilename?: string;
+}
+
+export async function sendTranslationNotification(data: TranslationNotificationData) {
+  try {
+    const {
+      email,
+      fullName,
+      documentId,
+      documentType,
+      version,
+      status,
+      adminNotes,
+      originalFilename,
+      translatedFilename,
+    } = data;
+
+    let subject = "";
+    let htmlContent = "";
+
+    const headerHtml = `
+      <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Rahvana Translation</h1>
+        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Document Translation Status Update</p>
+      </div>
+    `;
+
+    const footerHtml = `
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
+        <p>This is an automated notification from Rahvana. Please do not reply to this email.</p>
+        <p>&copy; ${new Date().getFullYear()} Rahvana. All rights reserved.</p>
+      </div>
+    `;
+
+    const cardStyles = `background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 20px 0;`;
+
+    // Map documentType key to pretty label
+    const docTypeLabel = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+
+    if (status === "TRANSLATED") {
+      subject = `Your Translation is Ready for Review - V${version}`;
+      htmlContent = `
+        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
+          ${headerHtml}
+          <div style="padding: 30px 20px;">
+            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Translation Ready for Review</h2>
+            <p>Dear ${fullName},</p>
+            <p>Great news! The English translation for your Urdu document has been uploaded and is ready for your review. Please see details below:</p>
+            
+            <div style="${cardStyles}">
+              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Document Details</h3>
+              <p style="margin: 8px 0;"><strong>Request ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${documentId}</span></p>
+              <p style="margin: 8px 0;"><strong>Document Type:</strong> ${docTypeLabel}</p>
+              <p style="margin: 8px 0;"><strong>Original File:</strong> ${originalFilename || "Urdu PDF"}</p>
+              <p style="margin: 8px 0;"><strong>Translated Proof:</strong> <span style="color: #4f46e5; font-weight: 600;">${translatedFilename || `Proof_V${version}.pdf`}</span></p>
+              <p style="margin: 8px 0;"><strong>Version:</strong> V${version}</p>
+            </div>
+            
+            ${
+              adminNotes
+                ? `
+            <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+              <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Admin Notes:</strong>
+              <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
+            </div>
+            `
+                : ""
+            }
+            
+            <p>Please click the button below to view the request, download the proof, and either approve it or request modifications.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/document-translation/request/${documentId}" 
+                 style="background-color: #4f46e5; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                Review Translation Proof
+              </a>
+            </div>
+            
+            ${footerHtml}
+          </div>
+        </div>
+      `;
+    } else if (status === "VERIFIED") {
+      subject = `Your Translation Has Been Certified and Verified!`;
+      htmlContent = `
+        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
+          ${headerHtml}
+          <div style="padding: 30px 20px;">
+            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #16a34a;">Translation Certified & Verified!</h2>
+            <p>Dear ${fullName},</p>
+            <p>We are pleased to inform you that your Urdu to English document translation has been officially certified and verified by our team. It is now ready for use!</p>
+            
+            <div style="${cardStyles}">
+              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Completed Request</h3>
+              <p style="margin: 8px 0;"><strong>Request ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${documentId}</span></p>
+              <p style="margin: 8px 0;"><strong>Document Type:</strong> ${docTypeLabel}</p>
+              <p style="margin: 8px 0;"><strong>Certified File:</strong> <span style="color: #16a34a; font-weight: 600;">${translatedFilename || `Certified_Translation.pdf`}</span></p>
+            </div>
+            
+            ${
+              adminNotes
+                ? `
+            <div style="background-color: #f3f4f6; border-left: 4px solid #16a34a; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+              <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Verification Notes:</strong>
+              <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
+            </div>
+            `
+                : ""
+            }
+            
+            <p>You can access and download your certified translation anytime by logging into your dashboard or clicking the link below.</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/document-translation/request/${documentId}" 
+                 style="background-color: #16a34a; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                Download Certified Document
+              </a>
+            </div>
+            
+            ${footerHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    if (!subject || !htmlContent) {
+      console.warn(`No notification email layout implemented for status: ${status}`);
+      return { error: `No layout for status ${status}` };
+    }
+
+    const fromEmail = process.env.EMAIL_FROM || "onboarding@resend.dev";
+
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: subject,
+      html: htmlContent,
+    });
+
+    if (error) {
+      console.error("Error sending translation email via Resend:", error);
+      return { error };
+    }
+
+    console.log("Translation status notification email sent successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in sendTranslationNotification:", error);
+    return { error: "Failed to send notification" };
+  }
+}
+
+/**
+ * Build user-facing notification content based on translation status.
+ */
+function getTranslationNotificationContent(
+  status: string,
+  documentType: string,
+  version: number,
+  adminNotes?: string
+): InAppNotificationContent | null {
+  const docTypeLabel = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+
+  switch (status) {
+    case "TRANSLATED":
+      return {
+        title: "Translation Ready for Review",
+        body: `Your Urdu to English translation for "${docTypeLabel}" (Version ${version}) is ready. Please review and approve it.`,
+        priority: "high",
+        actionLabel: "Review Translation",
+        actionUrl: `/document-translation/request`,
+      };
+    case "VERIFIED":
+      return {
+        title: "Translation Certified & Verified",
+        body: `Great news! Your translation request for "${docTypeLabel}" has been verified and certified. You can now download the certified document.`,
+        priority: "high",
+        actionLabel: "Download Document",
+        actionUrl: `/document-translation/request`,
+      };
+    case "IN_REVIEW":
+      return {
+        title: "Translation In Review",
+        body: `Your translation request for "${docTypeLabel}" is now being processed by our admin team.`,
+        priority: "normal",
+        actionLabel: "View Request",
+        actionUrl: `/document-translation/request`,
+      };
+    default:
+      return null;
+  }
+}
+
+/**
+ * Create an in-app notification for the user who owns the translation document.
+ * Looks up user_id from the document row, or falls back to email-based lookup.
+ */
+async function createTranslationInAppNotification(
+  documentId: string,
+  document: Record<string, any>
+) {
+  try {
+    const { createServerClient } = await import("@supabase/ssr");
+
+    const supabaseAdmin = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    // Resolve the user_id
+    let userId: string | null = document.user_id ?? null;
+
+    if (!userId && document.user_email) {
+      // Fallback: look up the user by email in the profiles table
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .ilike("email", document.user_email)
+        .maybeSingle();
+
+      userId = profile?.id ?? null;
+    }
+
+    if (!userId) {
+      console.warn(
+        `[TranslationInAppNotif] No user profile found for email ${document.user_email}. Skipping in-app notification.`
+      );
+      return;
+    }
+
+    const content = getTranslationNotificationContent(
+      document.status,
+      document.document_type || "document",
+      Number(document.version) || 1.0,
+      document.admin_notes || ""
+    );
+
+    if (!content) {
+      console.warn(
+        `[TranslationInAppNotif] No notification content for status: ${document.status}`
+      );
+      return;
+    }
+
+    const actionUrl = content.actionUrl ? `${content.actionUrl}/${documentId}` : null;
+
+    const { error } = await supabaseAdmin.from("app_notifications").insert({
+      user_id: userId,
+      type: "translation_status",
+      title: content.title,
+      body: content.body,
+      priority: content.priority,
+      action_label: content.actionLabel || null,
+      action_url: actionUrl,
+      metadata: {
+        document_id: documentId,
+        status: document.status,
+        document_type: document.document_type,
+        version: document.version,
+      },
+    });
+
+    if (error) {
+      console.error("[TranslationInAppNotif] Error inserting notification:", error);
+    } else {
+      console.log(
+        `[TranslationInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${document.status})`
+      );
+    }
+  } catch (err) {
+    console.error("[TranslationInAppNotif] Unexpected error creating in-app notification:", err);
+  }
+}
+
+export async function triggerTranslationNotification(documentId: string) {
+  try {
+    const { createServerClient } = await import("@supabase/ssr");
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      }
+    );
+
+    // Get document details
+    const { data: document, error } = await supabase
+      .from("translation_documents")
+      .select("*")
+      .eq("id", documentId)
+      .single();
+
+    if (error || !document) {
+      console.error("Error fetching translation document:", error);
+      return { error: Errors.msg(Errors.E.TRANSLATION_NOT_FOUND) };
+    }
+
+    // Attempt to lookup fullName if user_name is blank/User/generic
+    let fullName = document.user_name || "Valued User";
+    if ((!document.user_name || document.user_name === "User") && document.user_id) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", document.user_id)
+        .single();
+      if (profile?.full_name) {
+        fullName = profile.full_name;
+      }
+    }
+
+    const email = document.user_email;
+    if (!email) {
+      console.warn(
+        `[TranslationNotif] No email found for translation document ${documentId}. Skipping notification email.`
+      );
+    } else {
+      const notificationData: TranslationNotificationData = {
+        email: email,
+        fullName: fullName,
+        documentId: documentId,
+        documentType: document.document_type,
+        version: Number(document.version) || 1.0,
+        status: document.status,
+        adminNotes: document.admin_notes,
+        originalFilename: document.original_filename,
+        translatedFilename: document.translated_filename,
+      };
+
+      // Send email notification (non-blocking)
+      sendTranslationNotification(notificationData).catch((err) => {
+        console.error("[TranslationNotif] Email sending error:", err);
+      });
+    }
+
+    // Create in-app notification (non-blocking)
+    createTranslationInAppNotification(documentId, document).catch((err) => {
+      console.error("[TranslationInAppNotif] Background error:", err);
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error triggering translation notification:", error);
+    return { error: Errors.msg(Errors.E.TRANSLATION_TRIGGER_FAILED) };
   }
 }
