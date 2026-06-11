@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("translation_documents")
       .select("*", { count: "exact" })
+      // Only show documents that have been paid for (unless free/no payment)
+      .or("payment_status.eq.paid,payment_id.is.null")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 

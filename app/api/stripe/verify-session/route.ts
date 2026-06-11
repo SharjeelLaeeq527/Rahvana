@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/config";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { consultationService } from "@/lib/services/consultationService";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -164,8 +165,94 @@ export async function GET(request: NextRequest) {
 
     // ── 3c. CONSULTATION (one-time) ──────────────────────────────────────────
     else if (productType === "consultation" && productId) {
-      await supabase
+      // Get the payment ID
+      const { data: paymentRecord } = await supabase
+        .from("payments")
+        .select("id")
+        .eq("stripe_checkout_session_id", sessionId)
+        .maybeSingle();
+      const paymentId = paymentRecord?.id;
+
+      // Check if booking already exists (could be created by webhook)
+      const { data: existingBooking } = await supabase
         .from("consultation_bookings")
+        .select("id")
+        .eq("reference_id", productId)
+        .maybeSingle();
+
+      if (existingBooking) {
+        // Just update payment status and payment_id if not done
+        await supabase
+          .from("consultation_bookings")
+          .update({
+            payment_status: "paid",
+            payment_id: paymentId || undefined,
+          })
+          .eq("id", existingBooking.id);
+      } else {
+        // Reconstruct case_summary from split metadata fields
+        let caseSummary = "";
+        let index = 1;
+        while (true) {
+          const part = session.metadata?.[`c_summary_${index}`];
+          if (!part) break;
+          caseSummary += part;
+          index++;
+        }
+
+        // Reconstruct arrays
+        const attachments = session.metadata?.c_attachments ? session.metadata.c_attachments.split(",") : [];
+        const alternateSlots = session.metadata?.c_alternate_slots 
+          ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s)) 
+          : [];
+
+        const bookingData = {
+          issue_category: session.metadata?.c_issue_category || "General Inquiry",
+          visa_category: session.metadata?.c_visa_category || "IR-1 / CR-1",
+          case_stage: session.metadata?.c_case_stage || "Not Specified",
+          urgency: (session.metadata?.c_urgency as any) || "normal",
+          preferred_language: session.metadata?.c_preferred_language || "English",
+          full_name: session.metadata?.c_full_name || "Unknown",
+          email: session.metadata?.c_email || session.customer_details?.email || "",
+          whatsapp_phone: session.metadata?.c_whatsapp_phone || "",
+          embassy_consulate: session.metadata?.c_embassy_consulate || "",
+          case_summary: caseSummary,
+          attachments: attachments,
+          selected_slot: new Date(session.metadata?.c_selected_slot || Date.now()),
+          alternate_slots: alternateSlots,
+          reference_id: productId,
+          status: "pending_approval" as const,
+          payment_status: "paid" as const,
+          payment_id: paymentId,
+        };
+
+        await consultationService.createBooking(bookingData);
+      }
+
+      activated = true;
+    }
+
+    // ── 3d. MEDICAL APPOINTMENT (one-time) ───────────────────────────────────
+    else if (productType === "medical_booking" && productId) {
+      await supabase.from("appointments").update({ payment_status: "paid" }).eq("id", productId);
+
+      activated = true;
+    }
+
+    // ── 3e. POLICE VERIFICATION (one-time) ───────────────────────────────────
+    else if (productType === "pcc_filing" && productId) {
+      await supabase
+        .from("police_verification_requests")
+        .update({ payment_status: "paid" })
+        .eq("id", productId);
+
+      activated = true;
+    }
+
+    // ── 3e. Document Translation (one-time) ───────────────────────────────────
+    else if (productType === "document_translations" && productId) {
+      await supabase
+        .from("translation_documents")
         .update({ payment_status: "paid" })
         .eq("id", productId);
 

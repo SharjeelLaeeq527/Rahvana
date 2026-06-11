@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     let query = supabase
       .from("police_verification_requests")
       .select("*")
+      .or("payment_status.eq.paid,payment_id.is.null")
       .order("created_at", { ascending: false });
 
     if (status && status !== "all") {

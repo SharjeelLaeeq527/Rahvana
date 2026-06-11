@@ -4,6 +4,7 @@ import { paymentService } from "@/lib/services/paymentService";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
+import { consultationService } from "@/lib/services/consultationService";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -222,16 +223,63 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   // Consultation — mark as paid
   if (productType === "consultation" && productId) {
-    const { error } = await supabase
+    // Check if booking already exists (could be created by verify-session)
+    const { data: existingBooking } = await supabase
       .from("consultation_bookings")
-      .update({
-        payment_id: payment?.id,
-        payment_status: "paid",
-      })
-      .eq("id", productId);
+      .select("id")
+      .eq("reference_id", productId)
+      .maybeSingle();
 
-    if (error) {
-      console.error("Error updating consultation payment status:", error);
+    if (existingBooking) {
+      const { error } = await supabase
+        .from("consultation_bookings")
+        .update({
+          payment_id: payment?.id,
+          payment_status: "paid",
+        })
+        .eq("id", existingBooking.id);
+
+      if (error) {
+        console.error("Error updating consultation payment status:", error);
+      }
+    } else {
+      // Reconstruct case_summary from split metadata fields
+      let caseSummary = "";
+      let index = 1;
+      while (true) {
+        const part = session.metadata?.[`c_summary_${index}`];
+        if (!part) break;
+        caseSummary += part;
+        index++;
+      }
+
+      // Reconstruct arrays
+      const attachments = session.metadata?.c_attachments ? session.metadata.c_attachments.split(",") : [];
+      const alternateSlots = session.metadata?.c_alternate_slots 
+        ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s)) 
+        : [];
+
+      const bookingData = {
+        issue_category: session.metadata?.c_issue_category || "General Inquiry",
+        visa_category: session.metadata?.c_visa_category || "IR-1 / CR-1",
+        case_stage: session.metadata?.c_case_stage || "Not Specified",
+        urgency: (session.metadata?.c_urgency as any) || "normal",
+        preferred_language: session.metadata?.c_preferred_language || "English",
+        full_name: session.metadata?.c_full_name || "Unknown",
+        email: session.metadata?.c_email || session.customer_details?.email || "",
+        whatsapp_phone: session.metadata?.c_whatsapp_phone || "",
+        embassy_consulate: session.metadata?.c_embassy_consulate || "",
+        case_summary: caseSummary,
+        attachments: attachments,
+        selected_slot: new Date(session.metadata?.c_selected_slot || Date.now()),
+        alternate_slots: alternateSlots,
+        reference_id: productId,
+        status: "pending_approval" as const,
+        payment_status: "paid" as const,
+        payment_id: payment?.id,
+      };
+
+      await consultationService.createBooking(bookingData);
     }
 
     await sendConsultationConfirmationEmail(

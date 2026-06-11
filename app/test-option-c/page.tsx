@@ -133,59 +133,134 @@ export default function TestOptionC() {
               </div>
             </motion.div>
 
-            {/* Center Split SVG Graphic */}
-            <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-1">
+            {/* Center Split Signpost Graphic */}
+            <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-2 h-[180px]">
               
-              {/* Symmetrical Curved SVG Split Arrows */}
-              <svg
-                width="320"
-                height="160"
-                viewBox="0 0 320 160"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="drop-shadow-[0_8px_16px_rgba(22,33,38,0.06)]"
-              >
-                {/* Left Arrow Path */}
-                <motion.path
-                  d="M 152,160 C 152,100 135,60 60,60 L 60,75 L 25,50 L 60,25 L 60,40 C 145,40 168,90 168,160 Z"
-                  fill={hoveredSide === "left" ? "#0d7377" : "#1e293b"}
-                  className="transition-colors duration-300"
-                  whileHover={{ scale: 1.01 }}
-                  style={{ cursor: "pointer" }}
+              {/* Vertical Pole */}
+              <div className="absolute top-0 bottom-0 w-2.5 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 border-x border-slate-400/20 rounded-full left-1/2 -translate-x-1/2 z-0" />
+              
+              {/* Signpost Stack */}
+              <div className="relative flex flex-col justify-between items-center w-[250px] h-full z-10 py-1">
+                
+                {/* Top Arrow: Points Left (Roadmap) */}
+                <motion.div
+                  className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
                   onClick={() => window.location.href = journeyHref}
                   onMouseEnter={() => setHoveredSide("left")}
                   onMouseLeave={() => setHoveredSide(null)}
-                />
-                
-                {/* Right Arrow Path */}
-                <motion.path
-                  d="M 168,160 C 168,100 185,60 260,60 L 260,75 L 295,50 L 260,25 L 260,40 C 175,40 152,90 152,160 Z"
-                  fill={hoveredSide === "right" ? "#b5451b" : "#4a5c62"}
-                  className="transition-colors duration-300"
-                  whileHover={{ scale: 1.01 }}
-                  style={{ cursor: "pointer" }}
+                  animate={
+                    hoveredSide === "left"
+                      ? { x: -8, scale: 1.02 }
+                      : hoveredSide === "right"
+                      ? { x: 4, scale: 0.98, opacity: 0.6 }
+                      : { x: 0, scale: 1, opacity: 1 }
+                  }
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="tealArrowGradC" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#0d7377" />
+                        <stop offset="100%" stopColor="#14a0a6" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M 40,4 L 228,4 A 4,4 0 0 1 232,8 L 232,40 A 4,4 0 0 1 228,44 L 40,44 L 16,24 Z"
+                      fill={hoveredSide === "left" ? "url(#tealArrowGradC)" : "#f0faf9"}
+                      stroke={hoveredSide === "left" ? "#0d7377" : "#b2dedb"}
+                      strokeWidth="2"
+                      className="transition-all duration-300"
+                    />
+                  </svg>
+                  
+                  <div className="absolute inset-0 flex items-center justify-center pl-7 pr-3 gap-2">
+                    <Compass 
+                      size={16} 
+                      className={`transition-colors duration-300 ${
+                        hoveredSide === "left" ? "text-white animate-spin-slow" : "text-[#0d7377]"
+                      }`} 
+                    />
+                    <span 
+                      className={`text-[12px] font-black tracking-widest transition-colors duration-300 ${
+                        hoveredSide === "left" ? "text-white" : "text-[#0d7377]"
+                      }`}
+                    >
+                      ROADMAP
+                    </span>
+                  </div>
+                </motion.div>
+
+                {/* Bottom Arrow: Points Right (Tools) */}
+                <motion.div
+                  className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
                   onClick={() => window.location.href = toolsHref}
                   onMouseEnter={() => setHoveredSide("right")}
                   onMouseLeave={() => setHoveredSide(null)}
-                />
-              </svg>
+                  animate={
+                    hoveredSide === "right"
+                      ? { x: 8, scale: 1.02 }
+                      : hoveredSide === "left"
+                      ? { x: -4, scale: 0.98, opacity: 0.6 }
+                      : { x: 0, scale: 1, opacity: 1 }
+                  }
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="orangeArrowGradC" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#b5451b" />
+                        <stop offset="100%" stopColor="#d96b43" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M 200,4 L 12,4 A 4,4 0 0 0 8,8 L 8,40 A 4,4 0 0 0 12,44 L 200,44 L 224,24 Z"
+                      fill={hoveredSide === "right" ? "url(#orangeArrowGradC)" : "#fdf6f3"}
+                      stroke={hoveredSide === "right" ? "#b5451b" : "#f5d5c9"}
+                      strokeWidth="2"
+                      className="transition-all duration-300"
+                    />
+                  </svg>
+                  
+                  <div className="absolute inset-0 flex items-center justify-center pl-3 pr-7 gap-2">
+                    <span 
+                      className={`text-[12px] font-black tracking-widest transition-colors duration-300 ${
+                        hoveredSide === "right" ? "text-white" : "text-[#b5451b]"
+                      }`}
+                    >
+                      TOOLS
+                    </span>
+                    <PenTool 
+                      size={16} 
+                      className={`transition-colors duration-300 ${
+                        hoveredSide === "right" ? "text-white" : "text-[#b5451b]"
+                      }`} 
+                    />
+                  </div>
+                </motion.div>
 
-              {/* Icon Overlay inside Left Arrow Curve */}
-              <div 
-                className={`absolute left-[54px] top-[40px] flex items-center justify-center w-8 h-8 rounded-full pointer-events-none transition-all duration-300 ${
-                  hoveredSide === "left" ? "bg-white text-teal-600 scale-110 shadow-md" : "text-white/80"
-                }`}
-              >
-                <Compass size={16} className={hoveredSide === "left" ? "animate-spin-slow" : ""} />
               </div>
 
-              {/* Icon Overlay inside Right Arrow Curve */}
+              {/* Symmetrical OR Center Badge */}
               <div 
-                className={`absolute right-[54px] top-[40px] flex items-center justify-center w-8 h-8 rounded-full pointer-events-none transition-all duration-300 ${
-                  hoveredSide === "right" ? "bg-white text-orange-600 scale-110 shadow-md" : "text-white/80"
+                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-white border-2 shadow-md transition-all duration-300 pointer-events-none select-none ${
+                  hoveredSide === "left" 
+                    ? "border-[#0d7377] scale-110 shadow-teal-500/10" 
+                    : hoveredSide === "right" 
+                    ? "border-[#b5451b] scale-110 shadow-orange-500/10" 
+                    : "border-slate-200"
                 }`}
               >
-                <PenTool size={16} />
+                <span 
+                  className={`text-[11px] font-extrabold tracking-wider transition-colors duration-300 ${
+                    hoveredSide === "left" 
+                      ? "text-[#0d7377]" 
+                      : hoveredSide === "right" 
+                      ? "text-[#b5451b]" 
+                      : "text-slate-400"
+                  }`}
+                >
+                  OR
+                </span>
               </div>
 
             </div>
