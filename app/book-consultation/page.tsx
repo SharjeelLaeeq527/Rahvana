@@ -2933,7 +2933,7 @@ const ConsultationBookingPage = () => {
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
-                  disabled={currentStep === 1 || loading}
+                  disabled={currentStep === 1}
                   className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 text-white"
                 >
                   <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
